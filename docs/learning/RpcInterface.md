@@ -35,19 +35,19 @@ Table of Contents:
 
 ## Overview
 
-As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iTwin.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc](./RpcVsIpc.md). For web applications, iTwin.js uses *RpcInterfaces* or [RPC](../learning/Glossary.md#RPC).
+As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iTwin.js app is typically implemented in separate components that run in different processes, potentially on different machines. These components communicate through interfaces. These interfaces can either be implemented as [Rpc or Ipc](./RpcVsIpc.md). For web applications, iTwin.js uses _RpcInterfaces_ or [RPC](../learning/Glossary.md#RPC).
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
 
-The diagram above shows an app frontend requesting operations from some backend. The terms *client* and *server* specify the two *roles* of an RpcInterface:
+The diagram above shows an app frontend requesting operations from some backend. The terms _client_ and _server_ specify the two _roles_ of an RpcInterface:
 
-- *client* -- the code that runs on the frontend, and calls methods on an RpcInterface.
+- _client_ -- the code that runs on the frontend, and calls methods on an RpcInterface.
 
-- *server* -- the code that runs on the backend, and implements the RpcInterface.
+- _server_ -- the code that runs on the backend, and implements the RpcInterface.
 
 Classes that derive from [RpcInterface]($common) define a set of operations implemented by a server, callable from a client.
 
-As shown, client and server work with the [RpcManager]($common) to manage the available RpcInterfaces. RpcManager exposes a client "stub" on the client side that forwards RPC requests. On the other end, RpcManager uses a server dispatch mechanism to relay the request to the implementation in the server. In between the two is a transport mechanism that marshalls the data passed from the client to the serverover an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
+As shown, client and server work with the [RpcManager]($common) to manage the available RpcInterfaces. RpcManager exposes a client "stub" on the client side that forwards RPC requests. On the other end, RpcManager uses a server dispatch mechanism to relay the request to the implementation in the server. In between the two is a transport mechanism that marshalls the data passed from the client to the serverover an appropriate communications channel. The transport mechanism is encapsulated in a _configuration_ that is applied at runtime.
 
 A typical app frontend will use more than one remote component. Likewise, a server can contain and expose more than one component. For example, the app frontend might need two interfaces, Interface 1 and Interface 2. In this example, both are implemented in Backend A.
 
@@ -59,7 +59,7 @@ An app frontend can just as easily work with multiple backends to obtain the ser
 
 The RPC transport configuration that the frontend uses for Backend B can be different from the configuration it uses for Backend A. In fact, that is the common case. If Backend A is the app's own backend and Backend B is a remote service, then the app will use an [RPC configuration](#rpc-configuration) that matches its own configuration for A, while it uses a Web configuration for B.
 
-As noted above, the client of an RPC interface can be frontend or backend code. That means that backends can call on the services of other backends. In other words, a backend can be a server and a client at the same time. A backend configures the RpcInterfaces that it *implements* by calling the initializeImpl method on RpcManager, and it configures the RpcInterfaces that it *consumes* by calling initializeClient. For example, suppose Backend B needs the services of Backend C.
+As noted above, the client of an RPC interface can be frontend or backend code. That means that backends can call on the services of other backends. In other words, a backend can be a server and a client at the same time. A backend configures the RpcInterfaces that it _implements_ by calling the initializeImpl method on RpcManager, and it configures the RpcInterfaces that it _consumes_ by calling initializeClient. For example, suppose Backend B needs the services of Backend C.
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC4.png)
 
@@ -67,7 +67,7 @@ As noted above, the client of an RPC interface can be frontend or backend code. 
 
 ### RpcInterfaces are TypeScript Classes
 
-An RpcInterface is a normal TypeScript class. A client requests a server operation by calling an ordinary TypeScript method, passing parameters and getting a result as ordinary TypeScript objects. The client gets the TypeScript interface object from the RpcManager. As noted above, the client  does not deal with communication
+An RpcInterface is a normal TypeScript class. A client requests a server operation by calling an ordinary TypeScript method, passing parameters and getting a result as ordinary TypeScript objects. The client gets the TypeScript interface object from the RpcManager. As noted above, the client does not deal with communication
 
 Likewise, a server implements and exposes operations by writing normal TypeScript classes. A server registers its implementation objects with RcpManager. And, RpcManager dispatches in-coming requests from clients to those implementation objects.
 
@@ -102,7 +102,7 @@ The definition class must be in a directory or package that is accessible to bot
 
 A best practice is that an interface definition class should be marked as `abstract`. That tells the developer of the client that the definition class is never instantiated or used directly. Instead, callers use the [client stub](#client-stub) for the interface when making calls.
 
-*Example:*
+_Example:_
 
 ```ts
 [[include:RpcInterface.definition]]
@@ -134,7 +134,7 @@ The methods in the impl may have to transform certain argument types, such as IM
 
 A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcinterfaces).
 
-*Example:*
+_Example:_
 
 ```ts
 [[include:RpcInterface.implementation]]
@@ -144,7 +144,7 @@ Impls must be registered at runtime, as explained next.
 
 ### RPC Configuration
 
-The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, reusable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
+The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, reusable app components. A different _transport mechanism_ is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
 
 ### Web RPC configuration
 
@@ -168,7 +168,7 @@ A server must expose the RpcInterfaces that it implements or imports, so that cl
 
 The backend code must call `RpcManager.registerImpl` to register the classes for the interfaces that it implements, if any.
 
-*Example:*
+_Example:_
 
 ```ts
 [[include:RpcInterface.registerImpls]]
@@ -178,7 +178,7 @@ The backend code must call `RpcManager.registerImpl` to register the classes for
 
 The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 
-*Example:*
+_Example:_
 
 ```ts
 [[include:RpcInterface.selectInterfacesToExpose]]
@@ -191,15 +191,15 @@ If the server is an app backend, the RPC configuration must correspond to the ap
 If the server is a [service](./App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
 A backend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
-*Electron Example:*
+_Electron Example:_
 
-``` ts
+```ts
 [[include:RpcInterface.initializeBackendForElectron]]
 ```
 
-*Web Example:*
+_Web Example:_
 
-``` ts
+```ts
 [[include:RpcInterface.initializeForCloud]]
 ```
 
@@ -215,11 +215,11 @@ webServer.post("*", async (request, response) => {
 });
 ```
 
-It is this simple because the server should be concerned *only* with serving its RpcInterfaces and not with static resources or any other kind of API.
+It is this simple because the server should be concerned _only_ with serving its RpcInterfaces and not with static resources or any other kind of API.
 
 ### Client-side Configuration
 
-The client must specify *what* interfaces it plans to use and *where* those interfaces are found.
+The client must specify _what_ interfaces it plans to use and _where_ those interfaces are found.
 The configuration for all app-specific RpcInterfaces must agree with the app's overall configuration.
 A frontend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
@@ -227,9 +227,9 @@ A frontend should configure its RpcInterfaces in its [configuration-specific mai
 
 A desktop app must use a desktop configuration.
 
-*Desktop Example:*
+_Desktop Example:_
 
-``` ts
+```ts
 [[include:RpcInterface.initializeFrontendForElectron]]
 ```
 
@@ -241,9 +241,9 @@ The configuration of RpcInterfaces in a Web app depends on the relative location
 
 If the app has its own backend, and if its backend serves both its RpcInterfaces and its frontend Web resources, then configuration is simple. Just pass the array of interfaces to [BentleyCloudRpcManager]($common). The URI of the backend defaults to the origin of the Web page.
 
-*Web example (simple app):*
+_Web example (simple app):_
 
-``` ts
+```ts
 [[include:RpcInterface.initializeClientBentleyCloudApp]]
 ```
 
@@ -251,9 +251,9 @@ If the app has its own backend, and if its backend serves both its RpcInterfaces
 
 If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `uriPrefix` property when configuring BentleyCloudRpcManager.
 
-*Web example (separate backend):*
+_Web example (separate backend):_
 
-``` ts
+```ts
 [[include:RpcInterface.initializeClientBentleyCloudRemote]]
 ```
 
@@ -275,15 +275,15 @@ A backend method that turns around an invokes another backend's method via RpcIn
 
 Briefly, here is how it works:
 
-* Frontend/client
-  * iTwin.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
-  * It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
-* Backend
-  * iTwin.js on the backend gets the ActivityId from the HTTP header.
-  * The RpcInterface mechanism and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
-  * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
-* Log Browsers
-  * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
+- Frontend/client
+  - iTwin.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
+  - It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
+- Backend
+  - iTwin.js on the backend gets the ActivityId from the HTTP header.
+  - The RpcInterface mechanism and all the async methods in the backend work together to make the ActivityId part of the context in which backend methods are called.
+  - Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
+- Log Browsers
+  - Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
 
 ## RpcInterface Versioning
 
@@ -294,23 +294,23 @@ Follow the rules of [semantic versioning](https://semver.org) to indicate the ty
 
 ## Non-Zero Major Versions (released)
 
-* Change in major version indicates a breaking change
-* Change in minor version indicates a method was added
-* Change in patch indicates a fix not affecting compatibility was made
+- Change in major version indicates a breaking change
+- Change in minor version indicates a method was added
+- Change in patch indicates a fix not affecting compatibility was made
 
 ## Zero Major Versions (prerelease)
 
-* Major version locked at zero
-* Change in minor version indicates a potentially breaking change
-* Change in patch indicates that a method was added or a fix was made
+- Major version locked at zero
+- Change in minor version indicates a potentially breaking change
+- Change in patch indicates that a method was added or a fix was made
 
 Interface version incompatibility is a possibility when a client makes requests on a remote server. The [RpcManager]($common) checks that the RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
 
 The rules of [semantic versioning](https://semver.org) define compatibility. In brief, an interface is incompatible if:
 There are different types of incompatibilities:
 
-* Complete mismatch
-  * Different major versions
-  * Different minor versions in prerelease when major version is zero
-* Client too new
-  * Client version has the same major version but is greater than the server's version when considering minor and patch
+- Complete mismatch
+  - Different major versions
+  - Different minor versions in prerelease when major version is zero
+- Client too new
+  - Client version has the same major version but is greater than the server's version when considering minor and patch

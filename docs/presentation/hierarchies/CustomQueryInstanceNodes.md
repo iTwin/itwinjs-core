@@ -8,19 +8,19 @@ Returns nodes for instances returned by a provided ECSQL query.
 
 | Name                                                                        | Required? | Type                                                                   | Default     |
 | --------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- | ----------- |
-| *Filtering*                                                                 |
+| _Filtering_                                                                 |
 | [`queries`](#attribute-queries)                                             | No        | [`QuerySpecification[]`](#string-query-specification)                  | `[]`        |
 | [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                              | `false`     |
 | [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                              | `false`     |
 | [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                       | `""`        |
 | [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                              | `false`     |
-| *Ordering*                                                                  |
+| _Ordering_                                                                  |
 | [`priority`](#attribute-priority)                                           | No        | `number`                                                               | `1000`      |
 | [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                              | `false`     |
-| *Grouping*                                                                  |
+| _Grouping_                                                                  |
 | [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                              | `true`      |
 | [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                              | `true`      |
-| *Misc.*                                                                     |
+| _Misc._                                                                     |
 | [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                     | `"Unknown"` |
 | [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) | `[]`        |
 | [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                | `[]`        |
@@ -233,10 +233,10 @@ getting child nodes is expensive.
 In case when the attribute value "lies":
 
 - When set to `Always`, the returned nodes always have `hasChildren` flag set to `true`. Requesting children for such nodes returns
-empty list. It's up to the UI component to handle the case of parent node saying it has children but data source not returning any.
+  empty list. It's up to the UI component to handle the case of parent node saying it has children but data source not returning any.
 
 - When set to `Never`, the returned nodes always have `hasChildren` set to `false`. Requesting children for such nodes returns empty
-list even if there are child node rules that define children for it.
+  list even if there are child node rules that define children for it.
 
 |                   |                                    |
 | ----------------- | ---------------------------------- |

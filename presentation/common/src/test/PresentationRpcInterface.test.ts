@@ -6,37 +6,71 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { Id64String, using } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,
-  PresentationStatus, SelectionScopeRpcRequestOptions,
+  IModelRpcProps,
+  RpcOperation,
+  RpcRegistry,
+  RpcRequest,
+  RpcSerializedValue,
+} from "@itwin/core-common";
+import {
+  ContentDescriptorRpcRequestOptions,
+  ContentRpcRequestOptions,
+  ContentSourcesRpcRequestOptions,
+  DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions,
+  DistinctValuesRpcRequestOptions,
+  HierarchyRpcRequestOptions,
+  KeySet,
+  Paged,
+  PresentationRpcInterface,
+  PresentationStatus,
+  SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  ComputeSelectionRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyLevelDescriptorRpcRequestOptions, PresentationRpcResponseData,
+  ComputeSelectionRpcRequestOptions,
+  ContentInstanceKeysRpcRequestOptions,
+  FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions,
+  HierarchyLevelDescriptorRpcRequestOptions,
+  PresentationRpcResponseData,
   SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
-import { createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
+import {
+  createRandomECInstanceKey,
+  createRandomECInstancesNodeKey,
+} from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {
-    protected async send(): Promise<number> { throw new Error("Not implemented."); }
-    protected async load(): Promise<RpcSerializedValue> { throw new Error("Not implemented."); }
-    protected setHeader(_name: string, _value: string): void { throw new Error("Not implemented."); }
+    protected async send(): Promise<number> {
+      throw new Error("Not implemented.");
+    }
+    protected async load(): Promise<RpcSerializedValue> {
+      throw new Error("Not implemented.");
+    }
+    protected setHeader(_name: string, _value: string): void {
+      throw new Error("Not implemented.");
+    }
   }
 
   it("finds imodel tokens in RPC requests", () => {
-    const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
-    const parameters = [
-      token,
-      { rulesetOrId: faker.random.word() },
-    ];
+    const token: IModelRpcProps = {
+      key: "test",
+      iModelId: "test",
+      iTwinId: "test",
+    };
+    const parameters = [token, { rulesetOrId: faker.random.word() }];
     RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
-    const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
-    const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount");
+    const client = RpcRegistry.instance.getClientForInterface(
+      PresentationRpcInterface
+    );
+    const operation = RpcOperation.lookup(
+      PresentationRpcInterface,
+      "getNodesCount"
+    );
     const disposableRequest = {
       request: new TestRpcRequest(client, "getNodesCount", parameters),
       dispose: () => {
@@ -56,14 +90,19 @@ describe("PresentationRpcInterface", () => {
   }
 
   describe("calls forwarding", () => {
-
     let rpcInterface: PresentationRpcInterface;
     let spy: sinon.SinonStub<[IArguments], Promise<any>>;
-    const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
+    const token: IModelRpcProps = {
+      key: "test",
+      iModelId: "test",
+      iTwinId: "test",
+    };
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
-      spy = sinon.stub(rpcInterface, "forward").returns(Promise.resolve({ statusCode: PresentationStatus.Success }));
+      spy = sinon
+        .stub(rpcInterface, "forward")
+        .returns(Promise.resolve({ statusCode: PresentationStatus.Success }));
     });
 
     it("forwards getNodesCount call for root nodes", async () => {
@@ -138,19 +177,27 @@ describe("PresentationRpcInterface", () => {
 
       it("forwards call without modifying options", async () => {
         await rpcInterface.getContentDescriptor(token, options);
-        expect(spy).to.be.calledOnceWith([token, { ...options, transport: "unparsed-json" }]);
+        expect(spy).to.be.calledOnceWith([
+          token,
+          { ...options, transport: "unparsed-json" },
+        ]);
         expect(options.transport).to.be.undefined;
       });
 
       it("parses string response into DescriptorJSON", async () => {
-        const descriptorJson = createTestContentDescriptor({ fields: [] }).toJSON();
+        const descriptorJson = createTestContentDescriptor({
+          fields: [],
+        }).toJSON();
         const presentationResponse: PresentationRpcResponseData<string> = {
           statusCode: PresentationStatus.Success,
           result: JSON.stringify(descriptorJson),
         };
         spy.returns(Promise.resolve(presentationResponse));
 
-        const response = await rpcInterface.getContentDescriptor(token, options);
+        const response = await rpcInterface.getContentDescriptor(
+          token,
+          options
+        );
         expect(response.result).to.be.deep.equal(descriptorJson);
       });
     });
@@ -234,20 +281,20 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getSelectionScopes call", async () => {
-      const options: SelectionScopeRpcRequestOptions = {
-      };
+      const options: SelectionScopeRpcRequestOptions = {};
       await rpcInterface.getSelectionScopes(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
     it("[deprecated] forwards computeSelection call", async () => {
-      const options: SelectionScopeRpcRequestOptions = {
-      };
+      const options: SelectionScopeRpcRequestOptions = {};
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
       // eslint-disable-next-line deprecation/deprecation
       await rpcInterface.computeSelection(token, options, ids, scopeId);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
+      expect(spy).to.be.calledOnceWith(
+        toArguments(token, options, ids, scopeId)
+      );
     });
 
     it("forwards computeSelection call", async () => {
@@ -258,7 +305,5 @@ describe("PresentationRpcInterface", () => {
       await rpcInterface.computeSelection(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
-
   });
-
 });

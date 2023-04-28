@@ -23,13 +23,20 @@ export class CloneWithExpandedLineStrings extends CloneCurvesContext {
     super(undefined);
   }
   // We know we have no transform !!!
-  protected override doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] {
+  protected override doClone(
+    primitive: CurvePrimitive
+  ): CurvePrimitive | CurvePrimitive[] {
     if (primitive instanceof LineString3d && primitive.numPoints() > 1) {
       const packedPoints = primitive.packedPoints;
       const n = packedPoints.length;
       const segments = [];
       for (let i = 0; i + 1 < n; i++) {
-        segments.push(LineSegment3d.createCapture(packedPoints.getPoint3dAtUncheckedPointIndex(i), packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)));
+        segments.push(
+          LineSegment3d.createCapture(
+            packedPoints.getPoint3dAtUncheckedPointIndex(i),
+            packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)
+          )
+        );
       }
       return segments;
     }

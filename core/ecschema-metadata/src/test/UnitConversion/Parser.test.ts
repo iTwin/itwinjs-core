@@ -5,7 +5,10 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
-import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
+import {
+  DefinitionFragment,
+  parseDefinition,
+} from "../../UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [
@@ -38,7 +41,10 @@ describe("DefinitionParser tests", () => {
   type KeyValuePair = [string, DefinitionFragment];
 
   const expectedData: { [key: string]: KeyValuePair[] } = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "..", "assets", "./ParserTests.json"), "utf-8")
+    fs.readFileSync(
+      path.join(__dirname, "..", "assets", "./ParserTests.json"),
+      "utf-8"
+    )
   );
 
   describe("parsing individual tokens", () => {

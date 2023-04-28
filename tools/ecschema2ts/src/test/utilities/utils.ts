@@ -6,7 +6,12 @@ import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import {
+  Schema,
+  SchemaContext,
+  SchemaReadHelper,
+  XmlParser,
+} from "@itwin/ecschema-metadata";
 import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaToTs } from "../../ecschema2ts";
 
@@ -48,14 +53,15 @@ export function getHeaderString(): string {
  *--------------------------------------------------------------------------------------------*/\n\n`;
 }
 
-export function getTestSchemaString(classString?: string, classPropsString?: string, expectedImportsString?: string): string {
+export function getTestSchemaString(
+  classString?: string,
+  classPropsString?: string,
+  expectedImportsString?: string
+): string {
   let returnString = "";
-  if (expectedImportsString)
-    returnString += expectedImportsString;
-  if (classPropsString)
-    returnString += classPropsString;
-  if (classString)
-    returnString += classString;
+  if (expectedImportsString) returnString += expectedImportsString;
+  if (classPropsString) returnString += classPropsString;
+  if (classString) returnString += classString;
 
   return returnString;
 }
@@ -76,7 +82,9 @@ export function deserializeXml(context: SchemaContext, schemaXml: string) {
   return schema;
 }
 
-export function testGeneratedTypescriptProperty(testCases: PropertyTestCase[]): void {
+export function testGeneratedTypescriptProperty(
+  testCases: PropertyTestCase[]
+): void {
   testCases.forEach((testCase) => {
     it(testCase.testName, () => {
       const schemaLocator = new SchemaXmlFileLocater();
@@ -99,7 +107,9 @@ export function testGeneratedTypescriptProperty(testCases: PropertyTestCase[]): 
   });
 }
 
-export function testGeneratedSchemaTypescript(testCases: SchemaTestCase[]): void {
+export function testGeneratedSchemaTypescript(
+  testCases: SchemaTestCase[]
+): void {
   testCases.forEach((testCase) => {
     it(testCase.testName, () => {
       const schemaLocator = new SchemaXmlFileLocater();
@@ -134,8 +144,7 @@ export function testGeneratedSchemaTypescript(testCases: SchemaTestCase[]): void
 }
 
 export function createExpectedSchemaTsString(schemaName: string): string {
-  const schemaTsString: string =
-    `export class ${schemaName} extends Schema {
+  const schemaTsString: string = `export class ${schemaName} extends Schema {
   public static get schemaName(): string { return "${schemaName}"; }
 
   public static registerSchema() {
@@ -153,23 +162,26 @@ export function createExpectedSchemaTsString(schemaName: string): string {
 
 export function createExpectedSchemaImportTs(schemaName: string): RegExp[] {
   const importTs: RegExp[] = [
-    new RegExp(`import { (?=.*\\b(ClassRegistry)\\b)(?=.*\\b(Schema)\\b)(?=.*\\b(Schemas)\\b).* } from "@itwin/core-backend";`),
+    new RegExp(
+      `import { (?=.*\\b(ClassRegistry)\\b)(?=.*\\b(Schema)\\b)(?=.*\\b(Schemas)\\b).* } from "@itwin/core-backend";`
+    ),
     new RegExp(`import \\* as elementsModule from "./${schemaName}Elements";`),
   ];
 
   return importTs;
 }
 
-export function dedent(callSite: TemplateStringsArray | string, ...args: any[]): string {
+export function dedent(
+  callSite: TemplateStringsArray | string,
+  ...args: any[]
+): string {
   function format(str: string) {
     let size = -1;
 
     return str.replace(/\n(\s+)/g, (_m: string, m1: string) => {
-      if (size < 0)
-        size = m1.replace(/\t/g, "  ").length;
+      if (size < 0) size = m1.replace(/\t/g, "  ").length;
 
-      if (m1.match(/\n/) && m1.length === 1)
-        return _m;
+      if (m1.match(/\n/) && m1.length === 1) return _m;
 
       if (m1.match(/\n/) && m1.length > 1)
         return _m.slice(0, m1.length - size + 1);
@@ -177,8 +189,7 @@ export function dedent(callSite: TemplateStringsArray | string, ...args: any[]):
     });
   }
 
-  if (typeof callSite === "string")
-    return format(callSite);
+  if (typeof callSite === "string") return format(callSite);
 
   const output = callSite
     .slice(0, args.length + 1)

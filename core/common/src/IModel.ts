@@ -6,14 +6,40 @@
  * @module iModels
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
 import {
-  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps,
-  YawPitchRollAngles, YawPitchRollProps,
+  assert,
+  BeEvent,
+  GeoServiceStatus,
+  GuidString,
+  Id64,
+  Id64String,
+  IModelStatus,
+  Mutable,
+  OpenMode,
+} from "@itwin/core-bentley";
+import {
+  Angle,
+  AxisIndex,
+  AxisOrder,
+  Constant,
+  Geometry,
+  Matrix3d,
+  Point3d,
+  Range3d,
+  Range3dProps,
+  Transform,
+  Vector3d,
+  XYAndZ,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { Cartographic, CartographicProps } from "./geometry/Cartographic";
-import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
+import {
+  GeographicCRS,
+  GeographicCRSProps,
+} from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
@@ -150,7 +176,8 @@ export interface CloudContainerUri {
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
+  // eslint-disable-line deprecation/deprecation
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
@@ -182,7 +209,8 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
  * @see [SnapshotDb.createEmpty]($backend)
  * @public
  */
-export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+export type CreateEmptySnapshotIModelProps = CreateIModelProps &
+  CreateSnapshotIModelProps;
 
 /** Options that can be supplied when creating standalone iModels.
  * @internal
@@ -197,7 +225,8 @@ export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
  * @see [standalone.createEmpty]($backend)
  * @internal
  */
-export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
+export type CreateEmptyStandaloneIModelProps = CreateIModelProps &
+  CreateStandaloneIModelProps;
 
 /**
  * @public
@@ -230,14 +259,20 @@ export class EcefLocation implements EcefLocationProps {
   private readonly _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return this._transform; }
+  public getTransform(): Transform {
+    return this._transform;
+  }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
     this.origin = Point3d.fromJSON(props.origin).freeze();
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
-      this.cartographicOrigin = Cartographic.fromRadians({ longitude: props.cartographicOrigin.longitude, latitude: props.cartographicOrigin.latitude, height: props.cartographicOrigin.height }).freeze();
+      this.cartographicOrigin = Cartographic.fromRadians({
+        longitude: props.cartographicOrigin.longitude,
+        latitude: props.cartographicOrigin.latitude,
+        height: props.cartographicOrigin.height,
+      }).freeze();
     if (props.xVector && props.yVector) {
       this.xVector = Vector3d.fromJSON(props.xVector).freeze();
       this.yVector = Vector3d.fromJSON(props.yVector).freeze();
@@ -248,8 +283,7 @@ export class EcefLocation implements EcefLocationProps {
       if (zVector.normalizeInPlace())
         matrix = Matrix3d.createColumns(this.xVector, this.yVector, zVector);
     }
-    if (!matrix)
-      matrix = this.orientation.toMatrix3d();
+    if (!matrix) matrix = this.orientation.toMatrix3d();
 
     this._transform = Transform.createOriginAndMatrix(this.origin, matrix);
     this._transform.freeze();
@@ -263,46 +297,88 @@ export class EcefLocation implements EcefLocationProps {
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
-  public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
+  public static createFromCartographicOrigin(
+    origin: Cartographic,
+    point?: Point3d,
+    angle?: Angle
+  ) {
     const ecefOrigin = origin.toEcef();
     const deltaRadians = 10 / Constant.earthRadiusWGS84.polar;
-    const northCarto = Cartographic.fromRadians({ longitude: origin.longitude, latitude: origin.latitude + deltaRadians, height: origin.height });
-    const eastCarto = Cartographic.fromRadians({ longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height });
+    const northCarto = Cartographic.fromRadians({
+      longitude: origin.longitude,
+      latitude: origin.latitude + deltaRadians,
+      height: origin.height,
+    });
+    const eastCarto = Cartographic.fromRadians({
+      longitude: origin.longitude + deltaRadians,
+      latitude: origin.latitude,
+      height: origin.height,
+    });
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();
     const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize();
-    const matrix = Matrix3d.createRigidFromColumns(xVector!, yVector!, AxisOrder.XYZ)!;
+    const matrix = Matrix3d.createRigidFromColumns(
+      xVector!,
+      yVector!,
+      AxisOrder.XYZ
+    )!;
     if (angle !== undefined) {
       const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
       matrix.multiplyMatrixMatrix(north, matrix);
     }
     if (point !== undefined) {
-      const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
+      const delta = matrix.multiplyVector(
+        Vector3d.create(-point.x, -point.y, -point.z)
+      );
       ecefOrigin.addInPlace(delta);
     }
 
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!, cartographicOrigin: origin });
+    return new EcefLocation({
+      origin: ecefOrigin,
+      orientation: YawPitchRollAngles.createFromMatrix3d(matrix)!,
+      cartographicOrigin: origin,
+    });
   }
 
   /** Get the location center of the earth in the iModel coordinate system. */
   public get earthCenter(): Point3d {
     const matrix = this.orientation.toMatrix3d();
-    return Point3d.createFrom(matrix.multiplyTransposeXYZ(-this.origin.x, -this.origin.y, -this.origin.z));
+    return Point3d.createFrom(
+      matrix.multiplyTransposeXYZ(
+        -this.origin.x,
+        -this.origin.y,
+        -this.origin.z
+      )
+    );
   }
 
   /** Return true if this location is equivalent to another location within a small tolerance. */
   public isAlmostEqual(other: EcefLocation): boolean {
-    if (!this.origin.isAlmostEqual(other.origin) || !this.orientation.isAlmostEqual(other.orientation))
+    if (
+      !this.origin.isAlmostEqual(other.origin) ||
+      !this.orientation.isAlmostEqual(other.orientation)
+    )
       return false;
 
-    if ((this.xVector === undefined) !== (other.xVector === undefined) || (this.yVector === undefined) !== (other.yVector === undefined))
+    if (
+      (this.xVector === undefined) !== (other.xVector === undefined) ||
+      (this.yVector === undefined) !== (other.yVector === undefined)
+    )
       return false;
 
-    if (this.xVector !== undefined && other.xVector !== undefined && !this.xVector.isAlmostEqual(other.xVector))
+    if (
+      this.xVector !== undefined &&
+      other.xVector !== undefined &&
+      !this.xVector.isAlmostEqual(other.xVector)
+    )
       return false;
 
-    if (this.yVector !== undefined && other.yVector !== undefined && !this.yVector.isAlmostEqual(other.yVector))
+    if (
+      this.yVector !== undefined &&
+      other.yVector !== undefined &&
+      !this.yVector.isAlmostEqual(other.yVector)
+    )
       return false;
 
     const thisCarto = this.cartographicOrigin;
@@ -322,11 +398,9 @@ export class EcefLocation implements EcefLocationProps {
     if (this.cartographicOrigin)
       props.cartographicOrigin = this.cartographicOrigin.toJSON();
 
-    if (this.xVector)
-      props.xVector = this.xVector.toJSON();
+    if (this.xVector) props.xVector = this.xVector.toJSON();
 
-    if (this.yVector)
-      props.yVector = this.yVector.toJSON();
+    if (this.yVector) props.yVector = this.yVector.toJSON();
 
     return props;
   }
@@ -355,15 +429,25 @@ export abstract class IModel implements IModelProps {
   /** Event raised after [[name]] changes. */
   public readonly onNameChanged = new BeEvent<(previousName: string) => void>();
   /** Event raised after [[rootSubject]] changes. */
-  public readonly onRootSubjectChanged = new BeEvent<(previousSubject: RootSubjectProps) => void>();
+  public readonly onRootSubjectChanged = new BeEvent<
+    (previousSubject: RootSubjectProps) => void
+  >();
   /** Event raised after [[projectExtents]] changes. */
-  public readonly onProjectExtentsChanged = new BeEvent<(previousExtents: AxisAlignedBox3d) => void>();
+  public readonly onProjectExtentsChanged = new BeEvent<
+    (previousExtents: AxisAlignedBox3d) => void
+  >();
   /** Event raised after [[globalOrigin]] changes. */
-  public readonly onGlobalOriginChanged = new BeEvent<(previousOrigin: Point3d) => void>();
+  public readonly onGlobalOriginChanged = new BeEvent<
+    (previousOrigin: Point3d) => void
+  >();
   /** Event raised after [[ecefLocation]] changes. */
-  public readonly onEcefLocationChanged = new BeEvent<(previousLocation: EcefLocation | undefined) => void>();
+  public readonly onEcefLocationChanged = new BeEvent<
+    (previousLocation: EcefLocation | undefined) => void
+  >();
   /** Event raised after [[geographicCoordinateSystem]] changes. */
-  public readonly onGeographicCoordinateSystemChanged = new BeEvent<(previousGCS: GeographicCRS | undefined) => void>();
+  public readonly onGeographicCoordinateSystemChanged = new BeEvent<
+    (previousGCS: GeographicCRS | undefined) => void
+  >();
 
   /** Name of the iModel */
   public get name(): string {
@@ -374,8 +458,7 @@ export abstract class IModel implements IModelProps {
     if (name !== this._name) {
       const old = this._name;
       this._name = name;
-      if (undefined !== old)
-        this.onNameChanged.raiseEvent(old);
+      if (undefined !== old) this.onNameChanged.raiseEvent(old);
     }
   }
 
@@ -385,11 +468,14 @@ export abstract class IModel implements IModelProps {
     return this._rootSubject;
   }
   public set rootSubject(subject: RootSubjectProps) {
-    if (undefined === this._rootSubject || this._rootSubject.name !== subject.name || this._rootSubject.description !== subject.description) {
+    if (
+      undefined === this._rootSubject ||
+      this._rootSubject.name !== subject.name ||
+      this._rootSubject.description !== subject.description
+    ) {
       const old = this._rootSubject;
       this._rootSubject = subject;
-      if (old)
-        this.onRootSubjectChanged.raiseEvent(old);
+      if (old) this.onRootSubjectChanged.raiseEvent(old);
     }
   }
 
@@ -412,12 +498,14 @@ export abstract class IModel implements IModelProps {
     // Don't allow any axis of the project extents to be less than 1 meter.
     const projectExtents = extents.clone();
     projectExtents.ensureMinLengths(1.0);
-    if (!this._projectExtents || !this._projectExtents.isAlmostEqual(projectExtents)) {
+    if (
+      !this._projectExtents ||
+      !this._projectExtents.isAlmostEqual(projectExtents)
+    ) {
       const old = this._projectExtents;
       projectExtents.freeze();
       this._projectExtents = projectExtents;
-      if (old)
-        this.onProjectExtentsChanged.raiseEvent(old);
+      if (old) this.onProjectExtentsChanged.raiseEvent(old);
     }
   }
 
@@ -431,8 +519,7 @@ export abstract class IModel implements IModelProps {
       const old = this._globalOrigin;
       org.freeze();
       this._globalOrigin = org;
-      if (old)
-        this.onGlobalOriginChanged.raiseEvent(old);
+      if (old) this.onGlobalOriginChanged.raiseEvent(old);
     }
   }
 
@@ -446,16 +533,14 @@ export abstract class IModel implements IModelProps {
    * cartographic projection used and a linear transformation should then be calculated at the exact origin of the data
    * it must position.
    * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
-  */
+   */
   public get ecefLocation(): EcefLocation | undefined {
     return this._ecefLocation;
   }
   public set ecefLocation(ecefLocation: EcefLocation | undefined) {
     const old = this._ecefLocation;
-    if (!old && !ecefLocation)
-      return;
-    else if (old && ecefLocation && old.isAlmostEqual(ecefLocation))
-      return;
+    if (!old && !ecefLocation) return;
+    else if (old && ecefLocation && old.isAlmostEqual(ecefLocation)) return;
 
     this._ecefLocation = ecefLocation;
     this.onEcefLocationChanged.raiseEvent(old);
@@ -472,10 +557,8 @@ export abstract class IModel implements IModelProps {
   }
   public set geographicCoordinateSystem(geoCRS: GeographicCRS | undefined) {
     const old = this._geographicCoordinateSystem;
-    if (!old && !geoCRS)
-      return;
-    else if (old && geoCRS && old.equals(geoCRS))
-      return;
+    if (!old && !geoCRS) return;
+    else if (old && geoCRS && old.equals(geoCRS)) return;
 
     this._geographicCoordinateSystem = geoCRS;
     this.onGeographicCoordinateSystemChanged.raiseEvent(old);
@@ -495,7 +578,7 @@ export abstract class IModel implements IModelProps {
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
       geographicCoordinateSystem: this.geographicCoordinateSystem,
-      ... this._getRpcProps(),
+      ...this._getRpcProps(),
     };
   }
 
@@ -509,29 +592,40 @@ export abstract class IModel implements IModelProps {
    */
   protected _fileKey: string;
   /** Get the key that was used to open this iModel. This is the value used for Rpc and Ipc communications. */
-  public get key(): string { return this._fileKey; }
+  public get key(): string {
+    return this._fileKey;
+  }
 
   /** @internal */
   protected _iTwinId?: GuidString;
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public get iTwinId(): GuidString | undefined {
+    return this._iTwinId;
+  }
 
   /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString | undefined { return this._iModelId; }
+  public get iModelId(): GuidString | undefined {
+    return this._iModelId;
+  }
 
   /** @public */
   public changeset: ChangesetIdWithIndex;
 
   protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
-  public get openMode(): OpenMode { return this._openMode; }
+  public get openMode(): OpenMode {
+    return this._openMode;
+  }
 
   /** Return a token for RPC operations.
    * @throws IModelError if the iModel is not open.
    */
   public getRpcProps(): IModelRpcProps {
     if (!this.isOpen)
-      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc");
+      throw new IModelError(
+        IModelStatus.BadRequest,
+        "IModel is not open for rpc"
+      );
 
     return this._getRpcProps();
   }
@@ -557,8 +651,7 @@ export abstract class IModel implements IModelProps {
       this._fileKey = tokenProps.key;
       this._iTwinId = tokenProps.iTwinId;
       this._iModelId = tokenProps.iModelId;
-      if (tokenProps.changeset)
-        this.changeset = tokenProps.changeset;
+      if (tokenProps.changeset) this.changeset = tokenProps.changeset;
     }
   }
 
@@ -569,26 +662,40 @@ export abstract class IModel implements IModelProps {
     this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
 
-    const ecefLocation = props.ecefLocation ? new EcefLocation(props.ecefLocation) : undefined;
+    const ecefLocation = props.ecefLocation
+      ? new EcefLocation(props.ecefLocation)
+      : undefined;
     this.ecefLocation = ecefLocation?.isValid ? ecefLocation : undefined;
 
-    this.geographicCoordinateSystem = props.geographicCoordinateSystem ? new GeographicCRS(props.geographicCoordinateSystem) : undefined;
+    this.geographicCoordinateSystem = props.geographicCoordinateSystem
+      ? new GeographicCRS(props.geographicCoordinateSystem)
+      : undefined;
   }
 
   /** Get the default subCategoryId for the supplied categoryId */
   public static getDefaultSubCategoryId(categoryId: Id64String): Id64String {
-    return Id64.isValid(categoryId) ? Id64.fromLocalAndBriefcaseIds(Id64.getLocalId(categoryId) + 1, Id64.getBriefcaseId(categoryId)) : Id64.invalid;
+    return Id64.isValid(categoryId)
+      ? Id64.fromLocalAndBriefcaseIds(
+          Id64.getLocalId(categoryId) + 1,
+          Id64.getBriefcaseId(categoryId)
+        )
+      : Id64.invalid;
   }
 
   /** True if this iModel has an [EcefLocation]($docs/learning/glossary#ecefLocation). */
-  public get isGeoLocated() { return undefined !== this._ecefLocation; }
+  public get isGeoLocated() {
+    return undefined !== this._ecefLocation;
+  }
 
   /** Get the Transform from this iModel's Spatial coordinates to ECEF coordinates using its [[IModel.ecefLocation]].
    * @throws IModelError if [[isGeoLocated]] is false.
    */
   public getEcefTransform(): Transform {
     if (undefined === this._ecefLocation)
-      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(
+        GeoServiceStatus.NoGeoLocation,
+        "iModel is not GeoLocated"
+      );
     return this._ecefLocation.getTransform();
   }
 
@@ -598,7 +705,9 @@ export abstract class IModel implements IModelProps {
    * @returns A Point3d in ECEF coordinates
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result)!; }
+  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d {
+    return this.getEcefTransform().multiplyPoint3d(spatial, result)!;
+  }
 
   /** Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
    * @param ecef A point in ECEF coordinates
@@ -607,7 +716,9 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
+  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d {
+    return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!;
+  }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
@@ -615,7 +726,12 @@ export abstract class IModel implements IModelProps {
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+  public spatialToCartographicFromEcef(
+    spatial: XYAndZ,
+    result?: Cartographic
+  ): Cartographic {
+    return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!;
+  }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
    * @param cartographic A cartographic location
@@ -624,5 +740,10 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
+  public cartographicToSpatialFromEcef(
+    cartographic: Cartographic,
+    result?: Point3d
+  ) {
+    return this.ecefToSpatial(cartographic.toEcef(result), result);
+  }
 }

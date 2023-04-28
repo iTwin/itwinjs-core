@@ -6,7 +6,13 @@
  * @module Rendering
  */
 
-import { Gradient, ImageBuffer, ImageSource, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import {
+  Gradient,
+  ImageBuffer,
+  ImageSource,
+  RenderTexture,
+  TextureTransparency,
+} from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** A key that uniquely identifies a [RenderTexture]($common) in the context of an [[IModelConnection]], used for caching.
@@ -99,5 +105,5 @@ export interface CreateTextureFromSourceArgs {
    * Ideally, the decorator will take ownership of the texture by specifying "external" and disposing of the texture when it is no longer needed,
    * rather than recreating the texture every time it creates its decoration graphics.
    */
-  ownership?: TextureCacheOwnership & { key: string } | "external";
+  ownership?: (TextureCacheOwnership & { key: string }) | "external";
 }

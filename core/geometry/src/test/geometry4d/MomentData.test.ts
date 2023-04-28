@@ -33,9 +33,24 @@ describe("MomentData", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const loops = Sample.createSimpleXYPointLoops();
-    loops.push([Point3d.create(0, 0), Point3d.create(1, 0), Point3d.create(0, 1), Point3d.create(0, 0)]);
-    loops.push([Point3d.create(1, 1), Point3d.create(2, 1), Point3d.create(1, 2), Point3d.create(1, 1)]);
-    loops.push([Point3d.create(1, 0), Point3d.create(1, 1), Point3d.create(0, 1), Point3d.create(1, 0)]);
+    loops.push([
+      Point3d.create(0, 0),
+      Point3d.create(1, 0),
+      Point3d.create(0, 1),
+      Point3d.create(0, 0),
+    ]);
+    loops.push([
+      Point3d.create(1, 1),
+      Point3d.create(2, 1),
+      Point3d.create(1, 2),
+      Point3d.create(1, 1),
+    ]);
+    loops.push([
+      Point3d.create(1, 0),
+      Point3d.create(1, 1),
+      Point3d.create(0, 1),
+      Point3d.create(1, 0),
+    ]);
     let x0 = 0;
     const shift = 10.0;
     for (const xyLoop of loops) {
@@ -46,7 +61,14 @@ describe("MomentData", () => {
       for (const loop of [loop0, loop1]) {
         const momentData1 = RegionOps.computeXYAreaMoments(loop);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0, y0, 0);
-        GeometryCoreTestIO.showMomentData(allGeometry, momentData1, true, x0, y0, 0);
+        GeometryCoreTestIO.showMomentData(
+          allGeometry,
+          momentData1,
+          true,
+          x0,
+          y0,
+          0
+        );
         y0 += shift;
       }
       x0 += shift;
@@ -59,11 +81,22 @@ describe("MomentData", () => {
         const loop4 = Loop.create(bcurve4);
         const momentData1 = RegionOps.computeXYAreaMoments(loop4);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop4, x0, y0, 0);
-        GeometryCoreTestIO.showMomentData(allGeometry, momentData1, true, x0, y0, 0);
+        GeometryCoreTestIO.showMomentData(
+          allGeometry,
+          momentData1,
+          true,
+          x0,
+          y0,
+          0
+        );
       }
       x0 += shift;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "SimpleXYPointLoops");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Moments",
+      "SimpleXYPointLoops"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -73,29 +106,45 @@ describe("MomentData", () => {
     let y0 = 0;
     const regions: AnyRegion[] = [];
     const regionD0 = Loop.create(
-      LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4))!);
-    const mirrorX = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createScale(-1, 1, 1));
+      LineString3d.create([
+        [1, 4],
+        [0, 4],
+        [0, 0],
+        [1, 0],
+      ]),
+      Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(1, 0),
+        Point3d.create(3, 2),
+        Point3d.create(1, 4)
+      )!
+    );
+    const mirrorX = Transform.createFixedPointAndMatrix(
+      undefined,
+      Matrix3d.createScale(-1, 1, 1)
+    );
     const regionD1 = regionD0.cloneTransformed(mirrorX)!;
     regions.push(regionD0, regionD1 as Loop);
     const skewFactor = 0.25;
-    const skew = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createRowValues(1, skewFactor, 0, 0, 1, 0, 0, 0, 1));
+    const skew = Transform.createFixedPointAndMatrix(
+      undefined,
+      Matrix3d.createRowValues(1, skewFactor, 0, 0, 1, 0, 0, 0, 1)
+    );
     regions.push(regionD0.cloneTransformed(skew)! as AnyRegion);
     regions.push(regionD1.cloneTransformed(skew)! as AnyRegion);
     const poles = new Float64Array([
-      1, 0, 0,
-      4, 0, 0,
-      4, 1, 0,
-      1, 1, 0,
-      2, 2, 0,
-      5, 2, 0,
-      6, 3, 0,
-      5, 4, 0,
-      1, 4, 0]);
+      1, 0, 0, 4, 0, 0, 4, 1, 0, 1, 1, 0, 2, 2, 0, 5, 2, 0, 6, 3, 0, 5, 4, 0, 1,
+      4, 0,
+    ]);
     for (const order of [3, 4, 5]) {
       const regionE0 = Loop.create(
-        LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
-        BSplineCurve3d.createUniformKnots(poles, order)!);
+        LineString3d.create([
+          [1, 4],
+          [0, 4],
+          [0, 0],
+          [1, 0],
+        ]),
+        BSplineCurve3d.createUniformKnots(poles, order)!
+      );
       regions.push(regionE0);
     }
     for (const r0 of regions) {
@@ -105,9 +154,18 @@ describe("MomentData", () => {
       for (const r of [r0, r1]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, r, x0, y0);
         const rawMomentData = RegionOps.computeXYAreaMoments(r as AnyRegion)!;
-        const principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums)!;
+        const principalMomentData = MomentData.inertiaProductsToPrincipalAxes(
+          rawMomentData.origin,
+          rawMomentData.sums
+        )!;
         ck.testDefined(principalMomentData.absoluteQuantity);
-        GeometryCoreTestIO.showMomentData(allGeometry, principalMomentData, false, x0, y0);
+        GeometryCoreTestIO.showMomentData(
+          allGeometry,
+          principalMomentData,
+          false,
+          x0,
+          y0
+        );
         areas.push(principalMomentData.absoluteQuantity);
         x0 += 20.0;
       }
@@ -131,19 +189,43 @@ describe("MomentData", () => {
       const gyrationData: MomentData[] = [];
       let y0 = 0;
       const momentData0 = RegionOps.computeXYAreaMoments(loop0)!;
-      gyrationData.push(MomentData.inertiaProductsToPrincipalAxes(momentData0.origin, momentData0.sums)!);
+      gyrationData.push(
+        MomentData.inertiaProductsToPrincipalAxes(
+          momentData0.origin,
+          momentData0.sums
+        )!
+      );
 
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, x0, y0, 0);
       // GeometryCoreTestIO.consoleLog(momentData0);
-      GeometryCoreTestIO.showMomentData(allGeometry, momentData0, true, x0, y0, 0);
+      GeometryCoreTestIO.showMomentData(
+        allGeometry,
+        momentData0,
+        true,
+        x0,
+        y0,
+        0
+      );
       y0 += shift;
       for (const degrees of [5.0, 2.5, 1.25, 0.0625]) {
         strokeOptions.angleTol = Angle.createDegrees(degrees);
         const loop1 = loop0.cloneStroked(strokeOptions);
         const momentData1 = RegionOps.computeXYAreaMoments(loop1 as Loop)!;
-        gyrationData.push(MomentData.inertiaProductsToPrincipalAxes(momentData1.origin, momentData1.sums)!);
+        gyrationData.push(
+          MomentData.inertiaProductsToPrincipalAxes(
+            momentData1.origin,
+            momentData1.sums
+          )!
+        );
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0, y0, 0);
-        GeometryCoreTestIO.showMomentData(allGeometry, momentData1, true, x0, y0, 0);
+        GeometryCoreTestIO.showMomentData(
+          allGeometry,
+          momentData1,
+          true,
+          x0,
+          y0,
+          0
+        );
         y0 += shift;
       }
       /*
@@ -166,20 +248,39 @@ describe("MomentData", () => {
     const allGeometry: GeometryQuery[] = [];
     const shift = 20.0;
     let y0 = 0.0;
-    for (const loops of [Sample.createSimpleParityRegions(), Sample.createSimpleUnions()]) {
+    for (const loops of [
+      Sample.createSimpleParityRegions(),
+      Sample.createSimpleUnions(),
+    ]) {
       let x0 = 0;
       for (const loop0 of loops) {
         const gyrationData: MomentData[] = [];
         const momentData0 = RegionOps.computeXYAreaMoments(loop0)!;
-        gyrationData.push(MomentData.inertiaProductsToPrincipalAxes(momentData0.origin, momentData0.sums)!);
+        gyrationData.push(
+          MomentData.inertiaProductsToPrincipalAxes(
+            momentData0.origin,
+            momentData0.sums
+          )!
+        );
 
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, x0, y0, 0);
-        GeometryCoreTestIO.showMomentData(allGeometry, momentData0, true, x0, y0, 0);
+        GeometryCoreTestIO.showMomentData(
+          allGeometry,
+          momentData0,
+          true,
+          x0,
+          y0,
+          0
+        );
         x0 += shift;
       }
       y0 += shift;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "ParityAndUnionRegions");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Moments",
+      "ParityAndUnionRegions"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -193,25 +294,59 @@ describe("MomentData", () => {
     for (const sampleSet of [
       Sample.createSmoothCurvePrimitives(),
       Sample.createBsplineCurves(true),
-      Sample.createSimpleParityRegions()]) {
+      Sample.createSimpleParityRegions(),
+    ]) {
       for (const g of sampleSet) {
         const range = g.range();
         const dy = range.yLength() * 2.0;
         const rawSums = RegionOps.computeXYZWireMomentSums(g)!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0, 0);
-        GeometryCoreTestIO.showMomentData(allGeometry, rawSums, true, x0, y0, 0);
+        GeometryCoreTestIO.showMomentData(
+          allGeometry,
+          rawSums,
+          true,
+          x0,
+          y0,
+          0
+        );
         // GeometryCoreTestIO.showMomentData(allGeometry, principalMoments, true, x0, y0, 0);
         if (g instanceof CurveCollection) {
           const strokes = g.cloneStroked(strokeOptions);
           const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0 + dy, 0);
-          GeometryCoreTestIO.showMomentData(allGeometry, strokeSums, true, x0, y0 + dy, 0);
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            strokes,
+            x0,
+            y0 + dy,
+            0
+          );
+          GeometryCoreTestIO.showMomentData(
+            allGeometry,
+            strokeSums,
+            true,
+            x0,
+            y0 + dy,
+            0
+          );
         } else if (g instanceof CurvePrimitive) {
           const strokes = LineString3d.create();
           g.emitStrokes(strokes, strokeOptions);
           const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0 + dy, 0);
-          GeometryCoreTestIO.showMomentData(allGeometry, strokeSums, true, x0, y0 + dy, 0);
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            strokes,
+            x0,
+            y0 + dy,
+            0
+          );
+          GeometryCoreTestIO.showMomentData(
+            allGeometry,
+            strokeSums,
+            true,
+            x0,
+            y0 + dy,
+            0
+          );
         }
         x0 += 10.0 * range.xLength();
       }
@@ -219,5 +354,4 @@ describe("MomentData", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "WireMoments");
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

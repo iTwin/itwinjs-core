@@ -10,13 +10,13 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 
 There are several mechanisms available in BIS that domain authors can take advantage of in order to organize elements into hierarchies:
 
-* The Subject hierarchy organizes Models.
-* A Model can contain Elements.
-* An Element can be sub-modeled by a Model.
-* An Element can own child Elements.
-* A *Spatial Organizer* can hold an Element as part of a hierarchical spatial decomposition of a *Facility*, from the perspective of a specific discipline.
-* A *Physical System* can group member Elements as part of a hierarchical organization by sub-systems, from the perspective of a specific discipline.
-* The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
+- The Subject hierarchy organizes Models.
+- A Model can contain Elements.
+- An Element can be sub-modeled by a Model.
+- An Element can own child Elements.
+- A _Spatial Organizer_ can hold an Element as part of a hierarchical spatial decomposition of a _Facility_, from the perspective of a specific discipline.
+- A _Physical System_ can group member Elements as part of a hierarchical organization by sub-systems, from the perspective of a specific discipline.
+- The provenance of an Element can be traced back to an _External Source_, whose organization may be hierarchical.
 
 Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
 
@@ -26,11 +26,11 @@ The RepositoryModel contains a hierarchy of `Subject` Elements organized into a 
 
 ### Model Contains Elements
 
-A Model is a *container* for Elements. Models are a way to subdivide and organize the overall repository. Each Element is contained by exactly 1 Model as defined by the `ModelContainsElements` relationship.
+A Model is a _container_ for Elements. Models are a way to subdivide and organize the overall repository. Each Element is contained by exactly 1 Model as defined by the `ModelContainsElements` relationship.
 
 ### Model Models Element
 
-A Model is more detail about an Element from a higher level in the information hierarchy. A Model is about exactly 1 Element as defined by the `ModelModelsElement` relationship. From the Model's perspective, this higher-level Element is known as the *modeled element*. From the Element's perspective, the lower-level Model is knows as the *SubModel*. The *SubModel* term is just a way to refer to a relative position in the information hierarchy. There is no special class for a *SubModel*, only the standard `Model` subclasses.
+A Model is more detail about an Element from a higher level in the information hierarchy. A Model is about exactly 1 Element as defined by the `ModelModelsElement` relationship. From the Model's perspective, this higher-level Element is known as the _modeled element_. From the Element's perspective, the lower-level Model is knows as the _SubModel_. The _SubModel_ term is just a way to refer to a relative position in the information hierarchy. There is no special class for a _SubModel_, only the standard `Model` subclasses.
 
 For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
@@ -40,11 +40,11 @@ For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `D
 
 ### Element Owns Child Elements
 
-An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child. A parent Element and all its children are required to be contained in the same model.
+An Element can own child Elements. This is useful for modeling _assembly_ relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a _top-level_ Element. An Element with a parent is considered a _child_ Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child. A parent Element and all its children are required to be contained in the same model.
 
 ### Element Held by Spatial Organizer
 
-A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can *hold* Spatial Elements and aggregate other Spatial Structure elements.
+A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can _hold_ Spatial Elements and aggregate other Spatial Structure elements.
 
 These concepts are part of the rules and patterns introduced by the [SpatialComposition](../../domains/spatialcomposition.ecschema/) schema. They aim to enable the modeling of the Spatial Structure of infrastructure.
 
@@ -68,7 +68,7 @@ For more details about Physical Systems in BIS, please refer to the [Modeling Sy
 
 An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from. External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository. These External Source hierarchies can co-exist with the other organization mechanisms listed above.
 
-For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the *sources* for the elements in the iModel that were synchronized from the external dgn files. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
+For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the _sources_ for the elements in the iModel that were synchronized from the external dgn files. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 ![External Sources Example](../media/external-sources.png)
 
@@ -109,5 +109,6 @@ See [iModel Connectors](../../../learning/imodel-connectors.md) for more details
 -->
 
 ---
+
 | Next: [Modeling Perspectives](./modeling-perspectives.md)
 |:---

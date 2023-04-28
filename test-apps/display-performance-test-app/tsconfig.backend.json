@@ -4,12 +4,6 @@
     "module": "commonjs",
     "outDir": "./lib"
   },
-  "include": [
-    "./src/backend/*.ts",
-    "./src/common/*.ts"
-  ],
-  "exclude": [
-    "lib",
-    "node_modules"
-  ]
+  "include": ["./src/backend/*.ts", "./src/common/*.ts"],
+  "exclude": ["lib", "node_modules"]
 }

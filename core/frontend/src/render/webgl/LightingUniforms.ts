@@ -47,8 +47,7 @@ export class LightingUniforms {
   }
 
   public update(settings: LightSettings): void {
-    if (this._initialized && this._settings.equals(settings))
-      return;
+    if (this._initialized && this._settings.equals(settings)) return;
 
     this._initialized = true;
     this._settings = settings;
@@ -73,7 +72,6 @@ export class LightingUniforms {
   }
 
   public bind(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform1fv(this._data);
+    if (!sync(this, uniform)) uniform.setUniform1fv(this._data);
   }
 }

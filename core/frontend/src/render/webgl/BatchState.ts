@@ -36,10 +36,20 @@ export class BatchState {
     this._stack = stack;
   }
 
-  public get currentBatch(): Batch | undefined { return this._curBatch; }
-  public get currentBatchId(): number { return undefined !== this._curBatch ? this._curBatch.batchId : 0; }
-  public get currentBatchIModel(): IModelConnection | undefined { return undefined !== this._curBatch ? this._curBatch.batchIModel : undefined; }
-  public get isEmpty(): boolean { return 0 === this._batches.length; }
+  public get currentBatch(): Batch | undefined {
+    return this._curBatch;
+  }
+  public get currentBatchId(): number {
+    return undefined !== this._curBatch ? this._curBatch.batchId : 0;
+  }
+  public get currentBatchIModel(): IModelConnection | undefined {
+    return undefined !== this._curBatch
+      ? this._curBatch.batchIModel
+      : undefined;
+  }
+  public get isEmpty(): boolean {
+    return 0 === this._batches.length;
+  }
 
   public push(batch: Batch, allowAdd: boolean): void {
     assert(undefined === this.currentBatch, "batches cannot nest");
@@ -54,8 +64,7 @@ export class BatchState {
 
   public reset(): void {
     assert(undefined === this.currentBatch);
-    for (const batch of this._batches)
-      batch.resetContext();
+    for (const batch of this._batches) batch.resetContext();
 
     this._batches.length = 0;
     this._curBatch = undefined;
@@ -64,20 +73,24 @@ export class BatchState {
   private static readonly _scratchElementIdPair = { lower: 0, upper: 0 };
   public getElementId(featureId: number): Id64String {
     const batch = this.find(featureId);
-    if (undefined === batch)
-      return Id64.invalid;
+    if (undefined === batch) return Id64.invalid;
 
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    const parts = batch.featureTable.getElementIdPair(featureIndex, BatchState._scratchElementIdPair);
+    const parts = batch.featureTable.getElementIdPair(
+      featureIndex,
+      BatchState._scratchElementIdPair
+    );
     return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
-  public getFeature(featureId: number, result: ModelFeature): ModelFeature | undefined {
+  public getFeature(
+    featureId: number,
+    result: ModelFeature
+  ): ModelFeature | undefined {
     const batch = this.find(featureId);
-    if (undefined === batch)
-      return undefined;
+    if (undefined === batch) return undefined;
 
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
@@ -85,8 +98,12 @@ export class BatchState {
     return batch.featureTable.findFeature(featureIndex, result);
   }
 
-  public get numFeatureIds() { return this.nextBatchId; }
-  public get numBatches() { return this._batches.length; }
+  public get numFeatureIds() {
+    return this.nextBatchId;
+  }
+  public get numBatches() {
+    return this._batches.length;
+  }
 
   public findBatchId(featureId: number) {
     const batch = this.find(featureId);
@@ -94,15 +111,13 @@ export class BatchState {
   }
 
   public get nextBatchId(): number {
-    if (this.isEmpty)
-      return 1;
+    if (this.isEmpty) return 1;
 
     const prev = this._batches[this._batches.length - 1];
     assert(0 !== prev.batchId);
 
     let prevNumFeatures = prev.featureTable.numFeatures;
-    if (0 === prevNumFeatures)
-      prevNumFeatures = 1;
+    if (0 === prevNumFeatures) prevNumFeatures = 1;
 
     return prev.batchId + prevNumFeatures;
   }
@@ -117,18 +132,20 @@ export class BatchState {
   }
 
   private indexOf(featureId: number): number {
-    if (featureId <= 0)
-      return -1;
+    if (featureId <= 0) return -1;
 
-    const found = lowerBound(featureId, this._batches, (lhs: number, rhs: Batch) => {
-      // Determine if the requested feature ID is within the range of this batch.
-      if (lhs < rhs.batchId)
-        return -1;
+    const found = lowerBound(
+      featureId,
+      this._batches,
+      (lhs: number, rhs: Batch) => {
+        // Determine if the requested feature ID is within the range of this batch.
+        if (lhs < rhs.batchId) return -1;
 
-      const numFeatures = rhs.featureTable.numFeatures;
-      const nextBatchId = rhs.batchId + (numFeatures > 0 ? numFeatures : 1);
-      return lhs < nextBatchId ? 0 : 1;
-    });
+        const numFeatures = rhs.featureTable.numFeatures;
+        const nextBatchId = rhs.batchId + (numFeatures > 0 ? numFeatures : 1);
+        return lhs < nextBatchId ? 0 : 1;
+      }
+    );
 
     return found.index < this._batches.length ? found.index : -1;
   }

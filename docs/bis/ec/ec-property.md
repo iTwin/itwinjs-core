@@ -4,7 +4,7 @@ This section starts by describing the common parts of the 5 property types in EC
 
 Each property type models a different type of named value contained within an object.
 
-All property types may have a single base property determined using the base class traversal algorithm described. A derived property or property override may not change the property type or persistence unit (via KindOfQuantity).  A derived property inherits custom attributes from its base property, a custom attribute applied to the derived property overrides an inherited one of the same class.
+All property types may have a single base property determined using the base class traversal algorithm described. A derived property or property override may not change the property type or persistence unit (via KindOfQuantity). A derived property inherits custom attributes from its base property, a custom attribute applied to the derived property overrides an inherited one of the same class.
 
 ### Common Attributes
 
@@ -26,7 +26,7 @@ All property types may have a single base property determined using the base cla
 
 ### Custom Attributes
 
-ECProperties may have [Custom Attributes](./ec-custom-attributes.md) applied and inherit the custom attributes applied to any property they override.  Custom attributes applied to a base property may be overriden by applying the same custom attribute applied to a derived property.
+ECProperties may have [Custom Attributes](./ec-custom-attributes.md) applied and inherit the custom attributes applied to any property they override. Custom attributes applied to a base property may be overriden by applying the same custom attribute applied to a derived property.
 
 ### Common Sub-Elements
 
@@ -76,7 +76,7 @@ A Struct Array Property (`ECStructArrayProperty`) models an array of values of e
 
 ## ECNavigationProperty
 
-A Navigation Property models a reference to another instance, i.e. a related instance.  This reference may be as simple as the Id of the related instance, it may actually point to an in memory copy of the instance, a URL to load the related instance, or a query to select the related instance.
+A Navigation Property models a reference to another instance, i.e. a related instance. This reference may be as simple as the Id of the related instance, it may actually point to an in memory copy of the instance, a URL to load the related instance, or a query to select the related instance.
 
 > Navigation Properties are only valid on classes which can be relationship endpoints: ECEntityClass, ECMixinClass and ECRelationshipClass.
 

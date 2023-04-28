@@ -8,9 +8,11 @@ import { expect } from "chai";
 import { MapLayerSource } from "../../../tile/map/MapLayerSources";
 
 describe("MapLayerSources", () => {
-
   it("should create MapLayerSource with defaults", async () => {
-    const sampleSource = MapLayerSource.fromJSON({ name: "testSource", url: "https://testserver/wms" });
+    const sampleSource = MapLayerSource.fromJSON({
+      name: "testSource",
+      url: "https://testserver/wms",
+    });
     expect(sampleSource).to.not.undefined;
     expect(sampleSource!.formatId).to.equals("WMS");
     expect(sampleSource!.transparentBackground).to.equals(true);
@@ -31,7 +33,9 @@ describe("MapLayerSources", () => {
     expect(sampleSource!.formatId).to.equals(sampleSourceJson.formatId);
     expect(sampleSource!.name).to.equals(sampleSourceJson.name);
     expect(sampleSource!.url).to.equals(sampleSourceJson.url);
-    expect(sampleSource!.transparentBackground).to.equals(sampleSourceJson.transparentBackground);
+    expect(sampleSource!.transparentBackground).to.equals(
+      sampleSourceJson.transparentBackground
+    );
     expect(sampleSource!.baseMap).to.equals(sampleSourceJson.baseMap);
 
     // check baseMap false
@@ -58,19 +62,18 @@ describe("MapLayerSources", () => {
     sampleSource!.userName = "testUser";
     sampleSource!.password = "testPassword";
     expect(sampleSource).to.not.undefined;
-    if (!sampleSource)
-      return;
+    if (!sampleSource) return;
 
-    const sampleSubLayerSettings = MapSubLayerSettings.fromJSON({ name: "sampleSubLayer" });
+    const sampleSubLayerSettings = MapSubLayerSettings.fromJSON({
+      name: "sampleSubLayer",
+    });
     expect(sampleSubLayerSettings).to.not.undefined;
-    if (!sampleSubLayerSettings)
-      return;
+    if (!sampleSubLayerSettings) return;
 
     const subLayers = [sampleSubLayerSettings];
     const settings = sampleSource?.toLayerSettings(subLayers);
     expect(settings).to.not.undefined;
-    if (!settings)
-      return;
+    if (!settings) return;
 
     expect(sampleSource.formatId).to.equals(settings.formatId);
     expect(sampleSource.name).to.equals(settings.name);

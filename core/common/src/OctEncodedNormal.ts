@@ -11,7 +11,7 @@ import { Vector3d, XYAndZ } from "@itwin/core-geometry";
 const scratchUInt16 = new Uint16Array(1);
 
 function clamp(val: number, minVal: number, maxVal: number): number {
-  return val < minVal ? minVal : (val > maxVal ? maxVal : val);
+  return val < minVal ? minVal : val > maxVal ? maxVal : val;
 }
 
 function clampUint8(val: number): number {
@@ -59,7 +59,7 @@ export class OctEncodedNormal {
       rx = (1 - Math.abs(y)) * signNotZero(x);
       ry = (1 - Math.abs(x)) * signNotZero(y);
     }
-    return clampUint8(ry) << 8 | clampUint8(rx);
+    return (clampUint8(ry) << 8) | clampUint8(rx);
   }
 
   /** Create an OctEncodedNormal from a normalized vector. */
@@ -76,8 +76,8 @@ export class OctEncodedNormal {
   public static decodeValue(val: number, result?: Vector3d): Vector3d {
     let ex = val & 0xff;
     let ey = val >> 8;
-    ex = ex / 255.0 * 2.0 - 1.0;
-    ey = ey / 255.0 * 2.0 - 1.0;
+    ex = (ex / 255.0) * 2.0 - 1.0;
+    ey = (ey / 255.0) * 2.0 - 1.0;
     const ez = 1 - (Math.abs(ex) + Math.abs(ey));
     let n;
     if (result === undefined) {
@@ -103,5 +103,8 @@ export class OctEncodedNormal {
 
 /** @internal */
 export class OctEncodedNormalPair {
-  constructor(public first: OctEncodedNormal, public second: OctEncodedNormal) { }
+  constructor(
+    public first: OctEncodedNormal,
+    public second: OctEncodedNormal
+  ) {}
 }

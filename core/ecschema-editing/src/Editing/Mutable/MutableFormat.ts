@@ -10,7 +10,10 @@ import { FormatType, ShowSignOption } from "@itwin/core-quantity";
  * An abstract class used for schema editing.
  */
 export abstract class MutableFormat extends Format {
-  public abstract override addUnit(unit: Unit | InvertedUnit, label?: string): void;
+  public abstract override addUnit(
+    unit: Unit | InvertedUnit,
+    label?: string
+  ): void;
   public abstract override setPrecision(precision: number): void;
   public abstract override setFormatType(formatType: FormatType): void;
   public abstract override setRoundFactor(roundFactor: number): void;

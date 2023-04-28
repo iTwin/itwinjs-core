@@ -6,7 +6,14 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
+  ECObjectsError,
+  ECObjectsStatus,
+  ECVersion,
+  ISchemaLocater,
+  Schema,
+  SchemaContext,
+  SchemaKey,
+  SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
@@ -19,8 +26,10 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
  * from the file system using configurable search paths.
  * @beta
  */
-export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
-
+export class SchemaJsonFileLocater
+  extends SchemaFileLocater
+  implements ISchemaLocater
+{
   /**
    * Constructs a SchemaKey based on the information in the Schema JSON
    * @param data The Schema JSON as a string
@@ -29,18 +38,27 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const dataJson = JSON.parse(data);
 
     // Check if the name is present
-    if (!(dataJson.name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Could not retrieve the ECSchema name in the given file.`);
+    if (!dataJson.name)
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidECJson,
+        `Could not retrieve the ECSchema name in the given file.`
+      );
 
     // Check if versions is present
-    if (!(dataJson.version))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Could not parse the ECSchema version in the given file.`);
+    if (!dataJson.version)
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidECJson,
+        `Could not parse the ECSchema version in the given file.`
+      );
 
     // Get the name and version from the JSON
     const schemaName = dataJson.name;
     const schemaVersion = dataJson.version;
 
-    const key = new SchemaKey(schemaName.toString(), ECVersion.fromString(schemaVersion.toString()));
+    const key = new SchemaKey(
+      schemaName.toString(),
+      ECVersion.fromString(schemaVersion.toString())
+    );
     return key;
   }
 
@@ -51,23 +69,30 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(
+    schemaKey: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): Promise<T | undefined> {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
-    if (!candidates || candidates.length === 0)
-      return undefined;
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
+      schemaKey,
+      matchType,
+      "json"
+    );
+    if (!candidates || candidates.length === 0) return undefined;
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
+      candidates.length - 1
+    ];
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
-    if (!await this.fileExists(schemaPath))
-      return undefined;
+    if (!(await this.fileExists(schemaPath))) return undefined;
 
     const schemaText = await this.readUtf8FileToString(schemaPath);
-    if (!schemaText)
-      return undefined;
+    if (!schemaText) return undefined;
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
@@ -82,23 +107,30 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    * @param matchType The SchemaMatchType
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync<T extends Schema>(
+    schemaKey: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): T | undefined {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
-    if (!candidates || candidates.length === 0)
-      return undefined;
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
+      schemaKey,
+      matchType,
+      "json"
+    );
+    if (!candidates || candidates.length === 0) return undefined;
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
+      candidates.length - 1
+    ];
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
-    if (!fs.existsSync(schemaPath))
-      return undefined;
+    if (!fs.existsSync(schemaPath)) return undefined;
 
     const schemaText = fs.readFileSync(schemaPath, "utf-8");
-    if (!schemaText)
-      return undefined;
+    if (!schemaText) return undefined;
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 

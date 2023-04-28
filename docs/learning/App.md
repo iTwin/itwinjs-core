@@ -2,12 +2,12 @@
 
 From the same JavaScript codebase, it is possible to create:
 
-* [Backend Agents and Services](#agents-and-services) that process iModels and respond to events from iModelHub
-* [Interactive Apps](#interactive-apps) that have a GUI and access iModel content. Several kinds of apps are supported:
-  * [Web Apps](#web-apps) that run in web browsers and communicate with backend code running in Web servers
-  * [Desktop Apps](#desktop-apps) that run on personal computers
-  * [Mobile Apps](#mobile-apps) that run on tablets and phones
-* [Connectors](../learning/WriteAConnector.md)
+- [Backend Agents and Services](#agents-and-services) that process iModels and respond to events from iModelHub
+- [Interactive Apps](#interactive-apps) that have a GUI and access iModel content. Several kinds of apps are supported:
+  - [Web Apps](#web-apps) that run in web browsers and communicate with backend code running in Web servers
+  - [Desktop Apps](#desktop-apps) that run on personal computers
+  - [Mobile Apps](#mobile-apps) that run on tablets and phones
+- [Connectors](../learning/WriteAConnector.md)
 
 ## Agents and Services
 
@@ -23,7 +23,7 @@ See the [diagram of a Web agent](./SoftwareArchitecture.md#web) for an overview 
 
 ### iModel Agents
 
-An *iModel Agent* is a program that performs an unattended action upon being invoked by an event from iModelHub.
+An _iModel Agent_ is a program that performs an unattended action upon being invoked by an event from iModelHub.
 
 As an example, consider an iTwin.js Agent that receives notifications from iModelHub for every Changeset to a specific iModel. The Agent could inspect every changeset using the [ChangeSummaryManager]($backend) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
 
@@ -31,13 +31,13 @@ As an example, consider an iTwin.js Agent that receives notifications from iMode
 
 ### iModel Services
 
-An *iModel Service* is a program that responds to requests from other apps. A service runs on a server and waits for requests. A service may receive requests from [Web Apps](#web-apps) (frontend or backend) or from other services.
+An _iModel Service_ is a program that responds to requests from other apps. A service runs on a server and waits for requests. A service may receive requests from [Web Apps](#web-apps) (frontend or backend) or from other services.
 
 A true service is a stand-alone program that is never bundled with the clients that use it. An [app-specific backend](#app-backend) is a special kind of service that is logically part of an app and is often bundled with it. This distinction is important for [portability reasons](../learning/Portability.md#backend-portability).
 
 An example of a service is a program that serves out spatial tiles that it extracts from a specified area of an iModel upon request.
 
-An iModel service or app backend exposes an *interface* that clients can use to make requests. An iModel service interface is an [RpcInterface](./RpcInterface.md). A service always configures its interfaces using a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
+An iModel service or app backend exposes an _interface_ that clients can use to make requests. An iModel service interface is an [RpcInterface](./RpcInterface.md). A service always configures its interfaces using a [Web RPC configuration](./RpcInterface.md#web-rpc-configuration). Client code must be written in TypeScript and must use an RpcInterface to access the operations in an iModel service.
 
 ![>](./next.png) [How to write a Web service](../learning/WriteAWebService.md).
 

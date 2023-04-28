@@ -36,12 +36,26 @@ import { PointString3d } from "./PointString3d";
  *  @see [[AnyGeometryQuery]]
  * @public
  */
-export type GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf";
+export type GeometryQueryCategory =
+  | "polyface"
+  | "curvePrimitive"
+  | "curveCollection"
+  | "solid"
+  | "point"
+  | "pointCollection"
+  | "bsurf";
 
 /** Union type for subclasses of [[GeometryQuery]]. Specific subclasses can be discriminated at compile- or run-time using [[GeometryQuery.geometryCategory]].
  * @public
  */
-export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
+export type AnyGeometryQuery =
+  | Polyface
+  | CurvePrimitive
+  | CurveCollection
+  | SolidPrimitive
+  | CoordinateXYZ
+  | PointString3d
+  | BSpline2dNd;
 
 /** Queries to be supported by Curve, Surface, and Solid objects */
 /**
@@ -61,7 +75,10 @@ export abstract class GeometryQuery {
   }
 
   /** extend rangeToExtend by the range of this geometry multiplied by the transform */
-  public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+  public abstract extendRange(
+    rangeToExtend: Range3d,
+    transform?: Transform
+  ): void;
 
   /** Attempt to transform in place.
    *
@@ -71,19 +88,27 @@ export abstract class GeometryQuery {
   public abstract tryTransformInPlace(transform: Transform): boolean;
 
   /** try to move the geometry by dx,dy,dz */
-  public tryTranslateInPlace(dx: number, dy: number = 0.0, dz: number = 0.0): boolean {
+  public tryTranslateInPlace(
+    dx: number,
+    dy: number = 0.0,
+    dz: number = 0.0
+  ): boolean {
     return this.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy, dz));
   }
   /** return a transformed clone.
    */
-  public abstract cloneTransformed(transform: Transform): GeometryQuery | undefined;
+  public abstract cloneTransformed(
+    transform: Transform
+  ): GeometryQuery | undefined;
   /** return a clone */
   public abstract clone(): GeometryQuery | undefined;
   /** return GeometryQuery children for recursive queries.
    *
    * * leaf classes do not need to implement.
    */
-  public get children(): GeometryQuery[] | undefined { return undefined; }
+  public get children(): GeometryQuery[] | undefined {
+    return undefined;
+  }
   /** test if (other instanceof this.Type).  REQUIRED IN ALL CONCRETE CLASSES */
   public abstract isSameGeometryClass(other: GeometryQuery): boolean;
   /** test for exact structure and nearly identical geometry.
@@ -98,14 +123,14 @@ export abstract class GeometryQuery {
       const childrenA = this.children;
       const childrenB = other.children;
       if (childrenA && childrenB) {
-        if (childrenA.length !== childrenB.length)
-          return false;
+        if (childrenA.length !== childrenB.length) return false;
         for (let i = 0; i < childrenA.length; i++) {
           if (!childrenA[i].isAlmostEqual(childrenB[i])) return false;
         }
         return true;
-      } else if (childrenA || childrenB) {  // CurveCollections start with empty arrays for children.  So these null pointer cases are never reached.
-        return false;   // plainly different .
+      } else if (childrenA || childrenB) {
+        // CurveCollections start with empty arrays for children.  So these null pointer cases are never reached.
+        return false; // plainly different .
       } else {
         // both children null. call it equal?   This class should probably have implemented.
         return true;
@@ -117,11 +142,13 @@ export abstract class GeometryQuery {
    * * both undefined returns true
    * * single defined returns false
    */
-  public static areAlmostEqual(a: GeometryQuery | undefined, b: GeometryQuery | undefined): boolean {
+  public static areAlmostEqual(
+    a: GeometryQuery | undefined,
+    b: GeometryQuery | undefined
+  ): boolean {
     if (a instanceof GeometryQuery && b instanceof GeometryQuery)
       return a.isAlmostEqual(b);
-    if ((a === undefined) && (b === undefined))
-      return true;
+    if (a === undefined && b === undefined) return true;
     return false;
   }
   /**

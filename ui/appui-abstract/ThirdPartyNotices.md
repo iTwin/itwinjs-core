@@ -1,4 +1,3 @@
-
 # Third-Party Code
 
 The iTwin.js library potentially incorporates work from the following third-party code:

@@ -40,7 +40,7 @@ Creating subscription requires user to have an [access token](../common/AccessTo
 
 Example:
 
-After creating the subscription, ``subscription.wsgId`` can be used when subscription id is requested.
+After creating the subscription, `subscription.wsgId` can be used when subscription id is requested.
 
 Each subscription contains its own queue of events. Subscriptions expire after an hour of inactivity.
 

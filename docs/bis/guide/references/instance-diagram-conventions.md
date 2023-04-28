@@ -1,11 +1,13 @@
 # Instance-diagram Conventions
 
 ## **Introduction**
+
 This page explains the conventions used by **instance** diagrams included in this guide as well as the documentation of individual BIS schemas.
 
 ## **Colors**
 
 For **Elements**, colors are determined by the type of the element:
+
 - `Information` - light cyan (#EDF4F6)
 - `Physical` - light blue (#96C8FF)
 - `Functional or Analytical` - light green (#C8FFC8)

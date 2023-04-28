@@ -65,7 +65,8 @@ export interface InstanceLabelOverrideValueSpecificationBase {
  * @see [Composite value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#composite-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideCompositeValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideCompositeValueSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "Composite";
 
   /**
@@ -74,7 +75,10 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
    * If any of the parts with `isRequired` flag evaluate to an empty string, the
    * result of this specification is also an empty string.
    */
-  parts: Array<{ spec: InstanceLabelOverrideValueSpecification, isRequired?: boolean }>;
+  parts: Array<{
+    spec: InstanceLabelOverrideValueSpecification;
+    isRequired?: boolean;
+  }>;
 
   /** Separator to use when joining the parts. Defaults to a space character. */
   separator?: string;
@@ -86,7 +90,8 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
  * @see [Property value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#property-value-specification)
  * @public
  */
-export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverridePropertyValueSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "Property";
 
   /**
@@ -108,7 +113,8 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
  * @see [Class name value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#class-name-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideClassNameSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "ClassName";
 
   /** Should full (`{schemaName}.{className}`) class name be used */
@@ -121,7 +127,8 @@ export interface InstanceLabelOverrideClassNameSpecification extends InstanceLab
  * @see [Class label value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#class-label-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideClassLabelSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "ClassLabel";
 }
 
@@ -131,7 +138,8 @@ export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLa
  * @see [BriefcaseId value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#briefcaseid-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideBriefcaseIdSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "BriefcaseId";
 }
 
@@ -141,7 +149,8 @@ export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceL
  * @see [LocalId value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#localid-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideLocalIdSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "LocalId";
 }
 
@@ -151,7 +160,8 @@ export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabel
  * @see [String value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#string-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideStringValueSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "String";
 
   /** The value to use as the label content. */
@@ -164,7 +174,8 @@ export interface InstanceLabelOverrideStringValueSpecification extends InstanceL
  * @see [Related instance label value specification reference documentation page]($docs/presentation/customization/InstanceLabelOverride.md#related-instance-label-value-specification)
  * @public
  */
-export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
+export interface InstanceLabelOverrideRelatedInstanceLabelSpecification
+  extends InstanceLabelOverrideValueSpecificationBase {
   specType: "RelatedInstanceLabel";
 
   /**
@@ -179,7 +190,11 @@ export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends 
  * @public
  */
 export type InstanceLabelOverrideValueSpecification =
-  InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification |
-  InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification |
-  InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification |
-  InstanceLabelOverrideLocalIdSpecification | InstanceLabelOverrideRelatedInstanceLabelSpecification;
+  | InstanceLabelOverrideCompositeValueSpecification
+  | InstanceLabelOverridePropertyValueSpecification
+  | InstanceLabelOverrideStringValueSpecification
+  | InstanceLabelOverrideClassNameSpecification
+  | InstanceLabelOverrideClassLabelSpecification
+  | InstanceLabelOverrideBriefcaseIdSpecification
+  | InstanceLabelOverrideLocalIdSpecification
+  | InstanceLabelOverrideRelatedInstanceLabelSpecification;

@@ -7,7 +7,8 @@
 - Choose most recent changeset
 
 Execute queries
-> Example: SELECT * FROM BisCore.Element
+
+> Example: SELECT \* FROM BisCore.Element
 
 ## Learn more
 

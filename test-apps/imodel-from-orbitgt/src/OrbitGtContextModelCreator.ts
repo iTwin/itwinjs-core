@@ -6,11 +6,33 @@ import * as fs from "fs";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition,
+  CategorySelector,
+  DefinitionModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  PhysicalModel,
+  SnapshotDb,
+  SpatialViewDefinition,
 } from "@itwin/core-backend";
-import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 import {
-  ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
+  AxisAlignedBox3d,
+  Cartographic,
+  ContextRealityModelProps,
+  EcefLocation,
+  RenderMode,
+  ViewFlags,
+} from "@itwin/core-common";
+import {
+  ALong,
+  CRSManager,
+  Downloader,
+  OnlineEngine,
+  OPCReader,
+  OrbitGtBounds,
+  PageCachedFile,
+  PointCloudReader,
+  UrlFS,
 } from "@itwin/core-orbitgt";
 import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
 
@@ -33,16 +55,31 @@ export class OrbitGtContextIModelCreator {
    * @param iModelFileName the output iModel file name
    * @param url the reality model URL
    */
-  public constructor(private _props: OrbitGtPointCloudProps, iModelFileName: string, private _name: string) {
-    fs.unlink(iModelFileName, ((_err) => { }));
-    this.iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
+  public constructor(
+    private _props: OrbitGtPointCloudProps,
+    iModelFileName: string,
+    private _name: string
+  ) {
+    fs.unlink(iModelFileName, (_err) => {});
+    this.iModelDb = SnapshotDb.createEmpty(iModelFileName, {
+      rootSubject: { name: "Reality Model Context" },
+    });
   }
   /** Perform the import */
   public async create(): Promise<void> {
-    const { rdsUrl, accountName, containerName, blobFileName, sasToken } = this._props;
+    const { rdsUrl, accountName, containerName, blobFileName, sasToken } =
+      this._props;
     try {
-      this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
-      this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
+      this.definitionModelId = DefinitionModel.insert(
+        this.iModelDb,
+        IModelDb.rootSubjectId,
+        "Definitions"
+      );
+      this.physicalModelId = PhysicalModel.insert(
+        this.iModelDb,
+        IModelDb.rootSubjectId,
+        "Empty Model"
+      );
 
       if (Downloader.INSTANCE == null)
         Downloader.INSTANCE = new DownloaderNode();
@@ -51,52 +88,131 @@ export class OrbitGtContextIModelCreator {
 
       let blobFileURL: string = blobFileName;
       if (accountName.length > 0)
-        blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
+        blobFileURL = UrlFS.getAzureBlobSasUrl(
+          accountName,
+          containerName,
+          blobFileName,
+          sasToken
+        );
 
       const urlFS: UrlFS = new UrlFS();
 
       // wrap a caching layer (16 MB) around the blob file
       const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
-      const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024 /* pageSize */, 128 /* maxPageCount */);
-      const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/* lazyLoading */);
+      const blobFile: PageCachedFile = new PageCachedFile(
+        urlFS,
+        blobFileURL,
+        blobFileSize,
+        128 * 1024 /* pageSize */,
+        128 /* maxPageCount */
+      );
+      const fileReader: PointCloudReader = await OPCReader.openFile(
+        blobFile,
+        blobFileURL,
+        true /* lazyLoading */
+      );
 
       let fileCrs = fileReader.getFileCRS();
-      if (fileCrs == null)
-        fileCrs = "";
+      if (fileCrs == null) fileCrs = "";
       const bounds = fileReader.getFileBounds();
-      let worldRange = Range3d.createXYZXYZ(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
+      let worldRange = Range3d.createXYZXYZ(
+        bounds.getMinX(),
+        bounds.getMinY(),
+        bounds.getMinZ(),
+        bounds.getMaxX(),
+        bounds.getMaxY(),
+        bounds.getMaxZ()
+      );
       let geoLocated = false;
       if (fileCrs.length > 0) {
         await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
         const wgs84Crs = "4978";
         await CRSManager.ENGINE.prepareForArea(wgs84Crs, new OrbitGtBounds());
 
-        const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
-        const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
+        const ecefBounds = CRSManager.transformBounds(
+          bounds,
+          fileCrs,
+          wgs84Crs
+        );
+        const ecefRange = Range3d.createXYZXYZ(
+          ecefBounds.getMinX(),
+          ecefBounds.getMinY(),
+          ecefBounds.getMinZ(),
+          ecefBounds.getMaxX(),
+          ecefBounds.getMaxY(),
+          ecefBounds.getMaxZ()
+        );
+        const ecefCenter = ecefRange.localXYZToWorld(0.5, 0.5, 0.5)!;
         const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
         cartoCenter.height = 0;
-        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
+        const ecefLocation =
+          EcefLocation.createFromCartographicOrigin(cartoCenter);
         this.iModelDb.setEcefLocation(ecefLocation);
         const ecefToWorld = ecefLocation.getTransform().inverse()!;
         worldRange = ecefToWorld.multiplyRange(ecefRange);
         geoLocated = true;
       }
-      const orbitGtBlob = { rdsUrl, containerName, blobFileName, accountName, sasToken };
-      this.insertSpatialView("OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], geoLocated);
+      const orbitGtBlob = {
+        rdsUrl,
+        containerName,
+        blobFileName,
+        accountName,
+        sasToken,
+      };
+      this.insertSpatialView(
+        "OrbitGT Model View",
+        worldRange,
+        [{ tilesetUrl: "", orbitGtBlob, name: this._name }],
+        geoLocated
+      );
       this.iModelDb.updateProjectExtents(worldRange);
       this.iModelDb.saveChanges();
     } catch (error) {
-      process.stdout.write(`Error creating model from: ${blobFileName} Error: ${error}`);
+      process.stdout.write(
+        `Error creating model from: ${blobFileName} Error: ${error}`
+      );
     }
   }
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
-  protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
-    const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
-    return SpatialViewDefinition.insertWithCamera(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+  protected insertSpatialView(
+    viewName: string,
+    range: AxisAlignedBox3d,
+    realityModels: ContextRealityModelProps[],
+    geoLocated: boolean
+  ): Id64String {
+    const modelSelectorId: Id64String = ModelSelector.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      [this.physicalModelId]
+    );
+    const categorySelectorId: Id64String = CategorySelector.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      []
+    );
+    const vf = new ViewFlags({
+      backgroundMap: geoLocated,
+      renderMode: RenderMode.SmoothShade,
+      lighting: true,
+    });
+    const displayStyleId: Id64String = DisplayStyle3d.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      { viewFlags: vf, contextRealityModels: realityModels }
+    );
+    return SpatialViewDefinition.insertWithCamera(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      StandardViewIndex.Iso
+    );
   }
 }

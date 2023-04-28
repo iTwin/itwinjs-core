@@ -14,7 +14,10 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
-import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import {
+  PointStreamXYZXYZHandlerBase,
+  VariantPointDataStream,
+} from "../geometry3d/PointStreaming";
 import { Range1d, Range2d } from "../geometry3d/Range";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
@@ -25,26 +28,38 @@ import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
  * type for use as signature for xyz data of a single linestring appearing in a parameter list.
  * @public
  */
-export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
+export type LineStringDataVariant =
+  | IndexedXYZCollection
+  | XYAndZ[]
+  | XAndY[]
+  | number[][];
 
 /**
  * type for use as signature for multiple xyz data of multiple linestrings appearing in a parameter list.
  * @public
  */
-export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
+export type MultiLineStringDataVariant =
+  | LineStringDataVariant
+  | LineStringDataVariant[];
 
 /**
  * (static) methods for triangulating polygons
  * * @internal
  */
 export class Triangulator {
-
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them
    * * The shared edge mates are c and e.
    * * (abc) are a triangle in CCW order
    * * (dfe) are a triangle in CCW order. (!! node dfe instead of def.)
    */
-  private static flipEdgeBetweenTriangles(a: HalfEdge, b: HalfEdge, c: HalfEdge, d: HalfEdge, e: HalfEdge, f: HalfEdge) {
+  private static flipEdgeBetweenTriangles(
+    a: HalfEdge,
+    b: HalfEdge,
+    c: HalfEdge,
+    d: HalfEdge,
+    e: HalfEdge,
+    f: HalfEdge
+  ) {
     // Reassign all of the pointers
     HalfEdge.pinch(a, e);
     HalfEdge.pinch(c, d);
@@ -77,7 +92,9 @@ export class Triangulator {
    * * Return false if clearly negative or almost zero.
    * @param nodeA node on the diagonal edge of candidate for edge flip.
    */
-  public static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
+  public static computeInCircleDeterminantIsStrongPositive(
+    nodeA: HalfEdge
+  ): boolean {
     // Assume triangle A1,A2,B2 is ccw.
     // Shift the triangle to the origin (by negated A coords).
     // The Delaunay condition is computed by projecting the origin and the shifted triangle
@@ -87,33 +104,31 @@ export class Triangulator {
     // negative, as computed by the triple product."
     const nodeA1 = nodeA.faceSuccessor;
     const nodeA2 = nodeA1.faceSuccessor;
-    if (nodeA2.faceSuccessor !== nodeA)
-      return false;
+    if (nodeA2.faceSuccessor !== nodeA) return false;
     const nodeB = nodeA.edgeMate;
     const nodeB1 = nodeB.faceSuccessor;
     const nodeB2 = nodeB1.faceSuccessor;
-    if (nodeB2.faceSuccessor !== nodeB)
-      return false;
+    if (nodeB2.faceSuccessor !== nodeB) return false;
     const ux = nodeA1.x - nodeA.x;
     const uy = nodeA1.y - nodeA.y;
     const vx = nodeA2.x - nodeA.x;
     const vy = nodeA2.y - nodeA.y;
-    if (Geometry.crossProductXYXY(ux, uy, vx, vy) < 0)
-      return false;
+    if (Geometry.crossProductXYXY(ux, uy, vx, vy) < 0) return false;
     // we assume identical coordinates in pairs (nodeA, nodeB1)  and (nodeA1, nodeB)
     const wx = nodeB2.x - nodeA.x;
     const wy = nodeB2.y - nodeA.y;
     const tx = wx * wx + wy * wy;
     const ty = vx * vx + vy * vy;
     const tz = ux * ux + uy * uy;
-    const q = Geometry.tripleProduct(
-      wx, wy, tx,
-      vx, vy, ty,
-      ux, uy, tz);
-    if (q < 0)
-      return false;
-    const denom = Math.abs(wx * vy * tz) + Math.abs(wy * ty * ux) + Math.abs(tx * vx * uy)
-      + Math.abs(wx * ty * uy) + Math.abs(wy * vx * tz) + Math.abs(tx * vy * ux);
+    const q = Geometry.tripleProduct(wx, wy, tx, vx, vy, ty, ux, uy, tz);
+    if (q < 0) return false;
+    const denom =
+      Math.abs(wx * vy * tz) +
+      Math.abs(wy * ty * ux) +
+      Math.abs(tx * vx * uy) +
+      Math.abs(wx * ty * uy) +
+      Math.abs(wy * vx * tz) +
+      Math.abs(tx * vy * ux);
     return q > 1.0e-12 * denom;
   }
 
@@ -124,8 +139,7 @@ export class Triangulator {
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
     const edgeSet = MarkedEdgeSet.create(graph)!;
-    for (const node of graph.allHalfEdges)
-      edgeSet.addToSet(node);
+    for (const node of graph.allHalfEdges) edgeSet.addToSet(node);
     const numFlip = this.flipTrianglesInEdgeSet(graph, edgeSet);
     edgeSet.teardown();
     return numFlip;
@@ -136,8 +150,14 @@ export class Triangulator {
    *  *  If a flip would be possible, test the results of flipping using incircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
-  public static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number {
-    const barrierMasks = HalfEdgeMask.EXTERIOR | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.BOUNDARY_EDGE;
+  public static flipTrianglesInEdgeSet(
+    graph: HalfEdgeGraph,
+    edgeSet: MarkedEdgeSet
+  ): number {
+    const barrierMasks =
+      HalfEdgeMask.EXTERIOR |
+      HalfEdgeMask.PRIMARY_EDGE |
+      HalfEdgeMask.BOUNDARY_EDGE;
 
     const nodeArray = graph.allHalfEdges;
     const maxTest = 10.0 * nodeArray.length;
@@ -145,13 +165,20 @@ export class Triangulator {
     let numOK = 0;
     let node;
     while (undefined !== (node = edgeSet.chooseAndRemoveAny())) {
-
-      if (node.isMaskSet(barrierMasks)) // Flip not allowed
+      if (node.isMaskSet(barrierMasks))
+        // Flip not allowed
         continue;
 
       if (Triangulator.computeInCircleDeterminantIsStrongPositive(node)) {
         // Flip the triangles
-        Triangulator.flipEdgeBetweenTriangles(node.edgeMate.faceSuccessor, node.edgeMate.facePredecessor, node.edgeMate, node.faceSuccessor, node, node.facePredecessor);
+        Triangulator.flipEdgeBetweenTriangles(
+          node.edgeMate.faceSuccessor,
+          node.edgeMate.facePredecessor,
+          node.edgeMate,
+          node.faceSuccessor,
+          node,
+          node.facePredecessor
+        );
         // keep looking at the 2 faces
         edgeSet.addAroundFace(node);
         edgeSet.addAroundFace(node.edgeMate);
@@ -159,8 +186,7 @@ export class Triangulator {
       } else {
         numOK++;
       }
-      if (numFlip + numOK > maxTest)
-        break;
+      if (numFlip + numOK > maxTest) break;
     }
     return numFlip;
   }
@@ -169,9 +195,10 @@ export class Triangulator {
    * * The outer limit of the graph is the convex hull of the points.
    * * The outside loop is marked `HalfEdgeMask.EXTERIOR`
    */
-  public static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
-    if (points.length < 3)
-      return undefined;
+  public static createTriangulatedGraphFromPoints(
+    points: Point3d[]
+  ): HalfEdgeGraph | undefined {
+    if (points.length < 3) return undefined;
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
@@ -208,9 +235,10 @@ export class Triangulator {
    * @param loops an array of loops as GrowableXYZArray or XAndY[]
    * @returns triangulated graph, or undefined if bad data.
    */
-  public static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined {
-    if (loops.length < 1)
-      return undefined;
+  public static createTriangulatedGraphFromLoops(
+    loops: GrowableXYZArray[] | XAndY[][]
+  ): HalfEdgeGraph | undefined {
+    if (loops.length < 1) return undefined;
     const mask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
     const graph = new HalfEdgeGraph();
     const holeSeeds: HalfEdge[] = [];
@@ -219,9 +247,12 @@ export class Triangulator {
     // collect all the loops with pointers to the positive (inside)
     // remember which one has largest area.
     for (let i = 0; i < loops.length; i++) {
-      let seed = Triangulator.directCreateFaceLoopFromCoordinates(graph, loops[i]);
+      let seed = Triangulator.directCreateFaceLoopFromCoordinates(
+        graph,
+        loops[i]
+      );
       if (seed) {
-        seed = seed.faceSuccessor;  // directCreate returns tail
+        seed = seed.faceSuccessor; // directCreate returns tail
         const mate = seed.vertexSuccessor;
         seed.setMaskAroundFace(mask);
         mate.setMaskAroundFace(mask);
@@ -234,8 +265,7 @@ export class Triangulator {
         }
       }
     }
-    if (holeSeeds.length === 0)
-      return undefined;
+    if (holeSeeds.length === 0) return undefined;
     // extract the max area seed ...
     const maxAreaFace = holeSeeds[maxAreaIndex];
     holeSeeds[maxAreaIndex] = holeSeeds[holeSeeds.length - 1];
@@ -248,10 +278,13 @@ export class Triangulator {
       holeSeeds[i] = this.getLeftmost(seed.vertexSuccessor);
     }
 
-    const startingNode = Triangulator.spliceLeftMostNodesOfHoles(graph, maxAreaFace, holeSeeds);
+    const startingNode = Triangulator.spliceLeftMostNodesOfHoles(
+      graph,
+      maxAreaFace,
+      holeSeeds
+    );
     if (startingNode) {
-      if (Triangulator.triangulateSingleFace(graph, startingNode))
-        return graph;
+      if (Triangulator.triangulateSingleFace(graph, startingNode)) return graph;
     }
     return undefined;
   }
@@ -265,8 +298,7 @@ export class Triangulator {
       if (face.countEdgesAroundFace() > 3) {
         const area = face.signedFaceArea();
         if (area > 0.0)
-          if (!Triangulator.triangulateSingleFace(graph, face))
-            numFail++;
+          if (!Triangulator.triangulateSingleFace(graph, face)) numFail++;
       }
     }
     return numFail === 0;
@@ -277,9 +309,16 @@ export class Triangulator {
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
    */
-  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromSingleLoop(
+    data: XAndY[] | GrowableXYZArray
+  ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
-    const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
+    const startingNode = Triangulator.createFaceLoopFromCoordinates(
+      graph,
+      data,
+      true,
+      true
+    );
 
     if (!startingNode || graph.countNodes() < 6) return graph;
 
@@ -296,8 +335,14 @@ export class Triangulator {
    * * if xy is distinct from the coordinates at both baseNode and its successor, insert xy as a new node within that edge.
    * * also include z coordinate if present.
    */
-  private static interiorEdgeSplit(graph: HalfEdgeGraph, baseNode: HalfEdge | undefined, xy: XAndY | number[]): HalfEdge | undefined {
-    let x = 0, y = 0, z = 0;
+  private static interiorEdgeSplit(
+    graph: HalfEdgeGraph,
+    baseNode: HalfEdge | undefined,
+    xy: XAndY | number[]
+  ): HalfEdge | undefined {
+    let x = 0,
+      y = 0,
+      z = 0;
     if (Array.isArray(xy)) {
       x = xy[0];
       y = xy[1];
@@ -308,10 +353,8 @@ export class Triangulator {
       if (q.hasOwnProperty("y")) y = q.y;
       if (q.hasOwnProperty("z")) z = q.z;
     }
-    if (!baseNode)
-      return graph.splitEdge(baseNode, x, y, z);
-    if (Triangulator.isAlmostEqualXAndYXY(baseNode, x, y))
-      return baseNode;
+    if (!baseNode) return graph.splitEdge(baseNode, x, y, z);
+    if (Triangulator.isAlmostEqualXAndYXY(baseNode, x, y)) return baseNode;
     if (Triangulator.isAlmostEqualXAndYXY(baseNode.faceSuccessor, x, y))
       return baseNode;
     return graph.splitEdge(baseNode, x, y, z);
@@ -320,7 +363,10 @@ export class Triangulator {
    * * Return a pointer to any node on the loop.
    * * no masking or other markup is applied.
    */
-  public static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined {
+  public static directCreateFaceLoopFromCoordinates(
+    graph: HalfEdgeGraph,
+    data: LineStringDataVariant
+  ): HalfEdge | undefined {
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let baseNode: HalfEdge | undefined;
     if (data instanceof IndexedXYZCollection) {
@@ -344,7 +390,11 @@ export class Triangulator {
    * @param data coordinate data
    * @param id id to attach to (both side of all) edges
    */
-  public static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id: number = 0): HalfEdge[] {
+  public static directCreateChainsFromCoordinates(
+    graph: HalfEdgeGraph,
+    data: MultiLineStringDataVariant,
+    id: number = 0
+  ): HalfEdge[] {
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     const assembler = new AssembleXYZXYZChains(graph, id);
     VariantPointDataStream.streamXYZ(data, assembler);
@@ -359,9 +409,13 @@ export class Triangulator {
    * @param maskForOtherSide mask to apply to the "other" side of the loop.
    * @return the loop's start node or its vertex successor, chosen to be the positive or negative loop per request.
    */
-  private static maskAndOrientNewFaceLoop(_graph: HalfEdgeGraph, base: HalfEdge | undefined, returnPositiveAreaLoop: boolean,
+  private static maskAndOrientNewFaceLoop(
+    _graph: HalfEdgeGraph,
+    base: HalfEdge | undefined,
+    returnPositiveAreaLoop: boolean,
     maskForBothSides: HalfEdgeMask,
-    maskForOtherSide: HalfEdgeMask): HalfEdge | undefined {
+    maskForOtherSide: HalfEdgeMask
+  ): HalfEdge | undefined {
     // base is the final coordinates
     if (base) {
       base = base.faceSuccessor; // because typical construction process leaves the "live" edge at the end of the loop.
@@ -373,8 +427,7 @@ export class Triangulator {
       }
 
       let preferredNode = base;
-      if (returnPositiveAreaLoop && (area < 0))
-        preferredNode = mate;
+      if (returnPositiveAreaLoop && area < 0) preferredNode = mate;
       const otherNode = preferredNode.vertexSuccessor;
 
       if (maskForOtherSide !== HalfEdgeMask.NULL_MASK)
@@ -390,11 +443,20 @@ export class Triangulator {
    *   * HalfEdgeMask.PRIMARY_EDGE on both sides.
    * * Use `createFaceLoopFromCoordinatesAndMasks` for detail control of masks.
    */
-  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromCoordinates(
+    graph: HalfEdgeGraph,
+    data: LineStringDataVariant,
+    returnPositiveAreaLoop: boolean,
+    markExterior: boolean
+  ): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
-    return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop,
+    return Triangulator.maskAndOrientNewFaceLoop(
+      graph,
+      base,
+      returnPositiveAreaLoop,
       HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE,
-      markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK);
+      markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK
+    );
   }
 
   /**
@@ -406,11 +468,21 @@ export class Triangulator {
    * @param maskForBothSides mask to apply on both sides.
    * @param maskForOtherSide mask to apply on the "other" side from the returned loop.
    */
-  public static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean,
+  public static createFaceLoopFromCoordinatesAndMasks(
+    graph: HalfEdgeGraph,
+    data: LineStringDataVariant,
+    returnPositiveAreaLoop: boolean,
     maskForBothSides: HalfEdgeMask,
-    maskForOtherSide: HalfEdgeMask): HalfEdge | undefined {
+    maskForOtherSide: HalfEdgeMask
+  ): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
-    return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop, maskForBothSides, maskForOtherSide);
+    return Triangulator.maskAndOrientNewFaceLoop(
+      graph,
+      base,
+      returnPositiveAreaLoop,
+      maskForBothSides,
+      maskForOtherSide
+    );
   }
 
   /** Cut off an ear, forming a new face loop of nodes
@@ -422,8 +494,15 @@ export class Triangulator {
    */
   private static joinNeighborsOfEar(graph: HalfEdgeGraph, ear: HalfEdge) {
     const alpha = graph.createEdgeXYZXYZ(
-      ear.facePredecessor.x, ear.facePredecessor.y, ear.facePredecessor.z, ear.facePredecessor.i,
-      ear.faceSuccessor.x, ear.faceSuccessor.y, ear.faceSuccessor.z, ear.faceSuccessor.i);
+      ear.facePredecessor.x,
+      ear.facePredecessor.y,
+      ear.facePredecessor.z,
+      ear.facePredecessor.i,
+      ear.faceSuccessor.x,
+      ear.faceSuccessor.y,
+      ear.faceSuccessor.z,
+      ear.faceSuccessor.i
+    );
     const beta = alpha.edgeMate;
 
     // Add two nodes alpha and beta and reassign pointers (also mark triangle nodes as part of triangle)
@@ -432,13 +511,22 @@ export class Triangulator {
     ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
   }
   private static isInteriorTriangle(a: HalfEdge) {
-    if (!a.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) || a.isMaskSet(HalfEdgeMask.EXTERIOR))
+    if (
+      !a.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) ||
+      a.isMaskSet(HalfEdgeMask.EXTERIOR)
+    )
       return false;
     const b = a.faceSuccessor;
-    if (!b.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) || b.isMaskSet(HalfEdgeMask.EXTERIOR))
+    if (
+      !b.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) ||
+      b.isMaskSet(HalfEdgeMask.EXTERIOR)
+    )
       return false;
     const c = b.faceSuccessor;
-    if (!c.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) || c.isMaskSet(HalfEdgeMask.EXTERIOR))
+    if (
+      !c.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE) ||
+      c.isMaskSet(HalfEdgeMask.EXTERIOR)
+    )
       return false;
     return c.faceSuccessor === a;
   }
@@ -474,13 +562,22 @@ export class Triangulator {
     let b0 = ear;
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
-    while (Triangulator.isInteriorTriangle(a0) && Triangulator.isInteriorTriangle(b1)) {
+    while (
+      Triangulator.isInteriorTriangle(a0) &&
+      Triangulator.isInteriorTriangle(b1)
+    ) {
       const detA = Triangulator.computeInCircleDeterminantIsStrongPositive(a0);
-      if (!detA)
-        break;
+      if (!detA) break;
       // Flip the triangles
       const a1 = b1.faceSuccessor;
-      Triangulator.flipEdgeBetweenTriangles(a1, a1.faceSuccessor, a1.facePredecessor, b0, b0.facePredecessor, b0.faceSuccessor);
+      Triangulator.flipEdgeBetweenTriangles(
+        a1,
+        a1.faceSuccessor,
+        a1.facePredecessor,
+        b0,
+        b0.facePredecessor,
+        b0.faceSuccessor
+      );
       b0 = a0;
       a0 = b0.facePredecessor;
       b1 = a0.edgeMate;
@@ -496,7 +593,10 @@ export class Triangulator {
    * *  If not hashed, move on to a separate ear.
    * *  If no ears are currently hashed, attempt to cure self intersections or split the polygon into two before continuing
    */
-  private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge): boolean {
+  private static triangulateSingleFace(
+    graph: HalfEdgeGraph,
+    ear?: HalfEdge
+  ): boolean {
     if (!ear) {
       Triangulator.setDebugGraph(graph);
       return false;
@@ -513,8 +613,7 @@ export class Triangulator {
       pred = ear?.facePredecessor;
       next = ear.faceSuccessor;
       next2 = next.faceSuccessor;
-      if (next === ear || next2 === ear)
-        return true;
+      if (next === ear || next2 === ear) return true;
       if (next2.faceSuccessor === ear) {
         // if triangle, mask it so that its edges can potentially be flipped by doPostCutFlips()
         ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
@@ -526,7 +625,10 @@ export class Triangulator {
       // EDL Sept 2021 NO... coordinate test is fooled into early exit when large outer triangle has
       // edges going in from pred.
       // Hence add the around vertex test.  But this is possibly vulnerable to a variant false positive ..
-      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
+      if (
+        Geometry.isAlmostEqualXAndY(next2, pred) &&
+        !next2.findAroundVertex(pred)
+      ) {
         HalfEdge.pinch(pred, next2);
         ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
         ear = next2;
@@ -556,7 +658,7 @@ export class Triangulator {
       }
       ear = next;
     }
-    return true;  // um .. I'm not sure what this state is.
+    return true; // um .. I'm not sure what this state is.
   }
   /** @internal  */
   private static sDebugGraph: HalfEdgeGraph | undefined;
@@ -579,7 +681,9 @@ export class Triangulator {
    * * If debug graph capture is enabled, save this graph.
    * * This is called by internal steps at point of failure to preserve the failing graph for unit test examination.
    * @internal */
-  public static setDebugGraph(graph: HalfEdgeGraph | undefined) { if (Triangulator.sEnableDebugGraphCapture) Triangulator.sDebugGraph = graph; }
+  public static setDebugGraph(graph: HalfEdgeGraph | undefined) {
+    if (Triangulator.sEnableDebugGraphCapture) Triangulator.sDebugGraph = graph;
+  }
   /**
    * * Clear the debug graph
    * * Set capture enabled to indicated value.
@@ -610,12 +714,13 @@ export class Triangulator {
     const b = ear;
     const c = ear.faceSuccessor;
     const area = Triangulator.signedTolerancedCCWTriangleArea(a, b, c);
-    if (area <= 0)
-      return false; // reflex, can't be an ear
+    if (area <= 0) return false; // reflex, can't be an ear
     const planes = this._planes;
-    if (!Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(a, b, planes[0])
-      || !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(b, c, planes[1])
-      || !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(c, a, planes[2]))
+    if (
+      !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(a, b, planes[0]) ||
+      !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(b, c, planes[1]) ||
+      !Plane3dByOriginAndUnitNormal.createOriginAndTargetXY(c, a, planes[2])
+    )
       return false;
 
     // now make sure we don't have other points inside the potential ear, or edges crossing.
@@ -636,22 +741,32 @@ export class Triangulator {
       if (earRange.intersectsRange(edgeRange)) {
         // Does pq impinge on the triangle?
         Range1d.createXX(zeroMinus, onePlus, edgeInterval);
-        ClipUtilities.clipSegmentBelowPlanesXY(planes, p, q, edgeInterval, clipTolerance);
+        ClipUtilities.clipSegmentBelowPlanesXY(
+          planes,
+          p,
+          q,
+          edgeInterval,
+          clipTolerance
+        );
         if (!edgeInterval.isNull) {
           const mate = p.edgeMate;
           if (mate === a || mate === b) {
             // this is the back side of a bridge edge
           } else if (edgeInterval.low > oneMinus) {
             // the endpoint (q) just touches ... if it is at one of the vertex loops it's ok ...
-            if (!a.findAroundVertex(q)
-              && !b.findAroundVertex(q)
-              && !c.findAroundVertex(q))
+            if (
+              !a.findAroundVertex(q) &&
+              !b.findAroundVertex(q) &&
+              !c.findAroundVertex(q)
+            )
               return false;
           } else if (edgeInterval.high < zeroPlus) {
             // the start (p) just touches ... if it is at one of the vertex loops it's ok ...
-            if (!a.findAroundVertex(p)
-              && !b.findAroundVertex(p)
-              && !c.findAroundVertex(p))
+            if (
+              !a.findAroundVertex(p) &&
+              !b.findAroundVertex(p) &&
+              !c.findAroundVertex(p)
+            )
               return false;
           } else {
             // significant internal intersection -- this edge really intrudes on the  into the triangle
@@ -666,14 +781,16 @@ export class Triangulator {
   /** link holeLoopNodes[1], holeLoopNodes[2] etc into the outer loop, producing a single-ring polygon without holes
    *
    */
-  private static spliceLeftMostNodesOfHoles(graph: HalfEdgeGraph, outerNode: HalfEdge, leftMostHoleLoopNode: HalfEdge[]): HalfEdge | undefined {
-
+  private static spliceLeftMostNodesOfHoles(
+    graph: HalfEdgeGraph,
+    outerNode: HalfEdge,
+    leftMostHoleLoopNode: HalfEdge[]
+  ): HalfEdge | undefined {
     leftMostHoleLoopNode.sort(Triangulator.compareX);
     let numFail = 0;
     // process holes from left to right
     for (const holeStart of leftMostHoleLoopNode) {
-      if (!Triangulator.eliminateHole(graph, holeStart, outerNode))
-        numFail++;
+      if (!Triangulator.eliminateHole(graph, holeStart, outerNode)) numFail++;
     }
 
     return numFail === 0 ? outerNode : undefined;
@@ -684,7 +801,11 @@ export class Triangulator {
   }
 
   /** find a bridge between vertices that connects hole with an outer ring and and link it */
-  private static eliminateHole(graph: HalfEdgeGraph, hole: HalfEdge, outerNode: HalfEdge): boolean {
+  private static eliminateHole(
+    graph: HalfEdgeGraph,
+    hole: HalfEdge,
+    outerNode: HalfEdge
+  ): boolean {
     const outerNodeA = Triangulator.findHoleBridge(hole, outerNode);
     if (outerNodeA) {
       return Triangulator.splitFace(graph, outerNodeA, hole) !== undefined;
@@ -696,11 +817,13 @@ export class Triangulator {
    *  David Eberly algorithm for finding a bridge between hole and outer polygon:
    *  https://www.geometrictools.com/Documentation/TriangulationByEarClipping.pdf
    */
-  private static findHoleBridge(hole: HalfEdge, outerNode?: HalfEdge): HalfEdge | undefined {
+  private static findHoleBridge(
+    hole: HalfEdge,
+    outerNode?: HalfEdge
+  ): HalfEdge | undefined {
     let p = outerNode;
 
-    if (!p)
-      return undefined;
+    if (!p) return undefined;
 
     const hx = hole.x;
     const hy = hole.y;
@@ -711,7 +834,9 @@ export class Triangulator {
     // segment's endpoint with lesser x will be potential connection point
     do {
       if (hy <= p.y && hy >= p.faceSuccessor.y && p.faceSuccessor.y !== p.y) {
-        const x = p.x + (hy - p.y) * (p.faceSuccessor.x - p.x) / (p.faceSuccessor.y - p.y);
+        const x =
+          p.x +
+          ((hy - p.y) * (p.faceSuccessor.x - p.x)) / (p.faceSuccessor.y - p.y);
         if (x <= hx && x > qx) {
           qx = x;
           if (x === hx) {
@@ -741,12 +866,27 @@ export class Triangulator {
     p = m.faceSuccessor;
 
     while (p !== stop) {
-      if (hx >= p.x && p.x >= mx && hx !== p.x &&
-        Triangulator.pointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y)) {
-
+      if (
+        hx >= p.x &&
+        p.x >= mx &&
+        hx !== p.x &&
+        Triangulator.pointInTriangle(
+          hy < my ? hx : qx,
+          hy,
+          mx,
+          my,
+          hy < my ? qx : hx,
+          hy,
+          p.x,
+          p.y
+        )
+      ) {
         tan = Math.abs(hy - p.y) / (hx - p.x); // tangential
 
-        if ((tan < tanMin || (tan === tanMin && p.x > m.x)) && Triangulator.locallyInside(p, hole)) {
+        if (
+          (tan < tanMin || (tan === tanMin && p.x > m.x)) &&
+          Triangulator.locallyInside(p, hole)
+        ) {
           m = p;
           tanMin = tan;
         }
@@ -773,51 +913,81 @@ export class Triangulator {
   /** check if a point lies within a convex triangle.
    * i.e. areas of 3 triangles with an edge of abc and p all have zero or positive area.  (abp, bcp, cap)
    */
-  private static pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number) {
-    return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
+  private static pointInTriangle(
+    ax: number,
+    ay: number,
+    bx: number,
+    by: number,
+    cx: number,
+    cy: number,
+    px: number,
+    py: number
+  ) {
+    return (
+      (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
       (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
-      (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+      (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0
+    );
   }
-  private static nodeInTriangle(a: HalfEdge, b: HalfEdge, c: HalfEdge, p: HalfEdge) {
-    return Triangulator.signedTolerancedCCWTriangleArea(a, b, p) > 0
-      && Triangulator.signedTolerancedCCWTriangleArea(b, c, p) > 0.0
-      && Triangulator.signedTolerancedCCWTriangleArea(c, a, p) > 0.0;
+  private static nodeInTriangle(
+    a: HalfEdge,
+    b: HalfEdge,
+    c: HalfEdge,
+    p: HalfEdge
+  ) {
+    return (
+      Triangulator.signedTolerancedCCWTriangleArea(a, b, p) > 0 &&
+      Triangulator.signedTolerancedCCWTriangleArea(b, c, p) > 0.0 &&
+      Triangulator.signedTolerancedCCWTriangleArea(c, a, p) > 0.0
+    );
   }
   /** signed area of a triangle
    * EDL 2/21 This is negative of usual CCW area.  Beware in callers !!!
    * (This originates in classic earcut code.)
-  */
+   */
   private static signedCWTriangleArea(p: HalfEdge, q: HalfEdge, r: HalfEdge) {
     return 0.5 * ((q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y));
   }
 
   /** signed area of a triangle, with small positive corrected to zero by relTol
-  */
-  private static signedTolerancedCCWTriangleArea(p: HalfEdge, q: HalfEdge, r: HalfEdge, relTol: number = 1.0e-12) {
+   */
+  private static signedTolerancedCCWTriangleArea(
+    p: HalfEdge,
+    q: HalfEdge,
+    r: HalfEdge,
+    relTol: number = 1.0e-12
+  ) {
     const ux = q.x - p.x;
     const uy = q.y - p.y;
     const vx = r.x - p.x;
     const vy = r.y - p.y;
     const area = 0.5 * (ux * vy - uy * vx);
-    if (area < 0.0)
-      return area;
+    if (area < 0.0) return area;
     const uu = ux * ux + uy * uy;
     const vv = vx * vx + vy * vy;
-    if (area < relTol * (uu + vv))
-      return 0.0;
+    if (area < relTol * (uu + vv)) return 0.0;
     return area;
   }
 
   /** check if two points are equal */
   private static isAlmostEqualXAndYXY(p1: XAndY, x: number, y: number) {
-    return Geometry.isAlmostEqualNumber(p1.x, x) && Geometry.isAlmostEqualNumber(p1.y, y);
+    return (
+      Geometry.isAlmostEqualNumber(p1.x, x) &&
+      Geometry.isAlmostEqualNumber(p1.y, y)
+    );
   }
 
   /** check if a b is inside the sector around a */
   private static locallyInside(a: HalfEdge, b: HalfEdge) {
-    return Triangulator.signedCWTriangleArea(a.facePredecessor, a, a.faceSuccessor) < 0 ?
-      Triangulator.signedCWTriangleArea(a, b, a.faceSuccessor) >= 0 && Triangulator.signedCWTriangleArea(a, a.facePredecessor, b) >= 0 :
-      Triangulator.signedCWTriangleArea(a, b, a.facePredecessor) < 0 || Triangulator.signedCWTriangleArea(a, a.faceSuccessor, b) < 0;
+    return Triangulator.signedCWTriangleArea(
+      a.facePredecessor,
+      a,
+      a.faceSuccessor
+    ) < 0
+      ? Triangulator.signedCWTriangleArea(a, b, a.faceSuccessor) >= 0 &&
+          Triangulator.signedCWTriangleArea(a, a.facePredecessor, b) >= 0
+      : Triangulator.signedCWTriangleArea(a, b, a.facePredecessor) < 0 ||
+          Triangulator.signedCWTriangleArea(a, a.faceSuccessor, b) < 0;
   }
 
   /**
@@ -827,8 +997,15 @@ export class Triangulator {
    * * "a" and "b" still represent the same physical pieces of edges
    * @returns Returns the (base of) the new half edge, at the "a" end.
    */
-  private static splitFace(graph: HalfEdgeGraph, a: HalfEdge, b: HalfEdge): HalfEdge | undefined {
-    if (HalfEdge.isNodeVisibleInSector(a, b) && HalfEdge.isNodeVisibleInSector(b, a)) {
+  private static splitFace(
+    graph: HalfEdgeGraph,
+    a: HalfEdge,
+    b: HalfEdge
+  ): HalfEdge | undefined {
+    if (
+      HalfEdge.isNodeVisibleInSector(a, b) &&
+      HalfEdge.isNodeVisibleInSector(b, a)
+    ) {
       const a2 = graph.createEdgeXYZXYZ(a.x, a.y, a.z, a.i, b.x, b.y, b.z, b.i);
       const b2 = a2.faceSuccessor;
       HalfEdge.pinch(a, a2);
@@ -842,21 +1019,20 @@ export class Triangulator {
    * Triangulate a single face with (linear time) logic applicable only if the lowNode is the lowest node.
    * @returns false if any monotonicity condition is violated.
    */
-  public static triangulateSingleMonotoneFace(graph: HalfEdgeGraph, start: HalfEdge): boolean {
+  public static triangulateSingleMonotoneFace(
+    graph: HalfEdgeGraph,
+    start: HalfEdge
+  ): boolean {
     let left = start.facePredecessor;
     let right = start.faceSuccessor;
     // P0, P1, P2 are successive edges along evolving chain
     let upperSideOfNewEdge;
-    while (left !== right
-      && right !== start
-      && right.faceSuccessor !== left) {
+    while (left !== right && right !== start && right.faceSuccessor !== left) {
       /** These should not happen if face is monotone . .. */
       if (HalfEdge.crossProductXYAlongChain(left, start, right) <= 0)
         return false;
-      if (!start.belowYX(left))
-        return false;
-      if (!start.belowYX(right))
-        return false;
+      if (!start.belowYX(left)) return false;
+      if (!start.belowYX(right)) return false;
       if (left.belowYX(right)) {
         /*      Triangulate to all left side edges that
            are below right */
@@ -872,13 +1048,14 @@ export class Triangulator {
            (following start) is never altered.
          */
         while (P0 !== P2 && P0.belowYX(right)) {
-          while (P2 !== right
-            && P2 !== P0
-            && P2 !== P1
-            && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
+          while (
+            P2 !== right &&
+            P2 !== P0 &&
+            P2 !== P1 &&
+            HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0
+          ) {
             upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
-            if (upperSideOfNewEdge === undefined)
-              return false;
+            if (upperSideOfNewEdge === undefined) return false;
             P0 = upperSideOfNewEdge;
             P1 = P0.faceSuccessor;
             P2 = P1.faceSuccessor;
@@ -896,8 +1073,7 @@ export class Triangulator {
         P0 = P1.facePredecessor;
         while (P2.faceSuccessor !== P0 && P0 !== left) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
-          if (upperSideOfNewEdge === undefined)
-            return false;
+          if (upperSideOfNewEdge === undefined) return false;
           P1 = upperSideOfNewEdge;
           P0 = P1.facePredecessor;
         }
@@ -906,14 +1082,12 @@ export class Triangulator {
            topped out */
         if (P2.faceSuccessor !== P0) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
-          if (upperSideOfNewEdge === undefined)
-            return false;
+          if (upperSideOfNewEdge === undefined) return false;
           P0 = upperSideOfNewEdge;
         }
         start = P0;
         right = start.faceSuccessor;
         left = start.facePredecessor;
-
       } else {
         /*      Triangulate to all right side edges that
            are below left */
@@ -931,13 +1105,14 @@ export class Triangulator {
            left.faceSuccessor rather than as start.
          */
         while (P0 !== P2 && P2.belowYX(left)) {
-          while (P0 !== left
-            && P2 !== P0
-            && P2 !== P1
-            && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
+          while (
+            P0 !== left &&
+            P2 !== P0 &&
+            P2 !== P1 &&
+            HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0
+          ) {
             upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
-            if (upperSideOfNewEdge === undefined)
-              return false;
+            if (upperSideOfNewEdge === undefined) return false;
 
             P0 = upperSideOfNewEdge.facePredecessor;
             P1 = upperSideOfNewEdge;
@@ -955,8 +1130,7 @@ export class Triangulator {
         P2 = P1.faceSuccessor;
         while (P2.faceSuccessor !== P0 && P2 !== right) {
           upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
-          if (upperSideOfNewEdge === undefined)
-            return false;
+          if (upperSideOfNewEdge === undefined) return false;
           P0 = upperSideOfNewEdge;
           // P1 = P2;   // original code (ported from native) carefully maintained P1..P2 relationship.  But code analyzer says P1 is not used again.  So skip it.
           P2 = P2.faceSuccessor;
@@ -966,8 +1140,7 @@ export class Triangulator {
            topped out */
         if (P2.faceSuccessor !== P0) {
           const newEdge = Triangulator.splitFace(graph, P0, P2);
-          if (newEdge === undefined)
-            return false;
+          if (newEdge === undefined) return false;
         }
         start = right;
         right = start.faceSuccessor;
@@ -976,7 +1149,6 @@ export class Triangulator {
     }
     return true;
   }
-
 }
 
 /**
@@ -996,13 +1168,32 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
     this._graph = graph;
     this._id = id;
   }
-  public override startChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {
+  public override startChain(
+    chainData: MultiLineStringDataVariant,
+    isLeaf: boolean
+  ): void {
     super.startChain(chainData, isLeaf);
     this._baseNode = undefined;
     this._nodeB = undefined;
   }
-  public override handleXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) {
-    this._nodeC = this._graph.createEdgeXYZXYZ(x0, y0, z0, this._id, x1, y1, z1, this._id);
+  public override handleXYZXYZ(
+    x0: number,
+    y0: number,
+    z0: number,
+    x1: number,
+    y1: number,
+    z1: number
+  ) {
+    this._nodeC = this._graph.createEdgeXYZXYZ(
+      x0,
+      y0,
+      z0,
+      this._id,
+      x1,
+      y1,
+      z1,
+      this._id
+    );
     if (this._baseNode === undefined) {
       this._baseNode = this._nodeC;
       this._nodeB = this._baseNode.faceSuccessor;
@@ -1011,11 +1202,13 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
       this._nodeB = this._nodeC.faceSuccessor;
     }
   }
-  public override endChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {
+  public override endChain(
+    chainData: MultiLineStringDataVariant,
+    isLeaf: boolean
+  ): void {
     super.endChain(chainData, isLeaf);
     if (this._baseNode !== undefined) {
-      if (this._seeds === undefined)
-        this._seeds = [];
+      if (this._seeds === undefined) this._seeds = [];
       this._seeds.push(this._baseNode);
     }
     this._baseNode = undefined;
@@ -1023,8 +1216,7 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
     this._nodeC = undefined;
   }
   public claimSeeds(): HalfEdge[] {
-    if (this._seeds === undefined)
-      return [];
+    if (this._seeds === undefined) return [];
     return this._seeds;
   }
 }

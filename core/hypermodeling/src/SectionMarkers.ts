@@ -10,7 +10,17 @@ import { assert, BeEvent, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { IModelReadRpcInterface } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  IModelApp,
+  InputSource,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  ScreenViewport,
+  ViewClipTool,
 } from "@itwin/core-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
@@ -29,9 +39,13 @@ export class SectionMarker extends Marker {
   /** A description displayed as part of the tooltip when this marker is clustered with other markers. */
   public readonly description: string;
   /** @internal */
-  public readonly onMouseEnterEvent = new BeEvent<(marker: SectionMarker) => void>();
+  public readonly onMouseEnterEvent = new BeEvent<
+    (marker: SectionMarker) => void
+  >();
   /** @internal */
-  public readonly onMouseButtonEvent = new BeEvent<(marker: SectionMarker) => void>();
+  public readonly onMouseButtonEvent = new BeEvent<
+    (marker: SectionMarker) => void
+  >();
   /** @internal */
   private _isActive = false;
 
@@ -48,14 +62,15 @@ export class SectionMarker extends Marker {
 
     const data = HyperModeling.getMarkerData(state.sectionType);
     this.description = data.label;
-    if (data.image)
-      this.setImage(data.image);
+    if (data.image) this.setImage(data.image);
 
-    this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+    this.setScaleFactor({ low: 0.2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
   }
 
   /** @internal */
-  public get isHilited(): boolean { return this._isHilited; }
+  public get isHilited(): boolean {
+    return this._isHilited;
+  }
 
   /** Returns true if this is the "active" section marker. At most one marker is active at a given time.
    * @see [[HyperModelingDecorator.activeMarker]].
@@ -80,19 +95,23 @@ export class SectionMarker extends Marker {
 
   /** @internal */
   public override drawDecoration(ctx: CanvasRenderingContext2D): void {
-    if (!this.isActive || !this.drawActive(ctx))
-      super.drawDecoration(ctx);
+    if (!this.isActive || !this.drawActive(ctx)) super.drawDecoration(ctx);
   }
 
   /** @internal */
   public override onMouseEnter(ev: BeButtonEvent) {
     // Lazily load the tooltip.
     if (undefined === this.title) {
-      IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token).getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id).then((tooltipMsg) => {
-        this.title = IModelApp.formatElementToolTip(tooltipMsg);
-      }).catch((_) => {
-        this.title = this.description;
-      });
+      IModelReadRpcInterface.getClientForRouting(
+        this.state.iModel.routingContext.token
+      )
+        .getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id)
+        .then((tooltipMsg) => {
+          this.title = IModelApp.formatElementToolTip(tooltipMsg);
+        })
+        .catch((_) => {
+          this.title = this.description;
+        });
     }
 
     super.onMouseEnter(ev);
@@ -101,7 +120,12 @@ export class SectionMarker extends Marker {
 
   /** @internal */
   public override onMouseButton(ev: BeButtonEvent): boolean {
-    if (InputSource.Mouse === ev.inputSource && BeButton.Data === ev.button && ev.isDown && ev.viewport)
+    if (
+      InputSource.Mouse === ev.inputSource &&
+      BeButton.Data === ev.button &&
+      ev.isDown &&
+      ev.viewport
+    )
       this.onMouseButtonEvent.raiseEvent(this);
 
     return true; // Don't allow clicks to be sent to active tool...
@@ -111,7 +135,10 @@ export class SectionMarker extends Marker {
   public override addMarker(context: DecorateContext) {
     super.addMarker(context);
     if (this.isHilited)
-      ViewClipTool.drawClip(context, this.state.clip, undefined, { fillClipPlanes: true, hasPrimaryPlane: true });
+      ViewClipTool.drawClip(context, this.state.clip, undefined, {
+        fillClipPlanes: true,
+        hasPrimaryPlane: true,
+      });
   }
 }
 
@@ -120,7 +147,12 @@ export class SectionMarker extends Marker {
  */
 export class SectionMarkerCluster extends Marker {
   /** Create a new cluster marker */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
+  constructor(
+    location: XYAndZ,
+    size: XAndY,
+    cluster: Cluster<SectionMarker>,
+    image: MarkerImage | Promise<MarkerImage> | undefined
+  ) {
     super(location, size);
 
     this.imageOffset = new Point3d(0, 30);
@@ -132,20 +164,17 @@ export class SectionMarkerCluster extends Marker {
     let title = "";
     cluster.markers.forEach((marker, index: number) => {
       if (index < maxLen) {
-        if (title !== "")
-          title += "<br>";
+        if (title !== "") title += "<br>";
         title += marker.description;
       }
     });
 
-    if (cluster.markers.length > maxLen)
-      title += "<br>...";
+    if (cluster.markers.length > maxLen) title += "<br>...";
 
     const div = document.createElement("div");
     div.innerHTML = title;
     this.title = div;
-    if (image)
-      this.setImage(image);
+    if (image) this.setImage(image);
   }
 
   /** Show the cluster as a white circle with an outline */
@@ -159,7 +188,9 @@ export class SectionMarkerCluster extends Marker {
     ctx.stroke();
   }
 
-  public override onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
+  public override onMouseButton(_ev: BeButtonEvent): boolean {
+    return true;
+  } // Don't allow clicks to be sent to active tool...
 }
 
 /** A [MarkerSet]($frontend) containing [[SectionMarker]]s identifying [SectionDrawingLocation]($backend)s within a spatial view.
@@ -177,8 +208,7 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   public constructor(viewport: ScreenViewport, markers: SectionMarker[]) {
     super(viewport);
     for (const marker of markers) {
-      if (marker.state.iModel === viewport.iModel)
-        this.markers.add(marker);
+      if (marker.state.iModel === viewport.iModel) this.markers.add(marker);
     }
   }
 
@@ -190,14 +220,20 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
 
   /** @internal */
   protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker {
-    return new SectionMarkerCluster(cluster.getClusterLocation(), cluster.markers[0].size, cluster, cluster.markers[0].image);
+    return new SectionMarkerCluster(
+      cluster.getClusterLocation(),
+      cluster.markers[0].size,
+      cluster,
+      cluster.markers[0].image
+    );
   }
 
   /** Find the SectionMarker corresponding to the specified [SectionDrawingLocation]($backend) Id. */
-  public findMarkerById(sectionDrawingLocationId: Id64String): SectionMarker | undefined {
+  public findMarkerById(
+    sectionDrawingLocationId: Id64String
+  ): SectionMarker | undefined {
     for (const marker of this.markers)
-      if (marker.state.id === sectionDrawingLocationId)
-        return marker;
+      if (marker.state.id === sectionDrawingLocationId) return marker;
 
     return undefined;
   }

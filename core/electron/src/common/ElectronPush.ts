@@ -6,8 +6,17 @@
  * @module RpcInterface
  */
 
-import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
-import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
+import {
+  RpcMarshaling,
+  RpcPushChannel,
+  RpcPushConnection,
+  RpcPushTransport,
+  RpcRequestFulfillment,
+} from "@itwin/core-common";
+import {
+  BackendIpcTransport,
+  FrontendIpcTransport,
+} from "./ElectronIpcTransport";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -18,7 +27,9 @@ export class ElectronPushTransport extends RpcPushTransport {
   private _ipc: FrontendIpcTransport;
   private _last: number = -1;
 
-  public get last() { return this._last; }
+  public get last() {
+    return this._last;
+  }
 
   public constructor(ipc: FrontendIpcTransport) {
     super();
@@ -33,7 +44,10 @@ export class ElectronPushTransport extends RpcPushTransport {
     this._last = response.status;
 
     if (this.onMessage) {
-      const messageData = RpcMarshaling.deserialize(this._ipc.protocol, response.result);
+      const messageData = RpcMarshaling.deserialize(
+        this._ipc.protocol,
+        response.result
+      );
       this.onMessage(response.id, messageData);
     }
 
@@ -46,14 +60,27 @@ export class ElectronPushConnection<T> extends RpcPushConnection<T> {
   private _ipc: BackendIpcTransport;
   private _next: number = -1;
 
-  public constructor(channel: RpcPushChannel<T>, client: unknown, ipc: BackendIpcTransport) {
+  public constructor(
+    channel: RpcPushChannel<T>,
+    client: unknown,
+    ipc: BackendIpcTransport
+  ) {
     super(channel, client);
     this._ipc = ipc;
   }
 
   public async send(messageData: any) {
-    const result = await RpcMarshaling.serialize(this._ipc.protocol, messageData);
-    const fulfillment: RpcRequestFulfillment = { result, rawResult: messageData, interfaceName: PUSH, id: this.channel.id, status: ++this._next };
+    const result = await RpcMarshaling.serialize(
+      this._ipc.protocol,
+      messageData
+    );
+    const fulfillment: RpcRequestFulfillment = {
+      result,
+      rawResult: messageData,
+      interfaceName: PUSH,
+      id: this.channel.id,
+      status: ++this._next,
+    };
     this._ipc.sendResponse(fulfillment, undefined);
   }
 }

@@ -4,11 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d,
+  ClipPlane,
+  ClipPrimitive,
+  ClipVector,
+  ConvexClipPlaneSet,
+  Point3d,
+  Transform,
+  Vector3d,
 } from "@itwin/core-geometry";
 import {
   AccuDrawHintBuilder,
-  FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
+  FeatureSymbology,
+  GraphicBranch,
+  IModelApp,
+  RenderClipVolume,
+  SceneContext,
+  ScreenViewport,
+  TileTreeReference,
+  Tool,
 } from "@itwin/core-frontend";
 
 /** Prototype for SYNCHRO feature. Split the viewport down the middle. Left-hand side remains frozen at current time point. Right-hand side updates when time point changes. */
@@ -21,7 +34,10 @@ class TimePointComparison {
     this._timePoint = timePoint;
   }
 
-  public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
+  public forEachTileTreeRef(
+    viewport: ScreenViewport,
+    func: (ref: TileTreeReference) => void
+  ): void {
     viewport.view.forEachTileTreeRef(func);
   }
 
@@ -42,10 +58,15 @@ class TimePointComparison {
 
       const branch = new GraphicBranch();
       branch.symbologyOverrides = ovrs;
-      for (const gf of gfx)
-        branch.entries.push(gf);
+      for (const gf of gfx) branch.entries.push(gf);
 
-      output.outputGraphic(IModelApp.renderSystem.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume: this._clipVolume }));
+      output.outputGraphic(
+        IModelApp.renderSystem.createGraphicBranch(
+          branch,
+          Transform.createIdentity(),
+          { clipVolume: this._clipVolume }
+        )
+      );
     }
 
     vp.view.setViewClip(clip);
@@ -53,19 +74,17 @@ class TimePointComparison {
   }
 
   public static toggle(vp: ScreenViewport): void {
-    if (!vp.view.isSpatialView())
-      return;
+    if (!vp.view.isSpatialView()) return;
 
     let provider: TimePointComparison | undefined;
     vp.forEachTiledGraphicsProvider((x) => {
-      if (x instanceof TimePointComparison)
-        provider = x;
+      if (x instanceof TimePointComparison) provider = x;
     });
 
     if (!provider) {
-      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
-      if (undefined === timePoint)
-        return;
+      const timePoint =
+        vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
+      if (undefined === timePoint) return;
 
       const rect = vp.getClientRect();
       let point = new Point3d(rect.width / 2, rect.height / 2, 0);
@@ -81,7 +100,9 @@ class TimePointComparison {
         return ClipVector.createCapture([ClipPrimitive.createCapture(planes)]);
       };
 
-      vp.addTiledGraphicsProvider(new TimePointComparison(createClip(normal, point), timePoint));
+      vp.addTiledGraphicsProvider(
+        new TimePointComparison(createClip(normal, point), timePoint)
+      );
       vp.view.setViewClip(createClip(normal.negate(), point));
       vp.viewFlags = vp.viewFlags.with("clipVolume", true);
     } else {
@@ -98,8 +119,7 @@ export class TimePointComparisonTool extends Tool {
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      TimePointComparison.toggle(vp);
+    if (vp) TimePointComparison.toggle(vp);
 
     return true;
   }

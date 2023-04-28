@@ -5,12 +5,19 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { CustomAttributeContainerType, ECClassModifier, SchemaItemType } from "../../ECObjects";
+import {
+  CustomAttributeContainerType,
+  ECClassModifier,
+  SchemaItemType,
+} from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import {
+  createEmptyXmlDocument,
+  getElementChildrenByTagName,
+} from "../TestUtils/SerializationHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -27,7 +34,9 @@ describe("CustomAttributeClass", () => {
     });
 
     const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-    const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+    const testCAClass = await ecschema.getItem<CustomAttributeClass>(
+      "TestCAClass"
+    );
     expect(testCAClass).to.exist;
     expect(testCAClass!.fullName).eq("TestSchema.TestCAClass");
   });
@@ -52,14 +61,18 @@ describe("CustomAttributeClass", () => {
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
 
-      const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+      const testCAClass = await ecschema.getItem<CustomAttributeClass>(
+        "TestCAClass"
+      );
       expect(testCAClass).to.exist;
 
       expect(testCAClass!.name).to.equal("TestCAClass");
       expect(testCAClass!.label).to.equal("Test CustomAttribute Class");
       expect(testCAClass!.description).to.equal("Used for testing");
       expect(testCAClass!.modifier).to.equal(ECClassModifier.Sealed);
-      expect(testCAClass!.containerType).to.equal(CustomAttributeContainerType.AnyClass);
+      expect(testCAClass!.containerType).to.equal(
+        CustomAttributeContainerType.AnyClass
+      );
     });
 
     it("should throw for NavigationProperty", async () => {
@@ -67,7 +80,12 @@ describe("CustomAttributeClass", () => {
         appliesTo: "Schema",
         properties: [{ name: "navProp", type: "NavigationProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+      await expect(
+        Schema.fromJson(json, new SchemaContext())
+      ).to.be.rejectedWith(
+        ECObjectsError,
+        `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`
+      );
     });
   });
 
@@ -81,7 +99,14 @@ describe("CustomAttributeClass", () => {
     let testClass: CustomAttributeClass;
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const schema = new Schema(
+        new SchemaContext(),
+        "TestSchema",
+        "ts",
+        1,
+        0,
+        0
+      );
       testClass = new CustomAttributeClass(schema, "TestCustomAttribute");
     });
 
@@ -98,7 +123,10 @@ describe("CustomAttributeClass", () => {
 
       await testClass.fromJSON(schemaJson);
       const caJson = testClass!.toJSON(true, true);
-      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(
+        caJson.$schema,
+        "https://dev.bentley.com/json_schemas/ec/32/schemaitem"
+      );
       assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
       assert.strictEqual(caJson.modifier, "Sealed");
       assert.strictEqual(caJson.name, "TestCustomAttribute");
@@ -119,7 +147,10 @@ describe("CustomAttributeClass", () => {
 
       testClass.fromJSONSync(schemaJson);
       const caJson = testClass!.toJSON(true, true);
-      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(
+        caJson.$schema,
+        "https://dev.bentley.com/json_schemas/ec/32/schemaitem"
+      );
       assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
       assert.strictEqual(caJson.modifier, "Sealed");
       assert.strictEqual(caJson.name, "TestCustomAttribute");
@@ -148,7 +179,10 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = await ecschema.getItem("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
+      assert.isTrue(
+        testCustomAttribute?.schemaItemType ===
+          SchemaItemType.CustomAttributeClass
+      );
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const caSerialization = customAttributeClass.toJSON(false, true);
       assert.isDefined(caSerialization);
@@ -176,7 +210,10 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = ecschema.getItemSync("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
+      assert.isTrue(
+        testCustomAttribute?.schemaItemType ===
+          SchemaItemType.CustomAttributeClass
+      );
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const caSerialization = customAttributeClass.toJSON(false, false);
       assert.isDefined(caSerialization);
@@ -205,7 +242,10 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = await ecschema.getItem("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
+      assert.isTrue(
+        testCustomAttribute?.schemaItemType ===
+          SchemaItemType.CustomAttributeClass
+      );
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const json = JSON.stringify(customAttributeClass);
       const caSerialization = JSON.parse(json);
@@ -235,7 +275,10 @@ describe("CustomAttributeClass", () => {
 
       const testCustomAttribute = ecschema.getItemSync("testCustomAttribute");
       assert.isDefined(testCustomAttribute);
-      assert.isTrue(testCustomAttribute?.schemaItemType === SchemaItemType.CustomAttributeClass);
+      assert.isTrue(
+        testCustomAttribute?.schemaItemType ===
+          SchemaItemType.CustomAttributeClass
+      );
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const json = JSON.stringify(customAttributeClass);
       const caSerialization = JSON.parse(json);
@@ -270,14 +313,21 @@ describe("CustomAttributeClass", () => {
     const newDom = createEmptyXmlDocument();
 
     it("should properly serialize", async () => {
-      const ecschema = Schema.fromJsonSync(createCustomAttributeJson({}), new SchemaContext());
+      const ecschema = Schema.fromJsonSync(
+        createCustomAttributeJson({}),
+        new SchemaContext()
+      );
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>(
+        "testCustomAttribute"
+      );
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
-      expect(serialized.getAttribute("appliesTo")).to.eql("Schema, AnyProperty");
+      expect(serialized.getAttribute("appliesTo")).to.eql(
+        "Schema, AnyProperty"
+      );
     });
 
     it("with property, should properly serialize", async () => {
@@ -290,14 +340,21 @@ describe("CustomAttributeClass", () => {
           },
         ],
       };
-      const ecschema = Schema.fromJsonSync(createCustomAttributeJson(propertyJson), new SchemaContext());
+      const ecschema = Schema.fromJsonSync(
+        createCustomAttributeJson(propertyJson),
+        new SchemaContext()
+      );
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>(
+        "testCustomAttribute"
+      );
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
-      expect(serialized.getAttribute("appliesTo")).to.eql("Schema, AnyProperty");
+      expect(serialized.getAttribute("appliesTo")).to.eql(
+        "Schema, AnyProperty"
+      );
       const properties = getElementChildrenByTagName(serialized, "ECProperty");
       assert.strictEqual(properties.length, 1);
       expect(properties[0].getAttribute("propertyName")).to.eql("TestProperty");

@@ -55,14 +55,20 @@ export enum RpcRequestStatus {
   ServiceUnavailable,
   GatewayTimeout,
   RequestTimeout,
-  TooManyRequests
+  TooManyRequests,
 }
 
 /** @public @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0. */
-export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace RpcRequestStatus {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   export function isTransientError(status: RpcRequestStatus) {
-    return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout
-      || status === RpcRequestStatus.RequestTimeout || status === RpcRequestStatus.TooManyRequests;
+    return (
+      status === RpcRequestStatus.BadGateway ||
+      status === RpcRequestStatus.ServiceUnavailable ||
+      status === RpcRequestStatus.GatewayTimeout ||
+      status === RpcRequestStatus.RequestTimeout ||
+      status === RpcRequestStatus.TooManyRequests
+    );
   }
 }
 
@@ -73,7 +79,7 @@ export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no
 export enum RpcRequestEvent {
   StatusChanged,
   PendingUpdateReceived,
-  TransientErrorReceived
+  TransientErrorReceived,
 }
 
 /** RPC content types.

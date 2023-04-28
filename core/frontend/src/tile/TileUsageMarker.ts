@@ -23,8 +23,7 @@ export class TileUsageMarker {
   private _timePoint = BeTimePoint.now();
 
   /** Constructs a usage marker with its timepoint set to the current time and its set of [[TileUser]]s empty. */
-  public constructor() {
-  }
+  public constructor() {}
 
   /** Returns true if this tile is currently in use by no [[TileUser]]s and its timestamp pre-dates `expirationTime`. */
   public isExpired(expirationTime: BeTimePoint): boolean {

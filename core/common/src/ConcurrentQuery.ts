@@ -5,7 +5,14 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import {
+  BentleyError,
+  CompressedId64Set,
+  DbResult,
+  Id64,
+  Id64String,
+  OrderedId64Iterable,
+} from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
@@ -81,8 +88,8 @@ export interface BaseReaderOptions {
   /** If specified cancel last query (if any) with same restart token and queue the new query */
   restartToken?: string;
   /** For editing apps this can be set to true and all query will run on primary connection
-  *  his may cause slow queries execution but the most recent data changes will be visitable via query
-  */
+   *  his may cause slow queries execution but the most recent data changes will be visitable via query
+   */
   usePrimaryConn?: boolean;
   /** Restrict time or memory for query but use as hint and may be changed base on backend settings */
   quota?: QueryQuota;
@@ -133,8 +140,10 @@ export interface BlobOptions extends BaseReaderOptions {
 
 /** @public */
 export class QueryOptionsBuilder {
-  public constructor(private _options: QueryOptions = {}) { }
-  public getOptions(): QueryOptions { return this._options; }
+  public constructor(private _options: QueryOptions = {}) {}
+  public getOptions(): QueryOptions {
+    return this._options;
+  }
   /**
    * @internal
    * Allow to set priority of query. Query will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
@@ -231,8 +240,10 @@ export class QueryOptionsBuilder {
 }
 /** @beta */
 export class BlobOptionsBuilder {
-  public constructor(private _options: BlobOptions = {}) { }
-  public getOptions(): BlobOptions { return this._options; }
+  public constructor(private _options: BlobOptions = {}) {}
+  public getOptions(): BlobOptions {
+    return this._options;
+  }
   /**
    * @internal
    * Allow to set priority of blob request. Blob request will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
@@ -316,12 +327,13 @@ export class QueryBinder {
   private _args = {};
   private verify(indexOrName: string | number) {
     if (typeof indexOrName === "number") {
-      if (indexOrName < 1)
-        throw new Error("expect index to be >= 1");
+      if (indexOrName < 1) throw new Error("expect index to be >= 1");
     }
     if (typeof indexOrName === "string") {
       if (!/^[a-zA-Z_]+\w*$/i.test(indexOrName)) {
-        throw new Error("expect named parameter to meet identifier specification");
+        throw new Error(
+          "expect named parameter to meet identifier specification"
+        );
       }
     }
   }
@@ -354,7 +366,8 @@ export class QueryBinder {
     const name = String(indexOrName);
     const base64 = Base64.fromUint8Array(val);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Blob,
         value: base64,
       },
@@ -371,7 +384,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Double,
         value: val,
       },
@@ -388,7 +402,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Id,
         value: val,
       },
@@ -406,9 +421,12 @@ export class QueryBinder {
     const name = String(indexOrName);
     OrderedId64Iterable.uniqueIterator(val);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
+        value: CompressedId64Set.sortAndCompress(
+          OrderedId64Iterable.uniqueIterator(val)
+        ),
       },
     });
     return this;
@@ -423,7 +441,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Integer,
         value: val,
       },
@@ -440,7 +459,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Struct,
         value: val,
       },
@@ -457,7 +477,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Long,
         value: val,
       },
@@ -474,7 +495,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.String,
         value: val,
       },
@@ -490,7 +512,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Null,
         value: null,
       },
@@ -507,7 +530,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Point2d,
         value: val,
       },
@@ -524,14 +548,19 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Point3d,
         value: val,
       },
     });
     return this;
   }
-  private static bind(params: QueryBinder, nameOrId: string | number, val: any) {
+  private static bind(
+    params: QueryBinder,
+    nameOrId: string | number,
+    val: any
+  ) {
     if (typeof val === "boolean") {
       params.bindBoolean(nameOrId, val);
     } else if (typeof val === "number") {
@@ -544,7 +573,12 @@ export class QueryBinder {
       params.bindPoint2d(nameOrId, val);
     } else if (val instanceof Point3d) {
       params.bindPoint3d(nameOrId, val);
-    } else if (val instanceof Array && val.length > 0 && typeof val[0] === "string" && Id64.isValidId64(val[0])) {
+    } else if (
+      val instanceof Array &&
+      val.length > 0 &&
+      typeof val[0] === "string" &&
+      Id64.isValidId64(val[0])
+    ) {
       params.bindIdSet(nameOrId, val);
     } else if (typeof val === "object" && !Array.isArray(val)) {
       params.bindStruct(nameOrId, val);
@@ -561,8 +595,7 @@ export class QueryBinder {
    */
   public static from(args: any[] | object | undefined): QueryBinder {
     const params = new QueryBinder();
-    if (typeof args === "undefined")
-      return params;
+    if (typeof args === "undefined") return params;
 
     if (Array.isArray(args)) {
       let i = 1;
@@ -576,39 +609,44 @@ export class QueryBinder {
     }
     return params;
   }
-  public serialize(): object { return this._args; }
+  public serialize(): object {
+    return this._args;
+  }
 }
 
 /** @internal */
 export enum DbRequestKind {
   BlobIO = 0,
-  ECSql = 1
+  ECSql = 1,
 }
 /** @internal */
 export enum DbResponseKind {
   BlobIO = DbRequestKind.BlobIO,
   ECSql = DbRequestKind.ECSql,
-  NoResult = 2
+  NoResult = 2,
 }
 /** @internal */
 export enum DbResponseStatus {
-  Done = 1,  /* query ran to completion. */
-  Cancel = 2, /*  Requested by user.*/
-  Partial = 3, /*  query was running but ran out of quota.*/
-  Timeout = 4, /*  query time quota expired while it was in queue.*/
-  QueueFull = 5, /*  could not submit the query as queue was full.*/
-  Error = 100, /*  generic error*/
-  Error_ECSql_PreparedFailed = Error + 1, /*  ecsql prepared failed*/
-  Error_ECSql_StepFailed = Error + 2, /*  ecsql step failed*/
-  Error_ECSql_RowToJsonFailed = Error + 3, /*  ecsql failed to serialized row to json.*/
-  Error_ECSql_BindingFailed = Error + 4, /*  ecsql binding failed.*/
-  Error_BlobIO_OpenFailed = Error + 5, /*  class or property or instance specified was not found or property as not of type blob.*/
-  Error_BlobIO_OutOfRange = Error + 6, /*  range specified is invalid based on size of blob.*/
+  Done = 1 /* query ran to completion. */,
+  Cancel = 2 /*  Requested by user.*/,
+  Partial = 3 /*  query was running but ran out of quota.*/,
+  Timeout = 4 /*  query time quota expired while it was in queue.*/,
+  QueueFull = 5 /*  could not submit the query as queue was full.*/,
+  Error = 100 /*  generic error*/,
+  Error_ECSql_PreparedFailed = Error + 1 /*  ecsql prepared failed*/,
+  Error_ECSql_StepFailed = Error + 2 /*  ecsql step failed*/,
+  Error_ECSql_RowToJsonFailed = Error +
+    3 /*  ecsql failed to serialized row to json.*/,
+  Error_ECSql_BindingFailed = Error + 4 /*  ecsql binding failed.*/,
+  Error_BlobIO_OpenFailed = Error +
+    5 /*  class or property or instance specified was not found or property as not of type blob.*/,
+  Error_BlobIO_OutOfRange = Error +
+    6 /*  range specified is invalid based on size of blob.*/,
 }
 /** @internal */
 export enum DbValueFormat {
   ECSqlNames = 0,
-  JsNames = 1
+  JsNames = 1,
 }
 /** @internal */
 export interface DbRequest extends BaseReaderOptions {
@@ -646,8 +684,15 @@ export interface DbBlobResponse extends DbResponse {
 }
 /** @public */
 export class DbQueryError extends BentleyError {
-  public constructor(public readonly response: any, public readonly request?: any, rc?: DbResult) {
-    super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, { response, request });
+  public constructor(
+    public readonly response: any,
+    public readonly request?: any,
+    rc?: DbResult
+  ) {
+    super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, {
+      response,
+      request,
+    });
   }
   public static throwIfError(response: any, request?: any) {
     if ((response.status as number) >= (DbResponseStatus.Error as number)) {
@@ -659,7 +704,10 @@ export class DbQueryError extends BentleyError {
   }
 }
 /** @internal */
-export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
+export interface DbRequestExecutor<
+  TRequest extends DbRequest,
+  TResponse extends DbResponse
+> {
   execute(request: TRequest): Promise<TResponse>;
 }
 

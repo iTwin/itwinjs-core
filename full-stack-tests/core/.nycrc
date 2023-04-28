@@ -5,21 +5,11 @@
     "core/frontend/src/**/*",
     "core/frontend/lib/**/*"
   ],
-  "exclude": [
-    "**/*.d.ts",
-    "**/*.d.tsx"
-  ],
-  "extension": [
-    ".ts",
-    ".tsx"
-  ],
+  "exclude": ["**/*.d.ts", "**/*.d.tsx"],
+  "extension": [".ts", ".tsx"],
   "temp-dir": "./full-stack-tests/core/coverage/.nyc_output",
   "report-dir": "./full-stack-tests/core/coverage/",
-  "reporter": [
-    "text-summary",
-    "lcov",
-    "cobertura"
-  ],
+  "reporter": ["text-summary", "lcov", "cobertura"],
   "cache": false,
   "cwd": "../.."
 }

@@ -17,7 +17,11 @@ describe("ColorDef", () => {
     assert.equal(cadetBlue.getRgb(), ColorDef.from(0x5f, 0x9e, 0xa0).getRgb());
     assert.equal(cadetBlue.getRgb(), ColorDef.from(95, 158, 160).getRgb());
     assert.equal(cadetBlue.toRgbString(), "rgb(95,158,160)");
-    assert.equal(cadetBlue.tbgr, ColorDef.fromString("cadetblue").tbgr, "Expect case insensitive compare");
+    assert.equal(
+      cadetBlue.tbgr,
+      ColorDef.fromString("cadetblue").tbgr,
+      "Expect case insensitive compare"
+    );
     assert.equal(cadetBlue.getRgb(), ColorDef.fromString("cadetBlue").getRgb());
   });
 
@@ -128,7 +132,6 @@ describe("ColorDef", () => {
     assert.equal(0, t2.r);
     assert.equal(0, t2.b);
     assert.equal(100, t2.t);
-
   });
 
   it("determines whether string and numeric values represent valid colors", () => {

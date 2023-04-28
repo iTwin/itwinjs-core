@@ -6,8 +6,7 @@ import { ipcRenderer } from "electron";
 
 // NB: This has to happen _before_ we import mocha!
 window._CertaConsole = (name: string, args: any[] = [""]) => {
-  if (args.length === 0)
-    args.push("");
+  if (args.length === 0) args.push("");
 
   return ipcRenderer.sendSync("certa-console", name, ...args);
 };
@@ -15,7 +14,13 @@ import "../../utils/initLogging";
 
 import Mocha = require("mocha");
 
-window.onerror = (_message: any, _source: any, _lineno: any, _colno: any, error: any) => {
+window.onerror = (
+  _message: any,
+  _source: any,
+  _lineno: any,
+  _colno: any,
+  error: any
+) => {
   const { message, stack } = error || {};
   ipcRenderer.send("certa-error", { message, stack });
 };
@@ -54,7 +59,8 @@ async function startCertaTests(entryPoint: string) {
   }
 }
 
-const certaSendToBackend = async (name: string, args: any[]) => ipcRenderer.sendSync("certa-callback", { name, args });
+const certaSendToBackend = async (name: string, args: any[]) =>
+  ipcRenderer.sendSync("certa-callback", { name, args });
 
 // Expose some globals
 window.startCertaTests = startCertaTests;

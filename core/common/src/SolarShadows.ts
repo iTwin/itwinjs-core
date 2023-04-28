@@ -38,27 +38,26 @@ export class SolarShadowSettings {
     this.bias = JsonUtils.asDouble(props.bias, 0.001);
     if (undefined === props.color || null === props.color)
       this.color = defaultColor;
-    else
-      this.color = RgbColor.fromColorDef(ColorDef.fromJSON(props.color));
+    else this.color = RgbColor.fromColorDef(ColorDef.fromJSON(props.color));
   }
 
   public static defaults = new SolarShadowSettings({});
 
-  public static fromJSON(props?: SolarShadowSettingsProps): SolarShadowSettings {
+  public static fromJSON(
+    props?: SolarShadowSettingsProps
+  ): SolarShadowSettings {
     return props ? new SolarShadowSettings(props) : this.defaults;
   }
 
   public toJSON(): SolarShadowSettingsProps | undefined {
     const defaults = SolarShadowSettings.defaults;
-    if (this.equals(defaults))
-      return undefined;
+    if (this.equals(defaults)) return undefined;
 
     const props: SolarShadowSettingsProps = {};
     if (!this.color.equals(defaults.color))
       props.color = this.color.toColorDef().toJSON();
 
-    if (this.bias !== defaults.bias)
-      props.bias = this.bias;
+    if (this.bias !== defaults.bias) props.bias = this.bias;
 
     return props;
   }
@@ -72,15 +71,12 @@ export class SolarShadowSettings {
    * @returns A settings object equivalent to this one except for any properties explicitly overridden by `changedProps`.
    */
   public clone(changedProps?: SolarShadowSettingsProps): SolarShadowSettings {
-    if (!changedProps)
-      return this;
+    if (!changedProps) return this;
 
     const props = this.toJSON() ?? {};
-    if (changedProps.color)
-      props.color = changedProps.color;
+    if (changedProps.color) props.color = changedProps.color;
 
-    if (undefined !== changedProps.bias)
-      props.bias = changedProps.bias;
+    if (undefined !== changedProps.bias) props.bias = changedProps.bias;
 
     return SolarShadowSettings.fromJSON(props);
   }

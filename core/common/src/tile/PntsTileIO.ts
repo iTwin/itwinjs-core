@@ -18,7 +18,9 @@ export class PntsHeader extends TileHeader {
   public readonly featureTableBinaryLength: number;
   public readonly batchTableJsonLength: number;
   public readonly batchTableBinaryLength: number;
-  public get isValid(): boolean { return TileFormat.Pnts === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.Pnts === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);

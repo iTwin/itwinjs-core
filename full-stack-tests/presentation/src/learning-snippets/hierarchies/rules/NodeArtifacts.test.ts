@@ -10,12 +10,13 @@ import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openFile(
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
+    );
   });
 
   after(async () => {
@@ -24,9 +25,7 @@ describe("Learning Snippets", () => {
   });
 
   describe("Hierarchy Rules", () => {
-
     describe("NodeArtifacts", () => {
-
       it("uses `condition` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Condition.Ruleset
         // The ruleset has a root nodes rule that returns `bis.Model` nodes only if their child node
@@ -36,47 +35,74 @@ describe("Learning Snippets", () => {
         // type of `bis.Model` should have `bis.GeometricElement3d` elements).
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: [{ schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true }],
-              hideExpression: `NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsSpecialChild)`,
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "ChildNodes",
-            condition: `ParentNode.IsOfClass("Model", "BisCore")`,
-            specifications: [{
-              specType: "RelatedInstanceNodes",
-              relationshipPaths: [{
-                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: "Forward",
-              }],
-              hideNodesInHierarchy: true,
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-            customizationRules: [{
-              ruleType: "NodeArtifacts",
-              condition: `ThisNode.IsOfClass("GeometricElement3d", "BisCore")`,
-              items: {
-                ["IsSpecialChild"]: `TRUE`,
-              },
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: [
+                    {
+                      schemaName: "BisCore",
+                      classNames: ["Model"],
+                      arePolymorphic: true,
+                    },
+                  ],
+                  hideExpression: `NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsSpecialChild)`,
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
+              ],
+            },
+            {
+              ruleType: "ChildNodes",
+              condition: `ParentNode.IsOfClass("Model", "BisCore")`,
+              specifications: [
+                {
+                  specType: "RelatedInstanceNodes",
+                  relationshipPaths: [
+                    {
+                      relationship: {
+                        schemaName: "BisCore",
+                        className: "ModelContainsElements",
+                      },
+                      direction: "Forward",
+                    },
+                  ],
+                  hideNodesInHierarchy: true,
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
+              ],
+              customizationRules: [
+                {
+                  ruleType: "NodeArtifacts",
+                  condition: `ThisNode.IsOfClass("GeometricElement3d", "BisCore")`,
+                  items: {
+                    ["IsSpecialChild"]: `TRUE`,
+                  },
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Condition.Result
         // Confirm we get only the GeometricModel3d
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.have.lengthOf(1).and.containSubset([{
-          key: { instanceKeys: [{ className: "BisCore:PhysicalModel" }] },
-          hasChildren: undefined,
-        }]);
+        const nodes = await Presentation.presentation.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+        });
+        expect(nodes)
+          .to.have.lengthOf(1)
+          .and.containSubset([
+            {
+              key: { instanceKeys: [{ className: "BisCore:PhysicalModel" }] },
+              hasChildren: undefined,
+            },
+          ]);
         // __PUBLISH_EXTRACT_END__
       });
 
@@ -90,51 +116,75 @@ describe("Learning Snippets", () => {
         // elements).
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: "RootNodes",
-            specifications: [{
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: [{ schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true }],
-              hideExpression: `NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsSpecialChild)`,
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-          }, {
-            ruleType: "ChildNodes",
-            condition: `ParentNode.IsOfClass("Model", "BisCore")`,
-            specifications: [{
-              specType: "RelatedInstanceNodes",
-              relationshipPaths: [{
-                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: "Forward",
-              }],
-              hideNodesInHierarchy: true,
-              groupByClass: false,
-              groupByLabel: false,
-            }],
-            customizationRules: [{
-              ruleType: "NodeArtifacts",
-              items: {
-                ["IsSpecialChild"]: `this.IsOfClass("GeometricElement3d", "BisCore")`,
-              },
-            }],
-          }],
+          rules: [
+            {
+              ruleType: "RootNodes",
+              specifications: [
+                {
+                  specType: "InstanceNodesOfSpecificClasses",
+                  classes: [
+                    {
+                      schemaName: "BisCore",
+                      classNames: ["Model"],
+                      arePolymorphic: true,
+                    },
+                  ],
+                  hideExpression: `NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsSpecialChild)`,
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
+              ],
+            },
+            {
+              ruleType: "ChildNodes",
+              condition: `ParentNode.IsOfClass("Model", "BisCore")`,
+              specifications: [
+                {
+                  specType: "RelatedInstanceNodes",
+                  relationshipPaths: [
+                    {
+                      relationship: {
+                        schemaName: "BisCore",
+                        className: "ModelContainsElements",
+                      },
+                      direction: "Forward",
+                    },
+                  ],
+                  hideNodesInHierarchy: true,
+                  groupByClass: false,
+                  groupByLabel: false,
+                },
+              ],
+              customizationRules: [
+                {
+                  ruleType: "NodeArtifacts",
+                  items: {
+                    ["IsSpecialChild"]: `this.IsOfClass("GeometricElement3d", "BisCore")`,
+                  },
+                },
+              ],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Items.Result
         // Confirm we get only the GeometricModel3d
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.have.lengthOf(1).and.containSubset([{
-          key: { instanceKeys: [{ className: "BisCore:PhysicalModel" }] },
-          hasChildren: undefined,
-        }]);
+        const nodes = await Presentation.presentation.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+        });
+        expect(nodes)
+          .to.have.lengthOf(1)
+          .and.containSubset([
+            {
+              key: { instanceKeys: [{ className: "BisCore:PhysicalModel" }] },
+              hasChildren: undefined,
+            },
+          ]);
         // __PUBLISH_EXTRACT_END__
       });
-
     });
-
   });
-
 });

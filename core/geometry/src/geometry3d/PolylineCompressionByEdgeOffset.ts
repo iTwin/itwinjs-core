@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import {
+  IndexedReadWriteXYZCollection,
+  IndexedXYZCollection,
+} from "./IndexedXYZCollection";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 
@@ -16,7 +19,11 @@ export class PolylineCompressionContext {
   /** Caller provides source and tolerance.
    * * pointer to source is retained, but contents of source are never modified.
    */
-  private constructor(source: IndexedXYZCollection, dest: IndexedReadWriteXYZCollection, tolerance: number) {
+  private constructor(
+    source: IndexedXYZCollection,
+    dest: IndexedReadWriteXYZCollection,
+    tolerance: number
+  ) {
     this._toleranceSquared = tolerance * tolerance;
     this._source = source;
     this._dest = dest;
@@ -31,9 +38,10 @@ export class PolylineCompressionContext {
    * * index is adjusted cyclically to source index range by modulo.
    */
   private acceptPointByIndex(i: number) {
-    const point = this._source.getPoint3dAtCheckedPointIndex(this._source.cyclicIndex(i));
-    if (point)
-      this._dest.push(point);
+    const point = this._source.getPoint3dAtCheckedPointIndex(
+      this._source.cyclicIndex(i)
+    );
+    if (point) this._dest.push(point);
   }
   /** work data used by find max deviation */
   private static _vector01: Vector3d = Vector3d.create();
@@ -44,7 +52,10 @@ export class PolylineCompressionContext {
    * @param i0 first cross product central index.
    * @param i1 last cross product central index.
    */
-  private indexOfMaxCrossProduct(index0: number, index1: number): number | undefined {
+  private indexOfMaxCrossProduct(
+    index0: number,
+    index1: number
+  ): number | undefined {
     let qMax = 0.0;
     let q;
     let indexMax: number | undefined;
@@ -52,7 +63,12 @@ export class PolylineCompressionContext {
       const iA = this._source.cyclicIndex(index);
       const iB = this._source.cyclicIndex(index + 1);
       const iC = this._source.cyclicIndex(index + 2);
-      this._source.crossProductIndexIndexIndex(iA, iB, iC, PolylineCompressionContext._vectorQ);
+      this._source.crossProductIndexIndexIndex(
+        iA,
+        iB,
+        iC,
+        PolylineCompressionContext._vectorQ
+      );
       q = PolylineCompressionContext._vectorQ.magnitudeSquared();
       if (q > qMax) {
         qMax = q;
@@ -67,7 +83,10 @@ export class PolylineCompressionContext {
    * @param i0 first index of interval
    * @param i1 INCLUSIVE final index
    */
-  private indexOfMaxDeviation(index0: number, index1: number): number | undefined {
+  private indexOfMaxDeviation(
+    index0: number,
+    index1: number
+  ): number | undefined {
     const i0 = this._source.cyclicIndex(index0);
     const i1 = this._source.cyclicIndex(index1);
     let maxDeviation = this._toleranceSquared;
@@ -76,20 +95,34 @@ export class PolylineCompressionContext {
     let distanceSquared;
     let s;
     let i;
-    this._source.vectorIndexIndex(i0, i1, PolylineCompressionContext._vector01)!;
+    this._source.vectorIndexIndex(
+      i0,
+      i1,
+      PolylineCompressionContext._vector01
+    )!;
     const denominator = PolylineCompressionContext._vector01.magnitudeSquared();
     for (let index = index0 + 1; index < index1; index++) {
       i = this._source.cyclicIndex(index);
       this._source.vectorIndexIndex(i0, i, PolylineCompressionContext._vectorQ);
-      numerator = PolylineCompressionContext._vector01.dotProduct(PolylineCompressionContext._vectorQ);
+      numerator = PolylineCompressionContext._vector01.dotProduct(
+        PolylineCompressionContext._vectorQ
+      );
       if (numerator <= 0) {
-        distanceSquared = PolylineCompressionContext._vectorQ.magnitudeSquared();
+        distanceSquared =
+          PolylineCompressionContext._vectorQ.magnitudeSquared();
       } else if (numerator > denominator) {
-        this._source.vectorIndexIndex(i1, i, PolylineCompressionContext._vectorQ);
-        distanceSquared = PolylineCompressionContext._vectorQ.magnitudeSquared();
+        this._source.vectorIndexIndex(
+          i1,
+          i,
+          PolylineCompressionContext._vectorQ
+        );
+        distanceSquared =
+          PolylineCompressionContext._vectorQ.magnitudeSquared();
       } else {
         s = numerator / denominator;
-        distanceSquared = PolylineCompressionContext._vectorQ.magnitudeSquared() - denominator * s * s;
+        distanceSquared =
+          PolylineCompressionContext._vectorQ.magnitudeSquared() -
+          denominator * s * s;
       }
       if (distanceSquared > maxDeviation) {
         maxDeviation = distanceSquared;
@@ -127,7 +160,10 @@ export class PolylineCompressionContext {
    * @param source input points.
    * @param chordTolerance Points less than this distance from a retained edge may be ignored.
    */
-  public static compressPoint3dArrayByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
+  public static compressPoint3dArrayByChordError(
+    source: Point3d[],
+    chordTolerance: number
+  ): Point3d[] {
     const source1 = new Point3dArrayCarrier(source);
     const dest1 = new Point3dArrayCarrier([]);
     this.compressCollectionByChordError(source1, dest1, chordTolerance);
@@ -142,14 +178,22 @@ export class PolylineCompressionContext {
    * @param dest output points.  Must be different from source.
    * @param chordTolerance Points less than this distance from a retained edge may be ignored.
    */
-  public static compressCollectionByChordError(source: IndexedXYZCollection, dest: IndexedReadWriteXYZCollection, chordTolerance: number) {
+  public static compressCollectionByChordError(
+    source: IndexedXYZCollection,
+    dest: IndexedReadWriteXYZCollection,
+    chordTolerance: number
+  ) {
     dest.clear();
     const n = source.length;
     if (n === 1) {
       dest.push(source.getPoint3dAtCheckedPointIndex(0)!);
       return;
     }
-    const context = new PolylineCompressionContext(source, dest, chordTolerance);
+    const context = new PolylineCompressionContext(
+      source,
+      dest,
+      chordTolerance
+    );
     // Do compression on inclusive interval from indexA to indexB, with indices interpreted cyclically if closed
     let indexA = 0;
     let indexB = n - 1;
@@ -168,14 +212,19 @@ export class PolylineCompressionContext {
   /** Copy points from source to dest, omitting those too close to predecessor.
    * * First and last points are always preserved.
    */
-  public static compressInPlaceByShortEdgeLength(data: GrowableXYZArray, edgeLength: number) {
+  public static compressInPlaceByShortEdgeLength(
+    data: GrowableXYZArray,
+    edgeLength: number
+  ) {
     const n = data.length;
-    if (n < 2)
-      return;
+    if (n < 2) return;
     let lastAcceptedIndex = 0;
     // back up from final point ..
     let indexB = n - 1;
-    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! < edgeLength)
+    while (
+      indexB > 0 &&
+      data.distanceIndexIndex(indexB - 1, n - 1)! < edgeLength
+    )
       indexB--;
     if (indexB === 0) {
       // Theres only one point there.
@@ -183,8 +232,7 @@ export class PolylineCompressionContext {
       return;
     }
     // we want the exact bits of the final point even if others were nearby ..
-    if (indexB < n - 1)
-      data.moveIndexToIndex(n - 1, indexB);
+    if (indexB < n - 1) data.moveIndexToIndex(n - 1, indexB);
     let candidateIndex = lastAcceptedIndex + 1;
     while (candidateIndex <= indexB) {
       const d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)!;
@@ -200,10 +248,12 @@ export class PolylineCompressionContext {
   /** Copy points from source to dest, omitting those too close to predecessor.
    * * First and last points are always preserved.
    */
-  public static compressInPlaceBySmallTriangleArea(data: GrowableXYZArray, triangleArea: number) {
+  public static compressInPlaceBySmallTriangleArea(
+    data: GrowableXYZArray,
+    triangleArea: number
+  ) {
     const n = data.length;
-    if (n < 3)
-      return;
+    if (n < 3) return;
     let lastAcceptedIndex = 0;
     const cross = Vector3d.create();
     for (let i1 = 1; i1 + 1 < n; i1++) {
@@ -219,25 +269,34 @@ export class PolylineCompressionContext {
   /** Copy points from source to dest, omitting those too close to edge between neighbors.
    * * First and last points are always preserved.
    */
-  public static compressInPlaceByPerpendicularDistance(data: GrowableXYZArray, perpendicularDistance: number, maxExtensionFraction = 1.0001) {
+  public static compressInPlaceByPerpendicularDistance(
+    data: GrowableXYZArray,
+    perpendicularDistance: number,
+    maxExtensionFraction = 1.0001
+  ) {
     const n = data.length;
-    if (n < 3)
-      return;
+    if (n < 3) return;
     let lastAcceptedIndex = 0;
     const vector01 = PolylineCompressionContext._vector01;
     const vectorQ = PolylineCompressionContext._vectorQ;
     let distanceSquared;
-    const perpendicularDistanceSquared = perpendicularDistance * perpendicularDistance;
+    const perpendicularDistanceSquared =
+      perpendicularDistance * perpendicularDistance;
     let denominator;
     let i1 = 1;
     for (; i1 + 1 < n; i1++) {
       data.vectorIndexIndex(lastAcceptedIndex, i1 + 1, vector01);
       data.vectorIndexIndex(lastAcceptedIndex, i1, vectorQ);
       denominator = vector01.magnitudeSquared();
-      const s = Geometry.conditionalDivideFraction(vectorQ.dotProduct(vector01), denominator);
+      const s = Geometry.conditionalDivideFraction(
+        vectorQ.dotProduct(vector01),
+        denominator
+      );
       if (s !== undefined) {
         if (s >= 0.0 && s <= maxExtensionFraction) {
-          distanceSquared = PolylineCompressionContext._vectorQ.magnitudeSquared() - denominator * s * s;
+          distanceSquared =
+            PolylineCompressionContext._vectorQ.magnitudeSquared() -
+            denominator * s * s;
           if (distanceSquared <= perpendicularDistanceSquared) {
             // force accept of point i1+1 .
             data.moveIndexToIndex(i1 + 1, ++lastAcceptedIndex);
@@ -248,8 +307,7 @@ export class PolylineCompressionContext {
       }
       data.moveIndexToIndex(i1, ++lastAcceptedIndex);
     }
-    if (i1 < n)
-      data.moveIndexToIndex(i1, ++lastAcceptedIndex);
+    if (i1 < n) data.moveIndexToIndex(i1, ++lastAcceptedIndex);
     data.length = lastAcceptedIndex + 1;
   }
   /**
@@ -258,7 +316,10 @@ export class PolylineCompressionContext {
    * @param points
    * @param perpendicularDistance
    */
-  public static compressColinearWrapInPlace(points: Point3d[], tolerance: number) {
+  public static compressColinearWrapInPlace(
+    points: Point3d[],
+    tolerance: number
+  ) {
     const lastIndex = points.length - 1;
     if (lastIndex >= 3 && points[0].distance(points[lastIndex]) < tolerance) {
       // indices of 3 points potentially colinear.

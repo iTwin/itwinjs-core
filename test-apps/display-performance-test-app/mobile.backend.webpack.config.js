@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 
@@ -20,33 +20,33 @@ module.exports = {
       {
         test: /\.js$/,
         use: "source-map-loader",
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /growl\.js$/,
-        use: 'null-loader'
+        use: "null-loader",
       },
       {
         test: /xunit\.js$/,
-        use: 'null-loader'
+        use: "null-loader",
       },
       {
         test: /bunyan/,
-        use: 'null-loader'
-      }
-    ]
+        use: "null-loader",
+      },
+    ],
   },
   externals: {
     "@bentley/imodeljs-electronaddon": "throw new Error('should never happen')",
     "@bentley/imodeljs-nodeaddon": "throw new Error('should never happen')",
-    "electron": "throw new Error('should never happen')",
-    "IModelJsFs": "{IModelJsFs: IModelJsFs}",
+    electron: "throw new Error('should never happen')",
+    IModelJsFs: "{IModelJsFs: IModelJsFs}",
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "../IModelJsFs": "{IModelJsFs: IModelJsFs}",
-    "fs": "IModelJsFs",
-    "fs-extra": "IModelJsFs"
+    fs: "IModelJsFs",
+    "fs-extra": "IModelJsFs",
   },
   stats: {
-    warnings: false
-  }
-}
+    warnings: false,
+  },
+};

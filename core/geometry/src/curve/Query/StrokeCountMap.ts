@@ -47,7 +47,13 @@ export class StrokeCountMap {
    * @param a1
    * @param componentData
    */
-  private constructor(numStroke: number, curveLength: number, a0: number, a1: number, componentData?: StrokeCountMap[]) {
+  private constructor(
+    numStroke: number,
+    curveLength: number,
+    a0: number,
+    a1: number,
+    componentData?: StrokeCountMap[]
+  ) {
     this.numStroke = numStroke;
     this.curveLength = curveLength;
     this.a0 = a0;
@@ -63,8 +69,21 @@ export class StrokeCountMap {
    * @param a1
    * @param componentData
    */
-  public static createWithCurvePrimitive(primitive: CurvePrimitive, numStroke: number, curveLength: number, a0: number, a1: number, componentData?: StrokeCountMap[]) {
-    const result = new StrokeCountMap(numStroke, curveLength, a0, a1, componentData);
+  public static createWithCurvePrimitive(
+    primitive: CurvePrimitive,
+    numStroke: number,
+    curveLength: number,
+    a0: number,
+    a1: number,
+    componentData?: StrokeCountMap[]
+  ) {
+    const result = new StrokeCountMap(
+      numStroke,
+      curveLength,
+      a0,
+      a1,
+      componentData
+    );
     result.primitive = primitive;
     return result;
   }
@@ -76,7 +95,13 @@ export class StrokeCountMap {
    * @param a0
    * @param a1
    */
-  public static createWithComponentIndex(componentIndex: number = 0, numStroke: number = 0, curveLength: number = 0, a0: number = 0, a1: number = 0) {
+  public static createWithComponentIndex(
+    componentIndex: number = 0,
+    numStroke: number = 0,
+    curveLength: number = 0,
+    a0: number = 0,
+    a1: number = 0
+  ) {
     const result = new StrokeCountMap(numStroke, curveLength, a0, a1);
     result.componentIndex = componentIndex;
     return result;
@@ -89,12 +114,15 @@ export class StrokeCountMap {
    * @param parentMap optional map whose a1 becomes a0 in the new map.
    * @param componentData optional array of component StrokeCountMaps.
    */
-  public static createWithCurvePrimitiveAndOptionalParent(curvePrimitive: CurvePrimitive, parentMap?: StrokeCountMap, componentData?: StrokeCountMap[]): StrokeCountMap {
+  public static createWithCurvePrimitiveAndOptionalParent(
+    curvePrimitive: CurvePrimitive,
+    parentMap?: StrokeCountMap,
+    componentData?: StrokeCountMap[]
+  ): StrokeCountMap {
     const a0 = parentMap ? parentMap.a1 : 0.0;
     const result = new StrokeCountMap(0, 0, a0, a0, componentData);
     result.primitive = curvePrimitive;
     return result;
-
   }
   /**
    * Apply stroke count and curve length from a component to a parent map.
@@ -107,7 +135,8 @@ export class StrokeCountMap {
     const a2 = this.a1 + curveLength;
     if (this.componentData) {
       this.componentData.push(
-        new StrokeCountMap(numStroke, curveLength, this.a1, a2));
+        new StrokeCountMap(numStroke, curveLength, this.a1, a2)
+      );
     }
     this.numStroke += numStroke;
     this.curveLength += curveLength;
@@ -116,9 +145,11 @@ export class StrokeCountMap {
   /** return true if `other` has the same component structure as `this`
    * * testing recurses through corresponding members of componentData arrays.
    */
-  public isCompatibleComponentStructure(other: StrokeCountMap, enforceCounts: boolean): boolean {
-    if (enforceCounts && this.numStroke !== other.numStroke)
-      return false;
+  public isCompatibleComponentStructure(
+    other: StrokeCountMap,
+    enforceCounts: boolean
+  ): boolean {
+    if (enforceCounts && this.numStroke !== other.numStroke) return false;
     if (this.componentData === undefined && other.componentData === undefined)
       return true;
     if (this.componentData && other.componentData) {
@@ -127,7 +158,12 @@ export class StrokeCountMap {
         return false;
       const n = this.componentData.length;
       for (let i = 0; i < n; i++)
-        if (!this.componentData[i].isCompatibleComponentStructure(other.componentData[i], enforceCounts))
+        if (
+          !this.componentData[i].isCompatibleComponentStructure(
+            other.componentData[i],
+            enforceCounts
+          )
+        )
           return false;
       return true;
     }
@@ -139,7 +175,12 @@ export class StrokeCountMap {
    * * clone componentData arrays recursively.
    */
   public clone(): StrokeCountMap {
-    const a = new StrokeCountMap(this.numStroke, this.curveLength, this.a0, this.a1);
+    const a = new StrokeCountMap(
+      this.numStroke,
+      this.curveLength,
+      this.a0,
+      this.a1
+    );
     if (this.componentData) {
       a.componentData = [];
       for (const child of this.componentData)

@@ -18,7 +18,9 @@ export class PropertyCategory extends SchemaItem {
   public override readonly schemaItemType!: SchemaItemType.PropertyCategory; // eslint-disable-line
   protected _priority: number;
 
-  public get priority() { return this._priority; }
+  public get priority() {
+    return this._priority;
+  }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -31,7 +33,10 @@ export class PropertyCategory extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): PropertyCategoryProps {
+  public override toJSON(
+    standalone: boolean = false,
+    includeSchemaVersion: boolean = false
+  ): PropertyCategoryProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.priority = this.priority;
     return schemaJson;

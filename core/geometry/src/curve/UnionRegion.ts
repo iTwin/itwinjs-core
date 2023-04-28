@@ -27,13 +27,20 @@ export class UnionRegion extends CurveCollection {
   public readonly curveCollectionType = "unionRegion";
 
   /** test if `other` is a `UnionRegion` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof UnionRegion; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof UnionRegion;
+  }
   /** collection of Loop and ParityRegion children. */
   protected _children: Array<ParityRegion | Loop>;
   /** Return the array of regions */
-  public override get children(): Array<ParityRegion | Loop> { return this._children; }
+  public override get children(): Array<ParityRegion | Loop> {
+    return this._children;
+  }
   /** Constructor -- initialize with no children */
-  public constructor() { super(); this._children = []; }
+  public constructor() {
+    super();
+    this._children = [];
+  }
   /** Create a `UnionRegion` with given region children */
   public static create(...data: Array<ParityRegion | Loop>): UnionRegion {
     const result = new UnionRegion();
@@ -43,9 +50,14 @@ export class UnionRegion extends CurveCollection {
     return result;
   }
   /** Return the boundary type (5) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 5; }
+  public dgnBoundaryType(): number {
+    return 5;
+  }
   /** dispatch to more strongly typed  `processor.announceUnionRegion(this, indexInParent)` */
-  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
+  public announceToCurveProcessor(
+    processor: RecursiveCurveProcessor,
+    indexInParent: number = -1
+  ): void {
     return processor.announceUnionRegion(this, indexInParent);
   }
   /** Return structural clone with stroked primitives. */
@@ -54,18 +66,19 @@ export class UnionRegion extends CurveCollection {
     let child;
     for (child of this._children) {
       const childStrokes = child.cloneStroked(options) as ParityRegion | Loop;
-      if (childStrokes)
-        clone.children.push(childStrokes);
+      if (childStrokes) clone.children.push(childStrokes);
     }
     return clone;
   }
   /** Return new empty `UnionRegion` */
-  public cloneEmptyPeer(): UnionRegion { return new UnionRegion(); }
+  public cloneEmptyPeer(): UnionRegion {
+    return new UnionRegion();
+  }
   /** add a child.
    * * Returns false if the `AnyCurve` child is not a region type.
    */
   public tryAddChild(child: AnyCurve): boolean {
-    if (child && child instanceof ParityRegion || child instanceof Loop) {
+    if ((child && child instanceof ParityRegion) || child instanceof Loop) {
       this._children.push(child);
       return true;
     }
@@ -73,8 +86,7 @@ export class UnionRegion extends CurveCollection {
   }
   /** Return a child identified by index. */
   public getChild(i: number): Loop | ParityRegion | undefined {
-    if (i < this._children.length)
-      return this._children[i];
+    if (i < this._children.length) return this._children[i];
     return undefined;
   }
   /** Second step of double dispatch:  call `handler.handleUnionRegion(this)` */

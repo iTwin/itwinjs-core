@@ -2,16 +2,16 @@
 
 There are several types of notifications and messages that can be displayed using [NotificationManager]($core-frontend) methods:
 
-|Type|Description
-|-----|-----
-|Element Tooltip| displays near the cursor and provides information about the iModel element the cursor is over
-|Prompt and Tool Assistance | displays in or near the Status Bar and provides instructions about the usage of a Tool
-|Toast message| displays above the Status Bar and automatically disappears after 3 to 4 seconds
-|Sticky message| displays above the Status Bar and contains a Close button the user clicks to dismiss it
-|Alert message| displays in the center of the window and contains a Close button the user clicks to dismiss it
-|Input Field message| displays near an input field and provides feedback about the usage of the field
-|Pointer message| displays near the cursor and provides feedback about the usage of a Tool
-|Activity message| displays above the Status Bar and displays a Progress Bar and text related to a currently running activity
+| Type                       | Description                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Element Tooltip            | displays near the cursor and provides information about the iModel element the cursor is over              |
+| Prompt and Tool Assistance | displays in or near the Status Bar and provides instructions about the usage of a Tool                     |
+| Toast message              | displays above the Status Bar and automatically disappears after 3 to 4 seconds                            |
+| Sticky message             | displays above the Status Bar and contains a Close button the user clicks to dismiss it                    |
+| Alert message              | displays in the center of the window and contains a Close button the user clicks to dismiss it             |
+| Input Field message        | displays near an input field and provides feedback about the usage of the field                            |
+| Pointer message            | displays near the cursor and provides feedback about the usage of a Tool                                   |
+| Activity message           | displays above the Status Bar and displays a Progress Bar and text related to a currently running activity |
 
 ## AppNotificationManager
 
@@ -50,13 +50,19 @@ The following example displays a link in a Sticky message:
 ```tsx
 const reactNode = (
   <span>
-    For more details, <UnderlinedButton onClick={this._handleLink}>click here</UnderlinedButton>.
+    For more details,{" "}
+    <UnderlinedButton onClick={this._handleLink}>click here</UnderlinedButton>.
   </span>
 );
 const reactMessage = { reactNode };
 MessageManager.outputMessage(
-  new ReactNotifyMessageDetails(OutputMessagePriority.Info,
-    "This is an info message", reactMessage, OutputMessageType.Sticky));
+  new ReactNotifyMessageDetails(
+    OutputMessagePriority.Info,
+    "This is an info message",
+    reactMessage,
+    OutputMessageType.Sticky
+  )
+);
 ```
 
 ```ts

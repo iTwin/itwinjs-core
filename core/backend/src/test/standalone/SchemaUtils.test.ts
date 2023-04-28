@@ -7,7 +7,6 @@ import { Schema } from "../../Schema";
 import * as Semver from "semver";
 
 describe("Schema Utilities Test", () => {
-
   it("paddedVersionToSemver", async () => {
     assert.equal(Schema.toSemverString("1.00.00"), "1.0.0");
     assert.isNotNull(Semver.valid(Schema.toSemverString("1.00.00")));

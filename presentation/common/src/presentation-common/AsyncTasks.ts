@@ -23,7 +23,9 @@ import { Guid, GuidString, IDisposable } from "@itwin/core-bentley";
  */
 export class AsyncTasksTracker {
   private _asyncsInProgress = new Set<GuidString>();
-  public get pendingAsyncs() { return this._asyncsInProgress; }
+  public get pendingAsyncs() {
+    return this._asyncsInProgress;
+  }
   public trackAsyncTask(): IDisposable {
     const id = Guid.createValue();
     this._asyncsInProgress.add(id);

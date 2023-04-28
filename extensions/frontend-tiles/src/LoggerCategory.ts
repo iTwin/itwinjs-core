@@ -5,4 +5,3 @@
 
 /** @internal */
 export const loggerCategory = "frontend-tiles";
-

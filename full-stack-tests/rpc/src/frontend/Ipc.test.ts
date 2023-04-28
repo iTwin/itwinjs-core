@@ -8,7 +8,10 @@ import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
-function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel: string, ...args: any[]): Promise<any> }) {
+function orderTest(
+  it: Mocha.TestFunction,
+  socketSource: () => { invoke(channel: string, ...args: any[]): Promise<any> }
+) {
   async function onResponse(request: Promise<any>, responses: string[]) {
     const data = await request;
     responses.push(data[0]);
@@ -56,7 +59,9 @@ if (ProcessDetector.isElectronAppFrontend) {
 
         socket.send("test", 1, 2, 3);
 
-        assert(await executeBackendCallback(BackendTestCallbacks.sendIpcMessage));
+        assert(
+          await executeBackendCallback(BackendTestCallbacks.sendIpcMessage)
+        );
       });
     });
 

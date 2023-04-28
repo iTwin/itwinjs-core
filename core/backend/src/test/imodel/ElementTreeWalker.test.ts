@@ -3,13 +3,41 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import {
+  Code,
+  GeometricElement2dProps,
+  GeometricElementProps,
+  IModel,
+  SubCategoryAppearance,
+} from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject } from "../../core-backend";
-import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
+import {
+  DefinitionModel,
+  DocumentListModel,
+  Drawing,
+  DrawingCategory,
+  DrawingGraphic,
+  ElementGroupsMembers,
+  ElementOwnsChildElements,
+  ExternalSource,
+  ExternalSourceGroup,
+  IModelDb,
+  Model,
+  PhysicalPartition,
+  SnapshotDb,
+  SpatialCategory,
+  SubCategory,
+  Subject,
+} from "../../core-backend";
+import {
+  deleteElementSubTrees,
+  deleteElementTree,
+  ElementTreeBottomUp,
+  ElementTreeWalkerScope,
+} from "../../ElementTreeWalker";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -20,32 +48,47 @@ class ElementTreeCollector extends ElementTreeBottomUp {
   public elements: Id64Array = [];
   public definitions: Id64Array = [];
 
-  public constructor(iModel: IModelDb) { super(iModel); }
-
-  public visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
-    if (model instanceof DefinitionModel)
-      this.definitionModels.push(model.id);
-    else
-      this.subModels.push(model.id);
+  public constructor(iModel: IModelDb) {
+    super(iModel);
   }
 
-  public visitElement(elementId: Id64String, scope: ElementTreeWalkerScope): void {
+  public visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
+    if (model instanceof DefinitionModel) this.definitionModels.push(model.id);
+    else this.subModels.push(model.id);
+  }
+
+  public visitElement(
+    elementId: Id64String,
+    scope: ElementTreeWalkerScope
+  ): void {
     if (scope.inDefinitionModel)
-      this.definitions.push(elementId); // may be some other kind of InformationContentElement - that's OK.
-    else
-      this.elements.push(elementId);
+      this.definitions.push(
+        elementId
+      ); // may be some other kind of InformationContentElement - that's OK.
+    else this.elements.push(elementId);
   }
 
   public collect(topElement: Id64String): void {
-    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this._iModel, topElement));
+    this.processElementTree(
+      topElement,
+      ElementTreeWalkerScope.createTopScope(this._iModel, topElement)
+    );
   }
 }
 
 class SelectedElementCollector extends ElementTreeCollector {
-  public constructor(iModel: IModelDb, private _elementsToReport: Id64Array) { super(iModel); }
-  public override shouldExploreModel(_model: Model): boolean { return true; }
-  public override shouldVisitModel(_model: Model): boolean { return false; }
-  public override shouldVisitElement(elementId: Id64String): boolean { return this._elementsToReport.includes(elementId); }
+  public constructor(iModel: IModelDb, private _elementsToReport: Id64Array) {
+    super(iModel);
+  }
+  public override shouldExploreModel(_model: Model): boolean {
+    return true;
+  }
+  public override shouldVisitModel(_model: Model): boolean {
+    return false;
+  }
+  public override shouldVisitElement(elementId: Id64String): boolean {
+    return this._elementsToReport.includes(elementId);
+  }
 }
 
 function doesElementExist(iModel: IModelDb, elementId: Id64String): boolean {
@@ -56,13 +99,20 @@ function doesModelExist(iModel: IModelDb, mid: Id64String): boolean {
   return iModel.models.tryGetModelProps(mid) !== undefined;
 }
 
-function doesGroupRelationshipExist(iModel: IModelDb, source: Id64String, target: Id64String): boolean {
-  return iModel.withPreparedStatement(`select count(*) from ${ElementGroupsMembers.classFullName} where sourceecinstanceid=? and targetecinstanceid=?`, (stmt) => {
-    stmt.bindId(1, source);
-    stmt.bindId(2, target);
-    stmt.step();
-    return stmt.getValue(0).getInteger() !== 0;
-  });
+function doesGroupRelationshipExist(
+  iModel: IModelDb,
+  source: Id64String,
+  target: Id64String
+): boolean {
+  return iModel.withPreparedStatement(
+    `select count(*) from ${ElementGroupsMembers.classFullName} where sourceecinstanceid=? and targetecinstanceid=?`,
+    (stmt) => {
+      stmt.bindId(1, source);
+      stmt.bindId(2, target);
+      stmt.step();
+      return stmt.getValue(0).getInteger() !== 0;
+    }
+  );
 }
 
 describe("ElementTreeWalker", () => {
@@ -103,9 +153,17 @@ describe("ElementTreeWalker", () => {
     // Logger.initializeToConsole();
     // Logger.setLevel("core-backend.IModelDb.ElementTreeWalker", LogLevel.Trace);
 
-    const iModelFileName = IModelTestUtils.prepareOutputFile("ElementTreeWalker", "Test.bim");
-    iModel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ElementTreeWalker Test" } });
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    const iModelFileName = IModelTestUtils.prepareOutputFile(
+      "ElementTreeWalker",
+      "Test.bim"
+    );
+    iModel = SnapshotDb.createEmpty(iModelFileName, {
+      rootSubject: { name: "ElementTreeWalker Test" },
+    });
+    const schemaPathname = path.join(
+      KnownTestLocations.assetsDir,
+      "TestBim.ecschema.xml"
+    );
     await iModel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
     /*
@@ -129,22 +187,71 @@ describe("ElementTreeWalker", () => {
                                           PhysicalObject, PhysicalObject, PhysicalObject (grouped)
     */
 
-    repositoryLinkId = IModelTestUtils.insertRepositoryLink(iModel, "test link", "foo", "bar");
-    jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "Job").insert();
+    repositoryLinkId = IModelTestUtils.insertRepositoryLink(
+      iModel,
+      "test link",
+      "foo",
+      "bar"
+    );
+    jobSubjectId = IModelTestUtils.createJobSubjectElement(
+      iModel,
+      "Job"
+    ).insert();
 
     childSubject = Subject.insert(iModel, jobSubjectId, "Child Subject");
 
-    definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
-    spatialCategoryId = SpatialCategory.insert(iModel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-    drawingDefinitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "DrawingDefinition");
-    drawingCategoryId = DrawingCategory.insert(iModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    drawingSubCategory1Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
-    drawingSubCategory2Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
+    definitionModelId = DefinitionModel.insert(
+      iModel,
+      jobSubjectId,
+      "Definition"
+    );
+    spatialCategoryId = SpatialCategory.insert(
+      iModel,
+      definitionModelId,
+      "SpatialCategory",
+      new SubCategoryAppearance()
+    );
+    drawingDefinitionModelId = DefinitionModel.insert(
+      iModel,
+      jobSubjectId,
+      "DrawingDefinition"
+    );
+    drawingCategoryId = DrawingCategory.insert(
+      iModel,
+      drawingDefinitionModelId,
+      "DrawingCategory",
+      new SubCategoryAppearance()
+    );
+    drawingSubCategory1Id = SubCategory.insert(
+      iModel,
+      drawingCategoryId,
+      "SubCategory1",
+      new SubCategoryAppearance()
+    );
+    drawingSubCategory2Id = SubCategory.insert(
+      iModel,
+      drawingCategoryId,
+      "SubCategory2",
+      new SubCategoryAppearance()
+    );
 
-    xsGroup = iModel.elements.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
-    xsElement = iModel.elements.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
+    xsGroup = iModel.elements.insertElement({
+      classFullName: ExternalSourceGroup.classFullName,
+      model: drawingDefinitionModelId,
+      code: Code.createEmpty(),
+    });
+    xsElement = iModel.elements.insertElement({
+      classFullName: ExternalSource.classFullName,
+      model: drawingDefinitionModelId,
+      parent: new ElementOwnsChildElements(xsGroup),
+      code: Code.createEmpty(),
+    });
 
-    documentListModelId = DocumentListModel.insert(iModel, jobSubjectId, "Document");
+    documentListModelId = DocumentListModel.insert(
+      iModel,
+      jobSubjectId,
+      "Document"
+    );
     assert.isTrue(Id64.isValidId64(documentListModelId));
     drawingModelId = Drawing.insert(iModel, documentListModelId, "Drawing");
     const drawingGraphicProps1: GeometricElement2dProps = {
@@ -158,7 +265,13 @@ describe("ElementTreeWalker", () => {
     };
     drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
 
-    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, PhysicalPartition.createCode(iModel, childSubject, "Physical"), false, childSubject);
+    [, physicalModelId] =
+      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+        iModel,
+        PhysicalPartition.createCode(iModel, childSubject, "Physical"),
+        false,
+        childSubject
+      );
     const elementProps: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
       model: physicalModelId,
@@ -166,31 +279,94 @@ describe("ElementTreeWalker", () => {
       code: Code.createEmpty(),
     };
 
-    physicalObjectId1 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    physicalObjectId2 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    physicalObjectId3 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).insert();
-    ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).insert();
+    physicalObjectId1 = iModel.elements.insertElement(
+      iModel.elements.createElement(elementProps).toJSON()
+    );
+    physicalObjectId2 = iModel.elements.insertElement(
+      iModel.elements.createElement(elementProps).toJSON()
+    );
+    physicalObjectId3 = iModel.elements.insertElement(
+      iModel.elements.createElement(elementProps).toJSON()
+    );
+    ElementGroupsMembers.create(
+      iModel,
+      physicalObjectId1,
+      physicalObjectId2
+    ).insert();
+    ElementGroupsMembers.create(
+      iModel,
+      physicalObjectId1,
+      physicalObjectId3
+    ).insert();
 
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
-    assert.equal(iModel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
-    assert.equal(iModel.elements.getElement(definitionModelId).parent?.id, jobSubjectId);
-    assert.equal(iModel.elements.getElement(spatialCategoryId).model, definitionModelId);
-    assert.equal(iModel.elements.getElement(drawingDefinitionModelId).parent?.id, jobSubjectId);
-    assert.equal(iModel.elements.getElement(drawingCategoryId).model, drawingDefinitionModelId);
-    assert.equal(iModel.elements.getElement(drawingSubCategory1Id).parent?.id, drawingCategoryId);
-    assert.equal(iModel.elements.getElement(drawingSubCategory2Id).parent?.id, drawingCategoryId);
-    assert.equal(iModel.elements.getElement(xsGroup).model, drawingDefinitionModelId);
+    assert.equal(
+      iModel.elements.getElement(jobSubjectId).parent?.id,
+      IModel.rootSubjectId
+    );
+    assert.equal(
+      iModel.elements.getElement(definitionModelId).parent?.id,
+      jobSubjectId
+    );
+    assert.equal(
+      iModel.elements.getElement(spatialCategoryId).model,
+      definitionModelId
+    );
+    assert.equal(
+      iModel.elements.getElement(drawingDefinitionModelId).parent?.id,
+      jobSubjectId
+    );
+    assert.equal(
+      iModel.elements.getElement(drawingCategoryId).model,
+      drawingDefinitionModelId
+    );
+    assert.equal(
+      iModel.elements.getElement(drawingSubCategory1Id).parent?.id,
+      drawingCategoryId
+    );
+    assert.equal(
+      iModel.elements.getElement(drawingSubCategory2Id).parent?.id,
+      drawingCategoryId
+    );
+    assert.equal(
+      iModel.elements.getElement(xsGroup).model,
+      drawingDefinitionModelId
+    );
     assert.equal(iModel.elements.getElement(xsElement).parent?.id, xsGroup);
-    assert.equal(iModel.elements.getElement(documentListModelId).parent?.id, jobSubjectId);
-    assert.equal(iModel.elements.getElement(drawingModelId).model, documentListModelId);
-    assert.equal(iModel.elements.getElement(drawingGraphicId1).model, drawingModelId);
-    assert.equal(iModel.elements.getElement(physicalModelId).parent?.id, childSubject);
-    assert.equal(iModel.elements.getElement(physicalObjectId1).model, physicalModelId);
-    assert.equal(iModel.elements.getElement(physicalObjectId2).model, physicalModelId);
-    assert.equal(iModel.elements.getElement(physicalObjectId3).model, physicalModelId);
-    assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2));
-    assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3));
+    assert.equal(
+      iModel.elements.getElement(documentListModelId).parent?.id,
+      jobSubjectId
+    );
+    assert.equal(
+      iModel.elements.getElement(drawingModelId).model,
+      documentListModelId
+    );
+    assert.equal(
+      iModel.elements.getElement(drawingGraphicId1).model,
+      drawingModelId
+    );
+    assert.equal(
+      iModel.elements.getElement(physicalModelId).parent?.id,
+      childSubject
+    );
+    assert.equal(
+      iModel.elements.getElement(physicalObjectId1).model,
+      physicalModelId
+    );
+    assert.equal(
+      iModel.elements.getElement(physicalObjectId2).model,
+      physicalModelId
+    );
+    assert.equal(
+      iModel.elements.getElement(physicalObjectId3).model,
+      physicalModelId
+    );
+    assert.isTrue(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2)
+    );
+    assert.isTrue(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3)
+    );
     assert.isTrue(doesModelExist(iModel, definitionModelId));
     assert.isTrue(doesModelExist(iModel, drawingDefinitionModelId));
     assert.isTrue(doesModelExist(iModel, drawingModelId));
@@ -210,28 +386,70 @@ describe("ElementTreeWalker", () => {
       assert.isTrue(collector1.subModels.includes(physicalModelId));
       assert.isTrue(collector1.subModels.includes(drawingModelId));
       assert.isTrue(collector1.subModels.includes(documentListModelId));
-      assert.isTrue(collector1.subModels.indexOf(drawingModelId) < collector1.subModels.indexOf(documentListModelId), "in bottom-up search, a child model should be visited before its parent model");
+      assert.isTrue(
+        collector1.subModels.indexOf(drawingModelId) <
+          collector1.subModels.indexOf(documentListModelId),
+        "in bottom-up search, a child model should be visited before its parent model"
+      );
       assert.isFalse(collector1.subModels.includes(definitionModelId));
       assert.isTrue(collector1.definitionModels.includes(definitionModelId));
       assert.isFalse(collector1.subModels.includes(drawingDefinitionModelId));
-      assert.isTrue(collector1.definitionModels.includes(drawingDefinitionModelId));
+      assert.isTrue(
+        collector1.definitionModels.includes(drawingDefinitionModelId)
+      );
       assert.isTrue(collector1.definitions.includes(drawingCategoryId));
       assert.isTrue(collector1.definitions.includes(spatialCategoryId));
       assert.isFalse(collector1.elements.includes(drawingCategoryId));
       assert.isFalse(collector1.elements.includes(spatialCategoryId));
-      assert.isTrue(collector1.elements.indexOf(physicalObjectId1) < collector1.elements.indexOf(physicalModelId), "in bottom-up search, an element in a model should be visited before its model's element");
-      assert.isTrue(collector1.elements.indexOf(drawingGraphicId1) < collector1.elements.indexOf(drawingModelId), "in bottom-up search, an element in a model should be visited before its model's element");
-      assert.isTrue(collector1.elements.indexOf(drawingModelId) < collector1.elements.indexOf(documentListModelId), "in bottom-up search, an element in a model should be visited before its model's element");
-      assert.isTrue(collector1.elements.indexOf(documentListModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(definitionModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(drawingDefinitionModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(childSubject) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(physicalModelId) < collector1.elements.indexOf(childSubject), "in bottom-up search, a child element should be visited before its parent element");
+      assert.isTrue(
+        collector1.elements.indexOf(physicalObjectId1) <
+          collector1.elements.indexOf(physicalModelId),
+        "in bottom-up search, an element in a model should be visited before its model's element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(drawingGraphicId1) <
+          collector1.elements.indexOf(drawingModelId),
+        "in bottom-up search, an element in a model should be visited before its model's element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(drawingModelId) <
+          collector1.elements.indexOf(documentListModelId),
+        "in bottom-up search, an element in a model should be visited before its model's element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(documentListModelId) <
+          collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(definitionModelId) <
+          collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(drawingDefinitionModelId) <
+          collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(childSubject) <
+          collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element"
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(physicalModelId) <
+          collector1.elements.indexOf(childSubject),
+        "in bottom-up search, a child element should be visited before its parent element"
+      );
     }
 
     // Exercise the search filters
     {
-      const collector2 = new SelectedElementCollector(iModel, [drawingGraphicId1, spatialCategoryId, physicalObjectId3]);
+      const collector2 = new SelectedElementCollector(iModel, [
+        drawingGraphicId1,
+        spatialCategoryId,
+        physicalObjectId3,
+      ]);
       collector2.collect(jobSubjectId);
       assert.isTrue(collector2.definitions.length === 1);
       assert.isTrue(collector2.definitions.includes(spatialCategoryId));
@@ -245,7 +463,10 @@ describe("ElementTreeWalker", () => {
 
     assert.isTrue(doesModelExist(iModel, IModel.repositoryModelId));
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));
-    assert.isTrue(doesElementExist(iModel, repositoryLinkId), "RepositoryLink should not have been deleted, since it is not under Job Subject");
+    assert.isTrue(
+      doesElementExist(iModel, repositoryLinkId),
+      "RepositoryLink should not have been deleted, since it is not under Job Subject"
+    );
     assert.isFalse(doesElementExist(iModel, definitionModelId));
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));
     assert.isFalse(doesElementExist(iModel, spatialCategoryId));
@@ -259,8 +480,12 @@ describe("ElementTreeWalker", () => {
     assert.isFalse(doesElementExist(iModel, physicalObjectId1));
     assert.isFalse(doesElementExist(iModel, physicalObjectId2));
     assert.isFalse(doesElementExist(iModel, physicalObjectId3));
-    assert.isFalse(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2));
-    assert.isFalse(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3));
+    assert.isFalse(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2)
+    );
+    assert.isFalse(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3)
+    );
     assert.isFalse(doesElementExist(iModel, jobSubjectId));
     assert.isFalse(doesModelExist(iModel, definitionModelId));
     assert.isFalse(doesModelExist(iModel, drawingDefinitionModelId));
@@ -296,7 +521,9 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingCategoryId);
     toPrune.add(physicalObjectId3);
 
-    deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    deleteElementSubTrees(iModel, jobSubjectId, (elementId) =>
+      toPrune.has(elementId)
+    );
 
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
     assert.isFalse(doesElementExist(iModel, drawingSubCategory1Id));
@@ -305,19 +532,26 @@ describe("ElementTreeWalker", () => {
     assert.isFalse(doesModelExist(iModel, drawingModelId));
     assert.isFalse(doesElementExist(iModel, drawingGraphicId1)); // contents of drawing model should be gone
     assert.isFalse(doesElementExist(iModel, physicalObjectId3));
-    assert.isFalse(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3));
+    assert.isFalse(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3)
+    );
 
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
     assert.isTrue(doesElementExist(iModel, definitionModelId));
     assert.isTrue(doesElementExist(iModel, drawingDefinitionModelId));
-    assert.equal(iModel.elements.getElement(xsGroup).model, drawingDefinitionModelId);
+    assert.equal(
+      iModel.elements.getElement(xsGroup).model,
+      drawingDefinitionModelId
+    );
     assert.equal(iModel.elements.getElement(xsElement).parent?.id, xsGroup);
     assert.isTrue(doesElementExist(iModel, spatialCategoryId));
     assert.isTrue(doesElementExist(iModel, documentListModelId));
     assert.isTrue(doesElementExist(iModel, physicalModelId));
     assert.isTrue(doesElementExist(iModel, physicalObjectId1));
     assert.isTrue(doesElementExist(iModel, physicalObjectId2));
-    assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2));
+    assert.isTrue(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2)
+    );
     assert.isTrue(doesElementExist(iModel, jobSubjectId));
     assert.isTrue(doesModelExist(iModel, definitionModelId));
     assert.isTrue(doesModelExist(iModel, drawingDefinitionModelId));
@@ -352,7 +586,9 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingDefinitionModelId);
     toPrune.add(documentListModelId); // (also get rid of the elements that use the definitions)
 
-    deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    deleteElementSubTrees(iModel, jobSubjectId, (elementId) =>
+      toPrune.has(elementId)
+    );
 
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));
     assert.isFalse(doesModelExist(iModel, drawingDefinitionModelId));
@@ -374,8 +610,12 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesElementExist(iModel, physicalObjectId1));
     assert.isTrue(doesElementExist(iModel, physicalObjectId2));
     assert.isTrue(doesElementExist(iModel, physicalObjectId3));
-    assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2));
-    assert.isTrue(doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3));
+    assert.isTrue(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId2)
+    );
+    assert.isTrue(
+      doesGroupRelationshipExist(iModel, physicalObjectId1, physicalObjectId3)
+    );
     assert.isTrue(doesElementExist(iModel, jobSubjectId));
     assert.isTrue(doesModelExist(iModel, definitionModelId));
     assert.isTrue(doesModelExist(iModel, physicalModelId));

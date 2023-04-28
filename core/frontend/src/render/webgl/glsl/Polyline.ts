@@ -10,7 +10,12 @@ import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariableType,
+  VertexShaderBuilder,
+  VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
 import { IsInstanced, PositionType } from "../TechniqueFlags";
@@ -22,7 +27,11 @@ import { unquantize2d } from "./Decode";
 import { addHiliter } from "./FeatureSymbology";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import {
-  addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition,
+  addLineCode as addLineCodeUniform,
+  addLineWeight,
+  addModelViewMatrix,
+  addProjectionMatrix,
+  addSamplePosition,
 } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
@@ -138,7 +147,9 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 export function addAdjustWidth(vert: VertexShaderBuilder) {
   vert.addUniform("u_aaSamples", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_aaSamples", (attr, params) => {
-      const numSamples = System.instance.frameBufferStack.currentFbMultisampled ? params.target.compositor.antialiasSamples : 1;
+      const numSamples = System.instance.frameBufferStack.currentFbMultisampled
+        ? params.target.compositor.antialiasSamples
+        : 1;
       attr.setUniform1i(numSamples);
     });
   });
@@ -151,8 +162,7 @@ export function addLineCodeTexture(frag: FragmentShaderBuilder) {
     prog.addProgramUniform("u_lineCodeTexture", (uniform) => {
       const lct = System.instance.lineCodeTexture;
       assert(undefined !== lct);
-      if (undefined !== lct)
-        lct.bindSampler(uniform, TextureUnit.LineCode);
+      if (undefined !== lct) lct.bindSampler(uniform, TextureUnit.LineCode);
     });
   });
 }
@@ -166,7 +176,12 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 
   const funcCall: string = `computeLineCodeTextureCoords(${args})`;
 
-  prog.addFunctionComputedVaryingWithArgs("v_texc", VariableType.Vec2, funcCall, computeTextureCoord);
+  prog.addFunctionComputedVaryingWithArgs(
+    "v_texc",
+    VariableType.Vec2,
+    funcCall,
+    computeTextureCoord
+  );
 
   addFrustum(prog);
   addLineCodeTexture(prog.frag);
@@ -331,9 +346,15 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 /** @internal */
-export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
+export function createPolylineBuilder(
+  isInstanced: IsInstanced,
+  positionType: PositionType
+): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
-  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
+  const attrMap = AttributeMap.findAttributeMap(
+    TechniqueId.Polyline,
+    instanced
+  );
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addShaderFlags(builder);
@@ -350,9 +371,15 @@ export function createPolylineBuilder(isInstanced: IsInstanced, positionType: Po
 }
 
 /** @internal */
-export function createPolylineHiliter(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
+export function createPolylineHiliter(
+  isInstanced: IsInstanced,
+  positionType: PositionType
+): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
-  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
+  const attrMap = AttributeMap.findAttributeMap(
+    TechniqueId.Polyline,
+    instanced
+  );
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addCommon(builder);

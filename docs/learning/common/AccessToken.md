@@ -1,6 +1,6 @@
 # AccessToken
 
-An application must fetch an `AccessToken` from the Bentley Authorization Server to access various iTwin Services including iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iTwin.js API uses the [OpenID Connect](https://openid.net/connect/) specification for *authentication* - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for *authorization* - i.e., delegating the application to talk to services like iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
+An application must fetch an `AccessToken` from the Bentley Authorization Server to access various iTwin Services including iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iTwin.js API uses the [OpenID Connect](https://openid.net/connect/) specification for _authentication_ - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for _authorization_ - i.e., delegating the application to talk to services like iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
 
 The Bentley Authorization Service is built on the [IdentityServer4](http://docs.identityserver.io/en/latest/) framework, an officially [certified](https://openid.net/certification/) implementation of OpenID Connect.
 
@@ -16,7 +16,7 @@ Use the [developer registration page](https://developer.bentley.com/register/) t
 
 Before your application can access an iModel on iModelHub, it must obtain an access token that grants the required access. The way you make the request depends on the application you are building.
 
-For Web Frontend Applications, the means of authenticating the user is commonly referred to as an "implicit" flow. You will use the iTwin.js OpenID Connect Frontend API that will internally redirect the browser to the Bentley Authorization Server. The user then logs in through the browser, and is shown a *user consent* screen and asked whether they are willing to grant permissions that your application is requesting. Once the user grants the permission, the Bentley Authorization Server sends your application an access token.
+For Web Frontend Applications, the means of authenticating the user is commonly referred to as an "implicit" flow. You will use the iTwin.js OpenID Connect Frontend API that will internally redirect the browser to the Bentley Authorization Server. The user then logs in through the browser, and is shown a _user consent_ screen and asked whether they are willing to grant permissions that your application is requesting. Once the user grants the permission, the Bentley Authorization Server sends your application an access token.
 
 For Agent or Service Applications, since a browser is not involved, you would be using the iTwin.js OpenID Connect Backend API that makes web service requests to obtain the access token.
 

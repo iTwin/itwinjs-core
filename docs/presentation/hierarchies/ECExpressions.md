@@ -17,7 +17,7 @@ See [this topic](./ChildNodeRule.md#attribute-condition) for an example.
 
 ECExpressions that are specified in `instanceFilter` specification properties
 are converted to ECSQL WHERE clause, so they have some limitations - ony a subset
- of all the ECExpression symbols are available.
+of all the ECExpression symbols are available.
 
 The below table lists all of them:
 

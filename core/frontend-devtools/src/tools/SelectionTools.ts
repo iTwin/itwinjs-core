@@ -7,8 +7,17 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64Arg, OrderedId64Iterable } from "@itwin/core-bentley";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+import {
+  CompressedId64Set,
+  Id64Arg,
+  OrderedId64Iterable,
+} from "@itwin/core-bentley";
+import {
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  Tool,
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -18,8 +27,12 @@ import { parseArgs } from "./parseArgs";
  */
 export class SelectElementsByIdTool extends Tool {
   public static override toolId = "SelectElementsById";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async run(ids?: Id64Arg): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -39,16 +52,19 @@ export class SelectElementsByIdTool extends Tool {
  */
 export class DumpSelectionSetTool extends Tool {
   public static override toolId = "DumpSelectionSet";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   private _format: "json" | "compressed" | "list" = "list";
   private _copy?: boolean;
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return false;
+    if (!vp) return false;
 
     const elems = Array.from(vp.iModel.selectionSet.elements);
     OrderedId64Iterable.sortArray(elems);
@@ -66,11 +82,14 @@ export class DumpSelectionSetTool extends Tool {
         break;
     }
 
-    if (this._copy)
-      copyStringToClipboard(output);
+    if (this._copy) copyStringToClipboard(output);
 
     const brief = `Selection set dumped${this._copy ? " to clipboard" : ""}.`;
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, brief, output);
+    const details = new NotifyMessageDetails(
+      OutputMessagePriority.Info,
+      brief,
+      output
+    );
     IModelApp.notifications.outputMessage(details);
     return true;
   }

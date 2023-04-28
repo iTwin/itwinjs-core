@@ -27,26 +27,30 @@ export class ParityRegion extends CurveCollection {
   public readonly curveCollectionType = "parityRegion";
 
   /** Test if `other` is an instance of `ParityRegion` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof ParityRegion; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof ParityRegion;
+  }
   /** Array of loops in this parity region. */
   protected _children: Loop[];
   /** Return the array of loops in this parity region. */
-  public override get children(): Loop[] { return this._children; }
+  public override get children(): Loop[] {
+    return this._children;
+  }
   /** Construct parity region with empty loop array */
-  public constructor() { super(); this._children = []; }
+  public constructor() {
+    super();
+    this._children = [];
+  }
   /**
    * Add loops (recursively) to this region's children
    */
   public addLoops(data?: Loop | Loop[] | Loop[][]) {
     if (data === undefined) {
-    } else if (data instanceof Loop)
-      this.children.push(data);
+    } else if (data instanceof Loop) this.children.push(data);
     else if (Array.isArray(data)) {
       for (const child of data) {
-        if (child instanceof Loop)
-          this.children.push(child);
-        else if (Array.isArray(child))
-          this.addLoops(child);
+        if (child instanceof Loop) this.children.push(child);
+        else if (Array.isArray(child)) this.addLoops(child);
       }
     }
   }
@@ -54,9 +58,10 @@ export class ParityRegion extends CurveCollection {
    * * The returned structure CAPTURES the loops.
    * * The loops are NOT reorganized by hole analysis.
    */
-  public static createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion {
-    if (data instanceof Loop)
-      return data;
+  public static createLoops(
+    data?: Loop | Loop[] | Loop[][]
+  ): Loop | ParityRegion {
+    if (data instanceof Loop) return data;
     const result = new ParityRegion();
     result.addLoops(data);
     return result;
@@ -71,9 +76,14 @@ export class ParityRegion extends CurveCollection {
     return result;
   }
   /** Return the boundary type (4) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 4; }
+  public dgnBoundaryType(): number {
+    return 4;
+  }
   /** invoke `processor.announceParityRegion(this, indexInParent)` */
-  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
+  public announceToCurveProcessor(
+    processor: RecursiveCurveProcessor,
+    indexInParent: number = -1
+  ): void {
     return processor.announceParityRegion(this, indexInParent);
   }
   /** Return a deep copy. */
@@ -82,8 +92,7 @@ export class ParityRegion extends CurveCollection {
     let child;
     for (child of this.children) {
       const childClone = child.clone();
-      if (childClone instanceof Loop)
-        clone.children.push(childClone);
+      if (childClone instanceof Loop) clone.children.push(childClone);
     }
     return clone;
   }
@@ -93,13 +102,14 @@ export class ParityRegion extends CurveCollection {
     let child;
     for (child of this.children) {
       const childStrokes = child.cloneStroked(options) as Loop;
-      if (childStrokes)
-        clone.children.push(childStrokes);
+      if (childStrokes) clone.children.push(childStrokes);
     }
     return clone;
   }
   /** Create a new empty parity region. */
-  public cloneEmptyPeer(): ParityRegion { return new ParityRegion(); }
+  public cloneEmptyPeer(): ParityRegion {
+    return new ParityRegion();
+  }
   /** Add `child` to this parity region.
    * * any child type other than `Loop` is ignored.
    */
@@ -112,8 +122,7 @@ export class ParityRegion extends CurveCollection {
   }
   /** Get child `i` by index. */
   public getChild(i: number): Loop | undefined {
-    if (i < this._children.length)
-      return this._children[i];
+    if (i < this._children.length) return this._children[i];
     return undefined;
   }
   /** Second step of double dispatch:  call `handler.handleRegion(this)` */

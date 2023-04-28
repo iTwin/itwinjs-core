@@ -20,7 +20,7 @@ A [RepositoryLink](./BisCore.ecschema.md#repositorylink) represents a link to an
 
 An [ExternalSource](./BisCore.ecschema.md#externalsource) represents an `Information Container` within a repository. External repositories are referenced by [RepositoryLink](#repositorylink) instances in a BIS repository.
 
-Some external repositories do not have any data-container concept and therefore, their corresponding [RepositoryLink](#repositorylink) instances will only be associated with one  `ExternalSource` instance.
+Some external repositories do not have any data-container concept and therefore, their corresponding [RepositoryLink](#repositorylink) instances will only be associated with one `ExternalSource` instance.
 
 ### ExternalSourceAttachment
 
@@ -28,7 +28,7 @@ An [ExternalSourceAttachment](./BisCore.ecschema.md#externalsourceattachment) en
 
 `ExternalSourceAttachment` instances are owned by a `ExternalSource` at the higher level of the hierarchy via the [ExternalSourceOwnsAttachments](./BisCore.ecschema.md#externalsourceownsattachments) relationship.
 
-An instance of `ExternalSourceAttachment` also captures any transformations needed - in the form of translation, scale or rotation - relative to the  `ExternalSource` attaching it.
+An instance of `ExternalSourceAttachment` also captures any transformations needed - in the form of translation, scale or rotation - relative to the `ExternalSource` attaching it.
 
 ### ExternalSourceAspect
 
@@ -38,7 +38,7 @@ Provenance for a specific Element is captured in terms of:
 
 - An `Identifier` in the source repository (required).
 - A `Kind` of object within the source repository.
-- A reference to another Element that represents a `Scope` in which the combination of `Identifier` and `Kind` is *typically* unique. This referenced Element is usually a [RepositoryLink](#repositorylink) or an [InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement). Note that uniqueness among these three attributes in light of a single Element is not enforced by BIS repositories.
+- A reference to another Element that represents a `Scope` in which the combination of `Identifier` and `Kind` is _typically_ unique. This referenced Element is usually a [RepositoryLink](#repositorylink) or an [InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement). Note that uniqueness among these three attributes in light of a single Element is not enforced by BIS repositories.
 - A reference to an [ExternalSource](#externalsource) from which the Element originated (required).
 - An optional `Version` of the Element's data captured in the BIS repository.
 - An optional `Checksum` - a cryptographic hash (any algorithm) - of the Element's data captured in the BIS repository.
@@ -71,5 +71,6 @@ The following instance diagram shows an example of a hierarchy of `ExternalSourc
 ![ExternalSources tree](../guide/media/external-sources-synclink.png)
 
 ---
+
 | Back to: [Core domains](./core-domains.md)
 |:---

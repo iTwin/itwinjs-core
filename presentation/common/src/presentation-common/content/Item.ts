@@ -9,7 +9,14 @@
 import { ClassInfo, InstanceKey } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
 import { ValuesDictionary } from "../Utils";
-import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
+import {
+  DisplayValue,
+  DisplayValueJSON,
+  DisplayValuesMapJSON,
+  Value,
+  ValueJSON,
+  ValuesMapJSON,
+} from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -73,8 +80,16 @@ export class Item {
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
    */
-  public constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined,
-    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
+  public constructor(
+    primaryKeys: InstanceKey[],
+    label: string | LabelDefinition,
+    imageId: string,
+    classInfo: ClassInfo | undefined,
+    values: ValuesDictionary<Value>,
+    displayValues: ValuesDictionary<DisplayValue>,
+    mergedFieldNames: string[],
+    extendedData?: { [key: string]: any }
+  ) {
     this.primaryKeys = primaryKeys;
     this.imageId = imageId; // eslint-disable-line deprecation/deprecation
     this.classInfo = classInfo;
@@ -82,7 +97,10 @@ export class Item {
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
     this.extendedData = extendedData;
-    this.label = (typeof label === "string") ? LabelDefinition.fromLabelString(label) : label;
+    this.label =
+      typeof label === "string"
+        ? LabelDefinition.fromLabelString(label)
+        : label;
   }
 
   /**
@@ -100,18 +118,20 @@ export class Item {
       // eslint-disable-next-line deprecation/deprecation
       values: Value.toJSON(this.values) as ValuesMapJSON,
       // eslint-disable-next-line deprecation/deprecation
-      displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
+      displayValues: DisplayValue.toJSON(
+        this.displayValues
+      ) as DisplayValuesMapJSON,
       // eslint-disable-next-line deprecation/deprecation
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
 
   /** Deserialize [[Item]] from JSON */
-  public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
-    if (!json)
-      return undefined;
-    if (typeof json === "string")
-      return JSON.parse(json, Item.reviver);
+  public static fromJSON(
+    json: ItemJSON | string | undefined
+  ): Item | undefined {
+    if (!json) return undefined;
+    if (typeof json === "string") return JSON.parse(json, Item.reviver);
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {

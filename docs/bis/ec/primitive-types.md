@@ -3,7 +3,8 @@
 - binary – An array of bytes
 - boolean (bool) – A boolean value
 - dateTime – A DateTime value.
-  - Can store a Date, a Time, or a Date and Time.  Use the CoreCustomAttribute [DateTimeInfo](../domains/corecustomattributes.ecschema.md#datetimeinfo) to identify which component of time a DateTime the value is storing and if it is in UTC or Local timezone.
+
+  - Can store a Date, a Time, or a Date and Time. Use the CoreCustomAttribute [DateTimeInfo](../domains/corecustomattributes.ecschema.md#datetimeinfo) to identify which component of time a DateTime the value is storing and if it is in UTC or Local timezone.
 
   ```xml
   <DateTimeInfo xmlns="CoreCustomAttributes.01.00.02">

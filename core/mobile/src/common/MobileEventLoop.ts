@@ -28,5 +28,5 @@ export class MobileEventLoop {
     }
   }
 
-  private static _idleHandler() { }
+  private static _idleHandler() {}
 }

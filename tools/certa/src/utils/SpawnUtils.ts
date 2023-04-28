@@ -13,13 +13,22 @@ import * as inspector from "inspector";
  * @param env Environment vars to override in the child process.
  * @param useIpc Whether to enable an IPC channel when spawning.
  */
-export function spawnChildProcess(command: string, args: ReadonlyArray<string>, env?: NodeJS.ProcessEnv, useIpc = false): ChildProcess {
+export function spawnChildProcess(
+  command: string,
+  args: ReadonlyArray<string>,
+  env?: NodeJS.ProcessEnv,
+  useIpc = false
+): ChildProcess {
   const childEnv = { ...process.env, ...(env || {}) };
 
   // FIXME: We should be able to remove the useIpc param and just always enable it,
   // but it's not safe to spawn electron with IPC enabled until https://github.com/electron/electron/issues/17044 is fixed.
-  const stdio: StdioOptions = (useIpc) ? ["ipc", "pipe", "pipe"] : "pipe";
-  const childProcess = spawn(command, args, { stdio, cwd: process.cwd(), env: childEnv });
+  const stdio: StdioOptions = useIpc ? ["ipc", "pipe", "pipe"] : "pipe";
+  const childProcess = spawn(command, args, {
+    stdio,
+    cwd: process.cwd(),
+    env: childEnv,
+  });
   // For some reason, spawning using `stdio: "inherit"` results in some garbled output (for example, "✓" is printed as "ΓêÜ").
   // Using `stdio: "pipe"` and manually redirecting the output here seems to work though.
   childProcess.stdout!.on("data", (data: any) => process.stdout.write(data));
@@ -62,10 +71,14 @@ export async function relaunchInElectron(): Promise<number> {
   // '--debug' is not allowed in Electron and '--inspect' will automatically start a debugger,
   // so we use custom parameter to indicate what we want to start debugger ourselves.
   const debugIdx = args.indexOf("--debug");
-  if (debugIdx >= 0)
-    args[debugIdx] = "--debug-electron";
+  if (debugIdx >= 0) args[debugIdx] = "--debug-electron";
 
-  const child = spawnChildProcess(require("electron/index.js"), args, undefined, true);
+  const child = spawnChildProcess(
+    require("electron/index.js"),
+    args,
+    undefined,
+    true
+  );
   return onExitElectronApp(child);
 }
 
@@ -80,8 +93,7 @@ export async function relaunchInElectron(): Promise<number> {
  */
 export function startDebugger(port: number) {
   // Don't try to activate if there's already an active inspector.
-  if (inspector.url())
-    return;
+  if (inspector.url()) return;
 
   inspector.open(port, undefined, true);
 }

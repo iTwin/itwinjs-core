@@ -7,10 +7,24 @@ import { CompressedId64Set } from "@itwin/core-bentley";
 import { Vector3d } from "@itwin/core-geometry";
 import {
   Atmosphere,
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode, PlanarClipMaskSettings,
-  SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
+  BackgroundMapType,
+  ColorByName,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettingsProps,
+  GroundPlane,
+  PlanarClipMaskMode,
+  PlanarClipMaskSettings,
+  SkyGradient,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  ThematicDisplayMode,
 } from "@itwin/core-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import {
+  ContextRealityModelState,
+  DisplayStyle3dState,
+  IModelConnection,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("DisplayStyle", () => {
@@ -31,8 +45,7 @@ describe("DisplayStyle", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -71,30 +84,47 @@ describe("DisplayStyle", () => {
 
   it("should use iModel extents for thematic height range if unspecified", () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
-    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] } });
+    style.settings.applyOverrides({
+      thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] },
+    });
     expect(style.settings.thematic.range.low).to.equal(1);
     expect(style.settings.thematic.range.high).to.equal(100);
 
-    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height } });
-    expect(style.settings.thematic.range.low).to.equal(imodel.projectExtents.zLow);
-    expect(style.settings.thematic.range.high).to.equal(imodel.projectExtents.zHigh);
+    style.settings.applyOverrides({
+      thematic: { displayMode: ThematicDisplayMode.Height },
+    });
+    expect(style.settings.thematic.range.low).to.equal(
+      imodel.projectExtents.zLow
+    );
+    expect(style.settings.thematic.range.high).to.equal(
+      imodel.projectExtents.zHigh
+    );
 
-    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Slope } });
+    style.settings.applyOverrides({
+      thematic: { displayMode: ThematicDisplayMode.Slope },
+    });
     expect(style.settings.thematic.range.isNull).to.be.true;
   });
 
   it("should override selected settings", async () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
-    const test = (overrides: DisplayStyle3dSettingsProps, changed?: DisplayStyle3dSettingsProps) => {
+    const test = (
+      overrides: DisplayStyle3dSettingsProps,
+      changed?: DisplayStyle3dSettingsProps
+    ) => {
       const originalSettings = { ...style.settings.toJSON() };
       style.settings.applyOverrides(overrides);
       const output = style.settings.toJSON();
 
       const expected = { ...overrides, changed };
-      for (const key of Object.keys(expected) as Array<keyof DisplayStyle3dSettingsProps>)
+      for (const key of Object.keys(expected) as Array<
+        keyof DisplayStyle3dSettingsProps
+      >)
         expect(output[key]).to.deep.equal(expected[key]);
 
-      for (const key of Object.keys(output) as Array<keyof DisplayStyle3dSettingsProps>)
+      for (const key of Object.keys(output) as Array<
+        keyof DisplayStyle3dSettingsProps
+      >)
         if (undefined === expected[key])
           expect(output[key]).to.deep.equal(originalSettings[key]);
 
@@ -106,7 +136,10 @@ describe("DisplayStyle", () => {
         compareScheduleScripts(style, expected);
     };
 
-    function compareRealityModels(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
+    function compareRealityModels(
+      style3d: DisplayStyle3dState,
+      expected: DisplayStyle3dSettingsProps
+    ): void {
       const models: ContextRealityModelState[] = [];
       style3d.forEachRealityModel((model) => models.push(model));
       if (undefined !== expected.contextRealityModels) {
@@ -121,15 +154,29 @@ describe("DisplayStyle", () => {
           expect(a.description).to.equal(e.description);
           expect(a.treeRef).not.to.be.undefined;
 
-          expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
+          expect(undefined === a.classifiers).to.equal(
+            undefined === e.classifiers
+          );
           if (undefined !== a.classifiers && undefined !== e.classifiers)
             expect(a.classifiers.size).to.equal(e.classifiers.length);
 
-          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMask);
-          if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMask)
-            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
+          expect(undefined === a.planarClipMaskSettings).to.equal(
+            undefined === e.planarClipMask
+          );
+          if (
+            undefined !== a.planarClipMaskSettings &&
+            undefined !== e.planarClipMask
+          )
+            expect(
+              a.planarClipMaskSettings.equals(
+                PlanarClipMaskSettings.fromJSON(e.planarClipMask)
+              )
+            );
 
-          const foundIndex = style3d.settings.contextRealityModels.models.findIndex((x) => x.url === a.url);
+          const foundIndex =
+            style3d.settings.contextRealityModels.models.findIndex(
+              (x) => x.url === a.url
+            );
           expect(foundIndex).to.equal(i);
         }
         // Detach all.
@@ -140,10 +187,15 @@ describe("DisplayStyle", () => {
       }
     }
 
-    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
+    function compareScheduleScripts(
+      style3d: DisplayStyle3dState,
+      expected: DisplayStyle3dSettingsProps
+    ): void {
       if (undefined !== style3d.scheduleScript) {
         // eslint-disable-next-line deprecation/deprecation
-        expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
+        expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(
+          JSON.stringify(expected.scheduleScript)
+        );
       } else {
         // eslint-disable-next-line deprecation/deprecation
         expect(expected.scheduleScript).to.be.undefined;
@@ -157,65 +209,99 @@ describe("DisplayStyle", () => {
         providerData: { mapType: BackgroundMapType.Street },
         applyTerrain: true,
         terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
-        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 0 },
+        planarClipMask: {
+          mode: PlanarClipMaskMode.IncludeSubCategories,
+          modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
+          transparency: 0.5,
+          subCategoryOrElementIds: CompressedId64Set.compressArray([
+            "0x123",
+            "0x456",
+          ]),
+          priority: 0,
+        },
       },
     });
 
-    test({ planProjections: { "0x8": { elevation: 2, transparency: 0.25, overlay: true, enforceDisplayPriority: true } } });
+    test({
+      planProjections: {
+        "0x8": {
+          elevation: 2,
+          transparency: 0.25,
+          overlay: true,
+          enforceDisplayPriority: true,
+        },
+      },
+    });
     test({
       environment: {
-        sky: { ...SkyGradient.defaults.toJSON(), display: false, twoColor: true },
+        sky: {
+          ...SkyGradient.defaults.toJSON(),
+          display: false,
+          twoColor: true,
+        },
         ground: { ...GroundPlane.defaults.toJSON(), display: true },
-        atmosphere: { ...Atmosphere.Settings.defaults.toJSON(), display: false },
+        atmosphere: {
+          ...Atmosphere.Settings.defaults.toJSON(),
+          display: false,
+        },
       },
     });
 
     test({
-      contextRealityModels: [{
-        tilesetUrl: "bing.com",
-        name: "bing",
-        description: "an unpopular search engine",
-        classifiers: [{
-          modelId: "0x321",
-          expand: 1.5,
-          flags: {
-            inside: SpatialClassifierInsideDisplay.Dimmed,
-            outside: SpatialClassifierOutsideDisplay.On,
-            isVolumeClassifier: false,
-          },
+      contextRealityModels: [
+        {
+          tilesetUrl: "bing.com",
           name: "bing",
-          isActive: true,
-        }],
-      },
-      {
-        tilesetUrl: "google.com",
-        name: "google",
-        description: "a popular search engine",
-
-        classifiers: [{
-          modelId: "0x321",
-          expand: 1.5,
-          flags: {
-            inside: SpatialClassifierInsideDisplay.Dimmed,
-            outside: SpatialClassifierOutsideDisplay.On,
-            isVolumeClassifier: false,
-          },
+          description: "an unpopular search engine",
+          classifiers: [
+            {
+              modelId: "0x321",
+              expand: 1.5,
+              flags: {
+                inside: SpatialClassifierInsideDisplay.Dimmed,
+                outside: SpatialClassifierOutsideDisplay.On,
+                isVolumeClassifier: false,
+              },
+              name: "bing",
+              isActive: true,
+            },
+          ],
+        },
+        {
+          tilesetUrl: "google.com",
           name: "google",
-          isActive: true,
-        }],
-      },
+          description: "a popular search engine",
+
+          classifiers: [
+            {
+              modelId: "0x321",
+              expand: 1.5,
+              flags: {
+                inside: SpatialClassifierInsideDisplay.Dimmed,
+                outside: SpatialClassifierOutsideDisplay.On,
+                isVolumeClassifier: false,
+              },
+              name: "google",
+              isActive: true,
+            },
+          ],
+        },
       ],
     });
 
     test({
-      scheduleScript: [{
-        modelId: "0xadf",
-        realityModelUrl: "askjeeves.com",
-        elementTimelines: [{
-          batchId: 54,
-          elementIds: ["0x1", "0x2", "0x3", "0x4"],
-        }],
-      }],
+      scheduleScript: [
+        {
+          modelId: "0xadf",
+          realityModelUrl: "askjeeves.com",
+          elementTimelines: [
+            {
+              batchId: 54,
+              elementIds: ["0x1", "0x2", "0x3", "0x4"],
+            },
+          ],
+        },
+      ],
     });
 
     test({
@@ -242,44 +328,77 @@ describe("DisplayStyle", () => {
       },
     });
 
-    test({ planProjections: { "0x9": { elevation: 3, transparency: 0.75, overlay: true, enforceDisplayPriority: true } } });
+    test({
+      planProjections: {
+        "0x9": {
+          elevation: 3,
+          transparency: 0.75,
+          overlay: true,
+          enforceDisplayPriority: true,
+        },
+      },
+    });
     test({
       environment: {
-        sky: { ...SkyGradient.defaults.toJSON(), display: true, twoColor: true },
+        sky: {
+          ...SkyGradient.defaults.toJSON(),
+          display: true,
+          twoColor: true,
+        },
         ground: { ...GroundPlane.defaults.toJSON(), display: false },
-        atmosphere: { ...Atmosphere.Settings.defaults.toJSON(), display: false },
+        atmosphere: {
+          ...Atmosphere.Settings.defaults.toJSON(),
+          display: false,
+        },
       },
     });
 
     test({
-      contextRealityModels: [{
-        tilesetUrl: "google.com",
-        name: "google",
-        description: "a popular search engine",
-        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 1024 },
-        classifiers: [{
-          modelId: "0x123",
-          expand: 0.5,
-          flags: {
-            inside: SpatialClassifierInsideDisplay.Off,
-            outside: SpatialClassifierOutsideDisplay.Dimmed,
-            isVolumeClassifier: true,
-          },
+      contextRealityModels: [
+        {
+          tilesetUrl: "google.com",
           name: "google",
-          isActive: false,
-        }],
-      }],
+          description: "a popular search engine",
+          planarClipMask: {
+            mode: PlanarClipMaskMode.IncludeSubCategories,
+            modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
+            transparency: 0.5,
+            subCategoryOrElementIds: CompressedId64Set.compressArray([
+              "0x123",
+              "0x456",
+            ]),
+            priority: 1024,
+          },
+          classifiers: [
+            {
+              modelId: "0x123",
+              expand: 0.5,
+              flags: {
+                inside: SpatialClassifierInsideDisplay.Off,
+                outside: SpatialClassifierOutsideDisplay.Dimmed,
+                isVolumeClassifier: true,
+              },
+              name: "google",
+              isActive: false,
+            },
+          ],
+        },
+      ],
     });
 
     test({
-      scheduleScript: [{
-        modelId: "0xfda",
-        realityModelUrl: "altavista.com",
-        elementTimelines: [{
-          batchId: 45,
-          elementIds: ["0xa", "0xb"],
-        }],
-      }],
+      scheduleScript: [
+        {
+          modelId: "0xfda",
+          realityModelUrl: "altavista.com",
+          elementTimelines: [
+            {
+              batchId: 45,
+              elementIds: ["0xa", "0xb"],
+            },
+          ],
+        },
+      ],
     });
 
     // Also, while we have one constructed, test creation with reality model and script.

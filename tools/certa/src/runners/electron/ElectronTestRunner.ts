@@ -20,9 +20,17 @@ export class ElectronTestRunner {
     // If we are running in electron, we need to append any chromium CLI switches ***before*** the 'ready' event of the app module is emitted.
     const { app } = require("electron");
     if (config.debug)
-      app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
+      app.commandLine.appendSwitch(
+        "remote-debugging-port",
+        String(config.ports.frontendDebugging)
+      );
 
-    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
+    const timeout = new Promise((_resolve, reject) =>
+      setTimeout(
+        () => reject("Timed out after 2 minutes when starting electron"),
+        2 * 60 * 1000
+      )
+    );
     await Promise.race([app.whenReady(), timeout]);
   }
 
@@ -43,15 +51,17 @@ export class ElectronTestRunner {
     const exitElectronApp = (exitCode: number) => {
       // Passing exit code to parent process doesn't seem to work anymore with electron 10 - sending message with status instead
       // See note in SpawnUtils.onExitElectronApp
-      if (process.send)
-        process.send({ exitCode });
+      if (process.send) process.send({ exitCode });
       app.exit(exitCode);
     };
 
-    ipcMain.on("certa-console", async (e: any, op: "log" | "error" | "dir", ...args: any[]) => {
-      console[op](...args);
-      e.returnValue = undefined; // ipcRenderer.sendSync() will hang without this
-    });
+    ipcMain.on(
+      "certa-console",
+      async (e: any, op: "log" | "error" | "dir", ...args: any[]) => {
+        console[op](...args);
+        e.returnValue = undefined; // ipcRenderer.sendSync() will hang without this
+      }
+    );
 
     ipcMain.on("certa-done", (_e: any, count: number) => {
       rendererWindow.webContents.once("destroyed", () => {
@@ -75,13 +85,16 @@ export class ElectronTestRunner {
 
     rendererWindow.webContents.once("did-finish-load", async () => {
       const initScriptPath = require.resolve("./initElectronTests.js");
-      const startTests = async () => rendererWindow.webContents.executeJavaScript(`
+      const startTests = async () =>
+        rendererWindow.webContents.executeJavaScript(`
         var _CERTA_CONFIG = ${JSON.stringify(config)};
         require(${JSON.stringify(initScriptPath)});
         startCertaTests(${JSON.stringify(config.testBundle)});`);
 
       await startTests();
     });
-    await rendererWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
+    await rendererWindow.loadFile(
+      path.join(__dirname, "../../../public/index.html")
+    );
   }
 }

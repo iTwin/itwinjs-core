@@ -70,8 +70,12 @@ export class PolyfaceData {
   public taggedNumericData: TaggedNumericData | undefined;
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
-  public get twoSided(): boolean { return this._twoSided; }
-  public set twoSided(value: boolean) { this._twoSided = value; }
+  public get twoSided(): boolean {
+    return this._twoSided;
+  }
+  public set twoSided(value: boolean) {
+    this._twoSided = value;
+  }
 
   /** set the `taggedNumericData` member */
   public setTaggedNumericData(data: TaggedNumericData | undefined) {
@@ -79,20 +83,39 @@ export class PolyfaceData {
   }
   private _expectedClosure: number;
   /** boolean tag indicating if the facets are viewable from the back */
-  public get expectedClosure(): number { return this._expectedClosure; }
-  public set expectedClosure(value: number) { this._expectedClosure = value; }
+  public get expectedClosure(): number {
+    return this._expectedClosure;
+  }
+  public set expectedClosure(value: number) {
+    this._expectedClosure = value;
+  }
   /** Constructor for facets.
    *   * The various params control whether respective arrays are to be allocated.
    *   * If arrayData is provided, all other params are IGNORED.
    *   *
    */
-  public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false) {
+  public constructor(
+    needNormals: boolean = false,
+    needParams: boolean = false,
+    needColors: boolean = false,
+    twoSided: boolean = false
+  ) {
     this.face = [];
     this.point = new GrowableXYZArray();
-    this.pointIndex = []; this.edgeVisible = [];
-    if (needNormals) { this.normal = new GrowableXYZArray(); this.normalIndex = []; }
-    if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
-    if (needColors) { this.color = []; this.colorIndex = []; }
+    this.pointIndex = [];
+    this.edgeVisible = [];
+    if (needNormals) {
+      this.normal = new GrowableXYZArray();
+      this.normalIndex = [];
+    }
+    if (needParams) {
+      this.param = new GrowableXYArray();
+      this.paramIndex = [];
+    }
+    if (needColors) {
+      this.color = [];
+      this.colorIndex = [];
+    }
     this._twoSided = twoSided;
     this._expectedClosure = 0;
   }
@@ -105,95 +128,138 @@ export class PolyfaceData {
     result.face = this.face.slice();
     result.twoSided = this.twoSided;
     result.expectedClosure = this.expectedClosure;
-    if (this.normal)
-      result.normal = this.normal.clone();
-    if (this.param)
-      result.param = this.param.clone();
-    if (this.color)
-      result.color = this.color.slice();
+    if (this.normal) result.normal = this.normal.clone();
+    if (this.param) result.param = this.param.clone();
+    if (this.color) result.color = this.color.slice();
 
-    if (this.normalIndex)
-      result.normalIndex = this.normalIndex.slice();
-    if (this.paramIndex)
-      result.paramIndex = this.paramIndex.slice();
-    if (this.colorIndex)
-      result.colorIndex = this.colorIndex.slice();
-    if (this.auxData)
-      result.auxData = this.auxData.clone();
-    if (this.taggedNumericData){
+    if (this.normalIndex) result.normalIndex = this.normalIndex.slice();
+    if (this.paramIndex) result.paramIndex = this.paramIndex.slice();
+    if (this.colorIndex) result.colorIndex = this.colorIndex.slice();
+    if (this.auxData) result.auxData = this.auxData.clone();
+    if (this.taggedNumericData) {
       result.taggedNumericData = this.taggedNumericData.clone();
     }
     return result;
   }
   /** Test for equal indices and nearly equal coordinates */
   public isAlmostEqual(other: PolyfaceData): boolean {
-    if (!GrowableXYZArray.isAlmostEqual(this.point, other.point))
-      return false;
+    if (!GrowableXYZArray.isAlmostEqual(this.point, other.point)) return false;
     if (!NumberArray.isExactEqual(this.pointIndex, other.pointIndex))
       return false;
 
-    if (!GrowableXYZArray.isAlmostEqual(this.normal, other.normal)) return false;
-    if (!NumberArray.isExactEqual(this.normalIndex, other.normalIndex)) return false;
+    if (!GrowableXYZArray.isAlmostEqual(this.normal, other.normal))
+      return false;
+    if (!NumberArray.isExactEqual(this.normalIndex, other.normalIndex))
+      return false;
 
     if (!GrowableXYArray.isAlmostEqual(this.param, other.param)) return false;
-    if (!NumberArray.isExactEqual(this.paramIndex, other.paramIndex)) return false;
+    if (!NumberArray.isExactEqual(this.paramIndex, other.paramIndex))
+      return false;
 
     if (!NumberArray.isExactEqual(this.color, other.color)) return false;
-    if (!NumberArray.isExactEqual(this.colorIndex, other.colorIndex)) return false;
-
-    if (!NumberArray.isExactEqual(this.edgeVisible, other.edgeVisible)) return false;
-    if (!PolyfaceAuxData.isAlmostEqual(this.auxData, other.auxData)) return false;
-
-    if (this.twoSided !== other.twoSided)
+    if (!NumberArray.isExactEqual(this.colorIndex, other.colorIndex))
       return false;
 
-    if (this.expectedClosure !== other.expectedClosure)
+    if (!NumberArray.isExactEqual(this.edgeVisible, other.edgeVisible))
       return false;
-    if (!TaggedNumericData.areAlmostEqual(this.taggedNumericData, other.taggedNumericData))
+    if (!PolyfaceAuxData.isAlmostEqual(this.auxData, other.auxData))
+      return false;
+
+    if (this.twoSided !== other.twoSided) return false;
+
+    if (this.expectedClosure !== other.expectedClosure) return false;
+    if (
+      !TaggedNumericData.areAlmostEqual(
+        this.taggedNumericData,
+        other.taggedNumericData
+      )
+    )
       return false;
     return true;
   }
   /** Ask if normals are required in this mesh. */
-  public get requireNormals(): boolean { return undefined !== this.normal; }
+  public get requireNormals(): boolean {
+    return undefined !== this.normal;
+  }
   /** Get the point count */
-  public get pointCount() { return this.point.length; }
+  public get pointCount() {
+    return this.point.length;
+  }
   /** Get the normal count */
-  public get normalCount() { return this.normal ? this.normal.length : 0; }
+  public get normalCount() {
+    return this.normal ? this.normal.length : 0;
+  }
   /** Get the param count */
-  public get paramCount() { return this.param ? this.param.length : 0; }
+  public get paramCount() {
+    return this.param ? this.param.length : 0;
+  }
   /** Get the color count */
-  public get colorCount() { return this.color ? this.color.length : 0; }
+  public get colorCount() {
+    return this.color ? this.color.length : 0;
+  }
   /** Get the index count.  Note that there is one count, and all index arrays (point, normal, param, color) must match */
-  public get indexCount() { return this.pointIndex.length; }  // ALWAYS INDEXED ... all index vectors must have same length.
+  public get indexCount() {
+    return this.pointIndex.length;
+  } // ALWAYS INDEXED ... all index vectors must have same length.
   /** Get the number of faces.
    * * Note that a "face" is not a facet.
    * * A "face" is a subset of facets grouped for application purposes.
    */
-  public get faceCount() { return this.face.length; }
+  public get faceCount() {
+    return this.face.length;
+  }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
   public getPoint(i: number, out?: Point3d): Point3d | undefined {
     return this.point.getPoint3dAtCheckedPointIndex(i, out);
   }
   /** return indexed normal. This is the COPY to the normal, not a reference. */
-  public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i) : undefined; }
+  public getNormal(i: number): Vector3d | undefined {
+    return this.normal
+      ? this.normal.getVector3dAtCheckedVectorIndex(i)
+      : undefined;
+  }
   /** return indexed param. This is the COPY of the coordinates, not a reference. */
-  public getParam(i: number): Point2d | undefined { return this.param ? this.param.getPoint2dAtCheckedPointIndex(i) : undefined; }
+  public getParam(i: number): Point2d | undefined {
+    return this.param ? this.param.getPoint2dAtCheckedPointIndex(i) : undefined;
+  }
   /** return indexed color */
-  public getColor(i: number): number { return this.color ? this.color[i] : 0; }
+  public getColor(i: number): number {
+    return this.color ? this.color[i] : 0;
+  }
   /** return indexed visibility */
-  public getEdgeVisible(i: number): boolean { return this.edgeVisible[i]; }
+  public getEdgeVisible(i: number): boolean {
+    return this.edgeVisible[i];
+  }
   /** Copy the contents (not pointer) of point[i] into dest. */
-  public copyPointTo(i: number, dest: Point3d): void { this.point.getPoint3dAtUncheckedPointIndex(i, dest); }
+  public copyPointTo(i: number, dest: Point3d): void {
+    this.point.getPoint3dAtUncheckedPointIndex(i, dest);
+  }
   /** Copy the contents (not pointer) of normal[i] into dest. */
-  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.getVector3dAtCheckedVectorIndex(i, dest); }
+  public copyNormalTo(i: number, dest: Vector3d): void {
+    if (this.normal) this.normal.getVector3dAtCheckedVectorIndex(i, dest);
+  }
   /** Copy the contents (not pointer) of param[i] into dest. */
-  public copyParamTo(i: number, dest: Point2d): void { if (this.param) this.param.getPoint2dAtCheckedPointIndex(i, dest); }
+  public copyParamTo(i: number, dest: Point2d): void {
+    if (this.param) this.param.getPoint2dAtCheckedPointIndex(i, dest);
+  }
   /** test if normal at a specified index matches uv */
-  public isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean {
+  public isAlmostEqualParamIndexUV(
+    index: number,
+    u: number,
+    v: number
+  ): boolean {
     if (this.param !== undefined && index >= 0 && index < this.param.length)
-      return Geometry.isSameCoordinate(u, this.param.getXAtUncheckedPointIndex(index))
-        && Geometry.isSameCoordinate(v, this.param.getYAtUncheckedPointIndex(index));
+      return (
+        Geometry.isSameCoordinate(
+          u,
+          this.param.getXAtUncheckedPointIndex(index)
+        ) &&
+        Geometry.isSameCoordinate(
+          v,
+          this.param.getYAtUncheckedPointIndex(index)
+        )
+      );
     return false;
   }
   /**
@@ -207,13 +273,22 @@ export class PolyfaceData {
    * @param index1 end index (one beyond last data accessed0 in other's index arrays
    * @param numWrap number of points to replicate as wraparound.
    */
-  public gatherIndexedData(other: PolyfaceData, index0: number, index1: number, numWrap: number) {
+  public gatherIndexedData(
+    other: PolyfaceData,
+    index0: number,
+    index1: number,
+    numWrap: number
+  ) {
     const numEdge = index1 - index0;
     const numTotal = numEdge + numWrap;
     this.resizeAllDataArrays(numTotal);
     // copy wrapped points
     for (let i = 0; i < numEdge; i++)
-      this.point.transferFromGrowableXYZArray(i, other.point, other.pointIndex[index0 + i]);
+      this.point.transferFromGrowableXYZArray(
+        i,
+        other.point,
+        other.pointIndex[index0 + i]
+      );
     for (let i = 0; i < numWrap; i++)
       this.point.transferFromGrowableXYZArray(numEdge + i, this.point, i);
 
@@ -230,7 +305,11 @@ export class PolyfaceData {
 
     if (this.normal && this.normalIndex && other.normal && other.normalIndex) {
       for (let i = 0; i < numEdge; i++)
-        this.normal.transferFromGrowableXYZArray(i, other.normal, other.normalIndex[index0 + i]);
+        this.normal.transferFromGrowableXYZArray(
+          i,
+          other.normal,
+          other.normalIndex[index0 + i]
+        );
       for (let i = 0; i < numWrap; i++)
         this.normal.transferFromGrowableXYZArray(numEdge + i, this.normal, i);
 
@@ -242,7 +321,11 @@ export class PolyfaceData {
 
     if (this.param && this.paramIndex && other.param && other.paramIndex) {
       for (let i = 0; i < numEdge; i++)
-        this.param.transferFromGrowableXYArray(i, other.param, other.paramIndex[index0 + i]);
+        this.param.transferFromGrowableXYArray(
+          i,
+          other.param,
+          other.paramIndex[index0 + i]
+        );
       for (let i = 0; i < numWrap; i++)
         this.param.transferFromGrowableXYArray(numEdge + i, this.param, i);
 
@@ -255,16 +338,23 @@ export class PolyfaceData {
     if (this.color && this.colorIndex && other.color && other.colorIndex) {
       for (let i = 0; i < numEdge; i++)
         this.color[i] = other.color[other.colorIndex[index0 + i]];
-      for (let i = 0; i < numWrap; i++)
-        this.color[numEdge + i] = this.color[i];
+      for (let i = 0; i < numWrap; i++) this.color[numEdge + i] = this.color[i];
 
       for (let i = 0; i < numEdge; i++)
         this.colorIndex[i] = other.colorIndex[index0 + i];
       for (let i = 0; i < numWrap; i++)
         this.colorIndex[numEdge + i] = this.colorIndex[i];
     }
-    if (this.auxData && other.auxData && this.auxData.channels.length === other.auxData.channels.length) {
-      for (let iChannel = 0; iChannel < this.auxData.channels.length; iChannel++) {
+    if (
+      this.auxData &&
+      other.auxData &&
+      this.auxData.channels.length === other.auxData.channels.length
+    ) {
+      for (
+        let iChannel = 0;
+        iChannel < this.auxData.channels.length;
+        iChannel++
+      ) {
         const thisChannel = this.auxData.channels[iChannel];
         const otherChannel = other.auxData.channels[iChannel];
         const blockSize = thisChannel.entriesPerValue;
@@ -273,9 +363,19 @@ export class PolyfaceData {
             const thisData = thisChannel.data[iData];
             const otherData = otherChannel.data[iData];
             for (let i = 0; i < numEdge; i++)
-              thisData.copyValues(otherData, i, other.auxData.indices[index0 + i], blockSize);
+              thisData.copyValues(
+                otherData,
+                i,
+                other.auxData.indices[index0 + i],
+                blockSize
+              );
             for (let i = 0; i < numWrap; i++)
-              thisData.copyValues(thisData, other.auxData.indices[numEdge + i], i, blockSize);
+              thisData.copyValues(
+                thisData,
+                other.auxData.indices[numEdge + i],
+                i,
+                blockSize
+              );
           }
         }
       }
@@ -285,7 +385,9 @@ export class PolyfaceData {
         this.auxData.indices[numEdge + i] = this.auxData.indices[i];
     }
   }
-  private static trimArray(data: any[] | undefined, length: number) { if (data && length < data.length) data.length = length; }
+  private static trimArray(data: any[] | undefined, length: number) {
+    if (data && length < data.length) data.length = length;
+  }
   /** Trim all index arrays to stated length.
    * * This is called by PolyfaceBuilder to clean up after an aborted construction sequence.
    */
@@ -313,12 +415,12 @@ export class PolyfaceData {
         while (this.normal.length < length) this.normal.push(Vector3d.create());
       if (this.param)
         while (this.param.length < length) this.param.push(Point2d.create());
-      if (this.color)
-        while (this.color.length < length) this.color.push(0);
+      if (this.color) while (this.color.length < length) this.color.push(0);
       if (this.auxData) {
         for (const channel of this.auxData.channels) {
           for (const channelData of channel.data) {
-            while (channelData.values.length < length * channel.entriesPerValue) channelData.values.push(0);
+            while (channelData.values.length < length * channel.entriesPerValue)
+              channelData.values.push(0);
           }
         }
       }
@@ -352,7 +454,10 @@ export class PolyfaceData {
    * *
    */
   public reverseIndices(facetStartIndex?: number[]) {
-    if (facetStartIndex && PolyfaceData.isValidFacetStartIndexArray(facetStartIndex)) {
+    if (
+      facetStartIndex &&
+      PolyfaceData.isValidFacetStartIndexArray(facetStartIndex)
+    ) {
       PolyfaceData.reverseIndices(facetStartIndex, this.pointIndex, true);
       if (this.normalIndex !== this.pointIndex)
         PolyfaceData.reverseIndices(facetStartIndex, this.normalIndex, true);
@@ -371,20 +476,44 @@ export class PolyfaceData {
    * *
    */
   public reverseIndicesSingleFacet(facetId: number, facetStartIndex: number[]) {
-    PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.pointIndex, true);
+    PolyfaceData.reverseIndicesSingleFacet(
+      facetId,
+      facetStartIndex,
+      this.pointIndex,
+      true
+    );
     if (this.normalIndex !== this.pointIndex)
-      PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.normalIndex, true);
+      PolyfaceData.reverseIndicesSingleFacet(
+        facetId,
+        facetStartIndex,
+        this.normalIndex,
+        true
+      );
     if (this.paramIndex !== this.pointIndex)
-      PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.paramIndex, true);
+      PolyfaceData.reverseIndicesSingleFacet(
+        facetId,
+        facetStartIndex,
+        this.paramIndex,
+        true
+      );
     if (this.colorIndex !== this.pointIndex)
-      PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.colorIndex, true);
-    PolyfaceData.reverseIndicesSingleFacet(facetId, facetStartIndex, this.edgeVisible, false);
+      PolyfaceData.reverseIndicesSingleFacet(
+        facetId,
+        facetStartIndex,
+        this.colorIndex,
+        true
+      );
+    PolyfaceData.reverseIndicesSingleFacet(
+      facetId,
+      facetStartIndex,
+      this.edgeVisible,
+      false
+    );
   }
 
   /** Scale all the normals by -1 */
   public reverseNormals() {
-    if (this.normal)
-      this.normal.scaleInPlace(-1.0);
+    if (this.normal) this.normal.scaleInPlace(-1.0);
   }
   /** Apply `transform` to point and normal arrays and to auxData.
    * * IMPORTANT This base class is just a data carrier.  It does not know if the index order and normal directions have special meaning.
@@ -394,9 +523,13 @@ export class PolyfaceData {
     this.point.multiplyTransformInPlace(transform);
 
     if (this.normal && !transform.matrix.isIdentity)
-      this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
+      this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(
+        transform.matrix
+      );
 
-    return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
+    return (
+      undefined === this.auxData || this.auxData.tryTransformInPlace(transform)
+    );
   }
   /**
    * * Search for duplicates within points, normals, params, and colors.
@@ -404,19 +537,25 @@ export class PolyfaceData {
    * * revise all indexing for the relocated data.
    */
   public compress() {
-    const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point);
+    const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(
+      this.point
+    );
     this.point = packedPoints.growablePackedPoints!;
     packedPoints.updateIndices(this.pointIndex);
     //  compressUnusedGrowableXYZArray(this.point, this.pointIndex);
 
     if (this.normalIndex && this.normal) {
-      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal);
+      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(
+        this.normal
+      );
       this.normal = packedNormals.growablePackedPoints!;
       packedNormals.updateIndices(this.normalIndex);
     }
 
     if (this.paramIndex && this.param) {
-      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param);
+      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(
+        this.param
+      );
       this.param = packedParams.growablePackedPoints;
       packedParams.updateIndices(this.paramIndex);
     }
@@ -434,21 +573,24 @@ export class PolyfaceData {
    * * Each entry must be strictly smaller than the one that follows.
    * @param facetStartIndex array of facetStart data.  facet `i` has indices at `facetsStartIndex[i]` to (one before) `facetStartIndex[i+1]`
    */
-  public static isValidFacetStartIndexArray(facetStartIndex: number[]): boolean {
+  public static isValidFacetStartIndexArray(
+    facetStartIndex: number[]
+  ): boolean {
     // facetStartIndex for empty facets has a single entry "0" -- empty array is not allowed
-    if (facetStartIndex.length === 0)
-      return false;
+    if (facetStartIndex.length === 0) return false;
     for (let i = 0; i + 1 < facetStartIndex.length; i++)
-      if (facetStartIndex[i] >= facetStartIndex[i + 1])
-        return false;
+      if (facetStartIndex[i] >= facetStartIndex[i + 1]) return false;
     return true;
   }
   /** Reverse data in entire facet indexing arrays.
    * * parameterized over type T so non-number data -- e.g. boolean visibility flags -- can be reversed.
    */
-  public static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean {
-    if (!indices || indices.length === 0)
-      return true;  // empty case
+  public static reverseIndices<T>(
+    facetStartIndex: number[],
+    indices: T[] | undefined,
+    preserveStart: boolean
+  ): boolean {
+    if (!indices || indices.length === 0) return true; // empty case
     if (indices.length > 0) {
       if (facetStartIndex[facetStartIndex.length - 1] === indices.length) {
         for (let i = 0; i + 1 < facetStartIndex.length; i++) {
@@ -457,7 +599,8 @@ export class PolyfaceData {
           if (preserveStart) {
             // leave [index0] as is so reversed facet starts at same vertex
             while (index1 > index0 + 2) {
-              index1--; index0++;
+              index1--;
+              index0++;
               const a = indices[index0];
               indices[index0] = indices[index1];
               indices[index1] = a;
@@ -482,18 +625,26 @@ export class PolyfaceData {
   /** Reverse data in entire facet indexing arrays.
    * * parameterized over type T so non-number data -- e.g. boolean visibility flags -- can be reversed.
    */
-  public static reverseIndicesSingleFacet<T>(facetId: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean {
-    if (!indices || indices.length === 0)
-      return true;  // empty case
+  public static reverseIndicesSingleFacet<T>(
+    facetId: number,
+    facetStartIndex: number[],
+    indices: T[] | undefined,
+    preserveStart: boolean
+  ): boolean {
+    if (!indices || indices.length === 0) return true; // empty case
     if (indices.length > 0) {
-      if (facetStartIndex[facetStartIndex.length - 1] === indices.length
-        && facetId >= 0 && facetId + 1 < facetStartIndex.length) {
+      if (
+        facetStartIndex[facetStartIndex.length - 1] === indices.length &&
+        facetId >= 0 &&
+        facetId + 1 < facetStartIndex.length
+      ) {
         let index0 = facetStartIndex[facetId];
         let index1 = facetStartIndex[facetId + 1];
         if (preserveStart) {
           // leave [index0] as is so reversed facet starts at same vertex
           while (index1 > index0 + 2) {
-            index1--; index0++;
+            index1--;
+            index0++;
             const a = indices[index0];
             indices[index0] = indices[index1];
             indices[index1] = a;

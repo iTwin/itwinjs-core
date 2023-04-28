@@ -7,14 +7,15 @@ import { expect } from "chai";
 import { IconSpecUtilities } from "../../appui-abstract/utils/IconSpecUtilities";
 
 describe("IconSpecUtilities", () => {
-
   it("should correctly create iconSpec for svg", () => {
     const iconSpec = IconSpecUtilities.createSvgIconSpec("test");
     expect(iconSpec).to.eq(`${IconSpecUtilities.SVG_PREFIX}test`);
   });
 
   it("should correctly return svg source from iconSpec", () => {
-    const svgSource = IconSpecUtilities.getSvgSource(`${IconSpecUtilities.SVG_PREFIX}test`);
+    const svgSource = IconSpecUtilities.getSvgSource(
+      `${IconSpecUtilities.SVG_PREFIX}test`
+    );
     expect(svgSource).to.eq("test");
   });
 
@@ -29,7 +30,9 @@ describe("IconSpecUtilities", () => {
   });
 
   it("should correctly return WebSvg source from iconSpec", () => {
-    const webSvgSource = IconSpecUtilities.getWebComponentSource(`${IconSpecUtilities.WEB_COMPONENT_PREFIX}test`);
+    const webSvgSource = IconSpecUtilities.getWebComponentSource(
+      `${IconSpecUtilities.WEB_COMPONENT_PREFIX}test`
+    );
     expect(webSvgSource).to.eq("test");
   });
 

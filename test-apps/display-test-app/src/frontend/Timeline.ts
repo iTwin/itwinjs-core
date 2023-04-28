@@ -45,10 +45,19 @@ class SolarTimelineProvider {
     let cartoCenter;
     if (vp.iModel.isGeoLocated) {
       const projectExtents = vp.iModel.projectExtents;
-      const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
+      const projectCenter = Point3d.createAdd2Scaled(
+        projectExtents.low,
+        0.5,
+        projectExtents.high,
+        0.5
+      );
       cartoCenter = vp.iModel.spatialToCartographicFromEcef(projectCenter);
     } else {
-      cartoCenter = Cartographic.fromDegrees({longitude: -75.17035, latitude: 39.954927, height: 0.0});
+      cartoCenter = Cartographic.fromDegrees({
+        longitude: -75.17035,
+        latitude: 39.954927,
+        height: 0.0,
+      });
     }
 
     const today = new Date(Date.now());
@@ -105,7 +114,7 @@ class NoOpTimelineProvider {
     return "No animation available for this view.";
   }
 
-  public update(_time: number, _vp: Viewport): void { }
+  public update(_time: number, _vp: Viewport): void {}
 
   public getCurrentTime(_vp: Viewport): number {
     return this.duration.low;
@@ -114,13 +123,14 @@ class NoOpTimelineProvider {
 
 function createTimelineProvider(vp: Viewport): TimelineProvider {
   if (vp.displayStyle.scheduleScript)
-    return new ScheduleTimelineProvider(vp.displayStyle.scheduleScript.duration);
+    return new ScheduleTimelineProvider(
+      vp.displayStyle.scheduleScript.duration
+    );
 
   if (vp.displayStyle.settings.analysisStyle)
     return new AnalysisTimelineProvider();
 
-  if (vp.displayStyle.is3d())
-    return new SolarTimelineProvider(vp);
+  if (vp.displayStyle.is3d()) return new SolarTimelineProvider(vp);
 
   return new NoOpTimelineProvider();
 }
@@ -140,7 +150,11 @@ class TimelinePanel extends ToolBarDropDown {
   private readonly _playButton: HTMLElement;
   private readonly _pauseButton: HTMLElement;
 
-  public constructor(vp: Viewport, parent: HTMLElement, durationInSeconds: number) {
+  public constructor(
+    vp: Viewport,
+    parent: HTMLElement,
+    durationInSeconds: number
+  ) {
     super();
     this._vp = vp;
     this._totalMillis = 1000 * durationInSeconds;
@@ -192,7 +206,9 @@ class TimelinePanel extends ToolBarDropDown {
     this._slider.max = "1000";
     this._slider.value = "0";
     this._slider.className = "slider";
-    this._slider.addEventListener("input", () => this.processSliderAdjustment());
+    this._slider.addEventListener("input", () =>
+      this.processSliderAdjustment()
+    );
     this._element.appendChild(this._slider);
 
     this._messageElement = document.createElement("div");
@@ -218,17 +234,14 @@ class TimelinePanel extends ToolBarDropDown {
   public override get onViewChanged(): Promise<void> {
     // Change the provider before invoking update
     this._provider = this.createProvider();
-    if (this._isPlaying)
-      this.pause();
-    else
-      this.update();
+    if (this._isPlaying) this.pause();
+    else this.update();
 
     return Promise.resolve();
   }
 
   private start(): void {
-    if (this._isPlaying)
-      return;
+    if (this._isPlaying) return;
 
     this.onInteraction();
     this._isPlaying = true;
@@ -241,8 +254,7 @@ class TimelinePanel extends ToolBarDropDown {
   }
 
   private pause(): void {
-    if (!this._isPlaying)
-      return;
+    if (!this._isPlaying) return;
 
     this._isPlaying = false;
     this._pauseButton.style.display = "none";
@@ -254,8 +266,7 @@ class TimelinePanel extends ToolBarDropDown {
   }
 
   private onAnimationFrame(): void {
-    if (!this._isPlaying)
-      return;
+    if (!this._isPlaying) return;
 
     const now = Date.now();
     const elapsed = now - this._lastMillis;
@@ -264,8 +275,7 @@ class TimelinePanel extends ToolBarDropDown {
 
     this.update();
 
-    if (this._elapsedMillis >= this._totalMillis)
-      this._elapsedMillis = 0;
+    if (this._elapsedMillis >= this._totalMillis) this._elapsedMillis = 0;
 
     this.queueAnimationFrame();
   }
@@ -295,8 +305,7 @@ class TimelinePanel extends ToolBarDropDown {
 
   private updateDuration(): void {
     const seconds = parseInt(this._durationElement.value, 10);
-    if (Number.isNaN(seconds) || seconds <= 0)
-      return;
+    if (Number.isNaN(seconds) || seconds <= 0) return;
 
     const fraction = Math.min(1, this._elapsedMillis / this._totalMillis);
     this._totalMillis = seconds * 1000;
@@ -307,21 +316,25 @@ class TimelinePanel extends ToolBarDropDown {
   }
 
   private onInteraction(): void {
-    if (this._provider.onInteraction)
-      this._provider.onInteraction();
+    if (this._provider.onInteraction) this._provider.onInteraction();
   }
 
   private createProvider(): TimelineProvider {
     const provider = createTimelineProvider(this._vp);
 
     const time = provider.getCurrentTime(this._vp);
-    const timeFraction = (time - provider.duration.low) / provider.duration.length();
+    const timeFraction =
+      (time - provider.duration.low) / provider.duration.length();
     this._elapsedMillis = timeFraction * this._totalMillis;
 
     return provider;
   }
 }
 
-export function createTimeline(vp: Viewport, parent: HTMLElement, durationInSeconds: number): ToolBarDropDown {
+export function createTimeline(
+  vp: Viewport,
+  parent: HTMLElement,
+  durationInSeconds: number
+): ToolBarDropDown {
   return new TimelinePanel(vp, parent, durationInSeconds);
 }

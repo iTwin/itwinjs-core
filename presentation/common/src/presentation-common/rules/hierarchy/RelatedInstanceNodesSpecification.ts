@@ -7,7 +7,10 @@
  */
 
 import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import {
+  ChildNodeSpecificationBase,
+  DefaultGroupingPropertiesContainer,
+} from "./ChildNodeSpecification";
 
 /**
  * Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined
@@ -16,7 +19,9 @@ import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "
  * @see [Related instance nodes specification reference documentation page]($docs/presentation/hierarchies/RelatedInstanceNodes.md)
  * @public
  */
-export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export interface RelatedInstanceNodesSpecification
+  extends ChildNodeSpecificationBase,
+    DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
   specType: "RelatedInstanceNodes";
 

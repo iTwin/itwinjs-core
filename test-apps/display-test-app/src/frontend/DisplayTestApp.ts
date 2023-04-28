@@ -6,11 +6,21 @@ import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
   GpuMemoryLimit,
-  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
+  IModelApp,
+  IModelConnection,
+  RenderDiagnostics,
+  RenderSystem,
+  TileAdmin,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
+import {
+  DtaBooleanConfiguration,
+  DtaConfiguration,
+  DtaNumberConfiguration,
+  DtaStringConfiguration,
+  getConfig,
+} from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
 import { MobileMessenger } from "./FileOpen";
@@ -37,7 +47,9 @@ export function getConfigurationString(key: keyof DtaStringConfiguration) {
  * @param key The parameter name of the parameter to get.
  * @returns The value of the boolean configuration param, or false if the param is undefined.
  */
-export function getConfigurationBoolean(key: keyof DtaBooleanConfiguration): boolean {
+export function getConfigurationBoolean(
+  key: keyof DtaBooleanConfiguration
+): boolean {
   return (configuration as DtaBooleanConfiguration)[key] ?? false;
 }
 
@@ -59,7 +71,9 @@ const getFrontendConfig = async (useRPC = false) => {
       });
     }
   } else {
-    const config: DtaConfiguration = useRPC ? await DtaRpcInterface.getClient().getEnvConfig() : getConfig();
+    const config: DtaConfiguration = useRPC
+      ? await DtaRpcInterface.getClient().getEnvConfig()
+      : getConfig();
     Object.assign(configuration, config);
   }
 
@@ -85,9 +99,13 @@ async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
+function setConfigurationResults(): [
+  renderSystemOptions: RenderSystem.Options,
+  tileAdminProps: TileAdmin.Props
+] {
   const renderSystemOptions: RenderSystem.Options = {
-    disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+    disabledExtensions:
+      configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
     logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
@@ -106,8 +124,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
     enableIndexedEdges: true !== configuration.disableIndexedEdges,
   };
 
-  if (configuration.disableInstancing)
-    tileAdminProps.enableInstancing = false;
+  if (configuration.disableInstancing) tileAdminProps.enableInstancing = false;
 
   if (false === configuration.enableImprovedElision)
     tileAdminProps.enableImprovedElision = false;
@@ -118,8 +135,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   if (false === configuration.useProjectExtents)
     tileAdminProps.useProjectExtents = false;
 
-  if (configuration.cacheTileMetadata)
-    tileAdminProps.cacheTileMetadata = true;
+  if (configuration.cacheTileMetadata) tileAdminProps.cacheTileMetadata = true;
 
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;
@@ -128,16 +144,22 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
     tileAdminProps.optimizeBRepProcessing = false;
 
   if (undefined !== configuration.gpuMemoryLimit)
-    tileAdminProps.gpuMemoryLimits = configuration.gpuMemoryLimit as GpuMemoryLimit;
+    tileAdminProps.gpuMemoryLimits =
+      configuration.gpuMemoryLimit as GpuMemoryLimit;
 
-  tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
-  tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
-  tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
+  tileAdminProps.enableExternalTextures =
+    configuration.enableExternalTextures !== false;
+  tileAdminProps.enableFrontendScheduleScripts =
+    configuration.enableFrontendScheduleScripts !== false;
+  tileAdminProps.tileTreeExpirationTime =
+    configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
-  tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
-  tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
+  tileAdminProps.minimumSpatialTolerance =
+    configuration.minimumSpatialTolerance;
+  tileAdminProps.alwaysSubdivideIncompleteTiles =
+    true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
   return [renderSystemOptions, tileAdminProps];
@@ -172,12 +194,18 @@ const dtaFrontendMain = async () => {
   let tileAdminProps: TileAdmin.Props;
   let renderSystemOptions: RenderSystem.Options;
   [renderSystemOptions, tileAdminProps] = setConfigurationResults();
-  await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+  await DisplayTestApp.startup(
+    configuration,
+    renderSystemOptions,
+    tileAdminProps
+  );
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
-    alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
+    alert(
+      "Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment"
+    );
     return;
   }
 
@@ -189,12 +217,18 @@ const dtaFrontendMain = async () => {
     // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
     await IModelApp.shutdown();
     [renderSystemOptions, tileAdminProps] = setConfigurationResults();
-    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+    await DisplayTestApp.startup(
+      configuration,
+      renderSystemOptions,
+      tileAdminProps
+    );
     if (false !== configuration.enableDiagnostics)
       IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
     if (!configuration.standalone && !configuration.customOrchestratorUri) {
-      alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
+      alert(
+        "Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment"
+      );
       return;
     }
   }
@@ -203,7 +237,7 @@ const dtaFrontendMain = async () => {
 
   try {
     if (!configuration.standalone || configuration.signInForStandalone) {
-      while (!await signIn()) {
+      while (!(await signIn())) {
         alert("please sign in");
       }
     }
@@ -241,7 +275,9 @@ const dtaFrontendMain = async () => {
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
     if (configuration.startupMacro)
-      await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
+      await IModelApp.tools.parseAndRun(
+        `dta macro ${configuration.startupMacro}`
+      );
   } catch (reason) {
     alert(reason);
     return;
@@ -250,8 +286,7 @@ const dtaFrontendMain = async () => {
 
 async function documentLoaded(): Promise<void> {
   const readyState = /^complete$/;
-  if (readyState.test(document.readyState))
-    return;
+  if (readyState.test(document.readyState)) return;
 
   return new Promise<void>((resolve) => {
     const listener = () => {
@@ -270,12 +305,22 @@ async function initView(iModel: IModelConnection | undefined) {
   // open the specified view
   showStatus("opening View", configuration.viewName);
 
-  const fileSelector = undefined !== configuration.standalonePath ? {
-    directory: configuration.standalonePath,
-    input: document.getElementById("browserFileSelector") as HTMLInputElement,
-  } : undefined;
+  const fileSelector =
+    undefined !== configuration.standalonePath
+      ? {
+          directory: configuration.standalonePath,
+          input: document.getElementById(
+            "browserFileSelector"
+          ) as HTMLInputElement,
+        }
+      : undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
+  DisplayTestApp.surface = new Surface(
+    document.getElementById("app-surface")!,
+    document.getElementById("toolBar")!,
+    fileSelector,
+    configuration.openReadWrite ?? false
+  );
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...
@@ -297,7 +342,8 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise<void>(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+  return new Promise<void>(async (resolve) => {
+    // eslint-disable-line @typescript-eslint/no-misused-promises
     showSpinner();
     resolve();
   });
@@ -310,8 +356,7 @@ function showSpinner() {
 
 function hideSpinner() {
   const spinner = document.getElementById("spinner");
-  if (spinner)
-    spinner.style.display = "none";
+  if (spinner) spinner.style.display = "none";
 }
 
 // Entry point - run the main function

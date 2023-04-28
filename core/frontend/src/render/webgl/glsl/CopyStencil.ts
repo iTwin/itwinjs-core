@@ -6,11 +6,23 @@
  * @module WebGL
  */
 
-import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { BoundaryType, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
+import {
+  ColorDef,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+} from "@itwin/core-common";
+import {
+  BoundaryType,
+  SingleTexturedViewportQuadGeometry,
+  VolumeClassifierGeometry,
+} from "../CachedGeometry";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ShaderBuilder, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderComponent,
+  ShaderBuilder,
+  VariableType,
+} from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
@@ -43,7 +55,11 @@ function addBoundaryTypeConstants(builder: ShaderBuilder): void {
 }
 
 /** @internal */
-function setScratchColor(display: number, hilite: FloatRgb, hAlpha: number): void {
+function setScratchColor(
+  display: number,
+  hilite: FloatRgb,
+  hAlpha: number
+): void {
   switch (display) {
     case SpatialClassifierOutsideDisplay.Dimmed:
       scratchColor.set(0.0, 0.0, 0.0, 0.3);
@@ -61,7 +77,9 @@ function setScratchColor(display: number, hilite: FloatRgb, hAlpha: number): voi
 }
 
 /** @internal */
-export function createVolClassColorUsingStencilProgram(context: WebGL2RenderingContext): ShaderProgram {
+export function createVolClassColorUsingStencilProgram(
+  context: WebGL2RenderingContext
+): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
@@ -71,9 +89,13 @@ export function createVolClassColorUsingStencilProgram(context: WebGL2RenderingC
       const useLighting = params.geometry.getFlashMode(params);
       if (useLighting) {
         const hiliteColor = params.target.uniforms.hilite.hiliteColor;
-        scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, 1.0);
-      } else
-        scratchColor.set(1.0, 1.0, 1.0, 0.0);
+        scratchColor.set(
+          hiliteColor.red,
+          hiliteColor.green,
+          hiliteColor.blue,
+          1.0
+        );
+      } else scratchColor.set(1.0, 1.0, 1.0, 0.0);
       scratchColor.bind(uniform);
     });
   });
@@ -85,10 +107,16 @@ export function createVolClassColorUsingStencilProgram(context: WebGL2RenderingC
 }
 
 /** @internal */
-export function createVolClassCopyZProgram(context: WebGL2RenderingContext): ShaderProgram {
+export function createVolClassCopyZProgram(
+  context: WebGL2RenderingContext
+): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
-  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord); // TODO: I think this is not necessary because it's already added from the create above
+  builder.addInlineComputedVarying(
+    "v_texCoord",
+    VariableType.Vec2,
+    computeTexCoord
+  ); // TODO: I think this is not necessary because it's already added from the create above
 
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeSetBlendColor);
@@ -117,14 +145,23 @@ export function createVolClassCopyZProgram(context: WebGL2RenderingContext): Sha
 }
 
 /** @internal */
-export function createVolClassSetBlendProgram(context: WebGL2RenderingContext): ShaderProgram {
+export function createVolClassSetBlendProgram(
+  context: WebGL2RenderingContext
+): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
-  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+  builder.addInlineComputedVarying(
+    "v_texCoord",
+    VariableType.Vec2,
+    computeTexCoord
+  );
 
   const frag = builder.frag;
   addBoundaryTypeConstants(frag);
-  frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkDiscardBackgroundByZ);
+  frag.set(
+    FragmentShaderComponent.CheckForEarlyDiscard,
+    checkDiscardBackgroundByZ
+  );
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeSetBlendColor);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
@@ -139,17 +176,30 @@ export function createVolClassSetBlendProgram(context: WebGL2RenderingContext): 
     prog.addGraphicUniform("u_blend_color", (uniform, params) => {
       const geom = params.geometry as VolumeClassifierGeometry;
       const hiliteColor = params.target.uniforms.hilite.hiliteColor;
-      const hiliteAlpha = params.target.uniforms.hilite.hiliteSettings.visibleRatio;
+      const hiliteAlpha =
+        params.target.uniforms.hilite.hiliteSettings.visibleRatio;
       switch (geom.boundaryType) {
         case BoundaryType.Outside:
-          setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor, hiliteAlpha);
+          setScratchColor(
+            params.target.activeVolumeClassifierProps!.flags.outside,
+            hiliteColor,
+            hiliteAlpha
+          );
           break;
         case BoundaryType.Inside:
-          setScratchColor(params.target.activeVolumeClassifierProps!.flags.inside, hiliteColor, hiliteAlpha);
+          setScratchColor(
+            params.target.activeVolumeClassifierProps!.flags.inside,
+            hiliteColor,
+            hiliteAlpha
+          );
           break;
         case BoundaryType.Selected:
           // setScratchColor(params.target.activeVolumeClassifierProps!.flags.selected, hiliteColor, hiliteAlpha);
-          setScratchColor(SpatialClassifierInsideDisplay.Hilite, hiliteColor, hiliteAlpha); // option for how to display selected classifiers has been removed, always just hilite
+          setScratchColor(
+            SpatialClassifierInsideDisplay.Hilite,
+            hiliteColor,
+            hiliteAlpha
+          ); // option for how to display selected classifiers has been removed, always just hilite
           break;
       }
       scratchColor.bind(uniform);
@@ -170,10 +220,16 @@ export function createVolClassSetBlendProgram(context: WebGL2RenderingContext): 
 }
 
 /** @internal */
-export function createVolClassBlendProgram(context: WebGL2RenderingContext): ShaderProgram {
+export function createVolClassBlendProgram(
+  context: WebGL2RenderingContext
+): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
-  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+  builder.addInlineComputedVarying(
+    "v_texCoord",
+    VariableType.Vec2,
+    computeTexCoord
+  );
 
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlendTextureColor);

@@ -41,7 +41,8 @@ export class PointSearchContext {
   public reAimFromEdge(
     edgeHit: HalfEdgePositionDetail,
     ray: Ray3d,
-    targetDistance: number): HalfEdgePositionDetail {
+    targetDistance: number
+  ): HalfEdgePositionDetail {
     const nodeA = edgeHit.node!;
     const dataA = NodeXYZUV.createNodeAndRayOrigin(nodeA, ray);
     const dataB = NodeXYZUV.createNodeAndRayOrigin(nodeA.edgeMate, ray);
@@ -76,18 +77,15 @@ export class PointSearchContext {
         result.setITag(1);
       } else if (alongA < 0 && alongB < 0) {
         // target is beyond the edge -- move towards it.
-        if (dataA.u > dataB.u)
-          result = edgeHit.resetAsVertex(dataA.node);
-        else
-          result = edgeHit.resetAsVertex(dataB.node);
+        if (dataA.u > dataB.u) result = edgeHit.resetAsVertex(dataA.node);
+        else result = edgeHit.resetAsVertex(dataB.node);
       } else {
         // This shouldn't happen -- maybe as if the initial edge point was not within the edge???
-        if (Math.abs(dataA.u) < this._tol
-          && Math.abs(dataA.v) < this._tol
-        ) {
+        if (Math.abs(dataA.u) < this._tol && Math.abs(dataA.v) < this._tol) {
           result = edgeHit.resetAsVertex(dataA.node); // , dataA);
-        } else if (Math.abs(dataB.u) < this._tol
-          && Math.abs(dataB.v) < this._tol
+        } else if (
+          Math.abs(dataB.u) < this._tol &&
+          Math.abs(dataB.v) < this._tol
         ) {
           result = edgeHit.resetAsVertex(dataB.node);
         } else {
@@ -108,15 +106,22 @@ export class PointSearchContext {
   public reAimFromVertex(
     searchBase: HalfEdgePositionDetail,
     ray: Ray3d,
-    targetDistance: number): HalfEdgePositionDetail {
+    targetDistance: number
+  ): HalfEdgePositionDetail {
     const vertexNode = searchBase.node;
     let result;
     let outboundEdge = vertexNode!;
     do {
       // DPoint3d xyzBase;
       // vu_getDPoint3d(& xyzBase, outboundEdge);
-      const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
-      const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
+      const data0 = NodeXYZUV.createNodeAndRayOrigin(
+        outboundEdge.faceSuccessor,
+        ray
+      );
+      const data1 = NodeXYZUV.createNodeAndRayOrigin(
+        outboundEdge.facePredecessor,
+        ray
+      );
       const u0 = data0.u;
       // double u1 = data1.GetU ();
       const v0 = data0.v;
@@ -130,7 +135,10 @@ export class PointSearchContext {
         } else if (u0 > targetDistance) {
           // Direct hig within edge
           const edgeFraction = targetDistance / u0;
-          result = searchBase.resetAtEdgeAndFraction(outboundEdge, edgeFraction);
+          result = searchBase.resetAtEdgeAndFraction(
+            outboundEdge,
+            edgeFraction
+          );
           return result;
         } else if (Math.abs(u0) <= this._tol) {
           // Unexpected direct hit on the base of the search, but call it a hit....
@@ -168,9 +176,11 @@ export class PointSearchContext {
   public reAimAroundFace(
     faceNode: HalfEdge,
     ray: Ray3d,
-    targetDistance: number,  // !< distance to target point
-    lastBefore: HalfEdgePositionDetail,   // CALLER CREATED -- reset as first hit on negative side of ray.
-    firstAfter: HalfEdgePositionDetail): RayClassification {  // ! CALLER CREATED -- reset as first hit on positive side of ray.
+    targetDistance: number, // !< distance to target point
+    lastBefore: HalfEdgePositionDetail, // CALLER CREATED -- reset as first hit on negative side of ray.
+    firstAfter: HalfEdgePositionDetail
+  ): RayClassification {
+    // ! CALLER CREATED -- reset as first hit on positive side of ray.
 
     lastBefore.resetAsUndefinedWithTag(-Number.MAX_VALUE);
     firstAfter.resetAsUndefinedWithTag(Number.MAX_VALUE);
@@ -199,9 +209,12 @@ export class PointSearchContext {
           lastBefore.setFrom(vertexHit);
       } else if (v0 * v1 < 0.0) {
         // Edge Crossing ...
-        const edgeFraction = - v0 / (v1 - v0);
+        const edgeFraction = -v0 / (v1 - v0);
         const uEdge = Geometry.interpolate(u0, edgeFraction, u1);
-        const edgeHit = HalfEdgePositionDetail.createEdgeAtFraction(data0.node, edgeFraction);
+        const edgeHit = HalfEdgePositionDetail.createEdgeAtFraction(
+          data0.node,
+          edgeFraction
+        );
         edgeHit.setDTag(uEdge);
         if (Math.abs(uEdge - targetDistance) <= this._tol) {
           firstAfter.setFrom(edgeHit);
@@ -220,17 +233,18 @@ export class PointSearchContext {
       data0.setFrom(data1);
       node0 = node0.faceSuccessor;
     } while (node0 !== faceNode);
-// Returned to start node !!!
+    // Returned to start node !!!
     const afterTag = firstAfter.getITag();
     firstAfter.setITag(0);
     lastBefore.setITag(0);
     if (lastBefore.isUnclassified) {
-      if (firstAfter.isUnclassified)
-        return RayClassification.RC_NoHits;
+      if (firstAfter.isUnclassified) return RayClassification.RC_NoHits;
       return RayClassification.RC_TargetBefore;
     }
-    if (firstAfter.isUnclassified
-      || (firstAfter.isEdge && afterTag && afterTag < 0)) {
+    if (
+      firstAfter.isUnclassified ||
+      (firstAfter.isEdge && afterTag && afterTag < 0)
+    ) {
       return RayClassification.RC_TargetAfter;
     } else {
       return RayClassification.RC_Bracket;
@@ -247,7 +261,11 @@ export class PointSearchContext {
    * @param target target xy coordinates
    * @param ray ray to update
    */
-  public setSearchRay(start: HalfEdgePositionDetail, target: Point3d, ray: Ray3d): boolean {
+  public setSearchRay(
+    start: HalfEdgePositionDetail,
+    target: Point3d,
+    ray: Ray3d
+  ): boolean {
     ray.origin.setFromPoint3d(start);
     Vector3d.createStartEnd(ray.origin, target, ray.direction);
     ray.direction.z = 0.0;

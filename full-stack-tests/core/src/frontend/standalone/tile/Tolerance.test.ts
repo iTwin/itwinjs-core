@@ -6,11 +6,26 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
-  TileMetadata, TileProps, TileTreeMetadata,
+  BatchType,
+  computeChildTileProps,
+  computeTileChordTolerance,
+  ContentIdProvider,
+  defaultTileOptions,
+  ImdlHeader,
+  iModelTileTreeIdToString,
+  TileMetadata,
+  TileProps,
+  TileTreeMetadata,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
+  GeometricModelState,
+  IModelApp,
+  IModelConnection,
+  IModelTile,
+  IModelTileTree,
+  SnapshotConnection,
+  Tile,
+  TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
@@ -20,16 +35,21 @@ describe("Tile tolerance", () => {
   let imodel: IModelConnection;
   const minimumSpatialTolerance = 0.02;
   const modelId = "0x1c";
-  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, { ...defaultTileOptions, useLargerTiles: false });
+  const treeId = iModelTileTreeIdToString(
+    modelId,
+    { type: BatchType.Primary, edges: false },
+    { ...defaultTileOptions, useLargerTiles: false }
+  );
 
   before(async () => {
-    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance, useLargerTiles: false } });
+    await TestUtility.startFrontend({
+      tileAdmin: { minimumSpatialTolerance, useLargerTiles: false },
+    });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -46,20 +66,32 @@ describe("Tile tolerance", () => {
     };
   }
 
-  function computeTolerance(rangeProps: Range3dProps, arg: { tileScreenSize: number }, sizeMultiplier?: number, ): number {
+  function computeTolerance(
+    rangeProps: Range3dProps,
+    arg: { tileScreenSize: number },
+    sizeMultiplier?: number
+  ): number {
     const range = new Range3d();
     range.setFromJSON(rangeProps);
-    return computeTileChordTolerance({
-      contentRange: range,
-      isLeaf: false,
-      sizeMultiplier,
-      emptySubRangeMask: 0,
-      contentId: "",
-      range,
-    }, true, arg.tileScreenSize);
+    return computeTileChordTolerance(
+      {
+        contentRange: range,
+        isLeaf: false,
+        sizeMultiplier,
+        emptySubRangeMask: 0,
+        contentId: "",
+        range,
+      },
+      true,
+      arg.tileScreenSize
+    );
   }
 
-  async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
+  async function expectTolerance(
+    contentId: string,
+    expectedTolerance: number,
+    epsilon = 0.000001
+  ): Promise<void> {
     const tile = {
       iModelTree: {
         iModel: imodel,
@@ -69,7 +101,9 @@ describe("Tile tolerance", () => {
       },
       contentId,
     } as IModelTile;
-    const stream = ByteStream.fromUint8Array(await IModelApp.tileAdmin.generateTileContent(tile));
+    const stream = ByteStream.fromUint8Array(
+      await IModelApp.tileAdmin.generateTileContent(tile)
+    );
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;
@@ -78,14 +112,32 @@ describe("Tile tolerance", () => {
   }
 
   it("should match between frontend and backend", async () => {
-    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
-    const tree: TileTreeMetadata = { ...treeProps, modelId, is2d: false, contentRange: undefined, tileScreenSize: treeProps.tileScreenSize ?? 512 };
+    const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(
+      imodel,
+      treeId
+    );
+    const tree: TileTreeMetadata = {
+      ...treeProps,
+      modelId,
+      is2d: false,
+      contentRange: undefined,
+      tileScreenSize: treeProps.tileScreenSize ?? 512,
+    };
 
     // treeProps.rootTile.contentId is a lie...must be computed on front-end.
-    const contentIdProvider = ContentIdProvider.create(true, defaultTileOptions);
-    const rootTile = makeTile({ ...treeProps.rootTile, contentId: contentIdProvider.rootContentId });
+    const contentIdProvider = ContentIdProvider.create(
+      true,
+      defaultTileOptions
+    );
+    const rootTile = makeTile({
+      ...treeProps.rootTile,
+      contentId: contentIdProvider.rootContentId,
+    });
     expect(rootTile.sizeMultiplier).to.be.undefined;
-    await expectTolerance(rootTile.contentId, computeTolerance(rootTile.range, tree));
+    await expectTolerance(
+      rootTile.contentId,
+      computeTolerance(rootTile.range, tree)
+    );
 
     const kidsProps = computeChildTileProps(rootTile, contentIdProvider, tree);
     expect(kidsProps.numEmpty).to.equal(0);
@@ -103,12 +155,19 @@ describe("Tile tolerance", () => {
       for (const grandkidProp of grandkids.children) {
         const grandkid = makeTile(grandkidProp);
         expect(grandkid.sizeMultiplier).to.be.undefined;
-        await expectTolerance(grandkid.contentId, computeTolerance(grandkid.range, tree));
+        await expectTolerance(
+          grandkid.contentId,
+          computeTolerance(grandkid.range, tree)
+        );
       }
 
       // Refinement.
       let parent: TileMetadata = { ...kid, sizeMultiplier: 1 };
-      const parentTolerance = computeTolerance(parent.range, tree, parent.sizeMultiplier);
+      const parentTolerance = computeTolerance(
+        parent.range,
+        tree,
+        parent.sizeMultiplier
+      );
       expect(parentTolerance).to.equal(kidTolerance);
 
       for (let i = 0; i < 3; i++) {
@@ -116,7 +175,10 @@ describe("Tile tolerance", () => {
         expect(props.children.length).to.equal(1);
         const child = makeTile(props.children[0]);
         expect(child.sizeMultiplier).to.equal(parent.sizeMultiplier! * 2);
-        await expectTolerance(child.contentId, parentTolerance / child.sizeMultiplier!);
+        await expectTolerance(
+          child.contentId,
+          parentTolerance / child.sizeMultiplier!
+        );
         parent = child;
       }
     }
@@ -138,7 +200,11 @@ describe("Tile tolerance", () => {
     const iModelTree = tree as IModelTileTree;
     const rootTile = iModelTree.staticBranch;
     expect(iModelTree.tileScreenSize).to.equal(512);
-    const rootTolerance = computeTileChordTolerance(rootTile, true, iModelTree.tileScreenSize);
+    const rootTolerance = computeTileChordTolerance(
+      rootTile,
+      true,
+      iModelTree.tileScreenSize
+    );
     expect(rootTolerance).least(knownRootTolerance);
     expect(rootTolerance).most(knownRootTolerance + 0.00001);
     await expectTolerance(rootTile.contentId, knownRootTolerance, 0.0001);
@@ -165,11 +231,13 @@ describe("Tile tolerance", () => {
       ++depth;
       tile = getChild(tile)!;
       expect(tile).not.to.be.undefined;
-      const tolerance = computeTileChordTolerance(tile, true, iModelTree.tileScreenSize);
-      if (tile.isLeaf)
-        expect(tolerance).most(minimumSpatialTolerance);
-      else
-        expect(tolerance).least(minimumSpatialTolerance);
+      const tolerance = computeTileChordTolerance(
+        tile,
+        true,
+        iModelTree.tileScreenSize
+      );
+      if (tile.isLeaf) expect(tolerance).most(minimumSpatialTolerance);
+      else expect(tolerance).least(minimumSpatialTolerance);
     }
 
     expect(getChild(tile)).to.be.undefined;

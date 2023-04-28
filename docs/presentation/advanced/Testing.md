@@ -14,29 +14,29 @@ An example of setting up snapshot tests with the **@itwin/presentation-testing**
 
 1. Initialize testing library and open iModel
 
-    ```ts
-    [[include:Presentation.Testing.Rulesets.Setup]]
-    ```
+   ```ts
+   [[include:Presentation.Testing.Rulesets.Setup]]
+   ```
 
 2. Generate and verify results:
 
-    2.1. Hierarchies:
+   2.1. Hierarchies:
 
-      ```ts
-      [[include:Presentation.Testing.Rulesets.Hierarchies]]
-      ```
+   ```ts
+   [[include:Presentation.Testing.Rulesets.Hierarchies]]
+   ```
 
-    2.2. Content:
+   2.2. Content:
 
-      ```ts
-      [[include:Presentation.Testing.Rulesets.Content]]
-      ```
+   ```ts
+   [[include:Presentation.Testing.Rulesets.Content]]
+   ```
 
 3. Close iModel and terminate testing library:
 
-    ```ts
-    [[include:Presentation.Testing.Rulesets.Terminate]]
-    ```
+   ```ts
+   [[include:Presentation.Testing.Rulesets.Terminate]]
+   ```
 
 **Note:** The above example uses [mocha](https://www.npmjs.com/package/mocha) and [chai-jest-snapshot](https://www.npmjs.com/package/chai-jest-snapshot) packages to perform snapshot testing. `createSnapshotPath` function retrieves a path to the snapshot for the current test.
 
@@ -47,5 +47,5 @@ An example of setting up snapshot tests with the **@itwin/presentation-testing**
 - Ruleset can be provided either as an ID of already registered ruleset or as a `Ruleset` object. The object can even be imported from a JSON file:
 
   ```ts
-  await builder.createHierarchy(require("rulesets/YourRuleset.json"))
+  await builder.createHierarchy(require("rulesets/YourRuleset.json"));
   ```

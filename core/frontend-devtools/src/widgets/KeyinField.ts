@@ -7,9 +7,19 @@
  * @module Widgets
  */
 
-import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  MessageBoxIconType,
+  MessageBoxType,
+  ParseAndRunResult,
+} from "@itwin/core-frontend";
 import { createButton } from "../ui/Button";
-import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
+import {
+  appendDataListEntries,
+  createDataList,
+  DataList,
+  DataListEntry,
+} from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
@@ -72,7 +82,8 @@ export class KeyinField {
   private readonly _localization: KeyinFieldLocalization;
 
   public constructor(props: KeyinFieldProps) {
-    this._localization = props.localization ?? KeyinFieldLocalization.NonLocalized;
+    this._localization =
+      props.localization ?? KeyinFieldLocalization.NonLocalized;
     this.keyins = this.findKeyins();
     const autoCompleteListId = `${props.baseId}_autoComplete`;
     this.autoCompleteList = createDataList({
@@ -87,8 +98,12 @@ export class KeyinField {
       id: `${props.baseId}_textBox`,
       parent: props.parent,
       handler: () => this.selectAll(),
-      keypresshandler: async (_tb, ev) => { await this.handleKeyPress(ev); },
-      focushandler: (_tb) => { this.respondToKeyinFocus(); },
+      keypresshandler: async (_tb, ev) => {
+        await this.handleKeyPress(ev);
+      },
+      focushandler: (_tb) => {
+        this.respondToKeyinFocus();
+      },
       tooltip: "Type the key-in text here",
       inline: true,
       list: autoCompleteListId,
@@ -96,7 +111,9 @@ export class KeyinField {
 
     if (props.wantButton) {
       createButton({
-        handler: async (_bt) => { await this.submitKeyin(); },
+        handler: async (_bt) => {
+          await this.submitKeyin();
+        },
         parent: props.parent,
         value: "Enter",
         inline: true,
@@ -111,39 +128,41 @@ export class KeyinField {
     }
   }
 
-  public focus() { this.textBox.textbox.focus(); }
-  public loseFocus() { this.textBox.textbox.blur(); }
+  public focus() {
+    this.textBox.textbox.focus();
+  }
+  public loseFocus() {
+    this.textBox.textbox.blur();
+  }
 
   public selectAll(): void {
-    this.textBox.textbox.setSelectionRange(0, this.textBox.textbox.value.length);
+    this.textBox.textbox.setSelectionRange(
+      0,
+      this.textBox.textbox.value.length
+    );
   }
 
   private async handleKeyPress(ev: KeyboardEvent): Promise<void> {
     ev.stopPropagation();
 
-    if ("Enter" === ev.key)
-      await this.submitKeyin();
+    if ("Enter" === ev.key) await this.submitKeyin();
   }
 
   private async handleKeyDown(ev: KeyboardEvent): Promise<void> {
     ev.stopPropagation();
 
-    if (undefined === this._history || 0 === this._history.length)
-      return;
+    if (undefined === this._history || 0 === this._history.length) return;
 
     // NB: History list is ordered by most to least recent so moving "backwards" means incrementing the index.
-    const direction = ev.key === "ArrowDown" ? 1 : (ev.key === "ArrowUp" ? 1 : 0);
-    if (0 === direction)
-      return;
+    const direction = ev.key === "ArrowDown" ? 1 : ev.key === "ArrowUp" ? 1 : 0;
+    if (0 === direction) return;
 
     ev.preventDefault();
     ev.stopPropagation();
 
     if (this._historyIndex === undefined) {
-      if (direction < 0)
-        return;
-      else
-        this._historyIndex = -1;
+      if (direction < 0) return;
+      else this._historyIndex = -1;
     }
 
     const newIndex = this._historyIndex + direction;
@@ -159,15 +178,16 @@ export class KeyinField {
   }
 
   private pushHistory(keyin: string): void {
-    if (undefined === this._history)
-      return;
+    if (undefined === this._history) return;
 
     this.textBox.textbox.value = "";
     this.resetHistoryIndex();
-    if (this._history.length === 0 || keyin.toLowerCase() !== this._history[0].toLowerCase()) {
+    if (
+      this._history.length === 0 ||
+      keyin.toLowerCase() !== this._history[0].toLowerCase()
+    ) {
       this._history.unshift(keyin);
-      if (this._history.length > this._historyLength)
-        this._history.pop();
+      if (this._history.length > this._historyLength) this._history.pop();
     }
   }
 
@@ -196,7 +216,11 @@ export class KeyinField {
     }
 
     if (undefined !== message)
-      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
+      await IModelApp.notifications.openMessageBox(
+        MessageBoxType.MediumAlert,
+        message,
+        MessageBoxIconType.Warning
+      );
   }
 
   private respondToKeyinFocus() {
@@ -214,7 +238,10 @@ export class KeyinField {
         }
 
       if (newKeyins.length > 0)
-        appendDataListEntries(this.autoCompleteList, keyinsToDataListEntries(newKeyins));
+        appendDataListEntries(
+          this.autoCompleteList,
+          keyinsToDataListEntries(newKeyins)
+        );
     }
   }
 
@@ -228,8 +255,7 @@ export class KeyinField {
           break;
         case KeyinFieldLocalization.Both:
           keyins.push(tool.keyin);
-          if (tool.keyin === tool.englishKeyin)
-            break;
+          if (tool.keyin === tool.englishKeyin) break;
         /* falls through */
         default:
         case KeyinFieldLocalization.NonLocalized:

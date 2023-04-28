@@ -19,5 +19,5 @@ type float64 = number;
  */
 /** @internal */
 export interface iComparator<T> {
-    compare(value1: T, value2: T): int32;
+  compare(value1: T, value2: T): int32;
 }

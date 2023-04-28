@@ -7,7 +7,12 @@
  */
 
 import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
-import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import {
+  EntityProps,
+  EntityReferenceSet,
+  PropertyCallback,
+  PropertyMetaData,
+} from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -24,26 +29,36 @@ export class Entity {
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 
-  private get _ctor(): typeof Entity { return this.constructor as typeof Entity; }
+  private get _ctor(): typeof Entity {
+    return this.constructor as typeof Entity;
+  }
 
   /** The name of the BIS class associated with this class.
    * @note Every subclass of Entity **MUST** override this method to identify its BIS class.
    * Failure to do so will ordinarily result in an error when the class is registered, since there may only
    * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
    */
-  public static get className(): string { return "Entity"; }
+  public static get className(): string {
+    return "Entity";
+  }
 
   /** When working with an Entity it can be useful to set property values directly, bypassing the compiler's type checking.
    * This property makes such code slightly less tedious to read and write.
    * @internal
    */
-  public get asAny(): any { return this; }
+  public get asAny(): any {
+    return this;
+  }
 
   /** The name of the BIS Schema that defines this class */
-  public get schemaName(): string { return this._ctor.schema.schemaName; }
+  public get schemaName(): string {
+    return this._ctor.schema.schemaName;
+  }
 
   /** The name of the BIS class associated with this class. */
-  public get className(): string { return this._ctor.className; }
+  public get className(): string {
+    return this._ctor.className;
+  }
 
   /** The [[IModelDb]] that contains this Entity */
   public iModel: IModelDb;
@@ -56,7 +71,13 @@ export class Entity {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
+    this.forEachProperty(
+      (propName: string, meta: PropertyMetaData) =>
+        ((this as any)[propName] = meta.createProperty(
+          (props as any)[propName]
+        )),
+      false
+    );
   }
 
   /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
@@ -65,9 +86,11 @@ export class Entity {
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
-    if (Id64.isValid(this.id))
-      val.id = this.id;
-    this.forEachProperty((propName: string) => val[propName] = (this as any)[propName], false);
+    if (Id64.isValid(this.id)) val.id = this.id;
+    this.forEachProperty(
+      (propName: string) => (val[propName] = (this as any)[propName]),
+      false
+    );
     return val;
   }
 
@@ -76,18 +99,27 @@ export class Entity {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
+  public forEachProperty(
+    func: PropertyCallback,
+    includeCustom: boolean = true
+  ) {
     this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
   }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */
-  public static get classFullName(): string { return `${this.schema.schemaName}:${this.className}`; }
+  public static get classFullName(): string {
+    return `${this.schema.schemaName}:${this.className}`;
+  }
 
   /** Get the full BIS class name of this Entity in the form "schema:class". */
-  public get classFullName(): string { return this._ctor.classFullName; }
+  public get classFullName(): string {
+    return this._ctor.classFullName;
+  }
 
   /** @internal */
-  public static get protectedOperations(): string[] { return []; }
+  public static get protectedOperations(): string[] {
+    return [];
+  }
 
   /** return whether this Entity class is a subclass of another Entity class
    * @note the subclass-ness is checked according to JavaScript inheritance, to check the underlying raw EC class's
@@ -95,13 +127,17 @@ export class Entity {
    * @note this should have a type of `is<T extends typeof Entity>(otherClass: T): this is T` but can't because of
    * typescript's restriction on the `this` type in static methods
    */
-  public static is(otherClass: typeof Entity): boolean { return isSubclassOf(this, otherClass); }
+  public static is(otherClass: typeof Entity): boolean {
+    return isSubclassOf(this, otherClass);
+  }
 
   /** whether this JavaScript class was generated for this ECClass because there was no registered custom implementation
    * ClassRegistry overrides this when generating a class
    * @internal
    */
-  public static get isGeneratedClass() { return false; }
+  public static get isGeneratedClass() {
+    return false;
+  }
 
   // NOTE: will also consider using generated collectReferences everywhere and a separate collectJsonPropertyReferenceIds
   /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
@@ -142,9 +178,14 @@ export class Entity {
     const concreteEntityIds = this.getReferenceConcreteIds();
     for (const entity of concreteEntityIds) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention
-      const EntityReferences = (require("./EntityReferences") as typeof import("./EntityReferences")).EntityReferences;
+      const EntityReferences = (
+        require("./EntityReferences") as typeof import("./EntityReferences")
+      ).EntityReferences;
       // the old [[collectReferenceIds]] only supported elements/models, and the id spaces can overlap so dont include anything else
-      if (EntityReferences.isElement(entity) || EntityReferences.isModel(entity)) {
+      if (
+        EntityReferences.isElement(entity) ||
+        EntityReferences.isModel(entity)
+      ) {
         referenceIds.add(EntityReferences.toId64(entity));
       }
     }
@@ -154,7 +195,9 @@ export class Entity {
    * In the next breaking change it will replace getReferenceIds
    * @internal
    */
-  protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void {
+  protected collectReferenceConcreteIds(
+    _referenceIds: EntityReferenceSet
+  ): void {
     return; // no references by default
   }
 }

@@ -33,9 +33,9 @@ export class ToolSettings {
   /** Distance in screen inches the cursor must move before a drag operation begins. */
   public static startDragDistanceInches = 0.15;
   /** Distance in screen inches touch points must move apart to be considered a change in zoom scale. */
-  public static touchZoomChangeThresholdInches = 0.20;
+  public static touchZoomChangeThresholdInches = 0.2;
   /** Radius in screen inches to search for elements that anchor viewing operations. */
-  public static viewToolPickRadiusInches = 0.20;
+  public static viewToolPickRadiusInches = 0.2;
   /** Camera angle enforced for walk tool. */
   public static walkCameraAngle = Angle.createDegrees(75.6);
   /** Whether the walk tool enforces worldZ be aligned with screenY */
@@ -61,7 +61,7 @@ export class ToolSettings {
   /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
   public static wheelZoomBumpDistance = Constant.oneCentimeter;
   /** the speed to scroll for the "scroll view" tool (distance per second). */
-  public static scrollSpeed = .75;
+  public static scrollSpeed = 0.75;
   /** the speed to zoom for the "zoom view" tool. */
   public static zoomSpeed = 10;
   /** Scale factor for zooming with mouse wheel. */
@@ -71,7 +71,7 @@ export class ToolSettings {
     /** Flag to enable inertia. */
     enabled: true,
     /** How quickly the inertia decays. The smaller the damping value the faster the inertia decays. Must be less than 1.0 */
-    damping: .96,
+    damping: 0.96,
     /** Maximum duration of the inertia operation. Important when frame rates are low. */
     duration: BeDuration.fromMilliseconds(500),
   };

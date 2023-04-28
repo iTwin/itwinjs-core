@@ -10,7 +10,7 @@ ImageId override rules allow setting an image ID to specific types of ECInstance
 
 | Name                                                | Required? | Type                                                                 | Default |
 | --------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*                                         |
+| _Filtering_                                         |
 | [`requiredSchemas`](#attribute-requiredschemas)     | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attribute-priority)                   | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)   | No        | `boolean`                                                            | `false` |

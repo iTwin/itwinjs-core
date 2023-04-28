@@ -4,27 +4,30 @@ The [SettingsManager]($core-react) allows the registration of [SettingsTabsProvi
 
 ## SettingsTabEntry
 
-Registered [SettingsTabsProvider]($core-react) instance will implement the method `getSettingEntries` to return an array of [SettingsTabsProvider]($core-react) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($core-react) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry.  It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingsTabEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
+Registered [SettingsTabsProvider]($core-react) instance will implement the method `getSettingEntries` to return an array of [SettingsTabsProvider]($core-react) items. Each SettingsTabEntry will populate a Tab entry in the [SettingsContainer]($core-react) component. The `tabId` property is a string and must be unique across all registered SettingsProviders. A common practice is to prefix the tabId with the package name to ensure uniqueness. The `page` property holds the React.Element that will be used to construct the component to edit settings for this entry. It is the `page's` responsibility to persist and retrieve persisted settings. If the `page` contains multiple properties that must be saved together the SettingsTabEntry can set the `pageWillHandleCloseRequest` property to `true`. The `page's` control should then register to be notified when the setting container is closing or when the active SettingsEnty is changing so that any unsaved data can be saved. Two React hooks are provided to assist: `settingsManager.onProcessSettingsTabActivation` and `settingsManager.onProcessSettingsContainerClose`.
 
 ## Example
 
 ### Example SettingsTabsProvider
 
-Example below shows a settings provide that provides two settings pages. The first one depicts a page that has properties that cannot be saved immediately as individual properties are changed. It must be treated as a modal where once all values are define a save button is used the save the changes.  The second settings page handles settings that can be immediately saved when changed and does not require any special processing when the page is closed.
+Example below shows a settings provide that provides two settings pages. The first one depicts a page that has properties that cannot be saved immediately as individual properties are changed. It must be treated as a modal where once all values are define a save button is used the save the changes. The second settings page handles settings that can be immediately saved when changed and does not require any special processing when the page is closed.
 
 ```tsx
 // Sample UI items provider that dynamically adds ui items
 export class ExampleSettingsProvider implements SettingsTabsProvider {
   public readonly id = "myApp:ExampleSettingsProvider";
 
-  public getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
+  public getSettingEntries(
+    stageId: string,
+    stageUsage: string
+  ): ReadonlyArray<SettingsTabEntry> | undefined {
     // It is possible to use arguments stageId and stageUsage to determine if a settings entry is to be provided for display. In this example
     // we will just assume to always provide this SettingsTabEntry.
     return [
       {
         itemPriority: 60,
         tabId: "myApp:ExampleModalSettingsPage",
-        label:"Modal Feature",
+        label: "Modal Feature",
         page: <ExampleModalSettingsPage />,
         icon: "icon-paintbrush",
         tooltip: "My Example Modal Feature Settings",
@@ -33,7 +36,7 @@ export class ExampleSettingsProvider implements SettingsTabsProvider {
       {
         itemPriority: 70,
         tabId: "myApp:ExampleSimpleSettingsPage",
-        label:"Simple Feature",
+        label: "Simple Feature",
         page: <ExampleSimpleSettingsPage />,
         tooltip: "My Example Simple Feature Settings",
       },

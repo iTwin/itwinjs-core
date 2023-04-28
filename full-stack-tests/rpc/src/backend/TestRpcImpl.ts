@@ -4,11 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus, Id64String } from "@itwin/core-bentley";
 import {
-  IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
+  IModelRpcProps,
+  NoContentError,
+  RpcInterface,
+  RpcInvocation,
+  RpcManager,
+  RpcOperationsProfile,
+  RpcPendingResponse,
+  RpcRequest,
 } from "@itwin/core-common";
 import {
-  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode,
-  TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3, TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
+  AttachedInterface,
+  MobileTestInterface,
+  MultipleClientsInterface,
+  RpcTransportTestImpl,
+  TestNotFoundResponse,
+  TestNotFoundResponseCode,
+  TestOp1Params,
+  TestRpcInterface,
+  TestRpcInterface2,
+  TestRpcInterface3,
+  TokenValues,
+  WebRoutingInterface,
+  ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
 /* eslint-disable deprecation/deprecation */
@@ -28,7 +46,10 @@ export const resetOp8Initializer = () => {
   op8Initializer = 0;
 };
 
-export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcInterface {
+export class TestZeroMajorRpcImpl
+  extends RpcInterface
+  implements ZeroMajorRpcInterface
+{
   public static register() {
     RpcManager.registerImpl(ZeroMajorRpcInterface, TestZeroMajorRpcImpl);
   }
@@ -60,7 +81,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return val;
   }
 
-  public async op6(data: { x: number, y: number }): Promise<{ x: number, y: number }> {
+  public async op6(data: {
+    x: number;
+    y: number;
+  }): Promise<{ x: number; y: number }> {
     const val = data;
     return val;
   }
@@ -70,7 +94,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return val;
   }
 
-  public async op8(x: number, y: number): Promise<{ initializer: number, sum: number }> {
+  public async op8(
+    x: number,
+    y: number
+  ): Promise<{ initializer: number; sum: number }> {
     if (!op8Initializer) {
       op8Initializer = TestRpcInterface.OP8_INITIALIZER;
       throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE);
@@ -82,8 +109,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async op9(requestId: string): Promise<string> {
     const invocation = RpcInvocation.current(this);
-    if (!invocation || invocation.request.id !== requestId)
-      throw new Error();
+    if (!invocation || invocation.request.id !== requestId) throw new Error();
 
     const val = requestId;
     return val;
@@ -129,28 +155,29 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return;
   }
 
-  public async op16(token: IModelRpcProps, values: TokenValues): Promise<boolean> {
-    return token.key === values.key &&
+  public async op16(
+    token: IModelRpcProps,
+    values: TokenValues
+  ): Promise<boolean> {
+    return (
+      token.key === values.key &&
       token.iTwinId === values.iTwinId &&
       token.iModelId === values.iModelId &&
-      token.changeset?.id === values.changeset?.id;
+      token.changeset?.id === values.changeset?.id
+    );
   }
 
   public async op17() {
     throw new NoContentError();
   }
 
-  public async startCSRFTest(): Promise<void> {
-  }
+  public async startCSRFTest(): Promise<void> {}
 
-  public async stopCSRFTest(): Promise<void> {
-  }
+  public async stopCSRFTest(): Promise<void> {}
 
-  public async csrfTestEnabled(): Promise<void> {
-  }
+  public async csrfTestEnabled(): Promise<void> {}
 
-  public async csrfTestDisabled(): Promise<void> {
-  }
+  public async csrfTestDisabled(): Promise<void> {}
 
   public async noContent() {
     throw new NoContentError();
@@ -205,7 +232,10 @@ export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
   }
 }
 
-export class MultipleClientsImpl extends RpcInterface implements MultipleClientsInterface {
+export class MultipleClientsImpl
+  extends RpcInterface
+  implements MultipleClientsInterface
+{
   public static register() {
     RpcManager.registerImpl(MultipleClientsInterface, MultipleClientsImpl);
   }
@@ -216,7 +246,10 @@ export class MultipleClientsImpl extends RpcInterface implements MultipleClients
   }
 }
 
-export class AttachedInterfaceImpl extends RpcInterface implements AttachedInterface {
+export class AttachedInterfaceImpl
+  extends RpcInterface
+  implements AttachedInterface
+{
   public static register() {
     RpcManager.registerImpl(AttachedInterface, AttachedInterfaceImpl);
   }
@@ -226,32 +259,38 @@ export class AttachedInterfaceImpl extends RpcInterface implements AttachedInter
   }
 }
 
-export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingInterface {
+export class WebRoutingInterfaceImpl
+  extends RpcInterface
+  implements WebRoutingInterface
+{
   public static register() {
     RpcManager.registerImpl(WebRoutingInterface, WebRoutingInterfaceImpl);
   }
 
   public async ping502(sent: number): Promise<boolean> {
-    return (Date.now() - sent) >= 2000;
+    return Date.now() - sent >= 2000;
   }
 
   public async ping503(sent: number): Promise<boolean> {
-    return (Date.now() - sent) >= 1000;
+    return Date.now() - sent >= 1000;
   }
 
   public async ping504(sent: number): Promise<boolean> {
-    return (Date.now() - sent) >= 2000;
+    return Date.now() - sent >= 2000;
   }
 }
 
-export class MobileTestInterfaceImpl extends RpcInterface implements MobileTestInterface {
+export class MobileTestInterfaceImpl
+  extends RpcInterface
+  implements MobileTestInterface
+{
   public static register() {
     RpcManager.registerImpl(MobileTestInterface, MobileTestInterfaceImpl);
   }
 
   public async multipart(a: number, b: Uint8Array): Promise<number> {
     let s = a;
-    b.forEach((v) => s += v);
+    b.forEach((v) => (s += v));
     return s;
   }
 }

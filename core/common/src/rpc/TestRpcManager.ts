@@ -7,7 +7,10 @@
  */
 
 import { RpcInterfaceDefinition } from "../RpcInterface";
-import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfiguration";
+import {
+  RpcConfiguration,
+  RpcDefaultConfiguration,
+} from "./core/RpcConfiguration";
 
 /* eslint-disable deprecation/deprecation */
 

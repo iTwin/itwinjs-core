@@ -12,9 +12,7 @@ export class AllArgsProps {
   public hubArgs: HubArgs;
 }
 
-export class HubArgsProps {
-
-}
+export class HubArgsProps {}
 
 export class HubArgs {
   public constructor(hubArgsProps: HubArgsProps) {
@@ -24,9 +22,7 @@ export class HubArgs {
   public hubArgProps: HubArgsProps;
 }
 
-export class JobArgsProps {
-
-}
+export class JobArgsProps {}
 
 export class JobArgs {
   public constructor(jobArgsProps: JobArgsProps) {

@@ -23,10 +23,10 @@ In the list above, later entries tend to change more frequently and, in the case
 
 [Workspace]($backend)s expresses the current state of the session in two forms:
 
-  1. [Settings](#settings)
-  2. [WorkspaceDb](#workspaceDbs)
+1. [Settings](#settings)
+2. [WorkspaceDb](#workspaceDbs)
 
-`Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceDb`s hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceDb`s are often related in application logic, e.g.:
+`Settings` are _named parameters_ that an application defines and whose values are supplied at runtime. `WorkspaceDb`s hold _named resources_ (i.e. data) that the application uses. `Settings` and `WorkspaceDb`s are often related in application logic, e.g.:
 
 - a Setting may contain the "formula" to find a resource
 - a `WorkspaceDb`s may hold a resource that defines a group of `Settings`
@@ -35,7 +35,7 @@ This means that there must be some way to initialize the process. That can eithe
 
 ## Settings
 
-Settings are named parameters defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend) by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
+Settings are named parameters defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend) by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should _not_ be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
 
 ### SettingNames
 
@@ -44,14 +44,14 @@ A [SettingName]($backend) is used to retrieve the current value of a Setting. `S
 For example:
 
 ```ts
-"energyAnalysis/formats/totalWork"
-"energyAnalysis/formats/totalHours"
-"energyAnalysis/units/power"
-"energyAnalysis/units/temperature"
-"energyAnalysis/startupMode"
-"iot-scan-visualization/ports/cameras"
-"vibration-map/filters/scope"
-"vibration-map/filters/prefabricated"
+"energyAnalysis/formats/totalWork";
+"energyAnalysis/formats/totalHours";
+"energyAnalysis/units/power";
+"energyAnalysis/units/temperature";
+"energyAnalysis/startupMode";
+"iot-scan-visualization/ports/cameras";
+"vibration-map/filters/scope";
+"vibration-map/filters/prefabricated";
 ```
 
 `SettingName`s must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but should not contain periods or spaces.
@@ -62,7 +62,7 @@ A single `Setting` is defined according to the rules of [JSON Schema](https://js
 
 ### SettingTypes
 
-A `SettingSchema` defines the *type* of a Setting as one of:
+A `SettingSchema` defines the _type_ of a Setting as one of:
 
 - `string`
 - `number`
@@ -179,7 +179,7 @@ Applications can define groups of related `SettingSchema`s in the form of [Setti
 
 ### SettingDictionaries
 
-The *values* for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
+The _values_ for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
 
 E.g.:
 
@@ -231,9 +231,9 @@ To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]
 
 ### Cloud-based WorkspacesDbs
 
-Cloud storage systems (aka *blob storage*) provide access to data through a top-level concept called a *storage account*. A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called *containers*. Containers names must be unique within a storage account, and generally have strict rules on format and length. It is common that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix.
+Cloud storage systems (aka _blob storage_) provide access to data through a top-level concept called a _storage account_. A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called _containers_. Containers names must be unique within a storage account, and generally have strict rules on format and length. It is common that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix.
 
-Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) *shared access signature* token (a `sasToken`) from the storage authority.
+Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) _shared access signature_ token (a `sasToken`) from the storage authority.
 
 Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `WorkspaceDb`s through a secure, reliable, and highly available cloud api.
 
@@ -242,7 +242,7 @@ Data stored in cloud-based `WorkspaceDb`s:
 - can be versioned
 - can have fine-grained access permissions, or may be publicly accessible
 - can be accessed directly from cloud storage without pre-downloading
-- is automatically *cached* locally for fast access
+- is automatically _cached_ locally for fast access
 - can be fully downloaded for offline use
 - is automatically synched when changes are made
 
@@ -252,7 +252,7 @@ A [WorkspaceContainer]($backend) is a special type of cloud container that (only
 
 Conceptually, you can picture the hierarchy like this:
 
-- Cloud Storage Account  (usually provided by service provider, e.g. Bentley)
+- Cloud Storage Account (usually provided by service provider, e.g. Bentley)
   - `WorkspaceContainer`
     - `WorkspaceDb`
       - `WorkspaceResource`
@@ -417,19 +417,21 @@ For example, consider the following `ace-inc.settings.json` setting file:
       "dbName": "req",
       "containerName": "ace-inc/all-company",
       "version": "^2.0"
-    },
+    }
   ]
 }
-
 ```
 
 then, calling
 
 ```ts
-  const wsdb = await IModelHost.appWorkspace.getWorkspaceDb("ace-inc/ws-structural");
+const wsdb = await IModelHost.appWorkspace.getWorkspaceDb(
+  "ace-inc/ws-structural"
+);
 ```
 
 Will attempt to load a `WorkspaceDb` with:
+
 - the most recent version greater than or equal to 1.0.0 but less than 2.0.0 of the database `struct` (e.g. `struct:1.5.2`)
 - in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
 - from an Azure storage account named `aceprod1`
@@ -449,17 +451,18 @@ Workspace settings may also be stored [in an iModel](#imodel-based-settings) so 
 were stored in a `SettingDictionary` in an iModel, then
 
 ```ts
-  const wsdb = await iModel.workspace.getWorkspaceDb("ace-inc/ws-structural");
+const wsdb = await iModel.workspace.getWorkspaceDb("ace-inc/ws-structural");
 ```
 
 Will attempt to load a `WorkspaceDb` with:
+
 - the most recent version greater than or equal to 1.4.3 but less than 1.5.0 of the database `struct` (e.g. `struct:1.4.10`)
 - in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
 - from an Azure storage account named `aceprod1`
 
 ### CloudContainer Shared Access Signature (SAS) Tokens
 
-To access a CloudContainer, users must first obtain a Shared Access Signature token (aka a `sasToken`) from the container authority, by supplying their user credentials. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be *refreshed* before they expire for sessions that outlive them.
+To access a CloudContainer, users must first obtain a Shared Access Signature token (aka a `sasToken`) from the container authority, by supplying their user credentials. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be _refreshed_ before they expire for sessions that outlive them.
 
 Administrators may provide access to CloudContainers to groups of users via RBAC rules. Normally most users are provided readonly access to WorkspaceContainers, since they have no need or ability to change workspace content. Only a small set of trusted administrators are granted rights to modify the content of `WorkspaceContainer`s.
 
@@ -495,7 +498,7 @@ It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so t
 
 #### WorkspaceContainer Locks
 
-To edit a WorkspaceDb, administrators must first obtain authorization in the form of a writeable `sasToken` from the container authority. Additionally, there may only be one editor *per container* at the same time. This is enforced via the *write-lock* for WorkspaceContainers. The `WorkspaceEditor` utility has a command `acquireLock` that acquires the write-lock for a WorkspaceContainer. The `acquireLock` command must be executed before any other editing commands may be performed, and will fail if another user has already obtained the write-lock.
+To edit a WorkspaceDb, administrators must first obtain authorization in the form of a writeable `sasToken` from the container authority. Additionally, there may only be one editor _per container_ at the same time. This is enforced via the _write-lock_ for WorkspaceContainers. The `WorkspaceEditor` utility has a command `acquireLock` that acquires the write-lock for a WorkspaceContainer. The `acquireLock` command must be executed before any other editing commands may be performed, and will fail if another user has already obtained the write-lock.
 
 All changes to `WorkspaceDb`s are performed locally and are not visible to users until the `releaseLock` command is executed. The `releaseLock` command pushes all changes to the cloud before it releases the write-lock.
 

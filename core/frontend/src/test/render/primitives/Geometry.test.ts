@@ -4,25 +4,38 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import {
+  IndexedPolyface,
+  LineString3d,
+  Loop,
+  Path,
+  Point3d,
+  Range3d,
+  Transform,
+} from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
-import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
+import {
+  PolyfacePrimitive,
+  PolyfacePrimitiveList,
+} from "../../../render/primitives/Polyface";
+import {
+  StrokesPrimitiveList,
+  StrokesPrimitivePointList,
+  StrokesPrimitivePointLists,
+} from "../../../render/primitives/Strokes";
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
   for (const arrPt of arr) {
-    if (pt.isAlmostEqual(arrPt))
-      return true;
+    if (pt.isAlmostEqual(arrPt)) return true;
   }
   return false;
 }
 
 function pointIsInPolyface(pt: Point3d, pf: IndexedPolyface): boolean {
   for (let i = 0; i < pf.data.pointCount; i++) {
-    if (pt.isAlmostEqual(pf.data.getPoint(i)!))
-      return true;
+    if (pt.isAlmostEqual(pf.data.getPoint(i)!)) return true;
   }
   return false;
 }
@@ -45,16 +58,26 @@ describe("GeometryPrimitives tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(
+      gfParams,
+      false
+    );
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
+    const loopGeom = Geometry.createFromLoop(
+      loop,
+      Transform.createIdentity(),
+      loopRange,
+      displayParams,
+      false,
+      undefined
+    );
 
     // query stroke list from loopGeom
-    const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(0.0);
+    const strokesPrimList: StrokesPrimitiveList | undefined =
+      loopGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
-    if (strokesPrimList === undefined)
-      return;
+    if (strokesPrimList === undefined) return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
     const strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
@@ -62,22 +85,24 @@ describe("GeometryPrimitives tests", () => {
     const strks: StrokesPrimitivePointList = strksPrims[0];
     expect(strks.points.length).to.equal(points.length);
 
-    for (const pt of points) { // compare generated (stroked) points to original points
+    for (const pt of points) {
+      // compare generated (stroked) points to original points
       expect(pointIsInArray(pt, strks.points)).to.be.true;
     }
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined =
+      loopGeom.getPolyfaces(0);
 
     assert(pfPrimList !== undefined);
-    if (pfPrimList === undefined)
-      return;
+    if (pfPrimList === undefined) return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
-    for (const pt of points) { // compare generated polyface points to original points
+    for (const pt of points) {
+      // compare generated polyface points to original points
       expect(pointIsInPolyface(pt, pfPrim.indexedPolyface)).to.be.true;
     }
 
@@ -106,16 +131,24 @@ describe("GeometryPrimitives tests", () => {
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
-    const displayParams: DisplayParams = DisplayParams.createForLinear(gfParams);
+    const displayParams: DisplayParams =
+      DisplayParams.createForLinear(gfParams);
 
-    const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false, undefined);
+    const pathGeom = Geometry.createFromPath(
+      pth,
+      Transform.createIdentity(),
+      pathRange,
+      displayParams,
+      false,
+      undefined
+    );
 
     // query stroke list from pathGeom
-    const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(0.0);
+    const strokesPrimList: StrokesPrimitiveList | undefined =
+      pathGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
-    if (strokesPrimList === undefined)
-      return;
+    if (strokesPrimList === undefined) return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
     const strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
@@ -123,12 +156,14 @@ describe("GeometryPrimitives tests", () => {
     const strks: StrokesPrimitivePointList = strksPrims[0];
     expect(strks.points.length).to.equal(points.length);
 
-    for (const pt of points) { // compare generated (stroked) points to original points
+    for (const pt of points) {
+      // compare generated (stroked) points to original points
       expect(pointIsInArray(pt, strks.points)).to.be.true;
     }
 
     // query polyface list from pathGeom (should be undefined - can't get polys from paths)
-    const pfPrimList: PolyfacePrimitiveList | undefined = pathGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined =
+      pathGeom.getPolyfaces(0);
     expect(pfPrimList).to.be.undefined;
   });
 });

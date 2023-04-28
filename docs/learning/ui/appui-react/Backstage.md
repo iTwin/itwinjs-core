@@ -14,17 +14,22 @@ import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 
 export function AppBackstageComposer() {
   const [backstageItems] = React.useState(() => [
-    BackstageItemUtilities.createStageLauncher("app.SampleFrontstage", 100, 10, IModelApp.i18n.translate("app:backstage.sampleFrontstage"), undefined, IconSpecUtilities.createWebComponentIconSpec(stageIconSvg)),
-    SettingsModalFrontstage.getBackstageActionItem (300, 10),
+    BackstageItemUtilities.createStageLauncher(
+      "app.SampleFrontstage",
+      100,
+      10,
+      IModelApp.i18n.translate("app:backstage.sampleFrontstage"),
+      undefined,
+      IconSpecUtilities.createWebComponentIconSpec(stageIconSvg)
+    ),
+    SettingsModalFrontstage.getBackstageActionItem(300, 10),
   ]);
 
-  return (
-    <BackstageComposer items={backstageItems} />
-  );
+  return <BackstageComposer items={backstageItems} />;
 }
 ```
 
-Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage.  This stage will display [SettingsTabEntry]($core-react) items from [SettingsTabsProvider]($core-react) classes registered with the [SettingsManager]($core-react). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
+Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage. This stage will display [SettingsTabEntry]($core-react) items from [SettingsTabsProvider]($core-react) classes registered with the [SettingsManager]($core-react). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
 
 See additional info in [Backstage](../../../learning/ui/abstract/Backstage.md).
 

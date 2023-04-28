@@ -38,13 +38,13 @@ The strength of a relationship defines the lifetime of objects on its target end
 
 The strength direction of a relationship specifies the orientation in which the strength is interpreted. That is, in a `Forward` relationship, its strength is enforced from Source to Target. Whereas in a `Backward` relationship, its strength is enforced from Target to Source. If a relationship does not specify a strength direction, `Forward` is assumed by default.
 
-`ElementOwnsChildElements` is an example of a `Forward` relationship.  `ModelModelsElement` is an example of a `Backward` relationship since its embedding strength is enforced from an Element to its Model.
+`ElementOwnsChildElements` is an example of a `Forward` relationship. `ModelModelsElement` is an example of a `Backward` relationship since its embedding strength is enforced from an Element to its Model.
 
 In most cases, both the strength and direction of a relationship are already defined by base relationships defined at the core. These settings cannot be modified or overridden by subclasses.
 
 ## Relationship multiplicity
 
-Each endpoint of a relationship must define a multiplicity, they together define the cardinality of the relationship.  The multiplicity format specifies the number of times an endpoint may be used in this relationship.  It is defined using the format `(<lower>..<upper>)`.  Lower must be between `0` and `*` and upper between `1` and `*`, where `*` represents unbounded.
+Each endpoint of a relationship must define a multiplicity, they together define the cardinality of the relationship. The multiplicity format specifies the number of times an endpoint may be used in this relationship. It is defined using the format `(<lower>..<upper>)`. Lower must be between `0` and `*` and upper between `1` and `*`, where `*` represents unbounded.
 
 ### Example
 
@@ -63,7 +63,7 @@ The `ElementOwnsChildElements` relationship defines the following constraints:
 
 - The parent Element (Source) may own any number of child Elements (Target) determined by the Target multiplicity.
 
-- The parent Element controls the lifetime of the child Elements, so deleting the parent deletes the children.  Determined by the relationship strength. NOTE: Direction is assumed to be from Source to Target because none is specified.
+- The parent Element controls the lifetime of the child Elements, so deleting the parent deletes the children. Determined by the relationship strength. NOTE: Direction is assumed to be from Source to Target because none is specified.
 
 - An Element may only have one parent. Determined by the Source multiplicity.
 
@@ -107,7 +107,7 @@ For the purposes of optimized performance of BIS applications using iModel techn
 
 ### Link Table
 
-In iModel databases, there is a single link table (bis\_ElementRefersToElements) that supports all relationships between elements with either of these requirements:
+In iModel databases, there is a single link table (bis_ElementRefersToElements) that supports all relationships between elements with either of these requirements:
 
 - Both the source and the target have unconstrained multiplicity `(*..*)`
 
@@ -130,5 +130,6 @@ Regarding subclassable Navigation Property relationships, `ElementOwnsChildEleme
 Lastly, Navigation Properties can also be defined for Link table relationships. In this case, the link table relationship is specified as an end point of the Navigation Property relationship.
 
 ---
+
 | Next: [Schemas](./schemas-domains.md)
 |:---

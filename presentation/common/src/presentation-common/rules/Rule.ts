@@ -48,7 +48,12 @@ export interface RuleBase {
  * A union of all presentation rule types.
  * @public
  */
-export declare type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride;
+export declare type Rule =
+  | CustomizationRule
+  | NavigationRule
+  | ContentRule
+  | ContentModifier
+  | DefaultPropertyCategoryOverride;
 
 /**
  * Container of a [[condition]] property. Used for rules that support conditions. Not

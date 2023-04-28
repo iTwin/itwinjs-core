@@ -7,15 +7,24 @@ import { expect } from "chai";
 import { Capabilities } from "@itwin/webgl-compatibility";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import {
+  CompileStatus,
+  ShaderProgram,
+} from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
 import { EmptyLocalization } from "@itwin/core-common";
 
 class TestSystem extends System {
   private static _simulateBug = true;
 
-  protected constructor(canvas: HTMLCanvasElement, context: WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
-    capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ = TestSystem._simulateBug ? true : undefined;
+  protected constructor(
+    canvas: HTMLCanvasElement,
+    context: WebGL2RenderingContext,
+    capabilities: Capabilities,
+    options: RenderSystem.Options
+  ) {
+    capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ =
+      TestSystem._simulateBug ? true : undefined;
     super(canvas, context, capabilities, options);
   }
 
@@ -47,13 +56,15 @@ describe("Early Z driver bug workaround", () => {
     await TestSystem.startIModelApp(false);
     const indicesOfShadersLackingDiscard: number[] = [];
     let index = 0;
-    TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
-      expect(containsWorkaround(program)).to.be.false;
-      if (!containsDiscardStatement(program))
-        indicesOfShadersLackingDiscard.push(index);
+    TestSystem.instance.techniques.forEachVariedProgram(
+      (program: ShaderProgram) => {
+        expect(containsWorkaround(program)).to.be.false;
+        if (!containsDiscardStatement(program))
+          indicesOfShadersLackingDiscard.push(index);
 
-      ++index;
-    });
+        ++index;
+      }
+    );
 
     expect(indicesOfShadersLackingDiscard.length === 0).to.be.false;
 
@@ -61,14 +72,17 @@ describe("Early Z driver bug workaround", () => {
     await IModelApp.shutdown();
     await TestSystem.startIModelApp(true);
     index = 0;
-    TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
-      expect(containsDiscardStatement(program)).to.be.true;
-      const needsWorkaround = -1 !== indicesOfShadersLackingDiscard.indexOf(index);
-      expect(containsWorkaround(program)).to.equal(needsWorkaround);
-      if (needsWorkaround)
-        expect(program.compile()).to.equal(CompileStatus.Success);
+    TestSystem.instance.techniques.forEachVariedProgram(
+      (program: ShaderProgram) => {
+        expect(containsDiscardStatement(program)).to.be.true;
+        const needsWorkaround =
+          -1 !== indicesOfShadersLackingDiscard.indexOf(index);
+        expect(containsWorkaround(program)).to.equal(needsWorkaround);
+        if (needsWorkaround)
+          expect(program.compile()).to.equal(CompileStatus.Success);
 
-      index++;
-    });
+        index++;
+      }
+    );
   }).timeout(95000);
 });

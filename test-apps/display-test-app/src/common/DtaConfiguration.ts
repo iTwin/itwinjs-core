@@ -41,8 +41,8 @@ export interface DtaStringConfiguration {
   viewName?: string;
   iModelName?: string;
   filename?: string;
-  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
-  startupMacro?: string;    // Used when running a macro at startup, specifies file path
+  standalonePath?: string; // Used when run in the browser - a common base path for all standalone imodels
+  startupMacro?: string; // Used when running a macro at startup, specifies file path
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
@@ -71,7 +71,10 @@ export interface DtaOtherConfiguration {
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
-export type DtaConfiguration = DtaBooleanConfiguration & DtaStringConfiguration & DtaNumberConfiguration & DtaOtherConfiguration;
+export type DtaConfiguration = DtaBooleanConfiguration &
+  DtaStringConfiguration &
+  DtaNumberConfiguration &
+  DtaOtherConfiguration;
 
 let configuration: DtaConfiguration | undefined;
 
@@ -82,12 +85,10 @@ let configuration: DtaConfiguration | undefined;
  *      All subsequent calls will return the initial config.
  */
 export const getConfig = (): DtaConfiguration => {
-  if (undefined !== configuration)
-    return configuration;
+  if (undefined !== configuration) return configuration;
 
   configuration = {};
-  if (ProcessDetector.isMobileAppBackend)
-    return configuration;
+  if (ProcessDetector.isMobileAppBackend) return configuration;
 
   // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
   // At some point we will reinstate ability to open from hub.
@@ -152,33 +153,41 @@ export const getConfig = (): DtaConfiguration => {
     configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
 
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
-  configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
-  configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
-  configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
-  configuration.useFrontendTiles = undefined !== process.env.IMJS_USE_FRONTEND_TILES;
+  configuration.cacheTileMetadata =
+    undefined !== process.env.IMJS_CACHE_TILE_METADATA;
+  configuration.useProjectExtents =
+    undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
+  configuration.noElectronAuth =
+    undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
+  configuration.useFrontendTiles =
+    undefined !== process.env.IMJS_USE_FRONTEND_TILES;
   const gpuMemoryLimit = process.env.IMJS_GPU_MEMORY_LIMIT;
   if (undefined !== gpuMemoryLimit) {
     const gpuByteLimit = Number.parseInt(gpuMemoryLimit, 10);
-    configuration.gpuMemoryLimit = Number.isNaN(gpuByteLimit) ? gpuMemoryLimit : gpuByteLimit;
+    configuration.gpuMemoryLimit = Number.isNaN(gpuByteLimit)
+      ? gpuMemoryLimit
+      : gpuByteLimit;
   }
 
   const parseSeconds = (key: string) => {
     const env = process.env[key];
-    if (!env)
-      return undefined;
+    if (!env) return undefined;
 
     const val = Number.parseInt(env, 10);
     return Number.isNaN(val) ? undefined : val;
   };
 
-  configuration.tileTreeExpirationSeconds = parseSeconds("IMJS_TILETREE_EXPIRATION_SECONDS");
-  configuration.tileExpirationSeconds = parseSeconds("IMJS_TILE_EXPIRATION_SECONDS");
+  configuration.tileTreeExpirationSeconds = parseSeconds(
+    "IMJS_TILETREE_EXPIRATION_SECONDS"
+  );
+  configuration.tileExpirationSeconds = parseSeconds(
+    "IMJS_TILE_EXPIRATION_SECONDS"
+  );
 
   const maxToSkipVar = process.env.IMJS_MAX_TILES_TO_SKIP;
   if (undefined !== maxToSkipVar) {
     const maxToSkip = Number.parseInt(maxToSkipVar, 10);
-    if (!Number.isNaN(maxToSkip))
-      configuration.maxTilesToSkip = maxToSkip;
+    if (!Number.isNaN(maxToSkip)) configuration.maxTilesToSkip = maxToSkip;
   }
 
   const minSpatialTolEnv = process.env.IMJS_MIN_SPATIAL_TOLERANCE;
@@ -197,34 +206,45 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
 
-  const devicePixelRatioOverrideVar = process.env.IMJS_DEVICE_PIXEL_RATIO_OVERRIDE;
+  const devicePixelRatioOverrideVar =
+    process.env.IMJS_DEVICE_PIXEL_RATIO_OVERRIDE;
   if (undefined !== devicePixelRatioOverrideVar) {
-    const devicePixelRatioOverride = Number.parseFloat(devicePixelRatioOverrideVar);
+    const devicePixelRatioOverride = Number.parseFloat(
+      devicePixelRatioOverrideVar
+    );
     if (!Number.isNaN(devicePixelRatioOverride))
       configuration.devicePixelRatioOverride = devicePixelRatioOverride;
   }
 
-  if (undefined !== process.env.IMJS_DPI_LOD)
-    configuration.dpiAwareLOD = true;
+  if (undefined !== process.env.IMJS_DPI_LOD) configuration.dpiAwareLOD = true;
 
   const aaSamplesVar = process.env.IMJS_AASAMPLES;
-  if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
+  if (
+    undefined !== aaSamplesVar &&
+    "0" !== aaSamplesVar &&
+    "false" !== aaSamplesVar.toLowerCase()
+  ) {
     const aaSamples = Number.parseInt(aaSamplesVar, 10);
-    if (!Number.isNaN(aaSamples))
-      configuration.antialiasSamples = aaSamples;
+    if (!Number.isNaN(aaSamples)) configuration.antialiasSamples = aaSamples;
   }
 
   const useWebGL2Var = process.env.IMJS_USE_WEBGL2;
-  if (undefined !== useWebGL2Var && ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase()))
+  if (
+    undefined !== useWebGL2Var &&
+    ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase())
+  )
     configuration.useWebGL2 = false;
 
   const extensions = process.env.IMJS_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");
 
-  configuration.disableEdges = undefined !== process.env.IMJS_DISABLE_EDGE_DISPLAY;
-  configuration.alwaysLoadEdges = undefined !== process.env.IMJS_ALWAYS_LOAD_EDGES;
-  configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.IMJS_SUBDIVIDE_INCOMPLETE;
+  configuration.disableEdges =
+    undefined !== process.env.IMJS_DISABLE_EDGE_DISPLAY;
+  configuration.alwaysLoadEdges =
+    undefined !== process.env.IMJS_ALWAYS_LOAD_EDGES;
+  configuration.alwaysSubdivideIncompleteTiles =
+    undefined !== process.env.IMJS_SUBDIVIDE_INCOMPLETE;
 
   configuration.iTwinId = process.env.IMJS_ITWIN_ID;
 

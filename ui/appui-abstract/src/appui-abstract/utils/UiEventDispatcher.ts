@@ -19,7 +19,7 @@ export interface UiSyncEventArgs {
 /** UiSync Event class.
  * @public
  */
-export class UiSyncEvent extends UiEvent<UiSyncEventArgs> { }
+export class UiSyncEvent extends UiEvent<UiSyncEventArgs> {}
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
@@ -46,14 +46,12 @@ export class UiEventDispatcher {
   public setTimeoutPeriod(period: number): void {
     this._timeoutPeriod = period;
     this._secondaryTimeoutPeriod = Math.floor(this._timeoutPeriod / 2);
-    if (this._secondaryTimeoutPeriod < 1)
-      this._secondaryTimeoutPeriod = 1;
+    if (this._secondaryTimeoutPeriod < 1) this._secondaryTimeoutPeriod = 1;
     if (this._syncEventTimerId) {
       window.clearTimeout(this._syncEventTimerId);
       this._syncEventTimerId = undefined;
     }
-    if (this._eventIds)
-      this._eventIds.clear();
+    if (this._eventIds) this._eventIds.clear();
 
     this._eventIdAdded = false;
   }
@@ -87,8 +85,11 @@ export class UiEventDispatcher {
     }
 
     this.syncEventIds.add(eventId.toLowerCase());
-    if (!this._syncEventTimerId) {  // if there is not a timer active, create one
-      this._syncEventTimerId = window.setTimeout(() => {this.checkForAdditionalIds();}, this._timeoutPeriod);
+    if (!this._syncEventTimerId) {
+      // if there is not a timer active, create one
+      this._syncEventTimerId = window.setTimeout(() => {
+        this.checkForAdditionalIds();
+      }, this._timeoutPeriod);
     } else {
       this._eventIdAdded = true;
     }
@@ -103,8 +104,11 @@ export class UiEventDispatcher {
 
     eventIds.forEach((id) => this.syncEventIds.add(id.toLowerCase()));
     // istanbul ignore else
-    if (!this._syncEventTimerId) {  // if there is not a timer active, create one
-      this._syncEventTimerId = window.setTimeout(() => {this.checkForAdditionalIds();}, this._timeoutPeriod);
+    if (!this._syncEventTimerId) {
+      // if there is not a timer active, create one
+      this._syncEventTimerId = window.setTimeout(() => {
+        this.checkForAdditionalIds();
+      }, this._timeoutPeriod);
     } else {
       this._eventIdAdded = true;
     }
@@ -139,13 +143,20 @@ export class UiEventDispatcher {
     this._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
     // istanbul ignore next
-    this._syncEventTimerId = window.setTimeout(() => {this.checkForAdditionalIds();}, this._secondaryTimeoutPeriod);
+    this._syncEventTimerId = window.setTimeout(() => {
+      this.checkForAdditionalIds();
+    }, this._secondaryTimeoutPeriod);
   }
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
     /* istanbul ignore else */
-    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value.toLowerCase())))
+    if (
+      idsOfInterest.length > 0 &&
+      idsOfInterest.some((value: string): boolean =>
+        eventIds.has(value.toLowerCase())
+      )
+    )
       return true;
     return false;
   }

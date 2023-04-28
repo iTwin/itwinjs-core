@@ -11,7 +11,13 @@ const NAMESPACES = ["Presentation"];
 export class FrontendLocalizationHelper extends LocalizationHelper {
   private _lang: string | undefined;
   constructor(lang?: string) {
-    super({ getLocalizedString: (key) => Presentation.localization.getLocalizedString(key, { defaultValue: key, lng: this._lang }) });
+    super({
+      getLocalizedString: (key) =>
+        Presentation.localization.getLocalizedString(key, {
+          defaultValue: key,
+          lng: this._lang,
+        }),
+    });
     this._lang = lang;
   }
 
@@ -23,11 +29,15 @@ export class FrontendLocalizationHelper extends LocalizationHelper {
   }
 
   public static async registerNamespaces() {
-    const localizationPromises = NAMESPACES.map(async (namespace) => Presentation.localization.registerNamespace(namespace));
+    const localizationPromises = NAMESPACES.map(async (namespace) =>
+      Presentation.localization.registerNamespace(namespace)
+    );
     await Promise.all(localizationPromises);
   }
 
   public static unregisterNamespaces() {
-    NAMESPACES.map((namespace) => Presentation.localization.unregisterNamespace(namespace));
+    NAMESPACES.map((namespace) =>
+      Presentation.localization.unregisterNamespace(namespace)
+    );
   }
 }

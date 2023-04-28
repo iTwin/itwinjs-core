@@ -4,19 +4,19 @@
 
 Child node rules are used to define child nodes in a hierarchy.
 
-The rules have two types of attributes: for defining *placement* and for defining *branch content*. *Placement* attributes can make the whole rule return no nodes (e.g. when [condition](#attribute-condition) evaluates to `false`). In that case *branch content* attributes have no effect.
+The rules have two types of attributes: for defining _placement_ and for defining _branch content_. _Placement_ attributes can make the whole rule return no nodes (e.g. when [condition](#attribute-condition) evaluates to `false`). In that case _branch content_ attributes have no effect.
 
 ## Attributes
 
 | Name                                                        | Required? | Type                                                                 | Default |
 | ----------------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Placement attributes*                                      |
+| _Placement attributes_                                      |
 | [`condition`](#attribute-condition)                         | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 | [`requiredSchemas`](#attribute-requiredschemas)             | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attribute-priority)                           | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)           | No        | `boolean`                                                            | `false` |
 | [`stopFurtherProcessing`](#attribute-stopfurtherprocessing) | No        | `boolean`                                                            | `false` |
-| *Branch content attributes*                                 |
+| _Branch content attributes_                                 |
 | [`specifications`](#attribute-specifications)               | No        | `ChildNodeSpecification[]`                                           | `[]`    |
 | [`customizationRules`](#attribute-customizationrules)       | No        | `CustomizationRule[]`                                                | `[]`    |
 | [`subConditions`](#attribute-subconditions)                 | No        | `SubCondition[]`                                                     | `[]`    |
@@ -148,7 +148,7 @@ A list of [customization rules](./index.md#hierarchy-customization) that apply o
 
 ### Attribute: `subConditions`
 
-A list of sub-rules which share *placement attributes* and [nested customization rules](#attribute-customizationrules) of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules can add additional condition of their own.
+A list of sub-rules which share _placement attributes_ and [nested customization rules](#attribute-customizationrules) of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules can add additional condition of their own.
 
 |                   |                  |
 | ----------------- | ---------------- |

@@ -9,8 +9,18 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import {
-  ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
-  RemoveFunction, RootSubjectProps, TxnNotifications,
+  ChangedEntities,
+  ChangesetIndexAndId,
+  EcefLocation,
+  EcefLocationProps,
+  GeographicCRS,
+  GeographicCRSProps,
+  IModelStatus,
+  IpcAppChannel,
+  ModelIdAndGeometryGuid,
+  RemoveFunction,
+  RootSubjectProps,
+  TxnNotifications,
 } from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
@@ -21,9 +31,13 @@ import { IpcApp, NotificationHandler } from "./IpcApp";
  * @public
  */
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
-  constructor(private _key: string) { super(); }
+  constructor(private _key: string) {
+    super();
+  }
   public abstract get briefcaseChannelName(): string;
-  public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
+  public get channelName() {
+    return `${this.briefcaseChannelName}:${this._key}`;
+  }
 }
 
 /** Manages local changes to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
@@ -31,7 +45,10 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
  * @see [TxnManager]($backend) for the backend counterpart.
  * @public
  */
-export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
+export class BriefcaseTxns
+  extends BriefcaseNotificationHandler
+  implements TxnNotifications
+{
   private readonly _iModel: BriefcaseConnection;
   private _cleanup?: RemoveFunction;
 
@@ -43,12 +60,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
+  public readonly onElementsChanged = new BeEvent<
+    (changes: Readonly<ChangedEntities>) => void
+  >();
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed models.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onModelsChanged = new BeEvent<(changes: Readonly<ChangedEntities>) => void>();
+  public readonly onModelsChanged = new BeEvent<
+    (changes: Readonly<ChangedEntities>) => void
+  >();
 
   /** Event raised after the geometry within one or more [[GeometricModelState]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
@@ -56,7 +77,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    *  - Modification of an existing element's geometric properties; or
    *  - An explicit request to flag it as changed via [IModelDb.Models.updateModel]($backend).
    */
-  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
+  public readonly onModelGeometryChanged = new BeEvent<
+    (changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void
+  >();
 
   /** Event raised before a commit operation is performed. Initiated by a call to [[BriefcaseConnection.saveChanges]], unless there are no changes to save.
    * @see [[onCommitted]] for the event raised after the operation.
@@ -69,7 +92,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
    *  - `time`: the time at which changes were saved on the backend (obtained via `Date.now()`).
    * @see [[onCommit]] for the event raised before the operation.
    */
-  public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
+  public readonly onCommitted = new BeEvent<
+    (hasPendingTxns: boolean, time: number) => void
+  >();
 
   /** Event raised after a changeset has been applied to the briefcase.
    * Changesets may be applied as a result of [[BriefcaseConnection.pullChanges]], or by undo/redo operations.
@@ -89,12 +114,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised after changes are pulled and merged into the briefcase.
    * @see [[BriefcaseConnection.pullAndMergeChanges]].
    */
-  public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+  public readonly onChangesPulled = new BeEvent<
+    (parentChangeset: ChangesetIndexAndId) => void
+  >();
 
   /** Event raised after the briefcase's local changes are pushed.
    * @see [[BriefcaseConnection.pushChanges]].
    */
-  public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+  public readonly onChangesPushed = new BeEvent<
+    (parentChangeset: ChangesetIndexAndId) => void
+  >();
 
   /** @internal */
   public constructor(iModel: BriefcaseConnection) {
@@ -123,21 +152,24 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** Query if the briefcase has any pending Txns waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async hasPendingTxns(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return IpcApp.appFunctionIpc.hasPendingTxns(this._iModel.key);
   }
 
   /** Determine if any reversible (undoable) changes exist.
    * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
    */
-  public async isUndoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async isUndoPossible(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return IpcApp.appFunctionIpc.isUndoPossible(this._iModel.key);
   }
 
   /** Determine if any reinstatable (redoable) changes exist.
    * @see [[reinstateTxn]] to redo changes.
    */
-  public async isRedoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async isRedoPossible(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return IpcApp.appFunctionIpc.isRedoPossible(this._iModel.key);
   }
 
@@ -282,7 +314,11 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyGeographicCoordinateSystemChanged(gcs: GeographicCRSProps | undefined) {
-    this._iModel.geographicCoordinateSystem = gcs ? new GeographicCRS(gcs) : undefined;
+  public notifyGeographicCoordinateSystemChanged(
+    gcs: GeographicCRSProps | undefined
+  ) {
+    this._iModel.geographicCoordinateSystem = gcs
+      ? new GeographicCRS(gcs)
+      : undefined;
   }
 }

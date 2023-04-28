@@ -7,7 +7,10 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/SurfaceParams";
+import {
+  SurfaceMaterial,
+  SurfaceMaterialAtlas,
+} from "../primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
@@ -40,16 +43,24 @@ import { FloatRgb } from "./FloatRGBA";
  */
 export class Material extends RenderMaterial {
   // eslint-disable-next-line deprecation/deprecation
-  public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
+  public static readonly default: Material = new Material(
+    RenderMaterial.Params.defaults
+  );
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas = false as const;
   public readonly fragUniforms = new Float32Array(4);
   public readonly rgba = new Float32Array(4);
 
-  public get overridesRgb() { return this.rgba[0] >= 0; }
-  public get overridesAlpha() { return this.rgba[3] >= 0; }
-  public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
+  public get overridesRgb() {
+    return this.rgba[0] >= 0;
+  }
+  public get overridesAlpha() {
+    return this.rgba[3] >= 0;
+  }
+  public get hasTranslucency() {
+    return this.overridesAlpha && this.rgba[3] < 1;
+  }
 
   // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
@@ -70,8 +81,14 @@ export class Material extends RenderMaterial {
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
     this.setInteger(scale(params.diffuse), scale(params.specular), 0);
 
-    const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
-    const specularRgb = undefined !== params.specularColor ? params.specularColor : ColorDef.white;
+    const textureWeight =
+      undefined !== this.textureMapping
+        ? this.textureMapping.params.weight
+        : 1.0;
+    const specularRgb =
+      undefined !== params.specularColor
+        ? params.specularColor
+        : ColorDef.white;
     const specularColors = specularRgb.colors;
     this.setInteger(scale(textureWeight), specularColors.r, 1);
     this.setInteger(specularColors.g, specularColors.b, 2);
@@ -80,7 +97,7 @@ export class Material extends RenderMaterial {
   }
 
   private setInteger(loByte: number, hiByte: number, index: number): void {
-    const clamp = (x: number) => Math.floor(Math.min(255, (Math.max(x, 0))));
+    const clamp = (x: number) => Math.floor(Math.min(255, Math.max(x, 0)));
 
     loByte = clamp(loByte);
     hiByte = clamp(hiByte);
@@ -97,11 +114,10 @@ Object.freeze(Material.default);
 export type MaterialInfo = Material | SurfaceMaterialAtlas;
 
 /** @internal */
-export function createMaterialInfo(source: SurfaceMaterial | undefined): MaterialInfo | undefined {
-  if (undefined === source)
-    return undefined;
-  else if (source.isAtlas)
-    return source;
-  else
-    return source.material as Material;
+export function createMaterialInfo(
+  source: SurfaceMaterial | undefined
+): MaterialInfo | undefined {
+  if (undefined === source) return undefined;
+  else if (source.isAtlas) return source;
+  else return source.material as Material;
 }

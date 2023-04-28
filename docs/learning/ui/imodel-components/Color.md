@@ -3,13 +3,13 @@
 The [Color]($imodel-components-react:Color) category in the `@itwin/imodel-components-react` package includes
 classes and components for working with and picking a Color.
 
-|Component|Description
-|-----|-----
-|[AlphaSlider]($imodel-components-react)|used to set the alpha value for a color
-|[ColorPickerButton]($imodel-components-react)|used to pick a color from an array of available colors
-|[HueSlider]($imodel-components-react)|used to set the hue value for a color
-|[SaturationPicker]($imodel-components-react)|used to set the saturation value for a color
-|[ColorSwatch]($imodel-components-react)|displays a color swatch in a button
+| Component                                     | Description                                            |
+| --------------------------------------------- | ------------------------------------------------------ |
+| [AlphaSlider]($imodel-components-react)       | used to set the alpha value for a color                |
+| [ColorPickerButton]($imodel-components-react) | used to pick a color from an array of available colors |
+| [HueSlider]($imodel-components-react)         | used to set the hue value for a color                  |
+| [SaturationPicker]($imodel-components-react)  | used to set the saturation value for a color           |
+| [ColorSwatch]($imodel-components-react)       | displays a color swatch in a button                    |
 
 ## Samples
 
@@ -21,7 +21,11 @@ The following sample shows the components above used together to form a color pi
 
 ```tsx
 import { HSVColor, ColorDef, ColorByName } from "@itwin/core-common";
-import { SaturationPicker, HueSlider, ColorSwatch } from "@itwin/imodel-components-react";
+import {
+  SaturationPicker,
+  HueSlider,
+  ColorSwatch,
+} from "@itwin/imodel-components-react";
 ```
 
 #### State
@@ -123,7 +127,10 @@ interface State {
 #### render() method
 
 ```tsx
-<ColorPickerButton initialColor={this.state.color} onColorPick={this._handleColorChange} />
+<ColorPickerButton
+  initialColor={this.state.color}
+  onColorPick={this._handleColorChange}
+/>
 ```
 
 #### Handler Function

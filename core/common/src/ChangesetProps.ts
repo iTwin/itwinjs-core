@@ -30,19 +30,28 @@ export type ChangesetIndex = number;
  * @public
  * @extensions
  */
-export interface ChangesetIndexAndId { readonly index: ChangesetIndex, readonly id: ChangesetId }
+export interface ChangesetIndexAndId {
+  readonly index: ChangesetIndex;
+  readonly id: ChangesetId;
+}
 
 /** The Id and optionally the index of a changeset
  * @public
  * @extensions
  */
-export interface ChangesetIdWithIndex { readonly index?: ChangesetIndex, readonly id: ChangesetId }
+export interface ChangesetIdWithIndex {
+  readonly index?: ChangesetIndex;
+  readonly id: ChangesetId;
+}
 
 /** either changeset index, id, or both
-* @public
+ * @public
  * @extensions
-*/
-export type ChangesetIndexOrId = ChangesetIndexAndId | { readonly index: ChangesetIndex, readonly id?: never } | { readonly id: ChangesetId, readonly index?: never };
+ */
+export type ChangesetIndexOrId =
+  | ChangesetIndexAndId
+  | { readonly index: ChangesetIndex; readonly id?: never }
+  | { readonly id: ChangesetId; readonly index?: never };
 
 /** Value to indicate whether a changeset contains schema changes or not
  * @public

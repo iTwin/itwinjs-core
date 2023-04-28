@@ -19,7 +19,6 @@ import { TriangleCandidate } from "./TriangleCandidate";
  * @internal
  */
 export class GreedyTriangulationBetweenLineStrings {
-
   private _vector1: Vector3d;
   private constructor(turnRadians: number) {
     this._turnRadians = turnRadians;
@@ -37,12 +36,11 @@ export class GreedyTriangulationBetweenLineStrings {
   private isForwardVector(
     candidate: Vector3d,
     forward: Vector3d,
-    perp: Vector3d): boolean {
-    if (candidate.dotProduct(forward) <= 0.0)
-      return false;
+    perp: Vector3d
+  ): boolean {
+    if (candidate.dotProduct(forward) <= 0.0) return false;
     const theta = candidate.angleFromPerpendicular(perp);
-    if (Math.abs(theta.radians) > this._turnRadians)
-      return false;
+    if (Math.abs(theta.radians) > this._turnRadians) return false;
     return true;
   }
   private isPlanarBase(
@@ -55,7 +53,8 @@ export class GreedyTriangulationBetweenLineStrings {
     forwardA: Vector3d,
     xyzB: Point3d,
     crossB: Vector3d,
-    forwardB: Vector3d): boolean {
+    forwardB: Vector3d
+  ): boolean {
     if (baseA + 1 < pointsA.length && baseB + 1 < pointsB.length) {
       pointsA.getPoint3dAtUncheckedPointIndex(baseA, xyzA);
       pointsB.getPoint3dAtUncheckedPointIndex(baseB, xyzB);
@@ -64,11 +63,13 @@ export class GreedyTriangulationBetweenLineStrings {
       Vector3d.createStartEnd(xyzA, xyzB, this._vector1);
       this._vector1.crossProduct(forwardA, crossA);
       this._vector1.crossProduct(forwardB, crossB);
-      if (!xyzA.isAlmostEqual(xyzB) && crossA.angleTo(crossB).radians < this._turnRadians)
+      if (
+        !xyzA.isAlmostEqual(xyzB) &&
+        crossA.angleTo(crossB).radians < this._turnRadians
+      )
         return true;
     }
     return false;
-
   }
   /**
    * Starting at start in source, examine points to see how long they are close to being "in plane"
@@ -85,18 +86,16 @@ export class GreedyTriangulationBetweenLineStrings {
     perpA: Vector3d,
     forwardA: Vector3d,
     perpB: Vector3d,
-    forwardB: Vector3d) {
-    child.setFrom(parent, parent.begin, trialEnd);  // initialize as empty interval.
+    forwardB: Vector3d
+  ) {
+    child.setFrom(parent, parent.begin, trialEnd); // initialize as empty interval.
     while (child.end < parent.end) {
       child.points.vectorXYAndZIndex(xyzA, child.end, this._vector1);
-      if (!this.isForwardVector(this._vector1, forwardA, perpA))
-        break;
-      if (!this.isForwardVector(this._vector1, forwardB, perpB))
-        break;
+      if (!this.isForwardVector(this._vector1, forwardA, perpA)) break;
+      if (!this.isForwardVector(this._vector1, forwardB, perpB)) break;
       if (child.end > 0) {
         child.points.vectorIndexIndex(child.end - 1, child.end, this._vector1);
-        if (!this.isForwardVector(this._vector1, forwardA, perpA))
-          break;
+        if (!this.isForwardVector(this._vector1, forwardA, perpA)) break;
       }
       child.end++;
     }
@@ -119,47 +118,119 @@ export class GreedyTriangulationBetweenLineStrings {
     intervalA: IndexedXYZCollectionInterval,
     intervalB: IndexedXYZCollectionInterval,
     handler: (triangle: BarycentricTriangle) => void,
-    addOnly1: boolean = false) {
+    addOnly1: boolean = false
+  ) {
     intervalA.restrictEnd();
     intervalB.restrictEnd();
 
     while (intervalA.length > 1 && intervalB.length > 1) {
-
       // triangles A1 and B1 are always valid.
-      this._triangleA1 = TriangleCandidate.createFromIndexedXYZ(intervalA.points, intervalA.begin, intervalA.points, intervalA.begin + 1, intervalB.points, intervalB.begin, 1, this._triangleA1);
-      this._triangleA2 = TriangleCandidate.createFromIndexedXYZ(intervalA.points, intervalA.begin + 1, intervalA.points, intervalA.begin + 2, intervalB.points, intervalB.begin, 2, this._triangleA2);
-      this._triangleA3 = TriangleCandidate.createFromIndexedXYZ(intervalA.points, intervalA.begin, intervalA.points, intervalA.begin + 1, intervalB.points, intervalB.begin + 1, 3, this._triangleA3);
+      this._triangleA1 = TriangleCandidate.createFromIndexedXYZ(
+        intervalA.points,
+        intervalA.begin,
+        intervalA.points,
+        intervalA.begin + 1,
+        intervalB.points,
+        intervalB.begin,
+        1,
+        this._triangleA1
+      );
+      this._triangleA2 = TriangleCandidate.createFromIndexedXYZ(
+        intervalA.points,
+        intervalA.begin + 1,
+        intervalA.points,
+        intervalA.begin + 2,
+        intervalB.points,
+        intervalB.begin,
+        2,
+        this._triangleA2
+      );
+      this._triangleA3 = TriangleCandidate.createFromIndexedXYZ(
+        intervalA.points,
+        intervalA.begin,
+        intervalA.points,
+        intervalA.begin + 1,
+        intervalB.points,
+        intervalB.begin + 1,
+        3,
+        this._triangleA3
+      );
 
-      this._triangleB1 = TriangleCandidate.createFromIndexedXYZ(intervalB.points, intervalB.begin + 1, intervalB.points, intervalB.begin, intervalA.points, intervalA.begin, -1, this._triangleB1);
-      this._triangleB2 = TriangleCandidate.createFromIndexedXYZ(intervalB.points, intervalB.begin + 2, intervalB.points, intervalB.begin + 1, intervalA.points, intervalA.begin, -2, this._triangleB2);
-      this._triangleB3 = TriangleCandidate.createFromIndexedXYZ(intervalB.points, intervalB.begin + 1, intervalB.points, intervalB.begin, intervalA.points, intervalA.begin + 1, -3, this._triangleB3);
+      this._triangleB1 = TriangleCandidate.createFromIndexedXYZ(
+        intervalB.points,
+        intervalB.begin + 1,
+        intervalB.points,
+        intervalB.begin,
+        intervalA.points,
+        intervalA.begin,
+        -1,
+        this._triangleB1
+      );
+      this._triangleB2 = TriangleCandidate.createFromIndexedXYZ(
+        intervalB.points,
+        intervalB.begin + 2,
+        intervalB.points,
+        intervalB.begin + 1,
+        intervalA.points,
+        intervalA.begin,
+        -2,
+        this._triangleB2
+      );
+      this._triangleB3 = TriangleCandidate.createFromIndexedXYZ(
+        intervalB.points,
+        intervalB.begin + 1,
+        intervalB.points,
+        intervalB.begin,
+        intervalA.points,
+        intervalA.begin + 1,
+        -3,
+        this._triangleB3
+      );
       // Look at pairs of 2 triangles.
       // (each pair begins with 1 or -1)
       // For each pair find the smallest aspect ratio of its two triangles.  (Small is bad)
       // Choose the pair where that (smaller aspect ratio of two) is largest.
       // Advance in that direction.
-      this._bestTriangle = TriangleCandidate.copyWithLowerQuality(this._triangleA1, this._triangleB3, this._bestTriangle);
-      this._workTriangle = TriangleCandidate.copyWithLowerQuality(this._triangleB1, this._triangleA3, this._workTriangle);
-      TriangleCandidate.updateIfOtherHasHigherQuality(this._bestTriangle, this._workTriangle);
+      this._bestTriangle = TriangleCandidate.copyWithLowerQuality(
+        this._triangleA1,
+        this._triangleB3,
+        this._bestTriangle
+      );
+      this._workTriangle = TriangleCandidate.copyWithLowerQuality(
+        this._triangleB1,
+        this._triangleA3,
+        this._workTriangle
+      );
+      TriangleCandidate.updateIfOtherHasHigherQuality(
+        this._bestTriangle,
+        this._workTriangle
+      );
       // TestTriangle::UpdateIfOtherHasLargerAspectRatio (bestTriangle, TestTriangle::MergeAspectRatio (triangleB1, triangleB2));
       // TestTriangle::UpdateIfOtherHasLargerAspectRatio (bestTriangle, TestTriangle::MergeAspectRatio (triangleA1, triangleA2));
 
       if (this._bestTriangle.id > 0) {
         intervalA.advanceBegin();
         handler(this._bestTriangle);
-        if (addOnly1)
-          return;
+        if (addOnly1) return;
       } else {
         intervalB.advanceBegin();
         handler(this._bestTriangle);
-        if (addOnly1)
-          return;
+        if (addOnly1) return;
       }
     }
     // sweep in trailing points from either side.  At least one of intervalA.begin, intervalB.begin is at its limit, so only one of these will execute any bodies.
     if (intervalA.isSingleton) {
       while (intervalB.length >= 2) {
-        this._workTriangle = TriangleCandidate.createFromIndexedXYZ(intervalB.points, intervalB.begin + 1, intervalB.points, intervalB.begin, intervalA.points, intervalA.begin, 0, this._workTriangle);
+        this._workTriangle = TriangleCandidate.createFromIndexedXYZ(
+          intervalB.points,
+          intervalB.begin + 1,
+          intervalB.points,
+          intervalB.begin,
+          intervalA.points,
+          intervalA.begin,
+          0,
+          this._workTriangle
+        );
         //  this._workTriangle.scaleFromPointInPlace(this._workTriangle.points[2], 0.95); // crude visualization aid for tracking logic.
         handler(this._workTriangle);
         intervalB.advanceBegin();
@@ -169,7 +240,16 @@ export class GreedyTriangulationBetweenLineStrings {
     // sweep in trailing points from either side.  At least one of baseA, baseB is at its limit, so only one of these will execute any bodies.
     if (intervalB.isSingleton) {
       while (intervalA.length >= 2) {
-        this._workTriangle = TriangleCandidate.createFromIndexedXYZ(intervalA.points, intervalA.begin, intervalA.points, intervalA.begin + 1, intervalB.points, intervalB.begin, 0, this._workTriangle);
+        this._workTriangle = TriangleCandidate.createFromIndexedXYZ(
+          intervalA.points,
+          intervalA.begin,
+          intervalA.points,
+          intervalA.begin + 1,
+          intervalB.points,
+          intervalB.begin,
+          0,
+          this._workTriangle
+        );
         // this._workTriangle.scaleFromPointInPlace(this._workTriangle.points[2], 0.95); // crude visualization aid for tracking logic.
         handler(this._workTriangle);
         intervalA.advanceBegin();
@@ -192,9 +272,14 @@ export class GreedyTriangulationBetweenLineStrings {
   public emitTriangles(
     pointsA: IndexedXYZCollection,
     pointsB: IndexedXYZCollection,
-    handler: (triangle: BarycentricTriangle) => void) {
+    handler: (triangle: BarycentricTriangle) => void
+  ) {
     /** Clean up duplicates for the real logic . . . */
-    this.emitTrianglesGo(resolveToNoDuplicates(pointsA), resolveToNoDuplicates(pointsB), handler);
+    this.emitTrianglesGo(
+      resolveToNoDuplicates(pointsA),
+      resolveToNoDuplicates(pointsB),
+      handler
+    );
   }
   /**
    * Run triangle logic on inputs with no duplicates.
@@ -205,27 +290,89 @@ export class GreedyTriangulationBetweenLineStrings {
   private emitTrianglesGo(
     pointsA: IndexedXYZCollection,
     pointsB: IndexedXYZCollection,
-    handler: (triangle: BarycentricTriangle) => void) {
+    handler: (triangle: BarycentricTriangle) => void
+  ) {
     const intervalA = IndexedXYZCollectionInterval.createComplete(pointsA);
     const intervalB = IndexedXYZCollectionInterval.createComplete(pointsB);
     const childA = IndexedXYZCollectionInterval.createComplete(pointsA);
     const childB = IndexedXYZCollectionInterval.createComplete(pointsB);
-    while (intervalA.length > 0 && intervalB.length > 0 && (intervalA.length > 1 || intervalB.length > 1)) {
+    while (
+      intervalA.length > 0 &&
+      intervalB.length > 0 &&
+      (intervalA.length > 1 || intervalB.length > 1)
+    ) {
       // const lA = intervalA.length;
       // const lB = intervalB.length;
-      if (this.isPlanarBase(pointsA, intervalA.begin, pointsB, intervalB.begin, this._xyzA, this._crossA, this._forwardA, this._xyzB, this._crossB, this._forwardB)) {
-        this.advanceToPlanarLimit(intervalA, childA, intervalA.begin + 1, this._xyzA, this._crossA, this._forwardA, this._crossB, this._forwardB);
-        this.advanceToPlanarLimit(intervalB, childB, intervalB.begin + 1, this._xyzB, this._crossB, this._forwardB, this._crossA, this._forwardA);
+      if (
+        this.isPlanarBase(
+          pointsA,
+          intervalA.begin,
+          pointsB,
+          intervalB.begin,
+          this._xyzA,
+          this._crossA,
+          this._forwardA,
+          this._xyzB,
+          this._crossB,
+          this._forwardB
+        )
+      ) {
+        this.advanceToPlanarLimit(
+          intervalA,
+          childA,
+          intervalA.begin + 1,
+          this._xyzA,
+          this._crossA,
+          this._forwardA,
+          this._crossB,
+          this._forwardB
+        );
+        this.advanceToPlanarLimit(
+          intervalB,
+          childB,
+          intervalB.begin + 1,
+          this._xyzB,
+          this._crossB,
+          this._forwardB,
+          this._crossA,
+          this._forwardA
+        );
         this.addGreedy(childA, childB, handler);
         intervalA.advanceToTail(childA);
         intervalB.advanceToTail(childB);
-      } else if (this.isPlanarBase(pointsA, intervalA.begin + 1, pointsB, intervalB.begin, this._xyzA, this._crossA, this._forwardA, this._xyzB, this._crossB, this._forwardB)) {
+      } else if (
+        this.isPlanarBase(
+          pointsA,
+          intervalA.begin + 1,
+          pointsB,
+          intervalB.begin,
+          this._xyzA,
+          this._crossA,
+          this._forwardA,
+          this._xyzB,
+          this._crossB,
+          this._forwardB
+        )
+      ) {
         childA.setFrom(intervalA, intervalA.begin, intervalA.begin + 2);
         childB.setFrom(intervalB, intervalB.begin, intervalB.begin + 1);
         this.addGreedy(childA, childB, handler);
         intervalA.advanceToTail(childA);
         intervalB.advanceToTail(childB);
-      } else if (this.isPlanarBase(pointsA, intervalA.begin, pointsB, intervalB.begin + 1, this._xyzA, this._crossA, this._forwardA, this._xyzB, this._crossB, this._forwardB)) {
+      } else if (
+        this.isPlanarBase(
+          pointsA,
+          intervalA.begin,
+          pointsB,
+          intervalB.begin + 1,
+          this._xyzA,
+          this._crossA,
+          this._forwardA,
+          this._xyzB,
+          this._crossB,
+          this._forwardB
+        )
+      ) {
         childA.setFrom(intervalA, intervalA.begin, intervalA.begin + 1);
         childB.setFrom(intervalB, intervalB.begin, intervalB.begin + 2);
         this.addGreedy(childA, childB, handler);
@@ -262,7 +409,9 @@ export class GreedyTriangulationBetweenLineStrings {
   }
   /** Default angle for considering two vectors to be colinear */
   public static defaultNearColinearAngle = Angle.createDegrees(15);
-  public static createContext(planarTurnAngle: Angle = this.defaultNearColinearAngle) {
+  public static createContext(
+    planarTurnAngle: Angle = this.defaultNearColinearAngle
+  ) {
     return new GreedyTriangulationBetweenLineStrings(planarTurnAngle.radians);
   }
 }
@@ -273,7 +422,10 @@ export class GreedyTriangulationBetweenLineStrings {
  * @param data
  * @param tolerance
  */
-function resolveToNoDuplicates(data: IndexedXYZCollection, tolerance = Geometry.smallMetricDistance): IndexedXYZCollection {
+function resolveToNoDuplicates(
+  data: IndexedXYZCollection,
+  tolerance = Geometry.smallMetricDistance
+): IndexedXYZCollection {
   let hasDuplicates = false;
   const n = data.length;
   for (let i = 0; i + 1 < n; i++) {
@@ -282,14 +434,21 @@ function resolveToNoDuplicates(data: IndexedXYZCollection, tolerance = Geometry.
       break;
     }
   }
-  if (!hasDuplicates)
-    return data;
+  if (!hasDuplicates) return data;
   const result = new GrowableXYZArray(n);
-  result.pushXYZ(data.getXAtUncheckedPointIndex(0), data.getYAtUncheckedPointIndex(0), data.getZAtUncheckedPointIndex(0));
+  result.pushXYZ(
+    data.getXAtUncheckedPointIndex(0),
+    data.getYAtUncheckedPointIndex(0),
+    data.getZAtUncheckedPointIndex(0)
+  );
   let i0 = 0;
   for (let i = 1; i < n; i++) {
     if (data.distanceIndexIndex(i0, i)! > tolerance) {
-      result.pushXYZ(data.getXAtUncheckedPointIndex(i), data.getYAtUncheckedPointIndex(i), data.getZAtUncheckedPointIndex(i));
+      result.pushXYZ(
+        data.getXAtUncheckedPointIndex(i),
+        data.getYAtUncheckedPointIndex(i),
+        data.getZAtUncheckedPointIndex(i)
+      );
       i0 = i;
     }
   }

@@ -14,12 +14,14 @@ import { Mixin } from "../../Metadata/Mixin";
 import { NavigationProperty } from "../../Metadata/Property";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import {
+  createEmptyXmlDocument,
+  getElementChildrenByTagName,
+} from "../TestUtils/SerializationHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Mixin", () => {
-
   function createSchemaJson(mixinJson: any): any {
     return createSchemaJsonWithItems({
       TestMixin: {
@@ -101,8 +103,8 @@ describe("Mixin", () => {
       assert.isDefined(mixin);
 
       assert.isDefined(await mixin!.appliesTo);
-      assert.isTrue(await mixin!.appliesTo === entity);
-      assert.isTrue(await mixin!.baseClass === baseMixin);
+      assert.isTrue((await mixin!.appliesTo) === entity);
+      assert.isTrue((await mixin!.baseClass) === baseMixin);
       assert.isTrue(await mixin!.applicableTo(entity!));
     });
 
@@ -125,7 +127,10 @@ describe("Mixin", () => {
       const mixin = await schema.getItem<Mixin>("TestMixin");
       expect(mixin).to.exist;
 
-      const navProp = await mixin!.getProperty("testNavProp", false) as NavigationProperty;
+      const navProp = (await mixin!.getProperty(
+        "testNavProp",
+        false
+      )) as NavigationProperty;
       expect(navProp).to.exist;
       expect(navProp.isNavigation()).to.be.true;
       expect(navProp.direction).to.equal(StrengthDirection.Forward);
@@ -150,7 +155,10 @@ describe("Mixin", () => {
       const mixin = schema.getItemSync<Mixin>("TestMixin");
       expect(mixin).to.exist;
 
-      const navProp = mixin!.getPropertySync("testNavProp", false) as NavigationProperty;
+      const navProp = mixin!.getPropertySync(
+        "testNavProp",
+        false
+      ) as NavigationProperty;
       expect(navProp).to.exist;
       expect(navProp.isNavigation()).to.be.true;
       expect(navProp.direction).to.equal(StrengthDirection.Forward);
@@ -160,7 +168,12 @@ describe("Mixin", () => {
       const json = createSchemaJson({
         appliesTo: 0,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+      await expect(
+        Schema.fromJson(json, new SchemaContext())
+      ).to.be.rejectedWith(
+        ECObjectsError,
+        `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`
+      );
     });
 
     it("applicableTo, wrong entity, fails", async () => {
@@ -198,8 +211,17 @@ describe("Mixin", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
-      testEntity = await (schema as MutableSchema).createEntityClass("TestEntity");
+      const schema = new Schema(
+        new SchemaContext(),
+        "TestSchema",
+        "ts",
+        1,
+        0,
+        0
+      );
+      testEntity = await (schema as MutableSchema).createEntityClass(
+        "TestEntity"
+      );
       testMixin = new Mixin(schema, "TestMixin");
     });
 
@@ -216,8 +238,13 @@ describe("Mixin", () => {
 
     it("should throw for invalid appliesTo", async () => {
       expect(testMixin).to.exist;
-      const unloadedAppliesToJson = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
-      await expect(testMixin.fromJSON(unloadedAppliesToJson)).to.be.rejectedWith(ECObjectsError);
+      const unloadedAppliesToJson = {
+        ...baseJson,
+        appliesTo: "ThisClassDoesNotExist",
+      };
+      await expect(
+        testMixin.fromJSON(unloadedAppliesToJson)
+      ).to.be.rejectedWith(ECObjectsError);
     });
   });
   describe("Sync fromJson", () => {
@@ -226,8 +253,17 @@ describe("Mixin", () => {
     const baseJson = { schemaItemType: "Mixin" };
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
-      testEntity = (schema as MutableSchema).createEntityClassSync("TestEntity");
+      const schema = new Schema(
+        new SchemaContext(),
+        "TestSchema",
+        "ts",
+        1,
+        0,
+        0
+      );
+      testEntity = (schema as MutableSchema).createEntityClassSync(
+        "TestEntity"
+      );
       testMixin = new Mixin(schema, "TestMixin");
     });
 
@@ -282,21 +318,42 @@ describe("Mixin", () => {
     });
 
     it("applicableTo, appliesTo undefined, should throw", async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      const schema = new Schema(
+        new SchemaContext(),
+        "TestSchema",
+        "ts",
+        1,
+        1,
+        1
+      );
       const mixin = new Mixin(schema, "TestMixin");
       const entity = new EntityClass(schema, "TestEntity");
 
-      await expect(mixin.applicableTo(entity)).to.be.rejectedWith(`appliesTo is undefined in the class ${mixin.fullName}`);
+      await expect(mixin.applicableTo(entity)).to.be.rejectedWith(
+        `appliesTo is undefined in the class ${mixin.fullName}`
+      );
     });
 
     it("applicableTo, appliesTo resolves undefined, should throw", async () => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      const schema = new Schema(
+        new SchemaContext(),
+        "TestSchema",
+        "ts",
+        1,
+        1,
+        1
+      );
       const entity = new EntityClass(schema, "TestEntity");
       const mixin = new Mixin(schema, "TestMixin");
-      const promise = new DelayedPromiseWithProps(entity.key, async () => undefined);
+      const promise = new DelayedPromiseWithProps(
+        entity.key,
+        async () => undefined
+      );
       sinon.stub(Mixin.prototype, "appliesTo").get(() => promise);
 
-      await expect(mixin.applicableTo(entity)).to.be.rejectedWith(`Unable to locate the appliesTo ${promise.fullName}`);
+      await expect(mixin.applicableTo(entity)).to.be.rejectedWith(
+        `Unable to locate the appliesTo ${promise.fullName}`
+      );
     });
   });
 
@@ -382,13 +439,22 @@ describe("Mixin", () => {
       expect(serialized.nodeName).to.eql("ECEntityClass");
       expect(serialized.hasAttribute("modifier")).to.eql(true);
 
-      const customAttributesResult = getElementChildrenByTagName(serialized, "ECCustomAttributes");
+      const customAttributesResult = getElementChildrenByTagName(
+        serialized,
+        "ECCustomAttributes"
+      );
       assert.strictEqual(customAttributesResult.length, 1);
       const customAttributes = customAttributesResult[0];
-      const mixinPropsResult = getElementChildrenByTagName(customAttributes, "IsMixin");
+      const mixinPropsResult = getElementChildrenByTagName(
+        customAttributes,
+        "IsMixin"
+      );
       assert.strictEqual(mixinPropsResult.length, 1);
       const mixinProps = mixinPropsResult[0];
-      const appliesToResult = getElementChildrenByTagName(mixinProps, "AppliesToEntityClass");
+      const appliesToResult = getElementChildrenByTagName(
+        mixinProps,
+        "AppliesToEntityClass"
+      );
       assert.strictEqual(appliesToResult.length, 1);
       const appliesTo = appliesToResult[0];
       expect(appliesTo.textContent).to.eql("TestEntity");

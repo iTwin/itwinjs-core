@@ -4,7 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { parseToggle } from "@itwin/frontend-devtools";
 import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, RenderGraphic, RenderGraphicOwner, Target, Tool, Viewport,
+  DecorateContext,
+  GraphicBranch,
+  GraphicType,
+  IModelApp,
+  RenderGraphic,
+  RenderGraphicOwner,
+  Target,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
 
 class ShadowMapDecoration {
@@ -13,11 +21,14 @@ class ShadowMapDecoration {
   private readonly _graphics: RenderGraphic[] = [];
   private _removeMe?: () => void;
 
-  private get _target(): Target { return this._vp.target as Target; }
+  private get _target(): Target {
+    return this._vp.target as Target;
+  }
 
   private constructor(vp: Viewport) {
     this._vp = vp;
-    this._target.solarShadowMap.onGraphicsChanged = (gfx) => this.onGraphicsChanged(gfx);
+    this._target.solarShadowMap.onGraphicsChanged = (gfx) =>
+      this.onGraphicsChanged(gfx);
     vp.onChangeView.addOnce(() => ShadowMapDecoration.stop());
     this._removeMe = IModelApp.viewManager.addDecorator(this);
   }
@@ -28,8 +39,7 @@ class ShadowMapDecoration {
       this._removeMe = undefined;
       for (const gf of this._graphics) {
         gf.dispose();
-        if (gf instanceof RenderGraphicOwner)
-          gf.disposeGraphic();
+        if (gf instanceof RenderGraphicOwner) gf.disposeGraphic();
       }
 
       this._graphics.length = 0;
@@ -44,7 +54,11 @@ class ShadowMapDecoration {
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
-    if (this._vp === vp || !this._vp.view.isSpatialView() || !vp.view.isSpatialView())
+    if (
+      this._vp === vp ||
+      !this._vp.view.isSpatialView() ||
+      !vp.view.isSpatialView()
+    )
       return;
 
     for (const gf of this._graphics)
@@ -63,10 +77,12 @@ class ShadowMapDecoration {
 
       const copy = new GraphicBranch(false);
       copy.symbologyOverrides = this._target.currentFeatureSymbologyOverrides;
-      for (const entry of branch.entries)
-        copy.add(entry);
+      for (const entry of branch.entries) copy.add(entry);
 
-      const copyGf = IModelApp.renderSystem.createBranch(copy, (gf as any).localToWorldTransform);
+      const copyGf = IModelApp.renderSystem.createBranch(
+        copy,
+        (gf as any).localToWorldTransform
+      );
       const owner = IModelApp.renderSystem.createGraphicOwner(copyGf);
       this._graphics.push(owner);
     }
@@ -77,8 +93,7 @@ class ShadowMapDecoration {
   public static toggle(vp: Viewport, enabled?: boolean): void {
     const cur = ShadowMapDecoration._instance;
     if (undefined !== enabled) {
-      if ((undefined !== cur) === enabled)
-        return;
+      if ((undefined !== cur) === enabled) return;
     }
 
     if (undefined === cur) {
@@ -101,8 +116,12 @@ class ShadowMapDecoration {
 /** Decorates all other viewports with the tiles selected for drawing the selected viewport's shadow map. */
 export class ToggleShadowMapTilesTool extends Tool {
   public static override toolId = "ToggleShadowMapTiles";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -114,8 +133,7 @@ export class ToggleShadowMapTilesTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      await this.run(enable);
+    if (typeof enable !== "string") await this.run(enable);
 
     return true;
   }

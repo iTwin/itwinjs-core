@@ -11,7 +11,9 @@ import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexKey } from "../../../render/primitives/VertexKey";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
+  public constructor() {
+    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
+  }
 }
 
 /**
@@ -26,7 +28,14 @@ describe("MeshPrimitive Tests", () => {
     const is2d = false;
     const isPlanar = true;
 
-    let m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
+    let m = Mesh.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
     expect(m.type).to.equal(type);
     expect(m.displayParams).to.equal(displayParams);
     expect(m.features).to.be.undefined;
@@ -38,12 +47,26 @@ describe("MeshPrimitive Tests", () => {
     expect(m.polylines).to.be.undefined;
 
     type = Mesh.PrimitiveType.Polyline;
-    m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
+    m = Mesh.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
     expect(m.polylines).to.not.be.undefined;
     expect(m.triangles).to.be.undefined;
 
     type = Mesh.PrimitiveType.Point;
-    m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
+    m = Mesh.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
     expect(m.polylines).to.not.be.undefined;
     expect(m.triangles).to.be.undefined;
   });
@@ -55,7 +78,14 @@ describe("MeshPrimitive Tests", () => {
     const is2d = false;
     const isPlanar = true;
 
-    let m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
+    let m = Mesh.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
 
     expect(m.polylines!.length).to.equal(0);
     let mp = new MeshPolyline([1, 2, 3]);
@@ -64,7 +94,14 @@ describe("MeshPrimitive Tests", () => {
 
     // doesn't add polyline if meshpolyline indices has a length less that 2
     type = Mesh.PrimitiveType.Polyline;
-    m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
+    m = Mesh.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
     expect(m.polylines!.length).to.equal(0);
     mp = new MeshPolyline([1]);
     m.addPolyline(mp);
@@ -78,7 +115,14 @@ describe("MeshPrimitive Tests", () => {
     const is2d = false;
     const isPlanar = true;
 
-    const m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
+    const m = Mesh.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
 
     expect(m.triangles!.length).to.equal(0);
     const t = new Triangle();
@@ -89,11 +133,21 @@ describe("MeshPrimitive Tests", () => {
   it("addVertex", () => {
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
 
-    let m = Mesh.create({ quantizePositions: true, displayParams, type, range, is2d, isPlanar });
+    let m = Mesh.create({
+      quantizePositions: true,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
 
     expect(m.points.length).to.equal(0);
     let p = new Point3d(100, 100, 100);
@@ -103,19 +157,38 @@ describe("MeshPrimitive Tests", () => {
     expect(m.normals.length).to.equal(0);
     expect(m.uvParams.length).to.equal(0);
 
-    m = Mesh.create({ quantizePositions: true, displayParams, type, range, is2d, isPlanar });
+    m = Mesh.create({
+      quantizePositions: true,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
     expect(m.normals.length).to.equal(0);
     expect(m.uvParams.length).to.equal(0);
     expect(m.points.length).to.equal(0);
     const oct = new OctEncodedNormal(10);
     const param = new Point2d(10, 10);
     p = new Point3d(100, 100, 100);
-    index = m.addVertex({ position: p, fillColor: ColorDef.white.tbgr, normal: oct, uvParam: param });
+    index = m.addVertex({
+      position: p,
+      fillColor: ColorDef.white.tbgr,
+      normal: oct,
+      uvParam: param,
+    });
     expect(m.normals.length).to.equal(1);
     expect(m.uvParams.length).to.equal(1);
     expect(m.points.length).to.equal(1);
 
-    m = Mesh.create({ quantizePositions: true, displayParams, type, range, is2d, isPlanar });
+    m = Mesh.create({
+      quantizePositions: true,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+    });
     const key = new VertexKey(p, ColorDef.white.tbgr, oct, param);
     m.addVertex(key);
     expect(m.points.length).to.equal(1);

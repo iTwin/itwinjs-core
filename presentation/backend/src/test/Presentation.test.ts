@@ -10,7 +10,10 @@ import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
-import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
+import {
+  MultiManagerPresentationProps,
+  Presentation,
+} from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
@@ -19,13 +22,11 @@ import { NativePlatformDefinition } from "../presentation-backend/NativePlatform
 import { join } from "path";
 
 describe("Presentation", () => {
-
   afterEach(async () => {
     Presentation.terminate();
   });
 
   describe("initialize", () => {
-
     it("registers rpc implementation", () => {
       const registerSpy = sinon.spy(RpcManager, "registerImpl");
       Presentation.initialize();
@@ -33,7 +34,10 @@ describe("Presentation", () => {
     });
 
     it("registers itself as IModelHost shutdown listener", () => {
-      const addListenerSpy = sinon.spy(IModelHost.onBeforeShutdown, "addListener");
+      const addListenerSpy = sinon.spy(
+        IModelHost.onBeforeShutdown,
+        "addListener"
+      );
       Presentation.initialize();
       expect(addListenerSpy).to.be.calledOnce;
     });
@@ -60,11 +64,16 @@ describe("Presentation", () => {
     });
 
     describe("props handling", () => {
-
       it("sets unused client lifetime provided through props", () => {
-        Presentation.initialize({ unusedClientLifetime: faker.random.number() });
-        const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.unusedValueLifetime).to.eq((Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime);
+        Presentation.initialize({
+          unusedClientLifetime: faker.random.number(),
+        });
+        const storage = (Presentation as any)
+          ._clientsStorage as TemporaryStorage<PresentationManager>;
+        expect(storage.props.unusedValueLifetime).to.eq(
+          (Presentation.initProps! as MultiManagerPresentationProps)
+            .unusedClientLifetime
+        );
       });
 
       it("sets request timeout to `PresentationRpcImpl`", () => {
@@ -78,7 +87,9 @@ describe("Presentation", () => {
 
       it("uses client manager factory provided through props", () => {
         const managerMock = moq.Mock.ofType<PresentationManager>();
-        Presentation.initialize({ clientManagerFactory: () => managerMock.object });
+        Presentation.initialize({
+          clientManagerFactory: () => managerMock.object,
+        });
         expect(Presentation.getManager()).to.eq(managerMock.object);
       });
 
@@ -89,21 +100,18 @@ describe("Presentation", () => {
         const clientId = faker.random.word();
         expect(manager).to.be.eq(Presentation.getManager(clientId));
       });
-
     });
-
   });
 
   describe("getRequestTimeout", () => {
-
     it("should throw PresentationError if initialize is not called", () => {
-      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
+      expect(() => Presentation.getRequestTimeout()).to.throw(
+        PresentationError
+      );
     });
-
   });
 
   describe("terminate", () => {
-
     it("resets manager instance", () => {
       Presentation.initialize();
       expect(Presentation.getManager()).to.be.not.null;
@@ -134,23 +142,29 @@ describe("Presentation", () => {
       Presentation.terminate();
       expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
     });
-
   });
 
   describe("preloading schemas", () => {
-
     it("calls addon's `forceLoadSchemas` on `BriefcaseDb.onOpened` events", () => {
       const imodelMock = moq.Mock.ofType<BriefcaseDb>();
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const managerMock = moq.Mock.ofType<PresentationManager>();
-      managerMock.setup((x) => x.getNativePlatform).returns(() => () => nativePlatformMock.object);
-      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
+      managerMock
+        .setup((x) => x.getNativePlatform)
+        .returns(() => () => nativePlatformMock.object);
+      nativePlatformMock
+        .setup((x) => x.getImodelAddon(imodelMock.object))
+        .verifiable(moq.Times.atLeastOnce());
 
-      Presentation.initialize({ enableSchemasPreload: true, clientManagerFactory: () => managerMock.object });
+      Presentation.initialize({
+        enableSchemasPreload: true,
+        clientManagerFactory: () => managerMock.object,
+      });
       BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
-      nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
+      nativePlatformMock.verify(
+        async (x) => x.forceLoadSchemas(moq.It.isAny()),
+        moq.Times.once()
+      );
     });
-
   });
-
 });

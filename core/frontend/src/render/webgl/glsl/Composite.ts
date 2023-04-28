@@ -9,7 +9,11 @@
 import { assert } from "@itwin/core-bentley";
 import { CompositeGeometry } from "../CachedGeometry";
 import { CompositeFlags, TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  VariableType,
+} from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { addWindowToTexCoords, assignFragColor } from "./Fragment";
@@ -78,7 +82,8 @@ vec4 computeOpaqueColor() {
 const computeDefaultAmbientOcclusion = `\nfloat computeAmbientOcclusion() { return 1.0; }\n`;
 const computeAmbientOcclusion = `\nfloat computeAmbientOcclusion() { return TEXTURE(u_occlusion, v_texCoord).r; }\n`;
 
-const computeHiliteColor = "\nvec4 computeColor() { return computeOpaqueColor(); }\n";
+const computeHiliteColor =
+  "\nvec4 computeColor() { return computeOpaqueColor(); }\n";
 
 const computeHiliteBaseColor = `
   vec4 baseColor = computeColor();
@@ -119,23 +124,34 @@ const computeTranslucentBaseColor = "return computeColor();";
 const computeAmbientOcclusionBaseColor = "return computeOpaqueColor();";
 
 /** @internal */
-export function createCompositeProgram(flags: CompositeFlags, context: WebGL2RenderingContext): ShaderProgram {
+export function createCompositeProgram(
+  flags: CompositeFlags,
+  context: WebGL2RenderingContext
+): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
-  const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
-  const wantOcclusion = CompositeFlags.None !== (flags & CompositeFlags.AmbientOcclusion);
+  const wantTranslucent =
+    CompositeFlags.None !== (flags & CompositeFlags.Translucent);
+  const wantOcclusion =
+    CompositeFlags.None !== (flags & CompositeFlags.AmbientOcclusion);
 
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  frag.addFunction(wantOcclusion ? computeAmbientOcclusion : computeDefaultAmbientOcclusion);
+  frag.addFunction(
+    wantOcclusion ? computeAmbientOcclusion : computeDefaultAmbientOcclusion
+  );
   frag.addFunction(computeOpaqueColor);
 
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_opaque", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_opaque", (uniform, params) => {
-      Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).opaque, TextureUnit.Zero);
+      Texture2DHandle.bindSampler(
+        uniform,
+        (params.geometry as CompositeGeometry).opaque,
+        TextureUnit.Zero
+      );
     });
   });
 
@@ -147,7 +163,11 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
 
     frag.addUniform("u_hilite", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_hilite", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).hilite, TextureUnit.Three);
+        Texture2DHandle.bindSampler(
+          uniform,
+          (params.geometry as CompositeGeometry).hilite,
+          TextureUnit.Three
+        );
       });
     });
 
@@ -160,34 +180,55 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
   if (wantTranslucent) {
     frag.addUniform("u_accumulation", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_accumulation", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).accum, TextureUnit.One);
+        Texture2DHandle.bindSampler(
+          uniform,
+          (params.geometry as CompositeGeometry).accum,
+          TextureUnit.One
+        );
       });
     });
 
     frag.addUniform("u_revealage", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_revealage", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).reveal, TextureUnit.Two);
+        Texture2DHandle.bindSampler(
+          uniform,
+          (params.geometry as CompositeGeometry).reveal,
+          TextureUnit.Two
+        );
       });
     });
 
     frag.addFunction(computeTranslucentColor);
     if (!wantHilite) {
-      frag.set(FragmentShaderComponent.ComputeBaseColor, computeTranslucentBaseColor);
+      frag.set(
+        FragmentShaderComponent.ComputeBaseColor,
+        computeTranslucentBaseColor
+      );
     }
   }
 
   if (wantOcclusion) {
     frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_occlusion", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion!, TextureUnit.Four);
+        Texture2DHandle.bindSampler(
+          uniform,
+          (params.geometry as CompositeGeometry).occlusion!,
+          TextureUnit.Four
+        );
       });
     });
 
     if (!wantHilite && !wantTranslucent)
-      frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
+      frag.set(
+        FragmentShaderComponent.ComputeBaseColor,
+        computeAmbientOcclusionBaseColor
+      );
   }
 
-  const flagString = (wantHilite ? "-Hilite" : "") + (wantTranslucent ? "-Translucent" : "") + (wantOcclusion ? "-Occlusion" : "");
+  const flagString =
+    (wantHilite ? "-Hilite" : "") +
+    (wantTranslucent ? "-Translucent" : "") +
+    (wantOcclusion ? "-Occlusion" : "");
   builder.vert.headerComment = `//!V! CombineTextures${flagString}`;
   builder.frag.headerComment = `//!F! CombineTextures${flagString}`;
 

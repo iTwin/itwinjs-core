@@ -98,7 +98,9 @@ export interface InputEditorSizeParams extends BasePropertyEditorParams {
 /** InputEditorSizeParams type guard.
  * @public
  */
-export const isInputEditorSizeParams = (item: BasePropertyEditorParams): item is InputEditorSizeParams => {
+export const isInputEditorSizeParams = (
+  item: BasePropertyEditorParams
+): item is InputEditorSizeParams => {
   return item.type === PropertyEditorParamTypes.InputEditorSize;
 };
 
@@ -118,7 +120,9 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
 /** ColorEditorParams type guard.
  * @public
  */
-export const isColorEditorParams = (item: BasePropertyEditorParams): item is ColorEditorParams => {
+export const isColorEditorParams = (
+  item: BasePropertyEditorParams
+): item is ColorEditorParams => {
   return item.type === PropertyEditorParamTypes.ColorData;
 };
 
@@ -139,7 +143,9 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
 /** IconListEditorParams type guard.
  * @public
  */
-export const isIconListEditorParams = (item: BasePropertyEditorParams): item is IconListEditorParams => {
+export const isIconListEditorParams = (
+  item: BasePropertyEditorParams
+): item is IconListEditorParams => {
   return item.type === PropertyEditorParamTypes.IconListData;
 };
 
@@ -166,7 +172,9 @@ export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
 /** ButtonGroupEditorParams type guard.
  * @public
  */
-export const isButtonGroupEditorParams = (item: BasePropertyEditorParams): item is ButtonGroupEditorParams => {
+export const isButtonGroupEditorParams = (
+  item: BasePropertyEditorParams
+): item is ButtonGroupEditorParams => {
   return item.type === PropertyEditorParamTypes.ButtonGroupData;
 };
 
@@ -183,7 +191,9 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
 /** SuppressLabelEditorParams type guard.
  * @public
  */
-export const isSuppressLabelEditorParams = (item: BasePropertyEditorParams): item is SuppressLabelEditorParams => {
+export const isSuppressLabelEditorParams = (
+  item: BasePropertyEditorParams
+): item is SuppressLabelEditorParams => {
   return item.type === PropertyEditorParamTypes.SuppressEditorLabel;
 };
 
@@ -295,7 +305,6 @@ export interface ImageCheckBoxParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CheckBoxImages;
   imageOn: string;
   imageOff: string;
-
 }
 
 // /**
@@ -328,7 +337,9 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
 /** CustomFormattedNumberParams type guard.
  * @public
  */
-export const isCustomFormattedNumberParams = (item: BasePropertyEditorParams): item is CustomFormattedNumberParams => {
+export const isCustomFormattedNumberParams = (
+  item: BasePropertyEditorParams
+): item is CustomFormattedNumberParams => {
   return item.type === PropertyEditorParamTypes.CustomFormattedNumber;
 };
 

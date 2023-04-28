@@ -11,14 +11,19 @@
  * Used by various tools which take such arguments.
  * @beta
  */
-export function parseToggle(arg: string | undefined): string | boolean | undefined {
-  if (undefined === arg)
-    return undefined;
+export function parseToggle(
+  arg: string | undefined
+): string | boolean | undefined {
+  if (undefined === arg) return undefined;
 
   switch (arg.toLowerCase()) {
-    case "on": return true;
-    case "off": return false;
-    case "toggle": return undefined;
-    default: return arg;
+    case "on":
+      return true;
+    case "off":
+      return false;
+    case "toggle":
+      return undefined;
+    default:
+      return arg;
   }
 }

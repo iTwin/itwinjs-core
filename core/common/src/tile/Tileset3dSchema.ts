@@ -24,18 +24,34 @@ export namespace Tileset3dSchema {
   }
 
   export type BoundingSphere = [
-    centerX: number, centerY: number, centerZ: number, radius: number
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    radius: number
   ];
 
   export type BoundingRegion = [
-    west: number, south: number, east: number, north: number, minHeight: number, maxHeight: number
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    minHeight: number,
+    maxHeight: number
   ];
 
   export type BoundingBox = [
-    centerX: number, centerY: number, centerZ: number,
-    uX: number, uY: number, uZ: number,
-    vX: number, vY: number, vZ: number,
-    wX: number, wY: number, wZ: number,
+    centerX: number,
+    centerY: number,
+    centerZ: number,
+    uX: number,
+    uY: number,
+    uZ: number,
+    vX: number,
+    vY: number,
+    vZ: number,
+    wX: number,
+    wY: number,
+    wZ: number
   ];
 
   export type BoundingVolume = RequireAtLeastOne<{
@@ -49,10 +65,22 @@ export namespace Tileset3dSchema {
   export type Refinement = "ADD" | "REPLACE" | string;
 
   export type Transform = [
-    number, number, number, number,
-    number, number, number, number,
-    number, number, number, number,
-    number, number, number, number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
   ];
 
   export interface Content extends TilesetProperty {

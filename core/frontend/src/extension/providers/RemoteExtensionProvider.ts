@@ -2,10 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type {
-  ExtensionManifest,
-  ExtensionProvider,
-} from "../Extension";
+import type { ExtensionManifest, ExtensionProvider } from "../Extension";
 import { request } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 
@@ -49,5 +46,4 @@ export class RemoteExtensionProvider implements ExtensionProvider {
   public async getManifest(): Promise<ExtensionManifest> {
     return request(this._props.manifestUrl, "json");
   }
-
 }

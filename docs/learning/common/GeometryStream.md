@@ -7,40 +7,44 @@ Appearance related entries are all completely optional. The recommended approach
 Some appearance entries override the default SubCategoryAppearance, while others are for supplying additional appearance information that is not generally applicable to all geometry types and isn't represented in SubCategoryAppearance. The following entries are specific to setting the appearance of graphics in the GeometryStream:
 
 - [GeometryAppearanceProps]($common)
+
   - The presence of a GeometryAppearanceProps entry in the GeometryStreamProps array always signifies clearing all SubCategoryAppearance overrides, even when all values are undefined.
   - Defined values, with the exception of GeometryAppearanceProps.geometryClass, override a corresponding SubCategoryAppearance value.
   - The SubCategoryAppearance used for geometry entries that follow in the GeometryStreamProps array is determined by [GeometryAppearanceProps.subCategory]($common). Default SubCategory for GeometricElement's Category is used when undefined.
 
 - [LineStyle.ModifierProps]($common)
+
   - Modifies the default appearance from the [LineStyle]($backend) definition element identified by [GeometryAppearanceProps.style]($common) or [SubCategoryAppearance.styleId]($common).
-  ![Linestyle](./stroked_ls.png "Example of stroked line styles")
+    ![Linestyle](./stroked_ls.png "Example of stroked line styles")
   - Add instance specific overrides (ex. defining up direction for style in 3d) for stroked line styles. Override stroke lengths, gap lengths, and stroke widths.
   - Stroked line styles are only applicable to [IModelJson.CurvePrimitiveProps]($geometry) and [IModelJson.CurveCollectionProps]($geometry) entries; it does not apply to edges of non-region surfaces or solids.
 
 - [AreaFillProps]($common)
+
   - Add a gradient, background, opaque, or outline fill to the display of [IModelJson.PlanarRegionProps]($geometry) entries. Opaque fill can also be added to a [IModelJson.IndexedMeshProps]($geometry) entry.
-  ![Fill](./fill_types.png "Example of types of fill")
+    ![Fill](./fill_types.png "Example of types of fill")
   - Fill is only applicable to views that have [ViewFlags.renderMode]($common) set to [RenderMode.Wireframe]($common).
   - To be considered filled, [AreaFillProps.display]($common) must be defined to something other than [FillDisplay.Never]($common).
   - If [AreaFillProps.display]($common) is defined as [FillDisplay.ByView]($common), the view's [ViewFlags.fill]($common) determines whether the geometry displays as filled.
   - Planar regions always display as surfaces in non-Wireframe views regardless of the value for [FillDisplay]($common); they will however use the fill color as opposed to the line color when fill is specified.
 
 - [AreaPattern.ParamsProps]($common)
+
   - Add a hatch, crosshatch, area pattern, or hatch definition to the display of [IModelJson.PlanarRegionProps]($geometry) entries.
-  ![Pattern](./pattern_types.png "Example of types of pattern")
+    ![Pattern](./pattern_types.png "Example of types of pattern")
   - A planar region can have both fill and pattern.
   - Pattern display is controlled by [ViewFlags.patterns]($common) for the view.
 
 - [MaterialProps]($common)
   - Override for [SubCategoryAppearance.materialId]($common). Can be used to add or remove material for the display of surface and solid geometry.
-  ![Materials](./materials.png "Example of materials")
+    ![Materials](./materials.png "Example of materials")
   - Material is only applicable to views that have [ViewFlags.renderMode]($common) set to [RenderMode.SmoothShade]($common).
 
-Geometry entries should *always* be inserted into the GeometryStreamProps array unrotated with a basis point of 0,0,0 (local coordinate frame). The world location and orientation of the geometry is determined by the GeometricElement's placement origin and angle(s), [GeometricElement3dProps.placement]($common) and [GeometricElement2dProps.placement]($common).
+Geometry entries should _always_ be inserted into the GeometryStreamProps array unrotated with a basis point of 0,0,0 (local coordinate frame). The world location and orientation of the geometry is determined by the GeometricElement's placement origin and angle(s), [GeometricElement3dProps.placement]($common) and [GeometricElement2dProps.placement]($common).
 
 ![Correct Example](./placement_good.png "Example of correctly defined GeometryStream")
 
-> A GeometricElement can be translated and rotated by just updating its placement, the geometry is *not* transformed.
+> A GeometricElement can be translated and rotated by just updating its placement, the geometry is _not_ transformed.
 
 The element aligned bounding box that is part of the placement is computed automatically based on the local coordinate geometry. An application should leave [Placement3dProps.bbox]($common) and [Placement2dProps.bbox]($common) undefined when inserting a new GeometricElement or updating an existing element's GeometryStream; any defined value will be ignored.
 

@@ -24,8 +24,7 @@ export class ConcurrencyQueue<T> {
   // Starts the next task waiting in the queue, and moves it into the _pending array.
   private startNextInQueue() {
     const startFn = this._queue.shift();
-    if (startFn)
-      startFn(); // This will append a Promise to the _pending array
+    if (startFn) startFn(); // This will append a Promise to the _pending array
   }
 
   // Wraps a Promise to advance the queue as soon as it's resolved, and appends to the `_pending` array.
@@ -44,13 +43,19 @@ export class ConcurrencyQueue<T> {
   }
 
   /** The number of currently started tasks that are still pending completion. */
-  public get pendingCount() { return this._pending.length; }
+  public get pendingCount() {
+    return this._pending.length;
+  }
 
   /** The number of queued tasks that have not yet started. */
-  public get queuedCount() { return this._queue.length; }
+  public get queuedCount() {
+    return this._queue.length;
+  }
 
   /** True if there are no tasks currently pending or queued. */
-  public get isEmpty() { return (this.pendingCount === 0 && this.queuedCount === 0); }
+  public get isEmpty() {
+    return this.pendingCount === 0 && this.queuedCount === 0;
+  }
 
   /**
    * Adds a task to the queue. Tasks are automatically started on a FIFO basis whenever there are less than `maxParallel` currently started/pending.
@@ -71,7 +76,7 @@ export class ConcurrencyQueue<T> {
 
   /** Returns a Promise that is resolved when any of the currently pending Promises are resolved. */
   public async next(): Promise<T | undefined> {
-    return (this.isEmpty) ? undefined : Promise.race(this._pending);
+    return this.isEmpty ? undefined : Promise.race(this._pending);
   }
 
   /** Returns a Promise that is resolved when all pending and queued tasks have been completed. */

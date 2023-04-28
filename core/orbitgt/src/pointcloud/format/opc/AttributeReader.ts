@@ -30,53 +30,68 @@ import { TileReadBuffer } from "./TileReadBuffer";
  */
 /** @internal */
 export abstract class AttributeReader {
-    /**
-     * Create a new reader.
-     */
-    public constructor() {
-    }
+  /**
+   * Create a new reader.
+   */
+  public constructor() {}
 
-    /**
-     * Close the reader.
-     */
-    public abstract close(): void;
+  /**
+   * Close the reader.
+   */
+  public abstract close(): void;
 
-    /**
-     * Get the attribute.
-     * @return the attribute.
-     */
-    public abstract getAttribute(): PointAttribute;
+  /**
+   * Get the attribute.
+   * @return the attribute.
+   */
+  public abstract getAttribute(): PointAttribute;
 
-    /**
-     * Get the minimum value.
-     * @return the minimum value.
-     */
-    public abstract getMinimumValue(): AttributeValue;
+  /**
+   * Get the minimum value.
+   * @return the minimum value.
+   */
+  public abstract getMinimumValue(): AttributeValue;
 
-    /**
-     * Get the maximum value.
-     * @return the maximum value.
-     */
-    public abstract getMaximumValue(): AttributeValue;
+  /**
+   * Get the maximum value.
+   * @return the maximum value.
+   */
+  public abstract getMaximumValue(): AttributeValue;
 
-    /**
-     * Read the raw data for a tile.
-     * @param level the index of the level.
-     * @param tile the tile.
-     * @param tileBuffer the buffer to read into.
-     * @param bufferIndex the index of the attribute in the read buffer.
-     * @param readRequest the read parameters (contains the result read statistics).
-     */
-    public abstract readTileData2(level: int32, tile: TileIndex, pointOffset: ALong, pointCount: int32, tileBuffer: TileReadBuffer, bufferIndex: int32, readRequest: ReadRequest, fileContents: ContentLoader): void;
+  /**
+   * Read the raw data for a tile.
+   * @param level the index of the level.
+   * @param tile the tile.
+   * @param tileBuffer the buffer to read into.
+   * @param bufferIndex the index of the attribute in the read buffer.
+   * @param readRequest the read parameters (contains the result read statistics).
+   */
+  public abstract readTileData2(
+    level: int32,
+    tile: TileIndex,
+    pointOffset: ALong,
+    pointCount: int32,
+    tileBuffer: TileReadBuffer,
+    bufferIndex: int32,
+    readRequest: ReadRequest,
+    fileContents: ContentLoader
+  ): void;
 
-    /**
-     * Get an attribute value.
-     * @param level the index of the level.
-     * @param tile the tile.
-     * @param tileBuffer the buffer that has been read.
-     * @param bufferIndex the index of the attribute in the read buffer.
-     * @param pointIndex the index of the point in the tile (starts at 0).
-     * @param cloudPoint the point to read the attribute of.
-     */
-    public abstract getPointData(level: int32, tile: TileIndex, tileBuffer: TileReadBuffer, bufferIndex: int32, pointIndex: int32, cloudPoint: CloudPoint): void;
+  /**
+   * Get an attribute value.
+   * @param level the index of the level.
+   * @param tile the tile.
+   * @param tileBuffer the buffer that has been read.
+   * @param bufferIndex the index of the attribute in the read buffer.
+   * @param pointIndex the index of the point in the tile (starts at 0).
+   * @param cloudPoint the point to read the attribute of.
+   */
+  public abstract getPointData(
+    level: int32,
+    tile: TileIndex,
+    tileBuffer: TileReadBuffer,
+    bufferIndex: int32,
+    pointIndex: int32,
+    cloudPoint: CloudPoint
+  ): void;
 }

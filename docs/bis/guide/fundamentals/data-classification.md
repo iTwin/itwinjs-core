@@ -15,17 +15,17 @@ Every Element has an [ECEntityClass](../../ec/ec-entity-class.md) that defines i
 
 Examples of Element Classes include `Pipe`, `Column` or `Pump` and are defined in [Domain Schemas](../../domains/index.md).
 
-The [BisCore](../../domains/biscore.ecschema.md) schema defines the core Element classes from which all other Element classes must derive. See [Element Fundamentals](./element-fundamentals.md#core-element-classes) for more details on *Core Element Classes*.
+The [BisCore](../../domains/biscore.ecschema.md) schema defines the core Element classes from which all other Element classes must derive. See [Element Fundamentals](./element-fundamentals.md#core-element-classes) for more details on _Core Element Classes_.
 
 ## Type Definitions
 
 Class and Type organize Elements along roughly the same semantic/property dimension. The Type is a further specialization of the Element Class, but is defined more-dynamically in data as TypeDefinition instances.
 
-A schema author must *enable* such further specialization of a particular Class by defining a TypeDefinition Class that "applies to" that Class and creating a RelationshipClass that expresses that constraint.
+A schema author must _enable_ such further specialization of a particular Class by defining a TypeDefinition Class that "applies to" that Class and creating a RelationshipClass that expresses that constraint.
 
 The properties of the TypeDefinition define the properties whose values will be common among all instances of a given Type.
 
-Types often correspond to "manufacturer's models" in a catalog, e.g. catalog entries for *Pump RCP-24* and *Pump RCP-26* can be thought of as specializations of the `Pump` Class. In some domains, the set of TypeDefinition instances may not be thought of as a "catalog", e.g. *Wearing course layer*, *Base course layer* and *Sub-base course layer* are specializations of the `Course` Class.
+Types often correspond to "manufacturer's models" in a catalog, e.g. catalog entries for _Pump RCP-24_ and _Pump RCP-26_ can be thought of as specializations of the `Pump` Class. In some domains, the set of TypeDefinition instances may not be thought of as a "catalog", e.g. _Wearing course layer_, _Base course layer_ and _Sub-base course layer_ are specializations of the `Course` Class.
 
 For a real-world specialization hierarchy, how much of it should translate into a Class hierarchy vs a set of Types? Generally, Classes are used for specializations that are known when the schema is designed and tend not to vary per project or facility. Types can easily vary among different digital twins. Types can also be used to hold property values shared by many Entity instances, whereas classes assume that all property values can vary per Entity instance.
 
@@ -48,9 +48,10 @@ See [ClassificationSystems](../../domains/classificationsystems.ecschema.md/).
 ## General Recommendations
 
 - If a concept can be further classified beyond what is covered by the chosen Element-Class strategy, it typically leads to the need of introducing `bis:TypeDefinitionElement` subclasses.
-- Deep hierarchies of physical-element instances typically model multiple levels of containment. Such cases are usually better modeled via [*Spatial Composition*](./../data-organization/spatial-composition.md). That usually results in the more fundamental and granular physical concepts modeled via `bis:PhysicalElement`s while the higher-level containment semantics are captured in classes that follow the patterns defined by the `SpatialComposition` schema.
+- Deep hierarchies of physical-element instances typically model multiple levels of containment. Such cases are usually better modeled via [_Spatial Composition_](./../data-organization/spatial-composition.md). That usually results in the more fundamental and granular physical concepts modeled via `bis:PhysicalElement`s while the higher-level containment semantics are captured in classes that follow the patterns defined by the `SpatialComposition` schema.
 - Categories are usually introduced driven by element-visualization needs. However, there are cases in which it is appropriate to introduce them for data-classification purposes. This is typically done when a classification in need is orthogonal to the element-class and Type-Definition schemes.
 
 ---
+
 | Next: [Type Definitions](./type-definitions.md)
 |:---

@@ -7,18 +7,37 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
+import {
+  RelationshipClassProps,
+  RelationshipConstraintProps,
+} from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import {
-  ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
-  strengthToString, StrengthType,
+  ECClassModifier,
+  parseStrength,
+  parseStrengthDirection,
+  RelationshipEnd,
+  SchemaItemType,
+  StrengthDirection,
+  strengthDirectionToString,
+  strengthToString,
+  StrengthType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
+import {
+  CustomAttribute,
+  CustomAttributeContainerProps,
+  CustomAttributeSet,
+  serializeCustomAttributes,
+} from "./CustomAttribute";
+import {
+  createNavigationProperty,
+  createNavigationPropertySync,
+  EntityClass,
+} from "./EntityClass";
 import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
 import { Schema } from "./Schema";
@@ -47,10 +66,18 @@ export class RelationshipClass extends ECClass {
     this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }
 
-  public get strength() { return this._strength; }
-  public get strengthDirection() { return this._strengthDirection; }
-  public get source() { return this._source; }
-  public get target() { return this._target; }
+  public get strength() {
+    return this._strength;
+  }
+  public get strengthDirection() {
+    return this._strengthDirection;
+  }
+  public get source() {
+    return this._source;
+  }
+  public get target() {
+    return this._target;
+  }
 
   /**
    *
@@ -58,12 +85,24 @@ export class RelationshipClass extends ECClass {
    * @param relationship
    * @param direction
    */
-  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
-    return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
+  protected async createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection
+  ): Promise<NavigationProperty> {
+    return this.addProperty(
+      await createNavigationProperty(this, name, relationship, direction)
+    );
   }
 
-  protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
-    return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
+  protected createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection
+  ): NavigationProperty {
+    return this.addProperty(
+      createNavigationPropertySync(this, name, relationship, direction)
+    );
   }
 
   /**
@@ -85,10 +124,15 @@ export class RelationshipClass extends ECClass {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): RelationshipClassProps {
+  public override toJSON(
+    standalone: boolean = false,
+    includeSchemaVersion: boolean = false
+  ): RelationshipClassProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.strength = strengthToString(this.strength);
-    schemaJson.strengthDirection = strengthDirectionToString(this.strengthDirection);
+    schemaJson.strengthDirection = strengthDirectionToString(
+      this.strengthDirection
+    );
     schemaJson.source = this.source.toJSON();
     schemaJson.target = this.target.toJSON();
     return schemaJson;
@@ -98,7 +142,10 @@ export class RelationshipClass extends ECClass {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     itemElement.setAttribute("strength", strengthToString(this.strength));
-    itemElement.setAttribute("strengthDirection", strengthDirectionToString(this.strengthDirection));
+    itemElement.setAttribute(
+      "strengthDirection",
+      strengthDirectionToString(this.strengthDirection)
+    );
     itemElement.appendChild(await this.source.toXml(schemaXml));
     itemElement.appendChild(await this.target.toXml(schemaXml));
     return itemElement;
@@ -109,17 +156,27 @@ export class RelationshipClass extends ECClass {
 
     const strength = parseStrength(relationshipClassProps.strength);
     if (undefined === strength)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidStrength,
+        `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`
+      );
 
-    const strengthDirection = parseStrengthDirection(relationshipClassProps.strengthDirection);
+    const strengthDirection = parseStrengthDirection(
+      relationshipClassProps.strengthDirection
+    );
     if (undefined === strengthDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strengthDirection' attribute. '${relationshipClassProps.strengthDirection}' is not a valid StrengthDirection.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidStrength,
+        `The RelationshipClass ${this.fullName} has an invalid 'strengthDirection' attribute. '${relationshipClassProps.strengthDirection}' is not a valid StrengthDirection.`
+      );
 
     this._strength = strength;
     this._strengthDirection = strengthDirection;
   }
 
-  public override async fromJSON(relationshipClassProps: RelationshipClassProps) {
+  public override async fromJSON(
+    relationshipClassProps: RelationshipClassProps
+  ) {
     this.fromJSONSync(relationshipClassProps);
   }
 }
@@ -138,35 +195,61 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
   private _customAttributes?: Map<string, CustomAttribute>;
 
-  constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
+  constructor(
+    relClass: RelationshipClass,
+    relEnd: RelationshipEnd,
+    roleLabel?: string,
+    polymorphic?: boolean
+  ) {
     this._relationshipEnd = relEnd;
-    if (polymorphic)
-      this._polymorphic = polymorphic;
-    else
-      this._polymorphic = false;
+    if (polymorphic) this._polymorphic = polymorphic;
+    else this._polymorphic = false;
 
     this._multiplicity = RelationshipMultiplicity.zeroOne;
     this._relationshipClass = relClass;
     this._roleLabel = roleLabel;
   }
 
-  public get multiplicity() { return this._multiplicity; }
-  public get polymorphic() { return this._polymorphic; }
-  public get roleLabel() { return this._roleLabel; }
-  public get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
-  public get relationshipClass() { return this._relationshipClass; }
-  public get relationshipEnd() { return this._relationshipEnd; }
-  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get multiplicity() {
+    return this._multiplicity;
+  }
+  public get polymorphic() {
+    return this._polymorphic;
+  }
+  public get roleLabel() {
+    return this._roleLabel;
+  }
+  public get constraintClasses():
+    | LazyLoadedRelationshipConstraintClass[]
+    | undefined {
+    return this._constraintClasses;
+  }
+  public get relationshipClass() {
+    return this._relationshipClass;
+  }
+  public get relationshipEnd() {
+    return this._relationshipEnd;
+  }
+  public get customAttributes(): CustomAttributeSet | undefined {
+    return this._customAttributes;
+  }
 
   /** Returns the constraint name, ie. 'RelationshipName.Source/Target' */
-  public get fullName() { return `${this._relationshipClass.name}:${this.isSource ? "Source" : "Target"}`; }
+  public get fullName() {
+    return `${this._relationshipClass.name}:${
+      this.isSource ? "Source" : "Target"
+    }`;
+  }
 
   /** Returns the schema of the RelationshipClass. */
-  public get schema(): Schema { return this._relationshipClass.schema; }
+  public get schema(): Schema {
+    return this._relationshipClass.schema;
+  }
 
-  public get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined {
-    if (this._abstractConstraint)
-      return this._abstractConstraint;
+  public get abstractConstraint():
+    | LazyLoadedRelationshipConstraintClass
+    | undefined {
+    if (this._abstractConstraint) return this._abstractConstraint;
 
     if (this.constraintClasses && this.constraintClasses.length === 1)
       return this.constraintClasses[0];
@@ -174,14 +257,18 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     return this._abstractConstraint;
   }
 
-  public set abstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined) {
+  public set abstractConstraint(
+    abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined
+  ) {
     this._abstractConstraint = abstractConstraint;
   }
 
   /**
    * True if this RelationshipConstraint is the Source relationship end.
    */
-  public get isSource(): boolean { return this.relationshipEnd === RelationshipEnd.Source; }
+  public get isSource(): boolean {
+    return this.relationshipEnd === RelationshipEnd.Source;
+  }
 
   /**
    * Adds the provided class as a constraint class to this constraint.
@@ -191,11 +278,12 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     // TODO: Ensure we don't start mixing constraint class types
     // TODO: Check that this class is or subclasses abstract constraint?
 
-    if (!this._constraintClasses)
-      this._constraintClasses = [];
+    if (!this._constraintClasses) this._constraintClasses = [];
 
     // TODO: Handle relationship constraints
-    this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
+    this._constraintClasses.push(
+      new DelayedPromiseWithProps(constraint.key, async () => constraint)
+    );
   }
 
   /**
@@ -208,8 +296,13 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     schemaJson.polymorphic = this.polymorphic;
     if (undefined !== this._abstractConstraint)
       schemaJson.abstractConstraint = this._abstractConstraint.fullName;
-    if (undefined !== this.constraintClasses && this.constraintClasses.length > 0)
-      schemaJson.constraintClasses = this.constraintClasses.map((constraintClass) => constraintClass.fullName);
+    if (
+      undefined !== this.constraintClasses &&
+      this.constraintClasses.length > 0
+    )
+      schemaJson.constraintClasses = this.constraintClasses.map(
+        (constraintClass) => constraintClass.fullName
+      );
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
@@ -230,7 +323,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     const abstractConstraint = await this.abstractConstraint;
     if (undefined !== abstractConstraint) {
-      const abstractConstraintName = XmlSerializationUtils.createXmlTypedName(this.schema, abstractConstraint.schema, abstractConstraint.name);
+      const abstractConstraintName = XmlSerializationUtils.createXmlTypedName(
+        this.schema,
+        abstractConstraint.schema,
+        abstractConstraint.name
+      );
       itemElement.setAttribute("abstractConstraint", abstractConstraintName);
     }
 
@@ -238,7 +335,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       for (const item of this.constraintClasses) {
         const constraintClass = await item;
         const classElement = schemaXml.createElement("Class");
-        const constraintClassName = XmlSerializationUtils.createXmlTypedName(this.schema, constraintClass.schema, constraintClass.name);
+        const constraintClassName = XmlSerializationUtils.createXmlTypedName(
+          this.schema,
+          constraintClass.schema,
+          constraintClass.name
+        );
         classElement.setAttribute("class", constraintClassName);
         itemElement.appendChild(classElement);
       }
@@ -247,7 +348,12 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     if (this._customAttributes) {
       const caContainerElement = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        const caElement = await XmlSerializationUtils.writeCustomAttribute(
+          name,
+          attribute,
+          schemaXml,
+          this.schema
+        );
         caContainerElement.appendChild(caElement);
       }
       itemElement.appendChild(caContainerElement);
@@ -256,12 +362,15 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     return itemElement;
   }
 
-  public fromJSONSync(relationshipConstraintProps: RelationshipConstraintProps) {
-
+  public fromJSONSync(
+    relationshipConstraintProps: RelationshipConstraintProps
+  ) {
     this._roleLabel = relationshipConstraintProps.roleLabel;
     this._polymorphic = relationshipConstraintProps.polymorphic;
 
-    const parsedMultiplicity = RelationshipMultiplicity.fromString(relationshipConstraintProps.multiplicity);
+    const parsedMultiplicity = RelationshipMultiplicity.fromString(
+      relationshipConstraintProps.multiplicity
+    );
     if (!parsedMultiplicity)
       throw new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, ``);
     this._multiplicity = parsedMultiplicity;
@@ -269,21 +378,35 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     const relClassSchema = this.relationshipClass.schema;
 
     if (undefined !== relationshipConstraintProps.abstractConstraint) {
-      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(relationshipConstraintProps.abstractConstraint);
+      const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(
+        relationshipConstraintProps.abstractConstraint
+      );
       if (!abstractConstraintSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
-      this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
-        async () => {
-          const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(relationshipConstraintProps.abstractConstraint!);
-          if (undefined === tempAbstractConstraint)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`
+        );
+      this.abstractConstraint = new DelayedPromiseWithProps<
+        SchemaItemKey,
+        AnyConstraintClass
+      >(abstractConstraintSchemaItemKey, async () => {
+        const tempAbstractConstraint =
+          await relClassSchema.lookupItem<AnyConstraintClass>(
+            relationshipConstraintProps.abstractConstraint!
+          );
+        if (undefined === tempAbstractConstraint)
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`
+          );
 
-          return tempAbstractConstraint;
-        });
+        return tempAbstractConstraint;
+      });
     }
 
     const loadEachConstraint = (constraintClassName: any) => {
-      const tempConstraintClass = relClassSchema.lookupItemSync<AnyConstraintClass>(constraintClassName);
+      const tempConstraintClass =
+        relClassSchema.lookupItemSync<AnyConstraintClass>(constraintClassName);
       if (!tempConstraintClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       return tempConstraintClass;
@@ -295,7 +418,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     }
   }
 
-  public async fromJSON(relationshipConstraintProps: RelationshipConstraintProps) {
+  public async fromJSON(
+    relationshipConstraintProps: RelationshipConstraintProps
+  ) {
     this.fromJSONSync(relationshipConstraintProps);
   }
 
@@ -306,25 +431,44 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   public async supportsClass(ecClass: ECClass): Promise<boolean> {
     if (!this.constraintClasses) {
       if (this.relationshipClass.baseClass) {
-        const baseRelationship = await this.relationshipClass.baseClass as RelationshipClass;
-        const baseConstraint = this.isSource ? baseRelationship.source : baseRelationship.target;
+        const baseRelationship = (await this.relationshipClass
+          .baseClass) as RelationshipClass;
+        const baseConstraint = this.isSource
+          ? baseRelationship.source
+          : baseRelationship.target;
         return baseConstraint.supportsClass(ecClass);
       }
       return false;
     }
 
-    if (ecClass.schemaItemType !== SchemaItemType.EntityClass && ecClass.schemaItemType !== SchemaItemType.RelationshipClass &&
-      ecClass.schemaItemType !== SchemaItemType.Mixin) {
+    if (
+      ecClass.schemaItemType !== SchemaItemType.EntityClass &&
+      ecClass.schemaItemType !== SchemaItemType.RelationshipClass &&
+      ecClass.schemaItemType !== SchemaItemType.Mixin
+    ) {
       return false;
     }
 
     const abstractConstraint = await this.abstractConstraint;
 
-    if (abstractConstraint && await RelationshipConstraint.classCompatibleWithConstraint(abstractConstraint, ecClass, this.polymorphic || false))
+    if (
+      abstractConstraint &&
+      (await RelationshipConstraint.classCompatibleWithConstraint(
+        abstractConstraint,
+        ecClass,
+        this.polymorphic || false
+      ))
+    )
       return true;
 
     for (const constraint of this.constraintClasses) {
-      if (await RelationshipConstraint.classCompatibleWithConstraint(await constraint, ecClass, this.polymorphic || false))
+      if (
+        await RelationshipConstraint.classCompatibleWithConstraint(
+          await constraint,
+          ecClass,
+          this.polymorphic || false
+        )
+      )
         return true;
     }
 
@@ -337,20 +481,27 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
    * @param testClass The ECClass to check against the constraint class.
    * @param isPolymorphic Indicates if the testClass should be checked polymorphically.
    */
-  public static async classCompatibleWithConstraint(constraintClass: ECClass, testClass: ECClass, isPolymorphic: boolean): Promise<boolean> {
-    if (SchemaItem.equalByKey(constraintClass, testClass))
-      return true;
+  public static async classCompatibleWithConstraint(
+    constraintClass: ECClass,
+    testClass: ECClass,
+    isPolymorphic: boolean
+  ): Promise<boolean> {
+    if (SchemaItem.equalByKey(constraintClass, testClass)) return true;
 
     if (isPolymorphic) {
-      if (testClass.schemaItemType === SchemaItemType.EntityClass || testClass.schemaItemType === SchemaItemType.RelationshipClass) {
+      if (
+        testClass.schemaItemType === SchemaItemType.EntityClass ||
+        testClass.schemaItemType === SchemaItemType.RelationshipClass
+      ) {
         return testClass.is(constraintClass);
       }
 
       if (testClass.schemaItemType === SchemaItemType.Mixin) {
         if (constraintClass.schemaItemType === SchemaItemType.EntityClass)
-          return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
-        else
-          return testClass.is(constraintClass);
+          return (testClass as Mixin).applicableTo(
+            constraintClass as EntityClass
+          );
+        else return testClass.is(constraintClass);
       }
     }
     return false;
@@ -359,11 +510,18 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   /**
    * @internal
    */
-  public static isRelationshipConstraint(object: any): object is RelationshipConstraint {
+  public static isRelationshipConstraint(
+    object: any
+  ): object is RelationshipConstraint {
     const relationshipConstrait = object as RelationshipConstraint;
 
-    return relationshipConstrait !== undefined && relationshipConstrait.polymorphic !== undefined && relationshipConstrait.multiplicity !== undefined
-      && relationshipConstrait.relationshipEnd !== undefined && relationshipConstrait._relationshipClass !== undefined;
+    return (
+      relationshipConstrait !== undefined &&
+      relationshipConstrait.polymorphic !== undefined &&
+      relationshipConstrait.multiplicity !== undefined &&
+      relationshipConstrait.relationshipEnd !== undefined &&
+      relationshipConstrait._relationshipClass !== undefined
+    );
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
@@ -372,7 +530,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
-
 }
 
 /**
@@ -380,8 +537,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
  * @internal
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
-  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
-
+  public abstract override addCustomAttribute(
+    customAttribute: CustomAttribute
+  ): void;
 }
 
 const INT32_MAX = 2147483647;
@@ -405,11 +563,11 @@ export class RelationshipMultiplicity {
 
   public static fromString(str: string): RelationshipMultiplicity | undefined {
     const matches = /^\(([0-9]*)\.\.([0-9]*|\*)\)$/.exec(str);
-    if (matches === null || matches.length !== 3)
-      return undefined;
+    if (matches === null || matches.length !== 3) return undefined;
 
     const lowerLimit = parseInt(matches[1], 10);
-    const upperLimit = matches[2] === "*" ? INT32_MAX : parseInt(matches[2], 10);
+    const upperLimit =
+      matches[2] === "*" ? INT32_MAX : parseInt(matches[2], 10);
     if (0 === lowerLimit && 1 === upperLimit)
       return RelationshipMultiplicity.zeroOne;
     else if (0 === lowerLimit && INT32_MAX === upperLimit)
@@ -423,11 +581,15 @@ export class RelationshipMultiplicity {
   }
 
   public equals(rhs: RelationshipMultiplicity): boolean {
-    return this.lowerLimit === rhs.lowerLimit && this.upperLimit === rhs.upperLimit;
+    return (
+      this.lowerLimit === rhs.lowerLimit && this.upperLimit === rhs.upperLimit
+    );
   }
 
   public toString(): string {
-    return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
+    return `(${this.lowerLimit}..${
+      this.upperLimit === INT32_MAX ? "*" : this.upperLimit
+    })`;
   }
 }
 
@@ -436,11 +598,25 @@ export class RelationshipMultiplicity {
  * An abstract class used for schema editing.
  */
 export abstract class MutableRelationshipClass extends RelationshipClass {
-  public override get source() { return this._source as MutableRelationshipConstraint; }
-  public override get target() { return this._target as MutableRelationshipConstraint; }
+  public override get source() {
+    return this._source as MutableRelationshipConstraint;
+  }
+  public override get target() {
+    return this._target as MutableRelationshipConstraint;
+  }
   public abstract override setStrength(strength: StrengthType): void;
-  public abstract override setStrengthDirection(direction: StrengthDirection): void;
-  public abstract override createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
-  public abstract override createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract override setStrengthDirection(
+    direction: StrengthDirection
+  ): void;
+  public abstract override createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection
+  ): Promise<NavigationProperty>;
+  public abstract override createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection
+  ): NavigationProperty;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

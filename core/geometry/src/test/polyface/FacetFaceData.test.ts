@@ -12,7 +12,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("FacetFaceData", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -20,8 +19,18 @@ describe("FacetFaceData", () => {
     const polyfaceA = Sample.createTriangularUnitGridPolyface(
       Point3d.create(0, 0, 0),
       Vector3d.unitX(2.5),
-      Vector3d.unitY(4), 2, 3, true, true, true);
-    ffd.setParamDistanceRangeFromNewFaceData(polyfaceA, 0, polyfaceA.facetCount);
+      Vector3d.unitY(4),
+      2,
+      3,
+      true,
+      true,
+      true
+    );
+    ffd.setParamDistanceRangeFromNewFaceData(
+      polyfaceA,
+      0,
+      polyfaceA.facetCount
+    );
 
     const paramRange = ffd.paramRange;
     const distanceRange = ffd.paramDistanceRange;
@@ -33,7 +42,11 @@ describe("FacetFaceData", () => {
     ffdB1.scaleDistances(3.5);
     const distanceRange1 = ffdB1.paramDistanceRange;
 
-    for (const uv of [Point2d.create(0, 0), Point2d.create(0.2, 0.5), Point2d.create(0.75, 0.8)]) {
+    for (const uv of [
+      Point2d.create(0, 0),
+      Point2d.create(0.2, 0.5),
+      Point2d.create(0.75, 0.8),
+    ]) {
       const uvA = paramRange.fractionToPoint(uv.x, uv.y);
       const uvB = distanceRange.fractionToPoint(uv.x, uv.y);
       const uvAtoB = ffd.convertParamToDistance(uvA);
@@ -48,7 +61,9 @@ describe("FacetFaceData", () => {
     }
 
     // confirm failure with start face out of range
-    ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 100, 110));
+    ck.testFalse(
+      ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 100, 110)
+    );
     // confirm failure with end face less than start face
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 2, 0));
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceA, 2, 2));
@@ -56,7 +71,13 @@ describe("FacetFaceData", () => {
     const polyfaceB = Sample.createTriangularUnitGridPolyface(
       Point3d.create(0, 0, 0),
       Vector3d.unitX(),
-      Vector3d.unitY(), 2, 3, false, false, false);
+      Vector3d.unitY(),
+      2,
+      3,
+      false,
+      false,
+      false
+    );
     // confirm failure if there are no params in the polyface
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceB, 2, 3));
 

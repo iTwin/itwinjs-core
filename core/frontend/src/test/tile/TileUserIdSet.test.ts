@@ -7,8 +7,7 @@ import { TileUserIdSet, TileUserIdSets } from "../../tile/LRUTileList";
 
 function makeTileUserIdSet(ids: number[]): TileUserIdSet {
   const set = new TileUserIdSet();
-  for (const id of ids)
-    set.add(id);
+  for (const id of ids) set.add(id);
 
   return set;
 }
@@ -16,19 +15,19 @@ function makeTileUserIdSet(ids: number[]): TileUserIdSet {
 describe("TileUserIdSet", () => {
   it("compares for equality", () => {
     const idLists = [
-      [ ],
-      [ 1 ],
-      [ 2 ],
-      [ 1, 2 ],
-      [ 5, 199, 2, 4, 300 ],
-      [ 1, 1, 2, 2, 5, 4, 4, 3, 3, 1, 2 ],
+      [],
+      [1],
+      [2],
+      [1, 2],
+      [5, 199, 2, 4, 300],
+      [1, 1, 2, 2, 5, 4, 4, 3, 3, 1, 2],
     ];
 
     for (let i = 0; i < idLists.length; i++) {
       const list = idLists[i];
       const set = makeTileUserIdSet(list);
       expect(set.equals(set)).to.be.true;
-      const reverse = [ ...list ];
+      const reverse = [...list];
       reverse.reverse();
       expect(set.equals(makeTileUserIdSet(reverse))).to.be.true;
 

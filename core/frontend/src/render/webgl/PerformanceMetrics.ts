@@ -33,11 +33,14 @@ export class PerformanceMetrics {
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
 
-  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, gpuResults?: GLTimerResultCallback) {
+  public constructor(
+    gatherGlFinish = false,
+    gatherCurPerformanceMetrics = false,
+    gpuResults?: GLTimerResultCallback
+  ) {
     this.gatherGlFinish = gatherGlFinish;
     this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
-    if (gpuResults)
-      System.instance.debugControl.resultsCallback = gpuResults;
+    if (gpuResults) System.instance.debugControl.resultsCallback = gpuResults;
   }
 
   public beginFrame(sceneTime: number = 0) {
@@ -59,13 +62,26 @@ export class PerformanceMetrics {
 
   public endOperation() {
     const endTimePoint = BeTimePoint.now();
-    const beginTimePoint = this._beginTimePoints.length > 0 ? this._beginTimePoints.pop()! : endTimePoint;
+    const beginTimePoint =
+      this._beginTimePoints.length > 0
+        ? this._beginTimePoints.pop()!
+        : endTimePoint;
     const operationName = this._operationNames.pop();
-    if (operationName) { // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
-      if (this._updateallTimePoints1) // Push to currently active allTimePoints buffer
-        this._allTimePoints1.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
+    if (operationName) {
+      // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
+      if (this._updateallTimePoints1)
+        // Push to currently active allTimePoints buffer
+        this._allTimePoints1.push({
+          begin: beginTimePoint,
+          end: endTimePoint,
+          name: operationName,
+        });
       else
-        this._allTimePoints2.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
+        this._allTimePoints2.push({
+          begin: beginTimePoint,
+          end: endTimePoint,
+          name: operationName,
+        });
     }
   }
 
@@ -74,11 +90,22 @@ export class PerformanceMetrics {
 
     // Use double buffering here to ensure that we grab a COMPLETE set of timings from a SINGLE run when grabbing timing data while continuously rendering
     this._updateallTimePoints1 = !this._updateallTimePoints1; // Switch to other allTimePoints buffer
-    if (this._updateallTimePoints1) { // Get data from the old buffer that was just completed
-      this._allTimePoints2.forEach((record: AllTimePoints) => this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds));
+    if (this._updateallTimePoints1) {
+      // Get data from the old buffer that was just completed
+      this._allTimePoints2.forEach((record: AllTimePoints) =>
+        this.frameTimings.set(
+          record.name,
+          record.end.milliseconds - record.begin.milliseconds
+        )
+      );
       this._allTimePoints2 = []; // Reset to empty
     } else {
-      this._allTimePoints1.forEach((record: AllTimePoints) => this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds));
+      this._allTimePoints1.forEach((record: AllTimePoints) =>
+        this.frameTimings.set(
+          record.name,
+          record.end.milliseconds - record.begin.milliseconds
+        )
+      );
       this._allTimePoints1 = []; // Reset to empty
     }
     this._beginTimePoints = []; // This should be back to [] at this point
@@ -95,8 +122,7 @@ export class PerformanceMetrics {
       this.spfTimes[this.curSpfTimeIndex] = fpsTimerElapsed;
 
       this.curSpfTimeIndex++;
-      if (this.curSpfTimeIndex >= 50)
-        this.curSpfTimeIndex = 0;
+      if (this.curSpfTimeIndex >= 50) this.curSpfTimeIndex = 0;
 
       this.fpsTimerStart = this.fpsTimer.currentSeconds;
     }

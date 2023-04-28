@@ -52,28 +52,37 @@ export class UsageSums {
     this._origin = origin;
   }
   /** Return the number of samples seen */
-  public get count(): number { return this._count; }
+  public get count(): number {
+    return this._count;
+  }
   /** return the mean of all samples.
    * * Return 0 if no samples
    */
-  public get mean(): number { return this._count > 0 ? this._sumX / this._count : 0.0; }
+  public get mean(): number {
+    return this._count > 0 ? this._sumX / this._count : 0.0;
+  }
   /** Return the mean of  squared samples.
    * * Return 0 if no samples.
    */
-  public get meanSquare(): number { return this._count > 0 ? this._sumXX / this._count : 0.0; }
-  public get minMax(): Range1d { return this._minMax.clone(); }
+  public get meanSquare(): number {
+    return this._count > 0 ? this._sumXX / this._count : 0.0;
+  }
+  public get minMax(): Range1d {
+    return this._minMax.clone();
+  }
 
   /**
    * Return the "biased standard deviation" (https://en.wikipedia.org/wiki/Standard_deviation)
    * * This is zero if count is zero.
    */
   public get standardDeviation(): number {
-    if (this._count < 1)
-      return 0.0;
+    if (this._count < 1) return 0.0;
     const xBar = this.mean;
     const sumXX = this._sumXX;
     const sumX = this._sumX;
-    return Math.sqrt((sumXX - 2 * xBar * sumX + this._count * xBar * xBar) / this._count);
+    return Math.sqrt(
+      (sumXX - 2 * xBar * sumX + this._count * xBar * xBar) / this._count
+    );
   }
   /** Reinitialize all sums.
    * * origin is unchanged
@@ -85,7 +94,9 @@ export class UsageSums {
   /**
    * return the origin being used in the `accumulate(x)` method.
    */
-  public get origin(): number { return this._origin; }
+  public get origin(): number {
+    return this._origin;
+  }
   /**
    * Reset the origin.
    * * Former sums are unchanged !!
@@ -102,7 +113,8 @@ export class UsageSums {
     const delta = origin - this._origin;
     this._origin = origin;
     // adjust sumXX first to get old sumX value before it is modified.
-    this._sumXX = this._sumXX - 2 * delta * this._sumX + this._count * delta * delta;
+    this._sumXX =
+      this._sumXX - 2 * delta * this._sumX + this._count * delta * delta;
     this._sumX = this._sumX - this._count * delta;
     this._minMax.cloneTranslated(-delta, this._minMax);
   }
@@ -116,13 +128,11 @@ export class UsageSums {
   }
   /** Accumulate a single value */
   public accumulateArray(xArray: number[]) {
-    for (const x of xArray)
-      this.accumulate(x);
+    for (const x of xArray) this.accumulate(x);
   }
   /** Clone all content (origin, count, sums, minMax) */
   public clone(result?: UsageSums): UsageSums {
-    if (!result)
-      result = new UsageSums();
+    if (!result) result = new UsageSums();
     this._minMax.clone(result._minMax);
     result._count = this._count;
     result._origin = this._origin;
@@ -132,10 +142,12 @@ export class UsageSums {
   }
   /** Compare all content. */
   public isAlmostEqual(other: UsageSums): boolean {
-    return Geometry.isAlmostEqualNumber(this._sumX, other._sumX)
-      && Geometry.isAlmostEqualNumber(this._sumXX, other._sumXX)
-      && Geometry.isAlmostEqualNumber(this._origin, other._origin)
-      && this._count === other._count
-      && this._minMax.isAlmostEqual(other._minMax);
+    return (
+      Geometry.isAlmostEqualNumber(this._sumX, other._sumX) &&
+      Geometry.isAlmostEqualNumber(this._sumXX, other._sumXX) &&
+      Geometry.isAlmostEqualNumber(this._origin, other._origin) &&
+      this._count === other._count &&
+      this._minMax.isAlmostEqual(other._minMax)
+    );
   }
 }

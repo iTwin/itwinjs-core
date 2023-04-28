@@ -20,7 +20,10 @@ import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { StrokeOptions } from "../StrokeOptions";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
+import {
+  GeometryHandler,
+  IStrokeHandler,
+} from "../../geometry3d/GeometryHandler";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { GeometryQuery } from "../GeometryQuery";
@@ -48,7 +51,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    */
   private _activeStrokes?: LineString3d;
   /** Return the internal stroked form of the (possibly partial) spiral   */
-  public get activeStrokes(): LineString3d { return this._activeStrokes !== undefined ? this._activeStrokes : this._globalStrokes; }
+  public get activeStrokes(): LineString3d {
+    return this._activeStrokes !== undefined
+      ? this._activeStrokes
+      : this._globalStrokes;
+  }
   private _evaluator: NormalizedTransition;
   /** Total curve arc length (computed) */
   private _arcLength01: number;
@@ -56,14 +63,16 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   private _curvature01: Segment1d;
   /** evaluator for transition */
   // constructor demands all bearing, radius, and length data -- caller determines usual dependency of "any 4 determine the 5th"
-  private constructor(spiralType: string | undefined,
+  private constructor(
+    spiralType: string | undefined,
     evaluator: NormalizedTransition,
     radius01: Segment1d,
     bearing01: AngleSweep,
     activeFractionInterval: Segment1d,
     localToWorld: Transform,
     arcLength: number,
-    properties: TransitionConditionalProperties | undefined) {
+    properties: TransitionConditionalProperties | undefined
+  ) {
     super(spiralType, localToWorld, activeFractionInterval, properties);
     this._evaluator = evaluator;
     this.radius01 = radius01;
@@ -82,7 +91,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public globalFractionToBearingRadians(fraction: number): number {
     const areaFraction = this._evaluator.fractionToArea(fraction);
     const dx = this._arcLength01;
-    return this.bearing01.startRadians + areaFraction * dx * this._curvature01.signedDelta() + fraction * this._curvature01.x0 * dx;
+    return (
+      this.bearing01.startRadians +
+      areaFraction * dx * this._curvature01.signedDelta() +
+      fraction * this._curvature01.x0 * dx
+    );
   }
   /** use the integrated function to return an angle at fractional position. */
   public globalFractionToCurvature(fraction: number): number {
@@ -93,22 +106,38 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** Return the bearing at given fraction of the active interval .... */
 
   public fractionToBearingRadians(activeFraction: number): number {
-    const fraction = this.activeFractionInterval.fractionToPoint(activeFraction);
-    return this.bearing01.startRadians + fraction * this._arcLength01 * (this._curvature01.x0 + 0.5 * fraction * (this._curvature01.x1 - this._curvature01.x0));
+    const fraction =
+      this.activeFractionInterval.fractionToPoint(activeFraction);
+    return (
+      this.bearing01.startRadians +
+      fraction *
+        this._arcLength01 *
+        (this._curvature01.x0 +
+          0.5 * fraction * (this._curvature01.x1 - this._curvature01.x0))
+    );
   }
   /** Return the curvature at given fraction of the active interval ...
    * * The `undefined` result is to match the abstract class -- it cannot actually occur.
    */
-  public override fractionToCurvature(activeFraction: number): number | undefined {
+  public override fractionToCurvature(
+    activeFraction: number
+  ): number | undefined {
     // BUG? active interval
-    return this._curvature01.fractionToPoint(this.activeFractionInterval.fractionToPoint(activeFraction));
+    return this._curvature01.fractionToPoint(
+      this.activeFractionInterval.fractionToPoint(activeFraction)
+    );
   }
 
   // These static variables are reused on calls to integrateFromStartFraction
 
   private static _gaussFraction: Float64Array;
   private static _gaussWeight: Float64Array;
-  private static _gaussMapper: (xA: number, xB: number, arrayX: Float64Array, arrayW: Float64Array) => number;
+  private static _gaussMapper: (
+    xA: number,
+    xB: number,
+    arrayX: Float64Array,
+    arrayW: Float64Array
+  ) => number;
   /** Initialize class level work arrays. */
   public static initWorkSpace() {
     IntegratedSpiral3d._gaussFraction = new Float64Array(5);
@@ -124,10 +153,20 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    * @param fractionB fraction at end of interval.
    * @param unitArcLength length of curve for 0 to 1 fractional
    */
-  private fullSpiralIncrementalIntegral(xyz: Point3d, fractionA: number, fractionB: number, applyMatrix: boolean) {
+  private fullSpiralIncrementalIntegral(
+    xyz: Point3d,
+    fractionA: number,
+    fractionB: number,
+    applyMatrix: boolean
+  ) {
     const gaussFraction = IntegratedSpiral3d._gaussFraction;
     const gaussWeight = IntegratedSpiral3d._gaussWeight;
-    const numEval = IntegratedSpiral3d._gaussMapper(fractionA, fractionB, gaussFraction, gaussWeight);
+    const numEval = IntegratedSpiral3d._gaussMapper(
+      fractionA,
+      fractionB,
+      gaussFraction,
+      gaussWeight
+    );
     const deltaL = this._arcLength01;
     let w = 0;
     let dx = 0.0;
@@ -139,16 +178,20 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       dy += w * Math.sin(radians);
     }
     if (applyMatrix)
-      Matrix3d.xyzPlusMatrixTimesXYZ(xyz, this.localToWorld.matrix, { x: dx, y: dy, z: 0.0 }, xyz);
-    else
-      xyz.addXYZInPlace(dx, dy, 0.0);
-
+      Matrix3d.xyzPlusMatrixTimesXYZ(
+        xyz,
+        this.localToWorld.matrix,
+        { x: dx, y: dy, z: 0.0 },
+        xyz
+      );
+    else xyz.addXYZInPlace(dx, dy, 0.0);
   }
   /** Recompute strokes */
   public override refreshComputedProperties() {
     this._curvature01 = Segment1d.create(
       TransitionSpiral3d.radiusToCurvature(this.radius01.x0),
-      TransitionSpiral3d.radiusToCurvature(this.radius01.x1));
+      TransitionSpiral3d.radiusToCurvature(this.radius01.x1)
+    );
     this._globalStrokes.clear();
     const currentPoint = Point3d.create();
     this._globalStrokes.appendStrokePoint(currentPoint);
@@ -158,7 +201,12 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     for (let i = 1; i <= numInterval; i++) {
       const fraction0 = (i - 1) * fractionStep;
       const fraction1 = i * fractionStep;
-      this.fullSpiralIncrementalIntegral(currentPoint, fraction0, fraction1, false);
+      this.fullSpiralIncrementalIntegral(
+        currentPoint,
+        fraction0,
+        fraction1,
+        false
+      );
       this._globalStrokes.appendStrokePoint(currentPoint);
     }
     this._globalStrokes.tryTransformInPlace(this.localToWorld);
@@ -181,19 +229,37 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    * @param activeFractionInterval fractional limits of the active portion of the spiral.
    * @param localToWorld placement frame.  Fractional coordinate 0 is at the origin.
    */
-  public static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, typeName?: string) {
-    const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(radius01.x0, radius01.x1, bearing01.sweepRadians);
-    if (typeName === undefined)
-      typeName = "clothoid";
+  public static createRadiusRadiusBearingBearing(
+    radius01: Segment1d,
+    bearing01: AngleSweep,
+    activeFractionInterval: Segment1d,
+    localToWorld: Transform,
+    typeName?: string
+  ) {
+    const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(
+      radius01.x0,
+      radius01.x1,
+      bearing01.sweepRadians
+    );
+    if (typeName === undefined) typeName = "clothoid";
     const evaluator = NormalizedTransition.findEvaluator(typeName);
-    if (!evaluator)
-      return undefined;
-    return new IntegratedSpiral3d(typeName, evaluator,
+    if (!evaluator) return undefined;
+    return new IntegratedSpiral3d(
+      typeName,
+      evaluator,
       radius01.clone(),
-      bearing01.clone(), activeFractionInterval.clone(), localToWorld.clone(), arcLength,
-      new TransitionConditionalProperties(radius01.x0, radius01.x1,
-        bearing01.startAngle.clone(), bearing01.endAngle.clone(),
-        undefined));
+      bearing01.clone(),
+      activeFractionInterval.clone(),
+      localToWorld.clone(),
+      arcLength,
+      new TransitionConditionalProperties(
+        radius01.x0,
+        radius01.x1,
+        bearing01.startAngle.clone(),
+        bearing01.endAngle.clone(),
+        undefined
+      )
+    );
   }
   /**
    * Create a transition spiral.
@@ -214,16 +280,20 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     bearing1: Angle | undefined,
     arcLength: number | undefined,
     fractionInterval: undefined | Segment1d,
-    localToWorld: Transform): IntegratedSpiral3d | undefined {
-    if (spiralType === undefined)
-      spiralType = "clothoid";
+    localToWorld: Transform
+  ): IntegratedSpiral3d | undefined {
+    if (spiralType === undefined) spiralType = "clothoid";
     const evaluator = NormalizedTransition.findEvaluator(spiralType);
-    if (!evaluator)
-      return undefined;
-    const data = new TransitionConditionalProperties(radius0, radius1, bearing0, bearing1, arcLength);
+    if (!evaluator) return undefined;
+    const data = new TransitionConditionalProperties(
+      radius0,
+      radius1,
+      bearing0,
+      bearing1,
+      arcLength
+    );
     const data1 = data.clone();
-    if (!data.tryResolveAnySingleUnknown())
-      return undefined;
+    if (!data.tryResolveAnySingleUnknown()) return undefined;
     if (fractionInterval === undefined)
       fractionInterval = Segment1d.create(0, 1);
     return new IntegratedSpiral3d(
@@ -232,7 +302,10 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       Segment1d.create(data.radius0, data.radius1),
       AngleSweep.createStartEnd(data.bearing0!, data.bearing1!),
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
-      localToWorld, data.curveLength!, data1);
+      localToWorld,
+      data.curveLength!,
+      data1
+    );
   }
   /** Copy all defining data from another spiral. */
   public setFrom(other: IntegratedSpiral3d): IntegratedSpiral3d {
@@ -247,15 +320,20 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   }
   /** Deep clone of this spiral */
   public override clone(): IntegratedSpiral3d {
-    return new IntegratedSpiral3d(this._spiralType, this._evaluator,
-      this.radius01.clone(), this.bearing01.clone(),
-      this.activeFractionInterval.clone(), this.localToWorld.clone(), this._arcLength01,
-      this._designProperties?.clone());
+    return new IntegratedSpiral3d(
+      this._spiralType,
+      this._evaluator,
+      this.radius01.clone(),
+      this.bearing01.clone(),
+      this.activeFractionInterval.clone(),
+      this.localToWorld.clone(),
+      this._arcLength01,
+      this._designProperties?.clone()
+    );
   }
 
   /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transformA: Transform): boolean {
-
     const rigidData = this.applyRigidPartOfTransform(transformA);
     if (rigidData !== undefined) {
       this._curvature01.x0 /= rigidData.scale;
@@ -269,36 +347,69 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   }
 
   /** Return the spiral start point. */
-  public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
+  public override startPoint(): Point3d {
+    return this.activeStrokes.startPoint();
+  }
   /** return the spiral end point. */
-  public override endPoint(): Point3d { return this.activeStrokes.endPoint(); }
+  public override endPoint(): Point3d {
+    return this.activeStrokes.endPoint();
+  }
   /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
-    return plane.isPointInPlane(this.localToWorld.origin as Point3d)
-      && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnX(plane.getNormalRef()))
-      && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnY(plane.getNormalRef()));
+    return (
+      plane.isPointInPlane(this.localToWorld.origin as Point3d) &&
+      Geometry.isSameCoordinate(
+        0.0,
+        this.localToWorld.matrix.dotColumnX(plane.getNormalRef())
+      ) &&
+      Geometry.isSameCoordinate(
+        0.0,
+        this.localToWorld.matrix.dotColumnY(plane.getNormalRef())
+      )
+    );
   }
   /** Return length of the spiral.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
-  public quickLength() { return this.curveLength(); }
+  public quickLength() {
+    return this.curveLength();
+  }
   /** Return length of the spiral.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
-  public override curveLength() { return this._arcLength01 * (this._activeFractionInterval.absoluteDelta()); }
+  public override curveLength() {
+    return this._arcLength01 * this._activeFractionInterval.absoluteDelta();
+  }
   /** Return (unsigned) length of the spiral between fractions.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
-  public override curveLengthBetweenFractions(fraction0: number, fraction1: number) {
-    return this._arcLength01 * (this._activeFractionInterval.absoluteDelta() * Math.abs(fraction1 - fraction0));
+  public override curveLengthBetweenFractions(
+    fraction0: number,
+    fraction1: number
+  ) {
+    return (
+      this._arcLength01 *
+      (this._activeFractionInterval.absoluteDelta() *
+        Math.abs(fraction1 - fraction0))
+    );
   }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof TransitionSpiral3d; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof TransitionSpiral3d;
+  }
   /** Add strokes from this spiral to `dest`.
    * * Linestrings will usually stroke as just their points.
    * * If maxEdgeLength is given, this will sub-stroke within the linestring -- not what we want.
    */
-  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void { this.activeStrokes.emitStrokes(dest, options); }
+  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
+    this.activeStrokes.emitStrokes(dest, options);
+  }
   /** emit stroke fragments to `dest` handler. */
-  public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
+  public emitStrokableParts(
+    dest: IStrokeHandler,
+    options?: StrokeOptions
+  ): void {
     const n = this.computeStrokeCountForOptions(options);
     dest.startParentCurvePrimitive(this);
     const activeStrokes = this.activeStrokes;
-    const preferPrimary = dest.needPrimaryGeometryForStrokes === undefined ? false : dest.needPrimaryGeometryForStrokes();
+    const preferPrimary =
+      dest.needPrimaryGeometryForStrokes === undefined
+        ? false
+        : dest.needPrimaryGeometryForStrokes();
     if (!preferPrimary && n <= activeStrokes.numPoints()) {
       this.activeStrokes.emitStrokableParts(dest, options);
     } else {
@@ -315,12 +426,22 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
     let numStroke;
     if (options) {
-      const rMin = Math.min(Math.abs(this.radius01.x0), Math.abs(this.radius01.x1));
-      numStroke = options.applyTolerancesToArc(rMin, this.bearing01.sweepRadians);
+      const rMin = Math.min(
+        Math.abs(this.radius01.x0),
+        Math.abs(this.radius01.x1)
+      );
+      numStroke = options.applyTolerancesToArc(
+        rMin,
+        this.bearing01.sweepRadians
+      );
       numStroke = options.applyMaxEdgeLength(numStroke, this.curveLength());
       numStroke = options.applyMinStrokesPerPrimitive(numStroke);
     } else {
-      numStroke = StrokeOptions.applyAngleTol(undefined, 4, this.bearing01.sweepRadians);
+      numStroke = StrokeOptions.applyAngleTol(
+        undefined,
+        4,
+        this.bearing01.sweepRadians
+      );
     }
     return numStroke;
   }
@@ -337,7 +458,8 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   }
   /** Evaluate curve point with respect to fraction. */
   public fractionToPoint(activeFraction: number, result?: Point3d): Point3d {
-    const targetGlobalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
+    const targetGlobalFraction =
+      this.activeFractionInterval.fractionToPoint(activeFraction);
     const numStrokes = this._globalStrokes.packedPoints.length - 1;
     if (activeFraction > 1.0) {
       result = this._globalStrokes.packedPoints.back(result)!;
@@ -345,51 +467,98 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       let currentGlobalFraction = 1.0;
       let nextGlobalFraction = currentGlobalFraction + integrationStep;
       while (nextGlobalFraction < targetGlobalFraction) {
-        this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, nextGlobalFraction, true);
+        this.fullSpiralIncrementalIntegral(
+          result,
+          currentGlobalFraction,
+          nextGlobalFraction,
+          true
+        );
         currentGlobalFraction = nextGlobalFraction;
         nextGlobalFraction += integrationStep;
       }
-      this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
+      this.fullSpiralIncrementalIntegral(
+        result,
+        currentGlobalFraction,
+        targetGlobalFraction,
+        true
+      );
     } else if (activeFraction < 0.0) {
       result = this._globalStrokes.packedPoints.front(result)!;
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 0.0;
       let nextGlobalFraction = currentGlobalFraction - integrationStep;
       while (nextGlobalFraction > targetGlobalFraction) {
-        this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, nextGlobalFraction, true);
+        this.fullSpiralIncrementalIntegral(
+          result,
+          currentGlobalFraction,
+          nextGlobalFraction,
+          true
+        );
         currentGlobalFraction = nextGlobalFraction;
         nextGlobalFraction -= integrationStep;
       }
-      this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
+      this.fullSpiralIncrementalIntegral(
+        result,
+        currentGlobalFraction,
+        targetGlobalFraction,
+        true
+      );
     } else {
-      const clampedGlobalFraction = Geometry.clampToStartEnd(targetGlobalFraction, 0, 1);
+      const clampedGlobalFraction = Geometry.clampToStartEnd(
+        targetGlobalFraction,
+        0,
+        1
+      );
       const index0 = Math.trunc(clampedGlobalFraction * numStrokes); // This indexes the point to the left of the query.
       const globalFraction0 = index0 / numStrokes;
-      result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(index0, result);
+      result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(
+        index0,
+        result
+      );
       // GeometryCoreTestIO.consoleLog(" fractionToPoint ", activeFraction, this.activeFractionInterval, "( global integration " + globalFraction0 + " to " + globalFraction + ")", index0);
-      this.fullSpiralIncrementalIntegral(result, globalFraction0, targetGlobalFraction, true);
-
+      this.fullSpiralIncrementalIntegral(
+        result,
+        globalFraction0,
+        targetGlobalFraction,
+        true
+      );
     }
     return result;
   }
   /** Evaluate curve point and derivative with respect to fraction. */
-  public fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d {
-    const globalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
+  public fractionToPointAndDerivative(
+    activeFraction: number,
+    result?: Ray3d
+  ): Ray3d {
+    const globalFraction =
+      this.activeFractionInterval.fractionToPoint(activeFraction);
     result = result ? result : Ray3d.createZero();
     this.fractionToPoint(activeFraction, result.origin);
     const radians = this.globalFractionToBearingRadians(globalFraction);
     const a = this._arcLength01 * this.activeFractionInterval.signedDelta();
-    this.localToWorld.matrix.multiplyXY(a * Math.cos(radians), a * Math.sin(radians), result.direction);
+    this.localToWorld.matrix.multiplyXY(
+      a * Math.cos(radians),
+      a * Math.sin(radians),
+      result.direction
+    );
     return result;
   }
 
   /** Return the frenet frame at fractional position. */
 
-  public override fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform {
-    const globalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
+  public override fractionToFrenetFrame(
+    activeFraction: number,
+    result?: Transform
+  ): Transform {
+    const globalFraction =
+      this.activeFractionInterval.fractionToPoint(activeFraction);
     result = result ? result : Transform.createIdentity();
     result.origin.setFrom(this.fractionToPoint(activeFraction));
-    Matrix3d.createRigidFromMatrix3d(this.localToWorld.matrix, AxisOrder.XYZ, result.matrix);
+    Matrix3d.createRigidFromMatrix3d(
+      this.localToWorld.matrix,
+      AxisOrder.XYZ,
+      result.matrix
+    );
 
     const radians = this.globalFractionToBearingRadians(globalFraction);
     const c = Math.cos(radians);
@@ -403,8 +572,12 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    * * vectorU is the first derivative, i.e. tangent vector with length equal to the rate of change with respect to the fraction.
    * * vectorV is the second derivative, i.e.derivative of vectorU.
    */
-  public fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined {
-    const globalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
+  public fractionToPointAnd2Derivatives(
+    activeFraction: number,
+    result?: Plane3dByOriginAndVectors
+  ): Plane3dByOriginAndVectors | undefined {
+    const globalFraction =
+      this.activeFractionInterval.fractionToPoint(activeFraction);
     const origin = this.fractionToPoint(activeFraction);
     const radians = this.globalFractionToBearingRadians(globalFraction);
     const c = Math.cos(radians);
@@ -415,7 +588,12 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const vectorX = this.localToWorld.matrix.multiplyXY(a * c, a * s);
     const vectorY = this.localToWorld.matrix.multiplyXY(-b * s, b * c);
     vectorY.scaleInPlace(this.globalFractionToCurvature(globalFraction));
-    return Plane3dByOriginAndVectors.createCapture(origin, vectorX, vectorY, result);
+    return Plane3dByOriginAndVectors.createCapture(
+      origin,
+      vectorX,
+      vectorY,
+      result
+    );
   }
   /** Second step of double dispatch:  call `handler.handleTransitionSpiral(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
@@ -425,12 +603,16 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** compare various coordinate quantities */
   public override isAlmostEqual(other?: GeometryQuery): boolean {
     if (other instanceof IntegratedSpiral3d) {
-      return this.radius01.isAlmostEqual(other.radius01)
-        && this.bearing01.isAlmostEqualAllowPeriodShift(other.bearing01)
-        && this.localToWorld.isAlmostEqual(other.localToWorld)
-        && Geometry.isSameCoordinate(this._arcLength01, other._arcLength01)
-        && this.activeFractionInterval.isAlmostEqual(other.activeFractionInterval)
-        && this._curvature01.isAlmostEqual(other._curvature01);
+      return (
+        this.radius01.isAlmostEqual(other.radius01) &&
+        this.bearing01.isAlmostEqualAllowPeriodShift(other.bearing01) &&
+        this.localToWorld.isAlmostEqual(other.localToWorld) &&
+        Geometry.isSameCoordinate(this._arcLength01, other._arcLength01) &&
+        this.activeFractionInterval.isAlmostEqual(
+          other.activeFractionInterval
+        ) &&
+        this._curvature01.isAlmostEqual(other._curvature01)
+      );
     }
     return false;
   }

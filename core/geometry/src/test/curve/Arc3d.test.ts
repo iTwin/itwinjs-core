@@ -26,25 +26,64 @@ import { prettyPrint } from "../testFunctions";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
 
 function sampleSweeps(): AngleSweep[] {
-  return [AngleSweep.create360(), AngleSweep.createStartEndDegrees(0, 40), AngleSweep.createStartEndDegrees(0, 2), AngleSweep.createStartEndDegrees(-1, 3), AngleSweep.createStartEndDegrees(88, 91),
-    /* */ AngleSweep.createStartEndDegrees(0, 18), AngleSweep.createStartEndDegrees(-10, 10), AngleSweep.createStartEndDegrees(80, 100), AngleSweep.createStartEndDegrees(90, 108), AngleSweep.createStartEndDegrees(30, 45),
-    /* */ AngleSweep.createStartEndDegrees(80, 110), AngleSweep.createStartEndDegrees(-10, 110), AngleSweep.createStartEndDegrees(-10, 320), AngleSweep.createStartEndDegrees(0, 88), AngleSweep.createStartEndDegrees(45, 132),
-    /* */ AngleSweep.createStartEndDegrees(-10, 278), AngleSweep.createStartEndDegrees(30, 80),
-    /* */ AngleSweep.createStartEndDegrees(0, -18), AngleSweep.createStartEndDegrees(-10, -20), AngleSweep.createStartEndDegrees(80, -100), AngleSweep.createStartEndDegrees(90, -108), AngleSweep.createStartEndDegrees(30, -45),
-    /* */ AngleSweep.createStartEndDegrees(80, -110), AngleSweep.createStartEndDegrees(-10, -110), AngleSweep.createStartEndDegrees(-10, -320), AngleSweep.createStartEndDegrees(0, -88), AngleSweep.createStartEndDegrees(45, -132),
-    /* */ AngleSweep.createStartEndDegrees(-10, -278), AngleSweep.createStartEndDegrees(30, -80)];
+  return [
+    AngleSweep.create360(),
+    AngleSweep.createStartEndDegrees(0, 40),
+    AngleSweep.createStartEndDegrees(0, 2),
+    AngleSweep.createStartEndDegrees(-1, 3),
+    AngleSweep.createStartEndDegrees(88, 91),
+    /* */ AngleSweep.createStartEndDegrees(0, 18),
+    AngleSweep.createStartEndDegrees(-10, 10),
+    AngleSweep.createStartEndDegrees(80, 100),
+    AngleSweep.createStartEndDegrees(90, 108),
+    AngleSweep.createStartEndDegrees(30, 45),
+    /* */ AngleSweep.createStartEndDegrees(80, 110),
+    AngleSweep.createStartEndDegrees(-10, 110),
+    AngleSweep.createStartEndDegrees(-10, 320),
+    AngleSweep.createStartEndDegrees(0, 88),
+    AngleSweep.createStartEndDegrees(45, 132),
+    /* */ AngleSweep.createStartEndDegrees(-10, 278),
+    AngleSweep.createStartEndDegrees(30, 80),
+    /* */ AngleSweep.createStartEndDegrees(0, -18),
+    AngleSweep.createStartEndDegrees(-10, -20),
+    AngleSweep.createStartEndDegrees(80, -100),
+    AngleSweep.createStartEndDegrees(90, -108),
+    AngleSweep.createStartEndDegrees(30, -45),
+    /* */ AngleSweep.createStartEndDegrees(80, -110),
+    AngleSweep.createStartEndDegrees(-10, -110),
+    AngleSweep.createStartEndDegrees(-10, -320),
+    AngleSweep.createStartEndDegrees(0, -88),
+    AngleSweep.createStartEndDegrees(45, -132),
+    /* */ AngleSweep.createStartEndDegrees(-10, -278),
+    AngleSweep.createStartEndDegrees(30, -80),
+  ];
 }
 function exerciseArcSet(ck: Checker, arcA: Arc3d) {
-  const arcB = Arc3d.createXY(Point3d.create(6, 5, 4), 1232.9, AngleSweep.createStartEndDegrees(1, 92));
+  const arcB = Arc3d.createXY(
+    Point3d.create(6, 5, 4),
+    1232.9,
+    AngleSweep.createStartEndDegrees(1, 92)
+  );
   const arcC = arcB.clone();
-  ck.testFalse(arcA.isAlmostEqual(arcC), "Verify distinct arcs before using set to match.");
+  ck.testFalse(
+    arcA.isAlmostEqual(arcC),
+    "Verify distinct arcs before using set to match."
+  );
   ck.testTrue(arcB.isAlmostEqual(arcC), "same arc after clone");
   arcC.setFrom(arcA);
-  ck.testTrue(arcC.isAlmostEqual(arcA), "same after setFrom");    // but still not to confirm members where cloned.
-  const transform = Transform.createOriginAndMatrix(Point3d.create(4, 23, 2),
-    Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 2), Angle.createDegrees(12)));
+  ck.testTrue(arcC.isAlmostEqual(arcA), "same after setFrom"); // but still not to confirm members where cloned.
+  const transform = Transform.createOriginAndMatrix(
+    Point3d.create(4, 23, 2),
+    Matrix3d.createRotationAroundVector(
+      Vector3d.create(1, 2, 2),
+      Angle.createDegrees(12)
+    )
+  );
   arcC.tryTransformInPlace(transform);
-  ck.testFalse(arcC.isAlmostEqual(arcA), "confirm cloned arc does not share pointers.");
+  ck.testFalse(
+    arcC.isAlmostEqual(arcA),
+    "confirm cloned arc does not share pointers."
+  );
 
   const myPoint = Point3d.create(4, 2, 1);
   const myMatrix = Matrix3d.createUniformScale(8.0);
@@ -64,32 +103,48 @@ function exerciseArc3d(ck: Checker, arc: Arc3d) {
   ck.testVector3d(vector0, vectorData.vector0);
   ck.testVector3d(vector90, vectorData.vector90);
   const a = 4.2;
-  const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3),
-    Matrix3d.createScale(a, a, a));
+  const scaleTransform = Transform.createFixedPointAndMatrix(
+    Point3d.create(4, 3),
+    Matrix3d.createScale(a, a, a)
+  );
   const arc1 = arc.cloneTransformed(scaleTransform);
   ck.testFalse(arc.isAlmostEqual(arc1), "scale changes arc");
   ck.testPointer(arc1);
-  ck.testBoolean(arc1.isCircular, arc.isCircular, "scaled clone retains circular");
+  ck.testBoolean(
+    arc1.isCircular,
+    arc.isCircular,
+    "scaled clone retains circular"
+  );
   ck.testBoolean(
     arc.sweep.isFullCircle,
     arc.startPoint().isAlmostEqual(arc.endPoint()),
-    "full circle start, end condition");
+    "full circle start, end condition"
+  );
 
   const json = arc1.toJSON();
   const arc2 = Arc3d.createUnitCircle();
   arc2.setFromJSON(json);
   ck.testTrue(arc1.isAlmostEqual(arc2), "Tight json round trip");
-  ck.testLE(arc.curveLength(),
+  ck.testLE(
+    arc.curveLength(),
     arc.sweep.sweepRadians * arc.maxVectorLength(),
-    "arc length smaller than circle on max radius");
+    "arc length smaller than circle on max radius"
+  );
   const fA = 0.35;
   const fB = 0.51;
   const arc3A = arc.clonePartialCurve(fA, fB)!;
   const arc3B = arc.clonePartialCurve(fB, fA)!;
-  ck.testCoordinate(arc3A.curveLength(), arc3B.curveLength(), "Reversed partials match length");
+  ck.testCoordinate(
+    arc3A.curveLength(),
+    arc3B.curveLength(),
+    "Reversed partials match length"
+  );
   const length1 = arc1.curveLength();
   const fuzzyLengthRange = Range1d.createXX(0.5 * length1, 2.0 * length1);
-  ck.testTrue(fuzzyLengthRange.containsX(arc1.quickLength()), "Quick length within factor of 2");
+  ck.testTrue(
+    fuzzyLengthRange.containsX(arc1.quickLength()),
+    "Quick length within factor of 2"
+  );
 
   exerciseArcSet(ck, arc1);
 }
@@ -99,28 +154,46 @@ describe("Arc3d", () => {
     const arcA = Arc3d.createUnitCircle();
     ck.testTrue(arcA.isCircular);
     exerciseArc3d(ck, arcA);
-    exerciseArc3d(ck,
+    exerciseArc3d(
+      ck,
       Arc3d.create(
         Point3d.create(1, 2, 5),
         Vector3d.create(1, 0, 0),
-        Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90))!);
+        Vector3d.create(0, 2, 0),
+        AngleSweep.createStartEndDegrees(0, 90)
+      )!
+    );
 
-    ck.testTrue(Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(4, 0, 0)) instanceof LineString3d);
+    ck.testTrue(
+      Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(4, 0, 0)
+      ) instanceof LineString3d
+    );
 
     ck.checkpoint("Arc3d.HelloWorld");
     const arcB = Arc3d.createUnitCircle();
     arcB.setFromJSON(undefined);
-    ck.testFalse(arcA.isAlmostEqual(CoordinateXYZ.create(Point3d.create(1, 2, 3))));
+    ck.testFalse(
+      arcA.isAlmostEqual(CoordinateXYZ.create(Point3d.create(1, 2, 3)))
+    );
     // high eccentricity arc .. make sure the length is bounded by rectangle and diagonal of quadrant ...
     const a = 1000.0;
-    const b = a / 1.e6;
+    const b = a / 1e6;
     const arcC = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), a, b);
     const lengthC = arcC.curveLengthBetweenFractions(0, 1);
     ck.testLE(lengthC, 4.0 * (a + b));
     ck.testLE(4.0 * Geometry.hypotenuseXY(a, b), lengthC);
     // in-place construction -- easy arc length
     const sweepRadians = 0.3423423;
-    Arc3d.create(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartSweepRadians(0.2, sweepRadians), arcC);
+    Arc3d.create(
+      Point3d.create(0, 0, 0),
+      Vector3d.unitX(),
+      Vector3d.unitY(),
+      AngleSweep.createStartSweepRadians(0.2, sweepRadians),
+      arcC
+    );
     ck.testCoordinate(arcC.curveLength(), sweepRadians);
     expect(ck.getNumErrors()).equals(0);
   });
@@ -136,10 +209,19 @@ describe("Arc3d", () => {
         Arc3d.createXYEllipse(origin, 8, 2, sweep),
         Arc3d.createXYEllipse(origin, 5, 4, sweep),
         Arc3d.createXYEllipse(origin, 20, 2, sweep),
-        Arc3d.create(origin,
-          Vector3d.create(4, 0, 0), Vector3d.create(1, 2, 0), sweep),
-        Arc3d.create(origin,
-          Vector3d.create(8, 7, 0), Vector3d.create(7, 8, 0), sweep)]) {
+        Arc3d.create(
+          origin,
+          Vector3d.create(4, 0, 0),
+          Vector3d.create(1, 2, 0),
+          sweep
+        ),
+        Arc3d.create(
+          origin,
+          Vector3d.create(8, 7, 0),
+          Vector3d.create(7, 8, 0),
+          sweep
+        ),
+      ]) {
         const arcLength = arc.curveLength();
         const quickLength = arc.quickLength();
         if (arc.isCircular) {
@@ -149,7 +231,13 @@ describe("Arc3d", () => {
           factorRange.extendX(factor);
           factorRange1.extendX(factor);
           //        const scale = arc.getFractionToDistanceScale();
-          if (!ck.testLE(arcLength, 1.1 * quickLength, "arc length .LE.  1.1 * quickLength")) {
+          if (
+            !ck.testLE(
+              arcLength,
+              1.1 * quickLength,
+              "arc length .LE.  1.1 * quickLength"
+            )
+          ) {
             GeometryCoreTestIO.consoleLog(prettyPrint(arc));
           }
         }
@@ -173,42 +261,71 @@ describe("Arc3d", () => {
     for (const numGauss of [1, 2, 3, 4, 5]) {
       let maxFactor = 0;
       if (noisy)
-        GeometryCoreTestIO.consoleLog(`\n\n  ******************* numGauss ${numGauss}`);
+        GeometryCoreTestIO.consoleLog(
+          `\n\n  ******************* numGauss ${numGauss}`
+        );
       for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
         const e = Math.sqrt(e2);
-        const arc = Arc3d.create(Point3d.createZero(),
+        const arc = Arc3d.create(
+          Point3d.createZero(),
           Vector3d.create(e, 0, 0),
-          Vector3d.create(0, 1, 0), AngleSweep.createStartEndDegrees(0, 90));
+          Vector3d.create(0, 1, 0),
+          AngleSweep.createStartEndDegrees(0, 90)
+        );
         const lengths = [];
         const deltas = [];
         const counts = [];
         let lastNumInterval = 0;
         let done = false;
-        for (let baseNumInterval = 4; baseNumInterval < 600; baseNumInterval *= 2) {
-          for (const numInterval of [baseNumInterval, 1.25 * baseNumInterval, 1.5 * baseNumInterval, 1.75 * baseNumInterval]) {
-            lengths.push(arc.curveLengthWithFixedIntervalCountQuadrature(0.0, 1.0, numInterval, numGauss));
+        for (
+          let baseNumInterval = 4;
+          baseNumInterval < 600;
+          baseNumInterval *= 2
+        ) {
+          for (const numInterval of [
+            baseNumInterval,
+            1.25 * baseNumInterval,
+            1.5 * baseNumInterval,
+            1.75 * baseNumInterval,
+          ]) {
+            lengths.push(
+              arc.curveLengthWithFixedIntervalCountQuadrature(
+                0.0,
+                1.0,
+                numInterval,
+                numGauss
+              )
+            );
             counts.push(numInterval);
             lastNumInterval = numInterval;
             const k = lengths.length - 1;
             if (k >= 1) {
               const q = (lengths[k] - lengths[k - 1]) / lengths[k];
               deltas.push(q);
-              if (Math.abs(q) < 4.0e-15) { done = true; break; }
+              if (Math.abs(q) < 4.0e-15) {
+                done = true;
+                break;
+              }
             }
           }
-          if (done)
-            break;
+          if (done) break;
         }
         const factor = lastNumInterval / e;
         if (noisy) {
           GeometryCoreTestIO.consoleLog("---");
-          GeometryCoreTestIO.consoleLog(` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`);
-          GeometryCoreTestIO.consoleLog(` deltas                             ${deltas.toString()}`);
+          GeometryCoreTestIO.consoleLog(
+            ` eccentricity ${e} ${lengths.toString()}(n ${lastNumInterval})(n / (fe) ${factor}`
+          );
+          GeometryCoreTestIO.consoleLog(
+            ` deltas                             ${deltas.toString()}`
+          );
         }
         maxFactor = Math.max(factor, maxFactor);
       }
       if (noisy)
-        GeometryCoreTestIO.consoleLog(`Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`);
+        GeometryCoreTestIO.consoleLog(
+          `Eccentric ellipse integration  (numGauss ${numGauss})   (maxFactor  {maxFactor})`
+        );
       if (numGauss === 5)
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integration factor");
     }
@@ -226,15 +343,40 @@ describe("Arc3d", () => {
     for (const sweepDegrees of [30, 90, 135, 180, 239, 360]) {
       for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
         const e = Math.sqrt(e2);
-        const arc = Arc3d.create(Point3d.createZero(),
+        const arc = Arc3d.create(
+          Point3d.createZero(),
           Vector3d.create(e, 0, 0),
-          Vector3d.create(0, 1, 0), AngleSweep.createStartEndDegrees(0, sweepDegrees));
-        const numA = Math.ceil(arc.sweep.sweepDegrees * e / degreesInterval);
-        const lengthA = arc.curveLengthWithFixedIntervalCountQuadrature(0.0, 1.0, numA, numGauss);
-        const lengthB = arc.curveLengthWithFixedIntervalCountQuadrature(0.0, 1.0, 2 * numA, numGauss);
+          Vector3d.create(0, 1, 0),
+          AngleSweep.createStartEndDegrees(0, sweepDegrees)
+        );
+        const numA = Math.ceil((arc.sweep.sweepDegrees * e) / degreesInterval);
+        const lengthA = arc.curveLengthWithFixedIntervalCountQuadrature(
+          0.0,
+          1.0,
+          numA,
+          numGauss
+        );
+        const lengthB = arc.curveLengthWithFixedIntervalCountQuadrature(
+          0.0,
+          1.0,
+          2 * numA,
+          numGauss
+        );
         const lengthC = arc.curveLength();
-        ck.testLE(Math.abs(lengthB - lengthA) / lengthA, 5.0e-15, "direct quadrature", e, numA);
-        ck.testLE(Math.abs(lengthB - lengthC) / lengthA, 5.0e-15, "compare to method", e, numA);
+        ck.testLE(
+          Math.abs(lengthB - lengthA) / lengthA,
+          5.0e-15,
+          "direct quadrature",
+          e,
+          numA
+        );
+        ck.testLE(
+          Math.abs(lengthB - lengthC) / lengthA,
+          5.0e-15,
+          "compare to method",
+          e,
+          numA
+        );
       }
     }
     ck.checkpoint("Arc3d.ValidateEllipseIntegrationHeuristic");
@@ -251,9 +393,13 @@ describe("Arc3d", () => {
         scaledForm.axes,
         scaledForm.r0,
         scaledForm.r90,
-        scaledForm.sweep);
+        scaledForm.sweep
+      );
       for (const fraction of [0.0, 0.2, 0.4, 0.6, 0.8]) {
-        ck.testPoint3d(arc.fractionToPoint(fraction), arc1.fractionToPoint(fraction));
+        ck.testPoint3d(
+          arc.fractionToPoint(fraction),
+          arc1.fractionToPoint(fraction)
+        );
       }
     }
     ck.checkpoint("Arc3d.ScaledForm");
@@ -276,11 +422,37 @@ describe("Arc3d", () => {
         const point1 = Point3d.create(0, 1, qz);
         const point2 = Point3d.create(3, 0);
         const arcData = Arc3d.createFilletArc(point0, point1, point2, radius);
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(point0, point1, point2), x0, y0);
-        if (ck.testDefined(arcData, "Fillet Arc exists") && arcData && arcData.arc) {
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcData.arc, x0, y0);
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction10, point0), markerRadius, x0, y0);
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction12, point2), markerRadius, x0, y0);
+        GeometryCoreTestIO.captureGeometry(
+          allGeometry,
+          LineString3d.create(point0, point1, point2),
+          x0,
+          y0
+        );
+        if (
+          ck.testDefined(arcData, "Fillet Arc exists") &&
+          arcData &&
+          arcData.arc
+        ) {
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            arcData.arc,
+            x0,
+            y0
+          );
+          GeometryCoreTestIO.createAndCaptureXYCircle(
+            allGeometry,
+            point1.interpolate(arcData.fraction10, point0),
+            markerRadius,
+            x0,
+            y0
+          );
+          GeometryCoreTestIO.createAndCaptureXYCircle(
+            allGeometry,
+            point1.interpolate(arcData.fraction12, point2),
+            markerRadius,
+            x0,
+            y0
+          );
         }
         x0 += outputStep;
       }
@@ -305,7 +477,18 @@ describe("Arc3d", () => {
     const rangeE = Range1d.createNull();
     for (const transform of Sample.createInvertibleTransforms()) {
       for (const sweep of sampleSweeps()) {
-        const arc = Arc3d.createXYZXYZXYZ(3, 2, 1, 2.5, 2.8, 1.2, -0.2, 0.6, 2.9, AngleSweep.create360());
+        const arc = Arc3d.createXYZXYZXYZ(
+          3,
+          2,
+          1,
+          2.5,
+          2.8,
+          1.2,
+          -0.2,
+          0.6,
+          2.9,
+          AngleSweep.create360()
+        );
         arc.sweep.setFrom(sweep);
         const range = arc.range(transform);
         x0 += dx;
@@ -313,16 +496,36 @@ describe("Arc3d", () => {
         arc.emitStrokes(linestring, options);
         linestring.tryTransformInPlace(transform);
         const range1 = linestring.range();
-        const e1 = range.low.distance(range1.low) + range.high.distance(range1.high);
+        const e1 =
+          range.low.distance(range1.low) + range.high.distance(range1.high);
         rangeE.extendX(e1);
         arc.tryTransformInPlace(transform);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
         GeometryCoreTestIO.captureRangeEdges(allGeometry, range, x0, y0);
         range1.expandInPlace(tolerancePullBack);
-        if (!ck.testTrue(range.containsRange(range1), "precise range contains stroke range", prettyPrint(arc.sweep), prettyPrint(range.toJSON()), prettyPrint(range1.toJSON())))
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, linestring, x0, y0);
+        if (
+          !ck.testTrue(
+            range.containsRange(range1),
+            "precise range contains stroke range",
+            prettyPrint(arc.sweep),
+            prettyPrint(range.toJSON()),
+            prettyPrint(range1.toJSON())
+          )
+        )
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            linestring,
+            x0,
+            y0
+          );
         range1.expandInPlace(chordTol2);
-        ck.testTrue(range1.containsRange(range), "stroking is close to true range", prettyPrint(arc.sweep), prettyPrint(range.toJSON()), prettyPrint(range1.toJSON()));
+        ck.testTrue(
+          range1.containsRange(range),
+          "stroking is close to true range",
+          prettyPrint(arc.sweep),
+          prettyPrint(range.toJSON()),
+          prettyPrint(range1.toJSON())
+        );
       }
       x0 = 0;
       y0 += dx;
@@ -341,12 +544,23 @@ describe("Arc3d", () => {
     const point0 = Point3d.create(0, 0, 0);
     const point1 = Point3d.create(0, 0, 1);
     const point2 = Point3d.create(1, 0, 1);
-    GeometryCoreTestIO.captureGeometry(allGeometry,
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
       LineString3d.create(point0, point1, point2),
-      x0, y0);
-    const arc = Arc3d.createCircularStartMiddleEnd(point0, point1, point2) as Arc3d;
+      x0,
+      y0
+    );
+    const arc = Arc3d.createCircularStartMiddleEnd(
+      point0,
+      point1,
+      point2
+    ) as Arc3d;
     GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ArnoldasFailureLinearSys3d");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Arc3d",
+      "ArnoldasFailureLinearSys3d"
+    );
     const r = arc.circularRadius();
     if (ck.testDefined(r) && r !== undefined) {
       ck.testCoordinate(r, point0.distance(arc.center));
@@ -371,40 +585,98 @@ describe("Arc3d", () => {
             Point3d.create(0, 0, 0),
             Point3d.create(2, e, 0),
             Point3d.create(2, 2 - e, 0),
-            Point3d.create(-e, 2, 0)];
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(points[points.length - 1], points[0]), x0, y0);
+            Point3d.create(-e, 2, 0),
+          ];
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineString3d.create(points),
+            x0,
+            y0
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineSegment3d.create(points[points.length - 1], points[0]),
+            x0,
+            y0
+          );
           let point0: Point3d | undefined;
           let point1: Point3d | undefined;
           for (let i = 0; i <= points.length; i++) {
-            const i0 = (i % points.length);
+            const i0 = i % points.length;
             const i1 = (i + 1) % points.length;
             const i2 = (i + 2) % points.length;
-            const joint = BuildingCodeOffsetOps.createJointWithRadiusChange(points[i0], points[i1], points[i2], offset[i0], offset[i1]);
+            const joint = BuildingCodeOffsetOps.createJointWithRadiusChange(
+              points[i0],
+              points[i1],
+              points[i2],
+              offset[i0],
+              offset[i1]
+            );
             if (joint instanceof Arc3d) {
               point1 = joint.startPoint();
               if (point0)
-                GeometryCoreTestIO.captureGeometry(allGeometry,
-                  LineSegment3d.create(point0, point1), x0, y0);
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, joint, x0, y0);
+                GeometryCoreTestIO.captureGeometry(
+                  allGeometry,
+                  LineSegment3d.create(point0, point1),
+                  x0,
+                  y0
+                );
+              GeometryCoreTestIO.captureCloneGeometry(
+                allGeometry,
+                joint,
+                x0,
+                y0
+              );
               point0 = joint.endPoint(point0);
             } else if (joint instanceof Point3d) {
               if (point0)
-                GeometryCoreTestIO.captureGeometry(allGeometry,
-                  LineSegment3d.create(point0, joint), x0, y0);
+                GeometryCoreTestIO.captureGeometry(
+                  allGeometry,
+                  LineSegment3d.create(point0, joint),
+                  x0,
+                  y0
+                );
               point0?.setFromPoint3d(joint);
             } else {
               point0 = undefined;
             }
           }
 
-          const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offset, false);
-          const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offset, true);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetA, x0 + 10, y0);
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0 + 10, y0);
+          const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+            points,
+            offset,
+            false
+          );
+          const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+            points,
+            offset,
+            true
+          );
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            fullOffsetA,
+            x0 + 10,
+            y0
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineString3d.create(points),
+            x0 + 10,
+            y0
+          );
 
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetB, x0 + 20, y0);
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0 + 20, y0);
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            fullOffsetB,
+            x0 + 20,
+            y0
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineString3d.create(points),
+            x0 + 20,
+            y0
+          );
           x0 += 40.0;
         }
         y0 += 10.0;
@@ -412,31 +684,69 @@ describe("Arc3d", () => {
       }
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionA");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Arc3d",
+      "CodeCheckerArcTransitionA"
+    );
   });
   it("CodeCheckerArcTransitionB", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = 0;
     let y0 = 0;
-    const points = Sample.createBidirectionalSawtooth(Point3d.create(-1, 0.5, 0), 3, 2, 5, 3, 3, 7, 1, 2, -1, 2);
+    const points = Sample.createBidirectionalSawtooth(
+      Point3d.create(-1, 0.5, 0),
+      3,
+      2,
+      5,
+      3,
+      3,
+      7,
+      1,
+      2,
+      -1,
+      2
+    );
     const offsets = [];
     for (let i = 0; i + 3 < points.length; i++) {
       offsets.push(0.1);
       offsets.push(0.5);
       offsets.push(0.3);
     }
-    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
-    const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offsets, false);
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      LineString3d.create(points),
+      x0,
+      y0
+    );
+    const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+      points,
+      offsets,
+      false
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetA, x0, y0);
     y0 += 20.0;
     points.reverse();
-    const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offsets, false);
-    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
+    const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+      points,
+      offsets,
+      false
+    );
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      LineString3d.create(points),
+      x0,
+      y0
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetB, x0, y0);
 
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionB");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Arc3d",
+      "CodeCheckerArcTransitionB"
+    );
   });
   it("CodeCheckerArcTransitionC", () => {
     const ck = new Checker();
@@ -452,58 +762,150 @@ describe("Arc3d", () => {
       for (const degrees of [90, 80, 70, 50, 30, 10, 100, 120, 135]) {
         const offsets = [baseOffset, baseOffset * offsetFactor, baseOffset];
         const reverseOffsets = [];
-        for (const x of offsets)
-          reverseOffsets.push(-x);
+        for (const x of offsets) reverseOffsets.push(-x);
         const theta = Angle.createDegrees(degrees);
-        const points = [Point3d.create(a - c * theta.cos(), c * theta.sin()), Point3d.create(a, 0, 0), Point3d.create(b, 0, 0), Point3d.create(b + c * theta.cos(), c * theta.sin())];
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
-        const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offsets, false);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetA, x0, y0);
-        const fullOffsetA1 = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, reverseOffsets, false);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetA1, x0, y0);
+        const points = [
+          Point3d.create(a - c * theta.cos(), c * theta.sin()),
+          Point3d.create(a, 0, 0),
+          Point3d.create(b, 0, 0),
+          Point3d.create(b + c * theta.cos(), c * theta.sin()),
+        ];
+        GeometryCoreTestIO.captureGeometry(
+          allGeometry,
+          LineString3d.create(points),
+          x0,
+          y0
+        );
+        const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+          points,
+          offsets,
+          false
+        );
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          fullOffsetA,
+          x0,
+          y0
+        );
+        const fullOffsetA1 = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+          points,
+          reverseOffsets,
+          false
+        );
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          fullOffsetA1,
+          x0,
+          y0
+        );
         points.reverse();
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0 + dy);
-        const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offsets, false);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetB, x0, y0 + dy);
-        const fullOffsetB1 = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, reverseOffsets, false);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetB1, x0, y0 + dy);
+        GeometryCoreTestIO.captureGeometry(
+          allGeometry,
+          LineString3d.create(points),
+          x0,
+          y0 + dy
+        );
+        const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+          points,
+          offsets,
+          false
+        );
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          fullOffsetB,
+          x0,
+          y0 + dy
+        );
+        const fullOffsetB1 = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+          points,
+          reverseOffsets,
+          false
+        );
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          fullOffsetB1,
+          x0,
+          y0 + dy
+        );
         y0 += 15.0;
       }
       x0 += 15.0;
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionC");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Arc3d",
+      "CodeCheckerArcTransitionC"
+    );
   });
   it("CodeCheckerArcTransitionD", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
-    for (const offsets of [[1, 0.8], [0.8, 1]]) {
+    for (const offsets of [
+      [1, 0.8],
+      [0.8, 1],
+    ]) {
       x0 = 0;
-      const points = [Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1, 1.1, 0)];
-      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
-      const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offsets, false);
+      const points = [
+        Point3d.create(0, 0, 0),
+        Point3d.create(0, 1, 0),
+        Point3d.create(-1, 1.1, 0),
+      ];
+      GeometryCoreTestIO.captureGeometry(
+        allGeometry,
+        LineString3d.create(points),
+        x0,
+        y0
+      );
+      const fullOffsetA = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+        points,
+        offsets,
+        false
+      );
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetA, x0, y0);
       x0 += 3.0;
       points[2].x *= -1.0;
       offsets[0] *= -1.0;
       offsets[1] *= -1.0;
-      const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(points, offsets, false);
-      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
+      const fullOffsetB = BuildingCodeOffsetOps.edgeByEdgeOffsetFromPoints(
+        points,
+        offsets,
+        false
+      );
+      GeometryCoreTestIO.captureGeometry(
+        allGeometry,
+        LineString3d.create(points),
+        x0,
+        y0
+      );
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetB, x0, y0);
       y0 += 5.0;
     }
 
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionD");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "Arc3d",
+      "CodeCheckerArcTransitionD"
+    );
   });
   it("CreateCenterNormalRadius", () => {
     const ck = new Checker();
 
-    for (const normal of [Vector3d.unitX(), Vector3d.unitY(-2), Vector3d.unitZ(3), new Vector3d(1, 2, 3)]) {
+    for (const normal of [
+      Vector3d.unitX(),
+      Vector3d.unitY(-2),
+      Vector3d.unitZ(3),
+      new Vector3d(1, 2, 3),
+    ]) {
       const arc = Arc3d.createCenterNormalRadius(undefined, normal, 10);
-      ck.testVector3d(normal.normalize()!, arc.perpendicularVector, `for normal ${prettyPrint(normal)}`);
+      ck.testVector3d(
+        normal.normalize()!,
+        arc.perpendicularVector,
+        `for normal ${prettyPrint(normal)}`
+      );
     }
 
     ck.checkpoint("Arc3d.CreateCenterNormalRadius");
@@ -516,8 +918,16 @@ describe("Arc3d", () => {
     const curvature = 1.0 / radius;
     const circle = Arc3d.createXY(Point3d.createZero(), 100.0);
     // two arcs of unequal sweep that join to cover the full circle
-    const arc1 = Arc3d.createXY(Point3d.createZero(), 100.0, AngleSweep.createStartEndDegrees(0, 90));
-    const arc2 = Arc3d.createXY(Point3d.createZero(), 100.0, AngleSweep.createStartEndDegrees(90, 360));
+    const arc1 = Arc3d.createXY(
+      Point3d.createZero(),
+      100.0,
+      AngleSweep.createStartEndDegrees(0, 90)
+    );
+    const arc2 = Arc3d.createXY(
+      Point3d.createZero(),
+      100.0,
+      AngleSweep.createStartEndDegrees(90, 360)
+    );
     const path = new Path();
     path.children.push(arc1);
     path.children.push(arc2);
@@ -526,17 +936,32 @@ describe("Arc3d", () => {
     for (const fraction of [0.0, 0.125]) {
       const circleCurvature = circle.fractionToCurvature(fraction)!;
       const circleDerivatives = circle.fractionToPointAnd2Derivatives(0.0)!;
-      ck.testCoordinate(circleCurvature, curvature, "curvature from full circle");
+      ck.testCoordinate(
+        circleCurvature,
+        curvature,
+        "curvature from full circle"
+      );
       assert.isTrue(Geometry.isAlmostEqualNumber(circleCurvature, curvature));
 
       const pathCurvature = indexed.fractionToCurvature(fraction)!;
-      ck.testCoordinate(pathCurvature, curvature, "curvature from arcs in path");
+      ck.testCoordinate(
+        pathCurvature,
+        curvature,
+        "curvature from arcs in path"
+      );
       const pathDerivatives = indexed.fractionToPointAnd2Derivatives(0.0)!;
       ck.testPoint3d(circleDerivatives.origin, pathDerivatives.origin, "point");
-      ck.testVector3d(circleDerivatives.vectorU, pathDerivatives.vectorU, "vectorU");
-      ck.testVector3d(circleDerivatives.vectorV, pathDerivatives.vectorV, "vectorV");
+      ck.testVector3d(
+        circleDerivatives.vectorU,
+        pathDerivatives.vectorU,
+        "vectorU"
+      );
+      ck.testVector3d(
+        circleDerivatives.vectorV,
+        pathDerivatives.vectorV,
+        "vectorV"
+      );
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

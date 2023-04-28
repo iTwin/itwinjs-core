@@ -80,7 +80,13 @@ export class TerrainSettings {
     return this._nonLocatable;
   }
 
-  constructor(providerName: string = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
+  constructor(
+    providerName: string = "CesiumWorldTerrain",
+    exaggeration: number = 1.0,
+    applyLighting = false,
+    heightOrigin = 0.0,
+    heightOriginMode = TerrainHeightOriginMode.Geodetic
+  ) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
     this.applyLighting = applyLighting;
@@ -97,13 +103,17 @@ export class TerrainSettings {
   }
 
   public static fromJSON(json?: TerrainProps) {
-    if (undefined === json)
-      return new TerrainSettings();
+    if (undefined === json) return new TerrainSettings();
 
     const providerName = json?.providerName ?? "CesiumWorldTerrain";
-    const settings = new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
-    if (true === json.nonLocatable)
-      settings._nonLocatable = true;
+    const settings = new TerrainSettings(
+      providerName,
+      json.exaggeration,
+      json.applyLighting,
+      json.heightOrigin,
+      json.heightOriginMode
+    );
+    if (true === json.nonLocatable) settings._nonLocatable = true;
 
     return settings;
   }
@@ -112,21 +122,23 @@ export class TerrainSettings {
     const props: TerrainProps = { heightOriginMode: this.heightOriginMode };
     if ("CesiumWorldTerrain" !== this.providerName)
       props.providerName = this.providerName;
-    if (1 !== this.exaggeration)
-      props.exaggeration = this.exaggeration;
-    if (this.nonLocatable)
-      props.nonLocatable = true;
-    if (this.applyLighting)
-      props.applyLighting = true;
-    if (0 !== this.heightOrigin)
-      props.heightOrigin = this.heightOrigin;
+    if (1 !== this.exaggeration) props.exaggeration = this.exaggeration;
+    if (this.nonLocatable) props.nonLocatable = true;
+    if (this.applyLighting) props.applyLighting = true;
+    if (0 !== this.heightOrigin) props.heightOrigin = this.heightOrigin;
 
     return props;
   }
 
   public equals(other: TerrainSettings): boolean {
-    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting
-      && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.nonLocatable === other.nonLocatable;
+    return (
+      this.providerName === other.providerName &&
+      this.exaggeration === other.exaggeration &&
+      this.applyLighting === other.applyLighting &&
+      this.heightOrigin === other.heightOrigin &&
+      this.heightOriginMode === other.heightOriginMode &&
+      this.nonLocatable === other.nonLocatable
+    );
   }
 
   /** Returns true if these settings are equivalent to the supplied JSON settings. */
@@ -139,8 +151,7 @@ export class TerrainSettings {
    * @returns A TerrainSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
    */
   public clone(changedProps?: TerrainProps): TerrainSettings {
-    if (undefined === changedProps)
-      return this;
+    if (undefined === changedProps) return this;
 
     const props = {
       providerName: changedProps.providerName ?? this.providerName,

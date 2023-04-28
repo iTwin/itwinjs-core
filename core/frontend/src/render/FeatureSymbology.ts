@@ -72,17 +72,18 @@ export namespace FeatureSymbology {
     public constructor(view?: ViewState | Viewport) {
       super();
       if (undefined !== view) {
-        if (view instanceof Viewport)
-          this.initFromViewport(view);
-        else
-          this.initFromView(view);
+        if (view instanceof Viewport) this.initFromViewport(view);
+        else this.initFromView(view);
       }
     }
 
     /** Create symbology overrides associated with a [[FeatureSymbology.Source]].
      * @alpha
      */
-    public static withSource(source: Source, view?: ViewState | Viewport): Overrides {
+    public static withSource(
+      source: Source,
+      view?: ViewState | Viewport
+    ): Overrides {
       const ovrs = new Overrides(view);
       ovrs._source = source;
       return ovrs;
@@ -107,10 +108,16 @@ export namespace FeatureSymbology {
         this.setNeverDrawnSet(viewport.neverDrawn);
 
       if (undefined !== viewport.alwaysDrawn)
-        this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
+        this.setAlwaysDrawnSet(
+          viewport.alwaysDrawn,
+          viewport.isAlwaysDrawnExclusive
+        );
 
       viewport.addFeatureOverrides(this);
-      viewport.addModelSubCategoryVisibilityOverrides(this, this._modelSubCategoryOverrides);
+      viewport.addModelSubCategoryVisibilityOverrides(
+        this,
+        this._modelSubCategoryOverrides
+      );
 
       // This will include any per-model subcategory visibility overrides added above.
       this._initSubCategoryOverrides(view);
@@ -132,9 +139,9 @@ export namespace FeatureSymbology {
       this._lineWeights = viewFlags.weights;
 
       for (const categoryId of view.categorySelector.categories) {
-        const subCategoryIds = view.iModel.subcategories.getSubCategories(categoryId);
-        if (undefined === subCategoryIds)
-          continue;
+        const subCategoryIds =
+          view.iModel.subcategories.getSubCategories(categoryId);
+        if (undefined === subCategoryIds) continue;
 
         for (const subCategoryId of subCategoryIds) {
           if (view.isSubCategoryVisible(subCategoryId)) {
@@ -142,34 +149,44 @@ export namespace FeatureSymbology {
             const idHi = Id64.getUpperUint32(subCategoryId);
             this._visibleSubCategories.add(idLo, idHi);
 
-            const app = view.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+            const app =
+              view.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
             if (undefined !== app)
               this._subCategoryPriorities.set(idLo, idHi, app.priority);
           }
         }
       }
       const style = view.displayStyle;
-      style.settings.modelAppearanceOverrides.forEach((appearance, modelId) => this.override({ modelId, appearance, onConflict: "skip" }));
+      style.settings.modelAppearanceOverrides.forEach((appearance, modelId) =>
+        this.override({ modelId, appearance, onConflict: "skip" })
+      );
 
       style.forEachRealityModel((realityModel) => {
         if (realityModel.appearanceOverrides && realityModel.modelId)
-          this.override({ modelId: realityModel.modelId, appearance: realityModel.appearanceOverrides });
+          this.override({
+            modelId: realityModel.modelId,
+            appearance: realityModel.appearanceOverrides,
+          });
       });
 
       const script = style.scheduleScript;
       if (script)
         script.addSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
-      if (!view.is3d())
-        return;
+      if (!view.is3d()) return;
 
-      const planProjectionSettings = view.getDisplayStyle3d().settings.planProjectionSettings;
-      if (undefined === planProjectionSettings)
-        return;
+      const planProjectionSettings =
+        view.getDisplayStyle3d().settings.planProjectionSettings;
+      if (undefined === planProjectionSettings) return;
 
       for (const [modelId, projSettings] of planProjectionSettings) {
         if (undefined !== projSettings.transparency)
-          this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
+          this.override({
+            modelId,
+            appearance: FeatureAppearance.fromJSON({
+              transparency: projSettings.transparency,
+            }),
+          });
       }
     }
 
@@ -193,14 +210,16 @@ export namespace FeatureSymbology {
       });
 
       // Add overrides for all subcategories overridden to be visible in specific models
-      this._modelSubCategoryOverrides.forEach((_modelIdLo: number, _modelIdHi: number, subcats: Id64.Uint32Set) => {
-        subcats.forEach((idLo: number, idHi: number) => {
-          if (!this.isSubCategoryVisible(idLo, idHi)) {
-            // Overridden to be visible in one or more models - will need the appearance overrides
-            addOverride(idLo, idHi);
-          }
-        });
-      });
+      this._modelSubCategoryOverrides.forEach(
+        (_modelIdLo: number, _modelIdHi: number, subcats: Id64.Uint32Set) => {
+          subcats.forEach((idLo: number, idHi: number) => {
+            if (!this.isSubCategoryVisible(idLo, idHi)) {
+              // Overridden to be visible in one or more models - will need the appearance overrides
+              addOverride(idLo, idHi);
+            }
+          });
+        }
+      );
     }
   }
 }

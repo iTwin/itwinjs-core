@@ -5,13 +5,25 @@
 import { expect } from "chai";
 import { Capabilities } from "../Capabilities";
 import {
-  queryRenderCompatibility, WebGLContext, WebGLFeature, WebGLRenderCompatibilityStatus,
+  queryRenderCompatibility,
+  WebGLContext,
+  WebGLFeature,
+  WebGLRenderCompatibilityStatus,
 } from "../RenderCompatibility";
 
-let createContext = (canvas: HTMLCanvasElement, useWebGL2: boolean, contextAttributes?: WebGLContextAttributes): WebGLContext | undefined => {
-  let context = useWebGL2 ? canvas.getContext("webgl2", contextAttributes) : canvas.getContext("webgl", contextAttributes);
+let createContext = (
+  canvas: HTMLCanvasElement,
+  useWebGL2: boolean,
+  contextAttributes?: WebGLContextAttributes
+): WebGLContext | undefined => {
+  let context = useWebGL2
+    ? canvas.getContext("webgl2", contextAttributes)
+    : canvas.getContext("webgl", contextAttributes);
   if (null === context) {
-    context = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
+    context = canvas.getContext(
+      "experimental-webgl",
+      contextAttributes
+    ) as WebGLRenderingContext | null; // IE, Edge...
     if (null === context) {
       return undefined;
     }
@@ -29,15 +41,22 @@ function makeTestContext(useWebGL2 = false): WebGLContext {
 class OverriddenFunctions {
   public origCreateContext = createContext;
 
-  public overrideCreateContext(newGetParameter?: (ctx: WebGLContext, pname: number) => any, useContextAttributes: boolean = true) {
+  public overrideCreateContext(
+    newGetParameter?: (ctx: WebGLContext, pname: number) => any,
+    useContextAttributes: boolean = true
+  ) {
     createContext = (canvas, useWebGL2, attr) => {
-      const ctx = this.origCreateContext(canvas, useWebGL2, useContextAttributes ? attr : undefined);
+      const ctx = this.origCreateContext(
+        canvas,
+        useWebGL2,
+        useContextAttributes ? attr : undefined
+      );
       if (undefined !== ctx && undefined !== newGetParameter) {
         const origGetParameter = ctx.getParameter; // eslint-disable-line @typescript-eslint/unbound-method
-        ctx.getParameter = (pname: number) => { // eslint-disable-line @typescript-eslint/unbound-method
+        ctx.getParameter = (pname: number) => {
+          // eslint-disable-line @typescript-eslint/unbound-method
           const result = newGetParameter(ctx, pname);
-          if (result !== undefined)
-            return result;
+          if (result !== undefined) return result;
           const boundGetParameter = origGetParameter.bind(ctx);
           return boundGetParameter(pname);
         };
@@ -65,36 +84,55 @@ describe("Render Compatibility", () => {
 
   it("should provide error message if failed to produce context", () => {
     const compatibility = queryRenderCompatibility(false, createContext);
-    expect(compatibility.contextErrorMessage !== undefined).to.equal(WebGLRenderCompatibilityStatus.MajorPerformanceCaveat === compatibility.status);
+    expect(compatibility.contextErrorMessage !== undefined).to.equal(
+      WebGLRenderCompatibilityStatus.MajorPerformanceCaveat ===
+        compatibility.status
+    );
   });
 
   it("should query proper render compatibility info assuming not enough texture units", () => {
-    overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number): any => {
-      if (ctx.MAX_TEXTURE_IMAGE_UNITS === pname)
-        return 0;
-      return undefined;
-    });
+    overriddenFunctions.overrideCreateContext(
+      (ctx: WebGLContext, pname: number): any => {
+        if (ctx.MAX_TEXTURE_IMAGE_UNITS === pname) return 0;
+        return undefined;
+      }
+    );
 
     const compatibility = queryRenderCompatibility(false, createContext);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingRequiredFeatures);
-    expect(compatibility.missingRequiredFeatures.indexOf(WebGLFeature.MinimalTextureUnits)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingRequiredFeatures
+    );
+    expect(
+      compatibility.missingRequiredFeatures.indexOf(
+        WebGLFeature.MinimalTextureUnits
+      )
+    ).to.not.equal(-1);
     overriddenFunctions.restore();
   });
 
   it("should query proper render compatibility info assuming lack of MRT support", () => {
-    overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number): any => {
-      const dbExt = ctx.getExtension("WEBGL_draw_buffers");
-      if (null === dbExt)
+    overriddenFunctions.overrideCreateContext(
+      (ctx: WebGLContext, pname: number): any => {
+        const dbExt = ctx.getExtension("WEBGL_draw_buffers");
+        if (null === dbExt) return undefined;
+        if (dbExt.MAX_COLOR_ATTACHMENTS_WEBGL === pname) return 0;
         return undefined;
-      if (dbExt.MAX_COLOR_ATTACHMENTS_WEBGL === pname)
-        return 0;
-      return undefined;
-    }, false);
+      },
+      false
+    );
 
     const compatibility = queryRenderCompatibility(false, createContext);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtTransparency)).to.not.equal(-1);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtPick)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingOptionalFeatures
+    );
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(
+        WebGLFeature.MrtTransparency
+      )
+    ).to.not.equal(-1);
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtPick)
+    ).to.not.equal(-1);
     overriddenFunctions.restore();
   });
 
@@ -102,24 +140,38 @@ describe("Render Compatibility", () => {
     const context = makeTestContext();
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["OES_element_index_uint"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingRequiredFeatures);
-    expect(compatibility.missingRequiredFeatures.indexOf(WebGLFeature.UintElementIndex)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingRequiredFeatures
+    );
+    expect(
+      compatibility.missingRequiredFeatures.indexOf(
+        WebGLFeature.UintElementIndex
+      )
+    ).to.not.equal(-1);
   });
 
   it("should query proper render compatibility info assuming lack of depth texture support", () => {
     const context = makeTestContext();
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["WEBGL_depth_texture"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.DepthTexture)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingOptionalFeatures
+    );
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(WebGLFeature.DepthTexture)
+    ).to.not.equal(-1);
   });
 
   it("should turn off logarithmicZBuffer if the gl frag depth extension is not available", () => {
     const context = makeTestContext();
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["EXT_frag_depth"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FragDepth)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingOptionalFeatures
+    );
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FragDepth)
+    ).to.not.equal(-1);
     expect(caps.supportsFragDepth).to.be.false;
   });
 
@@ -127,112 +179,143 @@ describe("Render Compatibility", () => {
     const context = makeTestContext();
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["ANGLE_instanced_arrays"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.Instancing)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingOptionalFeatures
+    );
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(WebGLFeature.Instancing)
+    ).to.not.equal(-1);
   });
 
   it("should query proper render compatibility info assuming lack of standard derivatives support", () => {
     const context = makeTestContext();
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["OES_standard_derivatives"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.StandardDerivatives)).to.not.equal(-1);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingOptionalFeatures
+    );
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(
+        WebGLFeature.StandardDerivatives
+      )
+    ).to.not.equal(-1);
   });
 
   it("should query proper render compatibility info assuming lack of float rendering support with webgl1", () => {
     const context = makeTestContext(false);
     const caps = new Capabilities();
-    const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FloatRendering)).to.not.equal(-1);
+    const compatibility = caps.init(context, [
+      "OES_texture_float",
+      "OES_texture_half_float",
+    ]);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.MissingOptionalFeatures
+    );
+    expect(
+      compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FloatRendering)
+    ).to.not.equal(-1);
   });
 
   it("should query proper render compatibility info assuming lack of float rendering support with webgl2", () => {
     const context = makeTestContext(true);
     const caps = new Capabilities();
-    const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
+    const compatibility = caps.init(context, [
+      "OES_texture_float",
+      "OES_texture_half_float",
+    ]);
+    expect(compatibility.status).to.equal(
+      WebGLRenderCompatibilityStatus.AllOkay
+    );
   });
 
   it("detects early Z culling driver bug", () => {
     const renderers = [
-      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false ],
+      ["ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["ANGLE (Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false],
 
       // Bug only confirmed on 620 and 630
-      [ "ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false ],
+      ["ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) HD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) HD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) UHD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) UHD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false],
 
       // Bug only confirmed for Direct3D11; if Direct3D11 not present, we're not on Windows or using a different renderer.
-      [ "ANGLE (Intel(R) HD Graphics 630)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 630)", false ],
-      [ "ANGLE (Intel(R) HD Graphics 620)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 620)", false ],
-      [ "ANGLE (Intel HD Graphics 620)", false ],
-      [ "ANGLE (Intel(R) UHD Graphics 610)", false ],
+      ["ANGLE (Intel(R) HD Graphics 630)", false],
+      ["ANGLE (Intel(R) UHD Graphics 630)", false],
+      ["ANGLE (Intel(R) HD Graphics 620)", false],
+      ["ANGLE (Intel(R) UHD Graphics 620)", false],
+      ["ANGLE (Intel HD Graphics 620)", false],
+      ["ANGLE (Intel(R) UHD Graphics 610)", false],
 
       // Bug only confirmed on Windows; if ANGLE not present, we're not running on Windows.
-      [ "Intel(R) HD Graphics 630", false ],
-      [ "Intel(R) UHD Graphics 630", false ],
-      [ "Intel(R) HD Graphics 620", false ],
-      [ "Intel(R) UHD Graphics 620", false ],
-      [ "Intel HD Graphics 620", false ],
-      [ "Intel(R) UHD Graphics 610", false ],
+      ["Intel(R) HD Graphics 630", false],
+      ["Intel(R) UHD Graphics 630", false],
+      ["Intel(R) HD Graphics 620", false],
+      ["Intel(R) UHD Graphics 620", false],
+      ["Intel HD Graphics 620", false],
+      ["Intel(R) UHD Graphics 610", false],
 
-      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+      ["ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false],
 
       // Around October 2021 slightly different unmasked renderer strings began showing up, containing "Intel, Intel(R)" instead of just "Intel(R)".
-      [ "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)", true ],
-      [ "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true ],
+      [
+        "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)",
+        true,
+      ],
+      ["ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true],
     ];
 
     for (const renderer of renderers) {
-      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
-        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
-        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
-          return renderer[0];
+      overriddenFunctions.overrideCreateContext(
+        (ctx: WebGLContext, pname: number) => {
+          const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+          if (ext && pname === ext.UNMASKED_RENDERER_WEBGL) return renderer[0];
 
-        return undefined;
-      });
+          return undefined;
+        }
+      );
 
       const context = makeTestContext(true);
       const caps = new Capabilities();
       const compatibility = caps.init(context);
 
-      expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
+      expect(compatibility.status).to.equal(
+        WebGLRenderCompatibilityStatus.AllOkay
+      );
 
       const expected = renderer[1] ? true : undefined;
-      expect(compatibility.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
+      expect(compatibility.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(
+        expected
+      );
       expect(caps.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
     }
   });
 
   it("detects integrated and dedicated graphics", () => {
     const renderers = [
-      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
-      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  true ],
-      [ "Intel(R) Iris(TM) Graphics 6100", true ],
-      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+      ["ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true],
+      ["Intel(R) Iris(TM) Graphics 6100", true],
+      ["ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false],
     ];
 
     for (const renderer of renderers) {
-      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
-        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
-        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
-          return renderer[0];
+      overriddenFunctions.overrideCreateContext(
+        (ctx: WebGLContext, pname: number) => {
+          const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+          if (ext && pname === ext.UNMASKED_RENDERER_WEBGL) return renderer[0];
 
-        return undefined;
-      });
+          return undefined;
+        }
+      );
 
       const context = makeTestContext(true);
       const caps = new Capabilities();
@@ -244,21 +327,22 @@ describe("Render Compatibility", () => {
 
   it("detects MSAA hang bug", () => {
     const renderers = [
-      [ "Mali-G71", true ],
-      [ "Mali-G72", true ],
-      [ "Mali-G76", true ],
-      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  false ],
-      [ "Mali-G79", false ],
+      ["Mali-G71", true],
+      ["Mali-G72", true],
+      ["Mali-G76", true],
+      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false],
+      ["Mali-G79", false],
     ];
 
     for (const renderer of renderers) {
-      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
-        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
-        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
-          return renderer[0];
+      overriddenFunctions.overrideCreateContext(
+        (ctx: WebGLContext, pname: number) => {
+          const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+          if (ext && pname === ext.UNMASKED_RENDERER_WEBGL) return renderer[0];
 
-        return undefined;
-      });
+          return undefined;
+        }
+      );
 
       const context = makeTestContext(true);
       const caps = new Capabilities();

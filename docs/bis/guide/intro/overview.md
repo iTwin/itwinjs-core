@@ -16,7 +16,7 @@ BIS can also be used as the conceptual schema of a data abstraction layer over o
 
 "BIS Repository" refers to both iModels and other repositories that are exposed to Federated Digital Twins using the BIS conceptual schema.
 
-Any given BIS Repository will always include the “BIS Core” Domain and one or more additional Domains that directly or indirectly depend on “BIS Core”. No single “BIS Repository” is likely to use ***all*** of the Domain schemas in the BIS family.
+Any given BIS Repository will always include the “BIS Core” Domain and one or more additional Domains that directly or indirectly depend on “BIS Core”. No single “BIS Repository” is likely to use **_all_** of the Domain schemas in the BIS family.
 
 ## Scope
 

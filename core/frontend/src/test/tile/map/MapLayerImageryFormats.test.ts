@@ -16,21 +16,21 @@ import {
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
 
-const getSampleLayerSettings = ((formatId: string) => {
+const getSampleLayerSettings = (formatId: string) => {
   return ImageMapLayerSettings.fromJSON({
-    formatId, url: "https://localhost/service", name: `Test ${formatId}`,
+    formatId,
+    url: "https://localhost/service",
+    name: `Test ${formatId}`,
   });
-});
+};
 
 describe("MapLayerImageryFormats", () => {
   it("should create proper provider", () => {
     const registry = new MapLayerFormatRegistry({});
     internalMapLayerImageryFormats.forEach((imageryFormat) => {
-
       const layerSettings = getSampleLayerSettings(imageryFormat.formatId);
       expect(layerSettings).to.not.undefined;
-      if (!layerSettings)
-        return;
+      if (!layerSettings) return;
 
       const provider = registry.createImageryProvider(layerSettings);
       expect(provider).to.not.undefined;
@@ -62,7 +62,9 @@ describe("MapLayerImageryFormats", () => {
           break;
 
         default:
-          assert.fail(`Unknown format: '${imageryFormat.formatId}'. Please make sure any new format is covered by this test.`);
+          assert.fail(
+            `Unknown format: '${imageryFormat.formatId}'. Please make sure any new format is covered by this test.`
+          );
       }
     });
   });

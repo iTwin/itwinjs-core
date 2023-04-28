@@ -8,11 +8,20 @@
 
 // cspell:ignore GCRS
 import {
-  assert, BeEvent, Dictionary, Logger, SortedArray,
+  assert,
+  BeEvent,
+  Dictionary,
+  Logger,
+  SortedArray,
 } from "@itwin/core-bentley";
 import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesResponseProps, IModelReadRpcInterface, PointWithStatus,
+  GeoCoordinatesResponseProps,
+  GeoCoordStatus,
+  GeographicCRSProps,
+  IModelCoordinatesResponseProps,
+  IModelReadRpcInterface,
+  PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -39,11 +48,11 @@ function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
 
 type CoordinateConverterState =
   // No pending requests.
-  "idle" |
+  | "idle"
   // We have scheduled a requestAnimationFrame to dispatch all pending requests.
-  "scheduled" |
+  | "scheduled"
   // We have dispatched all requests that were pending at the most recent requestAnimationFrame callback.
-  "in-flight";
+  | "in-flight";
 
 /** Performs conversion of coordinates from one coordinate system to another.
  * A [[GeoConverter]] has a pair of these for converting between iModel coordinates and geographic coordinates.
@@ -71,7 +80,9 @@ export class CoordinateConverter {
   protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
   protected readonly _maxPointsPerRequest: number;
   protected readonly _iModel: IModelConnection;
-  protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+  protected readonly _requestPoints: (
+    points: XYAndZ[]
+  ) => Promise<PointWithStatus[]>;
 
   protected toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ {
     if (Array.isArray(input)) {
@@ -92,7 +103,10 @@ export class CoordinateConverter {
     this._iModel = opts.iModel;
     this._requestPoints = opts.requestPoints;
 
-    this._cache = new Dictionary<XYAndZ, PointWithStatus>(compareXYAndZ, cloneXYAndZ);
+    this._cache = new Dictionary<XYAndZ, PointWithStatus>(
+      compareXYAndZ,
+      cloneXYAndZ
+    );
     this._pending = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
     this._inflight = new SortedArray<XYAndZ>(compareXYAndZ, false, cloneXYAndZ);
   }
@@ -120,21 +134,29 @@ export class CoordinateConverter {
     // Split requests if necessary to avoid requesting more than the maximum allowed number of points.
     const promises: Array<Promise<void>> = [];
     for (let i = 0; i < inflight.length; i += this._maxPointsPerRequest) {
-      const requests = inflight.slice(i, i + this._maxPointsPerRequest).extractArray();
-      const promise = this._requestPoints(requests).then((results) => {
-        if (this._iModel.isClosed)
-          return;
+      const requests = inflight
+        .slice(i, i + this._maxPointsPerRequest)
+        .extractArray();
+      const promise = this._requestPoints(requests)
+        .then((results) => {
+          if (this._iModel.isClosed) return;
 
-        if (results.length !== requests.length)
-          Logger.logError(`${FrontendLoggerCategory.Package}.geoservices`, `requested conversion of ${requests.length} points, but received ${results.length} points`);
+          if (results.length !== requests.length)
+            Logger.logError(
+              `${FrontendLoggerCategory.Package}.geoservices`,
+              `requested conversion of ${requests.length} points, but received ${results.length} points`
+            );
 
-        for (let j = 0; j < results.length; j++) {
-          if (j < requests.length)
-            this._cache.set(requests[j], results[j]);
-        }
-      }).catch((err) => {
-        Logger.logException(`${FrontendLoggerCategory.Package}.geoservices`, err);
-      });
+          for (let j = 0; j < results.length; j++) {
+            if (j < requests.length) this._cache.set(requests[j], results[j]);
+          }
+        })
+        .catch((err) => {
+          Logger.logException(
+            `${FrontendLoggerCategory.Package}.geoservices`,
+            err
+          );
+        });
 
       promises.push(promise);
     }
@@ -146,8 +168,7 @@ export class CoordinateConverter {
     this._inflight.clear();
 
     // If any more pending conversions arrived while awaiting this request, schedule another request.
-    if (!this._pending.isEmpty)
-      this.scheduleDispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (!this._pending.isEmpty) this.scheduleDispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Resolve promises of all callers who were awaiting this request.
     onCompleted.raiseEvent();
@@ -159,10 +180,8 @@ export class CoordinateConverter {
     let numInCache = 0;
     for (const point of points) {
       const xyz = this.toXYAndZ(point, this._scratchXYZ);
-      if (this._cache.get(xyz))
-        ++numInCache;
-      else if (!this._inflight.contains(xyz))
-        this._pending.insert(xyz);
+      if (this._cache.get(xyz)) ++numInCache;
+      else if (!this._inflight.contains(xyz)) this._pending.insert(xyz);
     }
 
     return numInCache;
@@ -175,8 +194,7 @@ export class CoordinateConverter {
     for (const input of inputs) {
       const xyz = this.toXYAndZ(input, this._scratchXYZ);
       let output = this._cache.get(xyz);
-      if (!output)
-        output = { p: { ...xyz }, s: GeoCoordStatus.CSMapError };
+      if (!output) output = { p: { ...xyz }, s: GeoCoordStatus.CSMapError };
 
       outputs.push(output);
     }
@@ -197,7 +215,9 @@ export class CoordinateConverter {
     });
   }
 
-  public async convert(inputs: XYZProps[]): Promise<{ points: PointWithStatus[], fromCache: number }> {
+  public async convert(
+    inputs: XYZProps[]
+  ): Promise<{ points: PointWithStatus[]; fromCache: number }> {
     const fromCache = this.enqueue(inputs);
     assert(fromCache >= 0);
     assert(fromCache <= inputs.length);
@@ -218,8 +238,7 @@ export class CoordinateConverter {
       const output = this._cache.get(key);
       result.push(output);
       if (!output) {
-        if (!missing)
-          missing = [];
+        if (!missing) missing = [];
 
         missing.push(input);
       }
@@ -249,15 +268,26 @@ export class GeoConverter {
   private readonly _iModelToGeo: CoordinateConverter;
 
   /** @internal */
-  constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
-    const datum = typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS;
+  constructor(
+    iModel: IModelConnection,
+    datumOrGCRS: string | GeographicCRSProps
+  ) {
+    const datum =
+      typeof datumOrGCRS === "object"
+        ? JSON.stringify(datumOrGCRS)
+        : datumOrGCRS;
 
     this._geoToIModel = new CoordinateConverter({
       iModel,
       requestPoints: async (geoCoords: XYAndZ[]) => {
         const request = { source: datum, geoCoords };
-        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
-        const response = await rpc.getIModelCoordinatesFromGeoCoordinates(iModel.getRpcProps(), request);
+        const rpc = IModelReadRpcInterface.getClientForRouting(
+          iModel.routingContext.token
+        );
+        const response = await rpc.getIModelCoordinatesFromGeoCoordinates(
+          iModel.getRpcProps(),
+          request
+        );
         return response.iModelCoords;
       },
     });
@@ -266,27 +296,40 @@ export class GeoConverter {
       iModel,
       requestPoints: async (iModelCoords: XYAndZ[]) => {
         const request = { target: datum, iModelCoords };
-        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
-        const response = await rpc.getGeoCoordinatesFromIModelCoordinates(iModel.getRpcProps(), request);
+        const rpc = IModelReadRpcInterface.getClientForRouting(
+          iModel.routingContext.token
+        );
+        const response = await rpc.getGeoCoordinatesFromIModelCoordinates(
+          iModel.getRpcProps(),
+          request
+        );
         return response.geoCoords;
       },
     });
   }
 
   /** Convert the specified geographic coordinates into iModel coordinates. */
-  public async convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]> {
+  public async convertToIModelCoords(
+    geoPoints: XYZProps[]
+  ): Promise<PointWithStatus[]> {
     const result = await this.getIModelCoordinatesFromGeoCoordinates(geoPoints);
     return result.iModelCoords;
   }
 
   /** Convert the specified iModel coordinates into geographic coordinates. */
-  public async convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]> {
-    const result = await this.getGeoCoordinatesFromIModelCoordinates(iModelCoords);
+  public async convertFromIModelCoords(
+    iModelCoords: XYZProps[]
+  ): Promise<PointWithStatus[]> {
+    const result = await this.getGeoCoordinatesFromIModelCoordinates(
+      iModelCoords
+    );
     return result.geoCoords;
   }
 
   /** @internal */
-  public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
+  public async getIModelCoordinatesFromGeoCoordinates(
+    geoPoints: XYZProps[]
+  ): Promise<IModelCoordinatesResponseProps> {
     const result = await this._geoToIModel.convert(geoPoints);
     return {
       iModelCoords: result.points,
@@ -295,7 +338,9 @@ export class GeoConverter {
   }
 
   /** @internal */
-  public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
+  public async getGeoCoordinatesFromIModelCoordinates(
+    iModelPoints: XYZProps[]
+  ): Promise<GeoCoordinatesResponseProps> {
     const result = await this._iModelToGeo.convert(iModelPoints);
     return {
       geoCoords: result.points,
@@ -304,7 +349,9 @@ export class GeoConverter {
   }
 
   /** @internal */
-  public getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps {
+  public getCachedIModelCoordinatesFromGeoCoordinates(
+    geoPoints: XYZProps[]
+  ): CachedIModelCoordinatesResponseProps {
     return this._geoToIModel.findCached(geoPoints);
   }
 }
@@ -326,7 +373,11 @@ export class GeoServices {
    * @returns a converter, or `undefined` if the iModel is not open.
    * @note A [[BlankConnection]] has no connection to a backend, so it is never "open"; therefore it always returns `undefined`.
    */
-  public getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined {
-    return this._iModel.isOpen ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "") : undefined;
+  public getConverter(
+    datumOrGCRS?: string | GeographicCRSProps
+  ): GeoConverter | undefined {
+    return this._iModel.isOpen
+      ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "")
+      : undefined;
   }
 }

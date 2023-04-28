@@ -15,7 +15,8 @@ import { WidgetState } from "./WidgetState";
  * @deprecated in 3.6. Use [WidgetProps]($appui-react) instead.
  * @public
  */
-export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+export interface AbstractWidgetProps extends ProvidedItem {
+  // eslint-disable-line deprecation/deprecation
   /** Gets the widget content. */
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
@@ -54,7 +55,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** Indicates if floating widget is resizable, defaults to false which caused the widget to be auto-sized.. */
   readonly isFloatingStateWindowResizable?: boolean;
   /** Defines that default Top Left position when widget is floated via API calls */
-  readonly defaultFloatingPosition?: { x: number, y: number };
+  readonly defaultFloatingPosition?: { x: number; y: number };
   /** Widget priority */
   readonly priority?: number;
   /** Defines the SyncUi event Ids that will trigger the stateFunc to run to determine the state of the widget. */
@@ -62,7 +63,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** Function executed to determine the state of the widget.
    *  Used by UI 1.0 widgets ONLY.
    * @deprecated in 3.3. UI 1.0 support will be removed in AppUi 4.0.
-  */
+   */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line deprecation/deprecation
   /** Badge to be overlaid on the widget tab. */
   readonly badgeType?: BadgeType;
@@ -77,10 +78,12 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** Optional default size to use when floating a widget. If not specified then the default is to size to content if possible.
    * Certain widget can't be intrinsically sized and must specify a content. These are typically ones that use a canvas element
    * internally. */
-  defaultFloatingSize?: { width: number, height: number };
+  defaultFloatingSize?: { width: number; height: number };
   /** Optional prop that tells the widget system to fade this widget out with the rest of the UI when it is in floating state */
   hideWithUiWhenFloating?: boolean;
   /** Optional prop specifying which Panel sides can be docking targets for this widget. If this prop is not specified, all sides are allowed.
    *  An empty array is treated the same as an undefined prop, allowing all targets. */
-  readonly allowedPanelTargets?:  ReadonlyArray<"left"|"right"|"bottom"|"top">;
+  readonly allowedPanelTargets?: ReadonlyArray<
+    "left" | "right" | "bottom" | "top"
+  >;
 }

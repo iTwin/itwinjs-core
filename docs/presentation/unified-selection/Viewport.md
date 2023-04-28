@@ -3,7 +3,7 @@
 As described in the [Viewport selection handling section](./index.md#viewport), selection in a Viewport component and Unified Selection are synchronized in a two-way manner:
 
 - When an element in the Viewport is selected, it (or anything that comes from it after applying active [selection scope](./index.md#selection-scopes)) is added to unified selection.
-- When an *ECInstance* is added to unified selection, all `BisCore.Elements` that represent that *ECInstances* are added to the Viewport's hilite set.
+- When an _ECInstance_ is added to unified selection, all `BisCore.Elements` that represent that _ECInstances_ are added to the Viewport's hilite set.
 
 ## Reference
 

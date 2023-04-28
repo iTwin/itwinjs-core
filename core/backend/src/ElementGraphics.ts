@@ -14,7 +14,10 @@ import { IModelDb } from "./IModelDb";
 /** See [[IModelDb.generateElementGraphics]] and IModelTileRpcImpl.requestElementGraphics.
  * @internal
  */
-export async function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined> {
+export async function generateElementGraphics(
+  request: ElementGraphicsRequestProps,
+  iModel: IModelDb
+): Promise<Uint8Array | undefined> {
   const result = await iModel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
 
   let error: string | undefined;

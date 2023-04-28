@@ -22,7 +22,10 @@ describe("IModelOpen", () => {
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
 
-    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    testIModelId = await HubUtility.getTestIModelId(
+      accessToken,
+      HubUtility.testIModelNames.stadium
+    );
   });
 
   const deleteTestIModelCache = () => {
@@ -32,8 +35,18 @@ describe("IModelOpen", () => {
 
   it("Unauthorized requests should cause an obvious error", async () => {
     // Try the bad request context
-    await expect(HubWrappers.downloadAndOpenCheckpoint({ accessToken: "bad", iTwinId: testITwinId, iModelId: testIModelId }))
-      .to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", RepositoryStatus.InvalidRequest);
+    await expect(
+      HubWrappers.downloadAndOpenCheckpoint({
+        accessToken: "bad",
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+      })
+    )
+      .to.be.rejectedWith(IModelError)
+      .to.eventually.have.property(
+        "errorNumber",
+        RepositoryStatus.InvalidRequest
+      );
   });
 
   it("should be able to handle simultaneous open calls", async () => {
@@ -45,7 +58,11 @@ describe("IModelOpen", () => {
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
     const openPromises = new Array<Promise<SnapshotDb>>();
     for (let ii = 0; ii < numTries; ii++) {
-      const open = HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+      const open = HubWrappers.downloadAndOpenCheckpoint({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+      });
       openPromises.push(open);
     }
     const iModels = await Promise.all(openPromises);
@@ -60,13 +77,20 @@ describe("IModelOpen", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost.hubAccess.queryChangesets({
+      accessToken,
+      iModelId: testIModelId,
+    });
     const numChangeSets = changesets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changesets[9].id).toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      asOf: IModelVersion.asOfChangeSet(changesets[9].id).toJSON(),
+    });
     assert.isDefined(iModel);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
-
 });

@@ -21,7 +21,11 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   private _disposeFunc: (ruleset: RegisteredRuleset) => void;
 
   /** Create a registered ruleset */
-  public constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void) {
+  public constructor(
+    ruleset: Ruleset,
+    uniqueIdentifier: string,
+    disposeFunc: (ruleset: RegisteredRuleset) => void
+  ) {
     this._disposeFunc = disposeFunc;
     this._ruleset = ruleset;
     this._uniqueIdentifier = uniqueIdentifier;
@@ -32,10 +36,22 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
     this._disposeFunc(this);
   }
 
-  public get uniqueIdentifier() { return this._uniqueIdentifier; }
-  public get id(): string { return this._ruleset.id; }
-  public get supplementationInfo(): SupplementationInfo | undefined { return this._ruleset.supplementationInfo; }
-  public get rules(): Rule[] { return this._ruleset.rules; }
-  public get vars(): VariablesGroup[] | undefined { return this._ruleset.vars; }
-  public toJSON(): Ruleset { return this._ruleset; }
+  public get uniqueIdentifier() {
+    return this._uniqueIdentifier;
+  }
+  public get id(): string {
+    return this._ruleset.id;
+  }
+  public get supplementationInfo(): SupplementationInfo | undefined {
+    return this._ruleset.supplementationInfo;
+  }
+  public get rules(): Rule[] {
+    return this._ruleset.rules;
+  }
+  public get vars(): VariablesGroup[] | undefined {
+    return this._ruleset.vars;
+  }
+  public toJSON(): Ruleset {
+    return this._ruleset;
+  }
 }

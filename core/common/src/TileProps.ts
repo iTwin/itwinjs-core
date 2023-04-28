@@ -95,7 +95,13 @@ export enum TileContentSource {
 /**
  * @internal
  */
-export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference {
+export function getTileObjectReference(
+  iModelId: string,
+  changesetId: string,
+  treeId: string,
+  contentId: string,
+  guid?: string
+): ObjectReference {
   return {
     baseDirectory: iModelId,
     relativeDirectory: `tiles/${treeId}/${guid ?? changesetId}`,

@@ -4,17 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import {
-  ArcGisUtilities,
-  MapLayerSourceStatus,
-} from "@itwin/core-frontend";
+import { ArcGisUtilities, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { esriFeatureSampleSource } from "./Mocks";
 import * as sinon from "sinon";
 
 describe("ArcGisFeaturePBF", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -22,19 +18,30 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should createImageryProvider", async () => {
-    const provider = ArcGisFeatureMapLayerFormat.createImageryProvider(ImageMapLayerSettings.fromJSON(esriFeatureSampleSource));
+    const provider = ArcGisFeatureMapLayerFormat.createImageryProvider(
+      ImageMapLayerSettings.fromJSON(esriFeatureSampleSource)
+    );
     expect(provider).to.not.undefined;
   });
 
   it("should validateSource", async () => {
-
-    const fakeMethod = async (_url: string, _formatId: string,_filter: string[], _userName?: string, _password?: string, _ignoreCache?: boolean) => {
-      return {status: MapLayerSourceStatus.Valid};
-
+    const fakeMethod = async (
+      _url: string,
+      _formatId: string,
+      _filter: string[],
+      _userName?: string,
+      _password?: string,
+      _ignoreCache?: boolean
+    ) => {
+      return { status: MapLayerSourceStatus.Valid };
     };
-    const validateSourceStub = sinon.stub(ArcGisUtilities, "validateSource").callsFake(fakeMethod);
+    const validateSourceStub = sinon
+      .stub(ArcGisUtilities, "validateSource")
+      .callsFake(fakeMethod);
 
-    await ArcGisFeatureMapLayerFormat.validateSource(esriFeatureSampleSource.url);
+    await ArcGisFeatureMapLayerFormat.validateSource(
+      esriFeatureSampleSource.url
+    );
 
     expect(validateSourceStub.calledOnce).to.be.true;
     const firstCall = validateSourceStub.getCalls()[0];
@@ -42,5 +49,4 @@ describe("ArcGisFeaturePBF", () => {
     expect(firstCall.args[1]).to.equals(ArcGisFeatureMapLayerFormat.formatId);
     expect(firstCall.args[2]).to.eqls(["query"]);
   });
-
 });

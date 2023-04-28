@@ -11,12 +11,13 @@ import { getFieldByLabel } from "../../Utils";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openFile(
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
+    );
   });
 
   after(async () => {
@@ -25,7 +26,6 @@ describe("Learning Snippets", () => {
   });
 
   describe("RelatedInstanceSpecification", () => {
-
     it("using in instance filter", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset
       // This ruleset defines a specification that returns content for `bis.ViewDefinition` instances. In addition,
@@ -33,24 +33,35 @@ describe("Learning Snippets", () => {
       // instance filter that filters using its property.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "Content",
-          specifications: [
-            {
-              specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
-              relatedInstances: [{
-                relationshipPath: {
-                  relationship: { schemaName: "BisCore", className: "ViewDefinitionUsesDisplayStyle" },
-                  direction: "Forward",
+        rules: [
+          {
+            ruleType: "Content",
+            specifications: [
+              {
+                specType: "ContentInstancesOfSpecificClasses",
+                classes: {
+                  schemaName: "BisCore",
+                  classNames: ["ViewDefinition"],
+                  arePolymorphic: true,
                 },
-                alias: "display_style",
-                isRequired: true,
-              }],
-              instanceFilter: `display_style.CodeValue ~ "%View%"`,
-            },
-          ],
-        }],
+                relatedInstances: [
+                  {
+                    relationshipPath: {
+                      relationship: {
+                        schemaName: "BisCore",
+                        className: "ViewDefinitionUsesDisplayStyle",
+                      },
+                      direction: "Forward",
+                    },
+                    alias: "display_style",
+                    isRequired: true,
+                  },
+                ],
+                instanceFilter: `display_style.CodeValue ~ "%View%"`,
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -64,7 +75,10 @@ describe("Learning Snippets", () => {
       });
 
       expect(content!.contentSet.length).to.eq(3);
-      const field = getFieldByLabel(content!.descriptor.fields, "Display Style");
+      const field = getFieldByLabel(
+        content!.descriptor.fields,
+        "Display Style"
+      );
       content!.contentSet.forEach((record) => {
         expect(record.displayValues[field.name]).to.contain("View");
       });
@@ -79,31 +93,40 @@ describe("Learning Snippets", () => {
       // instance specification.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "RootNodes",
-          specifications: [
-            {
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
-              groupByClass: false,
-              groupByLabel: false,
-              relatedInstances: [{
-                relationshipPath: {
-                  relationship: { schemaName: "ECDbMeta", className: "SchemaOwnsClasses" },
-                  direction: "Backward",
+        rules: [
+          {
+            ruleType: "RootNodes",
+            specifications: [
+              {
+                specType: "InstanceNodesOfSpecificClasses",
+                classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
+                groupByClass: false,
+                groupByLabel: false,
+                relatedInstances: [
+                  {
+                    relationshipPath: {
+                      relationship: {
+                        schemaName: "ECDbMeta",
+                        className: "SchemaOwnsClasses",
+                      },
+                      direction: "Backward",
+                    },
+                    alias: "schema",
+                    isRequired: true,
+                  },
+                ],
+              },
+            ],
+            customizationRules: [
+              {
+                ruleType: "ExtendedData",
+                items: {
+                  fullClassName: `schema.Name & "." & this.Name`,
                 },
-                alias: "schema",
-                isRequired: true,
-              }],
-            },
-          ],
-          customizationRules: [{
-            ruleType: "ExtendedData",
-            items: {
-              fullClassName: `schema.Name & "." & this.Name`,
-            },
-          }],
-        }],
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -133,34 +156,45 @@ describe("Learning Snippets", () => {
       // and classes get grouped by related schema names.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "RootNodes",
-          specifications: [
-            {
-              specType: "InstanceNodesOfSpecificClasses",
-              classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
-              groupByClass: false,
-              groupByLabel: false,
-              relatedInstances: [{
-                relationshipPath: {
-                  relationship: { schemaName: "ECDbMeta", className: "SchemaOwnsClasses" },
-                  direction: "Backward",
-                },
-                alias: "schema",
-                isRequired: true,
-              }],
-            },
-          ],
-          customizationRules: [{
-            ruleType: "Grouping",
-            class: { schemaName: "ECDbMeta", className: "ECSchemaDef" },
-            groups: [{
-              specType: "Property",
-              propertyName: "Name",
-              createGroupForSingleItem: true,
-            }],
-          }],
-        }],
+        rules: [
+          {
+            ruleType: "RootNodes",
+            specifications: [
+              {
+                specType: "InstanceNodesOfSpecificClasses",
+                classes: { schemaName: "ECDbMeta", classNames: ["ECClassDef"] },
+                groupByClass: false,
+                groupByLabel: false,
+                relatedInstances: [
+                  {
+                    relationshipPath: {
+                      relationship: {
+                        schemaName: "ECDbMeta",
+                        className: "SchemaOwnsClasses",
+                      },
+                      direction: "Backward",
+                    },
+                    alias: "schema",
+                    isRequired: true,
+                  },
+                ],
+              },
+            ],
+            customizationRules: [
+              {
+                ruleType: "Grouping",
+                class: { schemaName: "ECDbMeta", className: "ECSchemaDef" },
+                groups: [
+                  {
+                    specType: "Property",
+                    propertyName: "Name",
+                    createGroupForSingleItem: true,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -171,23 +205,23 @@ describe("Learning Snippets", () => {
         rulesetOrId: ruleset,
       });
       expect(schemaNodes.length).to.eq(18);
-      await Promise.all(schemaNodes.map(async (schemaNode) => {
-        expect(schemaNode).to.containSubset({
-          key: {
-            type: StandardNodeTypes.ECPropertyGroupingNode,
-            className: "ECDbMeta:ECSchemaDef",
-            propertyName: "Name",
-          },
-        });
-        const classNodes = await Presentation.presentation.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          parentKey: schemaNode.key,
-        });
-        expect(classNodes).to.not.be.empty;
-      }));
+      await Promise.all(
+        schemaNodes.map(async (schemaNode) => {
+          expect(schemaNode).to.containSubset({
+            key: {
+              type: StandardNodeTypes.ECPropertyGroupingNode,
+              className: "ECDbMeta:ECSchemaDef",
+              propertyName: "Name",
+            },
+          });
+          const classNodes = await Presentation.presentation.getNodes({
+            imodel,
+            rulesetOrId: ruleset,
+            parentKey: schemaNode.key,
+          });
+          expect(classNodes).to.not.be.empty;
+        })
+      );
     });
-
   });
-
 });

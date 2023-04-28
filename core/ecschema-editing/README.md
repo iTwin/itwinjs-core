@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/ecschema-editing__ package contains classes for editing and validating ECSchemas.  This package is a work in progress consider everything in alpha.
+The **@itwin/ecschema-editing** package contains classes for editing and validating ECSchemas. This package is a work in progress consider everything in alpha.
 
 ## Documentation
 

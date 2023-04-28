@@ -12,7 +12,7 @@ Suggested Package:
 
 - [TypeScript](https://www.typescriptlang.org/)
 
-With a properly configured tsconfig.json file, running the TypeScript compiler with `tsc` should be enough for backend libraries and simple backend agents/services. For more information about tsconfig properties, see the [TypeScript website](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html).  Frontend services or applications may require the use of Webpack or another more involved build solution.
+With a properly configured tsconfig.json file, running the TypeScript compiler with `tsc` should be enough for backend libraries and simple backend agents/services. For more information about tsconfig properties, see the [TypeScript website](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html). Frontend services or applications may require the use of Webpack or another more involved build solution.
 
 ## Cleaning Directories
 

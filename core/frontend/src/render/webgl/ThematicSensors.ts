@@ -8,7 +8,10 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
+import {
+  ThematicDisplaySensor,
+  ThematicDisplaySensorSettings,
+} from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { Texture2DData, Texture2DHandle } from "./Texture";
@@ -36,13 +39,18 @@ export class ThematicSensors implements WebGLDisposable {
   public readonly range: Range3d;
   public readonly sensorSettings?: ThematicDisplaySensorSettings;
 
-  public get numSensors(): number { return this._sensors.length; }
+  public get numSensors(): number {
+    return this._sensors.length;
+  }
 
   private _sensors: ThematicDisplaySensor[];
   private readonly _viewMatrix = Transform.createIdentity();
 
   public matchesTarget(target: Target): boolean {
-    return target === this.target && this.sensorSettings === target.plan.thematic?.sensorSettings;
+    return (
+      target === this.target &&
+      this.sensorSettings === target.plan.thematic?.sensorSettings
+    );
   }
 
   public static create(target: Target, range: Range3d): ThematicSensors {
@@ -53,7 +61,8 @@ export class ThematicSensors implements WebGLDisposable {
         target.plan.thematic.sensorSettings.sensors,
         range,
         target.currentTransform,
-        target.plan.thematic.sensorSettings.distanceCutoff);
+        target.plan.thematic.sensorSettings.distanceCutoff
+      );
     }
 
     const obj = this.createFloat(target, range, sensors);
@@ -61,7 +70,9 @@ export class ThematicSensors implements WebGLDisposable {
     return obj;
   }
 
-  public get isDisposed(): boolean { return this._texture.handle.isDisposed; }
+  public get isDisposed(): boolean {
+    return this._texture.handle.isDisposed;
+  }
 
   public dispose(): void {
     dispose(this._texture.handle);
@@ -75,9 +86,13 @@ export class ThematicSensors implements WebGLDisposable {
     this._texture.handle.bindSampler(uniform, TextureUnit.ThematicSensors);
   }
 
-  public get bytesUsed(): number { return this._texture.handle.bytesUsed; }
+  public get bytesUsed(): number {
+    return this._texture.handle.bytesUsed;
+  }
 
-  public get texture(): Texture2DHandle { return this._texture.handle; }
+  public get texture(): Texture2DHandle {
+    return this._texture.handle;
+  }
 
   private _update(viewMatrix: Transform) {
     this._viewMatrix.setFrom(viewMatrix);
@@ -98,7 +113,12 @@ export class ThematicSensors implements WebGLDisposable {
     }
   }
 
-  protected constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {
+  protected constructor(
+    texture: ThematicSensorsTexture,
+    target: Target,
+    range: Range3d,
+    sensors: ThematicDisplaySensor[]
+  ) {
     this.target = target;
     this.range = range;
     this.sensorSettings = target.plan.thematic?.sensorSettings;
@@ -107,14 +127,27 @@ export class ThematicSensors implements WebGLDisposable {
     this._view = new DataView(texture.data.buffer);
   }
 
-  public static createFloat(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
+  public static createFloat(
+    target: Target,
+    range: Range3d,
+    sensors: ThematicDisplaySensor[]
+  ): ThematicSensors {
     const data = new Float32Array(sensors.length * 4);
-    const handle = Texture2DHandle.createForData(1, sensors.length, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    const handle = Texture2DHandle.createForData(
+      1,
+      sensors.length,
+      data,
+      false,
+      GL.Texture.WrapMode.ClampToEdge,
+      GL.Texture.Format.Rgba
+    );
     assert(undefined !== handle);
     return new this({ handle, data }, target, range, sensors);
   }
 
-  protected append(value: number) { this.appendFloat(value); }
+  protected append(value: number) {
+    this.appendFloat(value);
+  }
 
   protected appendFloat(value: number): void {
     this._view.setFloat32(this._curPos, value, true);
@@ -126,8 +159,12 @@ export class ThematicSensors implements WebGLDisposable {
     this.advance(1);
   }
 
-  private advance(numBytes: number): void { this._curPos += numBytes; }
-  private reset(): void { this._curPos = 0; }
+  private advance(numBytes: number): void {
+    this._curPos += numBytes;
+  }
+  private reset(): void {
+    this._curPos = 0;
+  }
 
   private appendValues(a: number, b: number, c: number, d: number) {
     this.append(a);
@@ -136,17 +173,28 @@ export class ThematicSensors implements WebGLDisposable {
     this.append(d);
   }
 
-  private appendSensor(position: Point3d, value: number): void { this.appendValues(position.x, position.y, position.z, value); }
+  private appendSensor(position: Point3d, value: number): void {
+    this.appendValues(position.x, position.y, position.z, value);
+  }
 }
 
-function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: number, range: Range3d) {
+function _sensorRadiusAffectsRange(
+  sensor: ThematicDisplaySensor,
+  sensorRadius: number,
+  range: Range3d
+) {
   const distance = range.distanceToPoint(sensor.position);
   return !(distance > sensorRadius);
 }
 
 const scratchRange = Range3d.createNull();
 
-function _accumulateSensorsInRange(sensors: ThematicDisplaySensor[], range: Range3d, transform: Transform, distanceCutoff: number): ThematicDisplaySensor[] {
+function _accumulateSensorsInRange(
+  sensors: ThematicDisplaySensor[],
+  range: Range3d,
+  transform: Transform,
+  distanceCutoff: number
+): ThematicDisplaySensor[] {
   const retSensors: ThematicDisplaySensor[] = [];
 
   transform.multiplyRange(range, scratchRange);
@@ -154,7 +202,10 @@ function _accumulateSensorsInRange(sensors: ThematicDisplaySensor[], range: Rang
   for (const sensor of sensors) {
     const position = sensor.position;
 
-    if (distanceCutoff <= 0 || _sensorRadiusAffectsRange(sensor, distanceCutoff, scratchRange)) {
+    if (
+      distanceCutoff <= 0 ||
+      _sensorRadiusAffectsRange(sensor, distanceCutoff, scratchRange)
+    ) {
       const value = sensor.value;
       retSensors.push(ThematicDisplaySensor.fromJSON({ position, value }));
     }

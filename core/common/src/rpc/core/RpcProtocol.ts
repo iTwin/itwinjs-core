@@ -10,7 +10,11 @@ import { BeEvent } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import {
+  RpcProtocolEvent,
+  RpcRequestStatus,
+  RpcResponseCacheControl,
+} from "./RpcConstants";
 import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
@@ -71,7 +75,10 @@ export interface RpcRequestFulfillment {
 
 /** @internal */
 export namespace RpcRequestFulfillment {
-  export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
+  export async function forUnknownError(
+    request: SerializedRpcRequest,
+    error: any
+  ): Promise<RpcRequestFulfillment> {
     const result = await RpcMarshaling.serialize(undefined, error);
 
     return {
@@ -87,7 +94,11 @@ export namespace RpcRequestFulfillment {
 /** Handles RPC protocol events.
  * @internal
  */
-export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
+export type RpcProtocolEventHandler = (
+  type: RpcProtocolEvent,
+  object: RpcRequest | RpcInvocation,
+  err?: any
+) => void;
 
 /** Documents changes to the RPC protocol version.
  * @internal
@@ -95,7 +106,7 @@ export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcReques
 export enum RpcProtocolVersion {
   None = 0,
   IntroducedNoContent = 1,
-  IntroducedStatusCategory = 2
+  IntroducedStatusCategory = 2,
 }
 
 /**
@@ -113,10 +124,12 @@ export interface RpcManagedStatus {
  */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */
-  public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
+  public static readonly events: BeEvent<RpcProtocolEventHandler> =
+    new BeEvent();
 
   /** A version code that identifies the RPC protocol capabilties of this endpoint. */
-  public static readonly protocolVersion: number = RpcProtocolVersion.IntroducedStatusCategory;
+  public static readonly protocolVersion: number =
+    RpcProtocolVersion.IntroducedStatusCategory;
 
   /** The name of the RPC protocol version header. */
   public protocolVersionHeaderName = "";
@@ -163,7 +176,12 @@ export abstract class RpcProtocol {
   public supportsStatusCategory: boolean = false;
 
   /** If checkToken is true, will be called on the backend to inflate the IModelRpcProps for each request. */
-  public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps { return tokenFromBody; }
+  public inflateToken(
+    tokenFromBody: IModelRpcProps,
+    _request: SerializedRpcRequest
+  ): IModelRpcProps {
+    return tokenFromBody;
+  }
 
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
@@ -176,7 +194,10 @@ export abstract class RpcProtocol {
   }
 
   /** Override to supply the protocol-specific path value for an RPC operation. */
-  public supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string {
+  public supplyPathForOperation(
+    operation: RpcOperation,
+    _request: RpcRequest | undefined
+  ): string {
     return JSON.stringify(operation);
   }
 
@@ -186,23 +207,31 @@ export abstract class RpcProtocol {
   }
 
   /** Obtains the implementation result on the backend for an RPC operation request. */
-  public async fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment> {
-    return new (this.invocationType)(this, request).fulfillment;
+  public async fulfill(
+    request: SerializedRpcRequest
+  ): Promise<RpcRequestFulfillment> {
+    return new this.invocationType(this, request).fulfillment;
   }
 
   /** Serializes a request. */
   public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
-    const serializedContext = await RpcConfiguration.requestContext.serialize(request);
+    const serializedContext = await RpcConfiguration.requestContext.serialize(
+      request
+    );
     return {
       ...serializedContext,
       operation: {
-        interfaceDefinition: request.operation.interfaceDefinition.interfaceName,
+        interfaceDefinition:
+          request.operation.interfaceDefinition.interfaceName,
         operationName: request.operation.operationName,
         interfaceVersion: request.operation.interfaceVersion,
       },
       method: request.method,
       path: request.path,
-      parameters: await RpcMarshaling.serialize(request.protocol, request.parameters),
+      parameters: await RpcMarshaling.serialize(
+        request.protocol,
+        request.parameters
+      ),
       caching: RpcResponseCacheControl.None,
       protocolVersion: RpcProtocol.protocolVersion,
     };
@@ -211,18 +240,32 @@ export abstract class RpcProtocol {
   /** Constructs a protocol. */
   public constructor(configuration: RpcConfiguration) {
     this.configuration = configuration;
-    this.events.addListener((type, object) => RpcProtocol.events.raiseEvent(type, object));
+    this.events.addListener((type, object) =>
+      RpcProtocol.events.raiseEvent(type, object)
+    );
   }
 
   /** @internal */
-  public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
+  public onRpcClientInitialized(
+    _definition: RpcInterfaceDefinition,
+    _client: RpcInterface
+  ): void {}
 
   /** @internal */
-  public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
+  public onRpcImplInitialized(
+    _definition: RpcInterfaceDefinition,
+    _impl: RpcInterface
+  ): void {}
 
   /** @internal */
-  public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
+  public onRpcClientTerminated(
+    _definition: RpcInterfaceDefinition,
+    _client: RpcInterface
+  ): void {}
 
   /** @internal */
-  public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
+  public onRpcImplTerminated(
+    _definition: RpcInterfaceDefinition,
+    _impl: RpcInterface
+  ): void {}
 }

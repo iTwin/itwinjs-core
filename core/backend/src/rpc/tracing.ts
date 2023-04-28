@@ -42,16 +42,26 @@ export class RpcTrace {
   }
 
   /** Start the processing of an RpcActivity. */
-  public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
+  public static async run<T>(
+    activity: RpcActivity,
+    fn: () => Promise<T>
+  ): Promise<T> {
     return RpcTrace._storage.run(activity, fn);
   }
 
   /** Start the processing of an RpcActivity inside an OpenTelemetry span */
-  public static async runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
-    return Tracing.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
-      attributes: { ...RpcInvocation.sanitizeForLog(activity) },
-      kind: SpanKind.SERVER,
-    });
+  public static async runWithSpan<T>(
+    activity: RpcActivity,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    return Tracing.withSpan(
+      activity.rpcMethod ?? "unknown RPC method",
+      async () => RpcTrace.run(activity, fn),
+      {
+        attributes: { ...RpcInvocation.sanitizeForLog(activity) },
+        kind: SpanKind.SERVER,
+      }
+    );
   }
 }
 
@@ -63,16 +73,24 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const api = require("@opentelemetry/api");
-      const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
+      const tracer = api.trace.getTracer(
+        "@itwin/core-backend",
+        IModelHost.backendVersion
+      );
       Tracing.enableOpenTelemetry(tracer, api);
       RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
+      Logger.logError(
+        BackendLoggerCategory.IModelHost,
+        "Failed to initialize OpenTelemetry"
+      );
       Logger.logException(BackendLoggerCategory.IModelHost, e);
     }
   }
 
   // set up static logger metadata to include current RpcActivity information for logs during rpc processing
-  Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
+  Logger.staticMetaData.set("rpc", () =>
+    RpcInvocation.sanitizeForLog(RpcTrace.currentActivity)
+  );
 }

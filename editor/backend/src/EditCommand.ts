@@ -9,7 +9,11 @@
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { BackendError, IModelError } from "@itwin/core-common";
-import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
+import {
+  EditCommandIpc,
+  EditorIpc,
+  editorIpcStrings,
+} from "@itwin/editor-common";
 
 /** @beta */
 export type EditCommandType = typeof EditCommand;
@@ -35,14 +39,18 @@ export class EditCommand implements EditCommandIpc {
     return this.constructor as EditCommandType;
   }
 
-  public async onStart(): Promise<any> { }
+  public async onStart(): Promise<any> {}
 
-  public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
+  public async ping(): Promise<{
+    commandId: string;
+    version: string;
+    [propName: string]: any;
+  }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
   }
 
   // This is only temporary to find subclasses that used to implement this method. It was made async and renamed `requestFinish`.
-  private onFinish() { }
+  private onFinish() {}
 
   /**
    * Called when another EditCommand wishes to become the active EditCommand.
@@ -57,18 +65,30 @@ export class EditCommand implements EditCommandIpc {
 }
 
 class EditorAppHandler extends IpcHandler implements EditorIpc {
-  public get channelName() { return editorIpcStrings.channel; }
+  public get channelName() {
+    return editorIpcStrings.channel;
+  }
 
-  public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
+  public async startCommand(
+    commandId: string,
+    iModelKey: string,
+    ...args: any[]
+  ) {
     await EditCommandAdmin.finishCommand();
-    if (commandId === "") // just kill active command, don't start another
+    if (commandId === "")
+      // just kill active command, don't start another
       return;
 
     const commandClass = EditCommandAdmin.commands.get(commandId);
     if (undefined === commandClass)
-      throw new IModelError(IModelStatus.NotRegistered, `Command not registered [${commandId}]`);
+      throw new IModelError(
+        IModelStatus.NotRegistered,
+        `Command not registered [${commandId}]`
+      );
 
-    return EditCommandAdmin.runCommand(new commandClass(IModelDb.findByKey(iModelKey), ...args));
+    return EditCommandAdmin.runCommand(
+      new commandClass(IModelDb.findByKey(iModelKey), ...args)
+    );
   }
 
   public async callMethod(methodName: string, ...args: any[]) {
@@ -78,7 +98,10 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
 
     const func = (cmd as any)[methodName];
     if (typeof func !== "function")
-      throw new IModelError(IModelStatus.FunctionNotFound, `Method ${methodName} not found on ${cmd.ctor.commandId}`);
+      throw new IModelError(
+        IModelStatus.FunctionNotFound,
+        `Method ${methodName} not found on ${cmd.ctor.commandId}`
+      );
 
     return func.call(cmd, ...args);
   }
@@ -96,14 +119,20 @@ export class EditCommandAdmin {
 
   private static _activeCommand?: EditCommand;
   private static _isInitialized = false;
-  public static get activeCommand() { return this._activeCommand; }
+  public static get activeCommand() {
+    return this._activeCommand;
+  }
 
   /** @internal */
   public static async finishCommand() {
     if (this._activeCommand) {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
-        throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
+        throw new BackendError(
+          IModelStatus.ServerTimeout,
+          editorIpcStrings.commandBusy,
+          finished
+        );
     }
     this._activeCommand = undefined;
   }
@@ -132,8 +161,7 @@ export class EditCommandAdmin {
   public static register(commandType: EditCommandType) {
     if (!this._isInitialized) {
       this._isInitialized = true;
-      if (!IpcHost.isValid)
-        throw new Error("Edit Commands require IpcHost");
+      if (!IpcHost.isValid) throw new Error("Edit Commands require IpcHost");
       EditorAppHandler.register();
     }
     if (commandType.commandId.length !== 0)
@@ -146,7 +174,8 @@ export class EditCommandAdmin {
    */
   public static registerModule(moduleObj: any) {
     let foundOne = false;
-    for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
+    for (const thisMember in moduleObj) {
+      // eslint-disable-line guard-for-in
       const thisCmd = moduleObj[thisMember];
       if (thisCmd.prototype instanceof EditCommand) {
         foundOne = true;
@@ -154,6 +183,8 @@ export class EditCommandAdmin {
       }
     }
     if (!foundOne)
-      throw new Error(`no EditCommands found - are you sure this is a module? Maybe you meant to call "register"?`);
+      throw new Error(
+        `no EditCommands found - are you sure this is a module? Maybe you meant to call "register"?`
+      );
   }
 }

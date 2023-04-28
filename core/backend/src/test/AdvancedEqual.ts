@@ -36,10 +36,12 @@ declare global {
 }
 
 /** get whether two numbers are almost equal within a tolerance  */
-const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean =
+  Geometry.isSameCoordinate;
 
 /** normalize a classname for comparisons */
-const normalizeClassName = (name: string) => name.toLowerCase().replace(/:/, ".");
+const normalizeClassName = (name: string) =>
+  name.toLowerCase().replace(/:/, ".");
 
 interface AdvancedEqualFuncOpts extends DeepEqualOpts {
   /** only test */
@@ -54,18 +56,16 @@ interface AdvancedEqualFuncOpts extends DeepEqualOpts {
 export function advancedDeepEqual(
   e: any,
   a: any,
-  options: AdvancedEqualFuncOpts = {},
+  options: AdvancedEqualFuncOpts = {}
 ): boolean {
-  const normalizedClassNameProps
-    = options.normalizeClassNameProps === true
+  const normalizedClassNameProps =
+    options.normalizeClassNameProps === true
       ? ["classFullName", "relClassName"]
       : options.normalizeClassNameProps || [];
   if (options.tolerance === undefined)
     options.tolerance = defaultOpts.tolerance;
-  if (e === a)
-    return true;
-  if (typeof e !== typeof a)
-    return false;
+  if (e === a) return true;
+  if (typeof e !== typeof a) return false;
   switch (typeof e) {
     case "number":
       return isAlmostEqualNumber(e, a, options.tolerance);
@@ -76,30 +76,38 @@ export function advancedDeepEqual(
     case "undefined":
       return false; // these objects can only be strict equal which was already tested
     case "object":
-      if ((e === null) !== (a === null))
-        return false;
-      const eSize = Object.keys(e).filter((k) => options.considerNonExistingAndUndefinedEqual && e[k] !== undefined).length;
-      const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
-      return (eSize === aSize || !!options.useSubsetEquality) && Object.keys(e).every(
-        (keyOfE) =>
+      if ((e === null) !== (a === null)) return false;
+      const eSize = Object.keys(e).filter(
+        (k) =>
+          options.considerNonExistingAndUndefinedEqual && e[k] !== undefined
+      ).length;
+      const aSize = Object.keys(a).filter(
+        (k) =>
+          options.considerNonExistingAndUndefinedEqual && a[k] !== undefined
+      ).length;
+      return (
+        (eSize === aSize || !!options.useSubsetEquality) &&
+        Object.keys(e).every((keyOfE) =>
           (keyOfE in a || options.considerNonExistingAndUndefinedEqual) &&
           normalizedClassNameProps.includes(keyOfE)
-            ? advancedDeepEqual(normalizeClassName(e[keyOfE]), normalizeClassName(a[keyOfE]))
+            ? advancedDeepEqual(
+                normalizeClassName(e[keyOfE]),
+                normalizeClassName(a[keyOfE])
+              )
             : advancedDeepEqual(e[keyOfE], a[keyOfE], options)
+        )
       );
     default: // bigint unhandled
-      throw Error(`unhandled deep compare type code returned from typeof, "${typeof e}"`);
+      throw Error(
+        `unhandled deep compare type code returned from typeof, "${typeof e}"`
+      );
   }
 }
 
 Assertion.addMethod(
   "advancedEqual",
-  function advancedEqual(
-    expected: any,
-    options: DeepEqualOpts = {}
-  ) {
-    if (options.tolerance === undefined)
-      options.tolerance = 1e-10;
+  function advancedEqual(expected: any, options: DeepEqualOpts = {}) {
+    if (options.tolerance === undefined) options.tolerance = 1e-10;
     const actual = this._obj;
     const isDeep = util.flag(this, "deep");
     this.assert(
@@ -120,15 +128,14 @@ Assertion.addMethod(
 
 Assertion.addMethod(
   "subsetEqual",
-  function subsetEqual(
-    expected: any,
-    options: DeepEqualOpts = {}
-  ) {
-    if (options.tolerance === undefined)
-      options.tolerance = 1e-10;
+  function subsetEqual(expected: any, options: DeepEqualOpts = {}) {
+    if (options.tolerance === undefined) options.tolerance = 1e-10;
     const actual = this._obj;
     this.assert(
-      advancedDeepEqual(expected, actual, {...options, useSubsetEquality: true }),
+      advancedDeepEqual(expected, actual, {
+        ...options,
+        useSubsetEquality: true,
+      }),
       `expected #{act} to contain as a subset #{exp}`,
       `expected #{act} not to contain as a subset #{exp}`,
       expected,

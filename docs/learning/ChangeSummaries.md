@@ -1,6 +1,6 @@
 # Change Summaries
 
-*Change Summaries* are summaries of changes of ECInstances in an *iModel Changeset*.
+_Change Summaries_ are summaries of changes of ECInstances in an _iModel Changeset_.
 
 ## Generating Change Summaries
 
@@ -17,11 +17,11 @@ Working with Change Summaries really means to unleash the power of ECSQL. Change
 
 ### Attaching the Change Cache file to the local briefcase
 
-As the Change Summaries are not persisted in the iModel itself but in the *Change Cache file*, you need to attach the *Change Cache file* to the local briefcase of the iModel first.
+As the Change Summaries are not persisted in the iModel itself but in the _Change Cache file_, you need to attach the _Change Cache file_ to the local briefcase of the iModel first.
 
-Once done, the Change Summaries can be accessed by ECSQL from the iModel as if they were persisted in the iModel itself. The *Change Cache file* is visible from ECSQL under the table space **ecchange**.
+Once done, the Change Summaries can be accessed by ECSQL from the iModel as if they were persisted in the iModel itself. The _Change Cache file_ is visible from ECSQL under the table space **ecchange**.
 
-> The table space of the attached *Change Cache file* is needed to disambiguate between equally named schemas and classes in the iModel and
+> The table space of the attached _Change Cache file_ is needed to disambiguate between equally named schemas and classes in the iModel and
 > the Change Cache file. If the schema and class name combination is unambiguous, the table space does not need to be specified in the ECSQL.
 
 ### Leveraging Change Summary information
@@ -31,7 +31,7 @@ There are two main ways to use Change Summary information:
 1. Find out **what** classes, **what** instances, **what** property values have changed
 1. Find out **how** property values of certain instances have changed
 
-### Find out *what* has changed
+### Find out _what_ has changed
 
 This is achieved by executing ECSQL queries against the [ECDbChange](./ECDbChange.ecschema.md) and [IModelChange](./ImodelChange.ecschema.md) ECSchemas:
 
@@ -40,12 +40,12 @@ This is achieved by executing ECSQL queries against the [ECDbChange](./ECDbChang
 
 #### Examples
 
-ECSQL | Description
---- | ---
-`SELECT Summary.Id,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the description, the date when the changeset was pushed and by who
-`SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?` | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [ChangeOpCode]($common) (e.g. whether the instance was inserted, updated or deleted)
+| ECSQL                                                                                                               | Description                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SELECT Summary.Id,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE WsgId=?` | For the specified Changeset (the WsgId of the Changeset) the ECInstanceId of the corresponding ChangeSummary is returned along with the id of the parent changeset, the description, the date when the changeset was pushed and by who |
+| `SELECT ChangedInstance.Id, OpCode FROM ecchange.change.InstanceChange WHERE Summary.Id=?`                          | Returns the Ids of all changed instances in the specified Change Summary, plus the instance change's [ChangeOpCode]($common) (e.g. whether the instance was inserted, updated or deleted)                                              |
 
-### Find out *how* values have changed
+### Find out _how_ values have changed
 
 Querying for the changed values is done with the ECSQL function **Changes**.
 
@@ -58,8 +58,8 @@ SELECT ... FROM MySchema.MyClass.Changes(ChangeSummaryId, ChangedValueState) ...
 - `ChangeSummaryId`: The ECInstanceId of the Change Summary.
 - `ChangedValueState`: corresponds to the values of the enum [ChangedValueState]($common).
 
- > You can format the *ChangedValueState* in the ECSQL either by the enum's integral values or by the enum value's name.
- > The following two ECSQL statements are equivalent:
+> You can format the _ChangedValueState_ in the ECSQL either by the enum's integral values or by the enum value's name.
+> The following two ECSQL statements are equivalent:
 
 ```sql
 SELECT ... FROM MySchema.MyClass.Changes(12, 1)
@@ -67,7 +67,7 @@ SELECT ... FROM MySchema.MyClass.Changes(12, 1)
 
 ```sql
 SELECT ... FROM MySchema.MyClass.Changes(12, 'AfterInsert')
- ```
+```
 
 > Notes when specifying [ChangedValueState.BeforeUpdate]($common) or [ChangedValueState.AfterUpdate]($common):
 >
@@ -75,7 +75,7 @@ SELECT ... FROM MySchema.MyClass.Changes(12, 'AfterInsert')
 > the **value of the current state of the file** is returned. The function does **NOT** return the value it had in the
 > version the change summary referred to.
 >
-> If the row in the current state does not exist anymore (because it was deleted in subsequent changesets), *null* will be returned for the unchanged values.
+> If the row in the current state does not exist anymore (because it was deleted in subsequent changesets), _null_ will be returned for the unchanged values.
 
 ## Example Scenario
 
@@ -98,9 +98,9 @@ The following ECSchema is used to illustrate the example.
 
 ##### Result
 
-Id  | Name | Age
---- | ---- | ---
-1   | Mery | 20
+| Id  | Name | Age |
+| --- | ---- | --- |
+| 1   | Mery | 20  |
 
 ### Changeset 2
 
@@ -111,10 +111,10 @@ Id  | Name | Age
 
 ##### Result
 
-Id  | Name | Age
---- | ---- | ---
-1   | Mary | 20
-2   | Sam  | 30
+| Id  | Name | Age |
+| --- | ---- | --- |
+| 1   | Mary | 20  |
+| 2   | Sam  | 30  |
 
 ### Changeset 3
 
@@ -124,9 +124,9 @@ Id  | Name | Age
 
 ##### Result
 
-Id  | Name | Age
---- | ---- | ---
-2   | Sam  | 30
+| Id  | Name | Age |
+| --- | ---- | --- |
+| 2   | Sam  | 30  |
 
 ### ECSQL Examples
 
@@ -138,14 +138,14 @@ After having extracting Change Summaries for each of the three Changesets the fo
 > SELECT Summary.Id,ChangedInstance.Id,OpCode FROM change.InstanceChange
 > ```
 >
-> *Result*
+> _Result_
 >
-> `Summary.Id` | `ChangedInstance.Id` | `OpCode`
-> ------------ | -------------------- | -------
-> 1            | 1                    | Insert
-> 2            | 1                    | Update
-> 2            | 2                    | Insert
-> 3            | 1                    | Delete
+> | `Summary.Id` | `ChangedInstance.Id` | `OpCode` |
+> | ------------ | -------------------- | -------- |
+> | 1            | 1                    | Insert   |
+> | 2            | 1                    | Update   |
+> | 2            | 2                    | Insert   |
+> | 3            | 1                    | Delete   |
 >
 > - `ChangedInstance.Id` is the ECInstanceId of the changed instance, i.e. the changed `Person` instance in this example.
 > - The `OpCode` values refer to the [ChangeOpCode]($common) enumeration as defined in the [ECDbChange](./ECDbChange.ecschema.md) ECSchema.
@@ -159,13 +159,13 @@ After having extracting Change Summaries for each of the three Changesets the fo
 >     JOIN change.InstanceChange i ON p.InstanceChange.Id=i.ECInstanceId WHERE i.Summary.Id=2
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ChangedInstance.Id` | `AccessString` | `OpCode`
-> -------------------- | -------------- | -------
-> 1                    | Name           | Update
-> 2                    | Name           | Insert
-> 2                    | Age            | Insert
+> | `ChangedInstance.Id` | `AccessString` | `OpCode` |
+> | -------------------- | -------------- | -------- |
+> | 1                    | Name           | Update   |
+> | 2                    | Name           | Insert   |
+> | 2                    | Age            | Insert   |
 >
 > The ECSQL returns the property values that have changed in the Change Summary with Id 2. For every property value change, the
 > ECInstanceId of the respective class is returned as well as the OpCode.
@@ -176,16 +176,15 @@ After having extracting Change Summaries for each of the three Changesets the fo
 
 The following illustrates examples to find out how values have changed. We start by looking at the Persons in the current state of the iModel, i.e. at the tip of all changes:
 
->
 > ```sql
 > SELECT ECInstanceId, Name, Age FROM acme.Person
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> 2              | Sam    | 30
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | 2              | Sam    | 30    |
 
 #### ECSQL function `Changes`
 
@@ -197,11 +196,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(1,'AfterInsert')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> 1              | Mery   | 20
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | 1              | Mery   | 20    |
 
 ---
 
@@ -209,11 +208,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(1,'BeforeUpdate')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ---
 
@@ -221,11 +220,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(1,'AfterUpdate')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ---
 
@@ -233,11 +232,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(1,'BeforeDelete')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ##### Changes in Change Summary 2
 
@@ -245,11 +244,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(2,'AfterInsert')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> 2              | Sam    | 30
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | 2              | Sam    | 30    |
 
 ---
 
@@ -257,11 +256,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(2,'BeforeUpdate')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> 1              | Mery   | null
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | 1              | Mery   | null  |
 
 ---
 
@@ -269,11 +268,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(2,'AfterUpdate')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> 1              | Mary   | null
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | 1              | Mary   | null  |
 
 ---
 
@@ -281,11 +280,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(2,'BeforeDelete')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ##### Changes in Change Summary 3
 
@@ -293,11 +292,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'AfterInsert')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ---
 
@@ -305,11 +304,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'BeforeUpdate')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ---
 
@@ -317,11 +316,11 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'AfterUpdate')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> no rows | |
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | no rows        |        |
 
 ---
 
@@ -329,8 +328,8 @@ The following examples illustrate how to go back in history using the ECSQL func
 > SELECT ECInstanceId, Name, Age FROM acme.Person.Changes(3,'BeforeDelete')
 > ```
 >
-> *Result*
+> _Result_
 >
-> `ECInstanceId` | `Name` | `Age`
-> -------------- | ------ | ----
-> 1              | Mery   | null
+> | `ECInstanceId` | `Name` | `Age` |
+> | -------------- | ------ | ----- |
+> | 1              | Mery   | null  |

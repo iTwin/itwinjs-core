@@ -8,7 +8,12 @@
 import { assert } from "@itwin/core-bentley";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariableType,
+} from "../ShaderBuilder";
 import { System } from "../System";
 import { addInstancedRtcMatrix } from "./Vertex";
 
@@ -84,7 +89,11 @@ const applySolarShadowMapTerrain = `
 export function addEvsmExponent(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_evsmExponent", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_evsmExponent", (uniform) => {
-      uniform.setUniform1f((RenderType.TextureFloat === System.instance.maxRenderType) ? evsm32Exp : evsm16Exp);
+      uniform.setUniform1f(
+        RenderType.TextureFloat === System.instance.maxRenderType
+          ? evsm32Exp
+          : evsm16Exp
+      );
     });
   });
 }
@@ -98,7 +107,10 @@ export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
     prog.addGraphicUniform("s_shadowSampler", (uniform, params) => {
       const shadowMap = params.target.solarShadowMap;
       assert(undefined !== shadowMap.shadowMapTexture);
-      shadowMap.shadowMapTexture.texture.bindSampler(uniform, TextureUnit.ShadowMap);
+      shadowMap.shadowMapTexture.texture.bindSampler(
+        uniform,
+        TextureUnit.ShadowMap
+      );
     });
   });
 
@@ -124,9 +136,12 @@ export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
 
   addEvsmExponent(frag);
 
-  if (vert.usesInstancedGeometry)
-    addInstancedRtcMatrix(vert);
-  builder.addInlineComputedVarying("v_shadowPos", VariableType.Vec3, vert.usesInstancedGeometry ? computeInstancedShadowPos : computeShadowPos);
+  if (vert.usesInstancedGeometry) addInstancedRtcMatrix(vert);
+  builder.addInlineComputedVarying(
+    "v_shadowPos",
+    VariableType.Vec3,
+    vert.usesInstancedGeometry ? computeInstancedShadowPos : computeShadowPos
+  );
   /* This is the EVSM bias value, which makes tradeoffs in shadow quality.  Normally it should be set to 0.1.
      Lower values can introduce shadows where they should not be, including shadow acne. Higher values can cause Peter
      Panning effect and light bleeding. Tested 0.01 and 1.0, woth more focus on 0.1 to 0.5 inclusive, chose 0.2 for a
@@ -136,5 +151,8 @@ export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
   frag.addFunction(warpDepth);
   frag.addFunction(chebyshevUpperBound);
   frag.addFunction(shadowMapEVSM);
-  frag.set(FragmentShaderComponent.ApplySolarShadowMap, toTerrain ? applySolarShadowMapTerrain : applySolarShadowMap);
+  frag.set(
+    FragmentShaderComponent.ApplySolarShadowMap,
+    toTerrain ? applySolarShadowMapTerrain : applySolarShadowMap
+  );
 }

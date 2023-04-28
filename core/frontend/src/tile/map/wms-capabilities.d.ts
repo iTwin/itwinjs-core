@@ -6,7 +6,7 @@ declare module "wms-capabilities" {
   export = WMS;
 
   declare class WMS {
-    constructor() { }
+    constructor() {}
     public parse(input: string): any;
   }
 }

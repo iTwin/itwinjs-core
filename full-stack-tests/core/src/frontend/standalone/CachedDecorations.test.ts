@@ -4,7 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport,
+  CachedDecoration,
+  CanvasDecoration,
+  DecorateContext,
+  DecorationsCache,
+  Decorator,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  ScreenViewport,
   SnapshotConnection,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
@@ -22,19 +30,20 @@ describe("Cached decorations", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
     await TestUtility.shutdownFrontend();
   });
 
   class TestCanvasDecoration implements CanvasDecoration {
-    public drawDecoration(_ctx: CanvasRenderingContext2D): void { }
+    public drawDecoration(_ctx: CanvasRenderingContext2D): void {}
   }
 
   class TestDecorator implements Decorator {
     private _type: "graphic" | "html" | "canvas";
     private _useCachedDecorations: boolean;
-    public get useCachedDecorations() { return this._useCachedDecorations ? true : undefined; }
+    public get useCachedDecorations() {
+      return this._useCachedDecorations ? true : undefined;
+    }
     public decorate(context: DecorateContext) {
       switch (this._type) {
         case "graphic":
@@ -50,14 +59,21 @@ describe("Cached decorations", () => {
           break;
       }
     }
-    public constructor(type: "graphic" | "html" | "canvas", useCachedDecorations: boolean) {
+    public constructor(
+      type: "graphic" | "html" | "canvas",
+      useCachedDecorations: boolean
+    ) {
       this._type = type;
       this._useCachedDecorations = useCachedDecorations;
     }
   }
 
   // Drop the decorator and ensure no decorations are cached anymore.
-  async function dropAndVerifyEmptyCache(vp: ScreenTestViewport, dec: Decorator, cache: DecorationsCache) {
+  async function dropAndVerifyEmptyCache(
+    vp: ScreenTestViewport,
+    dec: Decorator,
+    cache: DecorationsCache
+  ) {
     IModelApp.viewManager.dropDecorator(dec);
     await vp.drawFrame();
     expect(cache.size).to.equal(0);
@@ -155,7 +171,10 @@ describe("Cached decorations", () => {
   it("should prohibit removal while decorating", async () => {
     const cachedDecorator = new TestDecorator("graphic", true);
 
-    async function test(decorateFunc: (vp: ScreenViewport) => void, expectRemovalAfterDecorate = true): Promise<void> {
+    async function test(
+      decorateFunc: (vp: ScreenViewport) => void,
+      expectRemovalAfterDecorate = true
+    ): Promise<void> {
       await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
         IModelApp.viewManager.addDecorator(cachedDecorator);
 

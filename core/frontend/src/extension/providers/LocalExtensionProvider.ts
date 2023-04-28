@@ -26,7 +26,7 @@ export interface LocalExtensionProviderProps {
  * @alpha
  */
 export class LocalExtensionProvider implements ExtensionProvider {
-  constructor(private readonly _props: LocalExtensionProviderProps) { }
+  constructor(private readonly _props: LocalExtensionProviderProps) {}
 
   /** returns the manifest (package.json) of a local extension */
   public async getManifest(): Promise<ExtensionManifest> {

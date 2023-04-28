@@ -2,7 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, QuantityFormatter, SnapshotConnection } from "@itwin/core-frontend";
+import {
+  IModelConnection,
+  QuantityFormatter,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { SchemaContext, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
@@ -21,8 +25,7 @@ describe("QuantityFormatter", () => {
   });
 
   after(async () => {
-    if (undefined !== imodel)
-      await imodel.close();
+    if (undefined !== imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -31,7 +34,9 @@ describe("QuantityFormatter", () => {
     const quantityFormatter = new QuantityFormatter();
     quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
     await quantityFormatter.onInitialized();
-    const spec = quantityFormatter.findFormatterSpecByQuantityType("QuantityTypeEnumValue-1");
+    const spec = quantityFormatter.findFormatterSpecByQuantityType(
+      "QuantityTypeEnumValue-1"
+    );
     assert(spec !== undefined);
   });
 });

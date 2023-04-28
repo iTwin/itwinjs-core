@@ -10,21 +10,34 @@ import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
 import { IModelApp } from "../../IModelApp";
 import {
-  Tile, TileContent, TiledGraphicsProvider, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  Tile,
+  TileContent,
+  TiledGraphicsProvider,
+  TileLoadPriority,
+  TileRequest,
+  TileTree,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSupplier,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 import { EmptyLocalization } from "@itwin/core-common";
 
 class TestTile extends Tile {
   public constructor(tree: TileTree) {
-    super({
-      contentId: "test",
-      range: new Range3d(0, 0, 0, 1, 1, 1),
-      maximumSize: 5,
-    }, tree);
+    super(
+      {
+        contentId: "test",
+        range: new Range3d(0, 0, 0, 1, 1, 1),
+        maximumSize: 5,
+      },
+      tree
+    );
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void
+  ): void {
     resolve(undefined);
   }
 
@@ -62,17 +75,25 @@ class TestTree extends TileTree {
     return BeDuration.wait(1);
   }
 
-  public get rootTile(): TestTile { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return {}; }
+  public get rootTile(): TestTile {
+    return this._rootTile;
+  }
+  public get is3d() {
+    return true;
+  }
+  public get maxDepth() {
+    return undefined;
+  }
+  public get viewFlagOverrides() {
+    return {};
+  }
 
   protected _selectTiles(): Tile[] {
     return [this.rootTile];
   }
 
-  public draw() { }
-  public prune() { }
+  public draw() {}
+  public prune() {}
 }
 
 class TestSupplier implements TileTreeSupplier {
@@ -99,7 +120,9 @@ class TestRef extends TileTreeReference {
     this._owner.load();
   }
 
-  public get treeOwner() { return this._owner; }
+  public get treeOwner() {
+    return this._owner;
+  }
 
   protected override get _isLoadingComplete(): boolean {
     return this.loadingComplete;
@@ -111,20 +134,19 @@ class TestProvider implements TiledGraphicsProvider {
   public isLoadingComplete?: (viewport: Viewport) => boolean;
 
   public constructor(ref?: TestRef) {
-    if (ref)
-      this.refs.push(ref);
+    if (ref) this.refs.push(ref);
   }
 
-  public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void) {
-    for (const ref of this.refs)
-      func(ref);
+  public forEachTileTreeRef(
+    _viewport: Viewport,
+    func: (ref: TileTreeReference) => void
+  ) {
+    for (const ref of this.refs) func(ref);
   }
 
   public set loadingComplete(loadingComplete: boolean | undefined) {
-    if (undefined === loadingComplete)
-      this.isLoadingComplete = undefined;
-    else
-      this.isLoadingComplete = () => loadingComplete;
+    if (undefined === loadingComplete) this.isLoadingComplete = undefined;
+    else this.isLoadingComplete = () => loadingComplete;
   }
 }
 
@@ -143,7 +165,11 @@ describe("TiledGraphicsProvider", () => {
   });
 
   beforeEach(() => {
-    const view = SpatialViewState.createBlank(imodel, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
+    const view = SpatialViewState.createBlank(
+      imodel,
+      new Point3d(0, 0, 0),
+      new Point3d(1, 1, 1)
+    );
     viewport = ScreenViewport.create(viewDiv, view);
   });
 

@@ -45,18 +45,36 @@ describe("DevTools", () => {
     assert.isTrue((formattedStats.os.freemem as string).endsWith("MB"));
     assert.isTrue((formattedStats.os.uptime as string).endsWith("secs"));
     assert.isTrue((formattedStats.os.cpus[0].speed as string).endsWith("MHz"));
-    assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
-    assert.isTrue((formattedStats.os.cpus[0].times.nice as string).endsWith("%"));
-    assert.isTrue((formattedStats.os.cpus[0].times.sys as string).endsWith("%"));
-    assert.isTrue((formattedStats.os.cpus[0].times.idle as string).endsWith("%"));
-    assert.isTrue((formattedStats.os.cpus[0].times.irq as string).endsWith("%"));
+    assert.isTrue(
+      (formattedStats.os.cpus[0].times.user as string).endsWith("%")
+    );
+    assert.isTrue(
+      (formattedStats.os.cpus[0].times.nice as string).endsWith("%")
+    );
+    assert.isTrue(
+      (formattedStats.os.cpus[0].times.sys as string).endsWith("%")
+    );
+    assert.isTrue(
+      (formattedStats.os.cpus[0].times.idle as string).endsWith("%")
+    );
+    assert.isTrue(
+      (formattedStats.os.cpus[0].times.irq as string).endsWith("%")
+    );
     assert.isTrue((formattedStats.os.cpuUsage! as string).endsWith("%"));
 
     assert.isTrue((formattedStats.process.uptime as string).endsWith("secs"));
-    assert.isTrue((formattedStats.process.memoryUsage.rss as string).endsWith("MB"));
-    assert.isTrue((formattedStats.process.memoryUsage.heapTotal as string).endsWith("MB"));
-    assert.isTrue((formattedStats.process.memoryUsage.heapUsed as string).endsWith("MB"));
-    assert.isTrue((formattedStats.process.memoryUsage.external as string).endsWith("MB"));
+    assert.isTrue(
+      (formattedStats.process.memoryUsage.rss as string).endsWith("MB")
+    );
+    assert.isTrue(
+      (formattedStats.process.memoryUsage.heapTotal as string).endsWith("MB")
+    );
+    assert.isTrue(
+      (formattedStats.process.memoryUsage.heapUsed as string).endsWith("MB")
+    );
+    assert.isTrue(
+      (formattedStats.process.memoryUsage.external as string).endsWith("MB")
+    );
   });
 
   it("can ping backend", () => {
@@ -71,7 +89,10 @@ describe("DevTools", () => {
     Logger.setLevel(loggerCategory, expectedOldLevel);
 
     const expectedNewLevel = LogLevel.Warning;
-    const actualOldLevel = DevTools.setLogLevel(loggerCategory, expectedNewLevel);
+    const actualOldLevel = DevTools.setLogLevel(
+      loggerCategory,
+      expectedNewLevel
+    );
     assert.equal(actualOldLevel, expectedOldLevel);
 
     const actualNewLevel = Logger.getLevel(loggerCategory);
@@ -84,5 +105,4 @@ describe("DevTools", () => {
     assert.isDefined(versions.iTwinJs);
     assert.isDefined(versions.availableRpcs);
   });
-}
-);
+});

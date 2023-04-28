@@ -6,7 +6,10 @@
 import { BeTimePoint } from "@itwin/core-bentley";
 import { RenderMode, ViewFlagOverrides } from "@itwin/core-common";
 import {
-  Tile, TileDrawArgs, TileTree, TileTreeParams,
+  Tile,
+  TileDrawArgs,
+  TileTree,
+  TileTreeParams,
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
 import { BatchedTilesetReader } from "./BatchedTilesetReader";
@@ -58,8 +61,7 @@ export class BatchedTileTree extends TileTree {
 
   public override draw(args: TileDrawArgs): void {
     const tiles = this.selectTiles(args);
-    for (const tile of tiles)
-      tile.drawGraphics(args);
+    for (const tile of tiles) tile.drawGraphics(args);
 
     args.drawGraphics();
   }

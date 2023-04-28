@@ -8,9 +8,28 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  AnyCurvePrimitive, Arc3d, Box, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+  AnyCurvePrimitive,
+  Arc3d,
+  Box,
+  Loop,
+  Path,
+  Point2d,
+  Point3d,
+  Polyface,
+  Range3d,
+  SolidPrimitive,
+  Transform,
 } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
+import {
+  AnalysisStyle,
+  ColorDef,
+  Feature,
+  Frustum,
+  GeometryClass,
+  GraphicParams,
+  LinePixels,
+  Npc,
+} from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -267,11 +286,17 @@ export abstract class GraphicBuilder {
   /** @alpha */
   public readonly analysisStyle?: AnalysisStyle;
 
-  protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
-  protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
+  protected readonly _computeChordTolerance: (
+    args: ComputeChordToleranceArgs
+  ) => number;
+  protected readonly _options:
+    | CustomGraphicBuilderOptions
+    | ViewportGraphicBuilderOptions;
 
   /** @internal */
-  protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
+  protected constructor(
+    options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions
+  ) {
     // Stored for potential use later in creating a new GraphicBuilder from this one (see PrimitiveBuilder.finishGraphic).
     this._options = options;
 
@@ -280,9 +305,15 @@ export abstract class GraphicBuilder {
     this.iModel = vp?.iModel ?? options.iModel;
     this.type = options.type;
     this.pickable = options.pickable;
-    this.wantEdges = options.generateEdges ?? (this.type === GraphicType.Scene && (!vp || vp.viewFlags.edgesRequired()));
-    this.wantNormals = options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
-    this.preserveOrder = options.preserveOrder ?? (this.isOverlay || this.isViewBackground);
+    this.wantEdges =
+      options.generateEdges ??
+      (this.type === GraphicType.Scene &&
+        (!vp || vp.viewFlags.edgesRequired()));
+    this.wantNormals =
+      options.wantNormals ??
+      (this.wantEdges || this.type === GraphicType.Scene);
+    this.preserveOrder =
+      options.preserveOrder ?? (this.isOverlay || this.isViewBackground);
 
     if (!options.viewport) {
       this._computeChordTolerance = options.computeChordTolerance;
@@ -295,13 +326,16 @@ export abstract class GraphicBuilder {
       let pixelSize = 1;
       if (!this.isViewCoordinates) {
         // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
-        pixelSize = options.viewport.getPixelSizeAtPoint(args.computeRange().center);
+        pixelSize = options.viewport.getPixelSizeAtPoint(
+          args.computeRange().center
+        );
         pixelSize = options.viewport.target.adjustPixelSizeForLOD(pixelSize);
 
         // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
-        const skew = options.applyAspectRatioSkew ? options.viewport.view.getAspectRatioSkew() : 0;
-        if (skew > 1)
-          pixelSize /= skew;
+        const skew = options.applyAspectRatioSkew
+          ? options.viewport.view.getAspectRatioSkew()
+          : 0;
+        if (skew > 1) pixelSize /= skew;
       }
 
       return pixelSize * 0.25;
@@ -320,7 +354,10 @@ export abstract class GraphicBuilder {
    * @see [[isWorldCoordinates]].
    */
   public get isViewCoordinates(): boolean {
-    return this.type === GraphicType.ViewBackground || this.type === GraphicType.ViewOverlay;
+    return (
+      this.type === GraphicType.ViewBackground ||
+      this.type === GraphicType.ViewOverlay
+    );
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.World]] coordinates.
@@ -342,7 +379,10 @@ export abstract class GraphicBuilder {
 
   /** True if the builder produces a graphic of [[GraphicType.WorldOverlay]] or [[GraphicType.ViewOerlay]]. */
   public get isOverlay(): boolean {
-    return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay;
+    return (
+      this.type === GraphicType.ViewOverlay ||
+      this.type === GraphicType.WorldOverlay
+    );
   }
 
   /**
@@ -360,16 +400,18 @@ export abstract class GraphicBuilder {
   /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry.
    * This default implementation does nothing.
    */
-  protected _activateFeature(_feature: Feature): void { }
+  protected _activateFeature(_feature: Feature): void {}
 
   /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
    * for more efficient rendering.
    * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
    */
   public activateFeature(feature: Feature): void {
-    assert(undefined !== this._options.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
-    if (this._options.pickable)
-      this._activateFeature(feature);
+    assert(
+      undefined !== this._options.pickable,
+      "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied"
+    );
+    if (this._options.pickable) this._activateFeature(feature);
   }
 
   /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
@@ -379,7 +421,9 @@ export abstract class GraphicBuilder {
    */
   public activatePickableId(id: Id64String): void {
     const pick = this._options.pickable;
-    this.activateFeature(new Feature(id, pick?.subCategoryId, pick?.geometryClass));
+    this.activateFeature(
+      new Feature(id, pick?.subCategoryId, pick?.geometryClass)
+    );
   }
 
   /**
@@ -436,7 +480,12 @@ export abstract class GraphicBuilder {
    * @param filled If true, and isEllipse is also true, then draw ellipse filled.
    * @param zDepth Z value in local coordinates to use for each point in the arc or ellipse.
    */
-  public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
+  public abstract addArc2d(
+    ellipse: Arc3d,
+    isEllipse: boolean,
+    filled: boolean,
+    zDepth: number
+  ): void;
 
   /** Append a 3d open path to the builder. */
   public abstract addPath(path: Path): void;
@@ -458,8 +507,7 @@ export abstract class GraphicBuilder {
         break;
       default:
         const path = new Path();
-        if (path.tryAddChild(curve))
-          this.addPath(path);
+        if (path.tryAddChild(curve)) this.addPath(path);
 
         break;
     }
@@ -498,10 +546,19 @@ export abstract class GraphicBuilder {
         this.addShape2d(primitive.points, primitive.zDepth);
         break;
       case "arc":
-        this.addArc(primitive.arc, true === primitive.isEllipse, true === primitive.filled);
+        this.addArc(
+          primitive.arc,
+          true === primitive.isEllipse,
+          true === primitive.filled
+        );
         break;
       case "arc2d":
-        this.addArc2d(primitive.arc, true === primitive.isEllipse, true === primitive.filled, primitive.zDepth);
+        this.addArc2d(
+          primitive.arc,
+          true === primitive.isEllipse,
+          true === primitive.filled,
+          primitive.zDepth
+        );
         break;
       case "path":
         this.addPath(primitive.path);
@@ -529,8 +586,7 @@ export abstract class GraphicBuilder {
     }
 
     const box = Box.createRange(range, true);
-    if (box)
-      this.addSolidPrimitive(box);
+    if (box) this.addSolidPrimitive(box);
   }
 
   /** Add Frustum edges. Useful for debugging. */
@@ -553,9 +609,18 @@ export abstract class GraphicBuilder {
       p[Npc.RightBottomFront].clone(),
     ]);
 
-    this.addLineString([p[Npc.LeftTopFront].clone(), p[Npc.LeftTopRear].clone()]);
-    this.addLineString([p[Npc.RightTopFront].clone(), p[Npc.RightTopRear].clone()]);
-    this.addLineString([p[Npc.LeftBottomRear].clone(), p[Npc.RightBottomRear].clone()]);
+    this.addLineString([
+      p[Npc.LeftTopFront].clone(),
+      p[Npc.LeftTopRear].clone(),
+    ]);
+    this.addLineString([
+      p[Npc.RightTopFront].clone(),
+      p[Npc.RightTopRear].clone(),
+    ]);
+    this.addLineString([
+      p[Npc.LeftBottomRear].clone(),
+      p[Npc.RightBottomRear].clone(),
+    ]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.
@@ -565,8 +630,15 @@ export abstract class GraphicBuilder {
    * @param linePixels The pixel pattern in which to draw lines.
    * @see [[GraphicBuilder.activateGraphicParams]] for additional symbology options.
    */
-  public setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid) {
-    this.activateGraphicParams(GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels));
+  public setSymbology(
+    lineColor: ColorDef,
+    fillColor: ColorDef,
+    lineWidth: number,
+    linePixels = LinePixels.Solid
+  ) {
+    this.activateGraphicParams(
+      GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels)
+    );
   }
 
   /** Set the current active symbology for this builder to be a blanking fill before adding a planar region.
@@ -575,5 +647,7 @@ export abstract class GraphicBuilder {
    * An example would be to add a line to a graphic containing a shape with blanking fill so that the line is always shown in front of the fill.
    * @param fillColor The color in which to draw filled regions.
    */
-  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
+  public setBlankingFill(fillColor: ColorDef) {
+    this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor));
+  }
 }

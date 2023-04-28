@@ -12,8 +12,14 @@ import { RenderMode, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
  * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.
  * @internal
  */
-export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean, thematic?: false }): ViewFlagOverrides {
-  const noLights = undefined !== options.lighting ? !options.lighting : undefined;
+export function createDefaultViewFlagOverrides(options: {
+  clipVolume?: boolean;
+  shadows?: boolean;
+  lighting?: boolean;
+  thematic?: false;
+}): ViewFlagOverrides {
+  const noLights =
+    undefined !== options.lighting ? !options.lighting : undefined;
   const viewflags = ViewFlags.fromJSON({
     renderMode: RenderMode.SmoothShade,
     noCameraLights: noLights,
@@ -26,17 +32,13 @@ export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, 
   });
 
   const ovrs: ViewFlagOverrides = { ...viewflags };
-  if (undefined === options.clipVolume)
-    ovrs.clipVolume = undefined;
+  if (undefined === options.clipVolume) ovrs.clipVolume = undefined;
 
-  if (undefined === options.shadows)
-    ovrs.shadows = undefined;
+  if (undefined === options.shadows) ovrs.shadows = undefined;
 
-  if (undefined === options.lighting)
-    ovrs.lighting = undefined;
+  if (undefined === options.lighting) ovrs.lighting = undefined;
 
-  if (undefined === options.thematic)
-    ovrs.thematicDisplay = undefined;
+  if (undefined === options.thematic) ovrs.thematicDisplay = undefined;
 
   return ovrs;
 }

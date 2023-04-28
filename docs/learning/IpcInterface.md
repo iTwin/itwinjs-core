@@ -70,8 +70,7 @@ class MyClassHandler extends IpcHandler implements MyInterface
 3. In your frontend code, make an Proxy object using `IpcApp.makeIpcProxy`:
 
 ```ts
-
-  const myBackendIpc = IpcApp.makeIpcProxy<MyInterface>(myChannel);
+const myBackendIpc = IpcApp.makeIpcProxy<MyInterface>(myChannel);
 ```
 
 This makes a Proxy object to call the methods of `MyInterface` from the frontend.

@@ -7,12 +7,12 @@ The [FrameworkChildWindows]($appui-react) interface, available via property `UiF
 There are two options when opening a child popup window, the first is to allow appui-react to open a blank URL and seed the HTML document with a div that can be targeted by React. Below is an example of code that would open a popup window using a blank URL.
 
 ```tsx
-  const childWindowId="popout-widget-1";
-  const title="Example Popout Widget";
-  const content=(<div>Example Popout Widget</div>);
-  const location={ height: 600, width: 400, left: 10, top: 50};
-  const useDefaultPopoutUrl=false; // this is default if not specified
-  UiFramework.childWindows.open(childWindowId, title, content, location, false);
+const childWindowId = "popout-widget-1";
+const title = "Example Popout Widget";
+const content = <div>Example Popout Widget</div>;
+const location = { height: 600, width: 400, left: 10, top: 50 };
+const useDefaultPopoutUrl = false; // this is default if not specified
+UiFramework.childWindows.open(childWindowId, title, content, location, false);
 ```
 
 The second option is to pass true for the useDefaultPopoutUrl argument above. This will result in the use of the URL "/iTwinPopup.html". It is the responsibility of the application to ensure this HTML file is available at that location on the server. The minimum contents for this file is shown below. The div with `id=root` is required as it is the element that is used to host React components.
@@ -20,29 +20,27 @@ The second option is to pass true for the useDefaultPopoutUrl argument above. Th
 ```html
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
 
-<head>
-  <meta charset="utf-8" />
-  <style>
-    html,
-    body {
-      height: 100%;
-      width: 100%;
-      margin: 0;
-      overflow: hidden;
-    }
+      #root {
+        height: 100%;
+      }
+    </style>
+  </head>
 
-    #root {
-      height: 100%;
-    }
-  </style>
-</head>
-
-<body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-</body>
-
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
 </html>
 ```
 
@@ -57,4 +55,3 @@ Careful consideration must be taken when building components for use in a child 
 ## Widgets
 
 A Widget can specify set its `canPopout` property to true if its supports being in a child window. This allows a Widget to be "popped-out" to its own window and then re-docked in the Widget Panel when the child window is closed. See [Popout Widget Support](../../ui/appui-react/Widgets.md#popout-widget-support) for more details.
-

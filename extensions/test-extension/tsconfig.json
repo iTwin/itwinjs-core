@@ -6,7 +6,5 @@
     "composite": true,
     "incremental": false
   },
-  "files": [
-    "package.json"
-  ]
+  "files": ["package.json"]
 }

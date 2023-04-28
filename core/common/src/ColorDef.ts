@@ -51,7 +51,7 @@ export class ColorDef {
   private readonly _tbgr: number;
 
   private constructor(tbgr: number) {
-    scratchUInt32[0] = tbgr;   // Force to be a 32-bit unsigned integer
+    scratchUInt32[0] = tbgr; // Force to be a 32-bit unsigned integer
     this._tbgr = scratchUInt32[0];
   }
 
@@ -80,7 +80,9 @@ export class ColorDef {
   }
 
   /** Convert this ColorDef to a 32 bit number representing the 0xTTBBGGRR value */
-  public toJSON(): ColorDefProps { return this._tbgr; }
+  public toJSON(): ColorDefProps {
+    return this._tbgr;
+  }
 
   /** Create a new ColorDef from a json object. If the json object is a number, it is assumed to be a 0xTTBBGGRR value. */
   public static fromJSON(json?: ColorDefProps): ColorDef {
@@ -88,12 +90,24 @@ export class ColorDef {
   }
 
   /** Create a ColorDef from Red, Green, Blue, Transparency values. All inputs should be integers between 0-255. */
-  public static from(red: number, green: number, blue: number, transparency?: number): ColorDef {
-    return this.fromTbgr(this.computeTbgrFromComponents(red, green, blue, transparency));
+  public static from(
+    red: number,
+    green: number,
+    blue: number,
+    transparency?: number
+  ): ColorDef {
+    return this.fromTbgr(
+      this.computeTbgrFromComponents(red, green, blue, transparency)
+    );
   }
 
   /** Compute the 0xTTBBGGRR value corresponding to the specified Red, Green, Blue, Transparency components. All inputs should be integers between 0-255. */
-  public static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): ColorDefProps {
+  public static computeTbgrFromComponents(
+    red: number,
+    green: number,
+    blue: number,
+    transparency?: number
+  ): ColorDefProps {
     scratchBytes[0] = red;
     scratchBytes[1] = green;
     scratchBytes[2] = blue;
@@ -163,13 +177,15 @@ export class ColorDef {
    * @returns the corresponding numeric representation, or `undefined` if the input does not represent a color.
    * @see [[fromString]] for the definition of a valid color string.
    */
-  public static tryComputeTbgrFromString(val: string): ColorDefProps | undefined {
-    if (typeof val !== "string")
-      return undefined;
+  public static tryComputeTbgrFromString(
+    val: string
+  ): ColorDefProps | undefined {
+    if (typeof val !== "string") return undefined;
 
     val = val.toLowerCase();
     let m = /^((?:rgb|hsl)a?)\(\s*([^\)]*)\)/.exec(val);
-    if (m) { // rgb / hsl
+    if (m) {
+      // rgb / hsl
       let color;
       const name = m[1];
       const components = m[2];
@@ -180,66 +196,85 @@ export class ColorDef {
         return 255 * Geometry.clamp(hasPercent(str) ? v / 100 : v, 0, 1);
       };
       const intOrPercent = (str: string) => {
-        const v = hasPercent(str) ? (parseFloat(str) / 100) * 255 : parseInt(str, 10);
+        const v = hasPercent(str)
+          ? (parseFloat(str) / 100) * 255
+          : parseInt(str, 10);
         return Geometry.clamp(v, 0, 255);
       };
 
       switch (name) {
         case "rgb":
         case "rgba":
-          color = /^(\d+%*)\s*[, ]\s*(\d+%*)\s*[, ]\s*(\d+%*)\s*([,\/]\s*([0-9]*\.?[0-9]+%*)\s*)?$/.exec(components);
-          if (color) { // rgb(255,0,0) rgba(255,0,0,0.5)
+          color =
+            /^(\d+%*)\s*[, ]\s*(\d+%*)\s*[, ]\s*(\d+%*)\s*([,\/]\s*([0-9]*\.?[0-9]+%*)\s*)?$/.exec(
+              components
+            );
+          if (color) {
+            // rgb(255,0,0) rgba(255,0,0,0.5)
             return this.computeTbgrFromComponents(
               intOrPercent(color[1]),
               intOrPercent(color[2]),
               intOrPercent(color[3]),
-              typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0);
+              typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0
+            );
           }
 
           break;
         case "hsl":
         case "hsla":
-          color = /^([0-9]*\.?[0-9]+)\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(components);
-          if (color) { // hsl(120,50%,50%) hsla(120,50%,50%,0.5)
+          color =
+            /^([0-9]*\.?[0-9]+)\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(
+              components
+            );
+          if (color) {
+            // hsl(120,50%,50%) hsla(120,50%,50%,0.5)
             const h = parseFloat(color[1]) / 360;
             const s = parseInt(color[2], 10) / 100;
             const l = parseInt(color[3], 10) / 100;
-            const t = typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0;
+            const t =
+              typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0;
             return this.computeTbgrFromHSL(h, s, l, t);
           }
 
           break;
       }
       // eslint-disable-next-line no-cond-assign
-    } else if (m = /^\#([a-f0-9]+)$/.exec(val)) {  // hex color
+    } else if ((m = /^\#([a-f0-9]+)$/.exec(val))) {
+      // hex color
       const hex = m[1];
       const size = hex.length;
 
-      if (size === 3) { // #ff0
+      if (size === 3) {
+        // #ff0
         return this.computeTbgrFromComponents(
           parseInt(hex.charAt(0) + hex.charAt(0), 16),
           parseInt(hex.charAt(1) + hex.charAt(1), 16),
-          parseInt(hex.charAt(2) + hex.charAt(2), 16), 0);
+          parseInt(hex.charAt(2) + hex.charAt(2), 16),
+          0
+        );
       }
-      if (size === 6) {  // #ff0000
+      if (size === 6) {
+        // #ff0000
         return this.computeTbgrFromComponents(
           parseInt(hex.charAt(0) + hex.charAt(1), 16),
           parseInt(hex.charAt(2) + hex.charAt(3), 16),
-          parseInt(hex.charAt(4) + hex.charAt(5), 16), 0);
+          parseInt(hex.charAt(4) + hex.charAt(5), 16),
+          0
+        );
       }
     }
 
-    if (val && val.length > 0) {   // ColorRgb value
+    if (val && val.length > 0) {
+      // ColorRgb value
       for (const [key, value] of Object.entries(ColorByName))
-        if (key.toLowerCase() === val)
-          return value;
+        if (key.toLowerCase() === val) return value;
     }
 
     return undefined;
   }
 
   /** Get the red, green, blue, and transparency values from this ColorDef. Values will be integers between 0-255. */
-  public get colors(): { r: number, g: number, b: number, t: number } {
+  public get colors(): { r: number; g: number; b: number; t: number } {
     return ColorDef.getColors(this._tbgr);
   }
 
@@ -255,7 +290,9 @@ export class ColorDef {
   }
 
   /** The color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
-  public get tbgr(): ColorDefProps { return this._tbgr; }
+  public get tbgr(): ColorDefProps {
+    return this._tbgr;
+  }
 
   /** Get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number {
@@ -344,7 +381,10 @@ export class ColorDef {
    * @param transparency the new transparency as an integer between 0-255.
    * @returns The 0xTTBBGGRR value equivalent to `tbgr` but with the specified transparency.
    */
-  public static withTransparency(tbgr: ColorDefProps, transparency: number): ColorDefProps {
+  public static withTransparency(
+    tbgr: ColorDefProps,
+    transparency: number
+  ): ColorDefProps {
     return this.withAlpha(tbgr, 255 - transparency);
   }
 
@@ -358,8 +398,7 @@ export class ColorDef {
    */
   public static getName(tbgr: ColorDefProps): string | undefined {
     for (const [key, value] of Object.entries(ColorByName))
-      if (value === tbgr)
-        return key;
+      if (value === tbgr) return key;
 
     return undefined;
   }
@@ -371,7 +410,7 @@ export class ColorDef {
 
   /** Convert the 0xTTBBGGRR value to a string in the form "#rrggbb". */
   public static toHexString(tbgr: ColorDefProps): string {
-    return `#${(`000000${this.getRgb(tbgr).toString(16)}`).slice(-6)}`;
+    return `#${`000000${this.getRgb(tbgr).toString(16)}`.slice(-6)}`;
   }
 
   private static getColorsString(tbgr: ColorDefProps) {
@@ -396,7 +435,7 @@ export class ColorDef {
 
   /** Convert the 0xTTBBGGRR color to a string of the form "rgba(r,g,b,a)" where the color components are specified in decimal and the alpha component is a fraction. */
   public static toRgbaString(tbgr: ColorDefProps): string {
-    return `rgba(${this.getColorsString(tbgr)},${this.getAlpha(tbgr) / 255.})`;
+    return `rgba(${this.getColorsString(tbgr)},${this.getAlpha(tbgr) / 255})`;
   }
 
   /** Create a ColorDef that is the linear interpolation of this ColorDef and another ColorDef, using a weighting factor.
@@ -414,7 +453,11 @@ export class ColorDef {
    * @param weight The weighting factor in [0..1]. A value of 0.0 selects `tbgr1`; 1.0 selects `tbgr2`; 0.5 mixes them evenly; etc.
    * @returns The linear interpolation between `tbgr1` and `tbgr2` using the specified weight.
    */
-  public static lerp(tbgr1: ColorDefProps, tbgr2: ColorDefProps, weight: number): ColorDefProps {
+  public static lerp(
+    tbgr1: ColorDefProps,
+    tbgr2: ColorDefProps,
+    weight: number
+  ): ColorDefProps {
     const c = this.getColors(tbgr1);
     const color = this.getColors(tbgr2);
     c.r += (color.r - c.r) * weight;
@@ -431,33 +474,43 @@ export class ColorDef {
   /** Return a 0xTTBBGGRR color whose color components are the inverse of the input color. The result has 0 transparency. */
   public static inverse(tbgr: ColorDefProps): ColorDefProps {
     const colors = this.getColors(tbgr);
-    return this.computeTbgrFromComponents(255 - colors.r, 255 - colors.g, 255 - colors.b);
+    return this.computeTbgrFromComponents(
+      255 - colors.r,
+      255 - colors.g,
+      255 - colors.b
+    );
   }
 
   /** Create a ColorDef from hue, saturation, lightness values */
-  public static fromHSL(h: number, s: number, l: number, transparency = 0): ColorDef {
+  public static fromHSL(
+    h: number,
+    s: number,
+    l: number,
+    transparency = 0
+  ): ColorDef {
     return this.fromTbgr(this.computeTbgrFromHSL(h, s, l, transparency));
   }
 
   /** Compute the 0xTTBBGGRR color corresponding to the specified hue, saturation, lightness values. */
-  public static computeTbgrFromHSL(h: number, s: number, l: number, transparency = 0): ColorDefProps {
+  public static computeTbgrFromHSL(
+    h: number,
+    s: number,
+    l: number,
+    transparency = 0
+  ): ColorDefProps {
     const torgb = (p1: number, q1: number, t: number) => {
-      if (t < 0)
-        t += 1;
-      if (t > 1)
-        t -= 1;
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
 
-      if (t < 1 / 6)
-        return p1 + (q1 - p1) * 6 * t;
-      if (t < 1 / 2)
-        return q1;
-      if (t < 2 / 3)
-        return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+      if (t < 1 / 6) return p1 + (q1 - p1) * 6 * t;
+      if (t < 1 / 2) return q1;
+      if (t < 2 / 3) return p1 + (q1 - p1) * 6 * (2 / 3 - t);
 
       return p1;
     };
 
-    const hue2rgb = (p1: number, q1: number, t: number) => Math.round(torgb(p1, q1, t) * 255);
+    const hue2rgb = (p1: number, q1: number, t: number) =>
+      Math.round(torgb(p1, q1, t) * 255);
     const modulo = (n: number, m: number) => ((n % m) + m) % m;
 
     // h,s,l ranges are in 0.0 - 1.0
@@ -470,13 +523,14 @@ export class ColorDef {
       return this.computeTbgrFromComponents(l, l, l, transparency);
     }
 
-    const p = l <= 0.5 ? l * (1 + s) : l + s - (l * s);
-    const q = (2 * l) - p;
+    const p = l <= 0.5 ? l * (1 + s) : l + s - l * s;
+    const q = 2 * l - p;
     return this.computeTbgrFromComponents(
       hue2rgb(q, p, h + 1 / 3),
       hue2rgb(q, p, h),
       hue2rgb(q, p, h - 1 / 3),
-      transparency);
+      transparency
+    );
   }
 
   /** Create an [[HSLColor]] from this ColorDef */
@@ -497,7 +551,8 @@ export class ColorDef {
       saturation = 0;
     } else {
       const delta = max - min;
-      saturation = lightness <= 0.5 ? delta / (max + min) : delta / (2 - max - min);
+      saturation =
+        lightness <= 0.5 ? delta / (max + min) : delta / (2 - max - min);
       switch (max) {
         case col.r:
           hue = (col.g - col.b) / delta + (col.g < col.b ? 6 : 0);
@@ -519,18 +574,16 @@ export class ColorDef {
   /** Create an [[HSVColor]] from this ColorDef */
   public toHSV(): HSVColor {
     const { r, g, b } = this.colors;
-    let min = (r < g) ? r : g;
-    if (b < min)
-      min = b;
+    let min = r < g ? r : g;
+    if (b < min) min = b;
 
-    let max = (r > g) ? r : g;
-    if (b > max)
-      max = b;
+    let max = r > g ? r : g;
+    if (b > max) max = b;
 
     /* amount of "blackness" present */
-    const v = Math.floor((max / 255.0 * 100) + 0.5);
+    const v = Math.floor((max / 255.0) * 100 + 0.5);
     const deltaRgb = max - min;
-    const s = (max !== 0.0) ? Math.floor((deltaRgb / max * 100) + 0.5) : 0;
+    const s = max !== 0.0 ? Math.floor((deltaRgb / max) * 100 + 0.5) : 0;
     let h = 0;
 
     if (s) {
@@ -539,23 +592,23 @@ export class ColorDef {
       const blueDistance = (max - b) / deltaRgb;
 
       let intermediateHue: number;
-      if (r === max)           /* color between yellow & magenta */
+      if (r === max)
+        /* color between yellow & magenta */
         intermediateHue = blueDistance - greenDistance;
-      else if (g === max)      /* color between cyan & yellow */
+      else if (g === max)
+        /* color between cyan & yellow */
         intermediateHue = 2.0 + redDistance - blueDistance;
-      else                    /* color between magenta & cyan */
+      /* color between magenta & cyan */ else
         intermediateHue = 4.0 + greenDistance - redDistance;
 
       /* intermediate hue is [0..6] */
       intermediateHue *= 60;
 
-      if (intermediateHue < 0.0)
-        intermediateHue += 360;
+      if (intermediateHue < 0.0) intermediateHue += 360;
 
       h = Math.floor(intermediateHue + 0.5);
 
-      if (h >= 360)
-        h = 0;
+      if (h >= 360) h = 0;
     } else {
       h = 0;
     }
@@ -566,15 +619,16 @@ export class ColorDef {
   /** Create a ColorDef from an HSVColor */
   public static fromHSV(hsv: HSVColor, transparency = 0): ColorDef {
     // Check for simple case first.
-    if ((!hsv.s) || (hsv.h === -1)) {
+    if (!hsv.s || hsv.h === -1) {
       // hue must be undefined, have no color only white
-      const white = 0xff & Math.floor(((255.0 * hsv.v) / 100.0) + 0.5 + 3.0e-14);
+      const white = 0xff & Math.floor((255.0 * hsv.v) / 100.0 + 0.5 + 3.0e-14);
       return ColorDef.from(white, white, white, 0);
     }
 
-    let dhue = hsv.h, dsaturation = hsv.s, dvalue = hsv.v;
-    if (dhue === 360)
-      dhue = 0.0;
+    let dhue = hsv.h,
+      dsaturation = hsv.s,
+      dvalue = hsv.v;
+    if (dhue === 360) dhue = 0.0;
 
     dhue /= 60; // hue is now [0..6]
     const hueIntpart = Math.floor(dhue); // convert double -> int
@@ -582,20 +636,47 @@ export class ColorDef {
     dvalue /= 100;
     dsaturation /= 100;
 
-    const p = 0xff & Math.floor((dvalue * (1.0 - dsaturation) * 255.0) + 0.5);
-    const q = 0xff & Math.floor((dvalue * (1.0 - (dsaturation * hueFractpart)) * 255.0) + 0.5);
-    const t = 0xff & Math.floor((dvalue * (1.0 - (dsaturation * (1.0 - hueFractpart))) * 255.0) + 0.5);
+    const p = 0xff & Math.floor(dvalue * (1.0 - dsaturation) * 255.0 + 0.5);
+    const q =
+      0xff &
+      Math.floor(dvalue * (1.0 - dsaturation * hueFractpart) * 255.0 + 0.5);
+    const t =
+      0xff &
+      Math.floor(
+        dvalue * (1.0 - dsaturation * (1.0 - hueFractpart)) * 255.0 + 0.5
+      );
     const v = 0xff & Math.floor(dvalue * 255 + 0.5);
 
-    let r = 0, b = 0, g = 0;
+    let r = 0,
+      b = 0,
+      g = 0;
     switch (hueIntpart) {
       /* eslint-disable max-statements-per-line */
-      case 0: r = v; g = t; b = p; break; // reddish
-      case 1: r = q, g = v; b = p; break; // yellowish
-      case 2: r = p, g = v; b = t; break; // greenish
-      case 3: r = p, g = q; b = v; break; // cyanish
-      case 4: r = t, g = p; b = v; break; // bluish
-      case 5: r = v, g = p; b = q; break; // magenta-ish
+      case 0:
+        r = v;
+        g = t;
+        b = p;
+        break; // reddish
+      case 1:
+        (r = q), (g = v);
+        b = p;
+        break; // yellowish
+      case 2:
+        (r = p), (g = v);
+        b = t;
+        break; // greenish
+      case 3:
+        (r = p), (g = q);
+        b = v;
+        break; // cyanish
+      case 4:
+        (r = t), (g = p);
+        b = v;
+        break; // bluish
+      case 5:
+        (r = v), (g = p);
+        b = q;
+        break; // magenta-ish
       /* eslint-enable max-statements-per-line */
     }
 
@@ -609,7 +690,7 @@ export class ColorDef {
     const red = Math.abs(fg.r - bg.r);
     const green = Math.abs(fg.g - bg.g);
     const blue = Math.abs(fg.b - bg.b);
-    return (0.30 * red) + (0.59 * green) + (0.11 * blue);
+    return 0.3 * red + 0.59 * green + 0.11 * blue;
   }
 
   /**
@@ -624,27 +705,32 @@ export class ColorDef {
       return undefined !== alpha ? this.withAlpha(alpha) : this;
     }
 
-    const adjPercent = Math.floor(((HSVConstants.VISIBILITY_GOAL - visibility) / 255.0) * 100.0);
+    const adjPercent = Math.floor(
+      ((HSVConstants.VISIBILITY_GOAL - visibility) / 255.0) * 100.0
+    );
     let darkerHSV = this.toHSV();
     let brightHSV = darkerHSV.clone();
 
     darkerHSV = darkerHSV.adjusted(true, adjPercent);
     brightHSV = brightHSV.adjusted(false, adjPercent);
 
-    if (undefined === alpha)
-      alpha = this.getAlpha();
+    if (undefined === alpha) alpha = this.getAlpha();
 
     const darker = ColorDef.fromHSV(darkerHSV).withAlpha(alpha);
     const bright = ColorDef.fromHSV(brightHSV).withAlpha(alpha);
 
-    if (bright.getRgb() === other.getRgb()) // Couldn't adjust brighter...
+    if (bright.getRgb() === other.getRgb())
+      // Couldn't adjust brighter...
       return darker;
 
-    if (darker.getRgb() === other.getRgb()) // Couldn't adjust darker...
+    if (darker.getRgb() === other.getRgb())
+      // Couldn't adjust darker...
       return bright;
 
     // NOTE: Best choice is the one most visible against the other color...
-    return (bright.visibilityCheck(other) >= darker.visibilityCheck(other)) ? bright : darker;
+    return bright.visibilityCheck(other) >= darker.visibilityCheck(other)
+      ? bright
+      : darker;
   }
 
   /** True if the value of this ColorDef is the same as another ColorDef. */

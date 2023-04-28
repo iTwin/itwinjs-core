@@ -6,13 +6,25 @@
  * @module NativeApp
  */
 
-import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
+import {
+  GuidString,
+  Id64String,
+  IModelStatus,
+  LogLevel,
+  OpenMode,
+} from "@itwin/core-bentley";
 import { Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
+import {
+  EcefLocationProps,
+  IModelConnectionProps,
+  IModelRpcProps,
+  RootSubjectProps,
+  StandaloneOpenOptions,
+} from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Options for pulling changes into iModel.
@@ -30,7 +42,8 @@ export interface PullChangesOptions {
 /** Get IPC channel name used for reporting progress of pulling changes into iModel.
  * @internal
  */
-export const getPullChangesIpcChannel = (iModelId: string) => `${IpcAppChannel.Functions}.pullChanges-progress-${iModelId}`;
+export const getPullChangesIpcChannel = (iModelId: string) =>
+  `${IpcAppChannel.Functions}.pullChanges-progress-${iModelId}`;
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -92,7 +105,9 @@ export interface TxnNotifications {
   notifyProjectExtentsChanged: (extents: Range3dProps) => void;
   notifyGlobalOriginChanged: (origin: XYZProps) => void;
   notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;
-  notifyGeographicCoordinateSystemChanged: (gcs: GeographicCRSProps | undefined) => void;
+  notifyGeographicCoordinateSystemChanged: (
+    gcs: GeographicCRSProps | undefined
+  ) => void;
 }
 
 /**
@@ -114,12 +129,22 @@ export interface IpcAppFunctions {
    * @param _message Specify log message.
    * @param _metaData metaData if any.
    */
-  log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
+  log: (
+    _timestamp: number,
+    _level: LogLevel,
+    _category: string,
+    _message: string,
+    _metaData?: any
+  ) => Promise<void>;
 
   /** see BriefcaseConnection.openFile */
   openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
-  openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+  openStandalone: (
+    _filePath: string,
+    _openMode: OpenMode,
+    _opts?: StandaloneOpenOptions
+  ) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
@@ -136,20 +161,36 @@ export interface IpcAppFunctions {
   getRedoString: (key: string) => Promise<string>;
 
   /** see BriefcaseConnection.pullChanges */
-  pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
+  pullChanges: (
+    key: string,
+    toIndex?: ChangesetIndex,
+    options?: PullChangesOptions
+  ) => Promise<ChangesetIndexAndId>;
   /** Cancels pull of changes. */
   cancelPullChangesRequest: (key: string) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
-  pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
+  pushChanges: (
+    key: string,
+    description: string
+  ) => Promise<ChangesetIndexAndId>;
   /** Cancels currently pending or active generation of tile content.  */
-  cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
+  cancelTileContentRequests: (
+    tokenProps: IModelRpcProps,
+    _contentIds: TileTreeContentIds[]
+  ) => Promise<void>;
 
   /** Cancel element graphics requests.
    * @see [[IModelTileRpcInterface.requestElementGraphics]].
    */
-  cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
+  cancelElementGraphicsRequests: (
+    key: string,
+    _requestIds: string[]
+  ) => Promise<void>;
 
-  toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
+  toggleGraphicalEditingScope: (
+    key: string,
+    _startSession: boolean
+  ) => Promise<boolean>;
   isGraphicalEditingSupported: (key: string) => Promise<boolean>;
 
   reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
@@ -160,4 +201,3 @@ export interface IpcAppFunctions {
   /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */
   queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
 }
-

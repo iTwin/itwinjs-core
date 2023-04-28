@@ -33,14 +33,27 @@ class PixelWidthFactor {
   public syncKey = 0;
 
   public bind(uniform: UniformHandle, uniforms: TargetUniforms): void {
-    if (!sync(uniforms.frustum, this._frustumSync) || !sync(uniforms.viewRect, this._rectSync) || !sync(uniforms.branch, this._branchSync))
-      this.compute(uniforms.frustum, uniforms.viewRect.width, uniforms.viewRect.height, uniforms.branch.top.frustumScale);
+    if (
+      !sync(uniforms.frustum, this._frustumSync) ||
+      !sync(uniforms.viewRect, this._rectSync) ||
+      !sync(uniforms.branch, this._branchSync)
+    )
+      this.compute(
+        uniforms.frustum,
+        uniforms.viewRect.width,
+        uniforms.viewRect.height,
+        uniforms.branch.top.frustumScale
+      );
 
-    if (!sync(this, uniform))
-      uniform.setUniform1f(this._factor);
+    if (!sync(this, uniform)) uniform.setUniform1f(this._factor);
   }
 
-  private compute(frustumUniforms: FrustumUniforms, width: number, height: number, scale: { x: number, y: number }): void {
+  private compute(
+    frustumUniforms: FrustumUniforms,
+    width: number,
+    height: number,
+    scale: { x: number; y: number }
+  ): void {
     desync(this);
 
     const frustumPlanes = frustumUniforms.planes;
@@ -57,14 +70,16 @@ class PixelWidthFactor {
     if (FrustumUniformType.Perspective === frustumUniforms.type) {
       const inverseNear = 1.0 / frustum[0];
       const tanTheta = top * inverseNear;
-      halfPixelHeight = scale.x * tanTheta / height;
-      halfPixelWidth = scale.y * tanTheta / width;
+      halfPixelHeight = (scale.x * tanTheta) / height;
+      halfPixelWidth = (scale.y * tanTheta) / width;
     } else {
-      halfPixelWidth = scale.x * 0.5 * (right - left) / width;
-      halfPixelHeight = scale.y * 0.5 * (top - bottom) / height;
+      halfPixelWidth = (scale.x * 0.5 * (right - left)) / width;
+      halfPixelHeight = (scale.y * 0.5 * (top - bottom)) / height;
     }
 
-    this._factor = Math.sqrt(halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight);
+    this._factor = Math.sqrt(
+      halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight
+    );
   }
 }
 
@@ -83,7 +98,10 @@ class SunDirection {
 
   public update(sunDir: Vector3d | undefined): void {
     const haveWorldDir = undefined !== sunDir;
-    if (haveWorldDir !== this._haveWorldDir || (sunDir && !sunDir.isExactEqual(this._worldDir))) {
+    if (
+      haveWorldDir !== this._haveWorldDir ||
+      (sunDir && !sunDir.isExactEqual(this._worldDir))
+    ) {
       this._updated = true;
       desync(this);
 
@@ -98,7 +116,10 @@ class SunDirection {
   public bind(uniform: UniformHandle, uniforms: TargetUniforms): void {
     if (!sync(uniforms.frustum, this) || this._updated) {
       if (this._haveWorldDir) {
-        uniforms.frustum.viewMatrix.multiplyVector(this._worldDir, this._viewDir);
+        uniforms.frustum.viewMatrix.multiplyVector(
+          this._worldDir,
+          this._viewDir
+        );
         this._viewDir.negate(this._viewDir);
       } else {
         defaultSunDirectionView.clone(this._viewDir);
@@ -113,8 +134,7 @@ class SunDirection {
       this._updated = false;
     }
 
-    if (!sync(this, uniform))
-      uniform.setUniform3fv(this._viewDir32);
+    if (!sync(this, uniform)) uniform.setUniform3fv(this._viewDir32);
   }
 }
 
@@ -146,18 +166,23 @@ export class TargetUniforms {
   }
 
   public getProjectionMatrix(forViewCoords: boolean): Matrix4d {
-    return forViewCoords ? this.viewRect.projectionMatrix : this.frustum.projectionMatrix;
+    return forViewCoords
+      ? this.viewRect.projectionMatrix
+      : this.frustum.projectionMatrix;
   }
 
   public getProjectionMatrix32(forViewCoords: boolean): Matrix4 {
-    return forViewCoords ? this.viewRect.projectionMatrix32 : this.frustum.projectionMatrix32;
+    return forViewCoords
+      ? this.viewRect.projectionMatrix32
+      : this.frustum.projectionMatrix32;
   }
 
-  public bindProjectionMatrix(uniform: UniformHandle, forViewCoords: boolean): void {
-    if (forViewCoords)
-      this.viewRect.bindProjectionMatrix(uniform);
-    else
-      this.frustum.bindProjectionMatrix(uniform);
+  public bindProjectionMatrix(
+    uniform: UniformHandle,
+    forViewCoords: boolean
+  ): void {
+    if (forViewCoords) this.viewRect.bindProjectionMatrix(uniform);
+    else this.frustum.bindProjectionMatrix(uniform);
   }
 
   public bindPixelWidthFactor(uniform: UniformHandle): void {
@@ -176,9 +201,9 @@ export class TargetUniforms {
     if (plan.lights) {
       this.lights.update(plan.lights);
 
-      const useSunDir = plan.viewFlags.shadows || plan.lights.solar.alwaysEnabled;
-      if (useSunDir)
-        sunDir = plan.lights.solar.direction;
+      const useSunDir =
+        plan.viewFlags.shadows || plan.lights.solar.alwaysEnabled;
+      if (useSunDir) sunDir = plan.lights.solar.direction;
     }
 
     this._sunDirection.update(sunDir);

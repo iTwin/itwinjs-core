@@ -6,12 +6,28 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import {
+  ElectronHost,
+  ElectronHostOptions,
+} from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import {
+  IModelHost,
+  IModelHostOptions,
+  LocalhostIpcHost,
+} from "@itwin/core-backend";
+import {
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  RpcInterfaceDefinition,
+  RpcManager,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
+import {
+  MobileHost,
+  MobileHostOpts,
+} from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
@@ -19,8 +35,7 @@ import * as editorBuiltInCommands from "@itwin/editor-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -33,22 +48,25 @@ function loadEnv(envFile: string) {
 }
 
 class DisplayTestAppRpc extends DtaRpcInterface {
-
-  public override async readExternalSavedViews(bimFileName: string): Promise<string> {
+  public override async readExternalSavedViews(
+    bimFileName: string
+  ): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 
     const esvFileName = this.createEsvFilename(bimFileName);
-    if (!fs.existsSync(esvFileName))
-      return "";
+    if (!fs.existsSync(esvFileName)) return "";
 
     const jsonStr = fs.readFileSync(esvFileName).toString();
     return jsonStr ?? "";
   }
 
-  public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
+  public override async writeExternalSavedViews(
+    bimFileName: string,
+    namedViews: string
+  ): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       // Used to set a writeable directory on an iOS or Android device.
       const docPath = process.env.DOCS;
@@ -59,21 +77,25 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
-  public override async readExternalCameraPaths(bimFileName: string): Promise<string> {
+  public override async readExternalCameraPaths(
+    bimFileName: string
+  ): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 
     const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
-    if (!fs.existsSync(cameraPathsFileName))
-      return "";
+    if (!fs.existsSync(cameraPathsFileName)) return "";
 
     const jsonStr = fs.readFileSync(cameraPathsFileName).toString();
     return jsonStr ?? "";
   }
 
-  public override async writeExternalCameraPaths(bimFileName: string, cameraPaths: string): Promise<void> {
+  public override async writeExternalCameraPaths(
+    bimFileName: string,
+    cameraPaths: string
+  ): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       // Used to set a writeable directory on an iOS or Android device.
       const docPath = process.env.DOCS;
@@ -91,20 +113,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     }
 
     const dataFileName = this.createTxtFilename(txtFileName);
-    if (!fs.existsSync(dataFileName))
-      return "";
+    if (!fs.existsSync(dataFileName)) return "";
 
     const contents = fs.readFileSync(dataFileName).toString();
     return contents ?? "";
   }
 
-  public override async writeExternalFile(fileName: string, content: string): Promise<void> {
+  public override async writeExternalFile(
+    fileName: string,
+    content: string
+  ): Promise<void> {
     const filePath = this.getFilePath(fileName);
-    if (!fs.existsSync(filePath))
-      this.createFilePath(filePath);
+    if (!fs.existsSync(filePath)) this.createFilePath(filePath);
 
-    if (fs.existsSync(fileName))
-      fs.unlinkSync(fileName);
+    if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
 
     fs.writeFileSync(fileName, content);
   }
@@ -113,28 +135,23 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
     let curFile = "";
     for (const file of files) {
-      if (file === "")
-        break;
+      if (file === "") break;
 
       curFile += `${file}\\`;
-      if (!fs.existsSync(curFile))
-        fs.mkdirSync(curFile);
+      if (!fs.existsSync(curFile)) fs.mkdirSync(curFile);
     }
   }
 
   private getFilePath(fileName: string): string {
     const slashIndex = fileName.lastIndexOf("/");
     const backSlashIndex = fileName.lastIndexOf("\\");
-    if (slashIndex > backSlashIndex)
-      return fileName.substring(0, slashIndex);
-    else
-      return fileName.substring(0, backSlashIndex);
+    if (slashIndex > backSlashIndex) return fileName.substring(0, slashIndex);
+    else return fileName.substring(0, backSlashIndex);
   }
 
   private createEsvFilename(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
-    if (-1 !== dotIndex)
-      return `${fileName.substring(0, dotIndex)}_ESV.json`;
+    if (-1 !== dotIndex) return `${fileName.substring(0, dotIndex)}_ESV.json`;
     return `${fileName}.sv`;
   }
 
@@ -147,8 +164,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
   private createTxtFilename(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
-    if (-1 === dotIndex)
-      return `${fileName}.txt`;
+    if (-1 === dotIndex) return `${fileName}.txt`;
     return fileName;
   }
 
@@ -162,15 +178,11 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     // Electron only
     try {
       const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
-      if (app !== undefined)
-        app.exit();
-    } catch {
-
-    }
+      if (app !== undefined) app.exit();
+    } catch {}
 
     // Browser only
-    if (DtaRpcInterface.backendServer)
-      DtaRpcInterface.backendServer.close();
+    if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
   }
 
   public override async getAccessToken(): Promise<string> {
@@ -197,7 +209,9 @@ export const loadBackendConfig = (): DtaConfiguration => {
   return getConfig();
 };
 
-export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
+export const initializeDtaBackend = async (
+  hostOpts?: ElectronHostOptions & MobileHostOpts
+) => {
   const dtaConfig = loadBackendConfig();
 
   let logLevel = LogLevel.None;
@@ -209,7 +223,13 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    api: {
+      baseUrl: `https://${
+        process.env.IMJS_URL_PREFIX ?? ""
+      }api.bentley.com/imodels`,
+    },
+  });
   const hubAccess = new BackendIModelsAccess(iModelClient);
 
   const iModelHost: IModelHostOptions = {
@@ -247,7 +267,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   }
 };
 
-async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization  | undefined> {
+async function initializeAuthorizationClient(): Promise<
+  ElectronMainAuthorization | undefined
+> {
   if (
     ProcessDetector.isElectronAppBackend &&
     checkEnvVars(
@@ -277,7 +299,8 @@ function checkEnvVars(...keys: Array<string>): boolean {
   if (missing.length === 0) {
     return true;
   }
-  if (missing.length < keys.length) { // Some missing, warn
+  if (missing.length < keys.length) {
+    // Some missing, warn
     // eslint-disable-next-line no-console
     console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
   }

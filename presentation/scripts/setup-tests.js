@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 const faker = require("faker");
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
@@ -39,7 +39,9 @@ beforeEach(function () {
   faker.seed(seed);
 
   // set up snapshot name
-  const sourceFilePath = currentTest.file.replace("lib\\cjs\\test", "src\\test").replace(/\.(jsx?|tsx?)$/, "");
+  const sourceFilePath = currentTest.file
+    .replace("lib\\cjs\\test", "src\\test")
+    .replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());

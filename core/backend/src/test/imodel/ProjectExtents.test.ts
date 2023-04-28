@@ -13,7 +13,10 @@ describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("IModel", "test.bim"),
+      IModelTestUtils.resolveAssetFile("test.bim")
+    );
   });
 
   after(() => {
@@ -25,12 +28,18 @@ describe("computeProjectExtents", () => {
     const args = [undefined, false, true];
     for (const reportExtentsWithOutliers of args) {
       for (const reportOutliers of args) {
-        const result = imodel.computeProjectExtents({ reportExtentsWithOutliers, reportOutliers });
+        const result = imodel.computeProjectExtents({
+          reportExtentsWithOutliers,
+          reportOutliers,
+        });
         expect(result.extents.isAlmostEqual(projectExtents)).to.be.true;
 
-        expect(undefined !== result.extentsWithOutliers).to.equal(true === reportExtentsWithOutliers);
+        expect(undefined !== result.extentsWithOutliers).to.equal(
+          true === reportExtentsWithOutliers
+        );
         if (undefined !== result.extentsWithOutliers)
-          expect(result.extentsWithOutliers.isAlmostEqual(projectExtents)).to.be.true;
+          expect(result.extentsWithOutliers.isAlmostEqual(projectExtents)).to.be
+            .true;
 
         expect(undefined !== result.outliers).to.equal(true === reportOutliers);
         if (undefined !== result.outliers)
@@ -40,7 +49,10 @@ describe("computeProjectExtents", () => {
   });
 
   it("should report outliers", () => {
-    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x39", wantGeometry: true });
+    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({
+      id: "0x39",
+      wantGeometry: true,
+    });
     elemProps.id = Id64.invalid;
     const placement = Placement3d.fromJSON(elemProps.placement);
     const originalOrigin = placement.origin.clone();
@@ -65,12 +77,23 @@ describe("computeProjectExtents", () => {
     const extentsWithOutlier = originalExtents.clone();
     extentsWithOutlier.extendRange(outlierRange);
 
-    const result = imodel.computeProjectExtents({ reportExtentsWithOutliers: true, reportOutliers: true });
+    const result = imodel.computeProjectExtents({
+      reportExtentsWithOutliers: true,
+      reportOutliers: true,
+    });
     expect(result.outliers!.length).to.equal(1);
     expect(result.outliers![0]).to.equal(newId);
     expect(result.extents.isAlmostEqual(originalExtents)).to.be.true;
-    expect(result.extentsWithOutliers!.isAlmostEqual(originalExtents)).to.be.false;
-    expect(result.extentsWithOutliers!.low.isAlmostEqual(extentsWithOutlier.low)).to.be.true;
-    expect(result.extentsWithOutliers!.high.isAlmostEqual(extentsWithOutlier.high, 20)).to.be.true;
+    expect(result.extentsWithOutliers!.isAlmostEqual(originalExtents)).to.be
+      .false;
+    expect(
+      result.extentsWithOutliers!.low.isAlmostEqual(extentsWithOutlier.low)
+    ).to.be.true;
+    expect(
+      result.extentsWithOutliers!.high.isAlmostEqual(
+        extentsWithOutlier.high,
+        20
+      )
+    ).to.be.true;
   });
 });

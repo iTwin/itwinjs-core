@@ -11,31 +11,32 @@ interpolation.
 Localization happens on the **frontend**.
 In the case of only using the backend, you must provide a localization function [PresentationManagerProps.getLocalizedString]($presentation-backend) when initializing the presentation backend.
 The localization function should translate:
+
 <details>
   <summary>List of translatable strings</summary>
 
-  * @Presentation:label.notSpecified@,
-  * @Presentation:label.other@,
-  * @Presentation:label.varies@,
-  * @Presentation:label.multipleInstances@,
-  * @Presentation:field.label@,
-  * @Presentation:selectedItems.categoryLabel@,
-  * @Presentation:selectedItems.categoryDescription@,
+- @Presentation:label.notSpecified@,
+- @Presentation:label.other@,
+- @Presentation:label.varies@,
+- @Presentation:label.multipleInstances@,
+- @Presentation:field.label@,
+- @Presentation:selectedItems.categoryLabel@,
+- @Presentation:selectedItems.categoryDescription@,
 
 </details>
 
 ```typescript
-  function getLocalizedStringExample(key: string) {
-    // implementation...
-  }
+function getLocalizedStringExample(key: string) {
+  // implementation...
+}
 
 const presentationBackendProps: PresentationProps = {
   getLocalizedString: (key) => getLocalizedStringExample(key),
 };
 
 Presentation.initialize(presentationBackendProps);
-
 ```
+
 ## Localization in presentation rulesets
 
 The strings in presentation rule sets can be localized by using the following

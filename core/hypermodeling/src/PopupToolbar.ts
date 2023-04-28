@@ -26,11 +26,20 @@ export class PopupToolbarManager {
 
   private static show(): boolean {
     const prov = this._provider;
-    if (!prov || !prov.overToolbarHotspot)
-      return false;
+    if (!prov || !prov.overToolbarHotspot) return false;
 
     const admin = IModelApp.uiAdmin;
-    if (!admin.showToolbar(prov.toolbarProps, prov.toolbarLocation, admin.createXAndY(0, 0), this._itemExecuted, this._cancel, undefined, prov.htmlElement))
+    if (
+      !admin.showToolbar(
+        prov.toolbarProps,
+        prov.toolbarLocation,
+        admin.createXAndY(0, 0),
+        this._itemExecuted,
+        this._cancel,
+        undefined,
+        prov.htmlElement
+      )
+    )
       return false;
 
     this._current = this._provider;
@@ -41,16 +50,14 @@ export class PopupToolbarManager {
 
   private static _itemExecuted = (item: any) => {
     const mgr = PopupToolbarManager;
-    if (mgr._current)
-      mgr._current.onToolbarItemExecuted(item.id);
+    if (mgr._current) mgr._current.onToolbarItemExecuted(item.id);
 
     mgr.close();
   };
 
   private static _cancel = () => {
     const mgr = PopupToolbarManager;
-    if (!mgr._current || !mgr._current.overToolbarHotspot)
-      mgr.close(); // Don't hide when click is over hotspot
+    if (!mgr._current || !mgr._current.overToolbarHotspot) mgr.close(); // Don't hide when click is over hotspot
   };
 
   private static close(): boolean {
@@ -59,19 +66,19 @@ export class PopupToolbarManager {
   }
 
   private static closeAfterTimeout(): void {
-    if (!this._current)
-      return;
+    if (!this._current) return;
 
     const delay = 1000;
     if (this._current.overToolbarHotspot || !IModelApp.toolAdmin.cursorView)
-      setTimeout(() => this.closeAfterTimeout(), delay); // Cursor not in view or over hotspot, check again
-    else
-      this.close();
+      setTimeout(
+        () => this.closeAfterTimeout(),
+        delay
+      ); // Cursor not in view or over hotspot, check again
+    else this.close();
   }
 
   public static showToolbarAfterTimeout(provider: PopupToolbarProvider): void {
-    if (this._current === provider)
-      return;
+    if (this._current === provider) return;
 
     this._provider = provider;
     setTimeout(() => this.show(), 500);

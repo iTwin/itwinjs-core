@@ -6,7 +6,12 @@
  * @module Content
  */
 
-import { ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON } from "../EC";
+import {
+  ClassInfoJSON,
+  CompressedClassInfoJSON,
+  PropertyInfo,
+  PropertyInfoJSON,
+} from "../EC";
 
 /**
  * Data structure that describes one step of property
@@ -45,14 +50,17 @@ export namespace Property {
   /**
    * Serialize [[Property]] to JSON
    * @deprecated in 3.x. Use [[toCompressedJSON]]
-  */
+   */
   // istanbul ignore next
   export function toJSON(prop: Property): PropertyJSON {
     return { ...prop };
   }
 
   /** Serialize [[Property]] to compressed JSON */
-  export function toCompressedJSON(prop: Property, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> {
+  export function toCompressedJSON(
+    prop: Property,
+    classesMap: { [id: string]: CompressedClassInfoJSON }
+  ): PropertyJSON<string> {
     return {
       property: PropertyInfo.toCompressedJSON(prop.property, classesMap),
     };

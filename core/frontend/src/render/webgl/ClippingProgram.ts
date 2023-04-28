@@ -25,7 +25,10 @@ export class ClippingProgram {
   protected _program?: ShaderProgram;
 
   public compile(): boolean {
-    return undefined === this._program || CompileStatus.Success === this._program.compile();
+    return (
+      undefined === this._program ||
+      CompileStatus.Success === this._program.compile()
+    );
   }
 
   public constructor(src: ProgramBuilder) {
@@ -43,6 +46,8 @@ export class ClippingProgram {
 }
 
 /** @internal */
-export function createClippingProgram(builder: ProgramBuilder): ClippingProgram {
+export function createClippingProgram(
+  builder: ProgramBuilder
+): ClippingProgram {
   return new ClippingProgram(builder);
 }

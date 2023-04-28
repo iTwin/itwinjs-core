@@ -4,7 +4,7 @@
 
 `ElementAspect`s are EC classes, typically with EC properties defined for them. ElementAspects are generally used for creating optional sets of properties.
 
-ElementAspects have a special relationship with Elements. Every ElementAspect instance is associated (through an EC relationship) to exactly one Element instance. ElementAspect instances are never shared among Element instances. An Element *owns* its ElementAspects; if the Element is deleted its ElementAspects are also deleted.
+ElementAspects have a special relationship with Elements. Every ElementAspect instance is associated (through an EC relationship) to exactly one Element instance. ElementAspect instances are never shared among Element instances. An Element _owns_ its ElementAspects; if the Element is deleted its ElementAspects are also deleted.
 
 ![ElementAspects](../media/elementaspect-fundamentals.png)
 
@@ -36,13 +36,13 @@ ElementAspects primarily derive their identities from the Element which owns the
 
 For an ElementUniqueAspect, the combination of subclass and the Element identity uniquely identifies the ElementUniqueAspect.
 
-For an ElementMultiAspect, the combination of subclass and the Element identity identifies a list of ElementMultiAspects. Every ElementMultiAspect also has a *private* Id if an individual ElementMultiAspect instance has to be referenced.
+For an ElementMultiAspect, the combination of subclass and the Element identity identifies a list of ElementMultiAspects. Every ElementMultiAspect also has a _private_ Id if an individual ElementMultiAspect instance has to be referenced.
 
-ElementAspects can also be used to separate groups of properties according to their applicability.  Consider the need to capture the `Shape` and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its specific `Shape`. This situation can be modeled via an ElementAspect class-hierarchy that captures all the `Shape`s to be supported by such a system as well as their respective properties.
+ElementAspects can also be used to separate groups of properties according to their applicability. Consider the need to capture the `Shape` and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its specific `Shape`. This situation can be modeled via an ElementAspect class-hierarchy that captures all the `Shape`s to be supported by such a system as well as their respective properties.
 
 ![ElementAspect hierarchy example](../media/elementaspect-shapeaspect-hierarchy.png)
 
-In this case, the `ShapeAspect` base-class should be used as the *key-class* to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time.
+In this case, the `ShapeAspect` base-class should be used as the _key-class_ to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time.
 
 ## ElementAspects and Relationships
 
@@ -55,11 +55,12 @@ General behaviors and uses of BIS relationships are discussed in [Relationship F
 ## Common Strategies Involving ElementAspects
 
 Because ElementAspects are ECClasses, they have a fixed schema.
-This gives them the same first class *reporting* functionality as with Elements.
+This gives them the same first class _reporting_ functionality as with Elements.
 
 ElementAspects are often used when the same set of properties needs to be stored for Elements that live in different parts of the class hierarchy.
 However, if the data is more ad-hoc, then Element `JsonProperties` are probably more appropriate.
 
 ---
+
 | Next: [Mixins](./mixins.md)
 |:---

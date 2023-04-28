@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const webpack = require("webpack");
@@ -9,8 +9,7 @@ const fs = require("fs");
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -29,8 +28,7 @@ if (!process.env.TF_BUILD) {
 
 /** Find package root folder where package.json exist */
 function findPackageRootDir(dir = __dirname) {
-  if (!fs.existsSync(dir))
-    return undefined;
+  if (!fs.existsSync(dir)) return undefined;
 
   for (const entry of fs.readdirSync(dir)) {
     if (entry === "package.json") {
@@ -42,7 +40,7 @@ function findPackageRootDir(dir = __dirname) {
 const outputDir = path.resolve(findPackageRootDir(), "lib/test/ios/webpack");
 const configFile = path.join(outputDir, "config.json");
 const filteredEnv = Object.keys(process.env)
-  .filter(key => key.match(/^imjs_|^hybrid_test_|^saml_delegation_test_/i))
+  .filter((key) => key.match(/^imjs_|^hybrid_test_|^saml_delegation_test_/i))
   .reduce((obj, key) => {
     obj[key] = process.env[key];
     return obj;
@@ -60,65 +58,67 @@ module.exports = {
   target: "webworker",
   devtool: "source-map",
   module: {
-    rules: [{
-      test: /growl\.js$/,
-      use: 'null-loader'
-    },
-    {
-      test: /xunit\.js$/,
-      use: 'null-loader'
-    },
-    {
-      test: /bunyan/,
-      use: 'null-loader'
-    },
-    {
-      test: /@azure/,
-      use: 'null-loader'
-    },
-    {
-      test: /IModelBankCloudEnv\.js$/,
-      use: 'null-loader'
-    },
-    {
-      test: /DevTools\.js$/,
-      use: 'null-loader'
-    },
-    {
-      test: /OidcDesktopClient\.js$/,
-      use: 'null-loader'
-    },
-    {
-      test: /oidc-signin-tool/,
-      use: 'null-loader'
-    },
-    {
-      test: /AzCopy\.js$/,
-      use: 'null-loader'
-    },
-    ]
+    rules: [
+      {
+        test: /growl\.js$/,
+        use: "null-loader",
+      },
+      {
+        test: /xunit\.js$/,
+        use: "null-loader",
+      },
+      {
+        test: /bunyan/,
+        use: "null-loader",
+      },
+      {
+        test: /@azure/,
+        use: "null-loader",
+      },
+      {
+        test: /IModelBankCloudEnv\.js$/,
+        use: "null-loader",
+      },
+      {
+        test: /DevTools\.js$/,
+        use: "null-loader",
+      },
+      {
+        test: /OidcDesktopClient\.js$/,
+        use: "null-loader",
+      },
+      {
+        test: /oidc-signin-tool/,
+        use: "null-loader",
+      },
+      {
+        test: /AzCopy\.js$/,
+        use: "null-loader",
+      },
+    ],
   },
   node: {
-    process: false
+    process: false,
   },
   externals: {
-    "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
-    "electron": "electron",
-    "IModelJsFs": "IModelJsFs",
+    "@bentley/imodeljs-native/package.json":
+      "@bentley/imodeljs-native/package.json",
+    electron: "electron",
+    IModelJsFs: "IModelJsFs",
     "./IModelJsFs": "IModelJsFs",
     "../IModelJsFs": "IModelJsFs",
     "../../IModelJsFs": "IModelJsFs",
     "./lib/IModelJsFs.js": "IModelJsFs",
-    "fs": "fs",
+    fs: "fs",
     "fs-extra": "fs",
-    "express": "express",
+    express: "express",
   },
   stats: {
-    warnings: false
+    warnings: false,
   },
   plugins: [
     new webpack.DefinePlugin({ "global.location.search": "''" }),
     new webpack.ProvidePlugin({}),
-    new webpack.EnvironmentPlugin({})
+    new webpack.EnvironmentPlugin({}),
   ],
-}
+};

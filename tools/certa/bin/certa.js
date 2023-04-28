@@ -1,68 +1,69 @@
 #!/usr/bin/env node
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 "use strict";
 
 const yargs = require("yargs");
-yargs.strict(true)
+yargs
+  .strict(true)
   .wrap(Math.min(150, yargs.terminalWidth()))
   .options({
-    "runner": {
+    runner: {
       alias: "r",
       choices: ["electron", "chrome", "node"],
       describe: `The target test runner environment.`,
       type: "string",
       demandOption: true,
     },
-    "backend": {
+    backend: {
       alias: "b",
       describe: `The path to a javascript file containing backend initialization logic.`,
-      type: "string"
+      type: "string",
     },
-    "config": {
+    config: {
       alias: "c",
       describe: `Path to a certa.json config file.`,
       type: "string",
-      default: "./certa.json"
+      default: "./certa.json",
     },
-    "cover": {
+    cover: {
       describe: `Measure code coverage using nyc.`,
       type: "boolean",
-      default: undefined
+      default: undefined,
     },
-    "debug": {
+    debug: {
       describe: `Run in debug mode.`,
       type: "boolean",
-      default: undefined
+      default: undefined,
     },
     "debug-electron": {
       describe: `Run in debug mode (alias to '--debug').`,
       type: "boolean",
       default: undefined,
-      hidden: true
+      hidden: true,
     },
-    "testBundle": {
+    testBundle: {
       alias: "t",
       describe: `The path to a javascript file containing all mocha tests to be run.`,
-      type: "string"
+      type: "string",
     },
-    "grep": {
+    grep: {
       alias: "g",
       requiresArg: "pattern",
       describe: `Only run tests matching <pattern>`,
       type: "string",
     },
-    "fgrep": {
+    fgrep: {
       alias: "f",
       requiresArg: "string",
       describe: `Only run tests containing <string>`,
       type: "string",
     },
-    "invert": {
+    invert: {
       alias: "i",
       describe: `Inverts --grep and --fgrep matches`,
       type: "boolean",
@@ -84,15 +85,14 @@ const opts = {
     grep: yargs.argv.grep,
     fgrep: yargs.argv.fgrep,
     invert: yargs.argv.invert,
-  }
+  },
 };
 
 const configFilePath = path.resolve(process.cwd(), yargs.argv.config);
 let config;
 if (fs.existsSync(configFilePath))
   config = CertaConfig.fromConfigFile(configFilePath, opts);
-else
-  config = CertaConfig.fromObject(opts);
+else config = CertaConfig.fromObject(opts);
 
 (async () => {
   try {
@@ -104,8 +104,7 @@ else
     } else {
       console.error(error);
     }
-    if (process.send)
-      process.send({ exitCode: 1 });
+    if (process.send) process.send({ exitCode: 1 });
     process.exit(1);
   }
 })();

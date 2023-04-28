@@ -16,13 +16,13 @@ A parameter `allowBackupAlongEdge` indicates how to handle edges where the incom
 The arc constructions are full 3D -- each arc is in the plane of its two line segments.
 (In the figures below, the linestring is slightly out-of-plane, and the visible fillets appear slightly elliptic because of being viewed at an angle.)
 
-| | |
-|-----|-----|
-| original linestring | ![>](./figs/CurveFactory/FilletLineStringA.png)  |
+|                                   |                                                 |
+| --------------------------------- | ----------------------------------------------- |
+| original linestring               | ![>](./figs/CurveFactory/FilletLineStringA.png) |
 | small fillets (0.5 of grid block) | ![>](./figs/CurveFactory/FilletLineStringB.png) |
-| large fillet, backup allowed | ![>](./figs/CurveFactory/FilletLineStringC.png)  |
-| large fillet, no backup | ![>](./figs/CurveFactory/FilletLineStringD.png)  |
-| varying size fillets | ![>](./figs/CurveFactory/FilletLineStringE.png)  |
+| large fillet, backup allowed      | ![>](./figs/CurveFactory/FilletLineStringC.png) |
+| large fillet, no backup           | ![>](./figs/CurveFactory/FilletLineStringD.png) |
+| varying size fillets              | ![>](./figs/CurveFactory/FilletLineStringE.png) |
 
 Unit Test
 
@@ -43,10 +43,10 @@ The pipe creation according to centerline segment is
 - `LineSegment3d`: simple cylinder (`Cone` object with constant radius) with axis from the line segment start to end.
 - `Arc3d`: `TorusPipe` primitive with the arc as its major arc.
 
-| | |
-|-----|-----|
-| thin lines: original linestring to elbows <br> thick lines and arcs: Filleted path (centerline) | ![>](./figs/CurveFactory/PipeConstructionA.png)   |
-| output of createPipeSegments | ![>](./figs/CurveFactory/PipeConstructionB.png)
+|                                                                                                 |                                                 |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| thin lines: original linestring to elbows <br> thick lines and arcs: Filleted path (centerline) | ![>](./figs/CurveFactory/PipeConstructionA.png) |
+| output of createPipeSegments                                                                    | ![>](./figs/CurveFactory/PipeConstructionB.png) |
 
 Unit Test
 

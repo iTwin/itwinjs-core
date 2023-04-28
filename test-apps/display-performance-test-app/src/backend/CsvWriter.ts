@@ -11,19 +11,20 @@ export function createFilePath(filePath: string) {
   const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
   let curFile = "";
   for (const file of files) {
-    if (file === "")
-      break;
+    if (file === "") break;
 
     curFile += `${file}\\`;
-    if (!IModelJsFs.existsSync(curFile))
-      IModelJsFs.mkdirSync(curFile);
+    if (!IModelJsFs.existsSync(curFile)) IModelJsFs.mkdirSync(curFile);
   }
 }
 
-export function createNewCsvFile(filePath: string, fileName: string, data: Map<string, number | string>): boolean {
+export function createNewCsvFile(
+  filePath: string,
+  fileName: string,
+  data: Map<string, number | string>
+): boolean {
   const file = path.join(filePath, fileName);
-  if (!IModelJsFs.existsSync(filePath))
-    createFilePath(filePath);
+  if (!IModelJsFs.existsSync(filePath)) createFilePath(filePath);
 
   if (!IModelJsFs.existsSync(file)) {
     try {
@@ -42,7 +43,11 @@ export function createNewCsvFile(filePath: string, fileName: string, data: Map<s
   }
 }
 
-function addColumn(origFile: string, newName: string, columnsIndex: number): string {
+function addColumn(
+  origFile: string,
+  newName: string,
+  columnsIndex: number
+): string {
   let newFile = "";
   const lines = origFile.split(/[\r\n]+/);
   lines.forEach((line, lineIndex) => {
@@ -53,30 +58,46 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
         pos = line.indexOf(",", pos + 1);
         curIndex++;
       }
-      if (pos < 0)
-        pos = line.length;
+      if (pos < 0) pos = line.length;
 
-      newFile += `${line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" || newName === "Other Props" ? "" : 0))
-        + (line[pos] !== "," ? "," : "") + line.slice(pos)}\r\n`;
+      newFile += `${
+        line.slice(0, pos) +
+        (pos !== 0 ? "," : "") +
+        (lineIndex === 0
+          ? newName
+          : newName === "ReadPixels Selector" || newName === "Other Props"
+          ? ""
+          : 0) +
+        (line[pos] !== "," ? "," : "") +
+        line.slice(pos)
+      }\r\n`;
     }
   });
   return newFile;
 }
 
-export function addColumnsToCsvFile(filePath: string, rowData: Map<string, number | string>) {
+export function addColumnsToCsvFile(
+  filePath: string,
+  rowData: Map<string, number | string>
+) {
   let origFile = IModelJsFs.readFileSync(filePath).toString();
   const columns = origFile.split(/[\r\n]+/)[0].split(",");
   const opNamesIter = rowData.keys();
   const opNames: string[] = [];
-  for (const name of opNamesIter)
-    opNames.push(name);
+  for (const name of opNamesIter) opNames.push(name);
   let opNamesIndex = 0;
   let columnsIndex = 0;
   while (opNamesIndex < opNames.length || columnsIndex < columns.length) {
-    if (opNames[opNamesIndex] === undefined || columns[columnsIndex] === undefined
-      || opNames[opNamesIndex].trim() !== columns[columnsIndex].trim()) {
+    if (
+      opNames[opNamesIndex] === undefined ||
+      columns[columnsIndex] === undefined ||
+      opNames[opNamesIndex].trim() !== columns[columnsIndex].trim()
+    ) {
       let count = 1;
-      while (opNames[opNamesIndex + count] !== columns[columnsIndex] && (opNamesIndex + count) < opNames.length) {
+      while (
+        opNames[opNamesIndex + count] !== columns[columnsIndex] &&
+        opNamesIndex + count < opNames.length
+      ) {
         count++;
       }
       if (opNames[opNamesIndex + count] === columns[columnsIndex]) {
@@ -88,7 +109,10 @@ export function addColumnsToCsvFile(filePath: string, rowData: Map<string, numbe
         }
       } else {
         count = 1;
-        while (opNames[opNamesIndex] !== columns[columnsIndex + count] && (columnsIndex + count) < columns.length)
+        while (
+          opNames[opNamesIndex] !== columns[columnsIndex + count] &&
+          columnsIndex + count < columns.length
+        )
           count++;
         if (opNames[opNamesIndex] === columns[columnsIndex + count])
           columnsIndex += count;
@@ -107,19 +131,36 @@ export function addColumnsToCsvFile(filePath: string, rowData: Map<string, numbe
   IModelJsFs.writeFileSync(filePath, origFile);
 }
 
-export function addDataToCsvFile(file: string, data: Map<string, number | string>) {
+export function addDataToCsvFile(
+  file: string,
+  data: Map<string, number | string>
+) {
   try {
-    const columns = IModelJsFs.readFileSync(file).toString().split(/[\r\n]+/)[0].split(",");
+    const columns = IModelJsFs.readFileSync(file)
+      .toString()
+      .split(/[\r\n]+/)[0]
+      .split(",");
     let stringData = "";
     columns.forEach((colName, index) => {
       let value = data.get(colName);
       if (value === undefined) {
-        if (index < 2 || colName === "ReadPixels Selector" || colName === "Other Props")
+        if (
+          index < 2 ||
+          colName === "ReadPixels Selector" ||
+          colName === "Other Props"
+        )
           value = "";
-        else
-          value = 0;
+        else value = 0;
       }
-      if (colName === "iModel" || colName === "View" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props" || colName === "Other Props")
+      if (
+        colName === "iModel" ||
+        colName === "View" ||
+        colName === "View Flags" ||
+        colName === "Disabled Ext" ||
+        colName === "ReadPixels Selector" ||
+        colName === "Tile Props" ||
+        colName === "Other Props"
+      )
         stringData += `"${value}",`;
       else if (colName !== "" || index !== columns.length - 1)
         stringData += `${value},`;

@@ -10,8 +10,7 @@ import { AuthorizationClient } from "@itwin/core-common";
 export class IModelHubUserMgr implements AuthorizationClient {
   private _token: AccessToken = "";
 
-  public constructor(private _userCredentials: any) {
-  }
+  public constructor(private _userCredentials: any) {}
 
   public async signIn(): Promise<void> {
     this._token = await getAccessTokenFromBackend(this._userCredentials);
@@ -23,7 +22,9 @@ export class IModelHubUserMgr implements AuthorizationClient {
     this.onAccessTokenChanged.raiseEvent(this._token);
   }
 
-  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<
+    (token: AccessToken) => void
+  >();
   public get isAuthorized(): boolean {
     return this._token !== "";
   }

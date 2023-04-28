@@ -20,7 +20,7 @@ If a property has no direct category, it is displayed as if it belonged to the p
 
 Categories group properties so they're easier for users to find and manage. However, it's often necessary to group already categorized properties into some other group, for example 'favorites'. This is where nested categorization comes into play.
 
-Generally, since a property grid requests properties for the current selection, we put all properties into the default *Selected Item(s)* category:
+Generally, since a property grid requests properties for the current selection, we put all properties into the default _Selected Item(s)_ category:
 
 ![Selected Item(s) category](./media/property-grid-selected-items-category.png)
 
@@ -74,31 +74,40 @@ Finally, category nesting can be achieved using [property category overrides](./
 {
   "ruleType": "ContentModifier",
   "class": { "schemaName": "MySchema", "className": "A" },
-  "propertyCategories": [{
-    "id": "my_custom_category",
-    "label": "My Custom Category"
-  }],
-  "relatedProperties": [{
-    "propertiesSource": {
-      "relationship": {"schemaName": "MySchema", "className": "A_To_B"},
-      "direction": "Forward"
+  "propertyCategories": [
+    {
+      "id": "my_custom_category",
+      "label": "My Custom Category"
+    }
+  ],
+  "relatedProperties": [
+    {
+      "propertiesSource": {
+        "relationship": { "schemaName": "MySchema", "className": "A_To_B" },
+        "direction": "Forward"
+      },
+      "relationshipMeaning": "SameInstance",
+      "properties": [
+        {
+          "name": "PropB",
+          "categoryId": "my_custom_category"
+        }
+      ]
     },
-    "relationshipMeaning": "SameInstance",
-    "properties": [{
-      "name": "PropB",
-      "categoryId": "my_custom_category"
-    }]
-  }, {
-    "propertiesSource": {
-      "relationship": {"schemaName": "MySchema", "className": "A_To_C"},
-      "direction": "Forward"
-    },
-    "relationshipMeaning": "RelatedInstance",
-    "properties": [{
-      "name": "PropC",
-      "categoryId": "my_custom_category"
-    }]
-  }]
+    {
+      "propertiesSource": {
+        "relationship": { "schemaName": "MySchema", "className": "A_To_C" },
+        "direction": "Forward"
+      },
+      "relationshipMeaning": "RelatedInstance",
+      "properties": [
+        {
+          "name": "PropC",
+          "categoryId": "my_custom_category"
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -108,7 +117,7 @@ Finally, category nesting can be achieved using [property category overrides](./
 
 In the above example both `PropB` and `PropC` have a custom property category assigned through presentation rules and they're both specified as related properties for class `A`. Because `PropB` is set to be related with a `SameInstance` relationship, it will be shown as nested under the other properties of class `A`. `PropC`, on the other hand, is nested under another top-level category created from class `C`, because it's related with a `RelatedInstance` relationship.
 
-Here is a more complex example with *nested* related properties:
+Here is a more complex example with _nested_ related properties:
 
 **ECSchema:**
 
@@ -168,33 +177,43 @@ Here is a more complex example with *nested* related properties:
 {
   "ruleType": "ContentModifier",
   "class": { "schemaName": "MySchema", "className": "A" },
-  "relatedProperties": [{
-    "propertiesSource": {
-      "relationship": {"schemaName": "MySchema", "className": "A_To_B"},
-      "direction": "Forward"
-    },
-    "relationshipMeaning": "RelatedInstance",
-    "nestedRelatedProperties": [{
+  "relatedProperties": [
+    {
       "propertiesSource": {
-        "relationship": {"schemaName": "MySchema", "className": "B_To_C"},
-        "direction": "Forward"
-      },
-      "relationshipMeaning": "RelatedInstance"
-    }, {
-      "propertiesSource": {
-        "relationship": {"schemaName": "MySchema", "className": "B_To_D"},
+        "relationship": { "schemaName": "MySchema", "className": "A_To_B" },
         "direction": "Forward"
       },
       "relationshipMeaning": "RelatedInstance",
-      "nestedRelatedProperties": [{
-        "propertiesSource": {
-          "relationship": {"schemaName": "MySchema", "className": "D_To_E"},
-          "direction": "Forward"
+      "nestedRelatedProperties": [
+        {
+          "propertiesSource": {
+            "relationship": { "schemaName": "MySchema", "className": "B_To_C" },
+            "direction": "Forward"
+          },
+          "relationshipMeaning": "RelatedInstance"
         },
-        "relationshipMeaning": "RelatedInstance"
-      }]
-    }]
-  }]
+        {
+          "propertiesSource": {
+            "relationship": { "schemaName": "MySchema", "className": "B_To_D" },
+            "direction": "Forward"
+          },
+          "relationshipMeaning": "RelatedInstance",
+          "nestedRelatedProperties": [
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "MySchema",
+                  "className": "D_To_E"
+                },
+                "direction": "Forward"
+              },
+              "relationshipMeaning": "RelatedInstance"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -221,21 +240,27 @@ Here is a more complex example with *nested* related properties:
 {
   "ruleType": "ContentModifier",
   "class": { "schemaName": "MySchema", "className": "A" },
-  "propertyCategories": [{
-    "id": "parent_category",
-    "label": "Parent Category"
-  }, {
-    "id": "child_category",
-    "parentId": "parent_category",
-    "label": "Child Category"
-  }],
-  "propertyOverrides": [{
-    "name": "PropA",
-    "categoryId": "parent_category"
-  }, {
-    "name": "PropB",
-    "categoryId": "child_category"
-  }]
+  "propertyCategories": [
+    {
+      "id": "parent_category",
+      "label": "Parent Category"
+    },
+    {
+      "id": "child_category",
+      "parentId": "parent_category",
+      "label": "Child Category"
+    }
+  ],
+  "propertyOverrides": [
+    {
+      "name": "PropA",
+      "categoryId": "parent_category"
+    },
+    {
+      "name": "PropB",
+      "categoryId": "child_category"
+    }
+  ]
 }
 ```
 
@@ -251,24 +276,30 @@ Occasionally there may be a need to move the categories' hierarchy to a specific
 {
   "ruleType": "ContentModifier",
   "class": { "schemaName": "MySchema", "className": "A" },
-  "relatedProperties": [{
-    "propertiesSource": {
-      "relationship": {"schemaName": "MySchema", "className": "AB"},
-      "direction": "Forward",
-      "targetClass": {"schemaName": "MySchema", "className": "B"}
-    },
-    "nestedRelatedProperties": [{
+  "relatedProperties": [
+    {
       "propertiesSource": {
-        "relationship": {"schemaName": "MySchema", "className": "BC"},
+        "relationship": { "schemaName": "MySchema", "className": "AB" },
         "direction": "Forward",
-        "targetClass": {"schemaName": "MySchema", "className": "C"}
+        "targetClass": { "schemaName": "MySchema", "className": "B" }
       },
-      "properties": [{
-        "name": "*",
-        "categoryId": { "type": "DefaultParent" }
-      }]
-    }]
-  }]
+      "nestedRelatedProperties": [
+        {
+          "propertiesSource": {
+            "relationship": { "schemaName": "MySchema", "className": "BC" },
+            "direction": "Forward",
+            "targetClass": { "schemaName": "MySchema", "className": "C" }
+          },
+          "properties": [
+            {
+              "name": "*",
+              "categoryId": { "type": "DefaultParent" }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -284,7 +315,7 @@ Below is a table of how category identifiers work in different situations:
 
 |                      | Direct Property    | Direct Categorized Property                | Related Property (`SameInstance` meaning) | Related Property (`RelatedInstance` meaning) | Nested Related Property (`RelatedInstance` & `SameInstance`) | Nested Related Property (`RelatedInstance` & `RelatedInstance`) | Nested Related Categorized Property (`RelatedInstance` & `SameInstance`) |
 | -------------------- | ------------------ | ------------------------------------------ | ----------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| No category override | `Selected Item(s)` | `Selected Item(s)` -> *ECPropertyCategory* | `Selected Item(s)` -> *Related class*     | *Related class*                              | *First level related class* -> *Second level related class*  | *First level related class* -> *Second level related class*     | *First level related class* -> *ECPropertyCategory*                      |
-| `DefaultParent`      | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class* -> *Second level related class*     | *First level related class*                                              |
-| `Root`               | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class*                                     | *First level related class*                                              |
+| No category override | `Selected Item(s)` | `Selected Item(s)` -> _ECPropertyCategory_ | `Selected Item(s)` -> _Related class_     | _Related class_                              | _First level related class_ -> _Second level related class_  | _First level related class_ -> _Second level related class_     | _First level related class_ -> _ECPropertyCategory_                      |
+| `DefaultParent`      | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | _Related class_                              | _First level related class_                                  | _First level related class_ -> _Second level related class_     | _First level related class_                                              |
+| `Root`               | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | _Related class_                              | _First level related class_                                  | _First level related class_                                     | _First level related class_                                              |
 | `Id`                 | Custom             | Custom                                     | Custom                                    | Custom                                       | Custom                                                       | Custom                                                          | Custom                                                                   |

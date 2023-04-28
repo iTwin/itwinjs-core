@@ -7,29 +7,50 @@ import * as faker from "faker";
 import { Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "../../presentation-common/content/Category";
 import {
-  Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,
+  Descriptor,
+  DescriptorJSON,
+  DescriptorSource,
+  SelectClassInfo,
+  SelectClassInfoJSON,
+  SortDirection,
 } from "../../presentation-common/content/Descriptor";
-import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
+import {
+  Field,
+  FieldDescriptorType,
+} from "../../presentation-common/content/Fields";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
-import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import {
+  CompressedClassInfoJSON,
+  RelatedClassInfo,
+  RelatedClassInfoJSON,
+} from "../../presentation-common/EC";
 import { InstanceFilterDefinition } from "../../presentation-common/InstanceFilterDefinition";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSelectClassInfo, createTestSimpleContentField,
+  createTestCategoryDescription,
+  createTestContentDescriptor,
+  createTestNestedContentField,
+  createTestPropertiesContentField,
+  createTestSelectClassInfo,
+  createTestSimpleContentField,
 } from "../_helpers/Content";
-import { createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC";
+import {
+  createTestPropertyInfo,
+  createTestRelatedClassInfo,
+  createTestRelationshipPath,
+} from "../_helpers/EC";
 
 describe("Descriptor", () => {
-
   describe("constructor", () => {
-
     it("creates Descriptor from DescriptorSource without categories", () => {
       const category = createTestCategoryDescription();
       const source: DescriptorSource = {
         contentFlags: 9,
         displayType: faker.random.word(),
         categories: [category],
-        fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
+        fields: [
+          createTestSimpleContentField({ category }),
+          createTestSimpleContentField({ category }),
+        ],
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -45,7 +66,10 @@ describe("Descriptor", () => {
         contentFlags: 9,
         displayType: faker.random.word(),
         categories: [category],
-        fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
+        fields: [
+          createTestSimpleContentField({ category }),
+          createTestSimpleContentField({ category }),
+        ],
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -54,11 +78,9 @@ describe("Descriptor", () => {
           expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
       }
     });
-
   });
 
   describe("fromJSON", () => {
-
     const validateParentship = (fields: Field[], parent?: Field) => {
       fields.forEach((field) => {
         expect(field.parent).to.eq(parent);
@@ -90,89 +112,121 @@ describe("Descriptor", () => {
           [ids[3]]: { name: "name4", label: "label4" },
           [ids[4]]: { name: "name5", label: "label5" },
         },
-        selectClasses: [{
-          selectClassInfo: ids[0],
-          isSelectPolymorphic: true,
-          pathFromInputToSelectClass: [testRelatedClassInfo],
-          relatedPropertyPaths: [[testRelatedClassInfo]],
-          navigationPropertyClasses: [testRelatedClassInfo],
-          relatedInstancePaths: [[testRelatedClassInfo]],
-        }],
-        fields: [{
-          name: "test-simple-field",
-          label: "Test Simple Field",
-          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
-          category: category.name,
-          isReadonly: false,
-          priority: 0,
-        }, {
-          name: "test-properties-field",
-          label: "Test Properties Field",
-          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
-          category: category.name,
-          isReadonly: false,
-          priority: 0,
-          properties: [{
-            property: {
-              classInfo: ids[0],
-              name: "PropertyName",
-              type: "TestPropertyType",
-            },
-          }],
-        }, {
-          name: "test-nested-content-field",
-          label: "Test Nested Content Field",
-          type: {
-            valueFormat: PropertyValueFormat.Struct,
-            typeName: "StructType",
-            members: [{
-              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
-              name: "StringType",
-              label: "String Type",
-            }],
+        selectClasses: [
+          {
+            selectClassInfo: ids[0],
+            isSelectPolymorphic: true,
+            pathFromInputToSelectClass: [testRelatedClassInfo],
+            relatedPropertyPaths: [[testRelatedClassInfo]],
+            navigationPropertyClasses: [testRelatedClassInfo],
+            relatedInstancePaths: [[testRelatedClassInfo]],
           },
-          category: category.name,
-          isReadonly: false,
-          priority: 0,
-          contentClassInfo: ids[1],
-          pathToPrimaryClass: [testRelatedClassInfo],
-          nestedFields: [{
-            name: "test-nested-properties-field",
-            label: "Test Nested Properties Field",
-            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+        ],
+        fields: [
+          {
+            name: "test-simple-field",
+            label: "Test Simple Field",
+            type: {
+              valueFormat: PropertyValueFormat.Primitive,
+              typeName: "string",
+            },
             category: category.name,
             isReadonly: false,
             priority: 0,
-            properties: [{
-              property: {
-                classInfo: ids[1],
-                name: "NestedPropertyName",
-                type: "TestNestedPropertyType",
-              },
-            }],
-          }],
-          autoExpand: false,
-        }, {
-          name: "test-properties-field-with-navigation-property-info",
-          label: "Test Properties Field With Navigation Property Info",
-          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
-          category: category.name,
-          isReadonly: false,
-          priority: 0,
-          properties: [{
-            property: {
-              classInfo: ids[1],
-              name: "PropertyName",
-              type: "TestPropertyType",
-              navigationPropertyInfo: {
-                classInfo: ids[3],
-                isForwardRelationship: true,
-                targetClassInfo: ids[4],
-                isTargetPolymorphic: true,
-              },
+          },
+          {
+            name: "test-properties-field",
+            label: "Test Properties Field",
+            type: {
+              valueFormat: PropertyValueFormat.Primitive,
+              typeName: "string",
             },
-          }],
-        }],
+            category: category.name,
+            isReadonly: false,
+            priority: 0,
+            properties: [
+              {
+                property: {
+                  classInfo: ids[0],
+                  name: "PropertyName",
+                  type: "TestPropertyType",
+                },
+              },
+            ],
+          },
+          {
+            name: "test-nested-content-field",
+            label: "Test Nested Content Field",
+            type: {
+              valueFormat: PropertyValueFormat.Struct,
+              typeName: "StructType",
+              members: [
+                {
+                  type: {
+                    valueFormat: PropertyValueFormat.Primitive,
+                    typeName: "string",
+                  },
+                  name: "StringType",
+                  label: "String Type",
+                },
+              ],
+            },
+            category: category.name,
+            isReadonly: false,
+            priority: 0,
+            contentClassInfo: ids[1],
+            pathToPrimaryClass: [testRelatedClassInfo],
+            nestedFields: [
+              {
+                name: "test-nested-properties-field",
+                label: "Test Nested Properties Field",
+                type: {
+                  valueFormat: PropertyValueFormat.Primitive,
+                  typeName: "string",
+                },
+                category: category.name,
+                isReadonly: false,
+                priority: 0,
+                properties: [
+                  {
+                    property: {
+                      classInfo: ids[1],
+                      name: "NestedPropertyName",
+                      type: "TestNestedPropertyType",
+                    },
+                  },
+                ],
+              },
+            ],
+            autoExpand: false,
+          },
+          {
+            name: "test-properties-field-with-navigation-property-info",
+            label: "Test Properties Field With Navigation Property Info",
+            type: {
+              valueFormat: PropertyValueFormat.Primitive,
+              typeName: "navigation",
+            },
+            category: category.name,
+            isReadonly: false,
+            priority: 0,
+            properties: [
+              {
+                property: {
+                  classInfo: ids[1],
+                  name: "PropertyName",
+                  type: "TestPropertyType",
+                  navigationPropertyInfo: {
+                    classInfo: ids[3],
+                    isForwardRelationship: true,
+                    targetClassInfo: ids[4],
+                    isTargetPolymorphic: true,
+                  },
+                },
+              },
+            ],
+          },
+        ],
       };
       const descriptor = Descriptor.fromJSON(json);
       validateParentship(descriptor!.fields);
@@ -203,11 +257,9 @@ describe("Descriptor", () => {
       const descriptor = Descriptor.fromJSON(undefined);
       expect(descriptor).to.be.undefined;
     });
-
   });
 
   describe("toJSON", () => {
-
     it("creates valid CompressedDescriptorJSON", () => {
       const category = createTestCategoryDescription();
       const fields = [
@@ -222,12 +274,14 @@ describe("Descriptor", () => {
         }),
       ];
       const descriptor = createTestContentDescriptor({
-        selectClasses: [createTestSelectClassInfo({
-          pathFromInputToSelectClass: [createTestRelatedClassInfo()],
-          navigationPropertyClasses: [createTestRelatedClassInfo()],
-          relatedInstancePaths: [[createTestRelatedClassInfo()]],
-          relatedPropertyPaths: [[createTestRelatedClassInfo()]],
-        })],
+        selectClasses: [
+          createTestSelectClassInfo({
+            pathFromInputToSelectClass: [createTestRelatedClassInfo()],
+            navigationPropertyClasses: [createTestRelatedClassInfo()],
+            relatedInstancePaths: [[createTestRelatedClassInfo()]],
+            relatedPropertyPaths: [[createTestRelatedClassInfo()]],
+          }),
+        ],
         categories: [category],
         fields,
         fieldsFilterExpression: "testFilterExpression",
@@ -237,33 +291,37 @@ describe("Descriptor", () => {
         instanceFilter: {
           selectClassName: "testClass",
           expression: "testExpression",
-          relatedInstances: [{
-            alias: "testAlias",
-            relationshipAlias: "testRelAlias",
-            isRequired: true,
-            pathFromSelectToPropertyClass: [{
-              sourceClassName: "sourceClass",
-              targetClassName: "targetClass",
-              relationshipName: "relClass",
-              isForwardRelationship: true,
-            }],
-          }],
+          relatedInstances: [
+            {
+              alias: "testAlias",
+              relationshipAlias: "testRelAlias",
+              isRequired: true,
+              pathFromSelectToPropertyClass: [
+                {
+                  sourceClassName: "sourceClass",
+                  targetClassName: "targetClass",
+                  relationshipName: "relClass",
+                  isForwardRelationship: true,
+                },
+              ],
+            },
+          ],
         },
       });
       expect(descriptor.toJSON()).to.matchSnapshot();
     });
-
   });
 
   describe("getFieldByName", () => {
-
     it("returns undefined when there are no fields", () => {
       const descriptor = createTestContentDescriptor({ fields: [] });
       expect(descriptor.getFieldByName("test")).to.be.undefined;
     });
 
     it("returns undefined when field is not found", () => {
-      const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
+      const descriptor = createTestContentDescriptor({
+        fields: [createTestSimpleContentField()],
+      });
       expect(descriptor.getFieldByName("does-not-exist", true)).to.be.undefined;
     });
 
@@ -278,7 +336,9 @@ describe("Descriptor", () => {
       const nestedContentField = createTestNestedContentField({
         nestedFields: [primitiveField],
       });
-      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
+      const descriptor = createTestContentDescriptor({
+        fields: [nestedContentField],
+      });
       expect(descriptor.getFieldByName("does not exist", true)).to.be.undefined;
     });
 
@@ -287,14 +347,16 @@ describe("Descriptor", () => {
       const nestedContentField = createTestNestedContentField({
         nestedFields: [primitiveField],
       });
-      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
-      expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(primitiveField);
+      const descriptor = createTestContentDescriptor({
+        fields: [nestedContentField],
+      });
+      expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(
+        primitiveField
+      );
     });
-
   });
 
   describe("createDescriptorOverrides", () => {
-
     it("creates a valid object with default parameters", () => {
       const descriptor = createTestContentDescriptor({
         fields: [],
@@ -385,13 +447,10 @@ describe("Descriptor", () => {
         instanceFilter,
       });
     });
-
   });
-
 });
 
 describe("SelectClassInfo", () => {
-
   let classesMap!: { [id: string]: CompressedClassInfoJSON };
   let obj!: SelectClassInfo;
   let compressedJson!: SelectClassInfoJSON<Id64String>;
@@ -418,9 +477,11 @@ describe("SelectClassInfo", () => {
   });
 
   describe("fromCompressedJSON", () => {
-
     it("doesn't create unnecessary members", () => {
-      const result = SelectClassInfo.fromCompressedJSON(compressedJson, classesMap);
+      const result = SelectClassInfo.fromCompressedJSON(
+        compressedJson,
+        classesMap
+      );
       expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
       expect(result).to.not.haveOwnProperty("relatedPropertyPaths");
       expect(result).to.not.haveOwnProperty("navigationPropertyClasses");
@@ -431,9 +492,13 @@ describe("SelectClassInfo", () => {
       const pathFromInputToSelectClass = createTestRelationshipPath(2);
       compressedJson = {
         ...compressedJson,
-        pathFromInputToSelectClass: pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)),
+        pathFromInputToSelectClass: pathFromInputToSelectClass.map((item) =>
+          RelatedClassInfo.toCompressedJSON(item, classesMap)
+        ),
       };
-      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
+      ).to.deep.eq({
         ...obj,
         pathFromInputToSelectClass,
       });
@@ -443,9 +508,13 @@ describe("SelectClassInfo", () => {
       const relatedPropertyPaths = [createTestRelationshipPath(2)];
       compressedJson = {
         ...compressedJson,
-        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))),
+        relatedPropertyPaths: relatedPropertyPaths.map((p) =>
+          p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))
+        ),
       };
-      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
+      ).to.deep.eq({
         ...obj,
         relatedPropertyPaths,
       });
@@ -455,9 +524,13 @@ describe("SelectClassInfo", () => {
       const navigationPropertyClasses = createTestRelationshipPath(2);
       compressedJson = {
         ...compressedJson,
-        navigationPropertyClasses: navigationPropertyClasses.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)),
+        navigationPropertyClasses: navigationPropertyClasses.map((item) =>
+          RelatedClassInfo.toCompressedJSON(item, classesMap)
+        ),
       };
-      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
+      ).to.deep.eq({
         ...obj,
         navigationPropertyClasses,
       });
@@ -467,24 +540,34 @@ describe("SelectClassInfo", () => {
       const relatedInstancePaths = [createTestRelationshipPath(2)];
       compressedJson = {
         ...compressedJson,
-        relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))),
+        relatedInstancePaths: relatedInstancePaths.map((p) =>
+          p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))
+        ),
       };
-      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)
+      ).to.deep.eq({
         ...obj,
         relatedInstancePaths,
       });
     });
-
   });
 
   describe("toCompressedJSON", () => {
-
     it("doesn't create unnecessary members", () => {
       const actualCompressedJson = SelectClassInfo.toCompressedJSON(obj, {});
-      expect(actualCompressedJson).to.not.haveOwnProperty("pathFromInputToSelectClass");
-      expect(actualCompressedJson).to.not.haveOwnProperty("relatedPropertyPaths");
-      expect(actualCompressedJson).to.not.haveOwnProperty("navigationPropertyClasses");
-      expect(actualCompressedJson).to.not.haveOwnProperty("relatedInstancePaths");
+      expect(actualCompressedJson).to.not.haveOwnProperty(
+        "pathFromInputToSelectClass"
+      );
+      expect(actualCompressedJson).to.not.haveOwnProperty(
+        "relatedPropertyPaths"
+      );
+      expect(actualCompressedJson).to.not.haveOwnProperty(
+        "navigationPropertyClasses"
+      );
+      expect(actualCompressedJson).to.not.haveOwnProperty(
+        "relatedInstancePaths"
+      );
     });
 
     it("serializes `pathFromInputToSelectClass`", () => {
@@ -494,9 +577,13 @@ describe("SelectClassInfo", () => {
         ...obj,
         pathFromInputToSelectClass,
       };
-      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
+      ).to.deep.eq({
         ...compressedJson,
-        pathFromInputToSelectClass: pathFromInputToSelectClass.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
+        pathFromInputToSelectClass: pathFromInputToSelectClass.map((p) =>
+          RelatedClassInfo.toCompressedJSON(p, {})
+        ),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -508,9 +595,13 @@ describe("SelectClassInfo", () => {
         ...obj,
         relatedPropertyPaths,
       };
-      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
+      ).to.deep.eq({
         ...compressedJson,
-        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
+        relatedPropertyPaths: relatedPropertyPaths.map((p) =>
+          p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))
+        ),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -522,9 +613,13 @@ describe("SelectClassInfo", () => {
         ...obj,
         navigationPropertyClasses,
       };
-      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
+      ).to.deep.eq({
         ...compressedJson,
-        navigationPropertyClasses: navigationPropertyClasses.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
+        navigationPropertyClasses: navigationPropertyClasses.map((p) =>
+          RelatedClassInfo.toCompressedJSON(p, {})
+        ),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
@@ -536,22 +631,25 @@ describe("SelectClassInfo", () => {
         ...obj,
         relatedInstancePaths,
       };
-      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+      expect(
+        SelectClassInfo.toCompressedJSON(obj, actualClassesMap)
+      ).to.deep.eq({
         ...compressedJson,
-        relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
+        relatedInstancePaths: relatedInstancePaths.map((p) =>
+          p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))
+        ),
       });
       expect(actualClassesMap).to.containSubset(classesMap);
     });
-
   });
 
   describe("listFromCompressedJSON", () => {
-
     it("creates valid SelectClassInfo[] from compressed JSON", () => {
-      const result = SelectClassInfo.listFromCompressedJSON([compressedJson], classesMap);
+      const result = SelectClassInfo.listFromCompressedJSON(
+        [compressedJson],
+        classesMap
+      );
       expect(result).to.deep.equal([obj]);
     });
-
   });
-
 });

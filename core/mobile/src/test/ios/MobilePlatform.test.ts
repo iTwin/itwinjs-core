@@ -29,24 +29,48 @@ describe("IOS Platform Test", () => {
     const outArray = fs.readFileSync(testFile, { encoding: null });
     assert.equal(outArray.length, testArray.length, "array size must match");
     for (let i = 0; i < testArray.length; i++) {
-      assert.equal(testArray[i], outArray[i], `content at offset ${i} missmatch`);
+      assert.equal(
+        testArray[i],
+        outArray[i],
+        `content at offset ${i} missmatch`
+      );
     }
 
-    assert.equal(fs.lstatSync(testFile).size, testArray.length, "file size must match");
+    assert.equal(
+      fs.lstatSync(testFile).size,
+      testArray.length,
+      "file size must match"
+    );
 
     fs.appendFileSync(testFile, testArray);
 
     // binary test
     const outArrayx2 = fs.readFileSync(testFile, { encoding: null });
-    assert.equal(outArrayx2.length, testArray.length * 2, "array size must match after append");
+    assert.equal(
+      outArrayx2.length,
+      testArray.length * 2,
+      "array size must match after append"
+    );
     for (let i = 0; i < testArray.length; i++) {
-      assert.equal(testArray[i], outArrayx2[i], `content at offset ${i} missmatch after append`);
+      assert.equal(
+        testArray[i],
+        outArrayx2[i],
+        `content at offset ${i} missmatch after append`
+      );
     }
     // check append
     for (let k = 0; k < testArray.length; k++) {
-      assert.equal(testArray[k], outArrayx2[k + testArray.length], `content at offset ${k} missmatch after append`);
+      assert.equal(
+        testArray[k],
+        outArrayx2[k + testArray.length],
+        `content at offset ${k} missmatch after append`
+      );
     }
-    assert.equal(fs.lstatSync(testFile).size, testArray.length * 2, "file size must match after append");
+    assert.equal(
+      fs.lstatSync(testFile).size,
+      testArray.length * 2,
+      "file size must match after append"
+    );
 
     fs.unlinkSync(testFile);
     assert.isFalse(fs.existsSync(testFile));
@@ -95,5 +119,4 @@ describe("IOS Platform Test", () => {
 - (NSString*) realpathSync: (JSValue*)path :(JSValue*)options;
 - (void) closeSync: (JSValue*)fd;
 - (JSValue*) openSync: (NSString*)path :(NSString*)flags :(JSValue*)mode; */
-
 });

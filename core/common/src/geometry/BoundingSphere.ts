@@ -36,10 +36,21 @@ export class BoundingSphere {
    * @param result An optional preallocated object to hold the result, to avoid allocating a new object. May be the same object as `this`.
    * @returns A bounding sphere equivalent to `this` with the specified transform applied.
    */
-  public transformBy(transform: Transform, result?: BoundingSphere): BoundingSphere {
+  public transformBy(
+    transform: Transform,
+    result?: BoundingSphere
+  ): BoundingSphere {
     result = result ?? new BoundingSphere();
     transform.multiplyPoint3d(this.center, result.center);
-    result.radius = this.radius * Math.max(transform.matrix.columnXMagnitude(), Math.max(transform.matrix.columnYMagnitude(), (transform.matrix.columnZMagnitude())));
+    result.radius =
+      this.radius *
+      Math.max(
+        transform.matrix.columnXMagnitude(),
+        Math.max(
+          transform.matrix.columnYMagnitude(),
+          transform.matrix.columnZMagnitude()
+        )
+      );
     return result;
   }
 

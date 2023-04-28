@@ -18,36 +18,53 @@ export async function commonSetup(): Promise<void> {
   const cacheDir = join(__dirname, ".cache");
   // Start the backend
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost: { cacheDir } });
-  } else
-    await IModelHost.startup({ cacheDir });
+    await ElectronHost.startup({
+      electronHost: { rpcInterfaces },
+      iModelHost: { cacheDir },
+    });
+  } else await IModelHost.startup({ cacheDir });
 
-  registerBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class, () => {
-    TestRpcImpl2.register();
-    TestRpcImpl2.instantiate();
-    return true;
-  });
+  registerBackendCallback(
+    BackendTestCallbacks.registerTestRpcImpl2Class,
+    () => {
+      TestRpcImpl2.register();
+      TestRpcImpl2.instantiate();
+      return true;
+    }
+  );
 
-  registerBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance, () => {
-    TestRpcImpl2.instantiate();
-    return true;
-  });
+  registerBackendCallback(
+    BackendTestCallbacks.replaceTestRpcImpl2Instance,
+    () => {
+      TestRpcImpl2.instantiate();
+      return true;
+    }
+  );
 
-  registerBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class, () => {
-    TestRpcImpl2.unregister();
-    return true;
-  });
+  registerBackendCallback(
+    BackendTestCallbacks.unregisterTestRpcImpl2Class,
+    () => {
+      TestRpcImpl2.unregister();
+      return true;
+    }
+  );
 
-  registerBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion, () => {
-    IModelReadRpcInterface.interfaceVersion = "0.0.0";
-    return true;
-  });
+  registerBackendCallback(
+    BackendTestCallbacks.setIncompatibleInterfaceVersion,
+    () => {
+      IModelReadRpcInterface.interfaceVersion = "0.0.0";
+      return true;
+    }
+  );
 
   const compatibleVersion = IModelReadRpcInterface.interfaceVersion;
-  registerBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion, () => {
-    IModelReadRpcInterface.interfaceVersion = compatibleVersion;
-    return true;
-  });
+  registerBackendCallback(
+    BackendTestCallbacks.restoreIncompatibleInterfaceVersion,
+    () => {
+      IModelReadRpcInterface.interfaceVersion = compatibleVersion;
+      return true;
+    }
+  );
 
   registerBackendCallback(BackendTestCallbacks.resetOp8Initializer, () => {
     resetOp8Initializer();
@@ -55,7 +72,7 @@ export async function commonSetup(): Promise<void> {
   });
 
   Logger.initializeToConsole();
-  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
+  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error); // Change to trace to debug
+  Logger.setLevel("core-backend.IModelDb", LogLevel.Error); // Change to trace to debug
+  Logger.setLevel("Performance", LogLevel.Error); // Change to Info to capture
 }

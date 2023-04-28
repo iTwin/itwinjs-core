@@ -9,14 +9,21 @@
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
-  DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
+  DisclosedTileTreeSet,
+  IModelApp,
+  RenderMemory,
+  TileTree,
+  TileTreeOwner,
+  Viewport,
 } from "@itwin/core-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
-function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
+function collectTileTreeMemory(
+  stats: RenderMemory.Statistics,
+  owner: TileTreeOwner
+): void {
   const tree = owner.tileTree;
-  if (undefined !== tree)
-    tree.collectStatistics(stats);
+  if (undefined !== tree) tree.collectStatistics(stats);
 }
 
 // Returns the number of tile trees processed.
@@ -49,14 +56,20 @@ const memLabels = [
   "All",
 ];
 
-function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.Statistics): number {
+function collectStatisticsForViewedTileTrees(
+  vp: Viewport,
+  stats: RenderMemory.Statistics
+): number {
   vp.collectStatistics(stats);
   const trees = new DisclosedTileTreeSet();
   vp.discloseTileTrees(trees);
   return trees.size;
 }
 
-function collectStatisticsForSelectedTiles(vp: Viewport, stats: RenderMemory.Statistics): number {
+function collectStatisticsForSelectedTiles(
+  vp: Viewport,
+  stats: RenderMemory.Statistics
+): number {
   const trees = new Set<TileTree>();
   const selectedTiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
   if (selectedTiles) {
@@ -69,12 +82,14 @@ function collectStatisticsForSelectedTiles(vp: Viewport, stats: RenderMemory.Sta
   return trees.size;
 }
 
-function collectStatisticsForAllTileTrees(vp: Viewport, stats: RenderMemory.Statistics): number {
+function collectStatisticsForAllTileTrees(
+  vp: Viewport,
+  stats: RenderMemory.Statistics
+): number {
   let numTrees = 0;
   vp.view.iModel.tiles.forEachTreeOwner((owner) => {
     collectTileTreeMemory(stats, owner);
-    if (undefined !== owner.tileTree)
-      ++numTrees;
+    if (undefined !== owner.tileTree) ++numTrees;
   });
   return numTrees;
 }
@@ -97,8 +112,7 @@ const calcMem: CalcMem[] = [
   },
   (stats, vp) => {
     vp.target.renderSystem.collectStatistics(stats);
-    for (const x of IModelApp.viewManager)
-      x.target.collectStatistics(stats);
+    for (const x of IModelApp.viewManager) x.target.collectStatistics(stats);
 
     return collectStatisticsForAllTileTrees(vp, stats);
   },
@@ -107,7 +121,10 @@ const calcMem: CalcMem[] = [
 // ###TODO...
 const purgeMem: Array<PurgeMem | undefined> = [
   undefined,
-  (olderThan?) => IModelApp.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
+  (olderThan?) =>
+    IModelApp.viewManager.purgeTileTrees(
+      olderThan ? olderThan : BeTimePoint.now()
+    ),
 ];
 
 /** @internal */
@@ -166,7 +183,9 @@ class MemoryPanel {
       }
 
       elem.style.display = "block";
-      elem.innerHTML = `${this._labels[i]} (${stat.count}): ${formatMemory(stat.totalBytes)}`; // + "\n(max: " + formatMemory(stat.maxBytes) + ")";
+      elem.innerHTML = `${this._labels[i]} (${stat.count}): ${formatMemory(
+        stat.totalBytes
+      )}`; // + "\n(max: " + formatMemory(stat.maxBytes) + ")";
     }
   }
 }
@@ -216,8 +235,31 @@ export class MemoryTracker {
     row1.appendChild(cell11);
     table.appendChild(row1);
 
-    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Edge Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments", "Thematic Textures"]);
-    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Indexed Edges", "Polylines", "Point Strings", "Point Clouds", "Instances", "Terrain", "Reality Mesh"]);
+    this._textures = new MemoryPanel(cell00, "Textures", [
+      "Surface Textures",
+      "Vertex Tables",
+      "Edge Tables",
+      "Feature Tables",
+      "Feature Overrides",
+      "Clip Volumes",
+      "Planar Classifiers",
+      "Shadow Maps",
+      "Texture Attachments",
+      "Thematic Textures",
+    ]);
+    this._buffers = new MemoryPanel(cell01, "Buffers", [
+      "Surfaces",
+      "Visible Edges",
+      "Silhouettes",
+      "Polyline Edges",
+      "Indexed Edges",
+      "Polylines",
+      "Point Strings",
+      "Point Clouds",
+      "Instances",
+      "Terrain",
+      "Reality Mesh",
+    ]);
     this._totalElem = this.addStatistics(cell10);
     this._totalTreesElem = this.addStatistics(cell11);
 
@@ -276,8 +318,7 @@ export class MemoryTracker {
   }
 
   private change(newIndex: MemIndex): void {
-    if (newIndex === this._memIndex)
-      return;
+    if (newIndex === this._memIndex) return;
 
     this._memIndex = newIndex;
     if (MemIndex.None === newIndex) {
@@ -300,11 +341,19 @@ export class MemoryTracker {
     const calc = calcMem[this._memIndex];
     this._stats.clear();
     const numTrees = calc(this._stats, this._vp);
-    this._totalElem.innerText = `Total: ${formatMemory(this._stats.totalBytes)}`;
+    this._totalElem.innerText = `Total: ${formatMemory(
+      this._stats.totalBytes
+    )}`;
     this._totalTreesElem.innerText = `Total Tile Trees: ${numTrees}`;
 
-    this._textures.update(this._stats.consumers, this._stats.totalBytes - this._stats.buffers.totalBytes);
-    this._buffers.update(this._stats.buffers.consumers, this._stats.buffers.totalBytes);
+    this._textures.update(
+      this._stats.consumers,
+      this._stats.totalBytes - this._stats.buffers.totalBytes
+    );
+    this._buffers.update(
+      this._stats.buffers.consumers,
+      this._stats.buffers.totalBytes
+    );
   }
 
   private purge(): void {

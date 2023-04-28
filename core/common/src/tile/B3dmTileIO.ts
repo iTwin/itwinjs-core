@@ -20,7 +20,9 @@ export class B3dmHeader extends TileHeader {
   public readonly batchTableBinaryLength: number;
   public readonly featureTableJson: any;
   public readonly batchTableJson: any;
-  public get isValid(): boolean { return TileFormat.B3dm === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.B3dm === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);
@@ -56,21 +58,18 @@ export class B3dmHeader extends TileHeader {
     if (0 !== this.featureTableJsonLength) {
       const sceneStrData = stream.nextBytes(this.featureTableJsonLength);
       const sceneStr = utf8ToString(sceneStrData);
-      if (sceneStr)
-        this.featureTableJson = JSON.parse(sceneStr);
+      if (sceneStr) this.featureTableJson = JSON.parse(sceneStr);
     }
 
     stream.advance(this.featureTableBinaryLength);
     if (0 !== this.batchTableJsonLength) {
       const batchStrData = stream.nextBytes(this.batchTableJsonLength);
       const batchStr = utf8ToString(batchStrData);
-      if (batchStr)
-        this.batchTableJson = JSON.parse(batchStr);
+      if (batchStr) this.batchTableJson = JSON.parse(batchStr);
     }
 
     stream.advance(this.batchTableBinaryLength);
 
-    if (stream.isPastTheEnd)
-      this.invalidate();
+    if (stream.isPastTheEnd) this.invalidate();
   }
 }

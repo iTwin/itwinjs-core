@@ -7,7 +7,12 @@
  */
 
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
-import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
+import {
+  FilePropertyProps,
+  IModelError,
+  LinePixels,
+  LineStyleProps,
+} from "@itwin/core-common";
 import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -22,7 +27,6 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export namespace LineStyleDefinition {
-
   /** Line style component type identifiers */
   export enum ComponentType {
     /** Component type for [[LineStyleDefinition.PointSymbolProps]] */
@@ -301,10 +305,15 @@ export namespace LineStyleDefinition {
 
   /** Helper methods for creating and querying line styles */
   export class Utils {
-
     /** Create a file property for a new stroke pattern component. */
-    public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps {
-      const fileProps: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle" };
+    public static createStrokePatternComponent(
+      iModel: IModelDb,
+      props: StrokePatternProps
+    ): StyleProps {
+      const fileProps: FilePropertyProps = {
+        name: "LineCodeV1",
+        namespace: "dgn_LStyle",
+      };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       iModel.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.StrokePattern };
@@ -313,12 +322,23 @@ export namespace LineStyleDefinition {
     /** Create a file property for a new point symbol component.
      * If base and size parameters are not supplied, queries GeometryPart by id to set them.
      */
-    public static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined {
+    public static createPointSymbolComponent(
+      iModel: IModelDb,
+      props: PointSymbolProps
+    ): StyleProps | undefined {
       // if part extents weren't supplied, set them up now.
-      if (!props.baseX && !props.baseY && !props.baseZ && !props.sizeX && !props.sizeY && !props.sizeZ) {
-        const geomPart = iModel.elements.getElement<GeometryPart>(props.geomPartId);
-        if (!geomPart)
-          return undefined;
+      if (
+        !props.baseX &&
+        !props.baseY &&
+        !props.baseZ &&
+        !props.sizeX &&
+        !props.sizeY &&
+        !props.sizeZ
+      ) {
+        const geomPart = iModel.elements.getElement<GeometryPart>(
+          props.geomPartId
+        );
+        if (!geomPart) return undefined;
 
         props.baseX = geomPart.bbox.low.x;
         props.baseY = geomPart.bbox.low.y;
@@ -329,51 +349,87 @@ export namespace LineStyleDefinition {
         props.sizeZ = geomPart.bbox.high.z;
       }
 
-      const fileProps: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle" };
+      const fileProps: FilePropertyProps = {
+        name: "PointSymV1",
+        namespace: "dgn_LStyle",
+      };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       iModel.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.PointSymbol };
     }
 
     /** Create a file property for a new stroke point component. */
-    public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps {
-      const fileProps: FilePropertyProps = { name: "LinePointV1", namespace: "dgn_LStyle" };
+    public static createStrokePointComponent(
+      iModel: IModelDb,
+      props: StrokePointProps
+    ): StyleProps {
+      const fileProps: FilePropertyProps = {
+        name: "LinePointV1",
+        namespace: "dgn_LStyle",
+      };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       iModel.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.StrokePoint };
     }
 
     /** Create a file property for a new compound component. */
-    public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps {
-      const fileProps: FilePropertyProps = { name: "CompoundV1", namespace: "dgn_LStyle" };
+    public static createCompoundComponent(
+      iModel: IModelDb,
+      props: CompoundProps
+    ): StyleProps {
+      const fileProps: FilePropertyProps = {
+        name: "CompoundV1",
+        namespace: "dgn_LStyle",
+      };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       iModel.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.Compound };
     }
 
     /** Create a file property for a new raster image component. */
-    public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
-      const rasterFileProps: FilePropertyProps = { name: "RasterImageV1", namespace: "dgn_LStyle" };
-      rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
+    public static createRasterComponent(
+      iModel: IModelDb,
+      props: RasterImageProps,
+      image: Uint8Array
+    ): StyleProps | undefined {
+      const rasterFileProps: FilePropertyProps = {
+        name: "RasterImageV1",
+        namespace: "dgn_LStyle",
+      };
+      rasterFileProps.id =
+        iModel.queryNextAvailableFileProperty(rasterFileProps);
       iModel.saveFileProperty(rasterFileProps, undefined, image);
       props.imageId = rasterFileProps.id;
-      const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };
+      const fileProps: FilePropertyProps = {
+        name: "RasterComponentV1",
+        namespace: "dgn_LStyle",
+      };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
       iModel.saveFileProperty(fileProps, JSON.stringify(props));
       return { compId: fileProps.id, compType: ComponentType.RasterImage };
     }
 
     /** Query for an existing line style with the supplied name. */
-    public static queryStyle(imodel: IModelDb, scopeModelId: Id64String, name: string): Id64String | undefined {
-      return imodel.elements.queryElementIdByCode(LineStyle.createCode(imodel, scopeModelId, name));
+    public static queryStyle(
+      imodel: IModelDb,
+      scopeModelId: Id64String,
+      name: string
+    ): Id64String | undefined {
+      return imodel.elements.queryElementIdByCode(
+        LineStyle.createCode(imodel, scopeModelId, name)
+      );
     }
 
     /** Insert a new line style with the supplied name.
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
-    public static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String {
-      if (undefined === props.flags)
-        props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
+    public static createStyle(
+      imodel: IModelDb,
+      scopeModelId: Id64String,
+      name: string,
+      props: StyleProps
+    ): Id64String {
+      if (undefined === props.flags) props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
 
       const lsProps: LineStyleProps = {
         classFullName: "BisCore:LineStyle",
@@ -394,23 +450,49 @@ export namespace LineStyleDefinition {
      *
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
-    public static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String {
+    public static getOrCreateContinuousStyle(
+      imodel: IModelDb,
+      scopeModelId: Id64String,
+      width?: number
+    ): Id64String {
       if (width === undefined) {
         const name0 = "Continuous";
         const lsId0 = this.queryStyle(imodel, scopeModelId, name0);
-        return (undefined === lsId0 ? this.createStyle(imodel, scopeModelId, name0, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap }) : lsId0);
+        return undefined === lsId0
+          ? this.createStyle(imodel, scopeModelId, name0, {
+              compId: 0,
+              compType: ComponentType.Internal,
+              flags: StyleFlags.Continuous | StyleFlags.NoSnap,
+            })
+          : lsId0;
       }
 
       const name = `Continuous-${width}`;
       const lsId = this.queryStyle(imodel, scopeModelId, name);
-      if (undefined !== lsId)
-        return lsId;
+      if (undefined !== lsId) return lsId;
 
-      const strokePatternData = this.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
+      const strokePatternData = this.createStrokePatternComponent(imodel, {
+        descr: name,
+        strokes: [
+          {
+            length: 1e37,
+            orgWidth: width,
+            strokeMode: StrokeMode.Dash,
+            widthMode: StrokeWidth.Full,
+          },
+        ],
+      });
       if (undefined === strokePatternData)
-        throw new IModelError(IModelStatus.BadArg, "Unable to insert stroke component");
+        throw new IModelError(
+          IModelStatus.BadArg,
+          "Unable to insert stroke component"
+        );
 
-      return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
+      return this.createStyle(imodel, scopeModelId, name, {
+        compId: strokePatternData.compId,
+        compType: strokePatternData.compType,
+        flags: StyleFlags.Continuous | StyleFlags.NoSnap,
+      });
     }
 
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.
@@ -418,7 +500,11 @@ export namespace LineStyleDefinition {
      * Unlike other components, [[LineStyleDefinition.ComponentType.Internal]] uses the line code as the compId instead of a file property id.
      * @throws [[IModelError]] if supplied an invalid [[LinePixels]] value or if unable to insert the line style definition element.
      */
-    public static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String {
+    public static getOrCreateLinePixelsStyle(
+      imodel: IModelDb,
+      scopeModelId: Id64String,
+      linePixels: LinePixels
+    ): Id64String {
       let lineCode;
       switch (linePixels) {
         case LinePixels.Code1:
@@ -447,7 +533,12 @@ export namespace LineStyleDefinition {
       }
       const name = `LinePixelsCodeNumber-${lineCode}`;
       const lsId = this.queryStyle(imodel, scopeModelId, name);
-      return (undefined === lsId ? this.createStyle(imodel, scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
+      return undefined === lsId
+        ? this.createStyle(imodel, scopeModelId, name, {
+            compId: lineCode,
+            compType: ComponentType.Internal,
+          })
+        : lsId;
     }
   }
 }

@@ -23,11 +23,13 @@ const coreCustomAttributesSchema = {
   name: "CoreCustomAttributes",
   alias: "CoreCA",
   version: "01.00.01",
-  description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
+  description:
+    "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
   items: {
     Deprecated: {
       appliesTo: "Any",
-      description: "Identifies a schema or item within a schema as deprecated.  Deprecated things should not be used.",
+      description:
+        "Identifies a schema or item within a schema as deprecated.  Deprecated things should not be used.",
       modifier: "sealed",
       schemaItemType: "CustomAttributeClass",
     },
@@ -57,13 +59,15 @@ const bisCoreSchema = {
     },
     IParentElement: {
       appliesTo: "BisCore.Element",
-      description: "An interface that indicates that this Element is capable of being a parent (owning child Elements). This interface is mutually exclusive with ISubModeledElement.",
+      description:
+        "An interface that indicates that this Element is capable of being a parent (owning child Elements). This interface is mutually exclusive with ISubModeledElement.",
       label: "Parent Element",
       schemaItemType: "Mixin",
     },
     ISubModeledElement: {
       appliesTo: "BisCore.Element",
-      description: "An interface which indicates that an Element can be broken down or described by a (sub) Model.  This interface is mutually exclusive with IParentElement.",
+      description:
+        "An interface which indicates that an Element can be broken down or described by a (sub) Model.  This interface is mutually exclusive with IParentElement.",
       label: "Modellable Element",
       schemaItemType: "Mixin",
     },

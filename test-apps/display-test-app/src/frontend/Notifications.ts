@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { XAndY } from "@itwin/core-geometry";
 import {
-  IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, ToolTipOptions,
+  IModelApp,
+  MessageBoxIconType,
+  MessageBoxType,
+  MessageBoxValue,
+  NotificationManager,
+  NotifyMessageDetails,
+  ToolTipOptions,
 } from "@itwin/core-frontend";
 import { Surface } from "./Surface";
 import { showError, showStatus } from "./Utils";
@@ -19,8 +25,12 @@ export interface NotificationsWindowProps extends WindowProps {
 export class NotificationsWindow extends Window {
   private readonly _maxMessages: number;
 
-  public override get isCloseable() { return false; }
-  public get windowId() { return "notifications"; }
+  public override get isCloseable() {
+    return false;
+  }
+  public get windowId() {
+    return "notifications";
+  }
 
   public constructor(surface: Surface, props: NotificationsWindowProps) {
     super(surface, props);
@@ -31,10 +41,14 @@ export class NotificationsWindow extends Window {
 
   public addMessage(message: NotifyMessageDetails): void {
     const toHtml = (msg: HTMLElement | string) => {
-      return ("string" !== typeof msg) ? msg : IModelApp.makeHTMLElement("div", { innerText: msg });
+      return "string" !== typeof msg
+        ? msg
+        : IModelApp.makeHTMLElement("div", { innerText: msg });
     };
 
-    const msgDiv = IModelApp.makeHTMLElement("div", { parent: this.contentDiv });
+    const msgDiv = IModelApp.makeHTMLElement("div", {
+      parent: this.contentDiv,
+    });
     msgDiv.appendChild(toHtml(message.briefMessage));
     if (undefined !== message.detailedMessage)
       msgDiv.appendChild(toHtml(message.detailedMessage));
@@ -51,7 +65,9 @@ export class NotificationsWindow extends Window {
 export class Notifications extends NotificationManager {
   private _tooltipDiv?: HTMLDivElement;
 
-  public override outputPrompt(prompt: string) { showStatus(prompt); }
+  public override outputPrompt(prompt: string) {
+    showStatus(prompt);
+  }
 
   /** Output a message and/or alert to the user. */
   public override outputMessage(message: NotifyMessageDetails) {
@@ -59,23 +75,33 @@ export class Notifications extends NotificationManager {
     Surface.instance.notifications.addMessage(message);
   }
 
-  public override async openMessageBox(_mbType: MessageBoxType, message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public override async openMessageBox(
+    _mbType: MessageBoxType,
+    message: HTMLElement | string,
+    _icon: MessageBoxIconType
+  ): Promise<MessageBoxValue> {
     const rootDiv = document.getElementById("root") as HTMLDivElement;
-    if (!rootDiv)
-      return MessageBoxValue.Cancel;
+    if (!rootDiv) return MessageBoxValue.Cancel;
 
     // create a dialog element.
-    const dialog = IModelApp.makeHTMLElement("dialog", { parent: rootDiv, className: "notification-messagebox" });
+    const dialog = IModelApp.makeHTMLElement("dialog", {
+      parent: rootDiv,
+      className: "notification-messagebox",
+    });
 
     // set up the message
-    const span = IModelApp.makeHTMLElement("span", { parent: dialog, className: "notification-messageboxtext" });
-    if (typeof message === "string")
-      span.innerHTML = message;
-    else
-      span.appendChild(message);
+    const span = IModelApp.makeHTMLElement("span", {
+      parent: dialog,
+      className: "notification-messageboxtext",
+    });
+    if (typeof message === "string") span.innerHTML = message;
+    else span.appendChild(message);
 
     // make the ok button
-    const button = IModelApp.makeHTMLElement("button", { parent: dialog, className: "notification-messageboxbutton" });
+    const button = IModelApp.makeHTMLElement("button", {
+      parent: dialog,
+      className: "notification-messageboxbutton",
+    });
     button.innerHTML = "Ok";
 
     const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
@@ -91,7 +117,9 @@ export class Notifications extends NotificationManager {
     return promise;
   }
 
-  public override get isToolTipSupported() { return true; }
+  public override get isToolTipSupported() {
+    return true;
+  }
   public override get isToolTipOpen() {
     return undefined !== this._tooltipDiv;
   }
@@ -103,7 +131,12 @@ export class Notifications extends NotificationManager {
     }
   }
 
-  protected override _showToolTip(parent: HTMLElement, message: HTMLElement | string, pt?: XAndY, _options?: ToolTipOptions): void {
+  protected override _showToolTip(
+    parent: HTMLElement,
+    message: HTMLElement | string,
+    pt?: XAndY,
+    _options?: ToolTipOptions
+  ): void {
     this.clearToolTip();
 
     if (undefined === pt) {
@@ -111,15 +144,16 @@ export class Notifications extends NotificationManager {
       pt = { x: rect.width / 2, y: rect.height / 2 };
     }
 
-    const div = IModelApp.makeHTMLElement("div", { parent, className: "tooltip" });
+    const div = IModelApp.makeHTMLElement("div", {
+      parent,
+      className: "tooltip",
+    });
     div.style.position = "absolute";
     div.style.top = `${pt.y - 20}px`;
     div.style.left = `${pt.x + 15}px`;
 
-    if (message instanceof HTMLElement)
-      div.appendChild(message);
-    else
-      div.innerText = message;
+    if (message instanceof HTMLElement) div.appendChild(message);
+    else div.innerText = message;
 
     this._tooltipDiv = div;
   }

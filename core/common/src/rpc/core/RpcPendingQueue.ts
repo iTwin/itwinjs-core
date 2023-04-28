@@ -32,9 +32,11 @@ export class RpcPendingQueue {
     RpcRequest.events.addListener(this.requestEventHandler, this);
   }
 
-  private requestEventHandler(type: RpcRequestEvent, request: RpcRequest): void {
-    if (type !== RpcRequestEvent.StatusChanged)
-      return;
+  private requestEventHandler(
+    type: RpcRequestEvent,
+    request: RpcRequest
+  ): void {
+    if (type !== RpcRequestEvent.StatusChanged) return;
 
     switch (request.status) {
       case RpcRequestStatus.Submitted: {
@@ -58,8 +60,7 @@ export class RpcPendingQueue {
   }
 
   private dequeuePending(request: RpcRequest) {
-    if (this._pendingLock)
-      return;
+    if (this._pendingLock) return;
 
     const i = this._pending.indexOf(request);
     this._pending.splice(i, 1);
@@ -73,7 +74,7 @@ export class RpcPendingQueue {
 
     for (const request of this._pending) {
       const retry = request.retryAfter ?? request.retryInterval;
-      if (request.connecting || (request.lastSubmitted + retry) > now) {
+      if (request.connecting || request.lastSubmitted + retry > now) {
         continue;
       }
 
@@ -86,12 +87,14 @@ export class RpcPendingQueue {
   }.bind(this);
 
   private cleanupPendingQueue() {
-    if (this._pendingLock)
-      return;
+    if (this._pendingLock) return;
 
     let i = this._pending.length;
     while (i--) {
-      if (!this._pending[i].pending && !RpcRequestStatus.isTransientError(this._pending[i].status)) {
+      if (
+        !this._pending[i].pending &&
+        !RpcRequestStatus.isTransientError(this._pending[i].status)
+      ) {
         this._pending.splice(i, 1);
       }
     }
@@ -100,8 +103,7 @@ export class RpcPendingQueue {
   }
 
   private setPendingInterval() {
-    if (this._pendingInterval)
-      return;
+    if (this._pendingInterval) return;
 
     this._pendingInterval = setInterval(this._pendingIntervalHandler, 0);
   }

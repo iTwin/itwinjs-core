@@ -14,8 +14,20 @@ Either takes in a list of modelIds, or displays all 3D models by default.
 
 import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, CustomViewState3dProps, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
-  QueryRowFormat, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+  Camera,
+  CategorySelectorProps,
+  Code,
+  CustomViewState3dProps,
+  DisplayStyle3dProps,
+  Environment,
+  IModel,
+  IModelReadRpcInterface,
+  ModelSelectorProps,
+  QueryRowFormat,
+  RenderMode,
+  ViewDefinition3dProps,
+  ViewQueryParams,
+  ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { StandardViewId } from "./StandardView";
@@ -26,7 +38,7 @@ import { SpatialViewState } from "./SpatialViewState";
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
  * @extensions
-*/
+ */
 export interface ViewCreator3dOptions {
   /** Turn the [[Camera]] on to produce a perspective view.
    * Default: true
@@ -70,7 +82,7 @@ export class ViewCreator3d {
    * Constructs a ViewCreator3d using an [[IModelConnection]].
    * @param _imodel [[IModelConnection]] to query for categories and/or models.
    */
-  constructor(private _imodel: IModelConnection) { }
+  constructor(private _imodel: IModelConnection) {}
 
   /**
    * Creates a default [[ViewState3d]] based on the model ids passed in. If no model ids are passed in, all 3D models in the iModel are used.
@@ -78,26 +90,38 @@ export class ViewCreator3d {
    * @param [modelIds] Ids of models to display in the view.
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
-  public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
-      modelIds === undefined ? {} : { modelIds: CompressedId64Set.sortAndCompress(modelIds) });
+  public async createDefaultView(
+    options?: ViewCreator3dOptions,
+    modelIds?: Id64String[]
+  ): Promise<ViewState> {
+    const serializedProps: CustomViewState3dProps =
+      await IModelReadRpcInterface.getClientForRouting(
+        this._imodel.routingContext.token
+      ).getCustomViewState3dData(
+        this._imodel.getRpcProps(),
+        modelIds === undefined
+          ? {}
+          : { modelIds: CompressedId64Set.sortAndCompress(modelIds) }
+      );
     const props = await this._createViewStateProps(
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
       Range3d.fromJSON(serializedProps.modelExtents),
-      options);
+      options
+    );
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
       await viewState.load();
-    } catch {
-    }
+    } catch {}
 
     if (options?.standardViewId)
       viewState.setStandardRotation(options.standardViewId);
 
     if (options?.allSubCategoriesVisible)
-      viewState.displayStyle.enableAllLoadedSubCategories(viewState.categorySelector.categories);
+      viewState.displayStyle.enableAllLoadedSubCategories(
+        viewState.categorySelector.categories
+      );
 
     const range = viewState.computeFitRange();
     viewState.lookAtVolume(range, options?.vpAspect);
@@ -110,12 +134,16 @@ export class ViewCreator3d {
    * @param models Models to put in view props
    * @param options view creation options like camera On and skybox On
    */
-  private async _createViewStateProps(models: Id64Array, categories: Id64Array, modelExtents: Range3d, options?: ViewCreator3dOptions): Promise<ViewStateProps> {
+  private async _createViewStateProps(
+    models: Id64Array,
+    categories: Id64Array,
+    modelExtents: Range3d,
+    options?: ViewCreator3dOptions
+  ): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
 
-    if (modelExtents.isNull)
-      modelExtents.setFrom(this._imodel.projectExtents);
+    if (modelExtents.isNull) modelExtents.setFrom(this._imodel.projectExtents);
 
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
@@ -189,8 +217,8 @@ export class ViewCreator3d {
           },
           environment:
             options !== undefined &&
-              options.skyboxOn !== undefined &&
-              options.skyboxOn
+            options.skyboxOn !== undefined &&
+            options.skyboxOn
               ? Environment.defaults.withDisplay({ sky: true }).toJSON()
               : undefined,
         },
@@ -205,20 +233,25 @@ export class ViewCreator3d {
     };
 
     // merge seed view props if needed
-    return options?.useSeedView ? this._mergeSeedView(viewStateProps) : viewStateProps;
+    return options?.useSeedView
+      ? this._mergeSeedView(viewStateProps)
+      : viewStateProps;
   }
 
   /**
    * Merges a seed view in the iModel with the passed view state props. It will be a no-op if there are no default 3D views in the iModel
    * @param viewStateProps Input view props to be merged
    */
-  private async _mergeSeedView(viewStateProps: ViewStateProps): Promise<ViewStateProps> {
+  private async _mergeSeedView(
+    viewStateProps: ViewStateProps
+  ): Promise<ViewStateProps> {
     const viewId = await this._getDefaultViewId();
     // Handle iModels without any default view id
-    if (viewId === undefined)
-      return viewStateProps;
+    if (viewId === undefined) return viewStateProps;
 
-    const seedViewState = (await this._imodel.views.load(viewId) as SpatialViewState);
+    const seedViewState = (await this._imodel.views.load(
+      viewId
+    )) as SpatialViewState;
     const seedViewStateProps = {
       categorySelectorProps: seedViewState.categorySelector.toJSON(),
       modelSelectorProps: seedViewState.modelSelector.toJSON(),
@@ -233,7 +266,11 @@ export class ViewCreator3d {
       };
     }
 
-    return { ...seedViewStateProps, ...viewStateProps, displayStyleProps: mergedDisplayProps };
+    return {
+      ...seedViewStateProps,
+      ...viewStateProps,
+      displayStyleProps: mergedDisplayProps,
+    };
   }
 
   /**
@@ -246,16 +283,23 @@ export class ViewCreator3d {
     params.where = `ECInstanceId=${viewId}`;
 
     // Check validity of default view
-    const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._imodel.getRpcProps(), params);
+    const viewProps =
+      await IModelReadRpcInterface.getClient().queryElementProps(
+        this._imodel.getRpcProps(),
+        params
+      );
     if (viewProps.length === 0) {
       // Return the first view we can find
-      const viewList = await this._imodel.views.getViewList({ wantPrivate: false });
-      if (viewList.length === 0)
-        return undefined;
+      const viewList = await this._imodel.views.getViewList({
+        wantPrivate: false,
+      });
+      if (viewList.length === 0) return undefined;
 
-      const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
-      if (spatialViewList.length === 0)
-        return undefined;
+      const spatialViewList = viewList.filter(
+        (value: IModelConnection.ViewSpec) =>
+          value.class.indexOf("Spatial") !== -1
+      );
+      if (spatialViewList.length === 0) return undefined;
 
       return spatialViewList[0].id;
     }
@@ -268,7 +312,9 @@ export class ViewCreator3d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const row of this._imodel.createQueryReader(query, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    }))
       rows.push(row.id);
 
     return rows;

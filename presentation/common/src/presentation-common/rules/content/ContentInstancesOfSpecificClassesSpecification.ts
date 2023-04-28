@@ -15,7 +15,8 @@ import { ContentSpecificationBase } from "./ContentSpecification";
  * @see [Content instances of specific classes specification reference documentation page]($docs/presentation/content/ContentInstancesOfSpecificClasses.md)
  * @public
  */
-export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
+export interface ContentInstancesOfSpecificClassesSpecification
+  extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
   specType: "ContentInstancesOfSpecificClasses";
 
@@ -29,7 +30,9 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
    * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that prevents specified
    * ECClasses and subclasses from being selected by [[classes]] attribute.
    */
-  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+  excludedClasses?:
+    | MultiSchemaClassesSpecification
+    | MultiSchemaClassesSpecification[];
 
   /**
    * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]

@@ -21,8 +21,11 @@ interface BufferHandleLinkage {
 
 /** Provides convenience methods for creating a BufferHandleLinkage interface. */
 class BufferHandleLinkage {
-  private constructor() { }
-  public static create(buffer: BufferHandle, params: BufferParameters[]): BufferHandleLinkage {
+  private constructor() {}
+  public static create(
+    buffer: BufferHandle,
+    params: BufferParameters[]
+  ): BufferHandleLinkage {
     return { buffer, params };
   }
   public static clone(linkage: BufferHandleLinkage): BufferHandleLinkage {
@@ -60,12 +63,36 @@ export interface BufferParameters {
  * @internal
  */
 export namespace BufferParameters {
-  export function create(glAttribLoc: number, glSize: number, glType: number, glNormalized: boolean, glStride: number, glOffset: number, glInstanced: boolean): BufferParameters {
-    return { glAttribLoc, glSize, glType, glNormalized, glStride, glOffset, glInstanced };
+  export function create(
+    glAttribLoc: number,
+    glSize: number,
+    glType: number,
+    glNormalized: boolean,
+    glStride: number,
+    glOffset: number,
+    glInstanced: boolean
+  ): BufferParameters {
+    return {
+      glAttribLoc,
+      glSize,
+      glType,
+      glNormalized,
+      glStride,
+      glOffset,
+      glInstanced,
+    };
   }
 
   export function clone(params: BufferParameters): BufferParameters {
-    return BufferParameters.create(params.glAttribLoc, params.glSize, params.glType, params.glNormalized, params.glStride, params.glOffset, params.glInstanced);
+    return BufferParameters.create(
+      params.glAttribLoc,
+      params.glSize,
+      params.glType,
+      params.glNormalized,
+      params.glStride,
+      params.glOffset,
+      params.glInstanced
+    );
   }
 }
 
@@ -117,7 +144,14 @@ export class BuffersContainer implements WebGLDisposable {
       if (p.glInstanced) {
         System.instance.vertexAttribDivisor(p.glAttribLoc, 1);
       }
-      System.instance.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
+      System.instance.context.vertexAttribPointer(
+        p.glAttribLoc,
+        p.glSize,
+        p.glType,
+        p.glNormalized,
+        p.glStride,
+        p.glOffset
+      );
     }
     this.unbind();
   }
@@ -154,7 +188,9 @@ export class VAOHandle implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+  public get isDisposed(): boolean {
+    return this._arrayObject === undefined;
+  }
 
   /** Frees the WebGL vertex array object */
   public dispose(): void {
@@ -202,8 +238,12 @@ export class BufferHandle implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._glBuffer === undefined; }
-  public get bytesUsed(): number { return this._bytesUsed; }
+  public get isDisposed(): boolean {
+    return this._glBuffer === undefined;
+  }
+  public get bytesUsed(): number {
+    return this._bytesUsed;
+  }
 
   /** Frees the WebGL buffer */
   public dispose(): void {
@@ -222,10 +262,15 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Sets the specified target to be bound to no buffer */
-  public unbind(): void { System.instance.context.bindBuffer(this._target, null); }
+  public unbind(): void {
+    System.instance.context.bindBuffer(this._target, null);
+  }
 
   /** Binds this buffer to the target specified at construction and sets the buffer's data store. */
-  public bindData(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
+  public bindData(
+    data: BufferSource,
+    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw
+  ): void {
     this.bind();
     System.instance.context.bufferData(this._target, data, usage);
     this.unbind();
@@ -233,7 +278,11 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Creates a BufferHandle and binds its data */
-  public static createBuffer(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+  public static createBuffer(
+    target: GL.Buffer.Target,
+    data: BufferSource,
+    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw
+  ): BufferHandle | undefined {
     const handle = new BufferHandle(target);
     if (handle.isDisposed) {
       return undefined;
@@ -243,11 +292,16 @@ export class BufferHandle implements WebGLDisposable {
     return handle;
   }
   /** Creates a BufferHandle and binds its data */
-  public static createArrayBuffer(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw) {
+  public static createArrayBuffer(
+    data: BufferSource,
+    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw
+  ) {
     return BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, data, usage);
   }
 
-  public isBound(binding: GL.Buffer.Binding) { return System.instance.context.getParameter(binding) === this._glBuffer; }
+  public isBound(binding: GL.Buffer.Binding) {
+    return System.instance.context.getParameter(binding) === this._glBuffer;
+  }
 }
 
 function setScale(index: number, value: number, array: Float32Array) {
@@ -294,7 +348,10 @@ export function qscale3dToArray(qscale: Point3d): Float32Array {
 /** Converts 3d quantization params to a pair of Float32Arrays
  * @internal
  */
-export function qparams3dToArray(params: QParams3d): { origin: Float32Array, scale: Float32Array } {
+export function qparams3dToArray(params: QParams3d): {
+  origin: Float32Array;
+  scale: Float32Array;
+} {
   const origin = qorigin3dToArray(params.origin);
   const scale = qscale3dToArray(params.scale);
   return { origin, scale };
@@ -311,7 +368,10 @@ export class QBufferHandle2d extends BufferHandle {
     this.params = qparams2dToArray(qParams);
   }
 
-  public static create(qParams: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
+  public static create(
+    qParams: QParams2d,
+    data: Uint16Array
+  ): QBufferHandle2d | undefined {
     const handle = new QBufferHandle2d(qParams);
     if (handle.isDisposed) {
       return undefined;
@@ -337,7 +397,10 @@ export class QBufferHandle3d extends BufferHandle {
     this.scale = qscale3dToArray(qParams.scale);
   }
 
-  public static create(qParams: QParams3d, data: Uint16Array | Uint8Array | Float32Array): QBufferHandle3d | undefined {
+  public static create(
+    qParams: QParams3d,
+    data: Uint16Array | Uint8Array | Float32Array
+  ): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(qParams);
     if (handle.isDisposed) {
       return undefined;

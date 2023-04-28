@@ -5,7 +5,12 @@
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
+  BackgroundMapProps,
+  ColorDef,
+  Hilite,
+  RenderMode,
+  ViewFlags,
+  ViewStateProps,
 } from "@itwin/core-common";
 import { RenderSystem, TileAdmin } from "@itwin/core-frontend";
 
@@ -18,7 +23,9 @@ export interface ViewSize {
 /** Selectively overrides individual ViewFlags for a TestConfig.
  * @note renderMode can be a string "wireframe", "hiddenline", "solidfill", or "smoothshade" (case-insensitive).
  */
-export type ViewFlagProps = Partial<Omit<ViewFlags, "renderMode">> & { renderMode?: string | RenderMode };
+export type ViewFlagProps = Partial<Omit<ViewFlags, "renderMode">> & {
+  renderMode?: string | RenderMode;
+};
 
 /** The types of saved views to include in a TestConfig. Case-insensitive in TestConfigProps; always lower-case in TestConfig.
  * local and internal mean exactly the same thing - include all persistent views from the iModel, including private ones.
@@ -161,8 +168,15 @@ export interface TestConfigProps {
 }
 
 export const defaultHilite = new Hilite.Settings();
-export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
-export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
+export const defaultEmphasis = new Hilite.Settings(
+  ColorDef.black,
+  0,
+  0,
+  Hilite.Silhouette.Thick
+);
+export const isWindows = window.navigator.userAgent
+  .toLowerCase()
+  .includes("win");
 export const separator = isWindows ? "\\" : "/";
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
@@ -209,30 +223,50 @@ export class TestConfig {
    */
   public constructor(props: TestConfigProps, prevConfig?: TestConfig) {
     this.view = props.view ?? prevConfig?.view ?? { width: 1000, height: 1000 };
-    this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
-    this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
-    this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
+    this.numRendersToTime =
+      props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
+    this.numRendersToSkip =
+      props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
+    this.outputName =
+      props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
+    this.outputPath =
+      prevConfig?.outputPath ??
+      (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     this.iModelId = props.iModelId ?? prevConfig?.iModelId;
     this.iTwinId = props.iTwinId ?? prevConfig?.iTwinId;
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
-    this.viewName = props.viewName ?? props.extViewName ?? prevConfig?.viewName ?? prevConfig?.extViewName ?? "*";
+    this.viewName =
+      props.viewName ??
+      props.extViewName ??
+      prevConfig?.viewName ??
+      prevConfig?.extViewName ??
+      "*";
     this.extViewName = props.extViewName;
     this.testType = props.testType ?? prevConfig?.testType ?? "timing";
-    this.savedViewType = (props.savedViewType?.toLowerCase() as SavedViewType) ?? prevConfig?.savedViewType ?? "both";
-    this.renderOptions = prevConfig?.renderOptions ? { ...prevConfig.renderOptions } : { useWebGL2: true, dpiAwareLOD: true };
-    this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
+    this.savedViewType =
+      (props.savedViewType?.toLowerCase() as SavedViewType) ??
+      prevConfig?.savedViewType ??
+      "both";
+    this.renderOptions = prevConfig?.renderOptions
+      ? { ...prevConfig.renderOptions }
+      : { useWebGL2: true, dpiAwareLOD: true };
+    this.filenameOptsToIgnore =
+      props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
-    this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
+    this.useDisjointTimer =
+      props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
         // Don't preserve selected elements or appearance overrides.
-        this.viewStateSpec = { name: prevConfig.viewStateSpec.name, viewProps: prevConfig.viewStateSpec.viewProps };
+        this.viewStateSpec = {
+          name: prevConfig.viewStateSpec.name,
+          viewProps: prevConfig.viewStateSpec.viewProps,
+        };
       }
 
       this.hilite = prevConfig.hilite;
@@ -241,18 +275,18 @@ export class TestConfig {
       if (prevConfig.backgroundMap)
         this.backgroundMap = { ...prevConfig.backgroundMap };
 
-      if (prevConfig.tileProps)
-        this.tileProps = { ...prevConfig.tileProps };
+      if (prevConfig.tileProps) this.tileProps = { ...prevConfig.tileProps };
 
-      if (prevConfig.viewFlags)
-        this.viewFlags = { ...prevConfig.viewFlags };
-
+      if (prevConfig.viewFlags) this.viewFlags = { ...prevConfig.viewFlags };
     } else if (props.argOutputPath) {
       this.outputPath = props.argOutputPath;
     }
 
     if (props.iModelLocation)
-      this.iModelLocation = combineFilePaths(props.iModelLocation, this.iModelLocation);
+      this.iModelLocation = combineFilePaths(
+        props.iModelLocation,
+        this.iModelLocation
+      );
 
     if (props.outputPath)
       this.outputPath = combineFilePaths(props.outputPath, this.outputPath);
@@ -264,10 +298,14 @@ export class TestConfig {
       };
 
       if (props.viewString._overrideElements)
-        this.viewStateSpec.elementOverrides = JSON.parse(props.viewString._overrideElements);
+        this.viewStateSpec.elementOverrides = JSON.parse(
+          props.viewString._overrideElements
+        );
 
       if (props.viewString._selectedElements)
-        this.viewStateSpec.selectedElements = JSON.parse(props.viewString._selectedElements);
+        this.viewStateSpec.selectedElements = JSON.parse(
+          props.viewString._selectedElements
+        );
     }
 
     if (props.renderOptions) {
@@ -284,7 +322,10 @@ export class TestConfig {
       this.hilite = hiliteSettings(this.hilite ?? defaultHilite, props.hilite);
 
     if (props.emphasis)
-      this.emphasis = hiliteSettings(this.emphasis ?? defaultEmphasis, props.emphasis);
+      this.emphasis = hiliteSettings(
+        this.emphasis ?? defaultEmphasis,
+        props.emphasis
+      );
   }
 
   /** Returns true if IModelApp must be restarted when transitioning from this config to the specified config. */
@@ -327,22 +368,35 @@ export class TestConfigStack {
 }
 
 /** Override properties of settings with those defined by props. */
-function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
+function hiliteSettings(
+  settings: Hilite.Settings,
+  props: HiliteProps
+): Hilite.Settings {
   const colors = settings.color.colors;
-  const color = ColorDef.from(props?.red ?? colors.r, props?.green ?? colors.g, props?.blue ?? colors.b, 0);
-  return new Hilite.Settings(color, props.visibleRatio ?? settings.visibleRatio, props.hiddenRatio ?? settings.hiddenRatio, props.silhouette ?? settings.silhouette);
+  const color = ColorDef.from(
+    props?.red ?? colors.r,
+    props?.green ?? colors.g,
+    props?.blue ?? colors.b,
+    0
+  );
+  return new Hilite.Settings(
+    color,
+    props.visibleRatio ?? settings.visibleRatio,
+    props.hiddenRatio ?? settings.hiddenRatio,
+    props.silhouette ?? settings.silhouette
+  );
 }
 
 /** Merge two objects of type T such that any property defined by second overrides the value supplied for that property by first.
  * The inputs are not modified - a new object is returned if two objects are supplied.
  */
-function merge<T extends object>(first: T | undefined, second: T | undefined): T | undefined {
-  if (!first)
-    return second;
-  else if (!second)
-    return first;
-  else
-    return { ...first, ...second };
+function merge<T extends object>(
+  first: T | undefined,
+  second: T | undefined
+): T | undefined {
+  if (!first) return second;
+  else if (!second) return first;
+  else return { ...first, ...second };
 }
 
 /** Combine two file paths. e.g., combineFilePaths("images/img.png", "/usr/tmp") returns "/usr/tmp/images/img.png".
@@ -350,42 +404,39 @@ function merge<T extends object>(first: T | undefined, second: T | undefined): T
  * If !isWindows & additionalPath begins with "/", initialPath is ignored.
  */
 function combineFilePaths(additionalPath: string, initialPath: string): string {
-  if (initialPath.length === 0 || (isWindows && additionalPath[1] === ":") || (!isWindows && additionalPath[0] === "/"))
+  if (
+    initialPath.length === 0 ||
+    (isWindows && additionalPath[1] === ":") ||
+    (!isWindows && additionalPath[0] === "/")
+  )
     return additionalPath;
   return `${initialPath}${separator}${additionalPath}`;
 }
 
 /** Compare two values for equality, recursing into arrays and object fields. */
 function areEqual(a: any, b: any): boolean {
-  if (typeof a !== typeof b)
-    return false;
+  if (typeof a !== typeof b) return false;
 
   if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length)
-      return false;
+    if (a.length !== b.length) return false;
 
-    for (let i = 0; i < a.length; i++)
-      if (!areEqual(a[i], b[i]))
-        return false;
+    for (let i = 0; i < a.length; i++) if (!areEqual(a[i], b[i])) return false;
 
     return true;
   }
 
-  if (typeof a === "object")
-    return areObjectsEqual(a, b as object);
+  if (typeof a === "object") return areObjectsEqual(a, b as object);
 
   return a === b;
 }
 
 /** Compare the fields of each object for equality. */
 function areObjectsEqual(a: object, b: object): boolean {
-  if (Object.keys(a).length !== Object.keys(b).length)
-    return false;
+  if (Object.keys(a).length !== Object.keys(b).length) return false;
 
   const ob = b as { [key: string]: any };
   for (const [key, value] of Object.entries(a))
-    if (!areEqual(value, ob[key]))
-      return false;
+    if (!areEqual(value, ob[key])) return false;
 
   return true;
 }

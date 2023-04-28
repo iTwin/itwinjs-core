@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@bentley/telemetry-client__ package contains client wrappers for reporting telemetry data.
+The **@bentley/telemetry-client** package contains client wrappers for reporting telemetry data.
 
 ## Documentation
 

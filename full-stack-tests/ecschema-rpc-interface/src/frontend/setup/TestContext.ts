@@ -7,7 +7,10 @@ import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+  getAccessTokenFromBackend,
+  TestBrowserAuthorizationClientConfiguration,
+  TestFrontendAuthorizationClient,
+  TestUserCredentials,
 } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
@@ -38,49 +41,77 @@ export class TestContext {
   }
 
   /** Initialize configuration for the rpc interfaces used by the application. */
-  private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line deprecation/deprecation
+  private initializeRpcInterfaces(info: OpenAPIInfo) {
+    // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
+    BentleyCloudRpcManager.initializeClient(
+      { info, uriPrefix },
+      getRpcInterfaces()
+    );
   }
 
   private async initialize() {
-    expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
+    expect(this.settings.users.length).to.be.gte(
+      1,
+      `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`
+    );
 
     // Print out the configuration
     console.log(this.settings.toString()); // eslint-disable-line
 
     // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
-    Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
+    Logger.setLevelDefault(
+      this.settings.logLevel === undefined
+        ? LogLevel.Warning
+        : this.settings.logLevel
+    );
 
     if (undefined !== this.settings.oidcClientId) {
-      this.adminUserAccessToken = await getAccessTokenFromBackend({
-        email: this.settings.users[0].email,
-        password: this.settings.users[0].password,
-      } as TestUserCredentials, {
-        clientId: this.settings.oidcClientId,
-        redirectUri: this.settings.oidcRedirect,
-        scope: this.settings.oidcScopes,
-        authority: this.settings.oidcAuthority,
-      } as TestBrowserAuthorizationClientConfiguration);
+      this.adminUserAccessToken = await getAccessTokenFromBackend(
+        {
+          email: this.settings.users[0].email,
+          password: this.settings.users[0].password,
+        } as TestUserCredentials,
+        {
+          clientId: this.settings.oidcClientId,
+          redirectUri: this.settings.oidcRedirect,
+          scope: this.settings.oidcScopes,
+          authority: this.settings.oidcAuthority,
+        } as TestBrowserAuthorizationClientConfiguration
+      );
     }
 
     const iModelData = this.settings.iModel;
 
-    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, iModelData);
+    this.iModelWithChangesets = await IModelSession.create(
+      this.adminUserAccessToken,
+      iModelData
+    );
     this.iTwinId = this.iModelWithChangesets.iTwinId;
 
-    this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
+    this.initializeRpcInterfaces({
+      title: this.settings.Backend.name,
+      version: this.settings.Backend.version,
+    });
 
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    const iModelClient = new IModelsClient({
+      api: {
+        baseUrl: `https://${
+          process.env.IMJS_URL_PREFIX ?? ""
+        }api.bentley.com/imodels`,
+      },
+    });
 
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,
-      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      authorizationClient: new TestFrontendAuthorizationClient(
+        this.adminUserAccessToken
+      ),
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    console.log("TestSetup: Done");  // eslint-disable-line
+    console.log("TestSetup: Done"); // eslint-disable-line
   }
 }

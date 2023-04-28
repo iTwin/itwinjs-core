@@ -2,7 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyCloudRpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "@itwin/core-common";
+import {
+  BentleyCloudRpcProtocol,
+  RpcRequestFulfillment,
+  SerializedRpcRequest,
+} from "@itwin/core-common";
 
 export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) {
   const realFulfill = protocol.fulfill; // eslint-disable-line @typescript-eslint/unbound-method
@@ -10,7 +14,10 @@ export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) {
 
   protocol.fulfill = async (request: SerializedRpcRequest) => {
     if (request.operation.interfaceDefinition === "WebRoutingInterface") {
-      const fulfillment = await RpcRequestFulfillment.forUnknownError(request, "");
+      const fulfillment = await RpcRequestFulfillment.forUnknownError(
+        request,
+        ""
+      );
       fulfillment.status = Number(request.operation.operationName.substring(4));
 
       let intercepted = interceptions.get(fulfillment.status) ?? 0;

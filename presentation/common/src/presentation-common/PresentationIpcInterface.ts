@@ -31,7 +31,9 @@ export interface UnsetRulesetVariableParams extends CommonIpcParams {
 /** @internal */
 export interface PresentationIpcInterface {
   /** Sets ruleset variable value. */
-  setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
+  setRulesetVariable(
+    params: SetRulesetVariableParams<RulesetVariableJSON>
+  ): Promise<void>;
 
   /** Unsets ruleset variable value. */
   unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;

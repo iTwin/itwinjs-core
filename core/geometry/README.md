@@ -4,13 +4,13 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-geometry__ package contains classes for working with geometric types including:
+The **@itwin/core-geometry** package contains classes for working with geometric types including:
 
-* Points
-* Vectors
-* Curves
-* Surfaces
-* Analytic solids
+- Points
+- Vectors
+- Curves
+- Surfaces
+- Analytic solids
 
 ## Documentation
 

@@ -56,5 +56,10 @@ export enum SpecialKey {
  * @public
  */
 export function isArrowKey(key: string): boolean {
-  return (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight || key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown);
+  return (
+    key === SpecialKey.ArrowLeft ||
+    key === SpecialKey.ArrowRight ||
+    key === SpecialKey.ArrowUp ||
+    key === SpecialKey.ArrowDown
+  );
 }

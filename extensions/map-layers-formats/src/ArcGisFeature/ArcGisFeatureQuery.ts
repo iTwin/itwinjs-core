@@ -8,29 +8,37 @@ export type ArcGisFeatureResultType = "none" | "standard" | "tile";
 
 /** @internal */
 export type ArcGisFeatureGeometryType =
- "esriGeometryNull"
- | "esriGeometryPoint"
- | "esriGeometryMultipoint"
- | "esriGeometryLine"
- | "esriGeometryCircularArc"
- | "esriGeometryEllipticArc"
- | "esriGeometryBezier3Curve"
- | "esriGeometryPath"
- | "esriGeometryPolyline"
- | "esriGeometryRing"
- | "esriGeometryPolygon"
- | "esriGeometryEnvelope"
- | "esriGeometryAny"
- | "esriGeometryBag"
- | "esriGeometryMultiPatch"
- | "esriGeometryTriangleStrip"
- | "esriGeometryTriangeFan"
- | "esriGeometryRay"
- | "esriGeometrySphere"
- | "esriGeometryTriangles";
+  | "esriGeometryNull"
+  | "esriGeometryPoint"
+  | "esriGeometryMultipoint"
+  | "esriGeometryLine"
+  | "esriGeometryCircularArc"
+  | "esriGeometryEllipticArc"
+  | "esriGeometryBezier3Curve"
+  | "esriGeometryPath"
+  | "esriGeometryPolyline"
+  | "esriGeometryRing"
+  | "esriGeometryPolygon"
+  | "esriGeometryEnvelope"
+  | "esriGeometryAny"
+  | "esriGeometryBag"
+  | "esriGeometryMultiPatch"
+  | "esriGeometryTriangleStrip"
+  | "esriGeometryTriangeFan"
+  | "esriGeometryRay"
+  | "esriGeometrySphere"
+  | "esriGeometryTriangles";
 
 /** @internal */
-export type ArcGisFeatureSpatialRel =  "esriSpatialRelIntersects" | "esriSpatialRelContains" | "esriSpatialRelCrosses" | "esriSpatialRelEnvelopeIntersects" | "esriSpatialRelIndexIntersects" | "esriSpatialRelOverlaps" | "esriSpatialRelTouches" | "esriSpatialRelWithin";
+export type ArcGisFeatureSpatialRel =
+  | "esriSpatialRelIntersects"
+  | "esriSpatialRelContains"
+  | "esriSpatialRelCrosses"
+  | "esriSpatialRelEnvelopeIntersects"
+  | "esriSpatialRelIndexIntersects"
+  | "esriSpatialRelOverlaps"
+  | "esriSpatialRelTouches"
+  | "esriSpatialRelWithin";
 
 /** @internal */
 export interface ArcGisGeometry {
@@ -75,7 +83,6 @@ export type ArcGisFeatureFormat = "JSON" | "PBF";
 // https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm
 /** @internal */
 export interface ArcGisFeatureQueryParams {
-
   /** This option can be used for fetching query results up to the resultRecordCount specified.
    * When resultOffset is specified but this parameter is not, the map service defaults it to maxRecordCount.
    * The maximum value for this parameter is the value of the layer's maxRecordCount property.
@@ -134,7 +141,13 @@ export class ArcGisFeatureQuery {
 
   // base url is expected ito be in the format of:
   // https://<hostname>/arcgis/rest/services/<ServiceName>/FeatureServer
-  public constructor(baseUrl: string, layerIdx: number, format: ArcGisFeatureFormat, outSR: number, params?: ArcGisFeatureQueryParams) {
+  public constructor(
+    baseUrl: string,
+    layerIdx: number,
+    format: ArcGisFeatureFormat,
+    outSR: number,
+    params?: ArcGisFeatureQueryParams
+  ) {
     this.baseUrl = baseUrl;
     this.layerIdx = layerIdx;
     this.format = format;
@@ -153,7 +166,6 @@ export class ArcGisFeatureQuery {
       this.outFields = params.outFields;
       this.distance = params.distance;
     }
-
   }
 
   public toString() {
@@ -161,46 +173,57 @@ export class ArcGisFeatureQuery {
 
     url.searchParams.append("f", this.format);
 
-    if ( this.resultRecordCount !== undefined) {
+    if (this.resultRecordCount !== undefined) {
       url.searchParams.append("resultRecordCount", `${this.resultRecordCount}`);
     }
 
-    if ( this.resultOffset !== undefined) {
-      url.searchParams.append( "resultOffset", `${this.resultOffset}`);
+    if (this.resultOffset !== undefined) {
+      url.searchParams.append("resultOffset", `${this.resultOffset}`);
     }
 
-    if ( this.returnGeometry !== undefined) {
-      url.searchParams.append("returnGeometry", this.returnGeometry?"true":"false");
+    if (this.returnGeometry !== undefined) {
+      url.searchParams.append(
+        "returnGeometry",
+        this.returnGeometry ? "true" : "false"
+      );
     }
 
-    if ( this.resultType !== undefined) {
+    if (this.resultType !== undefined) {
       url.searchParams.append("resultType", this.resultType);
     }
 
-    if ( this.maxRecordCountFactor !== undefined) {
-      url.searchParams.append( "maxRecordCountFactor", `${this.maxRecordCountFactor}`);
+    if (this.maxRecordCountFactor !== undefined) {
+      url.searchParams.append(
+        "maxRecordCountFactor",
+        `${this.maxRecordCountFactor}`
+      );
     }
 
-    if ( this.returnExceededLimitFeatures !== undefined) {
-      url.searchParams.append( "returnExceededLimitFeatures", this.returnExceededLimitFeatures?"true":"false");
+    if (this.returnExceededLimitFeatures !== undefined) {
+      url.searchParams.append(
+        "returnExceededLimitFeatures",
+        this.returnExceededLimitFeatures ? "true" : "false"
+      );
     }
 
-    url.searchParams.append( "outSR", `${this.outSR}`);
+    url.searchParams.append("outSR", `${this.outSR}`);
 
     if (this.geometry || this.spatialRel) {
-
       if (this.spatialRel) {
-        url.searchParams.append( "spatialRel", this.spatialRel);
+        url.searchParams.append("spatialRel", this.spatialRel);
       }
 
       if (this.geometry) {
-        url.searchParams.append( "geometryType", this.geometry.type);
+        url.searchParams.append("geometryType", this.geometry.type);
 
         const geomStr = JSON.stringify(this.geometry.geom);
-        url.searchParams.append( "geometry", geomStr);
-        url.searchParams.append( "units", "esriSRUnit_Meter");    // required on older server for get feature info
+        url.searchParams.append("geometry", geomStr);
+        url.searchParams.append("units", "esriSRUnit_Meter"); // required on older server for get feature info
 
-        url.searchParams.append( "inSR", `${this.geometry.geom.spatialReference.wkid}`);
+        url.searchParams.append(
+          "inSR",
+          `${this.geometry.geom.spatialReference.wkid}`
+        );
       }
     } else {
       // No custom params, fetch all geometries
@@ -213,7 +236,7 @@ export class ArcGisFeatureQuery {
     }
 
     if (this.outFields) {
-      url.searchParams.append( "outFields", this.outFields);
+      url.searchParams.append("outFields", this.outFields);
     }
 
     if (this.distance) {
@@ -222,5 +245,4 @@ export class ArcGisFeatureQuery {
 
     return url.toString();
   }
-
 }

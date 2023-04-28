@@ -6,7 +6,11 @@ import * as path from "path";
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
+import {
+  getRpcInterfaces,
+  initializeDtaBackend,
+  loadBackendConfig,
+} from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 
@@ -18,11 +22,9 @@ const getWindowSize = (winSize?: string) => {
       let width = Number.parseInt(parts[0], 10);
       let height = Number.parseInt(parts[1], 10);
 
-      if (Number.isNaN(width))
-        width = 1280;
+      if (Number.isNaN(width)) width = 1280;
 
-      if (Number.isNaN(height))
-        height = 1024;
+      if (Number.isNaN(height)) height = 1024;
       return { width, height, x: 100, y: 100 };
     }
   }
@@ -31,7 +33,9 @@ const getWindowSize = (winSize?: string) => {
 };
 
 class DtaHandler extends IpcHandler implements DtaIpcInterface {
-  public get channelName() { return dtaChannel; }
+  public get channelName() {
+    return dtaChannel;
+  }
   public async sayHello() {
     return "Hello from backend";
   }
@@ -60,10 +64,17 @@ const dtaElectronMain = async () => {
 
   // Restore previous window size, position and maximized state
   const sizeAndPosition = getWindowSize(configuration.windowSize);
-  const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
+  const maximizeWindow =
+    undefined === sizeAndPosition ||
+    ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
-  await ElectronHost.openMainWindow({ ...sizeAndPosition, show: !maximizeWindow, title: "Display Test App", storeWindowName: mainWindowName });
+  await ElectronHost.openMainWindow({
+    ...sizeAndPosition,
+    show: !maximizeWindow,
+    title: "Display Test App",
+    storeWindowName: mainWindowName,
+  });
   assert(ElectronHost.mainWindow !== undefined);
 
   if (maximizeWindow) {
@@ -78,7 +89,13 @@ const dtaElectronMain = async () => {
   ElectronHost.app.on("web-contents-created", (_e, wc) => {
     wc.on("before-input-event", (event, input) => {
       // CTRL + SHIFT + I  ==> Toggle DevTools
-      if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
+      if (
+        input.key === "I" &&
+        input.control &&
+        !input.alt &&
+        !input.meta &&
+        input.shift
+      ) {
         if (ElectronHost.mainWindow)
           ElectronHost.mainWindow.webContents.toggleDevTools();
 
@@ -89,11 +106,14 @@ const dtaElectronMain = async () => {
 
   // Custom orchestrator URL is used to define the iModelBank URL.
   if (configuration.customOrchestratorUri) {
-    ElectronHost.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
-      // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-      event.preventDefault();
-      callback(true);
-    });
+    ElectronHost.app.on(
+      "certificate-error",
+      (event, _webContents, _url, _error, _certificate, callback) => {
+        // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+        event.preventDefault();
+        callback(true);
+      }
+    );
   }
 };
 

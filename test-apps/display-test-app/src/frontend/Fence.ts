@@ -3,7 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
+import {
+  EmphasizeElements,
+  IModelApp,
+  ScreenViewport,
+  Tool,
+} from "@itwin/core-frontend";
 import { BentleyStatus, Id64, Id64Array } from "@itwin/core-bentley";
 import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
 import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
@@ -14,10 +19,19 @@ import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
  */
 export class FenceClassifySelectedTool extends Tool {
   public static override toolId = "Fence.ClassifySelected";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
-  public async doClassify(vp: ScreenViewport, candidates: Id64Array, clip: ClipVector, allowOverlaps: boolean): Promise<void> {
+  public async doClassify(
+    vp: ScreenViewport,
+    candidates: Id64Array,
+    clip: ClipVector,
+    allowOverlaps: boolean
+  ): Promise<void> {
     const requestProps: GeometryContainmentRequestProps = {
       candidates,
       clip: clip.toJSON(),
@@ -26,7 +40,10 @@ export class FenceClassifySelectedTool extends Tool {
     };
 
     const result = await vp.iModel.getGeometryContainment(requestProps);
-    if (BentleyStatus.SUCCESS !== result.status || undefined === result.candidatesContainment)
+    if (
+      BentleyStatus.SUCCESS !== result.status ||
+      undefined === result.candidatesContainment
+    )
       return;
 
     const inside: Id64Array = [];
@@ -47,16 +64,28 @@ export class FenceClassifySelectedTool extends Tool {
       }
     });
 
-    EmphasizeElements.getOrCreate(vp).overrideElements(inside, vp, ColorDef.green);
-    EmphasizeElements.getOrCreate(vp).overrideElements(outside, vp, ColorDef.red);
-    EmphasizeElements.getOrCreate(vp).overrideElements(overlap, vp, ColorDef.blue);
-    EmphasizeElements.getOrCreate(vp).defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
+    EmphasizeElements.getOrCreate(vp).overrideElements(
+      inside,
+      vp,
+      ColorDef.green
+    );
+    EmphasizeElements.getOrCreate(vp).overrideElements(
+      outside,
+      vp,
+      ColorDef.red
+    );
+    EmphasizeElements.getOrCreate(vp).overrideElements(
+      overlap,
+      vp,
+      ColorDef.blue
+    );
+    EmphasizeElements.getOrCreate(vp).defaultAppearance =
+      EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
   }
 
   public override async run(insideOnly?: true | undefined): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp)
-      return false;
+    if (undefined === vp) return false;
 
     const isActive = EmphasizeElements.getOrCreate(vp).isActive(vp);
     EmphasizeElements.clear(vp);
@@ -66,20 +95,26 @@ export class FenceClassifySelectedTool extends Tool {
 
     const candidates: Id64Array = [];
     vp.iModel.selectionSet.elements.forEach((val) => {
-      if (!Id64.isInvalid(val) && !Id64.isTransient(val))
-        candidates.push(val);
+      if (!Id64.isInvalid(val) && !Id64.isTransient(val)) candidates.push(val);
     });
 
-    if (0 === candidates.length)
-      return false;
+    if (0 === candidates.length) return false;
 
     vp.iModel.selectionSet.emptyAll();
-    await this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true);
+    await this.doClassify(
+      vp,
+      candidates,
+      vp.view.getViewClip()!,
+      insideOnly ? false : true
+    );
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    const insideOnly = (undefined !== args[0] && "inside" === args[0].toLowerCase()) ? true : undefined;
+    const insideOnly =
+      undefined !== args[0] && "inside" === args[0].toLowerCase()
+        ? true
+        : undefined;
     await this.run(insideOnly);
     return true;
   }

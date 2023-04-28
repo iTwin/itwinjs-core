@@ -14,13 +14,13 @@ iTwin.js UI bases its controls on the [React](https://reactjs.org/) JavaScript l
 
 The iTwin.js UI library is divided into these NPM packages in the `@bentley` scope:
 
-|Package Name|Description
-|-----|-----
-|[appui-abstract](./abstract/index)|Abstractions for UI controls and items, such as Toolbar, Button, Menu, Backstage, StatusBar and Widget.
-|[core-react](./core/index)|General purpose React components that can be used outside AppUi apps.
-|[components-react](./components/index)|React components that are data-oriented, such as PropertyGrid, Table and Tree.
-|[imodel-components-react](./imodel-components/index)|React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages. The components pertain to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
-|[appui-react](./appui-react/index)|Classes and components for specifying the application UI consisting of the Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
+| Package Name                                         | Description                                                                                                                                                                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [appui-abstract](./abstract/index)                   | Abstractions for UI controls and items, such as Toolbar, Button, Menu, Backstage, StatusBar and Widget.                                                                                                           |
+| [core-react](./core/index)                           | General purpose React components that can be used outside AppUi apps.                                                                                                                                             |
+| [components-react](./components/index)               | React components that are data-oriented, such as PropertyGrid, Table and Tree.                                                                                                                                    |
+| [imodel-components-react](./imodel-components/index) | React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages. The components pertain to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport. |
+| [appui-react](./appui-react/index)                   | Classes and components for specifying the application UI consisting of the Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.                                                     |
 
 See also:
 

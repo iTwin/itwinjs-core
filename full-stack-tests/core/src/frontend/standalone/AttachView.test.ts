@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
+import {
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("ViewState attached to Viewport", async () => {
@@ -25,8 +29,7 @@ describe("ViewState attached to Viewport", async () => {
   });
 
   afterEach(() => {
-    if (vp && !vp.isDisposed)
-      vp.dispose();
+    if (vp && !vp.isDisposed) vp.dispose();
   });
 
   async function loadView(id = "0x34"): Promise<SpatialViewState> {
@@ -80,14 +83,18 @@ describe("ViewState attached to Viewport", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view.clone());
     expect(view.isAttachedToViewport).to.be.false;
-    expect(() => view.detachFromViewport()).to.throw("Attempting to detach a ViewState from a Viewport to which it is not attached.");
+    expect(() => view.detachFromViewport()).to.throw(
+      "Attempting to detach a ViewState from a Viewport to which it is not attached."
+    );
   });
 
   it("should throw when attempting to attach while already attached", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
     expect(view.isAttachedToViewport).to.be.true;
-    expect(() => view.attachToViewport(vp)).to.throw("Attempting to attach a ViewState that is already attached to a Viewport");
+    expect(() => view.attachToViewport(vp)).to.throw(
+      "Attempting to attach a ViewState that is already attached to a Viewport"
+    );
   });
 
   it("should only emit events while attached to a Viewport", async () => {
@@ -95,17 +102,24 @@ describe("ViewState attached to Viewport", async () => {
     let modelsChanged = false;
     let styleChanged = false;
 
-    const reset = () => categoriesChanged = modelsChanged = styleChanged = false;
-    const expectChanges = (categories: boolean, models: boolean, style: boolean) => {
+    const reset = () =>
+      (categoriesChanged = modelsChanged = styleChanged = false);
+    const expectChanges = (
+      categories: boolean,
+      models: boolean,
+      style: boolean
+    ) => {
       expect(categoriesChanged).to.equal(categories);
       expect(modelsChanged).to.equal(models);
       expect(styleChanged).to.equal(style);
     };
 
     const view = await loadView();
-    view.onViewedCategoriesChanged.addListener(() => categoriesChanged = true);
-    view.onViewedModelsChanged.addListener(() => modelsChanged = true);
-    view.onDisplayStyleChanged.addListener(() => styleChanged = true);
+    view.onViewedCategoriesChanged.addListener(
+      () => (categoriesChanged = true)
+    );
+    view.onViewedModelsChanged.addListener(() => (modelsChanged = true));
+    view.onDisplayStyleChanged.addListener(() => (styleChanged = true));
 
     view.categorySelector = view.categorySelector.clone();
     view.modelSelector = view.modelSelector.clone();
@@ -155,7 +169,7 @@ describe("ViewState attached to Viewport", async () => {
   it("should re-target event listeners when category or model selector changes", async () => {
     let categoriesChanged = false;
     let modelsChanged = false;
-    const reset = () => categoriesChanged = modelsChanged = false;
+    const reset = () => (categoriesChanged = modelsChanged = false);
     const expectChanges = (categories: boolean, models: boolean) => {
       expect(categoriesChanged).to.equal(categories);
       expect(modelsChanged).to.equal(models);
@@ -163,8 +177,10 @@ describe("ViewState attached to Viewport", async () => {
 
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
-    view.onViewedCategoriesChanged.addListener(() => categoriesChanged = true);
-    view.onViewedModelsChanged.addListener(() => modelsChanged = true);
+    view.onViewedCategoriesChanged.addListener(
+      () => (categoriesChanged = true)
+    );
+    view.onViewedModelsChanged.addListener(() => (modelsChanged = true));
 
     const categories1 = view.categorySelector;
     const models1 = view.modelSelector;

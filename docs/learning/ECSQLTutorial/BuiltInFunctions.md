@@ -1,4 +1,3 @@
-
 # ECSQL Built-In functions
 
 ECSQL allows use of these built-in functions:
@@ -6,14 +5,14 @@ ECSQL allows use of these built-in functions:
 1. `ec_classname()` - Gets the formatted/qualified class name, given ECClassId as input
 2. `ec_classid())` - Gets ECClassId, given a formatted/qualified class name as input
 
-# ec_classname(*ecclassId*[,*format-string* | *format-id*)
+# ec_classname(_ecclassId_[,_format-string_ | _format-id_)
 
 For the specified ecClassId, returns the class name as a string formatted according to the specified format-string
 
 ## Parameters
 
 `ecclassId`: An integer which could be a constant, column or a parameter.
-`format-string | format-id`:  Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
+`format-string | format-id`: Optional format specifier and could be one of the following values. `NULL` is also valid value -- this is the same as not specifying the second parameter at all
 
 | format-id | format-string | output                    |
 | --------- | ------------- | ------------------------- |
@@ -50,11 +49,11 @@ SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 3) = 'bis'
 SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'c') = 'PUMP'
 ```
 
-# ec_classId('*schema-name-or-alias* : | . *classname*' )
+# ec_classId('_schema-name-or-alias_ : | . _classname_' )
 
 For the specified (qualified) class name, returns the `ECCassId`.
 
-Note that this function can also take in two arguments - in the following form where *schema-name-or-alias* and *classname* can be specified separately.
+Note that this function can also take in two arguments - in the following form where _schema-name-or-alias_ and _classname_ can be specified separately.
 `ec_classid[ '<schema-name-or-alias>',  '<classname>')`
 
 ## Parameters

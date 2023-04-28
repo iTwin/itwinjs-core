@@ -3,11 +3,40 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, Logger } from "@itwin/core-bentley";
-import { AngleSweep, Arc3d, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, Decorator, GraphicBranch, GraphicType, HitDetail, imageElementFromUrl,
-  IModelApp, IModelConnection, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, readGltfGraphics, RenderGraphic,
+  AngleSweep,
+  Arc3d,
+  Point2d,
+  Point3d,
+  Transform,
+  XAndY,
+  XYAndZ,
+} from "@itwin/core-geometry";
+import {
+  AxisAlignedBox3d,
+  ColorByName,
+  ColorDef,
+  NpcCenter,
+} from "@itwin/core-common";
+import {
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  Decorator,
+  GraphicBranch,
+  GraphicType,
+  HitDetail,
+  imageElementFromUrl,
+  IModelApp,
+  IModelConnection,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  MessageBoxIconType,
+  MessageBoxType,
+  readGltfGraphics,
+  RenderGraphic,
 } from "@itwin/core-frontend";
 
 // cSpell:ignore lerp
@@ -18,10 +47,12 @@ export class ExampleGraphicDecoration {
   public decorate(context: DecorateContext): void {
     // Check view type, project extents is only applicable to show in spatial views.
     const vp = context.viewport;
-    if (!vp.view.isSpatialView())
-      return;
+    if (!vp.view.isSpatialView()) return;
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
+    const builder = context.createGraphicBuilder(
+      GraphicType.WorldDecoration,
+      undefined
+    );
     // Set edge color to white or black depending on current view background color and set line weight to 2.
     builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 2);
     // Add range box edge geometry to builder.
@@ -38,24 +69,33 @@ export class ExamplePickableGraphicDecoration {
   /** Add a pickable decoration that will display interspersed with the scene graphics. */
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
-    if (!vp.view.isSpatialView())
-      return;
+    if (!vp.view.isSpatialView()) return;
 
     // Get next available Id to represent our decoration for it's life span.
     if (undefined === this._decoId)
       this._decoId = vp.iModel.transientIds.getNext();
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._decoId);
+    const builder = context.createGraphicBuilder(
+      GraphicType.WorldDecoration,
+      undefined,
+      this._decoId
+    );
     builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 2);
     builder.addRangeBox(vp.iModel.projectExtents);
     context.addDecorationFromBuilder(builder);
   }
 
   /** Return true if supplied Id represents a pickable decoration created by this decorator. */
-  public testDecorationHit(id: string): boolean { return id === this._decoId; }
+  public testDecorationHit(id: string): boolean {
+    return id === this._decoId;
+  }
 
   /** Return localized tooltip message for the decoration identified by HitDetail.sourceId. */
-  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> { return "Project Extents"; }
+  public async getDecorationToolTip(
+    _hit: HitDetail
+  ): Promise<HTMLElement | string> {
+    return "Project Extents";
+  }
   // __PUBLISH_EXTRACT_END__
 }
 
@@ -111,28 +151,38 @@ class IncidentMarker extends Marker {
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
   public static makeColor(severity: number): ColorDef {
-    return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
-      this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
+    return severity <= 16
+      ? ColorDef.green.lerp(this._amber, (severity - 1) / 15)
+      : this._amber.lerp(ColorDef.red, (severity - 16) / 14);
   }
 
   public override onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data) {
       if (ev.isDown) {
-        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
+        IModelApp.notifications.openMessageBox(
+          MessageBoxType.LargeOk,
+          `severity = ${this.severity}`,
+          MessageBoxIconType.Information
+        ); // eslint-disable-line @typescript-eslint/no-floating-promises
       }
     }
     return true;
   }
 
   /** Create a new IncidentMarker */
-  constructor(location: XYAndZ, public severity: number, public id: number, icon: HTMLImageElement) {
+  constructor(
+    location: XYAndZ,
+    public severity: number,
+    public id: number,
+    icon: HTMLImageElement
+  ) {
     super(location, IncidentMarker._size);
     this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
     this.setImage(icon); // save icon
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
     this.imageSize = IncidentMarker._imageSize; // 40x40
     this.title = `Severity: ${severity}<br>Id: ${id}`; // tooltip
-    this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+    this.setScaleFactor({ low: 0.2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     this.htmlElement = document.createElement("div");
@@ -142,7 +192,13 @@ class IncidentMarker extends Marker {
   public override addMarker(context: DecorateContext) {
     super.addMarker(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
+    const ellipse = Arc3d.createScaledXYColumns(
+      this.worldLocation,
+      context.viewport.rotation.transpose(),
+      0.2,
+      0.2,
+      IncidentMarker._sweep360
+    );
     builder.setSymbology(ColorDef.white, this._color, 1);
     builder.addArc(ellipse, false, false);
     builder.setBlankingFill(this._color);
@@ -168,21 +224,26 @@ class IncidentClusterMarker extends Marker {
   }
 
   /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: Promise<MarkerImage> | MarkerImage | undefined) {
+  constructor(
+    location: XYAndZ,
+    size: XAndY,
+    cluster: Cluster<IncidentMarker>,
+    image: Promise<MarkerImage> | MarkerImage | undefined
+  ) {
     super(location, size);
 
     // get the top 10 incidents by severity
     const sorted: IncidentMarker[] = [];
     const maxLen = 10;
     cluster.markers.forEach((marker) => {
-      if (maxLen > sorted.length || marker.severity > sorted[sorted.length - 1].severity) {
+      if (
+        maxLen > sorted.length ||
+        marker.severity > sorted[sorted.length - 1].severity
+      ) {
         const index = sorted.findIndex((val) => val.severity < marker.severity);
-        if (index === -1)
-          sorted.push(marker);
-        else
-          sorted.splice(index, 0, marker);
-        if (sorted.length > maxLen)
-          sorted.length = maxLen;
+        if (index === -1) sorted.push(marker);
+        else sorted.splice(index, 0, marker);
+        if (sorted.length > maxLen) sorted.length = maxLen;
       }
     });
 
@@ -194,24 +255,28 @@ class IncidentClusterMarker extends Marker {
 
     let title = "";
     sorted.forEach((marker) => {
-      if (title !== "")
-        title += "<br>";
+      if (title !== "") title += "<br>";
       title += `Severity: ${marker.severity} Id: ${marker.id}`;
     });
-    if (cluster.markers.length > maxLen)
-      title += "<br>...";
+    if (cluster.markers.length > maxLen) title += "<br>...";
 
     this.title = title;
-    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
-    if (image)
-      this.setImage(image);
+    this._clusterColor = IncidentMarker.makeColor(
+      sorted[0].severity
+    ).toHexString();
+    if (image) this.setImage(image);
   }
 }
 
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return new IncidentClusterMarker(cluster.getClusterLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(
+      cluster.getClusterLocation(),
+      cluster.markers[0].size,
+      cluster,
+      IncidentMarkerDemo.decorator!.warningSign
+    );
   }
 }
 
@@ -227,7 +292,9 @@ export class IncidentMarkerDemo {
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
-  public get warningSign() { return this._images[0]; }
+  public get warningSign() {
+    return this._images[0];
+  }
 
   // Load one image, logging if there was an error
   private async loadOne(src: string) {
@@ -252,18 +319,19 @@ export class IncidentMarkerDemo {
       this.loadOne("Hazard_tripping.svg"),
     ];
     await (this._loading = Promise.all(loads)); // this is a member so we can tell if we're still loading
-    for (const img of loads)
-      this._images.push(await img);
+    for (const img of loads) this._images.push(await img);
 
     const len = this._images.length;
     const pos = new Point3d();
     for (let i = 0; i < IncidentMarkerDemo._numMarkers; ++i) {
-      pos.x = extents.low.x + (Math.random() * extents.xLength());
-      pos.y = extents.low.y + (Math.random() * extents.yLength());
-      pos.z = extents.low.z + (Math.random() * extents.zLength());
+      pos.x = extents.low.x + Math.random() * extents.xLength();
+      pos.y = extents.low.y + Math.random() * extents.yLength();
+      pos.z = extents.low.z + Math.random() * extents.zLength();
       const img = this._images[(i % len) + 1];
       if (undefined !== img)
-        this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
+        this._incidents.markers.add(
+          new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img)
+        );
     }
     this._loading = undefined;
   }
@@ -274,8 +342,7 @@ export class IncidentMarkerDemo {
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
   public decorate(context: DecorateContext) {
-    if (!context.viewport.view.isSpatialView())
-      return;
+    if (!context.viewport.view.isSpatialView()) return;
 
     if (undefined === this._loading) {
       this._incidents.addDecoration(context);
@@ -285,10 +352,12 @@ export class IncidentMarkerDemo {
     // if we're still loading, just mark this viewport as needing decorations when all loads are complete
     if (!this._awaiting) {
       this._awaiting = true;
-      this._loading.then(() => {
-        context.viewport.invalidateDecorations();
-        this._awaiting = false;
-      }).catch(() => undefined);
+      this._loading
+        .then(() => {
+          context.viewport.invalidateDecorations();
+          this._awaiting = false;
+        })
+        .catch(() => undefined);
     }
   }
 
@@ -310,7 +379,11 @@ export class IncidentMarkerDemo {
 // __PUBLISH_EXTRACT_START__ Application_LogoCard
 
 IModelApp.applicationLogoCard = () => {
-  return IModelApp.makeLogoCard({ iconSrc: "MyApp.png", heading: "My Great Application", notice: "Example Application<br>Version 2.0" });
+  return IModelApp.makeLogoCard({
+    iconSrc: "MyApp.png",
+    heading: "My Great Application",
+    notice: "Example Application<br>Version 2.0",
+  });
 };
 
 // __PUBLISH_EXTRACT_END__
@@ -326,7 +399,11 @@ class GltfDecoration implements Decorator {
   /** The Id of the graphic used for picking. */
   private readonly _pickableId: Id64String;
 
-  public constructor(graphic: RenderGraphic, tooltip: string, pickableId: Id64String) {
+  public constructor(
+    graphic: RenderGraphic,
+    tooltip: string,
+    pickableId: Id64String
+  ) {
     this._graphic = graphic;
     this._tooltip = tooltip;
     this._pickableId = pickableId;
@@ -360,7 +437,9 @@ class GltfDecoration implements Decorator {
  * @param iModel The iModel with which the graphic will be associated. Any viewports viewing a spatial view of this iModel will be decorated with the glTF asset.
  * @returns true if the graphic was successfully created.
  */
-export async function displayGltfAsset(iModel: IModelConnection): Promise<boolean> {
+export async function displayGltfAsset(
+  iModel: IModelConnection
+): Promise<boolean> {
   // Allow the user to select the glTF asset.
   try {
     // We need to cast `window` to `any` because the TypeScript type definition doesn't expose the `showOpenFilePicker` function.
@@ -387,8 +466,7 @@ export async function displayGltfAsset(iModel: IModelConnection): Promise<boolea
       pickableOptions: { id },
     });
 
-    if (!graphic)
-      return false;
+    if (!graphic) return false;
 
     // Transform the graphic to the center of the project extents.
     const transform = Transform.createTranslation(iModel.projectExtents.center);

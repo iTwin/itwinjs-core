@@ -10,9 +10,9 @@ Refer to the iTwin.js [prerequisites](https://github.com/iTwin/itwinjs-core#prer
 
 ## Running the tests
 
-Before running the tests, the environment needs to be setup.  The easiest way is to configure a [.env] file in the working directory, the [template.env](./template.env) file has information about how to set one up and all the variables that need to be configured.
+Before running the tests, the environment needs to be setup. The easiest way is to configure a [.env] file in the working directory, the [template.env](./template.env) file has information about how to set one up and all the variables that need to be configured.
 
-All test related settings are contained in the `process.env` variable and parsed by [Settings.ts](./common/Settings.ts).  If something required is missing or not configured properly, the tests will fail to setup.
+All test related settings are contained in the `process.env` variable and parsed by [Settings.ts](./common/Settings.ts). If something required is missing or not configured properly, the tests will fail to setup.
 
 ### Setting up the required context
 
@@ -22,10 +22,10 @@ The iModel doesn't require anything special and can be a seed iModel.
 
 ### Specifying users to be used for testing
 
-The tests require a single user to be specified.  The user's access rules required are:
+The tests require a single user to be specified. The user's access rules required are:
 
 1. User1 - full access to the Project and an iModel (requires iModelHub Read iModel Project Role)
-    - i.e., "user_with_access_username" in the `.env` file.
+   - i.e., "user_with_access_username" in the `.env` file.
 
 ### Specifying the backend
 

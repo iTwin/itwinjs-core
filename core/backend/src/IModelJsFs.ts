@@ -26,44 +26,67 @@ export class IModelJsFsStats {
     public isFile: boolean,
     public isSocket: boolean,
     public isSymbolicLink: boolean,
-    public isReadOnly: boolean,
-  ) { }
+    public isReadOnly: boolean
+  ) {}
 }
 
 /** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]]
  * @public
  */
 export class IModelJsFs {
-
   /** Does file or directory exist? */
-  public static existsSync(pathname: string): boolean { return fs.existsSync(pathname); }
+  public static existsSync(pathname: string): boolean {
+    return fs.existsSync(pathname);
+  }
 
   /** Delete a file. */
-  public static unlinkSync(pathname: string): void { fs.unlinkSync(pathname); }
+  public static unlinkSync(pathname: string): void {
+    fs.unlinkSync(pathname);
+  }
 
   /** Delete a file or remove a directory (rm -r). */
-  public static removeSync(pathname: string): void { fs.removeSync(pathname); }
+  public static removeSync(pathname: string): void {
+    fs.removeSync(pathname);
+  }
 
   /** Create a directory. */
-  public static mkdirSync(pathname: string): void { fs.mkdirSync(pathname); }
+  public static mkdirSync(pathname: string): void {
+    fs.mkdirSync(pathname);
+  }
 
   /** Remove a directory. */
-  public static rmdirSync(pathname: string): void { fs.rmdirSync(pathname); }
+  public static rmdirSync(pathname: string): void {
+    fs.rmdirSync(pathname);
+  }
 
   /** Write to a file. */
-  public static writeFileSync(pathname: string, data: string | Uint8Array, wflag: string = "w"): void { fs.writeFileSync(pathname, data, { flag: wflag }); }
+  public static writeFileSync(
+    pathname: string,
+    data: string | Uint8Array,
+    wflag: string = "w"
+  ): void {
+    fs.writeFileSync(pathname, data, { flag: wflag });
+  }
 
   /** Append to a file. */
-  public static appendFileSync(pathname: string, str: string): void { fs.appendFileSync(pathname, str); }
+  public static appendFileSync(pathname: string, str: string): void {
+    fs.appendFileSync(pathname, str);
+  }
 
   /** Make a copy of a file */
-  public static copySync(src: string, dest: string, opts?: any): void { fs.copySync(src, dest, opts); }
+  public static copySync(src: string, dest: string, opts?: any): void {
+    fs.copySync(src, dest, opts);
+  }
 
   /** Gets the file and directory names in the specified directory. Excludes "." and "..". Returns an empty array if the specified directory does not exist. */
-  public static readdirSync(pathname: string): string[] { return fs.existsSync(pathname) ? fs.readdirSync(pathname) : []; }
+  public static readdirSync(pathname: string): string[] {
+    return fs.existsSync(pathname) ? fs.readdirSync(pathname) : [];
+  }
 
   /** Read file */
-  public static readFileSync(pathname: string): string | Buffer { return fs.readFileSync(pathname); }
+  public static readFileSync(pathname: string): string | Buffer {
+    return fs.readFileSync(pathname);
+  }
 
   /** Test if the current user has permission to write to a file. */
   private static isFileWritable(pathname: string): boolean {
@@ -78,8 +101,7 @@ export class IModelJsFs {
   /** Get information about a file. */
   public static lstatSync(pathname: string): IModelJsFsStats | undefined {
     const stats = fs.lstatSync(pathname);
-    if (stats === undefined)
-      return undefined;
+    if (stats === undefined) return undefined;
 
     return new IModelJsFsStats(
       stats.size,
@@ -90,7 +112,8 @@ export class IModelJsFs {
       stats.isFile(),
       stats.isSocket(),
       stats.isSymbolicLink(),
-      !IModelJsFs.isFileWritable(pathname));
+      !IModelJsFs.isFileWritable(pathname)
+    );
   }
 
   /**
@@ -118,7 +141,10 @@ export class IModelJsFs {
    * @param rootDir  directory from where the traversal starts
    * @param cb callback that would be called with full path of file or directory
    */
-  public static walkDirSync(rootDir: string, cb: (pathname: string, isDir: boolean) => boolean): void {
+  public static walkDirSync(
+    rootDir: string,
+    cb: (pathname: string, isDir: boolean) => boolean
+  ): void {
     const subDir = [];
     for (const childPath of IModelJsFs.readdirSync(rootDir)) {
       const fullPath = path.join(rootDir, childPath);
@@ -138,18 +164,15 @@ export class IModelJsFs {
 
   /** Create a directory, recursively setting up the path as necessary */
   public static recursiveMkDirSync(dirPath: string) {
-    if (IModelJsFs.existsSync(dirPath))
-      return;
+    if (IModelJsFs.existsSync(dirPath)) return;
     const parentPath = path.dirname(dirPath);
-    if (parentPath !== dirPath)
-      IModelJsFs.recursiveMkDirSync(parentPath);
+    if (parentPath !== dirPath) IModelJsFs.recursiveMkDirSync(parentPath);
     IModelJsFs.mkdirSync(dirPath);
   }
 
   /** Remove a directory, recursively */
   public static purgeDirSync(dirPath: string) {
-    if (!IModelJsFs.existsSync(dirPath))
-      return;
+    if (!IModelJsFs.existsSync(dirPath)) return;
 
     IModelJsFs.walkDirSync(dirPath, (pathName: string, isDir: boolean) => {
       if (isDir) {

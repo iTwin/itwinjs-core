@@ -24,25 +24,25 @@ An ECSchema is the root container of all other ECObject items and provides the n
 
 ## Sub-Elements
 
-[ECSchemaReference](#ecschemareference) _(0..*)_
+[ECSchemaReference](#ecschemareference) _(0..\*)_
 
 [ECCustomAttributes](./ec-custom-attributes.md) _(0..1)_
 
-[ECEntityClass](./ec-entity-class.md) _(0..*)_
+[ECEntityClass](./ec-entity-class.md) _(0..\*)_
 
-[ECMixinClass](./ec-mixin-class.md) _(0..*)_
+[ECMixinClass](./ec-mixin-class.md) _(0..\*)_
 
-[ECStructClass](./ec-struct-class.md) _(0..*)_
+[ECStructClass](./ec-struct-class.md) _(0..\*)_
 
-[ECCustomAttributeClass](./ec-custom-attribute-class.md) _(0..*)_
+[ECCustomAttributeClass](./ec-custom-attribute-class.md) _(0..\*)_
 
-[ECRelationshipClass](./ec-relationship-class.md) _(0..*)_
+[ECRelationshipClass](./ec-relationship-class.md) _(0..\*)_
 
-[ECEnumeration](./ec-enumeration.md) _(0..*)_
+[ECEnumeration](./ec-enumeration.md) _(0..\*)_
 
-[KindOfQuantity](./kindofquantity.md) _(0..*)_
+[KindOfQuantity](./kindofquantity.md) _(0..\*)_
 
-[PropertyCategory](./property-category.md) _(0..*)_
+[PropertyCategory](./property-category.md) _(0..\*)_
 
 # ECSchemaReference
 
@@ -55,6 +55,7 @@ Circular references are not supported and will result in a failure to load the s
 **name** the name of the ECSchema being referenced. Must match the Schema Name of the referenced schema.
 
 **version** The version of the ECSchema being referenced.
+
 - Referenced schemas are located using a 'Latest compatible match' where the read and write versions must match and the minor version of the located schema must be equal to or greater than the version listed in the schema reference
 
 **alias** The alias to use when referring to an item from the referenced schema. This alias generally matches the alias defined in the referenced schema, but may be different. If different, it is only valid within the context of the schema which contains the ECSchemaReference.

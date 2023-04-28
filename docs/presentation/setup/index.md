@@ -7,21 +7,22 @@ Before the Presentation library can be used, it needs to be properly initialized
 There are 2 main steps to enable Presentation library usage:
 
 1. Register `PresentationRpcInterface` when initializing `IModelHost`. The way it's done depends on [IModelHost specialization](../../backend/IModelHost.md#imodelhost-specializations), but in any case that's similar to how any other `RpcInterface` is registered. A couple of examples:
+
    - For a **web app**, `IModelHost` has to be initialized first and required RPC interfaces need to be passed to `BentleyCloudRpcManager.initializeImpl`:
 
-      ```ts
-      [[include:Presentation.Common.RpcInterface.Imports]]
-      [[include:Presentation.Common.RpcInterface]]
-      [[include:Presentation.Backend.WebApp.RpcInterface]]
-      ```
+     ```ts
+     [[include:Presentation.Common.RpcInterface.Imports]]
+     [[include:Presentation.Common.RpcInterface]]
+     [[include:Presentation.Backend.WebApp.RpcInterface]]
+     ```
 
    - For an **Electron app**, required RPC interfaces are passed straight into `ElectronHost.startup`:
 
-      ```ts
-      [[include:Presentation.Common.RpcInterface.Imports]]
-      [[include:Presentation.Common.RpcInterface]]
-      [[include:Presentation.Backend.Electron.RpcInterface]]
-      ```
+     ```ts
+     [[include:Presentation.Common.RpcInterface.Imports]]
+     [[include:Presentation.Common.RpcInterface]]
+     [[include:Presentation.Backend.Electron.RpcInterface]]
+     ```
 
 2. Initialize Presentation backend:
 
@@ -37,7 +38,7 @@ Similar to the backend, the frontend initialization consists of 2 steps:
 
 1. Register `PresentationRpcInterface` when initializing `IModelApp`. That's done by making sure the interface is included into the list of `rpcInterfaces` when calling `startup` on `IModelApp` or one of [its specializations](../../frontend/IModelApp.md#imodelapp-specializations).
 
-   ``` ts
+   ```ts
    [[include:Presentation.Common.RpcInterface.Imports]]
    [[include:Presentation.Common.RpcInterface]]
    [[include:Presentation.Frontend.RpcInterface.Options]]
@@ -48,7 +49,7 @@ Similar to the backend, the frontend initialization consists of 2 steps:
 
 2. Initialize Presentation frontend:
 
-   ``` ts
+   ```ts
    [[include:Presentation.Frontend.Imports]]
    [[include:Presentation.Frontend.Initialization]]
    ```

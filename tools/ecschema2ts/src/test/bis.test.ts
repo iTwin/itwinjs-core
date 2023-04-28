@@ -43,8 +43,7 @@ describe("BisCore test correct inheritance", () => {
   </ECEnumeration>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { Entity, IModelDb } from "@itwin/core-backend";
 import { EntityProps } from "@itwin/core-common";
 import { DerivedElementProps } from "./BisCoreElementProps";
 
@@ -74,8 +73,7 @@ export class DerivedElement extends Element implements DerivedElementProps {
   }
 }\n\n`;
 
-    const expectedPropsSchemaString =
-      `import { ElementProps } from "@itwin/core-common";
+    const expectedPropsSchemaString = `import { ElementProps } from "@itwin/core-common";
 
 export interface DerivedElementProps extends ElementProps {
   derivedTestProp?: string;
@@ -83,15 +81,15 @@ export interface DerivedElementProps extends ElementProps {
 
     const context = new SchemaContext();
     const schema = utils.deserializeXml(context, schemaXml);
-    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } =
+      ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(propsTsString, expectedPropsSchemaString);
     assert.equal(elemTsString, expectedElementSchemaString);
   });
 
   it("of class that subclasses Element without additional properties", () => {
-    const schemaXml =
-      `<?xml version="1.0" encoding="UTF-8"?>
+    const schemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="BisCore" alias="bis" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECEntityClass typeName="Element" modifier="Abstract">
     <ECCustomAttributes>
@@ -117,8 +115,7 @@ export interface DerivedElementProps extends ElementProps {
   </ECEnumeration>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { Entity, IModelDb } from "@itwin/core-backend";
 import { EntityProps, ElementProps } from "@itwin/core-common";
 
 export abstract class Element extends Entity {
@@ -148,7 +145,8 @@ export class DerivedElement extends Element {
 }\n\n`;
     const context = new SchemaContext();
     const schema = utils.deserializeXml(context, schemaXml);
-    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } =
+      ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(propsTsString, `\n`);
     assert.equal(elemTsString, expectedElementSchemaString);
@@ -201,8 +199,7 @@ export class DerivedElement extends Element {
   </ECEnumeration>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { Entity, IModelDb } from "@itwin/core-backend";
 import { EntityProps, ElementProps } from "@itwin/core-common";
 import { SubjectProps } from "./BisCoreElementProps";
 
@@ -248,8 +245,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   }
 }\n\n`;
 
-    const expectedPropSchemaString =
-      `import { ElementProps } from "@itwin/core-common";
+    const expectedPropSchemaString = `import { ElementProps } from "@itwin/core-common";
 
 export interface IParentElement {
 }
@@ -260,7 +256,8 @@ export interface SubjectProps extends ElementProps {
 
     const context = new SchemaContext();
     const schema = utils.deserializeXml(context, schemaXml);
-    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } =
+      ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(elemTsString, expectedElementSchemaString);
     assert.equal(propsTsString, expectedPropSchemaString);
@@ -283,8 +280,7 @@ describe("Referencing BisCore", () => {
   </ECEntityClass>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { DefinitionModel, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { DefinitionModel, IModelDb } from "@itwin/core-backend";
 import { ModelProps } from "@itwin/core-common";
 
 /**
@@ -315,7 +311,8 @@ export class SchemaModel extends DefinitionModel {
     context.addLocater(schemaLocator);
     const schema = utils.deserializeXml(context, schemaXml);
     const ecschema2ts = new ECSchemaToTs();
-    const { elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
+    const { elemTsString, propsTsString } =
+      ecschema2ts.convertSchemaToTs(schema);
 
     assert.equal(propsTsString, `\n`);
     assert.equal(elemTsString, expectedElementSchemaString);

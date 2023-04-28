@@ -3,11 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
-import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
+import {
+  Compiler,
+  Configuration,
+  DefinePlugin,
+  ExternalsPlugin,
+  RuleSetRule,
+  WebpackOptionsNormalized,
+} from "webpack";
+import {
+  CopyAppAssetsPlugin,
+  CopyStaticAssetsPlugin,
+} from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
-import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
+import {
+  addCopyFilesSuffix,
+  addExternalPrefix,
+  copyFilesRule,
+  handlePrefixedExternals,
+  RequireMagicCommentsPlugin,
+} from "./RequireMagicCommentsPlugin";
 
 const isProductionLikeMode = (
   options: Configuration | WebpackOptionsNormalized
@@ -59,8 +75,7 @@ export class BackendDefaultsPlugin {
       value: any,
       options: Configuration
     ) => {
-      if (value)
-        return value;
+      if (value) return value;
 
       if (isProductionLikeMode(options))
         return (info: any) =>
@@ -76,7 +91,9 @@ export class BackendDefaultsPlugin {
 
     if (compiler.options.ignoreWarnings === undefined)
       compiler.options.ignoreWarnings = [];
-    compiler.options.ignoreWarnings.push((warn) => /Failed to parse source map/.test(warn.message));
+    compiler.options.ignoreWarnings.push((warn) =>
+      /Failed to parse source map/.test(warn.message)
+    );
 
     // Add default plugins
     const plugins = [

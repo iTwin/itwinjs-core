@@ -45,20 +45,19 @@ export class Content {
   }
 
   /** Deserialize [[Content]] from JSON */
-  public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
-    if (!json)
-      return undefined;
+  public static fromJSON(
+    json: ContentJSON | string | undefined
+  ): Content | undefined {
+    if (!json) return undefined;
 
-    if (typeof json === "string")
-      return JSON.parse(json, Content.reviver);
+    if (typeof json === "string") return JSON.parse(json, Content.reviver);
 
     const descriptor = Descriptor.fromJSON(json.descriptor);
-    if (!descriptor)
-      return undefined;
+    if (!descriptor) return undefined;
 
     const contentSet = json.contentSet
       .map((itemJson: ItemJSON) => Item.fromJSON(itemJson))
-      .filter<Item>((item): item is Item => (item !== undefined));
+      .filter<Item>((item): item is Item => item !== undefined);
     return new Content(descriptor, contentSet);
   }
 

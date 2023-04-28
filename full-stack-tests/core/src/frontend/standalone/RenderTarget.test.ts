@@ -3,15 +3,43 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
-  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+  ClipStyle,
+  ColorDef,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
+  Hilite,
+  RenderMode,
+  RgbColor,
+} from "@itwin/core-common";
+import {
+  DecorateContext,
+  Decorator,
+  FeatureOverrideProvider,
+  FeatureSymbology,
+  GraphicBranch,
+  GraphicBranchOptions,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  OffScreenViewport,
+  Pixel,
+  RenderSystem,
+  SnapshotConnection,
+  SpatialViewState,
+  Viewport,
+  ViewRect,
 } from "@itwin/core-frontend";
 import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import {
-  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
+  Color,
+  comparePixelData,
+  createOnScreenTestViewport,
+  testOnScreenViewport,
+  TestViewport,
+  testViewports,
+  testViewportsWithDpr,
 } from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -55,8 +83,7 @@ describe("Vertex buffer objects", () => {
       };
 
       for (const c of colors.array) {
-        if (0 !== c.compare(bgColor))
-          expectWhitish(c);
+        if (0 !== c.compare(bgColor)) expectWhitish(c);
       }
 
       let color = vp.readColor(rect.left, rect.top);
@@ -77,8 +104,15 @@ describe("Vertex buffer objects", () => {
       const pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(3);
       expect(pixels.containsFeature(elemId, subcatId));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+      expect(
+        pixels.containsGeometry(
+          Pixel.GeometryType.Surface,
+          Pixel.Planarity.Planar
+        )
+      );
+      expect(
+        pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)
+      );
     });
   });
 });
@@ -107,46 +141,56 @@ describe("RenderTarget", () => {
 
   it("should render empty view", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
-      // Turn off all models so we're rendering an empty view.
-      vp.changeViewedModels([]);
-      await vp.drawFrame();
+    await testViewports(
+      "0x24",
+      imodel,
+      rect.width,
+      rect.height,
+      async (vp) => {
+        // Turn off all models so we're rendering an empty view.
+        vp.changeViewedModels([]);
+        await vp.drawFrame();
 
-      // Should have all black background pixels
-      let colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(1);
-      expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
+        // Should have all black background pixels
+        let colors = vp.readUniqueColors();
+        expect(colors.length).to.equal(1);
+        expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
 
-      // Change background color - expect pixel colors to match
-      vp.view.displayStyle.backgroundColor = ColorDef.green;
-      vp.invalidateRenderPlan();
-      await vp.drawFrame();
-      colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(1);
-      expect(colors.contains(Color.fromRgba(0, 0x80, 0, 0xff))).to.be.true;
+        // Change background color - expect pixel colors to match
+        vp.view.displayStyle.backgroundColor = ColorDef.green;
+        vp.invalidateRenderPlan();
+        await vp.drawFrame();
+        colors = vp.readUniqueColors();
+        expect(colors.length).to.equal(1);
+        expect(colors.contains(Color.fromRgba(0, 0x80, 0, 0xff))).to.be.true;
 
-      // Should have no features, depth, or geometry - only background pixels
-      const pixels = vp.readUniquePixelData();
-      expect(pixels.length).to.equal(1);
+        // Should have no features, depth, or geometry - only background pixels
+        const pixels = vp.readUniquePixelData();
+        expect(pixels.length).to.equal(1);
 
-      // Background pixels have distanceFraction = 0 indicating far plane.
-      const backgroundPixel = new Pixel.Data({
-        distanceFraction: 0,
-        type: Pixel.GeometryType.None,
-        planarity: Pixel.Planarity.None,
-      });
+        // Background pixels have distanceFraction = 0 indicating far plane.
+        const backgroundPixel = new Pixel.Data({
+          distanceFraction: 0,
+          type: Pixel.GeometryType.None,
+          planarity: Pixel.Planarity.None,
+        });
 
-      expect(comparePixelData(backgroundPixel, pixels.array[0])).to.equal(0);
+        expect(comparePixelData(backgroundPixel, pixels.array[0])).to.equal(0);
 
-      // Ensure reading out-of-bounds rects returns empty pixel array
-      const coords = [[-1, -1, -2, -2], [rect.width + 1, rect.height + 1, rect.width + 2, rect.height + 2]];
-      for (const coord of coords) {
-        const readRect = new ViewRect(coord[0], coord[1], coord[2], coord[3]);
-        const oob = vp.readUniquePixelData(readRect);
-        expect(oob).to.not.be.undefined;
-        expect(oob.array.length).to.equal(0);
-      }
-    }, 1.0);
+        // Ensure reading out-of-bounds rects returns empty pixel array
+        const coords = [
+          [-1, -1, -2, -2],
+          [rect.width + 1, rect.height + 1, rect.width + 2, rect.height + 2],
+        ];
+        for (const coord of coords) {
+          const readRect = new ViewRect(coord[0], coord[1], coord[2], coord[3]);
+          const oob = vp.readUniquePixelData(readRect);
+          expect(oob).to.not.be.undefined;
+          expect(oob.array.length).to.equal(0);
+        }
+      },
+      1.0
+    );
   });
 
   it("should render the model", async () => {
@@ -170,8 +214,7 @@ describe("RenderTarget", () => {
       };
 
       for (const c of colors.array) {
-        if (0 !== c.compare(bgColor))
-          expectWhitish(c);
+        if (0 !== c.compare(bgColor)) expectWhitish(c);
       }
 
       let color = vp.readColor(rect.left, rect.top);
@@ -192,8 +235,15 @@ describe("RenderTarget", () => {
       let pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(3);
       expect(pixels.containsFeature(elemId, subcatId));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+      expect(
+        pixels.containsGeometry(
+          Pixel.GeometryType.Surface,
+          Pixel.Planarity.Planar
+        )
+      );
+      expect(
+        pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)
+      );
 
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
@@ -221,7 +271,9 @@ describe("RenderTarget", () => {
       pixels = vp.readUniquePixelData();
       expect(pixels.length).to.equal(2);
       expect(pixels.containsFeature(elemId, subcatId));
-      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+      expect(
+        pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar)
+      );
     });
   });
 
@@ -231,7 +283,12 @@ describe("RenderTarget", () => {
     await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
-      const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
+      const expectImageDimensions = (
+        readRect: ViewRect | undefined,
+        targetSize: Point2d | undefined,
+        expectedWidth: number,
+        expectedHeight: number
+      ) => {
         const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
         expect(img).not.to.be.undefined;
         expect(img.width).to.equal(Math.floor(expectedWidth));
@@ -241,42 +298,92 @@ describe("RenderTarget", () => {
       const devRect = vp.target.viewRect;
 
       // Read full image, no resize
-      expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
-      expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
+      expectImageDimensions(
+        undefined,
+        undefined,
+        devRect.width,
+        devRect.height
+      );
+      expectImageDimensions(
+        undefined,
+        new Point2d(devRect.width, devRect.height),
+        devRect.width,
+        devRect.height
+      );
 
       // Read sub-image, no resize
       const cssHalfWidth = cssRect.width / 2;
       const cssQuarterHeight = cssRect.height / 4;
       const devHalfWidth = Math.floor(devRect.width / 2);
       const devQuarterHeight = Math.floor(devRect.height / 4);
-      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight), undefined, devHalfWidth, devQuarterHeight);
-      expectImageDimensions(new ViewRect(cssHalfWidth, cssQuarterHeight, cssRect.right, cssRect.bottom), undefined, devRect.width - devHalfWidth, devRect.height - devQuarterHeight);
-      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssRect.bottom), undefined, devHalfWidth, devRect.height);
+      expectImageDimensions(
+        new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight),
+        undefined,
+        devHalfWidth,
+        devQuarterHeight
+      );
+      expectImageDimensions(
+        new ViewRect(
+          cssHalfWidth,
+          cssQuarterHeight,
+          cssRect.right,
+          cssRect.bottom
+        ),
+        undefined,
+        devRect.width - devHalfWidth,
+        devRect.height - devQuarterHeight
+      );
+      expectImageDimensions(
+        new ViewRect(0, 0, cssHalfWidth, cssRect.bottom),
+        undefined,
+        devHalfWidth,
+        devRect.height
+      );
 
       // Read full image and resize
       expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
       expectImageDimensions(undefined, new Point2d(50, 200), 50, 200);
       expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
-      expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
+      expectImageDimensions(
+        undefined,
+        new Point2d(devRect.width, devRect.height),
+        devRect.width,
+        devRect.height
+      );
 
       // Read sub-image and resize
-      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight), new Point2d(512, 768), 512, 768);
+      expectImageDimensions(
+        new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight),
+        new Point2d(512, 768),
+        512,
+        768
+      );
     });
   });
 
-  it.skip("should override symbology", async () => { // flaky test #4420
+  it.skip("should override symbology", async () => {
+    // flaky test #4420
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";
       const subcatId = "0x18";
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        hiddenEdges: false,
+        lighting: false,
+      });
 
-      type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
+      type AddFeatureOverrides = (
+        overrides: FeatureSymbology.Overrides,
+        viewport: Viewport
+      ) => void;
       class RenderTestOverrideProvider implements FeatureOverrideProvider {
         public ovrFunc?: AddFeatureOverrides;
-        public addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void {
-          if (undefined !== this.ovrFunc)
-            this.ovrFunc(overrides, viewport);
+        public addFeatureOverrides(
+          overrides: FeatureSymbology.Overrides,
+          viewport: Viewport
+        ): void {
+          if (undefined !== this.ovrFunc) this.ovrFunc(overrides, viewport);
         }
       }
       const ovrProvider = new RenderTestOverrideProvider();
@@ -296,7 +403,11 @@ describe("RenderTarget", () => {
       expect(pixels.length).to.equal(1);
 
       // Specify element is nonLocatable
-      ovrProvider.ovrFunc = (ovrs) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ nonLocatable: true }) });
+      ovrProvider.ovrFunc = (ovrs) =>
+        ovrs.override({
+          elementId: elemId,
+          appearance: FeatureAppearance.fromJSON({ nonLocatable: true }),
+        });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
@@ -307,7 +418,11 @@ describe("RenderTarget", () => {
       expect(pixels.containsElement(elemId)).to.be.true;
 
       // Specify element is drawn blue
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
+      ovrProvider.ovrFunc = (ovrs, _) =>
+        ovrs.override({
+          elementId: elemId,
+          appearance: FeatureAppearance.fromRgb(ColorDef.blue),
+        });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -315,7 +430,8 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0, 0, 0xff, 0xff))).to.be.true;
 
       // Specify default overrides
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) =>
+        ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.red));
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -325,7 +441,10 @@ describe("RenderTarget", () => {
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
         ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.green));
-        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.create(0x7f0000)) }); // blue = 0x7f...
+        ovrs.override({
+          elementId: elemId,
+          appearance: FeatureAppearance.fromRgb(ColorDef.create(0x7f0000)),
+        }); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -335,7 +454,11 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.false;
 
       // Override by subcategory
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
+      ovrProvider.ovrFunc = (ovrs, _) =>
+        ovrs.override({
+          subCategoryId: subcatId,
+          appearance: FeatureAppearance.fromRgb(ColorDef.red),
+        });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -343,8 +466,14 @@ describe("RenderTarget", () => {
 
       // Override color for element and subcategory - element wins
       ovrProvider.ovrFunc = (ovrs, _) => {
-        ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
-        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
+        ovrs.override({
+          subCategoryId: subcatId,
+          appearance: FeatureAppearance.fromRgb(ColorDef.blue),
+        });
+        ovrs.override({
+          elementId: elemId,
+          appearance: FeatureAppearance.fromRgb(ColorDef.red),
+        });
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -352,7 +481,11 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
 
       // Override to be fully transparent - element should not draw at all
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromTransparency(1.0) });
+      ovrProvider.ovrFunc = (ovrs, _) =>
+        ovrs.override({
+          elementId: elemId,
+          appearance: FeatureAppearance.fromTransparency(1.0),
+        });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -366,7 +499,14 @@ describe("RenderTarget", () => {
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }) });
+      ovrProvider.ovrFunc = (ovrs, _) =>
+        ovrs.override({
+          elementId: elemId,
+          appearance: FeatureAppearance.fromJSON({
+            rgb: new RgbColor(0, 0, 0xff),
+            transparency: 0.5,
+          }),
+        });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -389,7 +529,11 @@ describe("RenderTarget", () => {
   it("should augment symbology", async () => {
     await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
       // Draw unlit surfaces only - a white slab on a black background.
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        hiddenEdges: false,
+        lighting: false,
+      });
 
       const expectSurfaceColor = async (color: ColorDef) => {
         await vp.waitForAllTilesToRender();
@@ -398,7 +542,12 @@ describe("RenderTarget", () => {
         expect(colors.length).to.equal(2);
         expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
 
-        const expected = Color.fromRgba(color.colors.r, color.colors.g, color.colors.b, 0xff);
+        const expected = Color.fromRgba(
+          color.colors.r,
+          color.colors.g,
+          color.colors.b,
+          0xff
+        );
         expect(colors.contains(expected)).to.be.true;
       };
 
@@ -406,12 +555,24 @@ describe("RenderTarget", () => {
       await expectSurfaceColor(ColorDef.white);
 
       // Override System.createGraphicBranch to use an AppearanceProvider that always overrides color to red.
-      const overrideColor = (color: ColorDef) => () => FeatureAppearance.fromRgb(color);
-      const appearanceProvider: FeatureAppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
+      const overrideColor = (color: ColorDef) => () =>
+        FeatureAppearance.fromRgb(color);
+      const appearanceProvider: FeatureAppearanceProvider = {
+        getFeatureAppearance: overrideColor(ColorDef.red),
+      };
       const createGraphicBranch = IModelApp.renderSystem.createGraphicBranch;
-      IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
+      IModelApp.renderSystem.createGraphicBranch = (
+        branch: GraphicBranch,
+        transform: Transform,
+        options?: GraphicBranchOptions
+      ) => {
         options = options ?? {};
-        return createGraphicBranch.call(IModelApp.renderSystem, branch, transform, { ...options, appearanceProvider });
+        return createGraphicBranch.call(
+          IModelApp.renderSystem,
+          branch,
+          transform,
+          { ...options, appearanceProvider }
+        );
       };
 
       // The viewport doesn't yet know its overrides need updating.
@@ -434,34 +595,65 @@ describe("RenderTarget", () => {
       //  - If the child has no symbology overrides:
       //    - It uses its own AppearanceProvider, or its parents if it has none.
       //  - Otherwise, it uses its own AppearanceProvider, or none.
-      interface OvrAug { ovr?: ColorDef, aug?: ColorDef }
-      const testNestedBranch = async (parent: OvrAug | undefined, child: OvrAug | undefined, expected: ColorDef) => {
+      interface OvrAug {
+        ovr?: ColorDef;
+        aug?: ColorDef;
+      }
+      const testNestedBranch = async (
+        parent: OvrAug | undefined,
+        child: OvrAug | undefined,
+        expected: ColorDef
+      ) => {
         const applyOvrs = (branch: GraphicBranch, ovraug?: OvrAug) => {
           if (ovraug?.ovr) {
             branch.symbologyOverrides = new FeatureSymbology.Overrides(vp);
-            branch.symbologyOverrides.setDefaultOverrides(FeatureAppearance.fromRgb(ovraug.ovr));
+            branch.symbologyOverrides.setDefaultOverrides(
+              FeatureAppearance.fromRgb(ovraug.ovr)
+            );
           }
         };
 
-        const getBranchOptions = (opts?: GraphicBranchOptions, ovraug?: OvrAug) => {
+        const getBranchOptions = (
+          opts?: GraphicBranchOptions,
+          ovraug?: OvrAug
+        ) => {
           if (ovraug?.aug)
-            opts = { ...opts, appearanceProvider: { getFeatureAppearance: overrideColor(ovraug.aug) } };
+            opts = {
+              ...opts,
+              appearanceProvider: {
+                getFeatureAppearance: overrideColor(ovraug.aug),
+              },
+            };
 
           return opts;
         };
 
         // Nest the branch inside a parent branch.
-        IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
+        IModelApp.renderSystem.createGraphicBranch = (
+          branch: GraphicBranch,
+          transform: Transform,
+          options?: GraphicBranchOptions
+        ) => {
           options = options ?? {};
           const childOptions = getBranchOptions(options, child);
           applyOvrs(branch, child);
-          const childBranch = createGraphicBranch.call(IModelApp.renderSystem, branch, transform, childOptions);
+          const childBranch = createGraphicBranch.call(
+            IModelApp.renderSystem,
+            branch,
+            transform,
+            childOptions
+          );
 
           const childGraphics = new GraphicBranch();
           childGraphics.add(childBranch);
           applyOvrs(childGraphics, parent);
           const parentOptions = getBranchOptions(undefined, parent);
-          return createGraphicBranch.call(IModelApp.renderSystem, childGraphics, Transform.createIdentity(), parentOptions);
+          return createGraphicBranch.call(
+            IModelApp.renderSystem,
+            childGraphics,
+            Transform.createIdentity(),
+            parentOptions
+          );
         };
 
         vp.invalidateScene();
@@ -482,18 +674,32 @@ describe("RenderTarget", () => {
         // Child has overrides and/or appearance provider. Provider always wins if defined.
         { child: { ovr: ColorDef.blue }, color: ColorDef.blue },
         { child: { aug: ColorDef.green }, color: ColorDef.green },
-        { child: { ovr: ColorDef.blue, aug: ColorDef.green }, color: ColorDef.green },
+        {
+          child: { ovr: ColorDef.blue, aug: ColorDef.green },
+          color: ColorDef.green,
+        },
 
         // Parent has overrides and/or appearance provider. Child inherits them. Provider always wins if defined.
         { parent: { ovr: ColorDef.blue }, color: ColorDef.blue },
         { parent: { aug: ColorDef.green }, color: ColorDef.green },
-        { parent: { ovr: ColorDef.blue, aug: ColorDef.green }, color: ColorDef.green },
+        {
+          parent: { ovr: ColorDef.blue, aug: ColorDef.green },
+          color: ColorDef.green,
+        },
 
         // If child has overrides, parent's overrides and/or provider have no effect on it.
-        { child: { ovr: ColorDef.blue }, parent: { ovr: ColorDef.red, aug: ColorDef.green }, color: ColorDef.blue },
+        {
+          child: { ovr: ColorDef.blue },
+          parent: { ovr: ColorDef.red, aug: ColorDef.green },
+          color: ColorDef.blue,
+        },
 
         // If child has provider, it wins over parent's overrides if defined.
-        { child: { aug: ColorDef.red }, parent: { ovr: ColorDef.green, aug: ColorDef.blue }, color: ColorDef.red },
+        {
+          child: { aug: ColorDef.red },
+          parent: { ovr: ColorDef.green, aug: ColorDef.blue },
+          color: ColorDef.red,
+        },
       ];
 
       for (const testCase of testCases)
@@ -506,41 +712,57 @@ describe("RenderTarget", () => {
 
   it("should show transparency for polylines", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
-    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
-
-      class TestPolylineDecorator implements Decorator {
-        public decorate(context: DecorateContext) {
-          expect(context.viewport === vp);
-          // draw semi-transparent polyline from top left to bottom right of vp
-          const overlayBuilder = context.createGraphicBuilder(GraphicType.ViewOverlay);
-          const polylineColor = ColorDef.from(0, 255, 0, 128);
-          overlayBuilder.setSymbology(polylineColor, polylineColor, 4);
-          overlayBuilder.addLineString([
-            new Point3d(0, 0, 0),
-            new Point3d(rect.width - 1, rect.height - 1, 0),
-          ]);
-          context.addDecorationFromBuilder(overlayBuilder);
+    await testOnScreenViewport(
+      "0x24",
+      imodel,
+      rect.width,
+      rect.height,
+      async (vp) => {
+        class TestPolylineDecorator implements Decorator {
+          public decorate(context: DecorateContext) {
+            expect(context.viewport === vp);
+            // draw semi-transparent polyline from top left to bottom right of vp
+            const overlayBuilder = context.createGraphicBuilder(
+              GraphicType.ViewOverlay
+            );
+            const polylineColor = ColorDef.from(0, 255, 0, 128);
+            overlayBuilder.setSymbology(polylineColor, polylineColor, 4);
+            overlayBuilder.addLineString([
+              new Point3d(0, 0, 0),
+              new Point3d(rect.width - 1, rect.height - 1, 0),
+            ]);
+            context.addDecorationFromBuilder(overlayBuilder);
+          }
         }
+
+        const decorator = new TestPolylineDecorator();
+        IModelApp.viewManager.addDecorator(decorator);
+        await vp.drawFrame();
+        IModelApp.viewManager.dropDecorator(decorator);
+
+        // expect green blended with black background
+        const testColor = vp.readColor(0, 0); // top left pixel
+        expect(testColor.r).equals(0);
+        expect(testColor.g).approximately(128, 3);
+        expect(testColor.b).equals(0);
       }
-
-      const decorator = new TestPolylineDecorator();
-      IModelApp.viewManager.addDecorator(decorator);
-      await vp.drawFrame();
-      IModelApp.viewManager.dropDecorator(decorator);
-
-      // expect green blended with black background
-      const testColor = vp.readColor(0, 0); // top left pixel
-      expect(testColor.r).equals(0);
-      expect(testColor.g).approximately(128, 3);
-      expect(testColor.b).equals(0);
-    });
+    );
   });
 
   it("should render hilite", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
-      vp.hilite = new Hilite.Settings(ColorDef.red, 1.0, 0.0, Hilite.Silhouette.Thin);
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        hiddenEdges: false,
+        lighting: false,
+      });
+      vp.hilite = new Hilite.Settings(
+        ColorDef.red,
+        1.0,
+        0.0,
+        Hilite.Silhouette.Thin
+      );
 
       await vp.waitForAllTilesToRender();
 
@@ -552,7 +774,10 @@ describe("RenderTarget", () => {
       ];
 
       // OffScreenViewports are not managed by ViewManager so not notified when hilite set changes.
-      const update = (vp instanceof OffScreenViewport) ? (() => (vp as any)._selectionSetDirty = true) : (() => undefined);
+      const update =
+        vp instanceof OffScreenViewport
+          ? () => ((vp as any)._selectionSetDirty = true)
+          : () => undefined;
 
       const white = Color.from(0xffffffff);
       const black = Color.from(0xff000000);
@@ -636,31 +861,55 @@ describe("RenderTarget", () => {
       imodel.projectExtents = extents;
     }
 
-    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(1000 * 1000);
+    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(
+      1000 * 1000
+    );
 
     const fullRect = new ViewRect(0, 0, 100, 100);
-    await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
-      vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
+    await testViewports(
+      "0x24",
+      imodel,
+      fullRect.width,
+      fullRect.height,
+      async (vp) => {
+        vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
 
-      await vp.waitForAllTilesToRender();
-      const mapTreeRef = vp.backgroundMap!;
-      const mapTree = mapTreeRef.treeOwner.tileTree!;
-      expect(mapTree).not.to.be.undefined;
-    });
+        await vp.waitForAllTilesToRender();
+        const mapTreeRef = vp.backgroundMap!;
+        const mapTree = mapTreeRef.treeOwner.tileTree!;
+        expect(mapTree).not.to.be.undefined;
+      }
+    );
   });
 
   it("should render to screen if only a single viewport exists", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
-      expect(vp.rendersToScreen).to.be.true;
-    });
+    await testOnScreenViewport(
+      "0x24",
+      imodel,
+      rect.width,
+      rect.height,
+      async (vp) => {
+        expect(vp.rendersToScreen).to.be.true;
+      }
+    );
   });
 
   it("should render off-screen if multiple viewports exist", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    const vp0 = await createOnScreenTestViewport(
+      "0x24",
+      imodel,
+      rect.width,
+      rect.height
+    );
     expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
-    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    const vp1 = await createOnScreenTestViewport(
+      "0x24",
+      imodel,
+      rect.width,
+      rect.height
+    );
     expect(vp0.rendersToScreen).to.be.false;
     expect(vp1.rendersToScreen).to.be.false;
 
@@ -673,12 +922,24 @@ describe("RenderTarget", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       vp.viewFlags = vp.viewFlags.with("visibleEdges", false);
 
-      const clip = ClipVector.fromJSON([{
-        shape: {
-          points: [[-58.57249751634662, -261.9870625343174, 0], [297.4029912650585, -261.9870625343174, 0], [297.4029912650585, 111.24234024435282, 0], [-58.57249751634662, 111.24234024435282, 0], [-58.57249751634662, -261.9870625343174, 0]],
-          trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
+      const clip = ClipVector.fromJSON([
+        {
+          shape: {
+            points: [
+              [-58.57249751634662, -261.9870625343174, 0],
+              [297.4029912650585, -261.9870625343174, 0],
+              [297.4029912650585, 111.24234024435282, 0],
+              [-58.57249751634662, 111.24234024435282, 0],
+              [-58.57249751634662, -261.9870625343174, 0],
+            ],
+            trans: [
+              [1, 0, 0, 289076.52682419703],
+              [0, 1, 0, 3803926.4450675533],
+              [0, 0, 1, 0],
+            ],
+          },
         },
-      }]);
+      ]);
       expect(clip).to.not.be.undefined;
       vp.view.setViewClip(clip);
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON({
@@ -729,16 +990,22 @@ describe("RenderTarget", () => {
       const colors = vp.readUniqueColors();
       expect(colors.length === 2);
       expect(colors.contains(bgColor)).to.be.true; // black background
-      colors.forEach((color) => expect(color.r < 20 && color.b < 20 && color.g < 20));
+      colors.forEach((color) =>
+        expect(color.r < 20 && color.b < 20 && color.g < 20)
+      );
     }
 
     it("should override color", async () => {
       const rect = new ViewRect(0, 0, 100, 100);
       await testViewportsWithDpr(imodel, rect, async (vp) => {
         expect(vp.view.is3d());
-        const colorOverride = FeatureAppearance.fromJSON({ rgb: new RgbColor(0xff, 0, 0) });
+        const colorOverride = FeatureAppearance.fromJSON({
+          rgb: new RgbColor(0xff, 0, 0),
+        });
 
-        vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
+        vp.view.forEachModel((model) =>
+          vp.overrideModelAppearance(model.id, colorOverride)
+        );
 
         await vp.waitForAllTilesToRender();
         expect(vp.numRequestedTiles).to.equal(0);
@@ -752,9 +1019,13 @@ describe("RenderTarget", () => {
       const rect = new ViewRect(0, 0, 100, 100);
       await testViewportsWithDpr(imodel, rect, async (vp) => {
         expect(vp.view.is3d());
-        const colorOverride = FeatureAppearance.fromJSON({ transparency: .95 });
+        const colorOverride = FeatureAppearance.fromJSON({
+          transparency: 0.95,
+        });
 
-        vp.view.forEachModel((model) => vp.overrideModelAppearance(model.id, colorOverride));
+        vp.view.forEachModel((model) =>
+          vp.overrideModelAppearance(model.id, colorOverride)
+        );
 
         await vp.waitForAllTilesToRender();
         expect(vp.numRequestedTiles).to.equal(0);

@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { EmptyLocalization, RpcInterface, RpcRegistry } from "@itwin/core-common";
+import {
+  EmptyLocalization,
+  RpcInterface,
+  RpcRegistry,
+} from "@itwin/core-common";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { ElectronApp } from "../../ElectronFrontend";
 
@@ -14,7 +18,9 @@ describe("ElectronApp tests.", () => {
     assert(!NativeApp.isValid);
     assert(!IModelApp.initialized);
 
-    await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() } });
+    await ElectronApp.startup({
+      iModelApp: { localization: new EmptyLocalization() },
+    });
 
     assert(ElectronApp.isValid);
     assert(NativeApp.isValid);
@@ -28,7 +34,8 @@ describe("ElectronApp tests.", () => {
   });
 
   it("Should initialize and terminate provided RPC interfaces.", async () => {
-    abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+    abstract class TestRpcInterface extends RpcInterface {
+      // eslint-disable-line deprecation/deprecation
       public static readonly interfaceName = "TestRpcInterface";
       public static interfaceVersion = "0.0.0";
     }
@@ -39,9 +46,15 @@ describe("ElectronApp tests.", () => {
         localization: new EmptyLocalization(),
       },
     });
-    assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
+    assert(
+      RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)
+    );
 
     await ElectronApp.shutdown();
-    assert(!RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
+    assert(
+      !RpcRegistry.instance.definitionClasses.has(
+        TestRpcInterface.interfaceName
+      )
+    );
   });
 });

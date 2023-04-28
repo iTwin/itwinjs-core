@@ -8,10 +8,7 @@
     "frontendDebugging": 9223
   },
   "chromeOptions": {
-    "args": [
-      "--disable-web-security",
-      "--no-sandbox"
-    ]
+    "args": ["--disable-web-security", "--no-sandbox"]
   },
   "mochaOptions": {
     "timeout": 90000,

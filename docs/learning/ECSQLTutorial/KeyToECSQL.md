@@ -23,15 +23,14 @@ SELECT FirstName, LastName FROM Employee WHERE Company='ACME'
 
 As you can see, there is **no syntactical difference** between ECSQL and SQL in that example. And that is true for ECSQL in general.
 
-> **Try it yourself**
-> *Goal:* Find out how many [Element](../../bis/domains/BisCore.ecschema.md#element)s there are in the iModel.
+> **Try it yourself** > _Goal:_ Find out how many [Element](../../bis/domains/BisCore.ecschema.md#element)s there are in the iModel.
 >
-> *ECSQL*
+> _ECSQL_
 >
 > ```sql
 > SELECT count(*) FROM bis.Element
 > ```
->
+
 <iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT count(*) from bis.Element"></iframe>
 
 There is a **semantic** difference however: ECSQL targets the **business data model**, i.e. your domain's ECSchema, whereas SQL targets the **database's schema**.
@@ -49,4 +48,4 @@ That abstraction is a huge simplification for ECSQL users. The database schema o
 
 ---
 
-[**< Previous**](./index.md)  &nbsp; | &nbsp; [**Next >**](./FirstExamples.md)
+[**< Previous**](./index.md) &nbsp; | &nbsp; [**Next >**](./FirstExamples.md)

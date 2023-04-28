@@ -6,7 +6,12 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
-import { IModelApp, MockRender, readElementGraphics, SnapshotConnection } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  MockRender,
+  readElementGraphics,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 
 describe("requestElementGraphics", () => {
@@ -18,14 +23,16 @@ describe("requestElementGraphics", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
 
   describe("quantization", () => {
-    async function expectQuantized(requestQuantized: boolean | undefined, expected: boolean): Promise<void> {
+    async function expectQuantized(
+      requestQuantized: boolean | undefined,
+      expected: boolean
+    ): Promise<void> {
       const requestProps: PersistentGraphicsRequestProps = {
         elementId: "0x29",
         id: Guid.createValue(),
@@ -35,7 +42,10 @@ describe("requestElementGraphics", () => {
       if (undefined !== requestQuantized)
         requestProps.quantizePositions = requestQuantized;
 
-      const bytes = await IModelApp.tileAdmin.requestElementGraphics(imodel, requestProps);
+      const bytes = await IModelApp.tileAdmin.requestElementGraphics(
+        imodel,
+        requestProps
+      );
       expect(bytes).not.to.be.undefined;
 
       let createdMesh = false;
@@ -67,18 +77,22 @@ describe("requestElementGraphics", () => {
     let elemRtc: number[];
 
     before(async () => {
-      const placement = (await imodel.elements.getPlacements("0x29", {type: "3d"}))[0];
+      const placement = (
+        await imodel.elements.getPlacements("0x29", { type: "3d" })
+      )[0];
       expect(placement).not.to.be.undefined;
       const range = placement.calculateRange();
       const rangeCenter = range.center;
       elemRtc = [rangeCenter.x, rangeCenter.y, rangeCenter.z];
     });
 
-    async function expectRtc(options: {
-      quantize?: boolean;
-      absolute?: boolean;
-      location?: Transform;
-    }, expectedRtc: number[] | undefined
+    async function expectRtc(
+      options: {
+        quantize?: boolean;
+        absolute?: boolean;
+        location?: Transform;
+      },
+      expectedRtc: number[] | undefined
     ): Promise<void> {
       const requestProps: PersistentGraphicsRequestProps = {
         elementId: "0x29",
@@ -89,18 +103,27 @@ describe("requestElementGraphics", () => {
         location: options.location?.toJSON(),
       };
 
-      const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, requestProps))!;
+      const bytes = (await IModelApp.tileAdmin.requestElementGraphics(
+        imodel,
+        requestProps
+      ))!;
       expect(bytes).not.to.be.undefined;
 
       let createdMesh = false;
       IModelApp.renderSystem.createMeshGeometry = (params) => {
-        expect(params.vertices.usesUnquantizedPositions).to.equal(true !== options.quantize);
+        expect(params.vertices.usesUnquantizedPositions).to.equal(
+          true !== options.quantize
+        );
         createdMesh = true;
         return new MockRender.Geometry();
       };
 
       let actualRtc: number[] | undefined;
-      IModelApp.renderSystem.createGraphicBranch = (branch, transform, branchOptions) => {
+      IModelApp.renderSystem.createGraphicBranch = (
+        branch,
+        transform,
+        branchOptions
+      ) => {
         actualRtc = transform.origin.toArray();
         return new MockRender.Branch(branch, transform, branchOptions);
       };
@@ -110,7 +133,8 @@ describe("requestElementGraphics", () => {
       expect(createdMesh).to.be.true;
       expect(undefined === actualRtc).to.equal(undefined === expectedRtc);
       if (actualRtc && expectedRtc) {
-        const expectAlmostEqual = (actual: number, expected: number) => expect(Math.abs(actual - expected)).most(0.00001);
+        const expectAlmostEqual = (actual: number, expected: number) =>
+          expect(Math.abs(actual - expected)).most(0.00001);
         expectAlmostEqual(actualRtc[0], expectedRtc[0]);
         expectAlmostEqual(actualRtc[1], expectedRtc[1]);
         expectAlmostEqual(actualRtc[2], expectedRtc[2]);
@@ -134,7 +158,10 @@ describe("requestElementGraphics", () => {
     });
 
     it("is adjusted based on location transform", async () => {
-      await expectRtc({ location: Transform.createTranslationXYZ(100, -200, 500) }, [elemRtc[0] - 100, elemRtc[1] + 200, elemRtc[2] - 500]);
+      await expectRtc(
+        { location: Transform.createTranslationXYZ(100, -200, 500) },
+        [elemRtc[0] - 100, elemRtc[1] + 200, elemRtc[2] - 500]
+      );
     });
   });
 });

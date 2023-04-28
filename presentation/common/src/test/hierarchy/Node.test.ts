@@ -9,14 +9,32 @@ import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
 describe("Node", () => {
   // eslint-disable-next-line deprecation/deprecation
   const testNodeJson: NodeJSON = {
-    key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode },
-    labelDefinition: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
+    key: {
+      instanceKeys: [],
+      pathFromRoot: [],
+      version: 0,
+      type: StandardNodeTypes.ECInstancesNode,
+    },
+    labelDefinition: {
+      displayValue: "TestNode",
+      rawValue: "test_node",
+      typeName: "string",
+    },
     description: "test description",
   };
 
   const testNode: Node = {
-    key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode },
-    label: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
+    key: {
+      instanceKeys: [],
+      pathFromRoot: [],
+      version: 0,
+      type: StandardNodeTypes.ECInstancesNode,
+    },
+    label: {
+      displayValue: "TestNode",
+      rawValue: "test_node",
+      typeName: "string",
+    },
     description: "test description",
   };
 

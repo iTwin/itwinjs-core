@@ -7,7 +7,14 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import {
+  DbResult,
+  Id64,
+  Id64Arg,
+  Id64String,
+  IModelStatus,
+  OpenMode,
+} from "@itwin/core-bentley";
 import { IModel, IModelError } from "@itwin/core-common";
 import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";
@@ -34,7 +41,9 @@ const enum LockOrigin {
 
 /** @internal */
 export class ServerBasedLocks implements LockControl {
-  public get isServerBased() { return true; }
+  public get isServerBased() {
+    return true;
+  }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
 
@@ -45,32 +54,43 @@ export class ServerBasedLocks implements LockControl {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
       this.lockDb.createDb(dbName);
-      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
+      this.lockDb.executeSQL(
+        "CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)"
+      );
       this.lockDb.saveChanges();
     }
   }
 
   public close() {
-    if (this.lockDb.isOpen)
-      this.lockDb.closeDb();
+    if (this.lockDb.isOpen) this.lockDb.closeDb();
   }
 
   private getOwners(id: Id64String): ElementOwners {
-    return this.briefcase.withPreparedSqliteStatement("SELECT ModelId,ParentId FROM bis_Element WHERE id=?", (stmt) => {
-      stmt.bindId(1, id);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_ROW !== rc)
-        throw new IModelError(rc, `element ${id} not found`);
+    return this.briefcase.withPreparedSqliteStatement(
+      "SELECT ModelId,ParentId FROM bis_Element WHERE id=?",
+      (stmt) => {
+        stmt.bindId(1, id);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_ROW !== rc)
+          throw new IModelError(rc, `element ${id} not found`);
 
-      return { modelId: stmt.getValueId(0), parentId: stmt.getValueId(1) };
-    });
+        return { modelId: stmt.getValueId(0), parentId: stmt.getValueId(1) };
+      }
+    );
   }
 
   private getLockState(id?: Id64String): LockState | undefined {
-    return (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
-      stmt.bindId(1, id);
-      return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
-    });
+    return id === undefined || !Id64.isValid(id)
+      ? undefined
+      : this.lockDb.withPreparedSqliteStatement(
+          "SELECT state FROM locks WHERE id=?",
+          (stmt) => {
+            stmt.bindId(1, id);
+            return DbResult.BE_SQLITE_ROW === stmt.step()
+              ? stmt.getValueInteger(0)
+              : undefined;
+          }
+        );
   }
 
   /** Clear the cache of locally held locks.
@@ -83,11 +103,14 @@ export class ServerBasedLocks implements LockControl {
 
   /** only for tests */
   public getLockCount(state: LockState): number {
-    return this.lockDb.withSqliteStatement("SELECT count(*) FROM locks WHERE state=?", (stmt) => {
-      stmt.bindInteger(1, state);
-      stmt.step();
-      return stmt.getValueInteger(0);
-    });
+    return this.lockDb.withSqliteStatement(
+      "SELECT count(*) FROM locks WHERE state=?",
+      (stmt) => {
+        stmt.bindInteger(1, state);
+        stmt.step();
+        return stmt.getValueInteger(0);
+      }
+    );
   }
 
   public async releaseAllLocks(): Promise<void> {
@@ -95,51 +118,78 @@ export class ServerBasedLocks implements LockControl {
     this.clearAllLocks();
   }
 
-  private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
-      stmt.bindId(1, id);
-      stmt.bindInteger(2, state);
-      stmt.bindInteger(3, origin);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't insert lock into database");
-    });
+  private insertLock(
+    id: Id64String,
+    state: LockState,
+    origin: LockOrigin
+  ): true {
+    this.lockDb.withPreparedSqliteStatement(
+      "INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin",
+      (stmt) => {
+        stmt.bindId(1, id);
+        stmt.bindInteger(2, state);
+        stmt.bindInteger(3, origin);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          throw new IModelError(rc, "can't insert lock into database");
+      }
+    );
     return true;
   }
 
   private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
-    if (id === undefined || id === IModel.rootSubjectId)
-      return false; // has no owners
+    if (id === undefined || id === IModel.rootSubjectId) return false; // has no owners
 
     const { modelId, parentId } = this.getOwners(id);
-    if (this.getLockState(modelId) === LockState.Exclusive || this.getLockState(parentId) === LockState.Exclusive)
+    if (
+      this.getLockState(modelId) === LockState.Exclusive ||
+      this.getLockState(parentId) === LockState.Exclusive
+    )
       return true;
 
     // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
     if (this.ownerHoldsExclusiveLock(modelId))
-      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
+      return this.insertLock(
+        modelId,
+        LockState.Exclusive,
+        LockOrigin.Discovered
+      );
 
     // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    return this.ownerHoldsExclusiveLock(parentId)
+      ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered)
+      : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
   public holdsExclusiveLock(id: Id64String): boolean {
     // see if we hold the exclusive lock. or if one of the element's owners is exclusively locked (recursively)
-    return this.getLockState(id) === LockState.Exclusive || this.ownerHoldsExclusiveLock(id);
+    return (
+      this.getLockState(id) === LockState.Exclusive ||
+      this.ownerHoldsExclusiveLock(id)
+    );
   }
 
   public holdsSharedLock(id: Id64String): boolean {
     const state = this.getLockState(id);
     // see if we hold shared or exclusive lock, or if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
-    return (state === LockState.Shared || state === LockState.Exclusive) || this.ownerHoldsExclusiveLock(id);
+    return (
+      state === LockState.Shared ||
+      state === LockState.Exclusive ||
+      this.ownerHoldsExclusiveLock(id)
+    );
   }
 
   /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
   private addSharedLock(id: Id64String | undefined, locks: Set<Id64String>) {
     // if the id is not valid, or of the lock is already in the set, or if we already hold a shared lock, we're done
     // Note: if we hold a shared lock, it is guaranteed that we also hold all required shared locks on owners.
-    if (id === undefined || !Id64.isValid(id) || locks.has(id) || this.holdsSharedLock(id))
+    if (
+      id === undefined ||
+      !Id64.isValid(id) ||
+      locks.has(id) ||
+      this.holdsSharedLock(id)
+    )
       return;
 
     locks.add(id); // add to set of needed shared locks
@@ -155,15 +205,16 @@ export class ServerBasedLocks implements LockControl {
 
   /** attempt to acquire all necessary locks for a set of elements */
   private async acquireAllLocks(locks: LockMap) {
-    if (locks.size === 0) // no locks are required.
+    if (locks.size === 0)
+      // no locks are required.
       return;
 
     const sharedLocks = new Set<Id64String>();
-    for (const lock of locks)
-      this.addOwnerSharedLocks(lock[0], sharedLocks);
+    for (const lock of locks) this.addOwnerSharedLocks(lock[0], sharedLocks);
 
     for (const shared of sharedLocks) {
-      if (!locks.has(shared)) // we may already be asking for exclusive lock
+      if (!locks.has(shared))
+        // we may already be asking for exclusive lock
         locks.set(shared, LockState.Shared);
     }
 
@@ -173,18 +224,19 @@ export class ServerBasedLocks implements LockControl {
     this.lockDb.saveChanges();
   }
 
-  public async acquireLocks(arg: { shared?: Id64Arg, exclusive?: Id64Arg }): Promise<void> {
+  public async acquireLocks(arg: {
+    shared?: Id64Arg;
+    exclusive?: Id64Arg;
+  }): Promise<void> {
     const locks = new Map<Id64String, LockState>();
     if (arg.shared) {
       for (const id of Id64.iterable(arg.shared)) {
-        if (!this.holdsSharedLock(id))
-          locks.set(id, LockState.Shared);
+        if (!this.holdsSharedLock(id)) locks.set(id, LockState.Shared);
       }
     }
     if (arg.exclusive) {
       for (const id of Id64.iterable(arg.exclusive)) {
-        if (!this.holdsExclusiveLock(id))
-          locks.set(id, LockState.Exclusive);
+        if (!this.holdsExclusiveLock(id)) locks.set(id, LockState.Exclusive);
       }
     }
     return this.acquireAllLocks(locks);
@@ -197,19 +249,25 @@ export class ServerBasedLocks implements LockControl {
   }
 
   /** locks are not necessary during change propagation. */
-  private get _locksAreRequired() { return !this.briefcase.txns.isIndirectChanges; }
+  private get _locksAreRequired() {
+    return !this.briefcase.txns.isIndirectChanges;
+  }
 
   /** throw if locks are currently required and the exclusive lock is not held on the supplied element */
   public checkExclusiveLock(id: Id64String, type: string, operation: string) {
     if (this._locksAreRequired && !this.holdsExclusiveLock(id))
-      throw new IModelError(IModelStatus.LockNotHeld, `exclusive lock not held on ${type} for ${operation} (id=${id})`);
+      throw new IModelError(
+        IModelStatus.LockNotHeld,
+        `exclusive lock not held on ${type} for ${operation} (id=${id})`
+      );
   }
 
   /** throw if locks are currently required and a shared lock is not held on the supplied element */
   public checkSharedLock(id: Id64String, type: string, operation: string) {
     if (this._locksAreRequired && !this.holdsSharedLock(id))
-      throw new IModelError(IModelStatus.LockNotHeld, `shared lock not held on ${type} for ${operation} (id=${id})`);
+      throw new IModelError(
+        IModelStatus.LockNotHeld,
+        `shared lock not held on ${type} for ${operation} (id=${id})`
+      );
   }
-
 }
-

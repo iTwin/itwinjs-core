@@ -5,10 +5,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ClientDiagnostics } from "@itwin/presentation-common";
-import { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "../presentation-frontend/Diagnostics";
+import {
+  consoleDiagnosticsHandler,
+  createCombinedDiagnosticsHandler,
+} from "../presentation-frontend/Diagnostics";
 
 describe("consoleDiagnosticsHandler", () => {
-
   const createConsoleSpies = () => ({
     error: sinon.stub(console, "error"),
     warn: sinon.stub(console, "warn"),
@@ -23,40 +25,51 @@ describe("consoleDiagnosticsHandler", () => {
     const spies = createConsoleSpies();
     consoleDiagnosticsHandler({
       backendVersion: "1.2.3",
-      logs: [{
-        scope: "scope1",
-        logs: [{
-          category: "test",
-          timestamp: 0,
-          message: "error",
-          severity: { dev: "error" },
-        }, {
-          category: "test",
-          timestamp: 0,
-          message: "warning",
-          severity: { editor: "warning" },
-        }, {
-          scope: "scope2",
-          logs: [{
-            category: "test",
-            timestamp: 0,
-            message: "info",
-            severity: { dev: "info" },
-          }, {
-            category: "test",
-            timestamp: 0,
-            message: "debug",
-            severity: { editor: "debug" },
-          }, {
-            category: "test",
-            timestamp: 0,
-            message: "trace",
-            severity: { editor: "trace", dev: "trace" },
-          }],
-        }, {
-          scope: "scope3",
-        }],
-      }],
+      logs: [
+        {
+          scope: "scope1",
+          logs: [
+            {
+              category: "test",
+              timestamp: 0,
+              message: "error",
+              severity: { dev: "error" },
+            },
+            {
+              category: "test",
+              timestamp: 0,
+              message: "warning",
+              severity: { editor: "warning" },
+            },
+            {
+              scope: "scope2",
+              logs: [
+                {
+                  category: "test",
+                  timestamp: 0,
+                  message: "info",
+                  severity: { dev: "info" },
+                },
+                {
+                  category: "test",
+                  timestamp: 0,
+                  message: "debug",
+                  severity: { editor: "debug" },
+                },
+                {
+                  category: "test",
+                  timestamp: 0,
+                  message: "trace",
+                  severity: { editor: "trace", dev: "trace" },
+                },
+              ],
+            },
+            {
+              scope: "scope3",
+            },
+          ],
+        },
+      ],
     });
     expect(spies.error).to.be.calledOnceWith("error");
     expect(spies.warn).to.be.calledOnceWith("warning");
@@ -67,19 +80,19 @@ describe("consoleDiagnosticsHandler", () => {
     expect(spies.log.getCall(3)).to.be.calledWith("trace");
     expect(spies.log.getCall(4)).to.be.calledWith("trace");
   });
-
 });
 
 describe("createCombinedDiagnosticsHandler", () => {
-
   it("calls all handlers with argument", () => {
     const arg: ClientDiagnostics = {};
     const handler1 = sinon.spy();
     const handler2 = sinon.spy();
-    const combinedHandler = createCombinedDiagnosticsHandler([handler1, handler2]);
+    const combinedHandler = createCombinedDiagnosticsHandler([
+      handler1,
+      handler2,
+    ]);
     combinedHandler(arg);
     expect(handler1).to.be.calledOnceWith(arg);
     expect(handler2).to.be.calledOnceWith(arg);
   });
-
 });

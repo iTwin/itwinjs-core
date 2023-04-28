@@ -25,18 +25,20 @@ import { QuantityError, QuantityStatus } from "../Exception";
  *   - Grabs the unit name, `|` and label separately
  * @internal
  */
-export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
+export const formatStringRgx =
+  /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
 /** @internal */
-export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
+export function* getItemNamesFromFormatString(
+  formatString: string
+): Iterable<string> {
   const match = formatString.split(formatStringRgx);
   yield match[1]; // the Format Name
   let index = 4;
-  while (index < match.length - 1) { // index 0 and 21 are empty strings
-    if (match[index] !== undefined)
-      yield match[index + 1]; // Unit Name
-    else
-      break;
+  while (index < match.length - 1) {
+    // index 0 and 21 are empty strings
+    if (match[index] !== undefined) yield match[index + 1]; // Unit Name
+    else break;
     index += 4;
   }
 }
@@ -136,57 +138,97 @@ export enum ShowSignOption {
 
 /**  @beta   */
 
-export function parseScientificType(scientificType: string, formatName: string): ScientificType {
+export function parseScientificType(
+  scientificType: string,
+  formatName: string
+): ScientificType {
   switch (scientificType.toLowerCase()) {
-    case "normalized": return ScientificType.Normalized;
-    case "zeronormalized": return ScientificType.ZeroNormalized;
+    case "normalized":
+      return ScientificType.Normalized;
+    case "zeronormalized":
+      return ScientificType.ZeroNormalized;
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'scientificType' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'scientificType' attribute.`
+      );
   }
 }
 
 /**  @beta   */
 export function scientificTypeToString(scientificType: ScientificType): string {
-  return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
+  return scientificType === ScientificType.Normalized
+    ? "Normalized"
+    : "ZeroNormalized";
 }
 
 /** @beta    */
-export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
+export function parseShowSignOption(
+  showSignOption: string,
+  formatName: string
+): ShowSignOption {
   switch (showSignOption.toLowerCase()) {
-    case "nosign": return ShowSignOption.NoSign;
-    case "onlynegative": return ShowSignOption.OnlyNegative;
-    case "signalways": return ShowSignOption.SignAlways;
-    case "negativeparentheses": return ShowSignOption.NegativeParentheses;
+    case "nosign":
+      return ShowSignOption.NoSign;
+    case "onlynegative":
+      return ShowSignOption.OnlyNegative;
+    case "signalways":
+      return ShowSignOption.SignAlways;
+    case "negativeparentheses":
+      return ShowSignOption.NegativeParentheses;
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'showSignOption' attribute.`
+      );
   }
 }
 
 /**  @beta  */
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
-    case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
-    case ShowSignOption.NoSign: return "NoSign";
-    case ShowSignOption.OnlyNegative: return "OnlyNegative";
-    case ShowSignOption.SignAlways: return "SignAlways";
+    case ShowSignOption.NegativeParentheses:
+      return "NegativeParentheses";
+    case ShowSignOption.NoSign:
+      return "NoSign";
+    case ShowSignOption.OnlyNegative:
+      return "OnlyNegative";
+    case ShowSignOption.SignAlways:
+      return "SignAlways";
   }
 }
 
 /**  @beta  */
-export function parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits {
+export function parseFormatTrait(
+  formatTraitsString: string,
+  formatName: string
+): FormatTraits {
   switch (formatTraitsString.toLowerCase()) {
-    case "trailzeroes": return FormatTraits.TrailZeroes;
-    case "keepsinglezero": return FormatTraits.KeepSingleZero;
-    case "zeroempty": return FormatTraits.ZeroEmpty;
-    case "keepdecimalpoint": return FormatTraits.KeepDecimalPoint;
-    case "applyrounding": return FormatTraits.ApplyRounding;
-    case "fractiondash": return FormatTraits.FractionDash;
-    case "showunitlabel": return FormatTraits.ShowUnitLabel;
-    case "prependunitlabel": return FormatTraits.PrependUnitLabel;
-    case "use1000separator": return FormatTraits.Use1000Separator;
-    case "exponentonlynegative": return FormatTraits.ExponentOnlyNegative;
+    case "trailzeroes":
+      return FormatTraits.TrailZeroes;
+    case "keepsinglezero":
+      return FormatTraits.KeepSingleZero;
+    case "zeroempty":
+      return FormatTraits.ZeroEmpty;
+    case "keepdecimalpoint":
+      return FormatTraits.KeepDecimalPoint;
+    case "applyrounding":
+      return FormatTraits.ApplyRounding;
+    case "fractiondash":
+      return FormatTraits.FractionDash;
+    case "showunitlabel":
+      return FormatTraits.ShowUnitLabel;
+    case "prependunitlabel":
+      return FormatTraits.PrependUnitLabel;
+    case "use1000separator":
+      return FormatTraits.Use1000Separator;
+    case "exponentonlynegative":
+      return FormatTraits.ExponentOnlyNegative;
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'formatTraits' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'formatTraits' attribute.`
+      );
   }
 }
 
@@ -218,94 +260,177 @@ export function getTraitString(trait: FormatTraits) {
 }
 
 /**  @beta  */
-export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
+export function formatTraitsToArray(
+  currentFormatTrait: FormatTraits
+): string[] {
   const formatTraitsArr = Array<string>();
-  if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes)
+  if (
+    (currentFormatTrait & FormatTraits.TrailZeroes) ===
+    FormatTraits.TrailZeroes
+  )
     formatTraitsArr.push("TrailZeroes");
-  if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero)
+  if (
+    (currentFormatTrait & FormatTraits.KeepSingleZero) ===
+    FormatTraits.KeepSingleZero
+  )
     formatTraitsArr.push("KeepSingleZero");
   if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty)
     formatTraitsArr.push("ZeroEmpty");
-  if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint)
+  if (
+    (currentFormatTrait & FormatTraits.KeepDecimalPoint) ===
+    FormatTraits.KeepDecimalPoint
+  )
     formatTraitsArr.push("KeepDecimalPoint");
-  if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding)
+  if (
+    (currentFormatTrait & FormatTraits.ApplyRounding) ===
+    FormatTraits.ApplyRounding
+  )
     formatTraitsArr.push("ApplyRounding");
-  if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash)
+  if (
+    (currentFormatTrait & FormatTraits.FractionDash) ===
+    FormatTraits.FractionDash
+  )
     formatTraitsArr.push("FractionDash");
-  if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel)
+  if (
+    (currentFormatTrait & FormatTraits.ShowUnitLabel) ===
+    FormatTraits.ShowUnitLabel
+  )
     formatTraitsArr.push("ShowUnitLabel");
-  if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel)
+  if (
+    (currentFormatTrait & FormatTraits.PrependUnitLabel) ===
+    FormatTraits.PrependUnitLabel
+  )
     formatTraitsArr.push("PrependUnitLabel");
-  if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator)
+  if (
+    (currentFormatTrait & FormatTraits.Use1000Separator) ===
+    FormatTraits.Use1000Separator
+  )
     formatTraitsArr.push("Use1000Separator");
-  if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative)
+  if (
+    (currentFormatTrait & FormatTraits.ExponentOnlyNegative) ===
+    FormatTraits.ExponentOnlyNegative
+  )
     formatTraitsArr.push("ExponentOnlyNegative");
   return formatTraitsArr;
 }
 
 /**  @beta    */
-export function parseFormatType(jsonObjType: string, formatName: string): FormatType {
+export function parseFormatType(
+  jsonObjType: string,
+  formatName: string
+): FormatType {
   switch (jsonObjType.toLowerCase()) {
-    case "decimal": return FormatType.Decimal;
-    case "scientific": return FormatType.Scientific;
-    case "station": return FormatType.Station;
-    case "fractional": return FormatType.Fractional;
+    case "decimal":
+      return FormatType.Decimal;
+    case "scientific":
+      return FormatType.Scientific;
+    case "station":
+      return FormatType.Station;
+    case "fractional":
+      return FormatType.Fractional;
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'type' attribute.`
+      );
   }
 }
 
 /** @beta    */
 export function formatTypeToString(type: FormatType): string {
   switch (type) {
-    case FormatType.Decimal: return "Decimal";
-    case FormatType.Scientific: return "Scientific";
-    case FormatType.Station: return "Station";
-    case FormatType.Fractional: return "Fractional";
+    case FormatType.Decimal:
+      return "Decimal";
+    case FormatType.Scientific:
+      return "Scientific";
+    case FormatType.Station:
+      return "Station";
+    case FormatType.Fractional:
+      return "Fractional";
   }
 }
 
 /**  @beta    */
-export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision {
+export function parseDecimalPrecision(
+  jsonObjPrecision: number,
+  formatName: string
+): DecimalPrecision {
   switch (jsonObjPrecision) {
-    case 0: return DecimalPrecision.Zero;
-    case 1: return DecimalPrecision.One;
-    case 2: return DecimalPrecision.Two;
-    case 3: return DecimalPrecision.Three;
-    case 4: return DecimalPrecision.Four;
-    case 5: return DecimalPrecision.Five;
-    case 6: return DecimalPrecision.Six;
-    case 7: return DecimalPrecision.Seven;
-    case 8: return DecimalPrecision.Eight;
-    case 9: return DecimalPrecision.Nine;
-    case 10: return DecimalPrecision.Ten;
-    case 11: return DecimalPrecision.Eleven;
-    case 12: return DecimalPrecision.Twelve;
+    case 0:
+      return DecimalPrecision.Zero;
+    case 1:
+      return DecimalPrecision.One;
+    case 2:
+      return DecimalPrecision.Two;
+    case 3:
+      return DecimalPrecision.Three;
+    case 4:
+      return DecimalPrecision.Four;
+    case 5:
+      return DecimalPrecision.Five;
+    case 6:
+      return DecimalPrecision.Six;
+    case 7:
+      return DecimalPrecision.Seven;
+    case 8:
+      return DecimalPrecision.Eight;
+    case 9:
+      return DecimalPrecision.Nine;
+    case 10:
+      return DecimalPrecision.Ten;
+    case 11:
+      return DecimalPrecision.Eleven;
+    case 12:
+      return DecimalPrecision.Twelve;
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'precision' attribute.`
+      );
   }
 }
 
 /**  @beta validates the input value, that is typically extracted for persisted JSON data, is a valid FractionalPrecision */
-export function parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision {
+export function parseFractionalPrecision(
+  jsonObjPrecision: number,
+  formatName: string
+): FractionalPrecision {
   switch (jsonObjPrecision) {
-    case 1: return FractionalPrecision.One;
-    case 2: return FractionalPrecision.Two;
-    case 4: return FractionalPrecision.Four;
-    case 8: return FractionalPrecision.Eight;
-    case 16: return FractionalPrecision.Sixteen;
-    case 32: return FractionalPrecision.ThirtyTwo;
-    case 64: return FractionalPrecision.SixtyFour;
-    case 128: return FractionalPrecision.OneHundredTwentyEight;
-    case 256: return FractionalPrecision.TwoHundredFiftySix;
+    case 1:
+      return FractionalPrecision.One;
+    case 2:
+      return FractionalPrecision.Two;
+    case 4:
+      return FractionalPrecision.Four;
+    case 8:
+      return FractionalPrecision.Eight;
+    case 16:
+      return FractionalPrecision.Sixteen;
+    case 32:
+      return FractionalPrecision.ThirtyTwo;
+    case 64:
+      return FractionalPrecision.SixtyFour;
+    case 128:
+      return FractionalPrecision.OneHundredTwentyEight;
+    case 256:
+      return FractionalPrecision.TwoHundredFiftySix;
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'precision' attribute.`
+      );
   }
 }
 
 /** @beta  validates the input value, that is typically extracted for persisted JSON data, is a valid DecimalPrecision or FractionalPrecision. */
-export function parsePrecision(precision: number, type: FormatType, formatName: string): DecimalPrecision | FractionalPrecision {
-  switch (type) { // type must be decimal, fractional, scientific, or station
+export function parsePrecision(
+  precision: number,
+  type: FormatType,
+  formatName: string
+): DecimalPrecision | FractionalPrecision {
+  switch (
+    type // type must be decimal, fractional, scientific, or station
+  ) {
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
@@ -313,6 +438,9 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Fractional:
       return parseFractionalPrecision(precision, formatName);
     default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'precision' attribute.`);
+      throw new QuantityError(
+        QuantityStatus.InvalidJson,
+        `The Format ${formatName} has an invalid 'precision' attribute.`
+      );
   }
 }

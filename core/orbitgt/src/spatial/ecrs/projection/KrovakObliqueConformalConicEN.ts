@@ -33,58 +33,72 @@ import { KrovakObliqueConformalConic } from "./KrovakObliqueConformalConic";
  */
 /** @internal */
 export class KrovakObliqueConformalConicEN extends OperationMethod {
-    /** The code of this method */
-    public static readonly METHOD_CODE: int32 = 1041;
+  /** The code of this method */
+  public static readonly METHOD_CODE: int32 = 1041;
 
-    /** The original projection */
-    private projection: KrovakObliqueConformalConic;
+  /** The original projection */
+  private projection: KrovakObliqueConformalConic;
 
-    /**
-       * Create a new projection.
-       * @param parameters the values of the parameters.
-       */
-    public constructor(parameters: ParameterValueList) {
-        super(KrovakObliqueConformalConicEN.METHOD_CODE, "Krovak Oblique Conic Conformal East-North", parameters);
-        /* Create the projection */
-        this.projection = new KrovakObliqueConformalConic(parameters);
-    }
+  /**
+   * Create a new projection.
+   * @param parameters the values of the parameters.
+   */
+  public constructor(parameters: ParameterValueList) {
+    super(
+      KrovakObliqueConformalConicEN.METHOD_CODE,
+      "Krovak Oblique Conic Conformal East-North",
+      parameters
+    );
+    /* Create the projection */
+    this.projection = new KrovakObliqueConformalConic(parameters);
+  }
 
-    /**
-       * OperationMethod method.
-       * @see OperationMethod#initialize
-       */
-    public override initialize(operation: Operation): void {
-        /* Prepare the projection */
-        this.projection.initialize(operation);
-    }
+  /**
+   * OperationMethod method.
+   * @see OperationMethod#initialize
+   */
+  public override initialize(operation: Operation): void {
+    /* Prepare the projection */
+    this.projection.initialize(operation);
+  }
 
-    /**
-       * OperationMethod interface method.
-       * @see OperationMethod#forward
-       */
-    public forward(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
-        /* Do the forward projection */
-        this.projection.forward(sourceCRS, source, targetCRS, target);
-        /* Get the original position */
-        const E: float64 = target.getX();
-        const N: float64 = target.getY();
-        /* Swap */
-        target.setX(-N);
-        target.setY(-E);
-    }
+  /**
+   * OperationMethod interface method.
+   * @see OperationMethod#forward
+   */
+  public forward(
+    sourceCRS: CRS,
+    source: Coordinate,
+    targetCRS: CRS,
+    target: Coordinate
+  ): void {
+    /* Do the forward projection */
+    this.projection.forward(sourceCRS, source, targetCRS, target);
+    /* Get the original position */
+    const E: float64 = target.getX();
+    const N: float64 = target.getY();
+    /* Swap */
+    target.setX(-N);
+    target.setY(-E);
+  }
 
-    /**
-       * OperationMethod interface method.
-       * @see OperationMethod#reverse
-       */
-    public reverse(sourceCRS: CRS, source: Coordinate, targetCRS: CRS, target: Coordinate): void {
-        /* Get the swapped position */
-        const N: float64 = -target.getX();
-        const E: float64 = -target.getY();
-        /* Swap (leave the target coordinate untouched) */
-        source.setX(E);
-        source.setY(N);
-        /* Do the reverse projection */
-        this.projection.reverse(sourceCRS, source, targetCRS, source/* target*/);
-    }
+  /**
+   * OperationMethod interface method.
+   * @see OperationMethod#reverse
+   */
+  public reverse(
+    sourceCRS: CRS,
+    source: Coordinate,
+    targetCRS: CRS,
+    target: Coordinate
+  ): void {
+    /* Get the swapped position */
+    const N: float64 = -target.getX();
+    const E: float64 = -target.getY();
+    /* Swap (leave the target coordinate untouched) */
+    source.setX(E);
+    source.setY(N);
+    /* Do the reverse projection */
+    this.projection.reverse(sourceCRS, source, targetCRS, source /* target*/);
+  }
 }

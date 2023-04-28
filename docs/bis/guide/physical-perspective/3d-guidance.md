@@ -66,5 +66,6 @@ If your new Element doesn’t fall into any of the categories above, please cons
 In all cases, new corresponding Model and Partition classes should have the same class qualifiers. Generally, both should be concrete or sealed.
 
 ---
+
 | Next: [Physical Models and Elements](./physical-models-and-elements.md)
 |:---

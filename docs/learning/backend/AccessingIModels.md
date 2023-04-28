@@ -1,6 +1,6 @@
 # Accessing iModels with the iTwin.js library
 
-iTwin.js is an open platform for creating, maintaining, and accessing Infrastructure Digital Twins using iModels. The open source nature of iTwin.js promotes an ecosystem of independent innovation using iModels. At the same time, iTwin.js strives to provide ways to limit access to your intellectual property stored in iModels to *only people and programs that you designate*, in real time.
+iTwin.js is an open platform for creating, maintaining, and accessing Infrastructure Digital Twins using iModels. The open source nature of iTwin.js promotes an ecosystem of independent innovation using iModels. At the same time, iTwin.js strives to provide ways to limit access to your intellectual property stored in iModels to _only people and programs that you designate_, in real time.
 
 These two somewhat competing goals are addressed internally by iTwin.js by two important details:
 
@@ -16,7 +16,7 @@ There are two common use cases for Snapshot iModels:
 1. Export the state of an iModel at a point in time, for archival purposes.
 2. A static but intelligent format for exchange of Infrastructure Digital Twins.
 
-When you create a Snapshot iModel, you implicitly *opt-out of enforcement* of any user or application authentication. *Snapshot iModels may be accessed by any iTwin.js program*, so there is no need or requirement for authentication by iTwin.js.
+When you create a Snapshot iModel, you implicitly _opt-out of enforcement_ of any user or application authentication. _Snapshot iModels may be accessed by any iTwin.js program_, so there is no need or requirement for authentication by iTwin.js.
 
 > Note: A password can optionally be provided when creating and opening Snapshot iModels.
 
@@ -27,11 +27,11 @@ The iTwin.js api has two ways to create a Snapshot iModel. Both are methods on t
 1. [SnapshotDb.createFrom]($backend)
 2. [SnapshotDb.createEmpty]($backend)
 
-The first method creates a Snapshot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
+The first method creates a Snapshot iModel from an existing iModel into the supplied filename. This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
 
-The second method creates an *empty* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotDb` may be used to populate the Snapshot, but once closed it becomes immutable.
+The second method creates an _empty_ Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotDb` may be used to populate the Snapshot, but once closed it becomes immutable.
 
-#### Create Snapshots with *iTwin Snapshot*
+#### Create Snapshots with _iTwin Snapshot_
 
 [iTwin Snapshot](../tutorials/create-test-imodel-offline.md), is a free tool for creating snapshots. iTwin Snapshot was designed for developers to quickly generate snapshots for use in iTwin.js development.
 
@@ -45,7 +45,7 @@ The second method creates an *empty* Snapshot iModel given a filename. This is u
 
 ## The `@bentley/imodeljs-native` module
 
-The `@bentley/imodeljs-native` module is written in C++, is delivered as a platform-specific binary, and is *not* open source. It contains the SQLite code that directly accesses iModel files and implements all the low-level APIs upon which `@itwin/core-backend` is based. It is always required for all backends.
+The `@bentley/imodeljs-native` module is written in C++, is delivered as a platform-specific binary, and is _not_ open source. It contains the SQLite code that directly accesses iModel files and implements all the low-level APIs upon which `@itwin/core-backend` is based. It is always required for all backends.
 
 `@bentley/imodeljs-native` implements the authentication and access enforcement expressed by iModel owners for (non-Snapshot) iModels. User authentication and access rights are a service of Bentley Systems, as a part of if its iTwin Services offerings. Bentley may also license third parties to supply similar services. **This is Bentley Systems' commercial motivation for creating iTwin.js**. Any attempt to circumvent or disrupt this checking is a violation of the [license agreement](https://github.com/iTwin/itwinjs-core/blob/master/core/backend/src/imodeljs-native-LICENSE.md).
 

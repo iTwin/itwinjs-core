@@ -4,7 +4,7 @@ Depending on the size of an iModel and presentation rules to create a hierarchy,
 
 ![Huge hierarchy level example](./media/filtering-limiting-problem.png)
 
-*Notice the scrollbar size in the above picture - the "Physical Object" node has more than 94 thousand child nodes there.*
+_Notice the scrollbar size in the above picture - the "Physical Object" node has more than 94 thousand child nodes there._
 
 To help end users find what they're looking for, all presentation-driven hierarchies support [hierarchy level filtering](#filtering). With that in mind, assuming hierarchy levels need to be filtered down to be useful, presentation-driven hierarchies also support [hierarchy level size limiting](#size-limiting).
 

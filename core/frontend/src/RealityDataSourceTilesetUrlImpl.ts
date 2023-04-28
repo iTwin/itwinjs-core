@@ -6,10 +6,21 @@
  * @module Tiles
  */
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import {
+  IModelError,
+  RealityData,
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+  RealityDataSourceProps,
+} from "@itwin/core-common";
 
 import { request } from "./request/Request";
-import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
+import {
+  PublisherProductInfo,
+  RealityDataSource,
+  SpatialLocationAndExtents,
+} from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 
 /** This class provides access to the reality data provider services.
@@ -17,8 +28,8 @@ import { ThreeDTileFormatInterpreter } from "./tile/internal";
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @internal
-*/
+ * @internal
+ */
 export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -30,7 +41,10 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @param props JSON representation of the reality data source
    */
   protected constructor(props: RealityDataSourceProps) {
-    assert(props.sourceKey.provider === RealityDataProvider.TilesetUrl || props.sourceKey.provider === RealityDataProvider.OrbitGtBlob);
+    assert(
+      props.sourceKey.provider === RealityDataProvider.TilesetUrl ||
+        props.sourceKey.provider === RealityDataProvider.OrbitGtBlob
+    );
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
   }
@@ -38,9 +52,11 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   /**
    * Create an instance of this class from a source key and iTwin context/
    */
-  public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.TilesetUrl)
-      return undefined;
+  public static async createFromKey(
+    sourceKey: RealityDataSourceKey,
+    _iTwinId: GuidString | undefined
+  ): Promise<RealityDataSource | undefined> {
+    if (sourceKey.provider !== RealityDataProvider.TilesetUrl) return undefined;
     const rdSource = new RealityDataSourceTilesetUrlImpl({ sourceKey });
     return rdSource;
   }
@@ -50,7 +66,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   }
   /**
    * Returns Reality Data if available
-  */
+   */
   public get realityData(): RealityData | undefined {
     return undefined;
   }
@@ -72,17 +88,17 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     urlParts.pop();
-    if (urlParts.length === 0)
-      this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
+    if (urlParts.length === 0) this._baseUrl = "";
+    else this._baseUrl = `${urlParts.join("/")}/`;
   }
 
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.
    */
-  public async getServiceUrl(_iTwinId: GuidString | undefined): Promise<string | undefined> {
+  public async getServiceUrl(
+    _iTwinId: GuidString | undefined
+  ): Promise<string | undefined> {
     return this._tilesetUrl;
   }
 
@@ -123,11 +139,14 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
+  public async getSpatialLocationAndExtents(): Promise<
+    SpatialLocationAndExtents | undefined
+  > {
     let spatialLocation: SpatialLocationAndExtents | undefined;
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);
-      spatialLocation = ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
+      spatialLocation =
+        ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
     }
     return spatialLocation;
   }
@@ -137,9 +156,10 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  public async getPublisherProductInfo(): Promise<PublisherProductInfo | undefined> {
+  public async getPublisherProductInfo(): Promise<
+    PublisherProductInfo | undefined
+  > {
     let publisherInfo: PublisherProductInfo | undefined;
     return publisherInfo;
   }
 }
-

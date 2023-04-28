@@ -9,12 +9,12 @@ import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("PresentationRpcInterface", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string =
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
@@ -25,7 +25,6 @@ describe("PresentationRpcInterface", () => {
   });
 
   describe("getElementProperties", () => {
-
     let rpcInterface: PresentationRpcInterface;
 
     beforeEach(() => {
@@ -33,12 +32,13 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("returns properties for requested element", async () => {
-      const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
-        elementId: "0x1",
-      });
+      const result = await rpcInterface.getElementProperties(
+        imodel.getRpcProps(),
+        {
+          elementId: "0x1",
+        }
+      );
       expect(result).to.matchSnapshot();
     });
-
   });
-
 });

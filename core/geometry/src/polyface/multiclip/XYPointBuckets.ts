@@ -39,28 +39,30 @@ export class XYIndexGrid<T> {
     }
   }
   /** Return the number of x edges in the grid */
-  public get numXEdge(): number { return this._numXEdge; }
+  public get numXEdge(): number {
+    return this._numXEdge;
+  }
   /** Return the number of y edges in the grid */
-  public get numYEdge(): number { return this._numYEdge; }
+  public get numYEdge(): number {
+    return this._numYEdge;
+  }
 
   /** Return the `i` index of cells containing x coordinate */
   public xIndex(x: number): number {
-    const fraction = (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
+    const fraction =
+      (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
     const q = Math.floor(fraction * this._numXEdge);
-    if (q < 0)
-      return 0;
-    if (q > this._numXEdge - 1)
-      return this._numXEdge - 1;
+    if (q < 0) return 0;
+    if (q > this._numXEdge - 1) return this._numXEdge - 1;
     return q;
   }
   /** Return the `j` index of cells containing x coordinate */
   public yIndex(y: number): number {
-    const fraction = (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
+    const fraction =
+      (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
     const q = Math.floor(fraction * this._numYEdge);
-    if (q < 0)
-      return 0;
-    if (q > this._numYEdge - 1)
-      return this._numYEdge - 1;
+    if (q < 0) return 0;
+    if (q > this._numYEdge - 1) return this._numYEdge - 1;
     return q;
   }
   /**
@@ -69,10 +71,19 @@ export class XYIndexGrid<T> {
    * @param totalEntries
    * @param targetEntriesPerCell
    */
-  public static createWithEstimatedCounts<T>(range: LowAndHighXY, totalEntries: number, targetEntriesPerCell: number): XYIndexGrid<T> | undefined {
+  public static createWithEstimatedCounts<T>(
+    range: LowAndHighXY,
+    totalEntries: number,
+    targetEntriesPerCell: number
+  ): XYIndexGrid<T> | undefined {
     if (range.low.x >= range.high.x || range.low.y >= range.high.y)
       return undefined;
-    const range2d = Range2d.createXYXY(range.low.x, range.low.y, range.high.x, range.high.y);
+    const range2d = Range2d.createXYXY(
+      range.low.x,
+      range.low.y,
+      range.high.x,
+      range.high.y
+    );
 
     const dx = range2d.xLength();
     const dy = range2d.yLength();
@@ -81,10 +92,14 @@ export class XYIndexGrid<T> {
     let numX: number;
     let numY: number;
     if (dy > dx) {
-      numY = Math.ceil(Math.sqrt(dy * totalEntries / (targetEntriesPerCell * dx)));
+      numY = Math.ceil(
+        Math.sqrt((dy * totalEntries) / (targetEntriesPerCell * dx))
+      );
       numX = Math.ceil(totalEntries / numY);
     } else {
-      numX = Math.ceil(Math.sqrt(dx * totalEntries / (targetEntriesPerCell * dy)));
+      numX = Math.ceil(
+        Math.sqrt((dx * totalEntries) / (targetEntriesPerCell * dy))
+      );
       numY = Math.ceil(totalEntries / (numX * targetEntriesPerCell));
     }
     return new XYIndexGrid(range2d, numX, numY);
@@ -123,27 +138,19 @@ export class XYIndexGrid<T> {
    * @param yIndex
    */
   public getDataAtIndex(xIndex: number, yIndex: number): OptionalArray<T> {
-    if (xIndex < 0)
-      return undefined;
-    if (xIndex >= this._numXEdge)
-      return undefined;
-    if (yIndex < 0)
-      return undefined;
-    if (yIndex >= this._numYEdge)
-      return undefined;
+    if (xIndex < 0) return undefined;
+    if (xIndex >= this._numXEdge) return undefined;
+    if (yIndex < 0) return undefined;
+    if (yIndex >= this._numYEdge) return undefined;
 
     return this._data[yIndex][xIndex];
   }
   /** Return true if (xIndex, yIndex) is a valid cell index. */
   public isValidIndex(xIndex: number, yIndex: number): boolean {
-    if (xIndex < 0)
-      return false;
-    if (xIndex >= this._numXEdge)
-      return false;
-    if (yIndex < 0)
-      return false;
-    if (yIndex >= this._numYEdge)
-      return false;
+    if (xIndex < 0) return false;
+    if (xIndex >= this._numXEdge) return false;
+    if (yIndex < 0) return false;
+    if (yIndex >= this._numYEdge) return false;
     return true;
   }
 }
@@ -154,21 +161,31 @@ export class XYPointBuckets {
   private _points: IndexedXYZCollection;
   private _buckets: XYIndexGrid<number>;
   /** Return the underlying grid with indices recorded by block */
-  public get indexGrid(): XYIndexGrid<number> { return this._buckets; }
-  private constructor(points: IndexedXYZCollection, buckets: XYIndexGrid<number>) {
+  public get indexGrid(): XYIndexGrid<number> {
+    return this._buckets;
+  }
+  private constructor(
+    points: IndexedXYZCollection,
+    buckets: XYIndexGrid<number>
+  ) {
     this._points = points;
     this._buckets = buckets;
   }
   /** Create an XYIndex grid with all indices of all `points` entered */
-  public static create(points: IndexedXYZCollection, targetPointsPerCell: number): XYPointBuckets | undefined {
+  public static create(
+    points: IndexedXYZCollection,
+    targetPointsPerCell: number
+  ): XYPointBuckets | undefined {
     const n = points.length;
-    if (points.length < 1)
-      return undefined;
+    if (points.length < 1) return undefined;
     const range = points.getRange();
     range.expandInPlace(Geometry.smallMetricDistance * 1000.0);
-    const buckets = XYIndexGrid.createWithEstimatedCounts<number>(range, points.length, targetPointsPerCell);
-    if (buckets === undefined)
-      return undefined;
+    const buckets = XYIndexGrid.createWithEstimatedCounts<number>(
+      range,
+      points.length,
+      targetPointsPerCell
+    );
+    if (buckets === undefined) return undefined;
     const result = new XYPointBuckets(points, buckets);
     const point = Point3d.create();
     for (let i = 0; i < n; i++) {
@@ -181,7 +198,10 @@ export class XYPointBuckets {
    * * continue the search if `announce` returns true.
    * * terminate the search if `announce` returns false;
    */
-  public announcePointsInRange(range: Range2d | Range3d, announce: (index: number, x: number, y: number, z: number) => boolean) {
+  public announcePointsInRange(
+    range: Range2d | Range3d,
+    announce: (index: number, x: number, y: number, z: number) => boolean
+  ) {
     const i0 = this._buckets.xIndex(range.low.x);
     const i1 = this._buckets.xIndex(range.high.x);
     const j0 = this._buckets.yIndex(range.low.y);
@@ -196,9 +216,7 @@ export class XYPointBuckets {
               const x = this._points.getXAtUncheckedPointIndex(k);
               const y = this._points.getYAtUncheckedPointIndex(k);
               const z = this._points.getZAtUncheckedPointIndex(k);
-              if (range.containsXY(x, y))
-                if (!announce(k, x, y, z))
-                  return;
+              if (range.containsXY(x, y)) if (!announce(k, x, y, z)) return;
             }
           }
         }

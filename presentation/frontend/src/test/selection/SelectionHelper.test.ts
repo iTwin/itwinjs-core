@@ -5,14 +5,14 @@
 
 import { expect } from "chai";
 import {
-  createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey,
+  createRandomBaseNodeKey,
+  createRandomECInstanceKey,
+  createRandomECInstancesNodeKey,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionHelper } from "../../presentation-frontend";
 
 describe("SelectionHelper", () => {
-
   describe("getKeysForSelection", () => {
-
     it("returns all ECInstance keys when ECInstances node key is provided", () => {
       const nodeKey = createRandomECInstancesNodeKey();
       const selectionKeys = SelectionHelper.getKeysForSelection([nodeKey]);
@@ -33,7 +33,5 @@ describe("SelectionHelper", () => {
       expect(selectionKeys.length).to.eq(1);
       expect(selectionKeys[0]).to.deep.eq(key);
     });
-
   });
-
 });

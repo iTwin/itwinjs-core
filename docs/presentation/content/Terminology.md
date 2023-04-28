@@ -38,7 +38,7 @@ When content is requested for multiple different classes and they all have simil
 
 > **Example:**
 >
-> Requesting content for *Window* and *Door* classes which both have property *Height* - content will contain only one field with name *Height* and values of both *Window* and *Door* instances will be put under that field.
+> Requesting content for _Window_ and _Door_ classes which both have property _Height_ - content will contain only one field with name _Height_ and values of both _Window_ and _Door_ instances will be put under that field.
 
 Properties are considered similar if:
 
@@ -82,4 +82,4 @@ In most cases property values are primitive, arrays or structs. However, it is p
 > Element1 Element2 Element3
 > ```
 >
-> In the above example *Model* has 3 related *Element* instances. We can request content for *Model* and ask to additionally show related *Element* properties. In this case element properties are called **nested content** because properties of multiple *Element* instances are displayed as a single *Model* property. The property is created as an array of structs where each struct is created from *Element* instance.
+> In the above example _Model_ has 3 related _Element_ instances. We can request content for _Model_ and ask to additionally show related _Element_ properties. In this case element properties are called **nested content** because properties of multiple _Element_ instances are displayed as a single _Model_ property. The property is created as an array of structs where each struct is created from _Element_ instance.

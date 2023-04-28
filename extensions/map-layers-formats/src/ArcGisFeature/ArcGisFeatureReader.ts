@@ -10,9 +10,9 @@ import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 /** @internal */
-export abstract class ArcGisFeatureReader  {
+export abstract class ArcGisFeatureReader {
   // Optionally you can set the floating precision
-  public floatPrecision: number|undefined;
+  public floatPrecision: number | undefined;
 
   // Force display value of date to ISO 8601 format.
   // Turning this ON, will disable display value in end-user's locale
@@ -26,18 +26,32 @@ export abstract class ArcGisFeatureReader  {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisFeatureRenderer): void;
+  public abstract readAndRender(
+    response: ArcGisResponseData,
+    _renderer: ArcGisFeatureRenderer
+  ): void;
 
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[]): void;
+  public abstract readFeatureInfo(
+    response: ArcGisResponseData,
+    featureInfos: MapLayerFeatureInfo[]
+  ): void;
 
-  protected  toFixedWithoutPadding = (value: number) => {
-    return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));
+  protected toFixedWithoutPadding = (value: number) => {
+    return this.floatPrecision === undefined
+      ? value
+      : parseFloat(value.toFixed(this.floatPrecision));
   };
 
-  protected getDisplayValue = (typename: StandardTypeNames, value: Primitives.Value|undefined) => {
+  protected getDisplayValue = (
+    typename: StandardTypeNames,
+    value: Primitives.Value | undefined
+  ) => {
     if (value === undefined) {
-      return  "";
-    } else if ( typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {
+      return "";
+    } else if (
+      typename === StandardTypeNames.DateTime &&
+      this.forceDateDisplayValueToIso
+    ) {
       return (value as Date).toISOString();
     } else {
       return `${value}`;

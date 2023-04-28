@@ -9,13 +9,15 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
-import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import {
+  IFavoritePropertiesStorage,
+  NoopFavoritePropertiesStorage,
+} from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import * as selection from "../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
 
 describe("Presentation", () => {
-
   const shutdownIModelApp = async () => {
     await IModelApp.shutdown();
   };
@@ -33,10 +35,12 @@ describe("Presentation", () => {
   });
 
   describe("initialize", () => {
-
     it("throws when initialized before IModelApp.startup()", async () => {
       await shutdownIModelApp();
-      expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup"); // eslint-disable-line @typescript-eslint/no-floating-promises
+      expect(Presentation.initialize()).to.be.rejectedWith(
+        PresentationError,
+        "IModelApp.startup"
+      ); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     it("creates manager instances", async () => {
@@ -46,8 +50,12 @@ describe("Presentation", () => {
       expect(() => Presentation.localization).to.throw();
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
-      expect(Presentation.selection).to.be.instanceof(selection.SelectionManager);
-      expect(Presentation.favoriteProperties).to.be.instanceof(favorites.FavoritePropertiesManager);
+      expect(Presentation.selection).to.be.instanceof(
+        selection.SelectionManager
+      );
+      expect(Presentation.favoriteProperties).to.be.instanceof(
+        favorites.FavoritePropertiesManager
+      );
     });
 
     it("initializes PresentationManager with given props", async () => {
@@ -122,11 +130,9 @@ describe("Presentation", () => {
       expect(Presentation.presentation.activeLocale).to.eq("other");
       expect(Presentation.selection.scopes.activeLocale).to.eq("other");
     });
-
   });
 
   describe("terminate", () => {
-
     it("resets manager instances", async () => {
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.not.null;
@@ -147,11 +153,9 @@ describe("Presentation", () => {
       Presentation.terminate();
       expect(spy).to.be.calledOnce;
     });
-
   });
 
   describe("setPresentationManager", () => {
-
     it("overwrites presentation manager instance before initialization", async () => {
       const manager = PresentationManager.create();
       Presentation.setPresentationManager(manager);
@@ -167,51 +171,53 @@ describe("Presentation", () => {
       Presentation.setPresentationManager(otherManager);
       expect(Presentation.presentation).to.eq(otherManager);
     });
-
   });
 
   describe("setSelectionManager", () => {
-
     it("overwrites selection manager instance before initialization", async () => {
-      const manager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
+      const manager = new SelectionManager({
+        scopes: moq.Mock.ofType<SelectionScopesManager>().object,
+      });
       Presentation.setSelectionManager(manager);
       await Presentation.initialize();
       expect(Presentation.selection).to.eq(manager);
     });
 
     it("overwrites selection manager instance after initialization", async () => {
-      const otherManager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
+      const otherManager = new SelectionManager({
+        scopes: moq.Mock.ofType<SelectionScopesManager>().object,
+      });
       await Presentation.initialize();
       expect(Presentation.selection).to.be.not.null;
       expect(Presentation.selection).to.not.eq(otherManager);
       Presentation.setSelectionManager(otherManager);
       expect(Presentation.selection).to.eq(otherManager);
     });
-
   });
 
   describe("setFavoritePropertiesManager", () => {
-
     it("overwrites favoriteProperties instance before initialization", async () => {
-      const manager = new favorites.FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
+      const manager = new favorites.FavoritePropertiesManager({
+        storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object,
+      });
       Presentation.setFavoritePropertiesManager(manager);
       await Presentation.initialize();
       expect(Presentation.favoriteProperties).to.eq(manager);
     });
 
     it("overwrites favoriteProperties instance after initialization", async () => {
-      const otherManager = new favorites.FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
+      const otherManager = new favorites.FavoritePropertiesManager({
+        storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object,
+      });
       await Presentation.initialize();
       expect(Presentation.favoriteProperties).to.be.not.null;
       expect(Presentation.favoriteProperties).to.not.eq(otherManager);
       Presentation.setFavoritePropertiesManager(otherManager);
       expect(Presentation.favoriteProperties).to.eq(otherManager);
     });
-
   });
 
   describe("setLocalization", () => {
-
     it("overwrites i18n instance before initialization", async () => {
       const i18nMock = mockI18N();
       Presentation.setLocalization(i18nMock.object);
@@ -227,7 +233,5 @@ describe("Presentation", () => {
       Presentation.setLocalization(i18nMock.object);
       expect(Presentation.localization).to.eq(i18nMock.object);
     });
-
   });
-
 });

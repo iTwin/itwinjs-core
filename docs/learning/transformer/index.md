@@ -2,9 +2,9 @@
 
 The `@itwin/imodel-transformer` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
 
-- [IModelExporter]($transformer) and [IModelExportHandler]($transformer) are the base classes that implement the *extract* (or *export*) part of ETL functionality.
-- [IModelTransformer]($transformer) is the base class that implements the *transform* part of ETL functionality.
-- [IModelImporter]($transformer) is the base class that implements the *load* (or *import*) part of ETL functionality.
+- [IModelExporter]($transformer) and [IModelExportHandler]($transformer) are the base classes that implement the _extract_ (or _export_) part of ETL functionality.
+- [IModelTransformer]($transformer) is the base class that implements the _transform_ part of ETL functionality.
+- [IModelImporter]($transformer) is the base class that implements the _load_ (or _import_) part of ETL functionality.
 
 The above classes contain the lower-level functionality required to implement transformation and data exchange services.
 These classes should be considered a framework and not confused with the actual packaged and deployed services that use the framework.
@@ -58,22 +58,22 @@ This setting should be used when the target iModel projectExtents are being set 
 ### autoExtendProjectExtents = true
 
 This setting causes the target iModel projectExtents to be extended to include the range box of **every** element that is imported.
-This includes potential *outliers* (one/few elements that are located far away from the main collection of elements).
-*Outliers* tend to suggest a user modeling problem or a Connector problem, but it is difficult for a program to know for sure what the intent was.
+This includes potential _outliers_ (one/few elements that are located far away from the main collection of elements).
+_Outliers_ tend to suggest a user modeling problem or a Connector problem, but it is difficult for a program to know for sure what the intent was.
 This setting assumes every Element is there for a reason.
 
 #### autoExtendProjectExtents = { excludeOutliers: true }
 
-This setting causes the projectExtents to be extended to include the range box of every element that is imported **except** for *outliers*.
-In this case, *outliers* are assumed to be a mistake and [IModelImporter]($transformer) tries to detect them using *fuzzy logic* from the [IModelDb.computeProjectExtents]($backend) method in order to exclude them from the projectExtents calculation.
+This setting causes the projectExtents to be extended to include the range box of every element that is imported **except** for _outliers_.
+In this case, _outliers_ are assumed to be a mistake and [IModelImporter]($transformer) tries to detect them using _fuzzy logic_ from the [IModelDb.computeProjectExtents]($backend) method in order to exclude them from the projectExtents calculation.
 
 Either of the non-false autoExtendProjectExtents options are useful for consolidation cases or filtering cases where the target iModel will have different optimal projectExtents than the source iModel(s).
 
 ## IModelCloneContext
 
-The [IModelCloneContext]($backend) class provides the core *cloning* capability required for iModel transformation.
-It also maintains the **sourceId --> targetId** mapping which is required to successfully *clone* [Entity]($backend) instances from the source iModel into the target iModel.
-iModel entities are highly related to each other. Therefore, *cloning* an entity means copying a *graph* of objects and remapping their source references (Ids) to other target entities.
+The [IModelCloneContext]($backend) class provides the core _cloning_ capability required for iModel transformation.
+It also maintains the **sourceId --> targetId** mapping which is required to successfully _clone_ [Entity]($backend) instances from the source iModel into the target iModel.
+iModel entities are highly related to each other. Therefore, _cloning_ an entity means copying a _graph_ of objects and remapping their source references (Ids) to other target entities.
 
 ## IModelTransformer
 
@@ -87,7 +87,7 @@ Potential transformations include:
 - Filtering - excluding data from the target that is contained in the source
 - Augmenting - generating data during transformation for the target that is not part of the source
 - Schema Mapping - mapping classes and properties to a new schema during transformation
-- Change Squashing - each iModel has its own change ledger, so multiple changesets from the source could be *squashed* into a single changeset to the target
+- Change Squashing - each iModel has its own change ledger, so multiple changesets from the source could be _squashed_ into a single changeset to the target
 
 ## Logging
 
@@ -101,7 +101,7 @@ The following logger categories are provided for use with the [Logger]($bentley)
 ## Implementing iModel branching workflows through the transformer
 
 Using the transformer as a framework, it is possible to implement the necessary operations for a branching workflow,
-where *branch iModels* from a *master iModel* form a tree-like change history as branches *synchronize* at distinct points to
+where _branch iModels_ from a _master iModel_ form a tree-like change history as branches _synchronize_ at distinct points to
 transfer data to the master. The implementation with examples and terminology by the transformer is elaborated in the
 [branching iModels article](./branching-imodels.md).
 

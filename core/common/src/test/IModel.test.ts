@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
+import {
+  EcefLocation,
+  EcefLocationProps,
+  IModel,
+  IModelProps,
+  RootSubjectProps,
+} from "../IModel";
 import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
 
 interface TestIModelProps extends IModelProps {
@@ -12,9 +18,15 @@ interface TestIModelProps extends IModelProps {
 }
 
 class TestIModel extends IModel {
-  public get isOpen() { return true; }
-  public get isSnapshot() { return true; }
-  public get isBriefcase() { return false; }
+  public get isOpen() {
+    return true;
+  }
+  public get isSnapshot() {
+    return true;
+  }
+  public get isBriefcase() {
+    return false;
+  }
 
   public constructor(props: TestIModelProps) {
     super(props);
@@ -53,7 +65,11 @@ describe("IModel", () => {
       gcs?: ChangedProp<GeographicCRS | undefined>;
     }
 
-    function expectChange(imodel: IModel, func: () => void, expected: IModelChangedProps): void {
+    function expectChange(
+      imodel: IModel,
+      func: () => void,
+      expected: IModelChangedProps
+    ): void {
       const actual: IModelChangedProps = {};
 
       imodel.onNameChanged.addOnce((prev) => {
@@ -106,32 +122,53 @@ describe("IModel", () => {
 
       const imodel = new TestIModel(props);
 
-      expectChange(imodel, () => imodel.name = "new name", { name: { prev: "imodel", curr: "new name" } });
+      expectChange(imodel, () => (imodel.name = "new name"), {
+        name: { prev: "imodel", curr: "new name" },
+      });
 
-      expectChange(imodel, () => imodel.rootSubject = { name: "subj" }, {
+      expectChange(imodel, () => (imodel.rootSubject = { name: "subj" }), {
         subject: {
           prev: props.rootSubject,
           curr: { name: "subj" },
         },
       });
 
-      const newRange = Range3d.fromJSON({ low: [0, 0, 0], high: [100, 100, 100] });
-      expectChange(imodel, () => imodel.projectExtents = newRange, { extents: { prev: imodel.projectExtents, curr: newRange } });
+      const newRange = Range3d.fromJSON({
+        low: [0, 0, 0],
+        high: [100, 100, 100],
+      });
+      expectChange(imodel, () => (imodel.projectExtents = newRange), {
+        extents: { prev: imodel.projectExtents, curr: newRange },
+      });
 
       const newOrigin = new Point3d(101, 202, 303);
-      expectChange(imodel, () => imodel.globalOrigin = newOrigin, { globalOrigin: { prev: imodel.globalOrigin, curr: newOrigin } });
+      expectChange(imodel, () => (imodel.globalOrigin = newOrigin), {
+        globalOrigin: { prev: imodel.globalOrigin, curr: newOrigin },
+      });
 
       const ecef = new EcefLocation({
         origin: [42, 21, 0],
         orientation: { yaw: 1, pitch: 1, roll: -1 },
       });
-      expectChange(imodel, () => imodel.setEcefLocation(ecef), { ecef: { prev: undefined, curr: ecef } });
+      expectChange(imodel, () => imodel.setEcefLocation(ecef), {
+        ecef: { prev: undefined, curr: ecef },
+      });
       const newEcef = new EcefLocation({
         origin: [0, 10, 20],
         orientation: { yaw: 5, pitch: 90, roll: -45 },
       });
-      expectChange(imodel, () => imodel.setEcefLocation(newEcef), { ecef: { prev: ecef, curr: newEcef } });
-      expectChange(imodel, () => imodel.initFromProps({ ...imodel.getProps(), ecefLocation: undefined }), { ecef: { prev: newEcef, curr: undefined } });
+      expectChange(imodel, () => imodel.setEcefLocation(newEcef), {
+        ecef: { prev: ecef, curr: newEcef },
+      });
+      expectChange(
+        imodel,
+        () =>
+          imodel.initFromProps({
+            ...imodel.getProps(),
+            ecefLocation: undefined,
+          }),
+        { ecef: { prev: newEcef, curr: undefined } }
+      );
 
       const newProps: TestIModelProps = {
         key: "",
@@ -143,8 +180,14 @@ describe("IModel", () => {
       expectChange(imodel, () => imodel.initFromProps(newProps), {
         name: { prev: imodel.name, curr: "abc" },
         subject: { prev: imodel.rootSubject, curr: { name: "new subject" } },
-        extents: { prev: imodel.projectExtents, curr: Range3d.fromJSON(newProps.projectExtents) },
-        globalOrigin: { prev: imodel.globalOrigin, curr: Point3d.fromJSON(newProps.globalOrigin) },
+        extents: {
+          prev: imodel.projectExtents,
+          curr: Range3d.fromJSON(newProps.projectExtents),
+        },
+        globalOrigin: {
+          prev: imodel.globalOrigin,
+          curr: Point3d.fromJSON(newProps.globalOrigin),
+        },
       });
     });
 
@@ -165,11 +208,23 @@ describe("IModel", () => {
 
       const imodel = new TestIModel(props);
 
-      expectNoChange(imodel, () => imodel.name = imodel.name);
-      expectNoChange(imodel, () => imodel.rootSubject = { ...imodel.rootSubject });
-      expectNoChange(imodel, () => imodel.projectExtents = imodel.projectExtents.clone());
-      expectNoChange(imodel, () => imodel.globalOrigin = imodel.globalOrigin.clone());
-      expectNoChange(imodel, () => imodel.geographicCoordinateSystem = undefined);
+      expectNoChange(imodel, () => (imodel.name = imodel.name));
+      expectNoChange(
+        imodel,
+        () => (imodel.rootSubject = { ...imodel.rootSubject })
+      );
+      expectNoChange(
+        imodel,
+        () => (imodel.projectExtents = imodel.projectExtents.clone())
+      );
+      expectNoChange(
+        imodel,
+        () => (imodel.globalOrigin = imodel.globalOrigin.clone())
+      );
+      expectNoChange(
+        imodel,
+        () => (imodel.geographicCoordinateSystem = undefined)
+      );
       expectNoChange(imodel, () => imodel.setEcefLocation({ ...ecefLocation }));
 
       expectNoChange(imodel, () => imodel.initFromProps({ ...props }));
@@ -186,13 +241,23 @@ describe("IModel", () => {
     };
 
     expect(new TestIModel(props).isGeoLocated).to.be.false;
-    expect(new TestIModel({
-      ...props,
-      ecefLocation: { origin: [0, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
-    }).isGeoLocated).to.be.false;
-    expect(new TestIModel({
-      ...props,
-      ecefLocation: { origin: [1, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
-    }).isGeoLocated).to.be.true;
+    expect(
+      new TestIModel({
+        ...props,
+        ecefLocation: {
+          origin: [0, 0, 0],
+          orientation: { yaw: 0, pitch: 0, roll: 0 },
+        },
+      }).isGeoLocated
+    ).to.be.false;
+    expect(
+      new TestIModel({
+        ...props,
+        ecefLocation: {
+          origin: [1, 0, 0],
+          orientation: { yaw: 0, pitch: 0, roll: 0 },
+        },
+      }).isGeoLocated
+    ).to.be.true;
   });
 });

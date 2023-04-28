@@ -36,7 +36,7 @@ The release tag should be on its own line - preferably the last line in the docu
  */
 ```
 
-*Internal* API items should include documentation that indicates why it is not *public* and what users should use instead.
+_Internal_ API items should include documentation that indicates why it is not _public_ and what users should use instead.
 
 ```ts
 /** Private explanation of why the API item is marked internal as a reminder to the maintainer or notice to someone perusing the source code.
@@ -45,7 +45,7 @@ The release tag should be on its own line - preferably the last line in the docu
  */
 ```
 
-Likewise, a *deprecated* API item should include documentation about when it became deprecated and what users should use instead.
+Likewise, a _deprecated_ API item should include documentation about when it became deprecated and what users should use instead.
 Use the format `@deprecated in <Major.Minor>. <What API to use instead>.`
 If relevant and helpful, you can also include a description of why the API became deprecated, e.g., poor performance.
 
@@ -57,7 +57,7 @@ If relevant and helpful, you can also include a description of why the API becam
  */
 ```
 
-*Extensions* API tag should be on its own line after the supported release tag:
+_Extensions_ API tag should be on its own line after the supported release tag:
 
 ```ts
 /** Sample description of an exported API item.
@@ -66,7 +66,7 @@ If relevant and helpful, you can also include a description of why the API becam
  */
 ```
 
-*Preview* API tag should be on its own line before the @extensions tag:
+_Preview_ API tag should be on its own line before the @extensions tag:
 
 ```ts
 /** Sample description of an exported API item.

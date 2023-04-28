@@ -7,7 +7,13 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import {
+  Angle,
+  AngleProps,
+  Point3d,
+  XYAndZ,
+  XYZProps,
+} from "@itwin/core-geometry";
 
 /** JSON representation of a [[Camera]].
  * @public
@@ -29,31 +35,56 @@ export class Camera implements CameraProps {
   public readonly eye: Point3d;
 
   public static isValidLensAngle(val: Angle) {
-    return val.radians > (Math.PI / 8.0) && val.radians < Math.PI;
+    return val.radians > Math.PI / 8.0 && val.radians < Math.PI;
   }
 
   public static validateLensAngle(val: Angle) {
-    if (!this.isValidLensAngle(val))
-      val.setRadians(Math.PI / 2.0);
+    if (!this.isValidLensAngle(val)) val.setRadians(Math.PI / 2.0);
   }
 
-  public invalidateFocus() { this.focusDist = 0.0; }
-  public get isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
-  public getFocusDistance() { return this.focusDist; }
-  public setFocusDistance(dist: number) { this.focusDist = dist; }
-  public get isLensValid() { return Camera.isValidLensAngle(this.lens); }
-  public validateLens() { Camera.validateLensAngle(this.lens); }
-  public getLensAngle() { return this.lens; }
-  public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
-  public getEyePoint() { return this.eye; }
-  public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
-  public get isValid() { return this.isLensValid && this.isFocusValid; }
-  public equals(other: Camera) {
-    return Math.abs(this.lens.radians - other.lens.radians) < .01 &&
-      Math.abs(this.focusDist - other.focusDist) < .1 &&
-      this.eye.isAlmostEqual(other.eye);
+  public invalidateFocus() {
+    this.focusDist = 0.0;
   }
-  public clone() { return new Camera(this); }
+  public get isFocusValid() {
+    return this.focusDist > 0.0 && this.focusDist < 1.0e14;
+  }
+  public getFocusDistance() {
+    return this.focusDist;
+  }
+  public setFocusDistance(dist: number) {
+    this.focusDist = dist;
+  }
+  public get isLensValid() {
+    return Camera.isValidLensAngle(this.lens);
+  }
+  public validateLens() {
+    Camera.validateLensAngle(this.lens);
+  }
+  public getLensAngle() {
+    return this.lens;
+  }
+  public setLensAngle(angle: Angle) {
+    this.lens.setFrom(angle);
+  }
+  public getEyePoint() {
+    return this.eye;
+  }
+  public setEyePoint(pt: XYAndZ) {
+    this.eye.setFrom(pt);
+  }
+  public get isValid() {
+    return this.isLensValid && this.isFocusValid;
+  }
+  public equals(other: Camera) {
+    return (
+      Math.abs(this.lens.radians - other.lens.radians) < 0.01 &&
+      Math.abs(this.focusDist - other.focusDist) < 0.1 &&
+      this.eye.isAlmostEqual(other.eye)
+    );
+  }
+  public clone() {
+    return new Camera(this);
+  }
   public setFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
     this.focusDist = rhs.focusDist;

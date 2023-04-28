@@ -31,8 +31,13 @@ describe("MatrixQuatMatrix", () => {
       Vector3d.create(0, 0, 90),
       Vector3d.create(89, 0, 0),
       Vector3d.create(0, 89, 0),
-      Vector3d.create(0, 0, 89)]) {
-      const ypr = YawPitchRollAngles.createDegrees(degrees.x, degrees.y, degrees.z);
+      Vector3d.create(0, 0, 89),
+    ]) {
+      const ypr = YawPitchRollAngles.createDegrees(
+        degrees.x,
+        degrees.y,
+        degrees.z
+      );
       const matrix = ypr.toMatrix3d();
       const quaternion = matrix.toQuaternion();
       const roundTrip = Matrix3d.createFromQuaternion(quaternion);
@@ -47,7 +52,8 @@ describe("MatrixQuatMatrix", () => {
     for (const xyzw of [
       Point4d.create(1, 0, 0, 0),
       Point4d.create(10, 1, 1, 1),
-      Point4d.create(10, 4, 5, 1)]) {
+      Point4d.create(10, 4, 5, 1),
+    ]) {
       let quat = xyzw.clone().normalizeXYZW()!;
       for (let i = 0; i < 4; i++) {
         quat = rotatexyzw(quat);
@@ -61,5 +67,4 @@ describe("MatrixQuatMatrix", () => {
     ck.testTrue(matrixA.isIdentity, "0000 quat is identity");
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

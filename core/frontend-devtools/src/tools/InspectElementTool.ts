@@ -8,10 +8,24 @@
  */
 
 import { BentleyError, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
 import {
-  BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
-  NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
+  GeometrySummaryOptions,
+  GeometrySummaryVerbosity,
+  IModelReadRpcInterface,
+} from "@itwin/core-common";
+import {
+  BeButtonEvent,
+  CoreTools,
+  EventHandled,
+  HitDetail,
+  IModelApp,
+  LocateFilterStatus,
+  LocateResponse,
+  MessageBoxIconType,
+  MessageBoxType,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  PrimitiveTool,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -29,8 +43,12 @@ import { parseArgs } from "./parseArgs";
  */
 export class InspectElementTool extends PrimitiveTool {
   public static override toolId = "InspectElement";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 6; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 6;
+  }
 
   private _options: GeometrySummaryOptions = {};
   private _elementIds?: Id64String[];
@@ -41,27 +59,33 @@ export class InspectElementTool extends PrimitiveTool {
 
   constructor(options?: GeometrySummaryOptions, elementIds?: Id64String[]) {
     super();
-    if (undefined !== options)
-      this._options = { ...options };
+    if (undefined !== options) this._options = { ...options };
 
     this._elementIds = elementIds;
   }
 
   private setupAndPromptForNextAction(): void {
-    this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
-    if (!this._useSelection)
-      IModelApp.accuSnap.enableLocate(true);
+    this._useSelection =
+      undefined !== this.targetView &&
+      this.targetView.iModel.selectionSet.isActive;
+    if (!this._useSelection) IModelApp.accuSnap.enableLocate(true);
 
     this.showPrompt();
   }
 
   private showPrompt(): void {
-    CoreTools.outputPromptByKey(this._useSelection ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.IdentifyElement");
+    CoreTools.outputPromptByKey(
+      this._useSelection
+        ? "ElementSet.Prompts.ConfirmSelection"
+        : "ElementSet.Prompts.IdentifyElement"
+    );
   }
 
-  public override autoLockTarget(): void { }
+  public override autoLockTarget(): void {}
 
-  public override requireWriteableTarget(): boolean { return false; }
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
 
   public override async onUnsuspend() {
     this.showPrompt();
@@ -71,45 +95,64 @@ export class InspectElementTool extends PrimitiveTool {
     await super.onPostInstall();
 
     if (undefined !== this._elementIds)
-      this.process(this._elementIds).then(async () => {
-        await this.onReinitialize();
-      }).catch((err) => {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
-      });
+      this.process(this._elementIds)
+        .then(async () => {
+          await this.onReinitialize();
+        })
+        .catch((err) => {
+          IModelApp.notifications.outputMessage(
+            new NotifyMessageDetails(
+              OutputMessagePriority.Error,
+              err.toString()
+            )
+          );
+        });
     else {
       this.setupAndPromptForNextAction();
     }
   }
 
-  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(
+    ev: BeButtonEvent
+  ): Promise<EventHandled> {
     if (this._useSelection) {
       if (undefined !== ev.viewport) {
         const ids: Id64Array = [];
         ev.viewport.iModel.selectionSet.elements.forEach((id) => {
-          if (!Id64.isInvalid(id) && !Id64.isTransient(id))
-            ids.push(id);
+          if (!Id64.isInvalid(id) && !Id64.isTransient(id)) ids.push(id);
         });
 
         if (0 === ids.length)
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
-        else
-          await this.process(ids);
+          IModelApp.notifications.outputMessage(
+            new NotifyMessageDetails(
+              OutputMessagePriority.Error,
+              CoreTools.translate("ElementSet.Error.NotSupportedElmType")
+            )
+          );
+        else await this.process(ids);
 
         await this.onReinitialize();
         return EventHandled.Yes;
       }
     }
 
-    const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (undefined === hit || !hit.isElementHit)
-      return EventHandled.No;
+    const hit = await IModelApp.locateManager.doLocate(
+      new LocateResponse(),
+      true,
+      ev.point,
+      ev.viewport,
+      ev.inputSource
+    );
+    if (undefined === hit || !hit.isElementHit) return EventHandled.No;
 
     await this.process([hit.sourceId]);
     this.setupAndPromptForNextAction();
     return EventHandled.No;
   }
 
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(
+    _ev: BeButtonEvent
+  ): Promise<EventHandled> {
     await this.onReinitialize();
     return EventHandled.No;
   }
@@ -124,12 +167,16 @@ export class InspectElementTool extends PrimitiveTool {
 
   public async onRestartTool() {
     const tool = new InspectElementTool();
-    if (!await tool.run())
-      return this.exitTool();
+    if (!(await tool.run())) return this.exitTool();
   }
 
-  public override async filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus> {
-    return hit.isElementHit ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+  public override async filterHit(
+    hit: HitDetail,
+    _out: LocateResponse
+  ): Promise<LocateFilterStatus> {
+    return hit.isElementHit
+      ? LocateFilterStatus.Accept
+      : LocateFilterStatus.Reject;
   }
 
   private async process(elementIds: Id64String[]) {
@@ -139,26 +186,34 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+      let str = await IModelReadRpcInterface.getClientForRouting(
+        this.iModel.routingContext.token
+      ).getGeometrySummary(this.iModel.getRpcProps(), request);
       if (this._explodeParts) {
         const regex = /^part id: (0x[a-f0-9]+)/gm;
         const partIds = new Set<string>();
         let match;
-        while (null !== (match = regex.exec(str)))
-          partIds.add(match[1]);
+        while (null !== (match = regex.exec(str))) partIds.add(match[1]);
 
         if (partIds.size > 0) {
           request.elementIds = Array.from(partIds);
           str += `\npart ids: ${JSON.stringify(request.elementIds)}\n`;
-          str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+          str += await IModelReadRpcInterface.getClientForRouting(
+            this.iModel.routingContext.token
+          ).getGeometrySummary(this.iModel.getRpcProps(), request);
         }
       }
 
-      if (this._doCopy)
-        copyStringToClipboard(str);
+      if (this._doCopy) copyStringToClipboard(str);
 
-      const brief = `Summary ${this._doCopy ? "copied to clipboard." : "complete."}`;
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, brief, str);
+      const brief = `Summary ${
+        this._doCopy ? "copied to clipboard." : "complete."
+      }`;
+      messageDetails = new NotifyMessageDetails(
+        OutputMessagePriority.Info,
+        brief,
+        str
+      );
 
       if (this._modal) {
         const div = document.createElement("div");
@@ -179,10 +234,18 @@ export class InspectElementTool extends PrimitiveTool {
           }
         }
 
-        await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
+        await IModelApp.notifications.openMessageBox(
+          MessageBoxType.Ok,
+          div,
+          MessageBoxIconType.Information
+        );
       }
     } catch (err) {
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", BentleyError.getErrorMessage(err));
+      messageDetails = new NotifyMessageDetails(
+        OutputMessagePriority.Error,
+        "Error occurred while generating summary",
+        BentleyError.getErrorMessage(err)
+      );
     }
 
     IModelApp.notifications.outputMessage(messageDetails);
@@ -191,8 +254,7 @@ export class InspectElementTool extends PrimitiveTool {
   public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     const args = parseArgs(inputArgs);
     const ids = args.get("i");
-    if (undefined !== ids)
-      this._elementIds = ids.split(",");
+    if (undefined !== ids) this._elementIds = ids.split(",");
 
     const verbosity = args.getInteger("v");
     if (undefined !== verbosity) {
@@ -210,24 +272,21 @@ export class InspectElementTool extends PrimitiveTool {
     }
 
     const symbology = args.getBoolean("s");
-    if (undefined !== symbology)
-      this._options.verboseSymbology = symbology;
+    if (undefined !== symbology) this._options.verboseSymbology = symbology;
 
     const placement = args.getBoolean("p");
-    if (undefined !== placement)
-      this._options.includePlacement = placement;
+    if (undefined !== placement) this._options.includePlacement = placement;
 
     const parts = args.getBoolean("r");
     if (true === parts && undefined !== IModelApp.viewManager.selectedView)
-      this._options.includePartReferences = IModelApp.viewManager.selectedView.view.is3d() ? "3d" : "2d";
+      this._options.includePartReferences =
+        IModelApp.viewManager.selectedView.view.is3d() ? "3d" : "2d";
 
     const modal = args.getBoolean("m");
-    if (undefined !== modal)
-      this._modal = modal;
+    if (undefined !== modal) this._modal = modal;
 
     const doCopy = args.getBoolean("c");
-    if (undefined !== doCopy)
-      this._doCopy = doCopy;
+    if (undefined !== doCopy) this._doCopy = doCopy;
 
     this._explodeParts = true === args.getBoolean("e");
 

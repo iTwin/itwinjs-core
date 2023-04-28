@@ -11,8 +11,7 @@ import * as path from "path";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -28,8 +27,14 @@ loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
 export async function startupForIntegration(cfg?: IModelHostOptions) {
   cfg = cfg ?? {};
-  cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  cfg.cacheDir = path.join(__dirname, ".cache"); // Set the cache dir to be under the lib directory.
+  const iModelClient = new IModelsClient({
+    api: {
+      baseUrl: `https://${
+        process.env.IMJS_URL_PREFIX ?? ""
+      }api.bentley.com/imodels`,
+    },
+  });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);
   return IModelHost.startup(cfg);
 }

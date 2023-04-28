@@ -54,7 +54,7 @@ export abstract class GeometryHandler {
   /** handle strongly typed  [[Arc3d]]  */
   public abstract handleArc3d(g: Arc3d): any;
   /** handle strongly typed  [[CurveCollection]]  */
-  public handleCurveCollection(_g: CurveCollection): any { }
+  public handleCurveCollection(_g: CurveCollection): any {}
   /** handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
   /** handle strongly typed  [[InterpolationCurve3d]]  */
@@ -77,15 +77,25 @@ export abstract class GeometryHandler {
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
 
   /** handle strongly typed Path (base class method calls handleCurveCollection) */
-  public handlePath(g: Path): any { return this.handleCurveCollection(g); }
+  public handlePath(g: Path): any {
+    return this.handleCurveCollection(g);
+  }
   /** handle strongly typed  Loop (base class method calls handleCurveCollection) */
-  public handleLoop(g: Loop): any { return this.handleCurveCollection(g); }
+  public handleLoop(g: Loop): any {
+    return this.handleCurveCollection(g);
+  }
   /** handle strongly typed  ParityRegion (base class method calls handleCurveCollection) */
-  public handleParityRegion(g: ParityRegion): any { return this.handleCurveCollection(g); }
+  public handleParityRegion(g: ParityRegion): any {
+    return this.handleCurveCollection(g);
+  }
   /** handle strongly typed  UnionRegion (base class method calls handleCurveCollection) */
-  public handleUnionRegion(g: UnionRegion): any { return this.handleCurveCollection(g); }
+  public handleUnionRegion(g: UnionRegion): any {
+    return this.handleCurveCollection(g);
+  }
   /** handle strongly typed  BagOfCurves (base class method calls handleCurveCollection) */
-  public handleBagOfCurves(g: BagOfCurves): any { return this.handleCurveCollection(g); }
+  public handleBagOfCurves(g: BagOfCurves): any {
+    return this.handleCurveCollection(g);
+  }
   /** handle strongly typed  BagOfCurves (base class method calls handleCurveCollection) */
   /** handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;
@@ -122,66 +132,122 @@ export abstract class GeometryHandler {
  */
 export class NullGeometryHandler extends GeometryHandler {
   /** no-action implementation */
-  public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
+  public handleLineSegment3d(_g: LineSegment3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleLineString3d(_g: LineString3d): any { return undefined; }
+  public handleLineString3d(_g: LineString3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleArc3d(_g: Arc3d): any { return undefined; }
+  public handleArc3d(_g: Arc3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public override handleCurveCollection(_g: CurveCollection): any { return undefined; }
+  public override handleCurveCollection(_g: CurveCollection): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  public handleBSplineCurve3d(_g: BSplineCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
+  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleAkimaCurve3d(_g: AkimaCurve3d): any { return undefined; }
+  public handleAkimaCurve3d(_g: AkimaCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
+  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineSurface3d(_g: BSplineSurface3d): any { return undefined; }
+  public handleBSplineSurface3d(_g: BSplineSurface3d): any {
+    return undefined;
+  }
 
   /** no-action implementation */
-  public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
+  public handleCoordinateXYZ(_g: CoordinateXYZ): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
+  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
+  public handleIndexedPolyface(_g: IndexedPolyface): any {
+    return undefined;
+  }
   /** no-action implementation
    * @alpha
    */
-  public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
+  public handleTransitionSpiral(_g: TransitionSpiral3d): any {
+    return undefined;
+  }
 
   /** no-action implementation */
-  public override handlePath(_g: Path): any { return undefined; }
+  public override handlePath(_g: Path): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public override handleLoop(_g: Loop): any { return undefined; }
+  public override handleLoop(_g: Loop): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public override handleParityRegion(_g: ParityRegion): any { return undefined; }
+  public override handleParityRegion(_g: ParityRegion): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public override handleUnionRegion(_g: UnionRegion): any { return undefined; }
+  public override handleUnionRegion(_g: UnionRegion): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public override handleBagOfCurves(_g: BagOfCurves): any { return undefined; }
+  public override handleBagOfCurves(_g: BagOfCurves): any {
+    return undefined;
+  }
 
   /** no-action implementation */
-  public handleSphere(_g: Sphere): any { return undefined; }
+  public handleSphere(_g: Sphere): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleCone(_g: Cone): any { return undefined; }
+  public handleCone(_g: Cone): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBox(_g: Box): any { return undefined; }
+  public handleBox(_g: Box): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleTorusPipe(_g: TorusPipe): any { return undefined; }
+  public handleTorusPipe(_g: TorusPipe): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleLinearSweep(_g: LinearSweep): any { return undefined; }
+  public handleLinearSweep(_g: LinearSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleRotationalSweep(_g: RotationalSweep): any { return undefined; }
+  public handleRotationalSweep(_g: RotationalSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleRuledSweep(_g: RuledSweep): any { return undefined; }
+  public handleRuledSweep(_g: RuledSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handlePointString3d(_g: PointString3d): any { return undefined; }
+  public handlePointString3d(_g: PointString3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBezierCurve3d(_g: BezierCurve3d): any { return undefined; }
+  public handleBezierCurve3d(_g: BezierCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBezierCurve3dH(_g: BezierCurve3dH): any { return undefined; }
+  public handleBezierCurve3dH(_g: BezierCurve3dH): any {
+    return undefined;
+  }
 }
 /**
  * Implement GeometryHandler methods, with all curve collection methods recursing to children.
@@ -189,32 +255,56 @@ export class NullGeometryHandler extends GeometryHandler {
  */
 export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   /** no-action implementation */
-  public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
+  public handleLineSegment3d(_g: LineSegment3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleLineString3d(_g: LineString3d): any { return undefined; }
+  public handleLineString3d(_g: LineString3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleArc3d(_g: Arc3d): any { return undefined; }
+  public handleArc3d(_g: Arc3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  public handleBSplineCurve3d(_g: BSplineCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
+  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleAkimaCurve3d(_g: AkimaCurve3d): any { return undefined; }
+  public handleAkimaCurve3d(_g: AkimaCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
+  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineSurface3d(_g: BSplineSurface3d): any { return undefined; }
+  public handleBSplineSurface3d(_g: BSplineSurface3d): any {
+    return undefined;
+  }
 
   /** no-action implementation */
-  public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
+  public handleCoordinateXYZ(_g: CoordinateXYZ): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
+  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
+  public handleIndexedPolyface(_g: IndexedPolyface): any {
+    return undefined;
+  }
   /** no-action implementation
    * @alpha
    */
-  public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
+  public handleTransitionSpiral(_g: TransitionSpiral3d): any {
+    return undefined;
+  }
   /** Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children` */
   public handleChildren(g: GeometryQuery): any {
     const children = g.children;
@@ -224,39 +314,71 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
       }
   }
   /** Recurse to children */
-  public override handleCurveCollection(g: CurveCollection): any { return this.handleChildren(g); }
+  public override handleCurveCollection(g: CurveCollection): any {
+    return this.handleChildren(g);
+  }
 
   /** Recurse to children */
-  public override handlePath(g: Path): any { return this.handleChildren(g); }
+  public override handlePath(g: Path): any {
+    return this.handleChildren(g);
+  }
   /** Recurse to children */
-  public override handleLoop(g: Loop): any { return this.handleChildren(g); }
+  public override handleLoop(g: Loop): any {
+    return this.handleChildren(g);
+  }
   /** Recurse to children */
-  public override handleParityRegion(g: ParityRegion): any { return this.handleChildren(g); }
+  public override handleParityRegion(g: ParityRegion): any {
+    return this.handleChildren(g);
+  }
   /** Recurse to children */
-  public override handleUnionRegion(g: UnionRegion): any { return this.handleChildren(g); }
+  public override handleUnionRegion(g: UnionRegion): any {
+    return this.handleChildren(g);
+  }
   /** Recurse to children */
-  public override handleBagOfCurves(g: BagOfCurves): any { return this.handleChildren(g); }
+  public override handleBagOfCurves(g: BagOfCurves): any {
+    return this.handleChildren(g);
+  }
 
   /** no-action implementation */
-  public handleSphere(_g: Sphere): any { return undefined; }
+  public handleSphere(_g: Sphere): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleCone(_g: Cone): any { return undefined; }
+  public handleCone(_g: Cone): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBox(_g: Box): any { return undefined; }
+  public handleBox(_g: Box): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleTorusPipe(_g: TorusPipe): any { return undefined; }
+  public handleTorusPipe(_g: TorusPipe): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleLinearSweep(_g: LinearSweep): any { return undefined; }
+  public handleLinearSweep(_g: LinearSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleRotationalSweep(_g: RotationalSweep): any { return undefined; }
+  public handleRotationalSweep(_g: RotationalSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleRuledSweep(_g: RuledSweep): any { return undefined; }
+  public handleRuledSweep(_g: RuledSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handlePointString3d(_g: PointString3d): any { return undefined; }
+  public handlePointString3d(_g: PointString3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBezierCurve3d(_g: BezierCurve3d): any { return undefined; }
+  public handleBezierCurve3d(_g: BezierCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBezierCurve3dH(_g: BezierCurve3dH): any { return undefined; }
+  public handleBezierCurve3dH(_g: BezierCurve3dH): any {
+    return undefined;
+  }
 }
 
 /** IStrokeHandler is an interface with methods to receive data about curves being stroked.
@@ -294,16 +416,17 @@ export interface IStrokeHandler {
    * * Note that this method is permitted (expected) to provide pre-stroked data if available.
    * * In th pre-stroked case, the cp passed to the handler will be the stroked image, not the original.
    * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes
-  */
+   */
   announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive,
     numStrokes: number,
     fraction0: number,
-    fraction1: number): void;
+    fraction1: number
+  ): void;
   /**
    * OPTIONAL method for a handler to indicate that it wants primary geometry (e.g. spirals) rather than strokes.
    * @returns true if primary geometry should be passed (rather than stroked or otherwise simplified)
-  */
+   */
   needPrimaryGeometryForStrokes?(): boolean;
   /** Announce numPoints interpolated between point0 and point1, with associated fractions */
   announceSegmentInterval(
@@ -312,7 +435,8 @@ export interface IStrokeHandler {
     point1: Point3d,
     numStrokes: number,
     fraction0: number,
-    fraction1: number): void;
+    fraction1: number
+  ): void;
   /** Announce that all data about `cp` has been announced. */
   endCurvePrimitive(cp: CurvePrimitive): void;
   /** Announce that all data about the parent primitive has been announced. */
@@ -334,7 +458,8 @@ export interface IStrokeHandler {
     parent: CurvePrimitive,
     spandex: number,
     fraction0: number,
-    fraction1: number): void;
+    fraction1: number
+  ): void;
 }
 
 /**
@@ -348,7 +473,11 @@ export interface UVSurface {
    * @param vFraction fractional coordinate in the v direction
    * @param result optional pre-allocated point
    */
-  uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
+  uvFractionToPoint(
+    uFraction: number,
+    vFraction: number,
+    result?: Point3d
+  ): Point3d;
   /**
    * Convert fractional u and v coordinates to surface point and in-surface tangent directions.
    * * Remark: the vectors are expected to be non-zero tangents which can be crossed to get a normal.
@@ -357,7 +486,11 @@ export interface UVSurface {
    * @param vFraction fractional coordinate in the v direction
    * @param result optional pre-allocated carrier for point and vectors
    */
-  uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+  uvFractionToPointAndTangents(
+    uFraction: number,
+    vFraction: number,
+    result?: Plane3dByOriginAndVectors
+  ): Plane3dByOriginAndVectors;
 }
 /**
  * Interface for queries of distance-along in u and v directions

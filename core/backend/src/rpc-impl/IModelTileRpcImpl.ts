@@ -6,8 +6,26 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
-import { ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcManager, RpcPendingResponse, TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo } from "@itwin/core-common";
+import {
+  AccessToken,
+  assert,
+  BeDuration,
+  Id64Array,
+  Logger,
+} from "@itwin/core-bentley";
+import {
+  ElementGraphicsRequestProps,
+  IModelRpcProps,
+  IModelTileRpcInterface,
+  IModelTileTreeProps,
+  RpcInterface,
+  RpcManager,
+  RpcPendingResponse,
+  TileContentIdentifier,
+  TileContentSource,
+  TileTreeContentIds,
+  TileVersionInfo,
+} from "@itwin/core-common";
 import type { TransferConfig } from "@itwin/object-storage-core";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
@@ -32,7 +50,10 @@ function generateTileRequestKey(props: TileRequestProps): string {
   })}:${props.treeId}`;
 }
 
-abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> extends PromiseMemoizer<Result> {
+abstract class TileRequestMemoizer<
+  Result,
+  Props extends TileRequestProps
+> extends PromiseMemoizer<Result> {
   private readonly _loggerCategory = BackendLoggerCategory.IModelTileRequestRpc;
   protected abstract get _operationName(): string;
   protected abstract addMetadata(metadata: any, props: Props): void;
@@ -45,7 +66,10 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     return meta;
   }
 
-  protected constructor(memoizeFn: (props: Props) => Promise<Result>, generateKeyFn: (props: Props) => string) {
+  protected constructor(
+    memoizeFn: (props: Props) => Promise<Result>,
+    generateKeyFn: (props: Props) => string
+  ) {
     super(memoizeFn, generateKeyFn);
   }
 
@@ -59,7 +83,9 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
   private log(status: string, props: Props): void {
     const descr = `${this._operationName}(${this.stringify(props)})`;
-    Logger.logTrace(this._loggerCategory, `Backend ${status} ${descr}`, () => this.makeMetadata(props));
+    Logger.logTrace(this._loggerCategory, `Backend ${status} ${descr}`, () =>
+      this.makeMetadata(props)
+    );
   }
 
   protected async perform(props: Props): Promise<Result> {
@@ -67,7 +93,9 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     const tileQP = this.memoize(props);
 
-    await BeDuration.race(this._timeoutMilliseconds, tileQP.promise).catch(() => { });
+    await BeDuration.race(this._timeoutMilliseconds, tileQP.promise).catch(
+      () => {}
+    );
     // Note: Rejections must be caught so that the memoization entry can be deleted
 
     if (tileQP.isPending) {
@@ -89,16 +117,30 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
   }
 }
 
-async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTreeProps> {
+async function getTileTreeProps(
+  props: TileRequestProps
+): Promise<IModelTileTreeProps> {
   assert(undefined !== props.accessToken);
-  const db = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, props.tokenProps);
+  const db = await RpcBriefcaseUtility.findOpenIModel(
+    props.accessToken,
+    props.tokenProps
+  );
   return db.tiles.requestTileTreeProps(props.treeId);
 }
 
-class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreeProps, TileRequestProps> {
-  protected get _timeoutMilliseconds() { return IModelHost.tileTreeRequestTimeout; }
-  protected get _operationName() { return "requestTileTreeProps"; }
-  protected stringify(props: TileRequestProps): string { return props.treeId; }
+class RequestTileTreePropsMemoizer extends TileRequestMemoizer<
+  IModelTileTreeProps,
+  TileRequestProps
+> {
+  protected get _timeoutMilliseconds() {
+    return IModelHost.tileTreeRequestTimeout;
+  }
+  protected get _operationName() {
+    return "requestTileTreeProps";
+  }
+  protected stringify(props: TileRequestProps): string {
+    return props.treeId;
+  }
   protected addMetadata(meta: any, props: TileRequestProps): void {
     meta.treeId = props.treeId;
   }
@@ -113,7 +155,9 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreePro
     });
   }
 
-  public static async perform(props: TileRequestProps): Promise<IModelTileTreeProps> {
+  public static async perform(
+    props: TileRequestProps
+  ): Promise<IModelTileTreeProps> {
     if (undefined === this._instance)
       this._instance = new RequestTileTreePropsMemoizer();
 
@@ -126,18 +170,31 @@ interface TileContentRequestProps extends TileRequestProps {
   guid?: string;
 }
 
-async function getTileContent(props: TileContentRequestProps): Promise<TileContentSource> {
+async function getTileContent(
+  props: TileContentRequestProps
+): Promise<TileContentSource> {
   assert(undefined !== props.accessToken);
-  const db = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, props.tokenProps);
+  const db = await RpcBriefcaseUtility.findOpenIModel(
+    props.accessToken,
+    props.tokenProps
+  );
   const tile = await db.tiles.requestTileContent(props.treeId, props.contentId);
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
   if (IModelHost.usingExternalTileCache) {
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, {
-      backendName: IModelHost.applicationId,
-      tileGenerationTime: tile.elapsedSeconds.toString(),
-      tileSize: tile.content.byteLength.toString(),
-    });
+    await IModelHost.tileStorage?.uploadTile(
+      db.iModelId,
+      db.changeset.id,
+      props.treeId,
+      props.contentId,
+      tile.content,
+      props.guid,
+      {
+        backendName: IModelHost.applicationId,
+        tileGenerationTime: tile.elapsedSeconds.toString(),
+        tileSize: tile.content.byteLength.toString(),
+      }
+    );
 
     return TileContentSource.ExternalCache;
   }
@@ -149,10 +206,19 @@ function generateTileContentKey(props: TileContentRequestProps): string {
   return `${generateTileRequestKey(props)}:${props.contentId}`;
 }
 
-class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, TileContentRequestProps> {
-  protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
-  protected get _operationName() { return "requestTileContent"; }
-  protected stringify(props: TileContentRequestProps): string { return `${props.treeId}:${props.contentId}`; }
+class RequestTileContentMemoizer extends TileRequestMemoizer<
+  TileContentSource,
+  TileContentRequestProps
+> {
+  protected get _timeoutMilliseconds() {
+    return IModelHost.tileContentRequestTimeout;
+  }
+  protected get _operationName() {
+    return "requestTileContent";
+  }
+  protected stringify(props: TileContentRequestProps): string {
+    return `${props.treeId}:${props.contentId}`;
+  }
   protected addMetadata(meta: any, props: TileContentRequestProps): void {
     meta.treeId = props.treeId;
     meta.contentId = props.contentId;
@@ -175,7 +241,9 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
     return this._instance;
   }
 
-  public static async perform(props: TileContentRequestProps): Promise<TileContentSource> {
+  public static async perform(
+    props: TileContentRequestProps
+  ): Promise<TileContentSource> {
     return this.instance.perform(props);
   }
 }
@@ -185,19 +253,37 @@ function currentActivity() {
 }
 
 /** @internal */
-export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface { // eslint-disable-line deprecation/deprecation
-  public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
-
-  public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    return RequestTileTreePropsMemoizer.perform({ accessToken: currentActivity().accessToken, tokenProps, treeId });
+export class IModelTileRpcImpl
+  extends RpcInterface
+  implements IModelTileRpcInterface
+{
+  // eslint-disable-line deprecation/deprecation
+  public static register() {
+    RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl);
   }
 
-  public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
-    // `undefined` gets forwarded as `null`...
-    if (null === modelIds)
-      modelIds = undefined;
+  public async requestTileTreeProps(
+    tokenProps: IModelRpcProps,
+    treeId: string
+  ): Promise<IModelTileTreeProps> {
+    return RequestTileTreePropsMemoizer.perform({
+      accessToken: currentActivity().accessToken,
+      tokenProps,
+      treeId,
+    });
+  }
 
-    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+  public async purgeTileTrees(
+    tokenProps: IModelRpcProps,
+    modelIds: Id64Array | undefined
+  ): Promise<void> {
+    // `undefined` gets forwarded as `null`...
+    if (null === modelIds) modelIds = undefined;
+
+    const db = await RpcBriefcaseUtility.findOpenIModel(
+      currentActivity().accessToken,
+      tokenProps
+    );
     if (!db.isOpen) {
       return;
     }
@@ -205,19 +291,44 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
-  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    return RequestTileContentMemoizer.perform({ accessToken: currentActivity().accessToken, tokenProps, treeId, contentId, guid });
+  public async generateTileContent(
+    tokenProps: IModelRpcProps,
+    treeId: string,
+    contentId: string,
+    guid: string | undefined
+  ): Promise<TileContentSource> {
+    return RequestTileContentMemoizer.perform({
+      accessToken: currentActivity().accessToken,
+      tokenProps,
+      treeId,
+      contentId,
+      guid,
+    });
   }
 
-  public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+  public async retrieveTileContent(
+    tokenProps: IModelRpcProps,
+    key: TileContentIdentifier
+  ): Promise<Uint8Array> {
+    const db = await RpcBriefcaseUtility.findOpenIModel(
+      currentActivity().accessToken,
+      tokenProps
+    );
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
-  public async getTileCacheConfig(tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
-    if (IModelHost.tileStorage === undefined)
-      return undefined;
-    const iModelId = tokenProps.iModelId ?? (await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps)).iModelId;
+  public async getTileCacheConfig(
+    tokenProps: IModelRpcProps
+  ): Promise<TransferConfig | undefined> {
+    if (IModelHost.tileStorage === undefined) return undefined;
+    const iModelId =
+      tokenProps.iModelId ??
+      (
+        await RpcBriefcaseUtility.findOpenIModel(
+          currentActivity().accessToken,
+          tokenProps
+        )
+      ).iModelId;
     return IModelHost.tileStorage.getDownloadConfig(iModelId);
   }
 
@@ -226,16 +337,29 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   /** @internal */
-  public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, rpcProps);
+  public async requestElementGraphics(
+    rpcProps: IModelRpcProps,
+    request: ElementGraphicsRequestProps
+  ): Promise<Uint8Array | undefined> {
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(
+      currentActivity().accessToken,
+      rpcProps
+    );
     return iModel.generateElementGraphics(request);
   }
 }
 
 /** @internal */
-export async function cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
+export async function cancelTileContentRequests(
+  tokenProps: IModelRpcProps,
+  contentIds: TileTreeContentIds[]
+): Promise<void> {
   const iModel = IModelDb.findByKey(tokenProps.key);
-  const props: TileContentRequestProps = { tokenProps, treeId: "", contentId: "" };
+  const props: TileContentRequestProps = {
+    tokenProps,
+    treeId: "",
+    contentId: "",
+  };
 
   for (const entry of contentIds) {
     props.treeId = entry.treeId;

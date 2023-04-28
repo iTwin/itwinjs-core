@@ -10,22 +10,32 @@ import { IModelApp, Tool } from "@itwin/core-frontend";
 /** Change grid settings for testing. */
 export class ChangeGridSettingsTool extends Tool {
   public static override toolId = "GridSettings";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
-  public override async run(spacing?: number, ratio?: number, gridsPerRef?: number, orientation?: GridOrientationType): Promise<boolean> {
+  public override async run(
+    spacing?: number,
+    ratio?: number,
+    gridsPerRef?: number,
+    orientation?: GridOrientationType
+  ): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp)
-      return false;
+    if (undefined === vp) return false;
 
     if (undefined !== spacing)
       vp.view.details.gridSpacing = { x: spacing, y: spacing };
 
     if (undefined !== ratio)
-      vp.view.details.gridSpacing = { x: vp.view.details.gridSpacing.x, y: vp.view.details.gridSpacing.x * ratio };
+      vp.view.details.gridSpacing = {
+        x: vp.view.details.gridSpacing.x,
+        y: vp.view.details.gridSpacing.x * ratio,
+      };
 
-    if (undefined !== gridsPerRef)
-      vp.view.details.gridsPerRef = gridsPerRef;
+    if (undefined !== gridsPerRef) vp.view.details.gridsPerRef = gridsPerRef;
 
     if (undefined !== orientation)
       vp.view.details.gridOrientation = orientation;
@@ -48,16 +58,13 @@ export class ChangeGridSettingsTool extends Tool {
     const args = parseArgs(inputArgs);
 
     const spacingArg = args.getFloat("s");
-    if (undefined !== spacingArg)
-      spacing = spacingArg;
+    if (undefined !== spacingArg) spacing = spacingArg;
 
     const ratioArg = args.getFloat("r");
-    if (undefined !== ratioArg)
-      ratio = ratioArg;
+    if (undefined !== ratioArg) ratio = ratioArg;
 
     const gridsPerRefArg = args.getInteger("g");
-    if (undefined !== gridsPerRefArg)
-      gridsPerRef = gridsPerRefArg;
+    if (undefined !== gridsPerRefArg) gridsPerRef = gridsPerRefArg;
 
     const orientationArg = args.getInteger("o");
     if (undefined !== orientationArg) {

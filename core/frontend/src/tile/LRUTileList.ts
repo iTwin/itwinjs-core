@@ -18,17 +18,14 @@ import { Tile } from "./internal";
 export class TileUserIdSet extends ReadonlySortedArray<number> {
   public constructor(userId?: number) {
     super((lhs, rhs) => lhs - rhs);
-    if (undefined !== userId)
-      this._array.push(userId);
+    if (undefined !== userId) this._array.push(userId);
   }
 
   public equals(set: TileUserIdSet): boolean {
-    if (this.length !== set.length)
-      return false;
+    if (this.length !== set.length) return false;
 
     for (let i = 0; i < this.length; i++)
-      if (this._array[i] !== set._array[i])
-        return false;
+      if (this._array[i] !== set._array[i]) return false;
 
     return true;
   }
@@ -48,8 +45,7 @@ export class TileUserIdSet extends ReadonlySortedArray<number> {
   public copyFrom(src: TileUserIdSet): void {
     this._array.length = src.length;
     let i = 0;
-    for (const userId of src)
-      this._array[i++] = userId;
+    for (const userId of src) this._array[i++] = userId;
   }
 
   public clone(): TileUserIdSet {
@@ -69,19 +65,16 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
 
   public constructor() {
     super((lhs, rhs) => {
-      if (lhs === rhs)
-        return 0;
+      if (lhs === rhs) return 0;
 
       let diff = lhs.length - rhs.length;
-      if (0 !== diff)
-        return diff;
+      if (0 !== diff) return diff;
 
       for (let i = 0; i < lhs.length; i++) {
         const lhId = lhs.get(i)!;
         const rhId = rhs.get(i)!;
         diff = lhId - rhId;
-        if (0 !== diff)
-          return diff;
+        if (0 !== diff) return diff;
       }
 
       return 0;
@@ -92,16 +85,15 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
   public drop(userId: number): void {
     // Remove from all sets, and delete empty sets.
     let i = 0;
-    for (/* */; i < this._array.length; i++) {
+    for (; /* */ i < this._array.length; i++) {
       const set = this._array[i];
       set.drop(userId);
-      if (set.length === 0)
-        this._array.splice(i, 1);
+      if (set.length === 0) this._array.splice(i, 1);
     }
 
     // Collapse equivalent sets.
     i = 0;
-    for (let j = 1; j < this._array.length; /* */) {
+    for (let j = 1; j < this._array.length /* */; ) {
       if (this._array[i].equals(this._array[j])) {
         this._array.splice(i, 1);
       } else {
@@ -119,7 +111,10 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
   }
 
   /** Obtain a TileUserIdSet owned by this object containing all of userIds (if specified) but not userId. Returns undefined if the resultant set would be empty. */
-  public minus(userId: number, userIds?: TileUserIdSet): TileUserIdSet | undefined {
+  public minus(
+    userId: number,
+    userIds?: TileUserIdSet
+  ): TileUserIdSet | undefined {
     const scratch = this.scratch(userIds);
     scratch.drop(userId);
     return scratch.length > 0 ? this.getEquivalent(scratch) : undefined;
@@ -127,10 +122,8 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
 
   private scratch(userIds?: TileUserIdSet): TileUserIdSet {
     const scratch = this._scratch;
-    if (userIds)
-      scratch.copyFrom(userIds);
-    else
-      scratch.clear();
+    if (userIds) scratch.copyFrom(userIds);
+    else scratch.clear();
 
     return scratch;
   }
@@ -138,9 +131,7 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
   private getEquivalent(sought: TileUserIdSet): TileUserIdSet {
     assert(sought.length > 0);
 
-    for (const set of this)
-      if (set.equals(sought))
-        return set;
+    for (const set of this) if (set.equals(sought)) return set;
 
     const newSet = sought.clone();
     this.insert(newSet);
@@ -167,7 +158,10 @@ function isLinked(node: LRUTileListNode): boolean {
   return undefined !== node.previous || undefined !== node.next;
 }
 
-function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefined): Iterator<Tile> {
+function* lruListIterator(
+  start: Tile | undefined,
+  end: LRUTileListNode | undefined
+): Iterator<Tile> {
   let cur = start;
   while (cur && cur !== end) {
     const prev = cur;
@@ -243,8 +237,7 @@ export class LRUTileList {
    */
   public add(tile: Tile): void {
     assert(!isLinked(tile));
-    if (isLinked(tile))
-      return;
+    if (isLinked(tile)) return;
 
     assert(tile.bytesUsed === 0);
     assert(tile.tileUserIds === undefined);
@@ -255,8 +248,7 @@ export class LRUTileList {
     assert(tile.bytesUsed >= 0);
     assert(tile.bytesUsed === Math.floor(tile.bytesUsed));
 
-    if (tile.bytesUsed <= 0)
-      return;
+    if (tile.bytesUsed <= 0) return;
 
     // Insert just before the sentinel, indicating this is the most-recently-used non-selected tile.
     this._totalBytesUsed += tile.bytesUsed;
@@ -269,8 +261,7 @@ export class LRUTileList {
    */
   public drop(tile: Tile): void {
     assert(isLinked(tile) || tile.bytesUsed === 0);
-    if (!isLinked(tile))
-      return;
+    if (!isLinked(tile)) return;
 
     assert(tile.bytesUsed > 0);
     this._totalBytesUsed -= tile.bytesUsed;
@@ -286,8 +277,7 @@ export class LRUTileList {
   /** Mark the tiles as in use by the specified TileUser. They are moved to the end of the "selected" partition. */
   public markUsed(userId: number, tiles: Iterable<Tile>): void {
     for (const tile of tiles) {
-      if (tile.bytesUsed <= 0)
-        continue;
+      if (tile.bytesUsed <= 0) continue;
 
       assert(isLinked(tile));
 
@@ -308,10 +298,8 @@ export class LRUTileList {
       const tile = prev.next as Tile;
       assert(tile !== this._sentinel);
       tile.tileUserIds = this._userIdSets.minus(userId, tile.tileUserIds);
-      if (undefined === tile.tileUserIds)
-        this.moveBeforeSentinel(tile);
-      else
-        prev = tile;
+      if (undefined === tile.tileUserIds) this.moveBeforeSentinel(tile);
+      else prev = tile;
     }
   }
 
@@ -328,13 +316,16 @@ export class LRUTileList {
       // Some tiles (ImageryMapTile) use reference-counting, in which case freeMemory() may not actually free the contents.
       // If the contents *were* disposed, then `this.drop` will have been called, and `tile` is no longer in the list.
       // Otherwise, `tile` remains in the list. Either way, we proceed to the next entry in the list.
-      assert((this.computeBytesUsed(tile) > 0) === isLinked(tile));
+      assert(this.computeBytesUsed(tile) > 0 === isLinked(tile));
     }
   }
 
   /** Iterate over all of the tiles in the unselected partition. */
   public get unselectedTiles(): Iterable<Tile> {
-    const start = this._head === this._sentinel ? undefined : this._head as Tile | undefined;
+    const start =
+      this._head === this._sentinel
+        ? undefined
+        : (this._head as Tile | undefined);
     return {
       [Symbol.iterator]: () => lruListIterator(start, this._sentinel),
     };
@@ -343,7 +334,8 @@ export class LRUTileList {
   /** Iterate over all of the tiles in the selected partition. */
   public get selectedTiles(): Iterable<Tile> {
     return {
-      [Symbol.iterator]: () => lruListIterator(this._sentinel.next as Tile | undefined, undefined),
+      [Symbol.iterator]: () =>
+        lruListIterator(this._sentinel.next as Tile | undefined, undefined),
     };
   }
 
@@ -360,8 +352,7 @@ export class LRUTileList {
 
   protected append(tile: Tile): void {
     assert(!isLinked(tile));
-    if (isLinked(tile))
-      this.unlink(tile);
+    if (isLinked(tile)) this.unlink(tile);
 
     this._tail.next = tile;
     tile.previous = this._tail;
@@ -370,8 +361,7 @@ export class LRUTileList {
 
   protected unlink(tile: Tile): void {
     assert(isLinked(tile));
-    if (!isLinked(tile))
-      return;
+    if (!isLinked(tile)) return;
 
     if (tile.next && tile.previous) {
       assert(tile !== this._head);
@@ -412,9 +402,7 @@ export class LRUTileList {
     this._sentinel.previous = tile;
     tile.next = this._sentinel;
 
-    if (!tile.previous)
-      this._head = tile;
-    else
-      tile.previous.next = tile;
+    if (!tile.previous) this._head = tile;
+    else tile.previous.next = tile;
   }
 }

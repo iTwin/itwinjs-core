@@ -10,7 +10,10 @@
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveCollection } from "../curve/CurveCollection";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import {
+  CurveLocationDetail,
+  CurveLocationDetailPair,
+} from "../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -50,13 +53,17 @@ export class AlternatingCCTreeNode implements PolygonClipper {
   public points: Point3d[] = [];
   public planes: ConvexClipPlaneSet = ConvexClipPlaneSet.createEmpty();
   public children: AlternatingCCTreeNode[] = [];
-  public startIdx: number = -1;    // Start index into the master array (not the local points array)
-  public numPoints: number = -1;   // Number of points used in the master array
+  public startIdx: number = -1; // Start index into the master array (not the local points array)
+  public numPoints: number = -1; // Number of points used in the master array
 
-  private constructor() { }
+  private constructor() {}
 
   /** Initialize this node with index data referencing the parent polygon. */
-  public static createWithIndices(index0: number, numPoints: number, result?: AlternatingCCTreeNode): AlternatingCCTreeNode {
+  public static createWithIndices(
+    index0: number,
+    numPoints: number,
+    result?: AlternatingCCTreeNode
+  ): AlternatingCCTreeNode {
     result = result ? result : new AlternatingCCTreeNode();
     result.startIdx = index0;
     result.numPoints = numPoints;
@@ -70,34 +77,39 @@ export class AlternatingCCTreeNode implements PolygonClipper {
    * <li>Caller creates the root node with empty constructor AlternatingConvexClipTreeNode.
    * </ul>
    */
-  public static createTreeForPolygon(points: Point3d[], result?: AlternatingCCTreeNode): AlternatingCCTreeNode {
+  public static createTreeForPolygon(
+    points: Point3d[],
+    result?: AlternatingCCTreeNode
+  ): AlternatingCCTreeNode {
     result = result ? result : new AlternatingCCTreeNode();
     result.empty();
     const builder = AlternatingCCTreeBuilder.createPointsRef(points);
-    builder.buildHullTree(result);  // <-- Currently ALWAYS returns true
+    builder.buildHullTree(result); // <-- Currently ALWAYS returns true
     return result;
   }
 
   /**
    * Build the outer convex hull will inlets as first level children
    */
-   public static createHullAndInletsForPolygon(points: Point3d[], result?: AlternatingCCTreeNode): AlternatingCCTreeNode {
+  public static createHullAndInletsForPolygon(
+    points: Point3d[],
+    result?: AlternatingCCTreeNode
+  ): AlternatingCCTreeNode {
     result = result ? result : new AlternatingCCTreeNode();
     result.empty();
     const builder = AlternatingCCTreeBuilder.createPointsRef(points);
-    builder.buildHullAndInletsForPolygon(result);  // <-- Currently ALWAYS returns true
+    builder.buildHullAndInletsForPolygon(result); // <-- Currently ALWAYS returns true
     return result;
   }
   private extractLoopsGo(loops: Point3d[][]) {
     loops.push(Point3dArray.clonePoint3dArray(this.points));
-    for (const c of this.children)
-      c.extractLoopsGo(loops);
+    for (const c of this.children) c.extractLoopsGo(loops);
   }
-/**
- * Return an array with all the loops in the tree.
- * This looses the alternating structure of the tree, but the collection still matches well-formed polygons by parity rules.
- */
-  public extractLoops(): Point3d[][]{
+  /**
+   * Return an array with all the loops in the tree.
+   * This looses the alternating structure of the tree, but the collection still matches well-formed polygons by parity rules.
+   */
+  public extractLoops(): Point3d[][] {
     const loops: Point3d[][] = [];
     this.extractLoopsGo(loops);
     return loops;
@@ -114,13 +126,11 @@ export class AlternatingCCTreeNode implements PolygonClipper {
   /** Creates a deep copy of this node (expensive - copies Geometry, and is recursive for children array). */
   public clone(result?: AlternatingCCTreeNode): AlternatingCCTreeNode {
     result = result ? result : new AlternatingCCTreeNode();
-    for (const point of this.points)
-      result.points.push(point.clone());
+    for (const point of this.points) result.points.push(point.clone());
     result.planes = ConvexClipPlaneSet.createEmpty();
     for (const plane of this.planes.planes)
       result.planes.planes.push(plane.clone());
-    for (const node of this.children)
-      result.children.push(node.clone());
+    for (const node of this.children) result.children.push(node.clone());
     result.startIdx = this.startIdx;
     result.numPoints = this.numPoints;
     return result;
@@ -140,12 +150,10 @@ export class AlternatingCCTreeNode implements PolygonClipper {
   /** Search with alternating in and out semantics. */
   public isPointOnOrInside(point: Point3d): boolean {
     const inRoot = this.planes.isPointOnOrInside(point, 0.0);
-    if (!inRoot)
-      return false;
+    if (!inRoot) return false;
 
     for (const child of this.children) {
-      if (child.isPointOnOrInside(point))
-        return false;
+      if (child.isPointOnOrInside(point)) return false;
     }
     return true;
   }
@@ -158,15 +166,33 @@ export class AlternatingCCTreeNode implements PolygonClipper {
   }
 
   /** Append start-end positions for curve intervals classified as inside or outside. */
-  public appendCurvePrimitiveClipIntervals(curve: CurvePrimitive, insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]) {
+  public appendCurvePrimitiveClipIntervals(
+    curve: CurvePrimitive,
+    insideIntervals: CurveLocationDetailPair[],
+    outsideIntervals: CurveLocationDetailPair[]
+  ) {
     const clipper = new AlternatingCCTreeNodeCurveClipper();
-    clipper.appendSingleClipPrimitive(this, curve, insideIntervals, outsideIntervals);
+    clipper.appendSingleClipPrimitive(
+      this,
+      curve,
+      insideIntervals,
+      outsideIntervals
+    );
   }
 
   /** Append start-end positions for curve intervals classified as inside or outside. */
-  public appendCurveCollectionClipIntervals(curves: CurveCollection, insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]) {
+  public appendCurveCollectionClipIntervals(
+    curves: CurveCollection,
+    insideIntervals: CurveLocationDetailPair[],
+    outsideIntervals: CurveLocationDetailPair[]
+  ) {
     const clipper = new AlternatingCCTreeNodeCurveClipper();
-    clipper.appendCurveCollectionClip(this, curves, insideIntervals, outsideIntervals);
+    clipper.appendCurveCollectionClip(
+      this,
+      curves,
+      insideIntervals,
+      outsideIntervals
+    );
   }
   /**
    *
@@ -179,14 +205,24 @@ export class AlternatingCCTreeNode implements PolygonClipper {
     xyz: GrowableXYZArray,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache): void {
+    arrayCache: GrowableXYZArrayCache
+  ): void {
     // At first level ..
     // newInside is subject to re-clip by children.
     // outside is definitively outside
     const oldOutsideCount = outsideFragments.length;
-    const newInside = this.planes.clipInsidePushOutside(xyz, outsideFragments, arrayCache);
+    const newInside = this.planes.clipInsidePushOutside(
+      xyz,
+      outsideFragments,
+      arrayCache
+    );
     if (newInside === undefined) {
-      ClipUtilities.restoreSingletonInPlaceOfMultipleShards (outsideFragments, oldOutsideCount, xyz, arrayCache);
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(
+        outsideFragments,
+        oldOutsideCount,
+        xyz,
+        arrayCache
+      );
     } else {
       let carryForwardA = [newInside];
       let carryForwardB: GrowableXYZArray[] = [];
@@ -196,11 +232,16 @@ export class AlternatingCCTreeNode implements PolygonClipper {
         carryForwardB.length = 0;
         while (undefined !== (shard = carryForwardA.pop())) {
           // Anything inside this child is truly outside  ...
-          c.appendPolygonClip(shard, outsideFragments, carryForwardB, arrayCache);
+          c.appendPolygonClip(
+            shard,
+            outsideFragments,
+            carryForwardB,
+            arrayCache
+          );
           arrayCache.dropToCache(shard);
         }
         tempAB = carryForwardB;
-        carryForwardB = carryForwardA;  // and that is empty
+        carryForwardB = carryForwardA; // and that is empty
         carryForwardA = tempAB;
       }
       while (undefined !== (shard = carryForwardA.pop())) {
@@ -231,28 +272,44 @@ export class AlternatingCCTreeBuilder {
   private _points: Point3d[] = [];
   private _stack: number[] = [];
 
-  private constructor() { }
+  private constructor() {}
 
-  public static createPointsRef(points: Point3d[], result?: AlternatingCCTreeBuilder): AlternatingCCTreeBuilder {
+  public static createPointsRef(
+    points: Point3d[],
+    result?: AlternatingCCTreeBuilder
+  ): AlternatingCCTreeBuilder {
     result = result ? result : new AlternatingCCTreeBuilder();
     result._points = points;
-    if (PolygonOps.areaXY(points) < 0.0)
-      result._points.reverse();
-    if (result._points[result._points.length - 1].isAlmostEqualMetric(result._points[0]))
-        result._points.pop();
+    if (PolygonOps.areaXY(points) < 0.0) result._points.reverse();
+    if (
+      result._points[result._points.length - 1].isAlmostEqualMetric(
+        result._points[0]
+      )
+    )
+      result._points.pop();
     return result;
   }
 
-  public get period(): number { return this._points.length; }
+  public get period(): number {
+    return this._points.length;
+  }
 
-  public indexAfter(i: number) { return (i + 1) % this._points.length; }
-  public indexBefore(i: number) { return (i + this._points.length - 1) % this._points.length; }
+  public indexAfter(i: number) {
+    return (i + 1) % this._points.length;
+  }
+  public indexBefore(i: number) {
+    return (i + this._points.length - 1) % this._points.length;
+  }
 
   public pushIndex(primaryPointIndex: number) {
     this._stack.push(primaryPointIndex);
   }
 
-  private static cross(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
+  private static cross(
+    pointA: Point3d,
+    pointB: Point3d,
+    pointC: Point3d
+  ): number {
     return pointA.crossProductToPointsXY(pointB, pointC);
   }
   /*
@@ -260,13 +317,12 @@ export class AlternatingCCTreeBuilder {
       return sign * AlternatingCCTreeBuilder.cross(pointA, pointB, pointC) > 0;
     }
   */
-  public cyclicStackPoint(cyclicIndex: number): Point3d {  // SIGNED index -- but negatives must be in first 10 periods?
+  public cyclicStackPoint(cyclicIndex: number): Point3d {
+    // SIGNED index -- but negatives must be in first 10 periods?
     let stackIndex: number;
     const stack = this._stack;
-    if (cyclicIndex > 0)
-      stackIndex = cyclicIndex;
-    else
-      stackIndex = cyclicIndex + 10 * stack.length;
+    if (cyclicIndex > 0) stackIndex = cyclicIndex;
+    else stackIndex = cyclicIndex + 10 * stack.length;
     stackIndex = stackIndex % stack.length;
     return this._points[stack[stackIndex]];
   }
@@ -275,7 +331,9 @@ export class AlternatingCCTreeBuilder {
     const pointA = this.cyclicStackPoint(-2);
     const pointB = this.cyclicStackPoint(-1);
     const pointC = this._points[pointIndex];
-    return sign * AlternatingCCTreeBuilder.cross(pointA, pointB, pointC) >= 0.0 ? 1 : -1;
+    return sign * AlternatingCCTreeBuilder.cross(pointA, pointB, pointC) >= 0.0
+      ? 1
+      : -1;
   }
 
   /*
@@ -300,8 +358,7 @@ export class AlternatingCCTreeBuilder {
     const points = this._points;
     const nPoints = this._points.length;
     for (let i = 1; i < nPoints; i++) {
-      if (points[i].x > points[k].x)
-        k = i;
+      if (points[i].x > points[k].x) k = i;
     }
     return k;
   }
@@ -310,8 +367,7 @@ export class AlternatingCCTreeBuilder {
   public extendHullChain(k: number, sign: number, pushAfterPops: boolean) {
     while (this._stack.length > 1 && this.signFromStackTip(k, sign) < 0.0)
       this._stack.pop();
-    if (pushAfterPops)
-      this.pushIndex(k);
+    if (pushAfterPops) this.pushIndex(k);
   }
 
   public collectHullChain(kStart: number, numK: number, sign: number) {
@@ -325,7 +381,12 @@ export class AlternatingCCTreeBuilder {
     }
   }
 
-  public collectHullPointsInArray(points: Point3d[], kStart: number, numK: number, _sign: number) {
+  public collectHullPointsInArray(
+    points: Point3d[],
+    kStart: number,
+    numK: number,
+    _sign: number
+  ) {
     points.length = 0;
     if (numK > 2) {
       let k = kStart;
@@ -336,8 +397,16 @@ export class AlternatingCCTreeBuilder {
     }
   }
 
-  private buildHullTreeGo(root: AlternatingCCTreeNode, isPositiveArea: boolean, recurseToChildren: boolean = true): boolean {
-    this.collectHullChain(root.startIdx, root.numPoints, isPositiveArea ? 1.0 : -1.0);
+  private buildHullTreeGo(
+    root: AlternatingCCTreeNode,
+    isPositiveArea: boolean,
+    recurseToChildren: boolean = true
+  ): boolean {
+    this.collectHullChain(
+      root.startIdx,
+      root.numPoints,
+      isPositiveArea ? 1.0 : -1.0
+    );
     root.points.length = 0;
     const stack = this._stack;
     const points = this._points;
@@ -350,29 +419,36 @@ export class AlternatingCCTreeBuilder {
         let k1 = stack[i + 1];
         if (k1 === this.indexAfter(k0)) {
           // two original points in sequence -- need a clip plane right here!!!
-          const plane = ClipPlane.createEdgeAndUpVector(points[k0], points[k1], Vector3d.create(0, 0, 1), Angle.createRadians(0));
+          const plane = ClipPlane.createEdgeAndUpVector(
+            points[k0],
+            points[k1],
+            Vector3d.create(0, 0, 1),
+            Angle.createRadians(0)
+          );
           if (plane !== undefined) {
-            if (isPositiveArea)
-              plane.negateInPlace();
+            if (isPositiveArea) plane.negateInPlace();
             root.addPlane(plane);
           }
         } else {
-          if (k1 < k0)
-            k1 += this.period;
+          if (k1 < k0) k1 += this.period;
           root.addEmptyChild(k0, k1 - k0 + 1);
         }
       }
     }
-    if (recurseToChildren){
+    if (recurseToChildren) {
       for (const child of root.children)
         this.buildHullTreeGo(child, !isPositiveArea);
     } else {
       for (const child of root.children)
-        this.collectHullPointsInArray(child.points, child.startIdx, child.numPoints, isPositiveArea ? -1.0 : 1.0);
-
+        this.collectHullPointsInArray(
+          child.points,
+          child.startIdx,
+          child.numPoints,
+          isPositiveArea ? -1.0 : 1.0
+        );
     }
 
-    return true;    // Are there failure modes? What happens with crossing data?..
+    return true; // Are there failure modes? What happens with crossing data?..
   }
 
   /**
@@ -385,7 +461,11 @@ export class AlternatingCCTreeBuilder {
    * </ul>
    */
   public buildHullAndInletsForPolygon(root: AlternatingCCTreeNode): boolean {
-    AlternatingCCTreeNode.createWithIndices(this.indexOfMaxX, this.period + 1, root);
+    AlternatingCCTreeNode.createWithIndices(
+      this.indexOfMaxX,
+      this.period + 1,
+      root
+    );
     return this.buildHullTreeGo(root, true, false);
   }
   /**
@@ -397,11 +477,14 @@ export class AlternatingCCTreeBuilder {
    * <li> Recursively move to children
    * </ul>
    */
-   public buildHullTree(root: AlternatingCCTreeNode): boolean {
-    AlternatingCCTreeNode.createWithIndices(this.indexOfMaxX, this.period + 1, root);
+  public buildHullTree(root: AlternatingCCTreeNode): boolean {
+    AlternatingCCTreeNode.createWithIndices(
+      this.indexOfMaxX,
+      this.period + 1,
+      root
+    );
     return this.buildHullTreeGo(root, true);
   }
-
 }
 
 export class AlternatingCCTreeNodeCurveClipper {
@@ -414,18 +497,19 @@ export class AlternatingCCTreeNodeCurveClipper {
     this._intervalStack = [];
   }
 
-  private setCurveRef(curve: CurvePrimitive) { this._curve = curve; }
+  private setCurveRef(curve: CurvePrimitive) {
+    this._curve = curve;
+  }
 
   private popSegmentFrame() {
     if (this._stackDepth > 0) {
-      this._topOfStack.length = 0;    // formality.
+      this._topOfStack.length = 0; // formality.
       this._stackDepth -= 1;
     }
   }
 
   private clearSegmentStack() {
-    while (this._stackDepth > 0)
-      this.popSegmentFrame();     // and that will reduce stack depth
+    while (this._stackDepth > 0) this.popSegmentFrame(); // and that will reduce stack depth
   }
 
   private pushEmptySegmentFrame() {
@@ -435,20 +519,20 @@ export class AlternatingCCTreeNodeCurveClipper {
     this._topOfStack.length = 0;
   }
 
-  private get _topOfStack(): Range1d[] { return this._intervalStack[this._stackDepth - 1]; }
+  private get _topOfStack(): Range1d[] {
+    return this._intervalStack[this._stackDepth - 1];
+  }
   // set the top of the stack (as defined by stackDepth -- not array length)
   private set _topOfStack(value: Range1d[]) {
     const n = this._stackDepth;
-    if (n > 0)
-      this._intervalStack[n - 1] = value;
+    if (n > 0) this._intervalStack[n - 1] = value;
   }
 
   /** Access entry [topOfStack() - numSkip] */
   private stackEntry(numSkip: number): Range1d[] {
     if (numSkip <= this._stackDepth)
       return this._intervalStack[this._stackDepth - 1 - numSkip];
-    else
-      return [];
+    else return [];
   }
 
   private isTopOfStackEmpty(): boolean {
@@ -458,50 +542,85 @@ export class AlternatingCCTreeNodeCurveClipper {
   // Is re-used by method calls
   private static _fractionIntervals: number[] = [];
 
-  private appendSingleClipToStack(planes: ConvexClipPlaneSet, insideSegments: Range1d[]): boolean {
-    const fractionIntervals = AlternatingCCTreeNodeCurveClipper._fractionIntervals;
+  private appendSingleClipToStack(
+    planes: ConvexClipPlaneSet,
+    insideSegments: Range1d[]
+  ): boolean {
+    const fractionIntervals =
+      AlternatingCCTreeNodeCurveClipper._fractionIntervals;
 
     if (this._curve instanceof LineSegment3d) {
       const segment = this._curve;
       let f0: number;
       let f1: number;
-      if (segment.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => { f0 = a0; f1 = a1; })) {
+      if (
+        segment.announceClipIntervals(
+          planes,
+          (a0: number, a1: number, _cp: CurvePrimitive) => {
+            f0 = a0;
+            f1 = a1;
+          }
+        )
+      ) {
         insideSegments.push(Range1d.createXX(f0!, f1!));
       }
       return true;
-
     } else if (this._curve instanceof Arc3d) {
       const arc = this._curve;
       fractionIntervals.length = 0;
-      arc.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => {
-        fractionIntervals.push(a0); fractionIntervals.push(a1);
-      });
+      arc.announceClipIntervals(
+        planes,
+        (a0: number, a1: number, _cp: CurvePrimitive) => {
+          fractionIntervals.push(a0);
+          fractionIntervals.push(a1);
+        }
+      );
       for (let i = 0; i < fractionIntervals.length; i += 2)
-        insideSegments.push(Range1d.createXX(fractionIntervals[i], fractionIntervals[i + 1]));
+        insideSegments.push(
+          Range1d.createXX(fractionIntervals[i], fractionIntervals[i + 1])
+        );
       return true;
-
-    } else if (this._curve instanceof LineString3d && (this._curve).points.length > 1) {
+    } else if (
+      this._curve instanceof LineString3d &&
+      this._curve.points.length > 1
+    ) {
       const linestring = this._curve;
       let f0: number;
       let f1: number;
       const nPoints = linestring.points.length;
       const df = 1.0 / (nPoints - 1);
       for (let i = 0; i < nPoints - 1; i++) {
-        const segment = LineSegment3d.create(linestring.points[i], linestring.points[i + 1]);
-        if (segment.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => { f0 = a0; f1 = a1; })) {
+        const segment = LineSegment3d.create(
+          linestring.points[i],
+          linestring.points[i + 1]
+        );
+        if (
+          segment.announceClipIntervals(
+            planes,
+            (a0: number, a1: number, _cp: CurvePrimitive) => {
+              f0 = a0;
+              f1 = a1;
+            }
+          )
+        ) {
           insideSegments.push(Range1d.createXX((i + f0!) * df, (i + f1!) * df));
         }
       }
       return true;
-
     } else if (this._curve instanceof BSplineCurve3d) {
       const bcurve = this._curve;
       fractionIntervals.length = 0;
-      bcurve.announceClipIntervals(planes, (a0: number, a1: number, _cp: CurvePrimitive) => {
-        fractionIntervals.push(a0); fractionIntervals.push(a1);
-      });
+      bcurve.announceClipIntervals(
+        planes,
+        (a0: number, a1: number, _cp: CurvePrimitive) => {
+          fractionIntervals.push(a0);
+          fractionIntervals.push(a1);
+        }
+      );
       for (let i = 0; i < fractionIntervals.length; i += 2)
-        insideSegments.push(Range1d.createXX(fractionIntervals[i], fractionIntervals[i + 1]));
+        insideSegments.push(
+          Range1d.createXX(fractionIntervals[i], fractionIntervals[i + 1])
+        );
       return true;
     }
 
@@ -516,20 +635,21 @@ export class AlternatingCCTreeNodeCurveClipper {
     this.pushEmptySegmentFrame();
     this.appendSingleClipToStack(node.planes, this._topOfStack);
     Range1dArray.sort(this._topOfStack);
-    if (this.isTopOfStackEmpty())
-      return;
+    if (this.isTopOfStackEmpty()) return;
 
     for (const child of node.children) {
       this.recurse(child);
       if (!this.isTopOfStackEmpty()) {
-        const ranges = Range1dArray.differenceSorted(this.stackEntry(1), this.stackEntry(0));
+        const ranges = Range1dArray.differenceSorted(
+          this.stackEntry(1),
+          this.stackEntry(0)
+        );
         this.popSegmentFrame();
         this._topOfStack = ranges;
       } else {
         this.popSegmentFrame();
       }
-      if (this.isTopOfStackEmpty())
-        break;
+      if (this.isTopOfStackEmpty()) break;
     }
   }
 
@@ -537,13 +657,16 @@ export class AlternatingCCTreeNodeCurveClipper {
    * Modifies the insideIntervals array given in place.
    * Note: curve given is passed by reference and stored.
    */
-  public appendSingleClipPrimitive(root: AlternatingCCTreeNode, curve: CurvePrimitive,
-    insideIntervals: CurveLocationDetailPair[], _outsideIntervals: CurveLocationDetailPair[]) {
+  public appendSingleClipPrimitive(
+    root: AlternatingCCTreeNode,
+    curve: CurvePrimitive,
+    insideIntervals: CurveLocationDetailPair[],
+    _outsideIntervals: CurveLocationDetailPair[]
+  ) {
     this.setCurveRef(curve);
     this.clearSegmentStack();
     this.recurse(root);
-    if (this._stackDepth !== 1)
-      return;
+    if (this._stackDepth !== 1) return;
 
     const intervals = this._topOfStack;
     for (const interval of intervals) {
@@ -551,10 +674,12 @@ export class AlternatingCCTreeNodeCurveClipper {
       const f1 = interval.high;
       const xyz0 = curve.fractionToPoint(f0);
       const xyz1 = curve.fractionToPoint(f1);
-      insideIntervals.push(CurveLocationDetailPair.createCapture(
-        CurveLocationDetail.createCurveFractionPoint(curve, f0, xyz0),
-        CurveLocationDetail.createCurveFractionPoint(curve, f1, xyz1),
-      ));
+      insideIntervals.push(
+        CurveLocationDetailPair.createCapture(
+          CurveLocationDetail.createCurveFractionPoint(curve, f0, xyz0),
+          CurveLocationDetail.createCurveFractionPoint(curve, f1, xyz1)
+        )
+      );
     }
     this.popSegmentFrame();
   }
@@ -563,13 +688,27 @@ export class AlternatingCCTreeNodeCurveClipper {
    * Modifies the insideIntervals array given in place.
    * Note: curve given is passed by reference and stored.
    */
-  public appendCurveCollectionClip(root: AlternatingCCTreeNode, curve: CurveCollection,
-    insideIntervals: CurveLocationDetailPair[], outsideIntervals: CurveLocationDetailPair[]) {
+  public appendCurveCollectionClip(
+    root: AlternatingCCTreeNode,
+    curve: CurveCollection,
+    insideIntervals: CurveLocationDetailPair[],
+    outsideIntervals: CurveLocationDetailPair[]
+  ) {
     for (const cp of curve.children!) {
       if (cp instanceof CurvePrimitive)
-        this.appendSingleClipPrimitive(root, cp, insideIntervals, outsideIntervals);
+        this.appendSingleClipPrimitive(
+          root,
+          cp,
+          insideIntervals,
+          outsideIntervals
+        );
       else if (cp instanceof CurveCollection)
-        this.appendCurveCollectionClip(root, cp, insideIntervals, outsideIntervals);
+        this.appendCurveCollectionClip(
+          root,
+          cp,
+          insideIntervals,
+          outsideIntervals
+        );
     }
   }
 }

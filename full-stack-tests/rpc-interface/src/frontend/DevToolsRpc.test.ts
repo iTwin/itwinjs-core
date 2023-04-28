@@ -14,8 +14,7 @@ describe("DevTools", () => {
   before(async function () {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runDevToolsRpcTests)
-      this.skip();
+    if (!testContext.settings.runDevToolsRpcTests) this.skip();
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
     devTools = DevTools.connectToBackendInstance(iModel.getRpcProps());
@@ -42,11 +41,17 @@ describe("DevTools", () => {
     await devTools.setLogLevel(loggerCategory, firstLevel);
 
     const secondLevel = LogLevel.Warning;
-    const actualFirstLevel = await devTools.setLogLevel(loggerCategory, secondLevel);
+    const actualFirstLevel = await devTools.setLogLevel(
+      loggerCategory,
+      secondLevel
+    );
     assert.equal(actualFirstLevel, firstLevel);
 
     const thirdLevel = LogLevel.Error;
-    const acutalSecondLevel = await devTools.setLogLevel(loggerCategory, thirdLevel);
+    const acutalSecondLevel = await devTools.setLogLevel(
+      loggerCategory,
+      thirdLevel
+    );
     assert.equal(acutalSecondLevel, secondLevel);
   });
 

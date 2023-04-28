@@ -12,9 +12,7 @@ import { TestResult, testSuites } from "./ElectronBackendTests";
 async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
   const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-var-requires
 
-  const args = [
-    path.join(__dirname, "./RunSingleTest.js"),
-  ];
+  const args = [path.join(__dirname, "./RunSingleTest.js")];
 
   const options: SpawnOptions = {
     stdio: ["ipc", "inherit", "inherit"],

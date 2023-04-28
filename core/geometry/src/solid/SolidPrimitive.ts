@@ -30,12 +30,26 @@ import { TorusPipe } from "./TorusPipe";
  *
  * @public
  */
-export type SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe";
+export type SolidPrimitiveType =
+  | "box"
+  | "cone"
+  | "sphere"
+  | "linearSweep"
+  | "rotationalSweep"
+  | "ruledSweep"
+  | "torusPipe";
 
 /** Union type of all subclasses of [[SolidPrimitive]].
  * @public
  */
-export type AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSweep | RuledSweep | TorusPipe;
+export type AnySolidPrimitive =
+  | Box
+  | Cone
+  | Sphere
+  | LinearSweep
+  | RotationalSweep
+  | RuledSweep
+  | TorusPipe;
 
 /**
  * Base class for SolidPrimitive variants.
@@ -51,12 +65,21 @@ export abstract class SolidPrimitive extends GeometryQuery {
 
   /** flag indicating whether cap region is considered closed (i.e. a planar region, rather than just a wire in space) */
   protected _capped: boolean;
-  protected constructor(capped: boolean) { super(); this._capped = capped; }
+  protected constructor(capped: boolean) {
+    super();
+    this._capped = capped;
+  }
   /** Whether this is a capped solid */
-  public get capped(): boolean { return this._capped; }
-  public set capped(capped: boolean) { this._capped = capped; }
+  public get capped(): boolean {
+    return this._capped;
+  }
+  public set capped(capped: boolean) {
+    this._capped = capped;
+  }
   /** Return a cross section at specified vFraction. */
-  public abstract constantVSection(_vFraction: number): CurveCollection | undefined;
+  public abstract constantVSection(
+    _vFraction: number
+  ): CurveCollection | undefined;
   /** Return a Transform from the local system of the solid to world.
    * * The particulars of origin and orientation are specific to each SolidPrimitive type.
    */

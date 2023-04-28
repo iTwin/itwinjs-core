@@ -37,10 +37,7 @@ The `setWidgetState` method may be called to set the state of the widget.
 ```tsx
 import * as React from "react";
 
-import {
-  WidgetControl,
-  ConfigurableCreateInfo,
-} from "@itwin/appui-react";
+import { WidgetControl, ConfigurableCreateInfo } from "@itwin/appui-react";
 
 import SimpleTreeComponent from "../components/Tree";
 
@@ -50,7 +47,12 @@ export class TreeWidget extends WidgetControl {
     super(info, options);
 
     if (options.iModelConnection) {
-      this.reactNode = <SimpleTreeComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = (
+        <SimpleTreeComponent
+          imodel={options.iModelConnection}
+          rulesetId={options.rulesetId}
+        />
+      );
     }
   }
 }
@@ -99,7 +101,7 @@ function SampleToolWidget () {
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
     />
   );
-  ```
+```
 
 There is an extensible Tool Widget named [BasicToolWidget]($appui-react) in the appui-react package. It supports the specification of additional horizontal and vertical toolbar items via props. It provides basic selection and measuring tools and supports the specification of additional horizontal and vertical toolbar items via props.
 

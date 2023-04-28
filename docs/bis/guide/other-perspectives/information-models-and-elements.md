@@ -110,17 +110,18 @@ Document subclasses include:
 
 The following tables lists the Model types that typically contains specific subclasses of InformationContentElements:
 
-| Element Class               | Model Class |
-|-----------------------------|-------------|
-| InformationRecordElement    | InformationRecordModel |
-| DefinitionElement           | DefinitionModel |
-| InformationPartitionElement | RepositoryModel |
+| Element Class               | Model Class                         |
+| --------------------------- | ----------------------------------- |
+| InformationRecordElement    | InformationRecordModel              |
+| DefinitionElement           | DefinitionModel                     |
+| InformationPartitionElement | RepositoryModel                     |
 | InformationReferenceElement | LinkModel or other InformationModel |
-| GroupInformationElement     | GroupInformationModel |
-| Document                    | DocumentListModel |
+| GroupInformationElement     | GroupInformationModel               |
+| Document                    | DocumentListModel                   |
 
 <!-- TODO:  mention *any model* rules for LinkElement and InformationRecordElement? -->
 
 ---
+
 | Next: [Schema Customization](../schema-evolution/schema-customization.md)
 |:---

@@ -23,7 +23,7 @@ interface Item<K, V> {
 export const enum Touch {
   None = 0,
   AsOld = 1,
-  AsNew = 2
+  AsNew = 2,
 }
 
 /**
@@ -31,7 +31,6 @@ export const enum Touch {
  */
 // istanbul ignore next
 export class LinkedMap<K, V> implements Map<K, V> {
-
   readonly [Symbol.toStringTag] = "LinkedMap";
 
   private _map: Map<K, Item<K, V>>;
@@ -146,7 +145,10 @@ export class LinkedMap<K, V> implements Map<K, V> {
     return item.value;
   }
 
-  forEach(callbackfn: (value: V, key: K, map: LinkedMap<K, V>) => void, thisArg?: any): void {
+  forEach(
+    callbackfn: (value: V, key: K, map: LinkedMap<K, V>) => void,
+    thisArg?: any
+  ): void {
     const state = this._state;
     let current = this._head;
     while (current) {
@@ -224,7 +226,10 @@ export class LinkedMap<K, V> implements Map<K, V> {
           throw new Error(`LinkedMap got modified during iteration.`);
         }
         if (current) {
-          const result: IteratorResult<[K, V]> = { value: [current.key, current.value], done: false };
+          const result: IteratorResult<[K, V]> = {
+            value: [current.key, current.value],
+            done: false,
+          };
           current = current.next;
           return result;
         } else {
@@ -328,7 +333,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
     if (!this._head || !this._tail) {
       throw new Error("Invalid list");
     }
-    if ((touch !== Touch.AsOld && touch !== Touch.AsNew)) {
+    if (touch !== Touch.AsOld && touch !== Touch.AsNew) {
       return;
     }
 
@@ -409,7 +414,6 @@ export class LinkedMap<K, V> implements Map<K, V> {
  */
 // istanbul ignore next
 export class LRUCache<K, V> extends LinkedMap<K, V> {
-
   private _limit: number;
   private _ratio: number;
 

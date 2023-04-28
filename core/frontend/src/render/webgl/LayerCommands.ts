@@ -6,9 +6,21 @@
  * @module WebGL
  */
 
-import { assert, compareNumbers, compareStrings, SortedArray } from "@itwin/core-bentley";
 import {
-  DrawCommand, DrawCommands, PopBatchCommand, PopBranchCommand, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand,
+  assert,
+  compareNumbers,
+  compareStrings,
+  SortedArray,
+} from "@itwin/core-bentley";
+import {
+  DrawCommand,
+  DrawCommands,
+  PopBatchCommand,
+  PopBranchCommand,
+  PopCommand,
+  PushBatchCommand,
+  PushBranchCommand,
+  PushCommand,
 } from "./DrawCommand";
 import { Layer, LayerContainer } from "./Layer";
 import { RenderCommands } from "./RenderCommands";
@@ -32,24 +44,28 @@ abstract class State {
     this.map.state = this;
   }
 
-  protected exit(): void { }
+  protected exit(): void {}
 
   protected throwStateError(operation: string): void {
     // Using assert because these are intended for developers.
-    assert(false, `Invalid layer command: operation '${operation}' unimplemented for state '${this.opcode}'`);
+    assert(
+      false,
+      `Invalid layer command: operation '${operation}' unimplemented for state '${this.opcode}'`
+    );
   }
 
   public processLayers(_container: LayerContainer, _func: () => void): void {
     this.throwStateError("processLayers");
   }
 
-  public pushAndPop(push: PushCommand, _pop: PopCommand, func: () => void): void {
-    if ("pushBatch" === push.opcode)
-      this.processBatch(push, func);
-    else if ("pushBranch" === push.opcode)
-      this.processBranch(push, func);
-    else
-      this.throwStateError("unhandled push command");
+  public pushAndPop(
+    push: PushCommand,
+    _pop: PopCommand,
+    func: () => void
+  ): void {
+    if ("pushBatch" === push.opcode) this.processBatch(push, func);
+    else if ("pushBranch" === push.opcode) this.processBranch(push, func);
+    else this.throwStateError("unhandled push command");
   }
 
   protected processBranch(_push: PushBranchCommand, _func: () => void): void {
@@ -70,27 +86,37 @@ abstract class State {
 }
 
 class IdleState extends State {
-  protected get opcode(): OpCode { return "Idle"; }
+  protected get opcode(): OpCode {
+    return "Idle";
+  }
 
   public constructor(map: LayerCommandMap) {
     super(map);
   }
 
-  public override processLayers(container: LayerContainer, func: () => void): void {
+  public override processLayers(
+    container: LayerContainer,
+    func: () => void
+  ): void {
     this.executeTransition(new ContainerState(this, container), func);
   }
 }
 
 class ContainerState extends State {
   public readonly elevation: number;
-  protected get opcode(): OpCode { return "Container"; }
+  protected get opcode(): OpCode {
+    return "Container";
+  }
 
   public constructor(idle: IdleState, container: LayerContainer) {
     super(idle.map);
     this.elevation = container.elevation;
   }
 
-  protected override processBranch(push: PushBranchCommand, func: () => void): void {
+  protected override processBranch(
+    push: PushBranchCommand,
+    func: () => void
+  ): void {
     this.executeTransition(new BranchState(this, push), func);
   }
 }
@@ -100,15 +126,23 @@ class BranchState extends State {
   public readonly containerState: ContainerState;
   private readonly _layerCommands = new Set<LayerCommands>();
 
-  protected get opcode(): OpCode { return "Branch"; }
+  protected get opcode(): OpCode {
+    return "Branch";
+  }
 
-  public constructor(containerState: ContainerState, pushCommand: PushBranchCommand) {
+  public constructor(
+    containerState: ContainerState,
+    pushCommand: PushBranchCommand
+  ) {
     super(containerState.map);
     this.containerState = containerState;
     this.pushCommand = pushCommand;
   }
 
-  protected override processBatch(push: PushBatchCommand, func: () => void): void {
+  protected override processBatch(
+    push: PushBatchCommand,
+    func: () => void
+  ): void {
     this.executeTransition(new BatchState(this, push), func);
   }
 
@@ -129,7 +163,9 @@ class BatchState extends State {
   public readonly branchState: BranchState;
   public readonly pushCommand: PushBatchCommand;
 
-  protected get opcode(): OpCode { return "Batch"; }
+  protected get opcode(): OpCode {
+    return "Batch";
+  }
 
   public constructor(branchState: BranchState, pushCommand: PushBatchCommand) {
     super(branchState.map);
@@ -138,10 +174,8 @@ class BatchState extends State {
   }
 
   public override set currentLayer(layer: Layer | undefined) {
-    if (undefined === layer)
-      this.throwStateError("currentLayer = undefined");
-    else
-      this.map.state = new LayerState(this, layer);
+    if (undefined === layer) this.throwStateError("currentLayer = undefined");
+    else this.map.state = new LayerState(this, layer);
   }
 }
 
@@ -149,13 +183,18 @@ class LayerState extends State {
   private readonly _batchState: BatchState;
   public readonly commands: LayerCommands;
 
-  protected get opcode(): OpCode { return "Layer"; }
+  protected get opcode(): OpCode {
+    return "Layer";
+  }
 
   public constructor(batchState: BatchState, layer: Layer) {
     super(batchState.map);
     this._batchState = batchState;
 
-    this.commands = this.map.getCommands(layer, batchState.branchState.containerState.elevation);
+    this.commands = this.map.getCommands(
+      layer,
+      batchState.branchState.containerState.elevation
+    );
     this._batchState.branchState.markLayer(this.commands);
     this.commands.commands.push(batchState.pushCommand);
   }
@@ -169,15 +208,18 @@ class LayerState extends State {
     }
   }
 
-  public override pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
+  public override pushAndPop(
+    push: PushCommand,
+    pop: PopCommand,
+    func: () => void
+  ): void {
     this.commands.commands.push(push);
     func();
     this.commands.commands.push(pop);
   }
 
   public override addCommands(commands: DrawCommand[]): void {
-    for (const command of commands)
-      this.commands.commands.push(command);
+    for (const command of commands) this.commands.commands.push(command);
   }
 }
 
@@ -207,8 +249,7 @@ class LayerCommandMap extends SortedArray<LayerCommands> {
       let cmp = compareNumbers(lhs.elevation, rhs.elevation);
       if (0 === cmp) {
         cmp = compareNumbers(lhs.priority, rhs.priority);
-        if (0 === cmp)
-          cmp = compareStrings(lhs.layerId, rhs.layerId);
+        if (0 === cmp) cmp = compareStrings(lhs.layerId, rhs.layerId);
       }
 
       return cmp;
@@ -228,15 +269,18 @@ class LayerCommandMap extends SortedArray<LayerCommands> {
       if (entry.layerId === layer.layerId && entry.elevation === elevation)
         return entry;
 
-    const cmds = new LayerCommands(layer.layerId, layer.getPriority(this.target), elevation);
+    const cmds = new LayerCommands(
+      layer.layerId,
+      layer.getPriority(this.target),
+      elevation
+    );
     this.insert(cmds);
     return cmds;
   }
 
   public outputCommands(cmds: DrawCommand[]): void {
     for (const entry of this._array)
-      for (const cmd of entry.commands)
-        cmds.push(cmd);
+      for (const cmd of entry.commands) cmds.push(cmd);
   }
 }
 
@@ -277,7 +321,11 @@ export class LayerCommandLists {
     this._activeMap.state.addCommands(cmds);
   }
 
-  public pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
+  public pushAndPop(
+    push: PushCommand,
+    pop: PopCommand,
+    func: () => void
+  ): void {
     assert(undefined !== this._activeMap);
     this._activeMap.state.pushAndPop(push, pop, func);
   }

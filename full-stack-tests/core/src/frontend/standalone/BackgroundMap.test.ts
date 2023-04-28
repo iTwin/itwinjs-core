@@ -4,7 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps,
+  BackgroundMapProps,
+  BackgroundMapProviderName,
+  BackgroundMapSettings,
+  BackgroundMapType,
+  GlobeMode,
+  PersistentBackgroundMapProps,
   TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -27,14 +32,16 @@ describe("Background map", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
 
   it("produces a different tile tree when background map settings change", async () => {
-    async function isSameTileTree(vp: TestViewport, props: BackgroundMapProps | PersistentBackgroundMapProps): Promise<boolean> {
+    async function isSameTileTree(
+      vp: TestViewport,
+      props: BackgroundMapProps | PersistentBackgroundMapProps
+    ): Promise<boolean> {
       expect(vp.viewFlags.backgroundMap).to.be.true;
       await vp.waitForAllTilesToRender();
       const prevTree = vp.backgroundMap!.treeOwner.tileTree!;
@@ -44,7 +51,10 @@ describe("Background map", () => {
       // eslint-disable-next-line deprecation/deprecation
       if (props.providerName || props.providerData) {
         // eslint-disable-next-line deprecation/deprecation
-        vp.displayStyle.changeBackgroundMapProvider({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
+        vp.displayStyle.changeBackgroundMapProvider({
+          name: props.providerName as BackgroundMapProviderName,
+          type: props.providerData?.mapType,
+        });
       }
 
       await vp.waitForAllTilesToRender();
@@ -72,7 +82,12 @@ describe("Background map", () => {
       // Terrain-specific settings don't affect tile tree if terrain is disabled.
       [{ terrainSettings: { exaggeration: 42 } }, true],
       [{ terrainSettings: { heightOrigin: 21 } }, true],
-      [{ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true],
+      [
+        {
+          terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground },
+        },
+        true,
+      ],
 
       // Terrain enabled.
       /* ###TODO ApproximateTerrainHeights.json supplied by core-frontend is not found...

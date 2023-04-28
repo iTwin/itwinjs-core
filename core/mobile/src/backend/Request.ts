@@ -8,7 +8,13 @@
 import * as _ from "lodash";
 import * as https from "https";
 import * as sarequest from "superagent";
-import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import {
+  BentleyError,
+  GetMetaDataFunction,
+  HttpStatus,
+  Logger,
+  LogLevel,
+} from "@itwin/core-bentley";
 
 const loggerCategory: string = "core-mobile-backend.Request";
 
@@ -88,7 +94,11 @@ export class ResponseError extends BentleyError {
   protected _data?: any;
   public status?: number;
   public description?: string;
-  public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(
+    errorNumber: number | HttpStatus,
+    message?: string,
+    getMetaData?: GetMetaDataFunction
+  ) {
     super(errorNumber, message, getMetaData);
   }
 
@@ -99,7 +109,9 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public static parse(response: any, log = true): ResponseError {
-    const error = new ResponseError(ResponseError.parseHttpStatus(response.statusType));
+    const error = new ResponseError(
+      ResponseError.parseHttpStatus(response.statusType)
+    );
     if (!response) {
       error.message = "Couldn't get response object.";
       return error;
@@ -113,7 +125,10 @@ export class ResponseError extends BentleyError {
       if (response.response.res) {
         error.message = response.response.res.statusMessage;
       }
-      if (response.response.body && Object.keys(response.response.body).length > 0) {
+      if (
+        response.response.body &&
+        Object.keys(response.response.body).length > 0
+      ) {
         error._data = {};
         _.merge(error._data, response.response.body);
       } else {
@@ -125,8 +140,7 @@ export class ResponseError extends BentleyError {
     error.name = response.code || response.name || error.name;
     error.message = error.message || response.message || response.statusMessage;
 
-    if (log)
-      error.log();
+    if (log) error.log();
 
     return error;
   }
@@ -139,11 +153,16 @@ export class ResponseError extends BentleyError {
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (error !== undefined && error !== null) {
-      if ((error.status === undefined || error.status === null) && (error.res === undefined || error.res === null)) {
+      if (
+        (error.status === undefined || error.status === null) &&
+        (error.res === undefined || error.res === null)
+      ) {
         return true;
       }
     }
-    return (response !== undefined && response.statusType === HttpStatus.ServerError);
+    return (
+      response !== undefined && response.statusType === HttpStatus.ServerError
+    );
   }
 
   /**
@@ -178,18 +197,27 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), () =>
+      this.getMetaData()
+    );
   }
 }
 
-const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
-  const elapsed = new Date().getTime() - startTime;
-  const elapsedTime = `${elapsed}ms`;
-  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
-};
+const logResponse =
+  (req: sarequest.SuperAgentRequest, startTime: number) =>
+  (res: sarequest.Response) => {
+    const elapsed = new Date().getTime() - startTime;
+    const elapsedTime = `${elapsed}ms`;
+    Logger.logTrace(
+      loggerCategory,
+      `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`
+    );
+  };
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
-const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentRequest => {
+const logRequest = (
+  req: sarequest.SuperAgentRequest
+): sarequest.SuperAgentRequest => {
   const startTime = new Date().getTime();
   return req.on("response", logResponse(req, startTime));
 };
@@ -204,7 +232,10 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
  * @internal
  */
-export async function request(url: string, options: RequestOptions): Promise<Response> {
+export async function request(
+  url: string,
+  options: RequestOptions
+): Promise<Response> {
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, url);
   if (options.retries)
     sareq = sareq.retry(options.retries, options.retryCallback);
@@ -212,37 +243,27 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
     sareq = sareq.use(logRequest);
 
-  if (options.headers)
-    sareq = sareq.set(options.headers);
+  if (options.headers) sareq = sareq.set(options.headers);
 
   Logger.logInfo(loggerCategory, url);
 
-  if (options.accept)
-    sareq = sareq.accept(options.accept);
+  if (options.accept) sareq = sareq.accept(options.accept);
 
-  if (options.body)
-    sareq = sareq.send(options.body);
+  if (options.body) sareq = sareq.send(options.body);
 
-  if (options.timeout)
-    sareq = sareq.timeout(options.timeout);
+  if (options.timeout) sareq = sareq.timeout(options.timeout);
 
-  if (options.responseType)
-    sareq = sareq.responseType(options.responseType);
+  if (options.responseType) sareq = sareq.responseType(options.responseType);
 
-  if (options.redirects)
-    sareq = sareq.redirects(options.redirects);
-  else
-    sareq = sareq.redirects(0);
+  if (options.redirects) sareq = sareq.redirects(options.redirects);
+  else sareq = sareq.redirects(0);
 
-  if (options.buffer)
-    sareq = sareq.buffer(options.buffer);
+  if (options.buffer) sareq = sareq.buffer(options.buffer);
 
-  if (options.parser)
-    sareq = sareq.parse(options.parser);
+  if (options.parser) sareq = sareq.parse(options.parser);
 
   /** Default to any globally supplied proxy, unless an agent is specified in this call */
-  if (options.agent)
-    sareq = sareq.agent(options.agent);
+  if (options.agent) sareq = sareq.agent(options.agent);
 
   if (options.progressCallback) {
     sareq = sareq.on("progress", (event: sarequest.ProgressEvent) => {
@@ -256,7 +277,9 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     });
   }
 
-  const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
+  const errorCallback = options.errorCallback
+    ? options.errorCallback
+    : ResponseError.parse;
 
   if (options.readStream) {
     if (typeof window !== "undefined")
@@ -264,8 +287,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
     return new Promise<Response>((resolve, reject) => {
       sareq = sareq.type("blob");
-      options
-        .readStream
+      options.readStream
         .pipe(sareq)
         .on("error", (error: any) => {
           const parsedError = errorCallback(error);
@@ -316,12 +338,12 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   // console.log("%s %s %s", url, options.method, queryStr);
 
   /**
-  * Note:
-  * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
-  * Fetch only rejects if there's some network issue (permissions issue or similar)
-  * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
-  * superagent, but may eventually switch to JavaScript's fetch library.
-  */
+   * Note:
+   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
+   * Fetch only rejects if there's some network issue (permissions issue or similar)
+   * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
+   * superagent, but may eventually switch to JavaScript's fetch library.
+   */
   try {
     const response = await sareq;
     const retResponse: Response = {

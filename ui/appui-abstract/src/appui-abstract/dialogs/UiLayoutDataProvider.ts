@@ -7,11 +7,24 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
-import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
+import {
+  PropertyEditorParams,
+  PropertyEditorParamTypes,
+  SuppressLabelEditorParams,
+} from "../properties/EditorParams";
 import { PropertyRecord } from "../properties/Record";
 import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
-import { BaseDialogItem, DialogItem, DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
-import { PropertyChangeResult, PropertyChangeStatus, UiDataProvider } from "./UiDataProvider";
+import {
+  BaseDialogItem,
+  DialogItem,
+  DialogPropertyItem,
+  DialogPropertySyncItem,
+} from "./DialogItem";
+import {
+  PropertyChangeResult,
+  PropertyChangeStatus,
+  UiDataProvider,
+} from "./UiDataProvider";
 
 /** Enum for button types. Determines button label, and default button style.
  * @public
@@ -25,7 +38,7 @@ export enum DialogButtonType {
   No = "no",
   Retry = "retry",
   Next = "next",
-  Previous = "previous"
+  Previous = "previous",
 }
 
 /** Enum for button style.
@@ -71,7 +84,9 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   private _items: ReadonlyArray<DialogItem> | undefined;
 
   /** Applies changes from one or more properties - some dialogs will use this to send a bulk set of changes back to the provider */
-  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public override processChangesInUi(
+    properties: DialogPropertyItem[]
+  ): PropertyChangeResult {
     // Default implementation is to just pass each property to applyUiPropertyChange
     properties.forEach((property) => this.applyUiPropertyChange(property));
     return { status: PropertyChangeStatus.Success };
@@ -79,8 +94,12 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
 
   /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
   // istanbul ignore next
-  public applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
-    throw (new Error("Derived UiDataProvider should implement this to apply change to a single property."));
+  public applyUiPropertyChange = (
+    _updatedValue: DialogPropertySyncItem
+  ): void => {
+    throw new Error(
+      "Derived UiDataProvider should implement this to apply change to a single property."
+    );
   };
 
   private _rows: DialogRow[] | undefined;
@@ -101,7 +120,9 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   // istanbul ignore next
   public supplyDialogItems(): DialogItem[] | undefined {
-    throw (new Error("Derived UiDataProvider must implement this method to supply set of properties."));
+    throw new Error(
+      "Derived UiDataProvider must implement this method to supply set of properties."
+    );
   }
 
   public get items(): ReadonlyArray<DialogItem> {
@@ -115,8 +136,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   public reloadDialogItems(emitEvent = true) {
     this.loadItemsInternal(this.supplyDialogItems());
     // istanbul ignore else
-    if (emitEvent)
-      this.fireItemsReloadedEvent();
+    if (emitEvent) this.fireItemsReloadedEvent();
   }
 
   /**
@@ -126,7 +146,9 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     const rows: DialogRow[] = [];
 
     this.items.forEach((item) => {
-      const row = rows.find((value) => value.priority === item.editorPosition.rowPriority);
+      const row = rows.find(
+        (value) => value.priority === item.editorPosition.rowPriority
+      );
       if (row) {
         row.items.push(item);
       } else {
@@ -137,17 +159,24 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     // sort rows
     rows.sort((a: DialogRow, b: DialogRow) => a.priority - b.priority);
     // sort records
-    rows.forEach((row: DialogRow) => row.items.sort((a: DialogItem, b: DialogItem) => a.editorPosition.columnIndex - b.editorPosition.columnIndex));
+    rows.forEach((row: DialogRow) =>
+      row.items.sort(
+        (a: DialogItem, b: DialogItem) =>
+          a.editorPosition.columnIndex - b.editorPosition.columnIndex
+      )
+    );
     return rows;
   }
 
   /** Determines if a dialog item editor wants a label */
   public static editorWantsLabel(item: DialogItem): boolean {
     if (item.property.editor && item.property.editor.params) {
-      const params = item.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
+      const params = item.property.editor.params.find(
+        (param: PropertyEditorParams) =>
+          param.type === PropertyEditorParamTypes.SuppressEditorLabel
+      ) as SuppressLabelEditorParams;
       // istanbul ignore else
-      if (params)
-        return false;
+      if (params) return false;
     }
     return true;
   }
@@ -165,16 +194,24 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
       return !!baseDialogItem.isDisabled;
     const value = dialogItem.lockProperty.value;
     // istanbul ignore next
-    if (value === undefined)
-      return !!baseDialogItem.isDisabled;
+    if (value === undefined) return !!baseDialogItem.isDisabled;
 
     return !value.value;
   }
 
   /** Gets a property record for a given dialog item */
-  public static getPropertyRecord = (dialogItem: BaseDialogItem): PropertyRecord => {
-    const propertyValue = { valueFormat: PropertyValueFormat.Primitive, value: dialogItem.value.value, displayValue: dialogItem.value.displayValue };
-    const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
+  public static getPropertyRecord = (
+    dialogItem: BaseDialogItem
+  ): PropertyRecord => {
+    const propertyValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: dialogItem.value.value,
+      displayValue: dialogItem.value.displayValue,
+    };
+    const record = new PropertyRecord(
+      propertyValue as PrimitiveValue,
+      dialogItem.property
+    );
     record.isDisabled = UiLayoutDataProvider.getItemDisabledState(dialogItem);
     return record;
   };
@@ -183,7 +220,12 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   public static onlyContainButtonGroupEditors(row: DialogRow): boolean {
     for (const item of row.items) {
       // istanbul ignore else
-      if (UiLayoutDataProvider.hasAssociatedLockProperty(item) || undefined === item.property.editor || "enum-buttongroup" !== item.property.editor.name || UiLayoutDataProvider.editorWantsLabel(item))
+      if (
+        UiLayoutDataProvider.hasAssociatedLockProperty(item) ||
+        undefined === item.property.editor ||
+        "enum-buttongroup" !== item.property.editor.name ||
+        UiLayoutDataProvider.editorWantsLabel(item)
+      )
         return false;
     }
     return true;
@@ -206,9 +248,9 @@ export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
     // Derived class should override
     const buttons: DialogButtonDef[] = [];
     // istanbul ignore next
-    buttons.push({ type: DialogButtonType.OK, onClick: () => { } });
+    buttons.push({ type: DialogButtonType.OK, onClick: () => {} });
     // istanbul ignore next
-    buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
+    buttons.push({ type: DialogButtonType.Cancel, onClick: () => {} });
     return buttons;
   }
 }

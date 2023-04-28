@@ -9,9 +9,11 @@
   --left-margin: 150px;
   --section-heading-size: 36px;
   --header-nav-height: 54px;
-  --itwin-gradient: linear-gradient(90deg,
-      #32b1d1 4.349046015712743%,
-      #30f1cf 92.31200897867573%);
+  --itwin-gradient: linear-gradient(
+    90deg,
+    #32b1d1 4.349046015712743%,
+    #30f1cf 92.31200897867573%
+  );
   --itwin-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.2);
   --section-vertical-padding: 20px;
 
@@ -34,7 +36,6 @@ a.iui-button:hover,
 a.iui-button:active {
   text-decoration: none;
 }
-
 
 p,
 span,
@@ -90,7 +91,6 @@ h1.gradient-text {
   width: 100%;
 }
 
-
 /* body/main formatting */
 
 body.iui-root {
@@ -108,7 +108,7 @@ main {
   flex-direction: column;
 }
 
-main>section {
+main > section {
   width: 100%;
   margin: 0 auto;
   padding: 45px 0 90px 0;
@@ -165,7 +165,6 @@ main>section {
   right: 0;
   padding: 10px;
   font-size: 11px;
-
 }
 
 #main-banner h1 {
@@ -217,8 +216,6 @@ main>section {
   gap: 8px;
 }
 
-
-
 #main-banner .iui-button.orange {
   background-color: var(--orange);
   margin-right: 16px;
@@ -256,7 +253,7 @@ main>section {
   margin-top: 20px;
 }
 
-.introduction>p {
+.introduction > p {
   width: 600px;
 }
 
@@ -378,7 +375,7 @@ ul.joined-blocklist li img {
 
 .next-steps-new img {
   height: 35px;
-  opacity: .8;
+  opacity: 0.8;
 }
 
 .next-steps-new h2 {
@@ -456,7 +453,6 @@ li.next-step p {
 section#getInspired {
   padding-top: 60px;
   background-color: #fbfbfb;
-
 }
 
 section#getInspired ul {
@@ -556,7 +552,6 @@ section#community .get-involved-list {
   flex-wrap: nowrap;
   display: flex;
   flex-direction: row;
-
 }
 
 section#community .get-involved-list li {
@@ -567,7 +562,6 @@ section#community .involved-content {
   display: flex;
   flex-direction: column;
 }
-
 
 section#community ul li {
   position: relative;
@@ -585,7 +579,6 @@ section#community ul li img {
 section#community ul li h2 {
   font-size: 16px;
   font-weight: 700;
-
 }
 
 section#community ul li p {
@@ -610,7 +603,6 @@ section#community ul li a {
   -ms-flex-pack: start;
   justify-content: flex-start;
   align-items: flex-start;
-
 }
 
 .get-involved-content {
@@ -769,7 +761,6 @@ section#what-is-itwin .feature-list p {
     flex-direction: row;
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
-
   }
 
   ul.joined-blocklist li.block-filled-gradient {
@@ -901,7 +892,7 @@ section#what-is-itwin .feature-list p {
     width: 100%;
   }
 
-  main>section {
+  main > section {
     padding: var(--section-vertical-space-top) 0 5px 0;
   }
 
@@ -927,7 +918,7 @@ section#what-is-itwin .feature-list p {
     margin-bottom: 20px;
   }
 
-  .introduction>p {
+  .introduction > p {
     width: 100%;
   }
 
@@ -938,7 +929,6 @@ section#what-is-itwin .feature-list p {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
   }
-
 
   ul.joined-blocklist li a {
     padding: 30px 10px;
@@ -963,7 +953,6 @@ section#what-is-itwin .feature-list p {
     margin-bottom: 30px;
     flex-direction: column;
   }
-
 
   li.next-step:last-of-type:after {
     display: none;
@@ -1010,7 +999,7 @@ section#what-is-itwin .feature-list p {
 
   section#what-is-itwin {
     margin-top: var(--section-vertical-space-top);
-    margin-bottom: var(--section-vertical-space-bottom)
+    margin-bottom: var(--section-vertical-space-bottom);
   }
 
   section#what-is-itwin h1 {
@@ -1050,7 +1039,6 @@ section#what-is-itwin .feature-list p {
     width: 100%;
     height: auto;
   }
-
 }
 
 #return-to-top,
@@ -1058,18 +1046,23 @@ section#what-is-itwin .feature-list p {
   display: none;
 }
 
-
 .example {
   display: -ms-grid;
   display: grid;
-  -webkit-transition: all .5s;
-  -o-transition: all .5s;
-  transition: all .5s;
+  -webkit-transition: all 0.5s;
+  -o-transition: all 0.5s;
+  transition: all 0.5s;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  background: -webkit-gradient(linear, left top, left bottom, from(var(--white)), to(black));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(var(--white)),
+    to(black)
+  );
   background: -o-linear-gradient(top, var(--white), black);
   background: linear-gradient(to bottom, var(--white), black);
 }

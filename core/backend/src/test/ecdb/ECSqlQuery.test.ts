@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import {
+  QueryBinder,
+  QueryOptionsBuilder,
+  QueryRowFormat,
+} from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -12,9 +16,18 @@ import { ConcurrentQuery } from "../../ConcurrentQuery";
 
 // cspell:ignore mirukuru ibim
 
-async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
+async function executeQuery(
+  iModel: IModelDb,
+  ecsql: string,
+  bindings?: any[] | object,
+  abbreviateBlobs?: boolean
+): Promise<any[]> {
   const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+  for await (const queryRow of iModel.createQueryReader(
+    ecsql,
+    QueryBinder.from(bindings),
+    { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs }
+  )) {
     rows.push(queryRow.toRow());
   }
   return rows;
@@ -29,10 +42,18 @@ describe("ECSql Query", () => {
 
   before(async () => {
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
-    imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel2 = SnapshotDb.openFile(
+      IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim")
+    );
+    imodel3 = SnapshotDb.openFile(
+      IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim")
+    );
+    imodel4 = SnapshotDb.openFile(
+      IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim")
+    );
+    imodel5 = SnapshotDb.openFile(
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
+    );
   });
 
   after(async () => {
@@ -45,7 +66,10 @@ describe("ECSql Query", () => {
 
   // new new addon build
   it("ecsql with blob", async () => {
-    let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    let rows = await executeQuery(
+      imodel1,
+      "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1"
+    );
     assert.equal(rows.length, 1);
     const row: any = rows[0];
 
@@ -55,10 +79,19 @@ describe("ECSql Query", () => {
     const geomStream: Uint8Array = row.geometryStream;
     assert.isAtLeast(geomStream.byteLength, 1);
 
-    rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    rows = await executeQuery(
+      imodel1,
+      "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?",
+      [geomStream]
+    );
     assert.equal(rows.length, 1);
 
-    rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1", undefined, true);
+    rows = await executeQuery(
+      imodel1,
+      "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1",
+      undefined,
+      true
+    );
     assert.equal(rows.length, 1);
     assert.isTrue(Id64.isValidId64(rows[0].id));
     assert.isDefined(rows[0].geometryStream);
@@ -67,26 +100,68 @@ describe("ECSql Query", () => {
     const ecdb = imodel1;
     // expect log message when statement fails
     let slm = new SequentialLogMatcher();
-    slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+    slm
+      .append()
+      .error()
+      .category("BeSQLite")
+      .message(
+        'Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def'
+      );
+    assert.throw(
+      () => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}),
+      "no such table: def (BE_SQLITE_ERROR)"
+    );
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
-    slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
+    slm
+      .append()
+      .error()
+      .category("BeSQLite")
+      .message(
+        'Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def'
+      );
+    assert.throw(
+      () =>
+        ecdb.withSqliteStatement(
+          "SELECT abc FROM def",
+          () => {},
+          /* logErrors = */ false
+        ),
+      "no such table: def (BE_SQLITE_ERROR)"
+    );
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
 
     // expect log message when statement fails
     slm = new SequentialLogMatcher();
-    slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+    slm
+      .append()
+      .error()
+      .category("ECDb")
+      .message("ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(
+      () => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}),
+      "ECClass 'abc.def' does not exist or could not be loaded."
+    );
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
-    slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
+    slm
+      .append()
+      .error()
+      .category("ECDb")
+      .message("ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(
+      () =>
+        ecdb.withPreparedStatement(
+          "SELECT abc FROM abc.def",
+          () => {},
+          /* logErrors = */ false
+        ),
+      ""
+    );
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });
   it("restart query", async () => {
@@ -95,7 +170,10 @@ describe("ECSql Query", () => {
     let rowCount = 0;
     try {
       ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+      ConcurrentQuery.resetConfig(imodel1.nativeDb, {
+        globalQuota: { time: 1 },
+        ignoreDelay: false,
+      });
 
       const scheduleQuery = async (delay: number) => {
         return new Promise<void>(async (resolve, reject) => {
@@ -103,7 +181,11 @@ describe("ECSql Query", () => {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
             options.setRestartToken("tag");
-            const reader = imodel1.createQueryReader("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions());
+            const reader = imodel1.createQueryReader(
+              "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element",
+              undefined,
+              options.getOptions()
+            );
             while (await reader.step()) {
               rowCount++;
             }
@@ -136,7 +218,11 @@ describe("ECSql Query", () => {
     }
   });
   it("concurrent query use primary connection", async () => {
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
+    const reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element",
+      undefined,
+      { usePrimaryConn: true }
+    );
     let props = await reader.getMetaData();
     assert.equal(props.length, 11);
     let rows = 0;
@@ -153,10 +239,15 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+    for await (const row of imodel1.createQueryReader(
+      "SELECT ECInstanceId FROM BisCore.Element LIMIT 23"
+    )) {
       ids.push(row[0]);
     }
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
+    const reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)",
+      QueryBinder.from([ids])
+    );
     let props = await reader.getMetaData();
     assert.equal(props.length, 11);
     let rows = 0;
@@ -186,13 +277,21 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendMemUsed > 1000);
   });
   it("concurrent query quota", async () => {
-    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
+    let reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element",
+      undefined,
+      { limit: { count: 4 } }
+    );
     let rows = 0;
     while (await reader.step()) {
       rows++;
     }
     assert.equal(rows, 4);
-    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
+    reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element",
+      undefined,
+      { limit: { offset: 4, count: 4 } }
+    );
     rows = 0;
     while (await reader.step()) {
       rows++;
@@ -203,7 +302,7 @@ describe("ECSql Query", () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
       const nPages = Math.ceil(nRowPerPage);
-      const nRowOnLastPage = nRowCount - (Math.floor(nRowPerPage) * pageSize);
+      const nRowOnLastPage = nRowCount - Math.floor(nRowPerPage) * pageSize;
       const pages = new Array(nPages).fill(pageSize);
       if (nRowPerPage) {
         pages[nPages - 1] = nRowOnLastPage;
@@ -212,11 +311,14 @@ describe("ECSql Query", () => {
     };
 
     const pageSize = 5;
-    const query = "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
+    const query =
+      "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      for await (const row of db.createQueryReader(`SELECT count(*) FROM (${query})`)) {
+      for await (const row of db.createQueryReader(
+        `SELECT count(*) FROM (${query})`
+      )) {
         pendingRowCount.push(row[0] as number);
       }
     }
@@ -232,7 +334,12 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: pageSize, offset: k * pageSize } }).toArray();
+        const rs = await db
+          .createQueryReader(query, undefined, {
+            rowFormat: QueryRowFormat.UseJsPropertyNames,
+            limit: { count: pageSize, offset: k * pageSize },
+          })
+          .toArray();
         assert.equal(rs.length, rowPerPage[k]);
       }
     }
@@ -240,7 +347,9 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of db.createQueryReader(query, undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })) {
         const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));

@@ -4,7 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64Arg } from "@itwin/core-bentley";
-import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@itwin/frontend-devtools";
+import {
+  createButton,
+  createTextBox,
+  deserializeViewState,
+  serializeViewState,
+} from "@itwin/frontend-devtools";
 import { IModelConnection, Viewport, ViewState } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Provider } from "./FeatureOverrides";
@@ -31,7 +36,11 @@ export class SavedViewPicker extends ToolBarDropDown {
       this._onSelectedViewChanged();
   }
 
-  public constructor(vp: Viewport, parent: HTMLElement, viewer: ApplySavedView) {
+  public constructor(
+    vp: Viewport,
+    parent: HTMLElement,
+    viewer: ApplySavedView
+  ) {
     super();
 
     this._vp = vp;
@@ -47,9 +56,15 @@ export class SavedViewPicker extends ToolBarDropDown {
     parent.appendChild(this._element);
   }
 
-  public get isOpen() { return "none" !== this._element.style.display; }
-  protected _open() { this._element.style.display = "block"; }
-  protected _close() { this._element.style.display = "none"; }
+  public get isOpen() {
+    return "none" !== this._element.style.display;
+  }
+  protected _open() {
+    this._element.style.display = "block";
+  }
+  protected _close() {
+    this._element.style.display = "none";
+  }
 
   public override get onViewChanged(): Promise<void> | undefined {
     if (this._imodel !== this._vp.iModel) {
@@ -64,11 +79,12 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
-    if (!this._imodel.isOpen)
-      return;
+    if (!this._imodel.isOpen) return;
 
     const filename = this._imodel.key;
-    const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(filename);
+    const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(
+      filename
+    );
     this._views.loadFromString(esvString);
     this.populateFromViewList();
   }
@@ -86,8 +102,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       tooltip: "Name of new saved view to create",
       keypresshandler: async (_tb, ev): Promise<void> => {
         ev.stopPropagation();
-        if ("Enter" === ev.key)
-          await this.saveView();
+        if ("Enter" === ev.key) await this.saveView();
       },
     });
 
@@ -101,14 +116,17 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     const viewsList = document.createElement("select");
     // If only 1 entry in list, input becomes a combo box and can't select the view...
-    viewsList.size = 1 === this._views.length ? 2 : Math.min(15, this._views.length);
+    viewsList.size =
+      1 === this._views.length ? 2 : Math.min(15, this._views.length);
     viewsList.style.width = "100%";
     viewsList.style.display = 0 < this._views.length ? "" : "none";
     viewsDiv.appendChild(viewsList);
-    viewsDiv.onchange = () => this.selectedView = viewsList.value ? this.findView(viewsList.value) : undefined;
+    viewsDiv.onchange = () =>
+      (this.selectedView = viewsList.value
+        ? this.findView(viewsList.value)
+        : undefined);
     viewsList.addEventListener("keyup", async (ev) => {
-      if (ev.key === "Delete")
-        await this.deleteView();
+      if (ev.key === "Delete") await this.deleteView();
     });
 
     for (const view of this._views) {
@@ -161,7 +179,10 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     this._onSelectedViewChanged = () => {
       const disabled = undefined === this._selectedView;
-      recallButton.disabled = updateButton.disabled = deleteButton.disabled = disabled;
+      recallButton.disabled =
+        updateButton.disabled =
+        deleteButton.disabled =
+          disabled;
     };
 
     textBox.div.style.marginLeft = textBox.div.style.marginRight = "3px";
@@ -173,12 +194,15 @@ export class SavedViewPicker extends ToolBarDropDown {
       textBox.textbox.style.color = viewExists ? "red" : "";
     };
 
-    newButton.disabled = recallButton.disabled = updateButton.disabled = deleteButton.disabled = true;
+    newButton.disabled =
+      recallButton.disabled =
+      updateButton.disabled =
+      deleteButton.disabled =
+        true;
   }
 
   private async recallView(): Promise<void> {
-    if (undefined === this._selectedView)
-      return;
+    if (undefined === this._selectedView) return;
 
     const vsp = JSON.parse(this._selectedView.viewStatePropsString);
     const viewState = await deserializeViewState(vsp, this._vp.iModel);
@@ -219,8 +243,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   private async saveViewWithName(newName: string): Promise<void> {
-    if (0 === newName.length || undefined !== this.findView(newName))
-      return;
+    if (0 === newName.length || undefined !== this.findView(newName)) return;
 
     const props = serializeViewState(this._vp.view);
     const json = JSON.stringify(props);
@@ -237,7 +260,12 @@ export class SavedViewPicker extends ToolBarDropDown {
       const overrideElements = provider.toJSON();
       overrideElementsString = JSON.stringify(overrideElements);
     }
-    const nvsp = new NamedViewStatePropsString(newName, json, selectedElementsString, overrideElementsString);
+    const nvsp = new NamedViewStatePropsString(
+      newName,
+      json,
+      selectedElementsString,
+      overrideElementsString
+    );
     this._views.insert(nvsp);
     this.populateFromViewList();
 
@@ -254,11 +282,13 @@ export class SavedViewPicker extends ToolBarDropDown {
 
   private async saveNamedViews(): Promise<void> {
     const filename = this._vp.view.iModel.key;
-    if (undefined === filename)
-      return;
+    if (undefined === filename) return;
 
     const namedViews = this._views.getPrintString();
-    await DtaRpcInterface.getClient().writeExternalSavedViews(filename, namedViews);
+    await DtaRpcInterface.getClient().writeExternalSavedViews(
+      filename,
+      namedViews
+    );
   }
 
   private findView(name: string): NamedViewStatePropsString | undefined {

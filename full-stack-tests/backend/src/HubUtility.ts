@@ -4,18 +4,41 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { IModelHost, IModelJsFs, V1CheckpointManager } from "@itwin/core-backend";
-import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
-import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import {
+  Project as ITwin,
+  ProjectsAccessClient,
+  ProjectsSearchableProperty,
+} from "@itwin/projects-client";
+import {
+  IModelHost,
+  IModelJsFs,
+  V1CheckpointManager,
+} from "@itwin/core-backend";
+import {
+  AccessToken,
+  ChangeSetStatus,
+  GuidString,
+  Logger,
+  OpenMode,
+  PerfLogger,
+} from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue,
+  ChangesetFileProps,
+  ChangesetProps,
+} from "@itwin/core-common";
+import {
+  TestUserCredentials,
+  TestUsers,
+  TestUtility,
+} from "@itwin/oidc-signin-tool";
 
 /** the types of users available for tests */
 export enum TestUserType {
   Regular,
   Manager,
   Super,
-  SuperManager
+  SuperManager,
 }
 
 /** Utility to work with test iModels in the iModelHub */
@@ -56,20 +79,28 @@ export class HubUtility {
 
   public static iTwinId: GuidString | undefined;
   /** Returns the iTwinId if an iTwin with the name exists. Otherwise, returns undefined. */
-  public static async getTestITwinId(accessToken: AccessToken): Promise<GuidString> {
-    if (undefined !== HubUtility.iTwinId)
-      return HubUtility.iTwinId;
+  public static async getTestITwinId(
+    accessToken: AccessToken
+  ): Promise<GuidString> {
+    if (undefined !== HubUtility.iTwinId) return HubUtility.iTwinId;
     return HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
   }
 
   private static imodelCache = new Map<string, GuidString>();
   /** Returns the iModelId if the iModel exists. Otherwise, returns undefined. */
-  public static async getTestIModelId(accessToken: AccessToken, name: string): Promise<GuidString> {
+  public static async getTestIModelId(
+    accessToken: AccessToken,
+    name: string
+  ): Promise<GuidString> {
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
     const iTwinId = await HubUtility.getTestITwinId(accessToken);
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName: name });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({
+      accessToken,
+      iTwinId,
+      iModelName: name,
+    });
     if (undefined === iModelId)
       throw new Error(`Cannot find iModel with ${name} in ${iTwinId}`);
     HubUtility.imodelCache.set(name, iModelId);
@@ -82,9 +113,11 @@ export class HubUtility {
    * @param name Name of iTwin
    * @throws If the iTwin is not found, or there is more than one iTwin with the supplied name
    */
-  public static async getITwinIdByName(accessToken: AccessToken, name: string): Promise<string> {
-    if (undefined !== HubUtility.iTwinId)
-      return HubUtility.iTwinId;
+  public static async getITwinIdByName(
+    accessToken: AccessToken,
+    name: string
+  ): Promise<string> {
+    if (undefined !== HubUtility.iTwinId) return HubUtility.iTwinId;
 
     const iTwin = await getITwinAbstraction().getITwinByName(accessToken, name);
     if (iTwin === undefined || !iTwin.id)
@@ -94,27 +127,38 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangesets(accessToken: AccessToken, changesetsPath: string, iModelId: GuidString): Promise<ChangesetProps[]> {
+  private static async downloadChangesets(
+    accessToken: AccessToken,
+    changesetsPath: string,
+    iModelId: GuidString
+  ): Promise<ChangesetProps[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changesets: ChangesetProps[] = await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
-    if (changesets.length === 0)
-      return changesets;
+    const changesets: ChangesetProps[] =
+      await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
+    if (changesets.length === 0) return changesets;
     const latestIndex = changesets.length;
     let earliestIndex = 0; // Earliest index that doesn't exist
     while (earliestIndex <= latestIndex) {
       const pathname = path.join(changesetsPath, changesets[earliestIndex].id);
-      if (!IModelJsFs.existsSync(pathname))
-        break;
+      if (!IModelJsFs.existsSync(pathname)) break;
       ++earliestIndex;
     }
-    if (earliestIndex > latestIndex) // All change sets have already been downloaded
+    if (earliestIndex > latestIndex)
+      // All change sets have already been downloaded
       return changesets;
 
     const earliestChangesetIndex = earliestIndex > 0 ? earliestIndex - 1 : 0; // Query results exclude earliest specified changeset
     const latestChangesetIndex = latestIndex; // Query results include latest specified change set
 
-    const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download Changesets");
-    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangesetIndex, end: latestChangesetIndex }, targetDir: changesetsPath });
+    const perfLogger = new PerfLogger(
+      "HubUtility.downloadChangesets -> Download Changesets"
+    );
+    await IModelHost.hubAccess.downloadChangesets({
+      accessToken,
+      iModelId,
+      range: { first: earliestChangesetIndex, end: latestChangesetIndex },
+      targetDir: changesetsPath,
+    });
     perfLogger.dispose();
     return changesets;
   }
@@ -122,7 +166,13 @@ export class HubUtility {
   /** Download an iModel's seed file and changesets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelById(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelById(
+    accessToken: AccessToken,
+    iTwinId: string,
+    iModelId: GuidString,
+    downloadDir: string,
+    reDownload: boolean
+  ): Promise<void> {
     // Recreate the download folder if necessary
     if (reDownload) {
       if (IModelJsFs.existsSync(downloadDir))
@@ -131,9 +181,15 @@ export class HubUtility {
     }
 
     // Download the seed file
-    const seedPathname = path.join(downloadDir, "seed", iModelId.concat(".bim"));
+    const seedPathname = path.join(
+      downloadDir,
+      "seed",
+      iModelId.concat(".bim")
+    );
     if (!IModelJsFs.existsSync(seedPathname)) {
-      const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
+      const perfLogger = new PerfLogger(
+        "HubUtility.downloadIModelById -> Download Seed File"
+      );
       await V1CheckpointManager.downloadCheckpoint({
         localFile: seedPathname,
         checkpoint: {
@@ -151,7 +207,11 @@ export class HubUtility {
 
     // Download the change sets
     const changesetDir = path.join(downloadDir, "changesets");
-    const changesets = await HubUtility.downloadChangesets(accessToken, changesetDir, iModelId);
+    const changesets = await HubUtility.downloadChangesets(
+      accessToken,
+      changesetDir,
+      iModelId
+    );
 
     const changesetsJsonStr = JSON.stringify(changesets, undefined, 4);
     const changesetsJsonPathname = path.join(downloadDir, "changesets.json");
@@ -161,23 +221,45 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelByName(accessToken: AccessToken, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelByName(
+    accessToken: AccessToken,
+    iTwinName: string,
+    iModelName: string,
+    downloadDir: string,
+    reDownload: boolean
+  ): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
 
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
-    if (!iModelId)
-      throw new Error(`IModel ${iModelName} not found`);
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({
+      accessToken,
+      iTwinId,
+      iModelName,
+    });
+    if (!iModelId) throw new Error(`IModel ${iModelName} not found`);
 
-    await HubUtility.downloadIModelById(accessToken, iTwinId, iModelId, downloadDir, reDownload);
+    await HubUtility.downloadIModelById(
+      accessToken,
+      iTwinId,
+      iModelId,
+      downloadDir,
+      reDownload
+    );
   }
 
   /** Delete an IModel from the hub */
-  public static async deleteIModel(accessToken: AccessToken, iTwinName: string, iModelName: string): Promise<void> {
+  public static async deleteIModel(
+    accessToken: AccessToken,
+    iTwinName: string,
+    iModelName: string
+  ): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({
+      accessToken,
+      iTwinId,
+      iModelName,
+    });
 
-    if (!iModelId)
-      return;
+    if (!iModelId) return;
     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
   }
 
@@ -191,17 +273,27 @@ export class HubUtility {
    * with the seed files, change sets, etc. in a standard format.
    * Returns time taken for each changeset. Returns on first apply changeset error.
    */
-  public static getApplyChangeSetTime(iModelDir: string, startCS: number = 0, endCS: number = 0): any[] {
+  public static getApplyChangeSetTime(
+    iModelDir: string,
+    startCS: number = 0,
+    endCS: number = 0
+  ): any[] {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
+    HubUtility.copyIModelFromSeed(
+      briefcasePathname,
+      iModelDir,
+      true /* =overwrite */
+    );
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const changesets = HubUtility.readChangesets(iModelDir);
     const endNum: number = endCS ? endCS : changesets.length;
-    const filteredCS = changesets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
+    const filteredCS = changesets.filter(
+      (obj) => obj.index >= startCS && obj.index <= endNum
+    );
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     const perfLogger = new PerfLogger(`Applying change sets }`);
@@ -236,7 +328,9 @@ export class HubUtility {
     const seedFileDir = path.join(iModelDir, "seed");
     const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
     if (seedFileNames.length !== 1) {
-      throw new Error(`Expected to find one and only one seed file in: ${seedFileDir}`);
+      throw new Error(
+        `Expected to find one and only one seed file in: ${seedFileDir}`
+      );
     }
     const seedFileName = seedFileNames[0];
     const seedPathname = path.join(seedFileDir, seedFileName);
@@ -248,8 +342,7 @@ export class HubUtility {
     const props: ChangesetFileProps[] = [];
 
     const changeSetJsonPathname = path.join(iModelDir, "changesets.json");
-    if (!IModelJsFs.existsSync(changeSetJsonPathname))
-      return props;
+    if (!IModelJsFs.existsSync(changeSetJsonPathname)) return props;
 
     const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
     const changesets = JSON.parse(jsonStr);
@@ -265,7 +358,11 @@ export class HubUtility {
   }
 
   /** Creates a standalone iModel from the seed file (version 0) */
-  public static copyIModelFromSeed(iModelPathname: string, iModelDir: string, overwrite: boolean) {
+  public static copyIModelFromSeed(
+    iModelPathname: string,
+    iModelDir: string,
+    overwrite: boolean
+  ) {
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
 
     if (!IModelJsFs.existsSync(iModelPathname)) {
@@ -286,13 +383,14 @@ export class HubUtility {
 
     return iModelPathname;
   }
-
 }
 
 /** An implementation of TestITwin backed by an iTwin */
 class TestITwin {
-  public get isIModelHub(): boolean { return true; }
-  public terminate(): void { }
+  public get isIModelHub(): boolean {
+    return true;
+  }
+  public terminate(): void {}
 
   private static _iTwinAccessClient?: ProjectsAccessClient;
 
@@ -302,7 +400,10 @@ class TestITwin {
     return this._iTwinAccessClient;
   }
 
-  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+  public async getITwinByName(
+    accessToken: AccessToken,
+    name: string
+  ): Promise<ITwin> {
     const client = TestITwin.iTwinClient;
     const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
@@ -323,8 +424,7 @@ class TestITwin {
 
 let iTwinAbstraction: TestITwin;
 export function getITwinAbstraction(): TestITwin {
-  if (iTwinAbstraction !== undefined)
-    return iTwinAbstraction;
+  if (iTwinAbstraction !== undefined) return iTwinAbstraction;
 
-  return iTwinAbstraction = new TestITwin();
+  return (iTwinAbstraction = new TestITwin());
 }

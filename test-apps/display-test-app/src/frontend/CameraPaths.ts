@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { Camera } from "@itwin/core-common";
 import { IModelConnection, Viewport } from "@itwin/core-frontend";
-import { Angle, AngleProps, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
+import {
+  Angle,
+  AngleProps,
+  Point3d,
+  Vector3d,
+  XYZProps,
+} from "@itwin/core-geometry";
 import { createButton, createTextBox } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToolBarDropDown } from "./ToolBar";
@@ -37,7 +43,14 @@ class Keyframe {
   /// View extent, undefined for perspective camera
   public extents: Vector3d | undefined;
 
-  constructor(time: number, location: Point3d, target: Point3d, up: Vector3d, lensAngle: Angle | undefined, extents: Vector3d | undefined) {
+  constructor(
+    time: number,
+    location: Point3d,
+    target: Point3d,
+    up: Vector3d,
+    lensAngle: Angle | undefined,
+    extents: Vector3d | undefined
+  ) {
     this.time = time;
     this.location = location;
     this.target = target;
@@ -58,7 +71,14 @@ class Keyframe {
   }
 
   public static createZero(): Keyframe {
-    return new Keyframe(0, Point3d.createZero(), Point3d.createZero(), Vector3d.createZero(), undefined, undefined);
+    return new Keyframe(
+      0,
+      Point3d.createZero(),
+      Point3d.createZero(),
+      Vector3d.createZero(),
+      undefined,
+      undefined
+    );
   }
 
   /**
@@ -69,14 +89,20 @@ class Keyframe {
     if (this.lensAngle === undefined) {
       lensAngle = other.lensAngle;
     } else {
-      lensAngle = other.lensAngle !== undefined ? Angle.createInterpolate(this.lensAngle, fraction, other.lensAngle) : this.lensAngle;
+      lensAngle =
+        other.lensAngle !== undefined
+          ? Angle.createInterpolate(this.lensAngle, fraction, other.lensAngle)
+          : this.lensAngle;
     }
 
     let extent;
     if (this.extents === undefined) {
       extent = other.extents;
     } else {
-      extent = other.extents !== undefined ? this.extents.interpolate(fraction, other.extents) : other.extents;
+      extent =
+        other.extents !== undefined
+          ? this.extents.interpolate(fraction, other.extents)
+          : other.extents;
     }
 
     return new Keyframe(
@@ -85,13 +111,12 @@ class Keyframe {
       this.target.interpolate(fraction, other.target),
       this.up.interpolate(fraction, other.up),
       lensAngle,
-      extent,
+      extent
     );
   }
 
   public static fromJSON(json?: KeyframeProps): Keyframe {
-    if (!json)
-      return Keyframe.createZero();
+    if (!json) return Keyframe.createZero();
 
     return new Keyframe(
       json.time,
@@ -99,7 +124,8 @@ class Keyframe {
       Point3d.fromJSON(json.target),
       Vector3d.fromJSON(json.up),
       json.lensAngle !== undefined ? Angle.fromJSON(json.lensAngle) : undefined,
-      json.extents !== undefined ? Vector3d.fromJSON(json.extents) : undefined);
+      json.extents !== undefined ? Vector3d.fromJSON(json.extents) : undefined
+    );
   }
 
   public toJSON(): KeyframeProps {
@@ -140,7 +166,11 @@ class CameraPath {
   }
 
   public clone(): CameraPath {
-    return new CameraPath(this.name, this.duration, this.keyframes.map((keyframe) => keyframe.clone()));
+    return new CameraPath(
+      this.name,
+      this.duration,
+      this.keyframes.map((keyframe) => keyframe.clone())
+    );
   }
 
   public static createEmpty(): CameraPath {
@@ -157,25 +187,42 @@ class CameraPath {
   /**
    * Remove keyframes that can be reconstructed with interpolation within the given error range.
    */
-  public simplifies(distanceThreshold: number, lensAngleThreshold: Angle, extentThreshold: number): void {
+  public simplifies(
+    distanceThreshold: number,
+    lensAngleThreshold: Angle,
+    extentThreshold: number
+  ): void {
     let i = 1;
     while (i < this.keyframes.length - 1) {
       const [before, current, after] = this.keyframes.slice(i - 1, i + 2);
-      const fraction =  (current.time - before.time) / (after.time - before.time);
+      const fraction =
+        (current.time - before.time) / (after.time - before.time);
       const interpolated = before.interpolate(fraction, after);
 
       // Check if the distances between the reconstructed keyframe and the original is acceptable
-      const sameCameraType = (interpolated.lensAngle === undefined) === (current.lensAngle === undefined);
+      const sameCameraType =
+        (interpolated.lensAngle === undefined) ===
+        (current.lensAngle === undefined);
       const locationDistance = interpolated.location.distance(current.location);
       const targetDistance = interpolated.target.distance(current.target);
-      const lensAngleDistance = (interpolated.lensAngle === undefined || !sameCameraType) ? 0 : Math.abs(interpolated.lensAngle.degrees - current.lensAngle!.degrees);
-      const extentDistance = (interpolated.extents !== undefined && current.extents !== undefined) ? interpolated.extents.distance(current.extents) : 0;
+      const lensAngleDistance =
+        interpolated.lensAngle === undefined || !sameCameraType
+          ? 0
+          : Math.abs(
+              interpolated.lensAngle.degrees - current.lensAngle!.degrees
+            );
+      const extentDistance =
+        interpolated.extents !== undefined && current.extents !== undefined
+          ? interpolated.extents.distance(current.extents)
+          : 0;
 
-      if (sameCameraType
-        && locationDistance < distanceThreshold
-        && targetDistance < distanceThreshold
-        && lensAngleDistance < lensAngleThreshold.degrees
-        && extentDistance < extentThreshold) {
+      if (
+        sameCameraType &&
+        locationDistance < distanceThreshold &&
+        targetDistance < distanceThreshold &&
+        lensAngleDistance < lensAngleThreshold.degrees &&
+        extentDistance < extentThreshold
+      ) {
         this.keyframes.splice(i, 1);
       } else {
         i++;
@@ -189,15 +236,15 @@ class CameraPath {
    * @returns the interpolated keyframe.
    */
   public getKeyframeAtTime(time: number): Keyframe {
-    const {before, after} = this.getKeyframeRangeAtTime(time);
+    const { before, after } = this.getKeyframeRangeAtTime(time);
 
     // Only one keyframe, use it directly
-    if (after === undefined)
-      return before;
+    if (after === undefined) return before;
 
     // Two keyframes: interpolate between them
     const timeDifference = after.time - before.time;
-    const fraction = timeDifference !== 0 ? (time - before.time) / timeDifference : 0.0;
+    const fraction =
+      timeDifference !== 0 ? (time - before.time) / timeDifference : 0.0;
 
     return before.interpolate(fraction, after);
   }
@@ -207,28 +254,30 @@ class CameraPath {
    * @param time In ms, the location in the timeline to get the keyframe at.
    * @returns an object with the keyframes. ``before`` will always be set, but ``after`` can be missing.
    */
-  private getKeyframeRangeAtTime(time: number): {before: Keyframe, after?: Keyframe} {
+  private getKeyframeRangeAtTime(time: number): {
+    before: Keyframe;
+    after?: Keyframe;
+  } {
     if (this.keyframes.length <= 0)
       throw new Error("Selected path has no keyframes.");
 
     // Only one keyframe or before first keyframe
     if (this.keyframes.length === 1 || time < this.keyframes[0].time) {
-      return {before: this.keyframes[0]};
+      return { before: this.keyframes[0] };
     }
 
     // Between two keyframes
     for (let i = 1; i < this.keyframes.length; i++) {
       if (time < this.keyframes[i].time)
-        return {before: this.keyframes[i - 1], after: this.keyframes[i]};
+        return { before: this.keyframes[i - 1], after: this.keyframes[i] };
     }
 
     // After the last keyframe
-    return {before: this.keyframes[this.keyframes.length - 1]};
+    return { before: this.keyframes[this.keyframes.length - 1] };
   }
 
   public static fromJSON(json?: CameraPathProps): CameraPath {
-    if (!json)
-      return CameraPath.createEmpty();
+    if (!json) return CameraPath.createEmpty();
 
     return new CameraPath(
       json.name,
@@ -296,9 +345,15 @@ export class CameraPathsMenu extends ToolBarDropDown {
     parent.appendChild(this._element);
   }
 
-  public get isOpen() { return "none" !== this._element.style.display; }
-  protected _open() { this._element.style.display = "block"; }
-  protected _close() { this._element.style.display = "none"; }
+  public get isOpen() {
+    return "none" !== this._element.style.display;
+  }
+  protected _open() {
+    this._element.style.display = "block";
+  }
+  protected _close() {
+    this._element.style.display = "none";
+  }
 
   public override get onViewChanged(): Promise<void> | undefined {
     if (this._imodel !== this._viewport.iModel) {
@@ -310,8 +365,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
-    if (!this._viewport.iModel.isOpen)
-      return;
+    if (!this._viewport.iModel.isOpen) return;
 
     await this.loadPathsFromExternalFile();
 
@@ -334,22 +388,26 @@ export class CameraPathsMenu extends ToolBarDropDown {
       },
     });
 
-    pathNameTextBox.div.style.marginLeft = pathNameTextBox.div.style.marginRight = "3px";
+    pathNameTextBox.div.style.marginLeft =
+      pathNameTextBox.div.style.marginRight = "3px";
     pathNameTextBox.textbox.size = 36;
     pathNameTextBox.textbox.value = this._newPathName;
     this._element.appendChild(document.createElement("hr"));
 
     const pathsList = document.createElement("select");
     // If only 1 entry in list, input becomes a combo box and can't select the view...
-    pathsList.size = 1 === this._paths.length ? 2 : Math.min(15, this._paths.length);
+    pathsList.size =
+      1 === this._paths.length ? 2 : Math.min(15, this._paths.length);
     pathsList.style.width = "100%";
     pathsList.style.display = 0 < this._paths.length ? "" : "none";
 
     this._element.appendChild(pathsList);
-    this._element.onchange = () => this.selectedPath = pathsList.value ? this.findPath(pathsList.value) : undefined;
+    this._element.onchange = () =>
+      (this.selectedPath = pathsList.value
+        ? this.findPath(pathsList.value)
+        : undefined);
     pathsList.addEventListener("keyup", async (ev) => {
-      if (ev.key === "Delete")
-        await this.deletePath();
+      if (ev.key === "Delete") await this.deletePath();
     });
 
     for (const path of this._paths) {
@@ -357,7 +415,8 @@ export class CameraPathsMenu extends ToolBarDropDown {
       option.value = option.innerText = path.name;
       if (path.duration === 0 || path.keyframes.length === 0) {
         option.style.color = "grey";
-        option.title = "This path is empty. Please use the record button to record it.";
+        option.title =
+          "This path is empty. Please use the record button to record it.";
       }
       pathsList.appendChild(option);
     }
@@ -382,8 +441,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
       id: "btn_deleteCameraPath",
       value: "Delete",
       handler: async () => {
-        if (await this.deletePath())
-          await this.savePathsToExternalFile();
+        if (await this.deletePath()) await this.savePathsToExternalFile();
       },
       tooltip: "Delete selected camera path",
       inline: true,
@@ -419,7 +477,8 @@ export class CameraPathsMenu extends ToolBarDropDown {
     }).button;
 
     const setCreatePathButtonDisabled = () => {
-      const pathExist = this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
+      const pathExist =
+        this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
       const isPathNameValid = this._newPathName.length > 0 && !pathExist;
 
       pathNameTextBox.textbox.style.color = isPathNameValid ? "" : "red";
@@ -433,10 +492,16 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
     this._onStateChanged = () => {
       if (this.selectedPath === undefined) {
-        playButton.disabled = recordButton.disabled = stopButton.disabled = deletePathButton.disabled = true;
+        playButton.disabled =
+          recordButton.disabled =
+          stopButton.disabled =
+          deletePathButton.disabled =
+            true;
         pathsList.disabled = false;
       } else {
-        const canRecord = this.selectedPath.duration === 0 || this.selectedPath.keyframes.length === 0;
+        const canRecord =
+          this.selectedPath.duration === 0 ||
+          this.selectedPath.keyframes.length === 0;
         playButton.disabled = this._isPlaying || canRecord;
         recordButton.disabled = this._isPlaying || !canRecord;
         stopButton.disabled = !this._isPlaying;
@@ -459,8 +524,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   private async deletePath(): Promise<boolean> {
-    if (this.selectedPath === undefined)
-      return false;
+    if (this.selectedPath === undefined) return false;
 
     const index = this._paths.indexOf(this.selectedPath);
     if (index > -1) {
@@ -474,7 +538,8 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   private async appendNewPathToPathList(): Promise<boolean> {
-    const pathExist = this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
+    const pathExist =
+      this._paths.findIndex((path) => path.name === this._newPathName) !== -1;
     if (this._newPathName.length > 0 && !pathExist) {
       this._paths.push(CameraPath.createEmpty());
       this.selectedPath = this._paths[this._paths.length - 1];
@@ -489,10 +554,13 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
   private async loadPathsFromExternalFile() {
     const filename = this._viewport.view.iModel.key;
-    const externalCameraPathsString = await DtaRpcInterface.getClient().readExternalCameraPaths(filename);
+    const externalCameraPathsString =
+      await DtaRpcInterface.getClient().readExternalCameraPaths(filename);
 
     try {
-      this._paths = JSON.parse(externalCameraPathsString).map((path: CameraPathProps) => CameraPath.fromJSON(path));
+      this._paths = JSON.parse(externalCameraPathsString).map(
+        (path: CameraPathProps) => CameraPath.fromJSON(path)
+      );
     } catch (_e) {
       this._paths = [];
     }
@@ -500,22 +568,22 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
   private async savePathsToExternalFile(): Promise<void> {
     const filename = this._viewport.view.iModel.key;
-    if (undefined === filename)
-      return;
+    if (undefined === filename) return;
 
     const namedViews = JSON.stringify(this._paths.map((path) => path.toJSON()));
-    await DtaRpcInterface.getClient().writeExternalCameraPaths(filename, namedViews);
+    await DtaRpcInterface.getClient().writeExternalCameraPaths(
+      filename,
+      namedViews
+    );
   }
 
   private findPath(name: string): CameraPath | undefined {
     const index = this._paths.findIndex((path) => name === path.name);
     return -1 !== index ? this._paths[index]! : undefined;
-
   }
 
   public prepareView(record = false): void {
-    if (!this.selectedPath)
-      throw new Error("No valid camera path loaded");
+    if (!this.selectedPath) throw new Error("No valid camera path loaded");
 
     this._viewport.setAnimator(undefined);
 
@@ -529,27 +597,26 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   public play(record = false): void {
-    if (this._isPlaying)
-      this.stop();
+    if (this._isPlaying) this.stop();
 
     this._previousAnimationFrame = undefined;
     this._currentAnimationTime = 0;
 
-    if (this.selectedPath === undefined)
-      return;
+    if (this.selectedPath === undefined) return;
 
     this.selectedPath.sortKeyframes();
 
     const animate = (timestamp: number) => {
-      const elapsed = this._previousAnimationFrame ? timestamp - this._previousAnimationFrame : 0;
+      const elapsed = this._previousAnimationFrame
+        ? timestamp - this._previousAnimationFrame
+        : 0;
       this._currentAnimationTime += elapsed;
 
       this.computeAnimationFrame();
 
       this._previousAnimationFrame = timestamp;
 
-      if (this._isPlaying)
-        this._animID = requestAnimationFrame(animate);
+      if (this._isPlaying) this._animID = requestAnimationFrame(animate);
     };
 
     this.prepareView(record);
@@ -561,15 +628,13 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   public stop(): void {
-
     if (this._animID) {
       cancelAnimationFrame(this._animID);
     }
 
     // End of recording
     if (this._isPlaying && this._isRecording) {
-      if (!this.selectedPath)
-        throw new Error("No valid camera path loaded");
+      if (!this.selectedPath) throw new Error("No valid camera path loaded");
 
       this.selectedPath.duration = this._currentAnimationTime;
 
@@ -602,21 +667,20 @@ export class CameraPathsMenu extends ToolBarDropDown {
       if (this._currentAnimationTime > this.selectedPath.duration)
         this.endAnimation();
     }
-
   }
 
   private playAnimationFrame(): void {
-    if (!this.selectedPath)
-      throw new Error("No valid camera path loaded");
+    if (!this.selectedPath) throw new Error("No valid camera path loaded");
 
     this._viewport.setAnimator(undefined);
-    const keyframe = this.selectedPath.getKeyframeAtTime(this._currentAnimationTime);
+    const keyframe = this.selectedPath.getKeyframeAtTime(
+      this._currentAnimationTime
+    );
     this.setCameraPosition(keyframe);
   }
 
   private recordAnimationFrame(): void {
-    if (!this.selectedPath)
-      throw new Error("No valid camera path loaded");
+    if (!this.selectedPath) throw new Error("No valid camera path loaded");
 
     const view = this._viewport.view;
     if (!view.is3d() || !view.supportsCamera())
@@ -627,18 +691,27 @@ export class CameraPathsMenu extends ToolBarDropDown {
     const target = this._viewport.npcToWorld(new Point3d(0.5, 0.5, 0.0));
 
     // Location and target are the same, the keyframe will be invalid
-    if (target.distance(location) <= Number.EPSILON)
-      return;
+    if (target.distance(location) <= Number.EPSILON) return;
 
     const topScreen = this._viewport.npcToWorld(new Point3d(0.5, 1.0, 0.0));
     const up = location.unitVectorTo(topScreen);
-    if (up === undefined)
-      return;
+    if (up === undefined) return;
 
-    const lensAngle = view.isCameraOn ? view.camera.getLensAngle().clone() : undefined;
+    const lensAngle = view.isCameraOn
+      ? view.camera.getLensAngle().clone()
+      : undefined;
     const extents = view.isCameraOn ? undefined : view.getExtents().clone();
 
-    this.selectedPath.keyframes.push(new Keyframe(this._currentAnimationTime, location, target, up, lensAngle, extents));
+    this.selectedPath.keyframes.push(
+      new Keyframe(
+        this._currentAnimationTime,
+        location,
+        target,
+        up,
+        lensAngle,
+        extents
+      )
+    );
   }
 
   private endAnimation(): void {
@@ -656,30 +729,27 @@ export class CameraPathsMenu extends ToolBarDropDown {
       Camera.validateLensAngle(lensAngle);
 
       // Perspective
-      view.lookAt(
-        {
-          eyePoint: keyframe.location,
-          targetPoint: keyframe.target,
-          upVector: keyframe.up,
-          lensAngle,
-        }
-      );
-
+      view.lookAt({
+        eyePoint: keyframe.location,
+        targetPoint: keyframe.target,
+        upVector: keyframe.up,
+        lensAngle,
+      });
     } else {
       if (keyframe.extents === undefined)
-        throw new Error("Invalid keyframe for camera: path should specifies either lensAngle or extents.");
+        throw new Error(
+          "Invalid keyframe for camera: path should specifies either lensAngle or extents."
+        );
 
       // Orthographic camera
-      view.lookAt(
-        {
-          eyePoint: keyframe.location,
-          viewDirection: (keyframe.target.minus(keyframe.location)),
-          upVector: keyframe.up,
-          newExtents: keyframe.extents,
-        }
-      );
+      view.lookAt({
+        eyePoint: keyframe.location,
+        viewDirection: keyframe.target.minus(keyframe.location),
+        upVector: keyframe.up,
+        newExtents: keyframe.extents,
+      });
     }
 
-    this._viewport.synchWithView({noSaveInUndo: true});
+    this._viewport.synchWithView({ noSaveInUndo: true });
   }
 }

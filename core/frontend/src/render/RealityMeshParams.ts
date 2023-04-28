@@ -6,22 +6,44 @@
  * @module Rendering
  */
 
-import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
-  IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
+  assert,
+  Uint16ArrayBuilder,
+  UintArray,
+  UintArrayBuilder,
+} from "@itwin/core-bentley";
+import {
+  IndexedPolyface,
+  Point2d,
+  Point3d,
+  Polyface,
+  Range2d,
+  Range3d,
+  Transform,
+  Vector3d,
+  XAndY,
+  XYAndZ,
 } from "@itwin/core-geometry";
 import {
-  OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
+  OctEncodedNormal,
+  QPoint2d,
+  QPoint2dBuffer,
+  QPoint2dBufferBuilder,
+  QPoint3d,
+  QPoint3dBuffer,
+  QPoint3dBufferBuilder,
+  RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
 
-function precondition(condition: boolean, message: string | (() => string)): asserts condition {
-  if (condition)
-    return;
+function precondition(
+  condition: boolean,
+  message: string | (() => string)
+): asserts condition {
+  if (condition) return;
 
-  if ("string" !== typeof message)
-    message = message();
+  if ("string" !== typeof message) message = message();
 
   throw new Error(`Logic Error: ${message}`);
 }
@@ -51,9 +73,19 @@ export interface RealityMeshParams {
 /** @public */
 export namespace RealityMeshParams {
   /** @internal */
-  export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
+  export function fromGltfMesh(
+    mesh: GltfMeshData
+  ): RealityMeshParams | undefined {
     // The specialized reality mesh shaders expect a mesh with uvs and no edges.
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
+    if (
+      mesh.primitive.type !== Mesh.PrimitiveType.Mesh ||
+      mesh.primitive.edges ||
+      !mesh.pointQParams ||
+      !mesh.uvQParams ||
+      !mesh.points ||
+      !mesh.uvs ||
+      !mesh.indices
+    )
       return undefined;
 
     return {
@@ -73,7 +105,14 @@ export namespace RealityMeshParams {
   }
 
   /** @alpha */
-  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): Polyface | undefined {
+  export function toPolyface(
+    params: RealityMeshParams,
+    options?: {
+      transform?: Transform;
+      wantNormals?: boolean;
+      wantParams?: boolean;
+    }
+  ): Polyface | undefined {
     const { positions, normals, uvs, indices } = params;
     const includeNormals = options?.wantNormals && undefined !== normals;
     const includeParams = options?.wantParams;
@@ -83,7 +122,12 @@ export namespace RealityMeshParams {
     const point = new Point3d();
     const transform = options?.transform;
     for (let i = 0; i < positions.points.length; i += 3) {
-      positions.params.unquantize(points[i], points[i + 1], points[i + 2], point);
+      positions.params.unquantize(
+        points[i],
+        points[i + 1],
+        points[i + 2],
+        point
+      );
       transform?.multiplyPoint3d(point, point);
       polyface.addPoint(point);
     }
@@ -97,20 +141,19 @@ export namespace RealityMeshParams {
     if (includeParams) {
       const uv = new Point2d();
       for (let i = 0; i < uvs.points.length; i += 2)
-        polyface.addParam(uvs.params.unquantize(uvs.points[i], uvs.points[i + 1], uv));
+        polyface.addParam(
+          uvs.params.unquantize(uvs.points[i], uvs.points[i + 1], uv)
+        );
     }
 
     let j = 0;
     indices.forEach((index: number) => {
       polyface.addPointIndex(index);
-      if (includeNormals)
-        polyface.addNormalIndex(index);
+      if (includeNormals) polyface.addNormalIndex(index);
 
-      if (includeParams)
-        polyface.addParamIndex(index);
+      if (includeParams) polyface.addParamIndex(index);
 
-      if (0 === (++j % 3))
-        polyface.terminateFacet();
+      if (0 === ++j % 3) polyface.terminateFacet();
     });
 
     return polyface;
@@ -180,8 +223,12 @@ export class RealityMeshParamsBuilder {
   /** Construct a builder from the specified options. */
   public constructor(options: RealityMeshParamsBuilderOptions) {
     let initialType;
-    if (undefined !== options.initialVertexCapacity && options.initialVertexCapacity > 0xff)
-      initialType = options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
+    if (
+      undefined !== options.initialVertexCapacity &&
+      options.initialVertexCapacity > 0xff
+    )
+      initialType =
+        options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
 
     this.indices = new UintArrayBuilder({
       initialCapacity: options.initialIndexCapacity,
@@ -189,7 +236,9 @@ export class RealityMeshParamsBuilder {
     });
 
     if (options.wantNormals)
-      this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
+      this.normals = new Uint16ArrayBuilder({
+        initialCapacity: options.initialVertexCapacity,
+      });
 
     this.positions = new QPoint3dBufferBuilder({
       range: options.positionRange,
@@ -209,7 +258,11 @@ export class RealityMeshParamsBuilder {
    * @see [[addQuantizedVertex]] if your vertex data is already quantized.
    * @returns the index of the new vertex in [[positions]].
    */
-  public addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): number {
+  public addUnquantizedVertex(
+    position: XYAndZ,
+    uv: XAndY,
+    normal?: XYAndZ
+  ): number {
     this._q3d.init(position, this.positions.params);
     this._q2d.init(uv, this.uvs.params);
     const oen = normal ? OctEncodedNormal.encode(normal) : undefined;
@@ -233,8 +286,15 @@ export class RealityMeshParamsBuilder {
    * @returns the index of the new vertex in [[positions]].
    * @throws Error if `normal` is `undefined` but `wantNormals` was specified at construction of the builder, or vice-versa.
    */
-  public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
-    precondition((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
+  public addQuantizedVertex(
+    position: XYAndZ,
+    uv: XAndY,
+    normal?: number
+  ): number {
+    precondition(
+      (undefined === normal) === (undefined === this.normals),
+      "RealityMeshParams requires all vertices to have normals, or none."
+    );
 
     this.positions.push(position);
     this.uvs.push(uv);
@@ -261,8 +321,7 @@ export class RealityMeshParamsBuilder {
 
   /** Add all of the indices in `indices` to the index buffer. */
   public addIndices(indices: Iterable<number>): void {
-    for (const index of indices)
-      this.addIndex(index);
+    for (const index of indices) this.addIndex(index);
   }
 
   private addIndex(index: number): void {
@@ -273,7 +332,10 @@ export class RealityMeshParamsBuilder {
    * @throws Error if the mesh contains no triangles.
    */
   public finish(): RealityMeshParams {
-    precondition(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
+    precondition(
+      this.positions.length >= 3 && this.indices.length >= 3,
+      "RealityMeshParams requires at least one triangle"
+    );
     return {
       positions: this.positions.finish(),
       uvs: this.uvs.finish(),

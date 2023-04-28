@@ -3,7 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@itwin/core-geometry";
+import {
+  ClipPrimitive,
+  ClipShape,
+  ClipVector,
+  Point3d,
+  Transform,
+  UnionOfConvexClipPlaneSets,
+} from "@itwin/core-geometry";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
@@ -24,7 +31,9 @@ describe("ClipVolume", async () => {
     clipVector = ClipVector.createCapture([]);
     expect(ClipVolume.create(clipVector)).to.be.undefined;
 
-    clipVector = ClipVector.createCapture([ClipPrimitive.createCapture(UnionOfConvexClipPlaneSets.createEmpty())]);
+    clipVector = ClipVector.createCapture([
+      ClipPrimitive.createCapture(UnionOfConvexClipPlaneSets.createEmpty()),
+    ]);
     expect(ClipVolume.create(clipVector)).to.be.undefined;
   });
 
@@ -39,14 +48,19 @@ describe("ClipVolume", async () => {
     const shape = ClipShape.createShape(points, 1.0, 2.0)!;
     expect(shape).not.to.be.undefined;
 
-    const clipVector = ClipVector.create([ shape ])!;
+    const clipVector = ClipVector.create([shape])!;
     expect(clipVector).not.to.be.undefined;
 
     const clipVolume = ClipVolume.create(clipVector)!;
     expect(clipVolume).to.not.be.undefined;
 
-    const data = new Float32Array(clipVolume.getData(Transform.createIdentity()).buffer);
-    const expectedData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2, 2, 2, 2, 0];
+    const data = new Float32Array(
+      clipVolume.getData(Transform.createIdentity()).buffer
+    );
+    const expectedData = [
+      0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1,
+      2, 2, 2, 2, 0,
+    ];
     expect(data.length).to.equal(expectedData.length);
     for (let i = 0; i < data.length; i++)
       expect(data[i]).to.equal(expectedData[i]);
@@ -54,7 +68,18 @@ describe("ClipVolume", async () => {
 
   it("should support compound ClipVectors", () => {
     const vec = ClipVector.createEmpty();
-    expect(vec.appendShape([ Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0) ], 1, 2)).to.be.true;
+    expect(
+      vec.appendShape(
+        [
+          Point3d.create(1, 1, 0),
+          Point3d.create(2, 1, 0),
+          Point3d.create(2, 2, 0),
+          Point3d.create(1, 2, 0),
+        ],
+        1,
+        2
+      )
+    ).to.be.true;
     let vol = ClipVolume.create(vec)!;
     expect(vol).not.to.be.undefined;
     expect(vol.clipVector).to.equal(vec);
@@ -68,11 +93,18 @@ describe("ClipVolume", async () => {
     expect(vol).not.to.be.undefined;
     expect(vol.numRows).to.equal(14); // 6 planes per ClipPrimitive, plus a plane after each serving as boundary marker.
 
-    const planesData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2];
+    const planesData = [
+      0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1,
+      2,
+    ];
     const boundaryData = [2, 2, 2, 0];
-    const expectedData = planesData.concat(boundaryData, planesData).concat(boundaryData);
+    const expectedData = planesData
+      .concat(boundaryData, planesData)
+      .concat(boundaryData);
 
-    const data = new Float32Array(vol.getData(Transform.createIdentity()).buffer);
+    const data = new Float32Array(
+      vol.getData(Transform.createIdentity()).buffer
+    );
     expect(data.length).to.equal(expectedData.length);
     for (let i = 0; i < data.length; i++)
       expect(data[i]).to.equal(expectedData[i]);

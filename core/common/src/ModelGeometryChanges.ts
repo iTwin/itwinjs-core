@@ -6,7 +6,13 @@
  * @module Geometry
  */
 
-import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@itwin/core-bentley";
+import {
+  assert,
+  CompressedId64Set,
+  DbOpcode,
+  GuidString,
+  Id64String,
+} from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
@@ -77,13 +83,19 @@ export interface DeletedElementGeometryChange {
  * @public
  * @extensions
  */
-export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
+export type ElementGeometryChange =
+  | ExtantElementGeometryChange
+  | DeletedElementGeometryChange;
 
 /** Represents a change to the geometry of a [GeometricElement]($backend), as exposed by [[ModelGeometryChanges.elements]].
  * @public
  */
-export namespace ElementGeometryChange { // eslint-disable-line @typescript-eslint/no-redeclare
-  function* extantIterator(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterator<ElementGeometryChange> {
+export namespace ElementGeometryChange {
+  // eslint-disable-line @typescript-eslint/no-redeclare
+  function* extantIterator(
+    props: ElementIdsAndRangesProps,
+    type: DbOpcode.Insert | DbOpcode.Update
+  ): Iterator<ElementGeometryChange> {
     let index = 0;
     const ids = CompressedId64Set.iterable(props.ids);
     for (const id of ids) {
@@ -94,12 +106,17 @@ export namespace ElementGeometryChange { // eslint-disable-line @typescript-esli
     }
   }
 
-  function extantIterable(props: ElementIdsAndRangesProps, type: DbOpcode.Insert | DbOpcode.Update): Iterable<ElementGeometryChange> {
+  function extantIterable(
+    props: ElementIdsAndRangesProps,
+    type: DbOpcode.Insert | DbOpcode.Update
+  ): Iterable<ElementGeometryChange> {
     return { [Symbol.iterator]: () => extantIterator(props, type) };
   }
 
   /** Obtain an iterator over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */
-  export function* iterator(modelChanges: ModelGeometryChangesProps): Iterator<ElementGeometryChange> {
+  export function* iterator(
+    modelChanges: ModelGeometryChangesProps
+  ): Iterator<ElementGeometryChange> {
     if (modelChanges.inserted)
       yield* extantIterable(modelChanges.inserted, DbOpcode.Insert);
 
@@ -112,7 +129,9 @@ export namespace ElementGeometryChange { // eslint-disable-line @typescript-esli
   }
 
   /** Obtain an iterable over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */
-  export function iterable(modelChanges: ModelGeometryChangesProps): Iterable<ElementGeometryChange> {
+  export function iterable(
+    modelChanges: ModelGeometryChangesProps
+  ): Iterable<ElementGeometryChange> {
     return { [Symbol.iterator]: () => iterator(modelChanges) };
   }
 }
@@ -138,18 +157,23 @@ export interface ModelGeometryChanges {
  */
 export namespace ModelGeometryChanges {
   /** Obtain an iterator over the geometry changes for a set of models. A given model will appear at most once. */
-  export function* iterator(modelChanges: ModelGeometryChangesProps[]): Iterator<ModelGeometryChanges> {
-    for (const props of modelChanges)
-      yield fromJSON(props);
+  export function* iterator(
+    modelChanges: ModelGeometryChangesProps[]
+  ): Iterator<ModelGeometryChanges> {
+    for (const props of modelChanges) yield fromJSON(props);
   }
 
   /** Obtain an iterable over the geometry changes for a set of models. A given model will appear at most once. */
-  export function iterable(modelChanges: ModelGeometryChangesProps[]): Iterable<ModelGeometryChanges> {
+  export function iterable(
+    modelChanges: ModelGeometryChangesProps[]
+  ): Iterable<ModelGeometryChanges> {
     return { [Symbol.iterator]: () => iterator(modelChanges) };
   }
 
   /** Instantiate from wire format. */
-  export function fromJSON(props: ModelGeometryChangesProps): ModelGeometryChanges {
+  export function fromJSON(
+    props: ModelGeometryChangesProps
+  ): ModelGeometryChanges {
     return {
       id: props.id,
       geometryGuid: props.guid,
@@ -159,10 +183,11 @@ export namespace ModelGeometryChanges {
   }
 
   /** Obtain the ModelGeometryChanges for the specified model Id. */
-  export function findByModelId(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): ModelGeometryChanges | undefined {
-    for (const change of changes)
-      if (change.id === modelId)
-        return change;
+  export function findByModelId(
+    changes: Iterable<ModelGeometryChanges>,
+    modelId: Id64String
+  ): ModelGeometryChanges | undefined {
+    for (const change of changes) if (change.id === modelId) return change;
 
     return undefined;
   }

@@ -6,7 +6,12 @@
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import {
-  SpatialClassifier, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SpatialClassifierProps, SpatialClassifiers,
+  SpatialClassifier,
+  SpatialClassifierFlags,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  SpatialClassifierProps,
+  SpatialClassifiers,
   SpatialClassifiersContainer,
 } from "../SpatialClassification";
 
@@ -16,14 +21,33 @@ describe("SpatialClassifierFlags", () => {
       [SpatialClassifierInsideDisplay.Off, undefined, undefined],
       [SpatialClassifierInsideDisplay.On, undefined, undefined],
       [SpatialClassifierInsideDisplay.Dimmed, undefined, undefined],
-      [SpatialClassifierInsideDisplay.Hilite, undefined, SpatialClassifierOutsideDisplay.Dimmed],
-      [SpatialClassifierInsideDisplay.ElementColor, undefined, SpatialClassifierOutsideDisplay.Dimmed],
-      [-1, SpatialClassifierInsideDisplay.ElementColor, SpatialClassifierOutsideDisplay.Dimmed],
-      [5, SpatialClassifierInsideDisplay.ElementColor, SpatialClassifierOutsideDisplay.Dimmed],
+      [
+        SpatialClassifierInsideDisplay.Hilite,
+        undefined,
+        SpatialClassifierOutsideDisplay.Dimmed,
+      ],
+      [
+        SpatialClassifierInsideDisplay.ElementColor,
+        undefined,
+        SpatialClassifierOutsideDisplay.Dimmed,
+      ],
+      [
+        -1,
+        SpatialClassifierInsideDisplay.ElementColor,
+        SpatialClassifierOutsideDisplay.Dimmed,
+      ],
+      [
+        5,
+        SpatialClassifierInsideDisplay.ElementColor,
+        SpatialClassifierOutsideDisplay.Dimmed,
+      ],
     ];
 
     for (const test of tests) {
-      const flags = SpatialClassifierFlags.fromJSON({ inside: test[0], outside: test[0] });
+      const flags = SpatialClassifierFlags.fromJSON({
+        inside: test[0],
+        outside: test[0],
+      });
       expect(flags.inside).to.equal(test[1] ?? test[0]);
       expect(flags.outside).to.equal(test[2] ?? test[0]);
     }
@@ -31,19 +55,29 @@ describe("SpatialClassifierFlags", () => {
 });
 
 describe("SpatialClassifiers", () => {
-  function makeClassifier(modelId: Id64String, name: string, flags = new SpatialClassifierFlags(), expand = 0) {
+  function makeClassifier(
+    modelId: Id64String,
+    name: string,
+    flags = new SpatialClassifierFlags(),
+    expand = 0
+  ) {
     return new SpatialClassifier(modelId, name, flags, expand);
   }
 
-  function makeClassifierProps(classifier: SpatialClassifier, isActive?: boolean) {
+  function makeClassifierProps(
+    classifier: SpatialClassifier,
+    isActive?: boolean
+  ) {
     const props = classifier.toJSON();
-    if (undefined !== isActive)
-      props.isActive = isActive;
+    if (undefined !== isActive) props.isActive = isActive;
 
     return props;
   }
 
-  function expectJson(actual: SpatialClassifierProps[] | undefined, expected: SpatialClassifierProps[] | undefined) {
+  function expectJson(
+    actual: SpatialClassifierProps[] | undefined,
+    expected: SpatialClassifierProps[] | undefined
+  ) {
     expect(actual).to.deep.equal(expected);
   }
 
@@ -82,7 +116,9 @@ describe("SpatialClassifiers", () => {
 
   it("sets active classifier", () => {
     const classifiers = [
-      makeClassifier("0x1", "1"), makeClassifier("0x2", "2"), makeClassifier("0x3", "3"),
+      makeClassifier("0x1", "1"),
+      makeClassifier("0x2", "2"),
+      makeClassifier("0x3", "3"),
     ];
 
     const json = { classifiers: classifiers.map((x) => x.toJSON()) };
@@ -98,8 +134,7 @@ describe("SpatialClassifiers", () => {
 
       expect(set.setActive(undefined)).to.be.undefined;
       expect(set.active).to.be.undefined;
-      for (const props of json.classifiers)
-        expect(props.isActive).to.be.false;
+      for (const props of json.classifiers) expect(props.isActive).to.be.false;
     }
 
     for (const classifier of classifiers) {
@@ -142,12 +177,20 @@ describe("SpatialClassifiers", () => {
     expect(set.has(c)).to.be.true;
 
     expectJson(json.classifiers, [
-      makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifier("0x1", "1", undefined, 12).toJSON(),
+      makeClassifier("0x1", "1").toJSON(),
+      makeClassifier("0x2", "2").toJSON(),
+      makeClassifier("0x1", "1", undefined, 12).toJSON(),
     ]);
   });
 
   it("deletes classifiers", () => {
-    const json = { classifiers: [makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifier("0x3", "3").toJSON()] };
+    const json = {
+      classifiers: [
+        makeClassifier("0x1", "1").toJSON(),
+        makeClassifier("0x2", "2").toJSON(),
+        makeClassifier("0x3", "3").toJSON(),
+      ],
+    };
     const set = new SpatialClassifiers(json);
     expect(set.size).to.equal(3);
 
@@ -157,7 +200,10 @@ describe("SpatialClassifiers", () => {
     expect(set.size).to.equal(2);
     expect(set.delete(c2)).to.be.undefined;
     expect(set.size).to.equal(2);
-    expectJson(json.classifiers, [makeClassifier("0x1", "1").toJSON(), makeClassifier("0x3", "3").toJSON()]);
+    expectJson(json.classifiers, [
+      makeClassifier("0x1", "1").toJSON(),
+      makeClassifier("0x3", "3").toJSON(),
+    ]);
 
     const c1 = makeClassifier("0x1", "1");
     const c1FromSet = set.findEquivalent(c1)!;
@@ -167,8 +213,7 @@ describe("SpatialClassifiers", () => {
     expect(set.size).to.equal(1);
     expectJson(json.classifiers, [makeClassifier("0x3", "3").toJSON()]);
 
-    for (const c of set)
-      expect(set.delete(c)).to.equal(c);
+    for (const c of set) expect(set.delete(c)).to.equal(c);
 
     expect(set.size).to.equal(0);
     expectJson(json.classifiers, undefined);
@@ -184,7 +229,9 @@ describe("SpatialClassifiers", () => {
   it("resets active classifier if deleted", () => {
     const set = new SpatialClassifiers({
       classifiers: [
-        makeClassifier("0x1", "1").toJSON(), makeClassifierProps(makeClassifier("0x2", "2"), true), makeClassifier("0x3", "3").toJSON(),
+        makeClassifier("0x1", "1").toJSON(),
+        makeClassifierProps(makeClassifier("0x2", "2"), true),
+        makeClassifier("0x3", "3").toJSON(),
       ],
     });
     expect(set.active!.name).to.equal("2");
@@ -204,7 +251,12 @@ describe("SpatialClassifiers", () => {
   });
 
   it("clears classifiers", () => {
-    const json = { classifiers: [makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON()] };
+    const json = {
+      classifiers: [
+        makeClassifier("0x1", "1").toJSON(),
+        makeClassifier("0x2", "2").toJSON(),
+      ],
+    };
     const set = new SpatialClassifiers(json);
     expect(set.size).to.equal(2);
 
@@ -216,7 +268,8 @@ describe("SpatialClassifiers", () => {
   it("resets active classifier when cleared", () => {
     const set = new SpatialClassifiers({
       classifiers: [
-        makeClassifierProps(makeClassifier("0x1", "1"), true), makeClassifier("0x2", "2").toJSON(),
+        makeClassifierProps(makeClassifier("0x1", "1"), true),
+        makeClassifier("0x2", "2").toJSON(),
       ],
     });
     expect(set.active).not.to.be.undefined;
@@ -225,19 +278,34 @@ describe("SpatialClassifiers", () => {
   });
 
   it("replaces classifiers", () => {
-    const json = { classifiers: [makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifierProps(makeClassifier("0x3", "3"), true)] };
+    const json = {
+      classifiers: [
+        makeClassifier("0x1", "1").toJSON(),
+        makeClassifier("0x2", "2").toJSON(),
+        makeClassifierProps(makeClassifier("0x3", "3"), true),
+      ],
+    };
     const set = new SpatialClassifiers(json);
 
     const c2 = set.findEquivalent(makeClassifier("0x2", "2"))!;
-    expect(c2.flags.inside).to.equal(SpatialClassifierInsideDisplay.ElementColor);
+    expect(c2.flags.inside).to.equal(
+      SpatialClassifierInsideDisplay.ElementColor
+    );
     expect(c2.flags.outside).to.equal(SpatialClassifierOutsideDisplay.Dimmed);
     expect(c2.expand).to.equal(0);
 
-    const c2New = c2.clone({ flags: c2.flags.clone({ inside: SpatialClassifierInsideDisplay.Hilite }).toJSON(), expand: 12 });
+    const c2New = c2.clone({
+      flags: c2.flags
+        .clone({ inside: SpatialClassifierInsideDisplay.Hilite })
+        .toJSON(),
+      expand: 12,
+    });
     expect(set.replace(c2, c2New)).to.be.true;
     expect(c2New.equals(c2)).to.be.false;
     expect(c2New.flags.inside).to.equal(SpatialClassifierInsideDisplay.Hilite);
-    expect(c2New.flags.outside).to.equal(SpatialClassifierOutsideDisplay.Dimmed);
+    expect(c2New.flags.outside).to.equal(
+      SpatialClassifierOutsideDisplay.Dimmed
+    );
     expect(c2New.expand).to.equal(12);
     expect(set.size).to.equal(3);
     expect(set.has(c2New)).to.be.true;
@@ -257,9 +325,15 @@ describe("SpatialClassifiers", () => {
     expect(set.active).to.equal(c3New);
     expect(set.active!.name).to.equal("3new");
 
-    expectJson(json.classifiers, [c1New.toJSON(), c2New.toJSON(), makeClassifierProps(c3New, true)]);
+    expectJson(json.classifiers, [
+      c1New.toJSON(),
+      c2New.toJSON(),
+      makeClassifierProps(c3New, true),
+    ]);
 
-    expect(set.replace(makeClassifier("0x4", "4"), makeClassifier("0x4", "4new"))).to.be.false;
+    expect(
+      set.replace(makeClassifier("0x4", "4"), makeClassifier("0x4", "4new"))
+    ).to.be.false;
 
     set.clear();
     expect(set.replace(c3New, makeClassifier("0x3", "3newer"))).to.be.false;

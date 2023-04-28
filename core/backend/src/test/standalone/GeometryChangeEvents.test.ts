@@ -4,12 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
+  LineSegment3d,
+  Point3d,
+  YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import {
+  Code,
+  ColorByName,
+  GeometricElement3dProps,
+  GeometryStreamBuilder,
+  IModel,
+  ModelGeometryChangesProps,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
-  IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
+  IModelJsFs,
+  PhysicalModel,
+  SpatialCategory,
+  StandaloneDb,
+  VolumeElement,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -20,7 +34,10 @@ describe("Model geometry changes", () => {
   let lastChanges: ModelGeometryChangesProps[] | undefined;
 
   before(async () => {
-    const testFileName = IModelTestUtils.prepareOutputFile("ModelGeometryTracking", "ModelGeometryTracking.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile(
+      "ModelGeometryTracking",
+      "ModelGeometryTracking.bim"
+    );
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
 
@@ -28,10 +45,15 @@ describe("Model geometry changes", () => {
     StandaloneDb.upgradeStandaloneSchemas(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
-    categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    categoryId = SpatialCategory.insert(
+      imodel,
+      IModel.dictionaryId,
+      "TestCategory",
+      new SubCategoryAppearance({ color: ColorByName.darkRed })
+    );
     imodel.saveChanges("set up");
     imodel.nativeDb.deleteAllTxns();
-    imodel.txns.onGeometryChanged.addListener((props) => lastChanges = props);
+    imodel.txns.onGeometryChanged.addListener((props) => (lastChanges = props));
   });
 
   after(async () => {
@@ -79,10 +101,13 @@ describe("Model geometry changes", () => {
 
   it("emits events", async () => {
     expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be
+      .true;
 
     const builder = new GeometryStreamBuilder();
-    builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));
+    builder.appendGeometry(
+      LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0))
+    );
 
     // Insert a geometric element.
     const props: GeometricElement3dProps = {
@@ -109,7 +134,10 @@ describe("Model geometry changes", () => {
     expectNoChanges();
 
     // Modify the element's geometry.
-    props.placement = { origin: new Point3d(2, 1, 0), angles: new YawPitchRollAngles() };
+    props.placement = {
+      origin: new Point3d(2, 1, 0),
+      angles: new YawPitchRollAngles(),
+    };
     imodel.elements.updateElement(props);
     imodel.saveChanges("change placement");
     expectChanges({ modelId, updated: [elemId0] });
@@ -126,18 +154,23 @@ describe("Model geometry changes", () => {
     expectChanges({ modelId, deleted: [elemId0] });
 
     // Stop tracking geometry changes
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be
+      .false;
     expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
 
     // Modify element's geometry.
     props.id = elemId1;
-    props.placement = { origin: new Point3d(2, 10, 0), angles: new YawPitchRollAngles() };
+    props.placement = {
+      origin: new Point3d(2, 10, 0),
+      angles: new YawPitchRollAngles(),
+    };
     imodel.elements.updateElement(props);
     imodel.saveChanges("change placement again without tracking");
     expectNoChanges();
 
     // Restart tracking and undo everything.
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be
+      .true;
     expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
     expectChanges({ modelId, updated: [elemId1] });
 
@@ -175,6 +208,7 @@ describe("Model geometry changes", () => {
     expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
     expectChanges({ modelId, updated: [elemId1] });
 
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
+    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be
+      .false;
   });
 });

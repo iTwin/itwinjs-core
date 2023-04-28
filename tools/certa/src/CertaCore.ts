@@ -19,13 +19,15 @@ export interface CertaTestRunner {
 export class CertaCore {
   private static _runners: { [environment: string]: CertaTestRunner } = {};
 
-  public static registerTestRunner(environment: string, runner: CertaTestRunner) {
+  public static registerTestRunner(
+    environment: string,
+    runner: CertaTestRunner
+  ) {
     this._runners[environment] = runner;
   }
 
   public static getTestRunner(environment: string): CertaTestRunner {
-    if (environment in this._runners)
-      return this._runners[environment];
+    if (environment in this._runners) return this._runners[environment];
 
     throw new Error(`Unknown TestRunner: "${environment}"`);
   }
@@ -35,7 +37,10 @@ CertaCore.registerTestRunner("node", NodeTestRunner);
 CertaCore.registerTestRunner("chrome", ChromeTestRunner);
 CertaCore.registerTestRunner("electron", ElectronTestRunner);
 
-export async function certa(environment: string, config: CertaConfig): Promise<void> {
+export async function certa(
+  environment: string,
+  config: CertaConfig
+): Promise<void> {
   const runner = CertaCore.getTestRunner(environment);
 
   // If we're going to measure code coverage, we should stop now and let an `nyc`-wrapped child process take it from here.
@@ -43,12 +48,10 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
   if (config.cover && runner.supportsCoverage && !alreadyInNyc)
     return process.exit(await relaunchForCoverage());
 
-  if (runner.initialize)
-    await runner.initialize(config);
+  if (runner.initialize) await runner.initialize(config);
 
   // In debug mode, we should now start listening for debugger connections (if we're not already).
-  if (config.debug)
-    startDebugger(config.ports.debugging);
+  if (config.debug) startDebugger(config.ports.debugging);
 
   // Source map any errors in this backend process
   require("source-map-support").install();

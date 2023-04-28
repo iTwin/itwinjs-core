@@ -55,7 +55,8 @@ export class RpcControlChannel {
   private _configuration: RpcConfiguration;
   private _initialized = false;
   private _clientActive = false;
-  private _describeEndpoints: () => Promise<RpcInterfaceEndpoints[]> = undefined as any;
+  private _describeEndpoints: () => Promise<RpcInterfaceEndpoints[]> =
+    undefined as any;
 
   /** @internal */
   public static ensureInitialized() {
@@ -79,8 +80,7 @@ export class RpcControlChannel {
 
   /** @internal */
   public static obtain(configuration: RpcConfiguration): RpcControlChannel {
-    if (RpcControlChannel._obtainLock)
-      return undefined as any;
+    if (RpcControlChannel._obtainLock) return undefined as any;
 
     ++RpcControlChannel._obtainLock;
     const channel = new RpcControlChannel(configuration);
@@ -92,7 +92,9 @@ export class RpcControlChannel {
   private _channelInterface = class extends RpcInterface {
     public static readonly interfaceVersion = "CONTROL";
     public static readonly interfaceName = "";
-    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward(arguments); }
+    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+      return this.forward(arguments);
+    }
   };
 
   private _channelImpl = class extends RpcInterface {
@@ -100,11 +102,17 @@ export class RpcControlChannel {
       const endpoints: RpcInterfaceEndpoints[] = [];
 
       this.configuration.interfaces().forEach((definition) => {
-        if (!RpcRegistry.instance.isRpcInterfaceInitialized(definition))
-          return;
+        if (!RpcRegistry.instance.isRpcInterfaceInitialized(definition)) return;
 
-        const description: RpcInterfaceEndpoints = { interfaceName: definition.interfaceName, interfaceVersion: definition.interfaceVersion, operationNames: [], compatible: true };
-        RpcOperation.forEach(definition, (operation) => description.operationNames.push(operation.operationName));
+        const description: RpcInterfaceEndpoints = {
+          interfaceName: definition.interfaceName,
+          interfaceVersion: definition.interfaceVersion,
+          operationNames: [],
+          compatible: true,
+        };
+        RpcOperation.forEach(definition, (operation) =>
+          description.operationNames.push(operation.operationName)
+        );
         endpoints.push(description);
       });
 
@@ -114,20 +122,35 @@ export class RpcControlChannel {
 
   private computeId(): string {
     const interfaces: string[] = [];
-    this._configuration.interfaces().forEach((definition) => interfaces.push(`${definition.interfaceName}@${definition.interfaceVersion}`));
+    this._configuration
+      .interfaces()
+      .forEach((definition) =>
+        interfaces.push(
+          `${definition.interfaceName}@${definition.interfaceVersion}`
+        )
+      );
     const id = interfaces.sort().join(",");
 
     return Base64.encode(id);
   }
 
   private activateClient() {
-    if (this._clientActive)
-      return;
+    if (this._clientActive) return;
 
     this.initialize();
 
-    const token: IModelRpcProps = { key: "none", iTwinId: "none", iModelId: "none", changeset: { id: "none" } };
-    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken ?? token);
+    const token: IModelRpcProps = {
+      key: "none",
+      iTwinId: "none",
+      iModelId: "none",
+      changeset: { id: "none" },
+    };
+    RpcOperation.forEach(
+      this._channelInterface,
+      (operation) =>
+        (operation.policy.token = (_request) =>
+          RpcOperation.fallbackToken ?? token)
+    );
     const client = RpcManager.getClientForInterface(this._channelInterface);
     this._describeEndpoints = async () => client.describeEndpoints();
     this._clientActive = true;
@@ -140,10 +163,15 @@ export class RpcControlChannel {
     }
 
     const id = this.computeId();
-    Object.defineProperty(this._channelInterface, "interfaceName", { value: id });
+    Object.defineProperty(this._channelInterface, "interfaceName", {
+      value: id,
+    });
     Object.defineProperty(this._channelImpl, "interfaceName", { value: id });
 
-    RpcConfiguration.assign(this._channelInterface, () => this._configuration.constructor as any);
+    RpcConfiguration.assign(
+      this._channelInterface,
+      () => this._configuration.constructor as any
+    );
     RpcManager.registerImpl(this._channelInterface, this._channelImpl);
     RpcManager.initializeInterface(this._channelInterface);
 
@@ -151,11 +179,17 @@ export class RpcControlChannel {
   }
 
   /** @internal */
-  public handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean {
+  public handleUnknownOperation(
+    invocation: RpcInvocation,
+    _error: any
+  ): boolean {
     this.initialize();
 
     const op = invocation.request.operation;
-    if (op.interfaceVersion === "CONTROL" && op.operationName === "describeEndpoints") {
+    if (
+      op.interfaceVersion === "CONTROL" &&
+      op.operationName === "describeEndpoints"
+    ) {
       if (this._channelInterface.interfaceName) {
         op.interfaceDefinition = this._channelInterface.interfaceName;
       }

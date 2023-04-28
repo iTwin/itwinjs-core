@@ -47,32 +47,32 @@ export enum PropertyType {
   String_Array = 0x905, // PrimitiveType.String | PropertyFlags.Array
   String_Enumeration = 0x911, // PrimitiveType.String | PropertyFlags.Enumeration
   String_Enumeration_Array = 0x915, // PrimitiveType.String | PropertyFlags.Enumeration | PropertyFlags.Array
-  IGeometry = 0xA01, // PrimitiveType.IGeometry
-  IGeometry_Array = 0xA05, // PrimitiveType.IGeometry | PropertyFlags.Array
+  IGeometry = 0xa01, // PrimitiveType.IGeometry
+  IGeometry_Array = 0xa05, // PrimitiveType.IGeometry | PropertyFlags.Array
 }
 
 /** @beta */
 export namespace PropertyTypeUtils {
   export function isArray(t: PropertyType) {
-    return (t === (PropertyFlags.Array | t));
+    return t === (PropertyFlags.Array | t);
   }
   export function isPrimitive(t: PropertyType) {
-    return (t === (PropertyFlags.Primitive | t));
+    return t === (PropertyFlags.Primitive | t);
   }
   export function isStruct(t: PropertyType) {
-    return (t === (PropertyFlags.Struct | t));
+    return t === (PropertyFlags.Struct | t);
   }
   export function isNavigation(t: PropertyType) {
-    return (t === (PropertyFlags.Navigation | t));
+    return t === (PropertyFlags.Navigation | t);
   }
   export function isEnumeration(t: PropertyType) {
-    return (t === (PropertyFlags.Enumeration | t));
+    return t === (PropertyFlags.Enumeration | t);
   }
   export function asArray(t: PropertyType): PropertyType {
     return t | PropertyFlags.Array;
   }
   export function getPrimitiveType(t: PropertyType): PrimitiveType {
-    return (0xFF01 & t);
+    return 0xff01 & t;
   }
   export function fromPrimitiveType(t: PrimitiveType): PropertyType {
     return t | 0;
@@ -82,10 +82,13 @@ export namespace PropertyTypeUtils {
 /** @beta */
 export function propertyTypeToString(type: PropertyType) {
   if (PropertyTypeUtils.isPrimitive(type))
-    return (PropertyTypeUtils.isArray(type)) ? "PrimitiveArrayProperty" : "PrimitiveProperty";
+    return PropertyTypeUtils.isArray(type)
+      ? "PrimitiveArrayProperty"
+      : "PrimitiveProperty";
   if (PropertyTypeUtils.isStruct(type))
-    return (PropertyTypeUtils.isArray(type)) ? "StructArrayProperty" : "StructProperty";
-  if (PropertyTypeUtils.isNavigation(type))
-    return "NavigationProperty";
+    return PropertyTypeUtils.isArray(type)
+      ? "StructArrayProperty"
+      : "StructProperty";
+  if (PropertyTypeUtils.isNavigation(type)) return "NavigationProperty";
   throw new ECObjectsError(ECObjectsStatus.InvalidType, "Invalid propertyType");
 }

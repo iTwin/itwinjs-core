@@ -4,18 +4,41 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
-  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
-  ModelSelectorState, OrthographicViewState, ViewState,
+  BisCodeSpec,
+  CodeSpec,
+  IModelVersion,
+  QueryBinder,
+  QueryRowFormat,
+  RelatedElement,
+} from "@itwin/core-common";
+import {
+  CategorySelectorState,
+  CheckpointConnection,
+  DisplayStyle2dState,
+  DisplayStyle3dState,
+  DrawingViewState,
+  IModelApp,
+  IModelConnection,
+  ModelSelectorState,
+  OrthographicViewState,
+  ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 
-async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
+async function executeQuery(
+  iModel: IModelConnection,
+  ecsql: string,
+  bindings?: any[] | object
+): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+  for await (const row of iModel.createQueryReader(
+    ecsql,
+    QueryBinder.from(bindings),
+    { rowFormat: QueryRowFormat.UseJsPropertyNames }
+  )) {
     rows.push(row.toRow());
   }
   return rows;
@@ -26,10 +49,13 @@ describe("IModelConnection (#integration)", () => {
 
   before(async () => {
     await TestUtility.shutdownFrontend();
-    await TestUtility.startFrontend({
-      applicationVersion: "1.2.1.1",
-      hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
-    }, true);
+    await TestUtility.startFrontend(
+      {
+        applicationVersion: "1.2.1.1",
+        hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
+      },
+      true
+    );
 
     Logger.initializeToConsole();
     Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -38,16 +64,20 @@ describe("IModelConnection (#integration)", () => {
     IModelApp.authorizationClient = TestUtility.iTwinPlatformEnv.authClient;
 
     // Setup a model with a large number of change sets
-    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.connectionRead);
+    const testITwinId = await TestUtility.queryITwinIdByName(
+      TestUtility.testITwinName
+    );
+    const testIModelId = await TestUtility.queryIModelIdByName(
+      testITwinId,
+      TestUtility.testIModelNames.connectionRead
+    );
 
     iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
 
   after(async () => {
     await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
-    if (iModel)
-      await iModel.close();
+    if (iModel) await iModel.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -59,87 +89,153 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(iModel.elements);
     assert.isTrue(iModel.elements instanceof IModelConnection.Elements);
 
-    const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
+    const elementProps = await iModel.elements.getProps(
+      iModel.elements.rootSubjectId
+    );
     assert.equal(elementProps.length, 1);
-    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
-    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
+    assert.equal(
+      iModel.elements.rootSubjectId,
+      Id64.fromJSON(elementProps[0].id)
+    );
+    assert.equal(
+      iModel.models.repositoryModelId,
+      RelatedElement.idFromJson(elementProps[0].model).toString()
+    );
 
-    const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
+    const queryElementIds = await iModel.elements.queryIds({
+      from: "BisCore.Category",
+      limit: 20,
+      offset: 0,
+    });
     assert.isAtLeast(queryElementIds.size, 1);
 
-    const modelProps = await iModel.models.getProps(iModel.models.repositoryModelId);
+    const modelProps = await iModel.models.getProps(
+      iModel.models.repositoryModelId
+    );
     assert.exists(modelProps);
     assert.equal(modelProps.length, 1);
     assert.equal(modelProps[0].id, iModel.models.repositoryModelId);
     assert.equal(iModel.models.repositoryModelId, modelProps[0].id);
 
-    const rows: any[] = await executeQuery(iModel, "SELECT CodeValue AS code FROM BisCore.Category LIMIT 20");
+    const rows: any[] = await executeQuery(
+      iModel,
+      "SELECT CodeValue AS code FROM BisCore.Category LIMIT 20"
+    );
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].code);
     assert.equal(rows.length, queryElementIds.size);
 
-    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getByName(BisCodeSpec.spatialCategory);
+    const codeSpecByName: CodeSpec = await iModel.codeSpecs.getByName(
+      BisCodeSpec.spatialCategory
+    );
     assert.exists(codeSpecByName);
-    const codeSpecById: CodeSpec = await iModel.codeSpecs.getById(codeSpecByName.id);
+    const codeSpecById: CodeSpec = await iModel.codeSpecs.getById(
+      codeSpecByName.id
+    );
     assert.exists(codeSpecById);
-    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(Id64.fromJSON(codeSpecByName.id));
+    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(
+      Id64.fromJSON(codeSpecByName.id)
+    );
     assert.exists(codeSpecByNewId);
 
-    let viewDefinitions = await iModel.views.getViewList({ from: "BisCore.OrthographicViewDefinition" });
+    let viewDefinitions = await iModel.views.getViewList({
+      from: "BisCore.OrthographicViewDefinition",
+    });
     assert.isAtLeast(viewDefinitions.length, 1);
     let viewState: ViewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
     assert.equal(viewState.classFullName, OrthographicViewState.classFullName);
-    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
-    assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.classFullName);
+    assert.equal(
+      viewState.categorySelector.classFullName,
+      CategorySelectorState.classFullName
+    );
+    assert.equal(
+      viewState.displayStyle.classFullName,
+      DisplayStyle3dState.classFullName
+    );
     assert.instanceOf(viewState, OrthographicViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
-    assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
+    assert.instanceOf(
+      (viewState as OrthographicViewState).modelSelector,
+      ModelSelectorState
+    );
 
-    viewDefinitions = await iModel.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
+    viewDefinitions = await iModel.views.getViewList({
+      from: "BisCore.DrawingViewDefinition",
+    });
     assert.isAtLeast(viewDefinitions.length, 1);
     viewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
     assert.equal(viewState.code.value, viewDefinitions[0].name);
     assert.equal(viewState.classFullName, viewDefinitions[0].class);
-    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
-    assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.classFullName);
+    assert.equal(
+      viewState.categorySelector.classFullName,
+      CategorySelectorState.classFullName
+    );
+    assert.equal(
+      viewState.displayStyle.classFullName,
+      DisplayStyle2dState.classFullName
+    );
     assert.instanceOf(viewState, DrawingViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
-
   });
 
   it("should be able to open an IModel with no versions", async () => {
-    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.noVersions);
-    const noVersionsIModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(
+      TestUtility.testITwinName
+    );
+    const iModelId = await TestUtility.queryIModelIdByName(
+      iTwinId,
+      TestUtility.testIModelNames.noVersions
+    );
+    const noVersionsIModel = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId
+    );
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await CheckpointConnection.openRemote(iTwinId, iModelId);
+    const noVersionsIModel2 = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId
+    );
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId,
+      IModelVersion.asOfChangeSet("")
+    );
     assert.isNotNull(noVersionsIModel3);
   });
 
   it("should be able to open the same IModel many times", async () => {
-    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, "ReadOnlyTest");
+    const iTwinId = await TestUtility.queryITwinIdByName(
+      TestUtility.testITwinName
+    );
+    const iModelId = await TestUtility.queryIModelIdByName(
+      iTwinId,
+      "ReadOnlyTest"
+    );
 
-    const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
+    const readOnlyTest = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId,
+      IModelVersion.latest()
+    );
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = CheckpointConnection.openRemote(iTwinId, iModelId)
-        .then((readOnlyTest2: IModelConnection) => {
+      const promise = CheckpointConnection.openRemote(iTwinId, iModelId).then(
+        (readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
-        });
+        }
+      );
       promises.push(promise);
     }
 
@@ -147,11 +243,18 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
-    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, "ConnectionReadTest");
+    const testITwinId = await TestUtility.queryITwinIdByName(
+      TestUtility.testITwinName
+    );
+    const testIModelId = await TestUtility.queryIModelIdByName(
+      testITwinId,
+      "ConnectionReadTest"
+    );
     iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
 
-    const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
+    const modelProps = await iModel.models.queryProps({
+      from: "BisCore.PhysicalModel",
+    });
     expect(modelProps.length).to.equal(1);
 
     const treeId = modelProps[0].id!.toString();
@@ -163,15 +266,30 @@ describe("IModelConnection (#integration)", () => {
 
     const tf = Transform.fromJSON(tree.location);
     expect(tf.matrix.isIdentity).to.be.true;
-    expect(tf.origin.isAlmostEqualXYZ(5.138785, 4.7847327, 10.15635152, 0.001)).to.be.true;
+    expect(tf.origin.isAlmostEqualXYZ(5.138785, 4.7847327, 10.15635152, 0.001))
+      .to.be.true;
 
     const rootTile = tree.rootTile;
     expect(rootTile.contentId).to.equal("0/0/0/0/1");
 
     const range = Range3d.fromJSON(rootTile.range);
     const expectedRange = { x: 35.285026, y: 35.118263, z: 10.157 };
-    expect(range.low.isAlmostEqualXYZ(-expectedRange.x, -expectedRange.y, -expectedRange.z, 0.001)).to.be.true;
-    expect(range.high.isAlmostEqualXYZ(expectedRange.x, expectedRange.y, expectedRange.z, 0.001)).to.be.true;
+    expect(
+      range.low.isAlmostEqualXYZ(
+        -expectedRange.x,
+        -expectedRange.y,
+        -expectedRange.z,
+        0.001
+      )
+    ).to.be.true;
+    expect(
+      range.high.isAlmostEqualXYZ(
+        expectedRange.x,
+        expectedRange.y,
+        expectedRange.z,
+        0.001
+      )
+    ).to.be.true;
 
     // The following are not known until we load the tile content.
     expect(rootTile.contentRange).to.be.undefined;
@@ -180,7 +298,10 @@ describe("IModelConnection (#integration)", () => {
 
   it("ECSQL with BLOB", async () => {
     assert.exists(iModel);
-    let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    let rows = await executeQuery(
+      iModel,
+      "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1"
+    );
     assert.equal(rows.length, 1);
     const row: any = rows[0];
 
@@ -190,7 +311,11 @@ describe("IModelConnection (#integration)", () => {
     const geomStream: Uint8Array = row.geometryStream;
     assert.isAtLeast(geomStream.byteLength, 1);
 
-    rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    rows = await executeQuery(
+      iModel,
+      "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?",
+      [geomStream]
+    );
     assert.equal(rows.length, 1);
   });
 

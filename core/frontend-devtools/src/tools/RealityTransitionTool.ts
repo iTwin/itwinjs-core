@@ -11,37 +11,57 @@ import { Vector3d } from "@itwin/core-geometry";
 import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 
-enum FadeMode { X, Y, Z, Transparent }
+enum FadeMode {
+  X,
+  Y,
+  Z,
+  Transparent,
+}
 
 /** This tool applies a transition in X, Y, Z, or transparency.
  * @beta
  */
 export class RealityTransitionTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
   public static override toolId = "RealityTransition";
   /** This method runs the tool, applying a transition in X, Y, Z, or transparency.
    * @param fadeMode whether to apply the transition in X, Y, Z, or transparency
    */
   public override async run(fadeMode: FadeMode = FadeMode.X): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp)
-      return true;
+    if (undefined === vp) return true;
 
     const displayStyle = vp.displayStyle;
     const view = vp.view;
-    const timeNow = Date.now(), timeEnd = timeNow + 1000.0 * 60.0 * 60.0;
+    const timeNow = Date.now(),
+      timeEnd = timeNow + 1000.0 * 60.0 * 60.0;
     const range = vp.iModel.projectExtents;
-    const directions = [Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 1)];
-    const modelInTimeline: RenderSchedule.ModelTimelineProps = { modelId: "", elementTimelines: [] };
-    const modelOutTimeline: RenderSchedule.ModelTimelineProps = { modelId: "", elementTimelines: [] };
+    const directions = [
+      Vector3d.create(1, 0, 0),
+      Vector3d.create(0, 1, 0),
+      Vector3d.create(0, 0, 1),
+    ];
+    const modelInTimeline: RenderSchedule.ModelTimelineProps = {
+      modelId: "",
+      elementTimelines: [],
+    };
+    const modelOutTimeline: RenderSchedule.ModelTimelineProps = {
+      modelId: "",
+      elementTimelines: [],
+    };
 
     switch (fadeMode) {
       case FadeMode.Transparent: {
         const fadeInTimeline = new Array<RenderSchedule.VisibilityEntryProps>();
         fadeInTimeline.push({ time: timeNow, interpolation: 2, value: 100.0 });
         fadeInTimeline.push({ time: timeEnd, interpolation: 2, value: 0.0 });
-        const fadeOutTimeline = new Array<RenderSchedule.VisibilityEntryProps>();
+        const fadeOutTimeline =
+          new Array<RenderSchedule.VisibilityEntryProps>();
         fadeOutTimeline.push({ time: timeNow, interpolation: 2, value: 0.0 });
         fadeOutTimeline.push({ time: timeEnd, interpolation: 2, value: 100.0 });
         modelInTimeline.visibilityTimeline = fadeInTimeline;
@@ -51,12 +71,42 @@ export class RealityTransitionTool extends Tool {
 
       default: {
         const direction = directions[fadeMode - FadeMode.X];
-        const clipInTimeline = new Array<RenderSchedule.CuttingPlaneEntryProps>();
-        clipInTimeline.push({ time: timeNow, interpolation: 2, value: { position: [range.low.x, range.low.y, range.low.z], direction: [direction.x, direction.y, direction.z] } });
-        clipInTimeline.push({ time: timeEnd, interpolation: 2, value: { position: [range.high.x, range.high.y, range.high.z], direction: [direction.x, direction.y, direction.z] } });
-        const clipOutTimeline = new Array<RenderSchedule.CuttingPlaneEntryProps>();
-        clipOutTimeline.push({ time: timeNow, interpolation: 2, value: { position: [range.low.x, range.low.y, range.low.z], direction: [-direction.x, -direction.y, -direction.z] } });
-        clipOutTimeline.push({ time: timeEnd, interpolation: 2, value: { position: [range.high.x, range.high.y, range.high.z], direction: [-direction.x, -direction.y, -direction.z] } });
+        const clipInTimeline =
+          new Array<RenderSchedule.CuttingPlaneEntryProps>();
+        clipInTimeline.push({
+          time: timeNow,
+          interpolation: 2,
+          value: {
+            position: [range.low.x, range.low.y, range.low.z],
+            direction: [direction.x, direction.y, direction.z],
+          },
+        });
+        clipInTimeline.push({
+          time: timeEnd,
+          interpolation: 2,
+          value: {
+            position: [range.high.x, range.high.y, range.high.z],
+            direction: [direction.x, direction.y, direction.z],
+          },
+        });
+        const clipOutTimeline =
+          new Array<RenderSchedule.CuttingPlaneEntryProps>();
+        clipOutTimeline.push({
+          time: timeNow,
+          interpolation: 2,
+          value: {
+            position: [range.low.x, range.low.y, range.low.z],
+            direction: [-direction.x, -direction.y, -direction.z],
+          },
+        });
+        clipOutTimeline.push({
+          time: timeEnd,
+          interpolation: 2,
+          value: {
+            position: [range.high.x, range.high.y, range.high.z],
+            direction: [-direction.x, -direction.y, -direction.z],
+          },
+        });
         modelInTimeline.cuttingPlaneTimeline = clipInTimeline;
         modelOutTimeline.cuttingPlaneTimeline = clipOutTimeline;
         break;
@@ -66,7 +116,9 @@ export class RealityTransitionTool extends Tool {
     const scriptProps: RenderSchedule.ScriptProps = [];
     view.forEachModel((model) => {
       scriptProps.push({
-        ...(model.jsonProperties.tilesetUrl ? modelOutTimeline : modelInTimeline),
+        ...(model.jsonProperties.tilesetUrl
+          ? modelOutTimeline
+          : modelInTimeline),
         modelId: model.id,
       });
     });
@@ -96,12 +148,7 @@ export class RealityTransitionTool extends Tool {
    * @see [[run]]
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    const transitionNames = [
-      "x",
-      "y",
-      "z",
-      "transparent",
-    ];
+    const transitionNames = ["x", "y", "z", "transparent"];
     let fade = FadeMode.X;
     if (0 !== args.length) {
       const arg = args[0].toLowerCase();

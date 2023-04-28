@@ -6,10 +6,30 @@
  * @module Validation
  */
 
-import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
-  PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass, Unit,
-  UnitSystem } from "@itwin/ecschema-metadata";
+import {
+  AnyClass,
+  AnyECType,
+  AnyProperty,
+  Constant,
+  CustomAttribute,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  StructClass,
+  Unit,
+  UnitSystem,
+} from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "./Diagnostic";
 
 /**
@@ -17,10 +37,17 @@ import { AnyDiagnostic } from "./Diagnostic";
  * Just telling us whether a rule is suppressed or not.
  * @beta
  */
-export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
+export type ISuppressionRule<T extends AnyECType, U = {}> = (
+  diagnostic: AnyDiagnostic,
+  ecDefinition: T,
+  ...args: U[]
+) => Promise<boolean>;
 
 /** @beta */
-export type BaseSuppressionRule<T extends AnyECType, U extends AnyECType> = ISuppressionRule<T, U>;
+export type BaseSuppressionRule<
+  T extends AnyECType,
+  U extends AnyECType
+> = ISuppressionRule<T, U>;
 
 /** @internal */
 export type AnyRuleSuppressionMap = IRuleSuppressionMap<AnyECType>;
@@ -38,7 +65,10 @@ export interface IRuleSuppressionMap<T extends AnyECType, U = {}> {
  * Interface used to represent elements of a rule suppression
  * @beta
  */
-export interface BaseRuleSuppressionMap<T extends AnyECType, U extends AnyECType> {
+export interface BaseRuleSuppressionMap<
+  T extends AnyECType,
+  U extends AnyECType
+> {
   ruleCode: string;
   rule: BaseSuppressionRule<T, U>;
 }
@@ -57,13 +87,23 @@ export interface IRuleSuppressionSet {
   structRuleSuppressions?: Array<IRuleSuppressionMap<StructClass>>;
   mixinRuleSuppressions?: Array<IRuleSuppressionMap<Mixin>>;
   relationshipRuleSuppressions?: Array<IRuleSuppressionMap<RelationshipClass>>;
-  relationshipConstraintRuleSuppressions?: Array<IRuleSuppressionMap<RelationshipConstraint>>;
-  customAttributeRuleSuppressions?: Array<IRuleSuppressionMap<CustomAttributeClass>>;
-  customAttributeContainerSuppressions?: Array<IRuleSuppressionMap<CustomAttributeContainerProps>>;
-  customAttributeInstanceSuppressions?: Array<BaseRuleSuppressionMap<CustomAttributeContainerProps, CustomAttribute>>;
+  relationshipConstraintRuleSuppressions?: Array<
+    IRuleSuppressionMap<RelationshipConstraint>
+  >;
+  customAttributeRuleSuppressions?: Array<
+    IRuleSuppressionMap<CustomAttributeClass>
+  >;
+  customAttributeContainerSuppressions?: Array<
+    IRuleSuppressionMap<CustomAttributeContainerProps>
+  >;
+  customAttributeInstanceSuppressions?: Array<
+    BaseRuleSuppressionMap<CustomAttributeContainerProps, CustomAttribute>
+  >;
   enumerationRuleSuppressions?: Array<IRuleSuppressionMap<Enumeration>>;
   koqRuleSuppressions?: Array<IRuleSuppressionMap<KindOfQuantity>>;
-  propertyCategoryRuleSuppressions?: Array<IRuleSuppressionMap<PropertyCategory>>;
+  propertyCategoryRuleSuppressions?: Array<
+    IRuleSuppressionMap<PropertyCategory>
+  >;
   formatRuleSuppressions?: Array<IRuleSuppressionMap<Format>>;
   unitRuleSuppressions?: Array<IRuleSuppressionMap<Unit>>;
   invertedUnitRuleSuppressions?: Array<IRuleSuppressionMap<InvertedUnit>>;

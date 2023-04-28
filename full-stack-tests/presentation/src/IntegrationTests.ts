@@ -12,25 +12,36 @@ import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, EmptyLocalization, IModelReadRpcInterface, Localization, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
+  AuthorizationClient,
+  EmptyLocalization,
+  IModelReadRpcInterface,
+  Localization,
+  RpcConfiguration,
+  RpcDefaultConfiguration,
+  RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
+  HierarchyCacheMode,
+  Presentation as PresentationBackend,
+  PresentationBackendNativeLoggerCategory,
+  PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
-import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import {
+  Presentation as PresentationFrontend,
+  PresentationProps as PresentationFrontendProps,
+} from "@itwin/presentation-frontend";
 import { getOutputRoot } from "./Utils";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -46,26 +57,32 @@ loadEnv(path.join(__dirname, "..", ".env"));
 
 const copyITwinBackendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "cjs", "assets");
-  }).filter((assetsPath) => {
-    return fs.existsSync(assetsPath);
-  }).forEach((src) => {
-    cpx.copySync(`${src}/**/*`, outputDir);
-  });
+  fs.readdirSync(iTwinPackagesPath)
+    .map((packageName) => {
+      const packagePath = path.resolve(iTwinPackagesPath, packageName);
+      return path.join(packagePath, "lib", "cjs", "assets");
+    })
+    .filter((assetsPath) => {
+      return fs.existsSync(assetsPath);
+    })
+    .forEach((src) => {
+      cpx.copySync(`${src}/**/*`, outputDir);
+    });
 };
 
 const copyITwinFrontendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "public");
-  }).filter((assetsPath) => {
-    return fs.existsSync(assetsPath);
-  }).forEach((src) => {
-    cpx.copySync(`${src}/**/*`, outputDir);
-  });
+  fs.readdirSync(iTwinPackagesPath)
+    .map((packageName) => {
+      const packagePath = path.resolve(iTwinPackagesPath, packageName);
+      return path.join(packagePath, "lib", "public");
+    })
+    .filter((assetsPath) => {
+      return fs.existsSync(assetsPath);
+    })
+    .forEach((src) => {
+      cpx.copySync(`${src}/**/*`, outputDir);
+    });
 };
 
 class IntegrationTestsApp extends NoRenderApp {
@@ -90,7 +107,10 @@ const initializeCommon = async (props: {
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
   Logger.setLevel("SQLite", LogLevel.Error);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
+  Logger.setLevel(
+    PresentationBackendNativeLoggerCategory.ECObjects,
+    LogLevel.Warning
+  );
 
   // prepare an empty, process-unique output directory
   const outputRoot = getOutputRoot();
@@ -98,8 +118,7 @@ const initializeCommon = async (props: {
   fs.mkdirSync(outputRoot, { recursive: true });
 
   const tempCachesDir = path.join(outputRoot, "caches");
-  if (!fs.existsSync(tempCachesDir))
-    fs.mkdirSync(tempCachesDir);
+  if (!fs.existsSync(tempCachesDir)) fs.mkdirSync(tempCachesDir);
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
@@ -156,7 +175,9 @@ export const initialize = async (props?: {
 };
 
 export const initializeWithClientServices = async () => {
-  const authorizationClient = TestUtility.getAuthorizationClient(TestUsers.regular);
+  const authorizationClient = TestUtility.getAuthorizationClient(
+    TestUsers.regular
+  );
   await authorizationClient.signIn();
   await initializeCommon({ authorizationClient });
 };
@@ -175,7 +196,9 @@ export const resetBackend = () => {
 };
 
 export const testLocalization = new ITwinLocalization({
-  urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+  urlTemplate: `file://${path
+    .join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json")
+    .replace(/\\/g, "/")}`,
   initOptions: {
     preload: ["test"],
   },
@@ -214,11 +237,14 @@ interface PresentationInitProps {
 
 let isInitialized = false;
 async function initializePresentation(props: PresentationInitProps) {
-  if (isInitialized)
-    return;
+  if (isInitialized) return;
 
   // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+  initializeRpcInterfaces([
+    SnapshotIModelRpcInterface,
+    IModelReadRpcInterface,
+    PresentationRpcInterface,
+  ]);
 
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
@@ -233,12 +259,12 @@ async function initializePresentation(props: PresentationInitProps) {
 }
 
 async function terminatePresentation(frontendApp = IModelApp) {
-  if (!isInitialized)
-    return;
+  if (!isInitialized) return;
 
   // store directory that needs to be cleaned-up
   let hierarchiesCacheDirectory: string | undefined;
-  const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
+  const hierarchiesCacheConfig =
+    PresentationBackend.initProps?.caching?.hierarchies;
   if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
     hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
   else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
@@ -247,8 +273,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   // terminate backend
   PresentationBackend.terminate();
   await IModelHost.shutdown();
-  if (hierarchiesCacheDirectory)
-    rimraf.sync(hierarchiesCacheDirectory);
+  if (hierarchiesCacheDirectory) rimraf.sync(hierarchiesCacheDirectory);
 
   // terminate frontend
   PresentationFrontend.terminate();

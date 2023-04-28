@@ -6,7 +6,11 @@ import { assert } from "chai";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
-import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
+import {
+  BlankConnection,
+  ScreenViewport,
+  SpatialViewState,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 function createViewDiv() {
@@ -24,7 +28,11 @@ describe("Blank Connection", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    const exton = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 });
+    const exton = Cartographic.fromDegrees({
+      longitude: -75.686694,
+      latitude: 40.065757,
+      height: 0,
+    });
     blankConnection = BlankConnection.create({
       name: "test",
       location: exton,
@@ -38,19 +46,30 @@ describe("Blank Connection", () => {
   });
 
   it("BlankConnection properties", async () => {
-    assert.isFalse(blankConnection.isOpen, "A BlankConnection is never considered open");
-    assert.isTrue(blankConnection.isClosed, "A BlankConnection is always considered closed");
+    assert.isFalse(
+      blankConnection.isOpen,
+      "A BlankConnection is never considered open"
+    );
+    assert.isTrue(
+      blankConnection.isClosed,
+      "A BlankConnection is always considered closed"
+    );
     assert.isUndefined(blankConnection.iModelId);
     assert.equal(iTwinId, blankConnection.iTwinId);
     assert.throws(() => blankConnection.getRpcProps());
-    const elementProps: ElementProps[] = await blankConnection.elements.getProps(IModel.rootSubjectId);
+    const elementProps: ElementProps[] =
+      await blankConnection.elements.getProps(IModel.rootSubjectId);
     assert.equal(0, elementProps.length);
   });
 
   it("ScreenViewport with a BlankConnection", async () => {
     const origin = new Point3d();
     const extents = new Vector3d(1, 1, 1);
-    const spatial = SpatialViewState.createBlank(blankConnection, origin, extents);
+    const spatial = SpatialViewState.createBlank(
+      blankConnection,
+      origin,
+      extents
+    );
     const vp = ScreenViewport.create(viewDiv, spatial);
     assert.isDefined(vp);
   });

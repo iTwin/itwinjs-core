@@ -60,7 +60,7 @@ jobs:
       # Check for certain paths having been modified
       - name: Get specific changed files
         id: changed-files-specific
-        uses: tj-actions/changed-files@v29.0.2    # See https://github.com/marketplace/actions/changed-files
+        uses: tj-actions/changed-files@v29.0.2 # See https://github.com/marketplace/actions/changed-files
         with:
           files: |
             **/*.md
@@ -71,7 +71,7 @@ jobs:
             **/CHANGELOG.md
 
       # Fake required checks if neccessary
-      - uses: LouisBrunner/checks-action@v1.3.0   # See https://github.com/marketplace/actions/github-checks
+      - uses: LouisBrunner/checks-action@v1.3.0 # See https://github.com/marketplace/actions/github-checks
         if: steps.changed-files-specific.outputs.only_modified == 'true'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

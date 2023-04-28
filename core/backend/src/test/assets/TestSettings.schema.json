@@ -9,14 +9,8 @@
   "properties": {
     "app1/list/multiSelectModifier": {
       "type": "string",
-      "enum": [
-        "ctrlCmd",
-        "alt"
-      ],
-      "enumDescriptions": [
-        "ctrl key.",
-        "alt key."
-      ],
+      "enum": ["ctrlCmd", "alt"],
+      "enumDescriptions": ["ctrl key.", "alt key."],
       "default": "ctrlCmd",
       "description": "multiSelectModifier"
     },
@@ -30,10 +24,7 @@
     },
     "app1/list/openMode": {
       "type": "string",
-      "enum": [
-        "singleClick",
-        "doubleClick"
-      ],
+      "enum": ["singleClick", "doubleClick"],
       "default": "singleClick",
       "description": "openModeModifier"
     },
@@ -59,10 +50,7 @@
       "description": "array of fonts to load",
       "items": {
         "type": "object",
-        "required": [
-          "container",
-          "fontName"
-        ],
+        "required": ["container", "fontName"],
         "properties": {
           "container": {
             "type": "string",

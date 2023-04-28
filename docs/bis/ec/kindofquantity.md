@@ -2,7 +2,7 @@
 
 > Commonly referred to as a `KOQ`.
 
-Describes a strongly typed *kind* for a property. This kind identifies what is being measured and stored in an [ECProperty](./ec-property.md). It is used for grouping like properties, setting units and display formatting, and creating quantity objects.
+Describes a strongly typed _kind_ for a property. This kind identifies what is being measured and stored in an [ECProperty](./ec-property.md). It is used for grouping like properties, setting units and display formatting, and creating quantity objects.
 
 ## Attributes
 
@@ -14,15 +14,15 @@ Describes a strongly typed *kind* for a property. This kind identifies what is b
 
 **persistenceUnit** The unit values of this kind will be stored in.
 
-**relativeError** The ratio of the absolute error and the actual value persisted as a fractional value (not a percentage).  For example if a pipes diameter is measured +/- 1 mm at a diameter of 2 meters the relative error would be 1/2000 => 5e-4.
+**relativeError** The ratio of the absolute error and the actual value persisted as a fractional value (not a percentage). For example if a pipes diameter is measured +/- 1 mm at a diameter of 2 meters the relative error would be 1/2000 => 5e-4.
 
-**presentationUnits** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI.  The first format in the list is used as the default presentation of the value.  e.g. `f:DefaultRealU(4)[u:M];f:DefaultRealU(4)[u:MM]`
+**presentationUnits** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI. The first format in the list is used as the default presentation of the value. e.g. `f:DefaultRealU(4)[u:M];f:DefaultRealU(4)[u:MM]`
 
 The first format in the list is considered the default presentation [format](./ec-format.md) used when displaying this kind of value in the UI.
 
 ## Format Overrides
 
-A [format](./ec-format.md) defines the way a value of a property can be displayed in the UI.  Formats support several numerical and unit based styles and sometimes that is desired is to change a single part of an existing format, defined within the same schema or reference schema.  Instead of copying that format to make the small change, KOQ supports overriding specific portions of the format by using [Format Strings](#format-string).
+A [format](./ec-format.md) defines the way a value of a property can be displayed in the UI. Formats support several numerical and unit based styles and sometimes that is desired is to change a single part of an existing format, defined within the same schema or reference schema. Instead of copying that format to make the small change, KOQ supports overriding specific portions of the format by using [Format Strings](#format-string).
 
 Format overrides are currently supported the following modifications to an existing Format,
 
@@ -37,21 +37,21 @@ Its main purpose is to reduce the need for new formats to be created for minor t
 
 The below represents the string literal syntax. All italicized values are to be replaced with appropriate values.
 
-*formatName*`(`*precision*`)` `[`*unitName*`|`*unitLabel*`]` `[`*unitName*`|`*unitLabel*`]` `[`*unitName*`|`*unitLabel*`]` `[`*unitName*`|`*unitLabel*`]`
+_formatName_`(`_precision_`)` `[`_unitName_`|`_unitLabel_`]` `[`_unitName_`|`_unitLabel_`]` `[`_unitName_`|`_unitLabel_`]` `[`_unitName_`|`_unitLabel_`]`
 
-*formatName*
+_formatName_
 
 - Required
 - A valid, fully-qualified, ECName referring to a [Format](./ec-format.md)
 
-*precision*
+_precision_
 
 - Optional
 - Integer
   - See [Format](./ec-format.md) for valid options
 - Overrides the number of decimal digits specified in the Format.
 
-*Unit Override* = `[`*unitName*`|`*unitLabel*`]`
+_Unit Override_ = `[`_unitName_`|`_unitLabel_`]`
 
 - Optional
 - Adds units to a Format that specifies **none** or overrides unit labels in a Format definition that specifies units.
@@ -64,13 +64,13 @@ The below represents the string literal syntax. All italicized values are to be 
 
 #### Parts of a Unit Override
 
-*unitName*
+_unitName_
 
 - Required
 - Name of a unit.
   - The name must be a fully qualified ECName.
 
-*unitLabel*
+_unitLabel_
 
 - Optional
 - A string that overrides the label of the Unit, in the position specified in this Unit Override
@@ -84,7 +84,7 @@ The below represents the string literal syntax. All italicized values are to be 
 - For the format `f:AmerFI` (which has `FT` as a first unit and `IN` as a second unit), valid overrides must specify both units in the correct order:
 
 | Intention             | Invalid way                        | Valid way                        |
-|-----------------------|------------------------------------|----------------------------------|
+| --------------------- | ---------------------------------- | -------------------------------- |
 | Override second Label | f:AmerFI[u:IN&#124;inches]         | f:AmerFI[u:FT][u:IN&#124;inches] |
 | Override first Label  | f:AmerFI[u:FT&#124;feet]           | f:AmerFI[u:FT&#124;feet][u:IN]   |
 | Change units          | f:AmerFI[u:M&#124;m][u:CM&#124;cm] | Never Valid                      |

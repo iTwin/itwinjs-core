@@ -21,23 +21,23 @@
 - `npm install`
 - Create a `.env` file at the project root with the following:
 
-    ``` ps
-    ###############################################################################
-    # This file contains secrets - don't commit or share it!
-    ###############################################################################
+  ```ps
+  ###############################################################################
+  # This file contains secrets - don't commit or share it!
+  ###############################################################################
 
-    # Specify an iModel
-    CONTEXT_ID=
-    IMODEL_ID=
+  # Specify an iModel
+  CONTEXT_ID=
+  IMODEL_ID=
 
-    # OIDC configuration
-    # Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project. This can be done in the "My sample iModels" page.
-    CLIENT_ID=
-    CLIENT_SECRET=
-    ```
+  # OIDC configuration
+  # Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project. This can be done in the "My sample iModels" page.
+  CLIENT_ID=
+  CLIENT_SECRET=
+  ```
 
-    > The values for `CONTEXT_ID` and `IMODEL_ID` can be obtained from the IDs column of the "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
-    > The values for `CLIENT_ID` and `CLIENT_SECRET` come from the Agent Application you registered during the Setup step
+  > The values for `CONTEXT_ID` and `IMODEL_ID` can be obtained from the IDs column of the "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
+  > The values for `CLIENT_ID` and `CLIENT_SECRET` come from the Agent Application you registered during the Setup step
 
 - `npm run build`
 

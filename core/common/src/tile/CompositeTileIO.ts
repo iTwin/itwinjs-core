@@ -17,7 +17,9 @@ export class CompositeTileHeader extends TileHeader {
   public readonly tileCount: number;
   public readonly tilePosition: number;
 
-  public get isValid(): boolean { return TileFormat.Cmpt === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.Cmpt === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);
@@ -25,7 +27,6 @@ export class CompositeTileHeader extends TileHeader {
     this.tileCount = stream.readUint32();
     this.tilePosition = stream.curPos;
 
-    if (stream.isPastTheEnd)
-      this.invalidate();
+    if (stream.isPastTheEnd) this.invalidate();
   }
 }

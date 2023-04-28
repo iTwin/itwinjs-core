@@ -9,7 +9,12 @@
 import { IpcWebSocketMessage } from "./IpcWebSocket";
 
 function isBuffer(val: any): boolean {
-  return val && typeof (val.constructor) !== "undefined" && typeof (val.constructor.isBuffer) === "function" && val.constructor.isBuffer(val);
+  return (
+    val &&
+    typeof val.constructor !== "undefined" &&
+    typeof val.constructor.isBuffer === "function" &&
+    val.constructor.isBuffer(val)
+  );
 }
 
 let parts: any[] = [];
@@ -23,10 +28,15 @@ export abstract class IpcWebSocketTransport {
   public abstract send(message: IpcWebSocketMessage): void;
 
   protected unwrap(data: any) {
-    return (typeof (Blob) !== "undefined" && data instanceof Blob) ? data.arrayBuffer() : data;
+    return typeof Blob !== "undefined" && data instanceof Blob
+      ? data.arrayBuffer()
+      : data;
   }
 
-  protected async notifyIncoming(data: any, connection: any): Promise<IpcWebSocketMessage> {
+  protected async notifyIncoming(
+    data: any,
+    connection: any
+  ): Promise<IpcWebSocketMessage> {
     if (this._partial) {
       this._received.push(data);
       --this._outstanding;
@@ -36,7 +46,9 @@ export abstract class IpcWebSocketTransport {
         const received = this._received;
         this._partial = undefined;
         this._received = [];
-        await Promise.all(received.map(async (v, i, a) => a[i] = await this.unwrap(v)));
+        await Promise.all(
+          received.map(async (v, i, a) => (a[i] = await this.unwrap(v)))
+        );
 
         parts = received;
         const message: IpcWebSocketMessage = JSON.parse(partial, reviver);
@@ -73,8 +85,23 @@ export abstract class IpcWebSocketTransport {
   }
 }
 
-interface Marker { ipc: "binary", type: number, index: number }
-const types = [Uint8Array, Int8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, DataView];
+interface Marker {
+  ipc: "binary";
+  type: number;
+  index: number;
+}
+const types = [
+  Uint8Array,
+  Int8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array,
+  DataView,
+];
 function identify(value: any) {
   return isBuffer(value) ? 0 : types.indexOf(value.constructor);
 }
@@ -93,7 +120,12 @@ function replacer(this: any, _key: string, value: any) {
 }
 
 function reviver(_key: string, value: any) {
-  if (typeof (value) === "object" && value !== null && value.hasOwnProperty("ipc") && value.ipc === "binary") {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    value.hasOwnProperty("ipc") &&
+    value.ipc === "binary"
+  ) {
     return reviveBinary(value);
   }
 
@@ -117,8 +149,8 @@ function reviveBinary(value: Marker): ArrayBufferView {
 }
 
 function makePromise<T>() {
-  let resolve: (value: T | PromiseLike<T>) => void = () => { };
-  let reject: (reason?: any) => void = () => { };
+  let resolve: (value: T | PromiseLike<T>) => void = () => {};
+  let reject: (reason?: any) => void = () => {};
   const promise = new Promise<T>((res, rej) => {
     resolve = res;
     reject = rej;
@@ -130,9 +162,15 @@ function makePromise<T>() {
 /* Reconstructing the sequence in which messages were sent is necessary since
    the binary data for a message has to be awaited in IpcWebSocketTransport.unwrap. */
 class InSentOrder {
-  private static _connections: Map<any, { queue: InSentOrder[], last: number }> = new Map();
+  private static _connections: Map<
+    any,
+    { queue: InSentOrder[]; last: number }
+  > = new Map();
 
-  public static async deliver(message: IpcWebSocketMessage, connection: any): Promise<IpcWebSocketMessage> {
+  public static async deliver(
+    message: IpcWebSocketMessage,
+    connection: any
+  ): Promise<IpcWebSocketMessage> {
     let context = this._connections.get(connection);
     if (!context) {
       context = { queue: [], last: -1 };
@@ -146,7 +184,7 @@ class InSentOrder {
     while (context.queue.length !== 0) {
       const next = context.queue[0];
       const duplicate = next.sequence <= context.last;
-      const match = next.sequence === (context.last + 1);
+      const match = next.sequence === context.last + 1;
 
       if (duplicate) {
         next.duplicate = true;
@@ -169,7 +207,7 @@ class InSentOrder {
     this._connections.delete(connection);
   }
 
-  public release = () => { };
+  public release = () => {};
   public sequence: number;
   public duplicate = false;
   public message: Promise<IpcWebSocketMessage>;

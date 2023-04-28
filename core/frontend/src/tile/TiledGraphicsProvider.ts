@@ -19,7 +19,10 @@ import { TileTreeReference } from "./internal";
  */
 export interface TiledGraphicsProvider {
   /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function. */
-  forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+  forEachTileTreeRef(
+    viewport: Viewport,
+    func: (ref: TileTreeReference) => void
+  ): void;
 
   /** If defined, overrides the logic for adding this provider's graphics into the scene.
    * Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference.
@@ -37,15 +40,22 @@ export interface TiledGraphicsProvider {
 /** @public */
 export namespace TiledGraphicsProvider {
   /** @internal because TypeDoc can't disambiguate with the interface method by same name. */
-  export function addToScene(provider: TiledGraphicsProvider, context: SceneContext): void {
-    if (provider.addToScene)
-      provider.addToScene(context);
+  export function addToScene(
+    provider: TiledGraphicsProvider,
+    context: SceneContext
+  ): void {
+    if (provider.addToScene) provider.addToScene(context);
     else
-      provider.forEachTileTreeRef(context.viewport, (ref) => ref.addToScene(context));
+      provider.forEachTileTreeRef(context.viewport, (ref) =>
+        ref.addToScene(context)
+      );
   }
 
   /** @internal because TypeDoc can't disambiguate with the interface method by same name. */
-  export function isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean {
+  export function isLoadingComplete(
+    provider: TiledGraphicsProvider,
+    viewport: Viewport
+  ): boolean {
     if (provider.isLoadingComplete && !provider.isLoadingComplete(viewport))
       return false;
 

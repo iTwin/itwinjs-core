@@ -13,7 +13,14 @@ import { Range3d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 // import { Sample } from "../serialization/GeometrySamples";
-import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
+import {
+  BezierCoffs,
+  Order2Bezier,
+  Order3Bezier,
+  Order4Bezier,
+  Order5Bezier,
+  UnivariateBezier,
+} from "../../numerics/BezierPolynomials";
 import { PascalCoefficients } from "../../numerics/PascalCoefficients";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Box } from "../../solid/Box";
@@ -36,11 +43,21 @@ describe("Bezier", () => {
     const b5 = new Order5Bezier(1, 16, 31, 46, 61);
     const scale = 3.4;
     const a = 7.0;
-    const b2A = b2.clone(); b2A.scaleInPlace(scale); b2A.addInPlace(a);
-    const b3A = b3.clone(); b3A.scaleInPlace(scale); b3A.addInPlace(a);
-    const b4A = b4.clone(); b4A.scaleInPlace(scale); b4A.addInPlace(a);
-    const b5A = b5.clone(); b5A.scaleInPlace(scale); b5A.addInPlace(a);
-    const b0A = b0.clone(); b0A.scaleInPlace(scale); b0A.addInPlace(a);
+    const b2A = b2.clone();
+    b2A.scaleInPlace(scale);
+    b2A.addInPlace(a);
+    const b3A = b3.clone();
+    b3A.scaleInPlace(scale);
+    b3A.addInPlace(a);
+    const b4A = b4.clone();
+    b4A.scaleInPlace(scale);
+    b4A.addInPlace(a);
+    const b5A = b5.clone();
+    b5A.scaleInPlace(scale);
+    b5A.addInPlace(a);
+    const b0A = b0.clone();
+    b0A.scaleInPlace(scale);
+    b0A.addInPlace(a);
     for (const f of [0.1, 0.4]) {
       ck.testCoordinate(b2.evaluate(f), b3.evaluate(f));
       ck.testCoordinate(b4.evaluate(f), b5.evaluate(f));
@@ -86,8 +103,14 @@ describe("Bezier", () => {
       ck.testCoordinate(b2.evaluate(f) * b3.evaluate(f), b2b3.evaluate(f));
       const y2A = c2A.evaluate(f);
       const y2B = c2B.evaluate(f);
-      ck.testCoordinate(c2.evaluate(f), y2A * y2A * scaleA + y2B * y2B * scaleB);
-      ck.testCoordinate(e5.evaluate(f), e3A.evaluate(f) * e3B.evaluate(f) * scaleB);
+      ck.testCoordinate(
+        c2.evaluate(f),
+        y2A * y2A * scaleA + y2B * y2B * scaleB
+      );
+      ck.testCoordinate(
+        e5.evaluate(f),
+        e3A.evaluate(f) * e3B.evaluate(f) * scaleB
+      );
     }
 
     ck.checkpoint("CurveLocationDetail.Products");
@@ -95,13 +118,13 @@ describe("Bezier", () => {
   });
 });
 describe("BezierRoots", () => {
-
   it("Products", () => {
     const ck = new Checker();
     const factors: BezierCoffs[] = [
       new Order2Bezier(1, 2),
       new Order2Bezier(-2, -3),
-      new Order3Bezier(0.1, 0.5, -0.3)];
+      new Order3Bezier(0.1, 0.5, -0.3),
+    ];
     for (let i1 = 0; i1 < factors.length; i1++) {
       let bezier = factors[0].clone();
       for (let i = 1; i <= i1; i++)
@@ -135,7 +158,10 @@ describe("BezierRoots", () => {
         for (let i = 1; i < numRoots; i++) {
           const a = rootsA[i];
           const bezierA = bezier.clone();
-          bezier = UnivariateBezier.createProduct(bezier, new Order2Bezier(-a, 1.0 - a));
+          bezier = UnivariateBezier.createProduct(
+            bezier,
+            new Order2Bezier(-a, 1.0 - a)
+          );
           const bezierB = bezier.clone();
           const remainder = bezierB.deflateRoot(rootsA[i]);
           ck.testCoordinate(remainder, 0, "deflation remainder");
@@ -148,7 +174,10 @@ describe("BezierRoots", () => {
           const bezier10 = bezier.clone();
           const remainder = bezier.deflateRoot(r);
           ck.testCoordinate(0, remainder, "remainder after deflation");
-          const bezier1 = UnivariateBezier.createProduct(bezier, new Order2Bezier(-r, 1 - r));
+          const bezier1 = UnivariateBezier.createProduct(
+            bezier,
+            new Order2Bezier(-r, 1 - r)
+          );
           const delta = BezierCoffs.maxAbsDiff(bezier0, bezier1);
           if (ck.testTrue(delta !== undefined))
             ck.testCoordinate(0, delta!, "deflate and re-multiply round trip.");
@@ -172,7 +201,8 @@ describe("BezierRoots", () => {
       [1, -4, 1],
       [1, 1, -4, -3, 2],
       [1, -4, 0.01, -2],
-      [1, 0.1, 0.1, -0.1, -5, 2]]) {
+      [1, 0.1, 0.1, -0.1, -5, 2],
+    ]) {
       const bezier = UnivariateBezier.createCoffs(coffs);
       const bezier1 = bezier.clone();
       const deflationRoots = UnivariateBezier.deflateRoots01(bezier);
@@ -206,24 +236,26 @@ describe("BezierRoots", () => {
       for (const distributionFunction of [
         (x: number) => x,
         (x: number) => Math.cos(x),
-        (x: number) => (0.1 * x),
-        (x: number) => (x + 0.001),
-        (x: number) => (Math.tan(x))]) {
+        (x: number) => 0.1 * x,
+        (x: number) => x + 0.001,
+        (x: number) => Math.tan(x),
+      ]) {
         const rootsA = [];
         for (const r of baseRoots) rootsA.push(distributionFunction(r));
         let bezier = UnivariateBezier.createCoffs([-rootsA[0], 1 - rootsA[0]]);
         for (let i = 1; i < numRoots; i++) {
           const a = rootsA[i];
-          bezier = UnivariateBezier.createProduct(bezier, UnivariateBezier.createCoffs([-a, 1.0 - a]));
+          bezier = UnivariateBezier.createProduct(
+            bezier,
+            UnivariateBezier.createCoffs([-a, 1.0 - a])
+          );
         }
         const bezier0 = bezier.clone();
         const roots = UnivariateBezier.deflateRoots01(bezier);
         if (ck.testPointer(roots, "root solver ok") && roots) {
-          for (const u of rootsA)
-            ck.testCoordinate(0, bezier0.evaluate(u));
+          for (const u of rootsA) ck.testCoordinate(0, bezier0.evaluate(u));
           for (const r of rootsA) {
-            if (Geometry.isIn01(r))
-              ck.testArrayContainsCoordinate(roots, r);
+            if (Geometry.isIn01(r)) ck.testArrayContainsCoordinate(roots, r);
           }
           // GeometryCoreTestIO.consoleLog("roots", roots);
         }
@@ -236,21 +268,22 @@ describe("BezierRoots", () => {
     const ck = new Checker();
     for (const numZero of [1, 2, 3, 5, 6]) {
       const coffs = [];
-      for (let i = 0; i < numZero; i++)
-        coffs.push(0);
+      for (let i = 0; i < numZero; i++) coffs.push(0);
 
       for (const numOther of [1, 2, 3, 5]) {
-        for (let i = 0; i < numOther; i++)
-          coffs.push(2 * i + i * i);
+        for (let i = 0; i < numOther; i++) coffs.push(2 * i + i * i);
         const bezierA = UnivariateBezier.createCoffs(coffs);
         const bezierB = bezierA.clone();
         for (let numDeflate = 1; numDeflate <= numZero; numDeflate++) {
           bezierB.deflateLeft();
           for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
             let factor = 1;
-            for (let i = 0; i < numDeflate; i++)
-              factor *= u;
-            ck.testCoordinate(bezierA.evaluate(u), factor * bezierB.evaluate(u), "left deflated bezier evaluation");
+            for (let i = 0; i < numDeflate; i++) factor *= u;
+            ck.testCoordinate(
+              bezierA.evaluate(u),
+              factor * bezierB.evaluate(u),
+              "left deflated bezier evaluation"
+            );
           }
         }
       }
@@ -261,13 +294,10 @@ describe("BezierRoots", () => {
   it("DeflateRight", () => {
     const ck = new Checker();
     for (const numZero of [1, 2, 3, 5, 6]) {
-
       for (const numOther of [1, 2, 3, 5]) {
         const coffs = [];
-        for (let i = 0; i < numOther; i++)
-          coffs.push(2 * i + i * i);
-        for (let i = 0; i < numZero; i++)
-          coffs.push(0);
+        for (let i = 0; i < numOther; i++) coffs.push(2 * i + i * i);
+        for (let i = 0; i < numZero; i++) coffs.push(0);
 
         const bezierA = UnivariateBezier.createCoffs(coffs);
         const bezierB = bezierA.clone();
@@ -275,16 +305,18 @@ describe("BezierRoots", () => {
           bezierB.deflateRight();
           for (const u of [0, 0.1, 0.35, 0.5, 0.75, 1]) {
             let factor = 1;
-            for (let i = 0; i < numDeflate; i++)
-              factor *= (1 - u);
-            ck.testCoordinate(bezierA.evaluate(u), factor * bezierB.evaluate(u), "right deflated bezier evaluation");
+            for (let i = 0; i < numDeflate; i++) factor *= 1 - u;
+            ck.testCoordinate(
+              bezierA.evaluate(u),
+              factor * bezierB.evaluate(u),
+              "right deflated bezier evaluation"
+            );
           }
         }
       }
     }
     expect(ck.getNumErrors()).equals(0);
   });
-
 });
 
 describe("PascalCoefficients", () => {
@@ -294,8 +326,10 @@ describe("PascalCoefficients", () => {
     for (const row of [1, 2, 3, 4, 5, 6, 7, 10, 9, 8, 12]) {
       const row0 = PascalCoefficients.getRow(row - 1);
       const row1 = PascalCoefficients.getRow(row);
-      if (ck.testExactNumber(row + 1, row1.length, "row1 length")
-        && ck.testExactNumber(row, row0.length, "row0 length")) {
+      if (
+        ck.testExactNumber(row + 1, row1.length, "row1 length") &&
+        ck.testExactNumber(row, row0.length, "row0 length")
+      ) {
         ck.testExactNumber(1, row1[0], row);
         ck.testExactNumber(1, row1[row], row);
         for (let i = 0; i + 1 < row; i++) {
@@ -311,12 +345,15 @@ describe("PascalCoefficients", () => {
     // tickle 1..7 in order, then jump out to stress the high-row construction
     let basisA = new Float64Array(2); // This will get reallocated as order grows . . .
     for (const order of [1, 2, 3, 4, 5, 6, 7, 10, 9, 8, 12]) {
-      for (const u of [0.0, 0.1, .08, 1.0]) {
+      for (const u of [0.0, 0.1, 0.08, 1.0]) {
         basisA = PascalCoefficients.getBezierBasisValues(order, u, basisA);
         const basisB = PascalCoefficients.getBezierBasisValues(order, u);
         let sA = 0.0;
         for (let i = 0; i < order; i++) {
-          ck.testLE(Math.abs(basisA[i] - basisB[i]), epsilon * (1.0 + Math.abs(basisA[i])));
+          ck.testLE(
+            Math.abs(basisA[i] - basisB[i]),
+            epsilon * (1.0 + Math.abs(basisA[i]))
+          );
           sA += basisA[i];
         }
         ck.testLE(Math.abs(sA - 1.0), epsilon);
@@ -345,10 +382,9 @@ describe("PascalCoefficients", () => {
     const allData = [];
     for (const order of [1, 2, 3, 4, 5, 9]) {
       const lineStrings = [];
-      const subdivisionFactor = 5.0;  // number of points between peaks
+      const subdivisionFactor = 5.0; // number of points between peaks
       const numValues = subdivisionFactor * 1 + subdivisionFactor * (order - 1);
-      for (let i = 0; i < order; i++)
-        lineStrings.push(LineString3d.create());
+      for (let i = 0; i < order; i++) lineStrings.push(LineString3d.create());
       for (let k = 0; k < numValues; k++) {
         const u = k / (numValues - 1);
         basisA = PascalCoefficients.getBezierBasisValues(order, u, basisA);
@@ -356,17 +392,22 @@ describe("PascalCoefficients", () => {
           lineStrings[i].addPoint(Point3d.create(u, y0 + basisA[i], 0));
         }
       }
-      for (const ls of lineStrings)
-        allData.push(ls);
+      for (const ls of lineStrings) allData.push(ls);
       const y1 = y0 + 1;
       const tic = 0.04;
-      allData.push(LineString3d.createXY([
-        Point2d.create(-tic, y1),
-        Point2d.create(0, y1), Point2d.create(0, y0),
-        Point2d.create(1, y0), Point2d.create(1, y1),
-        Point2d.create(1 + tic, y1),
-      ],
-        0.0));
+      allData.push(
+        LineString3d.createXY(
+          [
+            Point2d.create(-tic, y1),
+            Point2d.create(0, y1),
+            Point2d.create(0, y0),
+            Point2d.create(1, y0),
+            Point2d.create(1, y1),
+            Point2d.create(1 + tic, y1),
+          ],
+          0.0
+        )
+      );
       y0 += dy;
     }
     GeometryCoreTestIO.saveGeometry(allData, "Bezier", "BasisFunctions");
@@ -385,10 +426,22 @@ describe("PascalCoefficients", () => {
       let x0 = 0.0;
       y0 += 4.0 * yShift;
       for (const order of [2, 4, 4, 2, 3, 6, 7, 9]) {
-        const bezier = Sample.createTwistingBezier(order, x0, y0, r, thetaStepper, phiStepper,
-          weighted ? Segment1d.create(1.0, 0.8) : undefined)!;
-        let transform = Sample.createMessyRigidTransform(Point3d.create(x0, y0, 0));
-        transform = Transform.createTranslationXYZ(0, yShift).multiplyTransformTransform(transform);
+        const bezier = Sample.createTwistingBezier(
+          order,
+          x0,
+          y0,
+          r,
+          thetaStepper,
+          phiStepper,
+          weighted ? Segment1d.create(1.0, 0.8) : undefined
+        )!;
+        let transform = Sample.createMessyRigidTransform(
+          Point3d.create(x0, y0, 0)
+        );
+        transform = Transform.createTranslationXYZ(
+          0,
+          yShift
+        ).multiplyTransformTransform(transform);
         x0 += dx;
         const range0 = Range3d.createNull();
         const range1 = Range3d.createNull();
@@ -402,7 +455,10 @@ describe("PascalCoefficients", () => {
         const range1A = testPoints1.range();
         range1A.scaleAboutCenterInPlace(0.99999);
         ck.testTrue(range0.containsRange(range0A), `Direct range ${order}`);
-        ck.testTrue(range1.containsRange(range1A), `Transformed range ${order}`);
+        ck.testTrue(
+          range1.containsRange(range1A),
+          `Transformed range ${order}`
+        );
         allData.push(bezier.clone());
         allData.push(Box.createRange(range0, false));
         allData.push(testPoints0);
@@ -443,14 +499,15 @@ describe("PascalCoefficients", () => {
     const a = 10.0;
     for (let i = 0; i < 10; i++) {
       polygonX.push(i);
-      polygonX.push(a - i);   // contrived so curve has y = a - x at all points.
+      polygonX.push(a - i); // contrived so curve has y = a - x at all points.
     }
     const polygonY = new Float64Array(polygonX);
     for (const bezierA of [
       new Order2Bezier(0, 1),
       new Order3Bezier(0, 1, 2),
       new Order4Bezier(0, 1, 2, 3),
-      new Order5Bezier(0, 1, 2, 3, 4)]) {
+      new Order5Bezier(0, 1, 2, 3, 4),
+    ]) {
       // GeometryCoreTestIO.consoleLog(prettyPrint (bezierA));
       const bezierB = UnivariateBezier.create(bezierA)!;
       for (const u of [0, 0.2, 0.8]) {
@@ -464,7 +521,7 @@ describe("PascalCoefficients", () => {
         const blockB1 = bezierB.sumBasisFunctionDerivatives(u, polygonY, 2);
         ck.testCoordinate(blockA1[0], blockB1[0]);
         ck.testCoordinate(blockA1[1], blockB1[1]);
-        ck.testCoordinate(blockA1[0], - blockA1[1]);
+        ck.testCoordinate(blockA1[0], -blockA1[1]);
       }
     }
     expect(ck.getNumErrors()).equals(0);
@@ -486,8 +543,16 @@ describe("PascalCoefficients", () => {
     }
 
     const bezier1 = new UnivariateBezier([1]);
-    ck.testCoordinate(1.0, bezier1.deflateRoot(0.5), " order=1 bezier deflation");
-    ck.testCoordinate(0.0, bezier1.deflateRoot(0.5), " order=0 bezier deflation");
+    ck.testCoordinate(
+      1.0,
+      bezier1.deflateRoot(0.5),
+      " order=1 bezier deflation"
+    );
+    ck.testCoordinate(
+      0.0,
+      bezier1.deflateRoot(0.5),
+      " order=0 bezier deflation"
+    );
     bezier1.allocateOrder(5);
     ck.testExactNumber(5, bezier1.order);
     bezier1.allocateOrder(10);
@@ -498,5 +563,4 @@ describe("PascalCoefficients", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

@@ -16,4 +16,4 @@ You must write a [mobile-specific main](../learning/AppTailoring.md) to do the f
 
 ## 3. Package and Deploy
 
-You must then package the app as a mobile app. *TBD*
+You must then package the app as a mobile app. _TBD_

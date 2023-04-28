@@ -23,7 +23,12 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   public numYTerms: number;
   public constantDiv2LR: number;
   public nominalLength1: number;
-  public constructor(nominalLength1: number, constantDiv2LR: number, numXTerms: number = 4, numYTerms: number = 4) {
+  public constructor(
+    nominalLength1: number,
+    constantDiv2LR: number,
+    numXTerms: number = 4,
+    numYTerms: number = 4
+  ) {
     super();
     this.nominalLength1 = nominalLength1;
     this.constantDiv2LR = constantDiv2LR;
@@ -32,19 +37,29 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   }
   /** Return a deep clone. */
   public clone(): ClothoidSeriesRLEvaluator {
-    return new ClothoidSeriesRLEvaluator(this.nominalLength1, this.constantDiv2LR, this.numXTerms, this.numYTerms);
+    return new ClothoidSeriesRLEvaluator(
+      this.nominalLength1,
+      this.constantDiv2LR,
+      this.numXTerms,
+      this.numYTerms
+    );
   }
   public scaleInPlace(scaleFactor: number) {
     this.nominalLength1 *= scaleFactor;
-    this.constantDiv2LR /= (scaleFactor * scaleFactor);
+    this.constantDiv2LR /= scaleFactor * scaleFactor;
   }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof ClothoidSeriesRLEvaluator) {
-      return this.numXTerms === other.numXTerms
-        && this.numYTerms === other.numYTerms
-        && Geometry.isAlmostEqualNumber(this.constantDiv2LR, other.constantDiv2LR)
-        && Geometry.isSameCoordinate(this.nominalLength1, other.nominalLength1);
+      return (
+        this.numXTerms === other.numXTerms &&
+        this.numYTerms === other.numYTerms &&
+        Geometry.isAlmostEqualNumber(
+          this.constantDiv2LR,
+          other.constantDiv2LR
+        ) &&
+        Geometry.isSameCoordinate(this.nominalLength1, other.nominalLength1)
+      );
     }
     return false;
   }
@@ -52,34 +67,46 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
    * Evaluate the X series at a nominal distance along the curve.
    * @param fraction fractional position along the curve.
    */
-  public fractionToX(fraction: number): number { return this.fractionToXGo(fraction, this.numXTerms); }
+  public fractionToX(fraction: number): number {
+    return this.fractionToXGo(fraction, this.numXTerms);
+  }
   /**
    * Evaluate the Y series at a nominal distance along the curve.
    * @param fraction fractional position along the curve.
    */
-  public fractionToY(fraction: number): number { return this.fractionToYGo(fraction, this.numYTerms); }
+  public fractionToY(fraction: number): number {
+    return this.fractionToYGo(fraction, this.numYTerms);
+  }
 
   /**
    * Evaluate the derivative of the X series at a nominal distance along the curve.
    * @param fraction fractional position along the curve.
    */
-  public fractionToDX(fraction: number): number { return this.fractionToDXGo(fraction, this.numXTerms); }
+  public fractionToDX(fraction: number): number {
+    return this.fractionToDXGo(fraction, this.numXTerms);
+  }
   /**
    * Evaluate the derivative of the Y series at a nominal distance along the curve.
    * @param fraction fractional position along the curve.
    */
-  public fractionToDY(fraction: number): number { return this.fractionToDYGo(fraction, this.numYTerms); }
+  public fractionToDY(fraction: number): number {
+    return this.fractionToDYGo(fraction, this.numYTerms);
+  }
 
   /**
    * Evaluate the derivative of the X series at a nominal distance along the curve.
    * @param fraction fractional position along the curve.
    */
-  public fractionToDDX(fraction: number): number { return this.fractionToDDXGo(fraction, this.numXTerms); }
+  public fractionToDDX(fraction: number): number {
+    return this.fractionToDDXGo(fraction, this.numXTerms);
+  }
   /**
    * Evaluate the derivative of the Y series at a nominal distance along the curve.
    * @param fraction fractional position along the curve.
    */
-  public fractionToDDY(fraction: number): number { return this.fractionToDDYGo(fraction, this.numYTerms); }
+  public fractionToDDY(fraction: number): number {
+    return this.fractionToDDYGo(fraction, this.numYTerms);
+  }
 
   /**
    * Evaluate the X series at a nominal distance along the curve.
@@ -94,10 +121,9 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     //  x = s(1 - (s^4 c^2/2) ( 1/5 -s^4 c^2 / (3*4)  ( 1/9 - ....) ) )
     const s = fraction * this.nominalLength1;
     let result = s;
-    if (numTerms < 2)
-      return result;
+    if (numTerms < 2) return result;
     const q1 = s * s * this.constantDiv2LR;
-    const beta = - q1 * q1;
+    const beta = -q1 * q1;
     let alpha = s;
     let m = 1;
     let n = 5;
@@ -116,10 +142,9 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     //  x = s^3 c^2/ 3( (1/3)) - s^7 c^6/(3!) ((1/7)) - s^11 c^10 / 5! ((1/9) - ...)
     const s = fraction * this.nominalLength1;
     const q1 = s * s * this.constantDiv2LR;
-    let result = q1 * s / 3;
-    if (numTerms < 2)
-      return result;
-    const beta = - q1 * q1;
+    let result = (q1 * s) / 3;
+    if (numTerms < 2) return result;
+    const beta = -q1 * q1;
     let alpha = q1 * s;
     let m = 2;
     let n = 7;
@@ -133,8 +158,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   }
   public fractionToDXGo(fraction: number, numTerms: number): number {
     // Yes -- this does happen during derivatives of cosines with more than 0 terms !!
-    if (numTerms <= 0)
-      return 0;
+    if (numTerms <= 0) return 0;
     // dX = 1 - s^4c^2/2 + s^8 c^4 / 4! -
     // new Term = old Term * beta / (m(m+1))
     const s = fraction * this.nominalLength1;
@@ -143,7 +167,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
       return result * this.nominalLength1;
     }
     const q1 = s * s * this.constantDiv2LR;
-    const beta = - q1 * q1;
+    const beta = -q1 * q1;
     let alpha = 1.0;
     let m = 1;
     for (let i = 1; i < numTerms; i++) {
@@ -154,8 +178,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     return result * this.nominalLength1;
   }
   public fractionToDYGo(fraction: number, numTerms: number): number {
-    if (numTerms <= 0)
-      return 0;
+    if (numTerms <= 0) return 0;
     // dY = q - q^3/3!
     // q = s^2 c
     // dY = s^2 c - s^6 c^3/3! + s^10 c^5/ 5!
@@ -163,9 +186,8 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     const s = fraction * this.nominalLength1;
     const q1 = s * s * this.constantDiv2LR;
     let result = q1;
-    if (numTerms < 2)
-      return result * this.nominalLength1;
-    const beta = - q1 * q1;
+    if (numTerms < 2) return result * this.nominalLength1;
+    const beta = -q1 * q1;
     let alpha = q1;
     let m = 2;
     for (let i = 1; i < numTerms; i++) {
@@ -183,7 +205,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
 
     const dTheta = 2 * this.constantDiv2LR * s;
     const sine = this.fractionToDYGo(fraction, numTerms - 1);
-    const resultA = (- dTheta * sine * this.nominalLength1);
+    const resultA = -dTheta * sine * this.nominalLength1;
     return resultA;
   }
   public fractionToDDYGo(fraction: number, numTerms: number): number {
@@ -197,8 +219,7 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
   }
 
   public fractionToD3X(fraction: number): number {
-    if (this.numXTerms <= 1)
-      return 0.0;
+    if (this.numXTerms <= 1) return 0.0;
     // DX is "cosine"
     // DDX is "- sine" series times chain rule dTheta/ds = 2 * s * this.constantDivLR
     const s = fraction * this.nominalLength1;
@@ -206,7 +227,11 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     const d2Theta = 2.0 * this.constantDiv2LR;
     const sine = this.fractionToDYGo(fraction, this.numXTerms - 1);
     const cosine = this.fractionToDXGo(fraction, this.numXTerms - 1);
-    return (- cosine * dTheta * dTheta - sine * d2Theta) * this.nominalLength1 * this.nominalLength1;
+    return (
+      (-cosine * dTheta * dTheta - sine * d2Theta) *
+      this.nominalLength1 *
+      this.nominalLength1
+    );
   }
   public fractionToD3Y(fraction: number): number {
     // DY is "sine"
@@ -219,16 +244,21 @@ export class ClothoidSeriesRLEvaluator extends XYCurveEvaluator {
     // d3Y is sine series. Derivative of preceding cosine killed first term.
     const cosine = this.fractionToDXGo(fraction, this.numYTerms);
     const sine = this.fractionToDYGo(fraction, this.numYTerms - 1);
-    return (-sine * dTheta * dTheta + cosine * d2Theta) * this.nominalLength1 * this.nominalLength1;
+    return (
+      (-sine * dTheta * dTheta + cosine * d2Theta) *
+      this.nominalLength1 *
+      this.nominalLength1
+    );
   }
 
   public xToFraction(x: number): number | undefined {
     const fraction0 = x / this.nominalLength1;
-    const fraction1 = SimpleNewton.runNewton1D(fraction0,
-      (f: number) => (this.fractionToX(f) - x),
-      (f: number) => this.fractionToDX(f));
-    if (fraction1 === undefined)
-      return undefined;
+    const fraction1 = SimpleNewton.runNewton1D(
+      fraction0,
+      (f: number) => this.fractionToX(f) - x,
+      (f: number) => this.fractionToDX(f)
+    );
+    if (fraction1 === undefined) return undefined;
     return fraction1;
   }
 }

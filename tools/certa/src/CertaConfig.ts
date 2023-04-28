@@ -55,7 +55,6 @@ export interface PartialCertaConfig {
 
 /** Certa configuration options. */
 export interface CertaConfig {
-
   /** The absolute path to a JavaScript file containing all mocha tests to be run. */
   readonly testBundle: string;
 
@@ -121,7 +120,8 @@ export namespace CertaConfig {
   };
 
   // List of config options that may be relative file paths and should be resolved to absolute paths.
-  const _filePathOpts = [ // eslint-disable-line @typescript-eslint/naming-convention
+  const _filePathOpts = [
+    // eslint-disable-line @typescript-eslint/naming-convention
     "backendInitModule",
     "testBundle",
     "instrumentedTestBundle",
@@ -139,7 +139,11 @@ export namespace CertaConfig {
       const relativeFilePath = lodash.get(opts, propPath);
       if (relativeFilePath) {
         if (Array.isArray(relativeFilePath))
-          lodash.set(opts, propPath, relativeFilePath.map((p) => path.resolve(baseDir, p)));
+          lodash.set(
+            opts,
+            propPath,
+            relativeFilePath.map((p) => path.resolve(baseDir, p))
+          );
         else
           lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
       }
@@ -160,7 +164,9 @@ export namespace CertaConfig {
       throw new Error("The required testBundle option was not set.");
 
     if (!fs.existsSync(resolvedOpts.testBundle))
-      throw new Error(`The specified testBundle file "${resolvedOpts.testBundle}" does not exist.`);
+      throw new Error(
+        `The specified testBundle file "${resolvedOpts.testBundle}" does not exist.`
+      );
 
     return resolvedOpts;
   }
@@ -174,7 +180,10 @@ export namespace CertaConfig {
    * @param filePath The path to a certa.json config file.
    * @param overrides A partial CertaConfig object. These values will always override any options set in the config file.
    */
-  export function fromConfigFile(filePath: string, overrides: PartialCertaConfig): CertaConfig {
+  export function fromConfigFile(
+    filePath: string,
+    overrides: PartialCertaConfig
+  ): CertaConfig {
     const fileContents = fs.readFileSync(filePath);
     const fileOpts = parse(fileContents.toString()); // Parsing with jsonc-parser lets us safely handle comments.
     resolvePaths(path.dirname(filePath), fileOpts);

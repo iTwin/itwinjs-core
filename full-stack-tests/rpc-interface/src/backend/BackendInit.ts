@@ -12,8 +12,7 @@ import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires

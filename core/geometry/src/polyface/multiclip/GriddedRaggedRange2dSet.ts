@@ -10,7 +10,9 @@ import { Range2d, Range3d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
 import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
 
-export type OptionalLinearSearchRange2dArray<T> = LinearSearchRange2dArray<T> | undefined;
+export type OptionalLinearSearchRange2dArray<T> =
+  | LinearSearchRange2dArray<T>
+  | undefined;
 /**
  * A GriddedRaggedRange2dSet is
  * * A doubly dimensioned array of LinearSearchRange2dArray
@@ -47,20 +49,29 @@ export class GriddedRaggedRange2dSet<T> {
    * @param numXEdge
    * @param numYEdge
    */
-  public static create<T>(range: Range2d, numXEdge: number, numYEdge: number): GriddedRaggedRange2dSet<T> | undefined {
+  public static create<T>(
+    range: Range2d,
+    numXEdge: number,
+    numYEdge: number
+  ): GriddedRaggedRange2dSet<T> | undefined {
     if (numXEdge < 1 || numYEdge < 1 || range.isNull || range.isSinglePoint)
       return undefined;
     return new GriddedRaggedRange2dSet(range.clone(), numXEdge, numYEdge);
   }
   private xIndex(x: number): number {
-    const fraction = (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
+    const fraction =
+      (x - this._range.low.x) / (this._range.high.x - this._range.low.x);
     return Math.floor(fraction * this._numXEdge);
   }
   private yIndex(y: number): number {
-    const fraction = (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
+    const fraction =
+      (y - this._range.low.y) / (this._range.high.y - this._range.low.y);
     return Math.floor(fraction * this._numXEdge);
   }
-  private getBlock(i: number, j: number): LinearSearchRange2dArray<T> | undefined {
+  private getBlock(
+    i: number,
+    j: number
+  ): LinearSearchRange2dArray<T> | undefined {
     if (i >= 0 && i < this._numXEdge && j >= 0 && j < this._numYEdge) {
       if (!this._rangesInBlock[j][i])
         this._rangesInBlock[j][i] = new LinearSearchRange2dArray();
@@ -75,18 +86,14 @@ export class GriddedRaggedRange2dSet<T> {
    *   * range x or y extent is larger than 2 grid blocks.
    */
   public conditionalInsert(range: Range2d | Range3d, tag: T): boolean {
-    if (range.isNull)
-      return false;
-    if (!this._range.containsRange(range))
-      return false;
+    if (range.isNull) return false;
+    if (!this._range.containsRange(range)) return false;
     const xIndex0 = this.xIndex(range.low.x);
     const xIndex1 = this.xIndex(range.high.x);
     const yIndex0 = this.yIndex(range.low.y);
     const yIndex1 = this.yIndex(range.high.y);
-    if (!(xIndex0 === xIndex1 || xIndex0 + 1 === xIndex1))
-      return false;
-    if (!(yIndex0 === yIndex1 || yIndex0 + 1 === yIndex1))
-      return false;
+    if (!(xIndex0 === xIndex1 || xIndex0 + 1 === xIndex1)) return false;
+    if (!(yIndex0 === yIndex1 || yIndex0 + 1 === yIndex1)) return false;
     const rangesInBlock = this.getBlock(xIndex0, yIndex0);
     if (rangesInBlock) {
       rangesInBlock.addRange(range, tag);
@@ -102,10 +109,15 @@ export class GriddedRaggedRange2dSet<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  private searchXYInIndexedBlock(i: number, j: number, x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean {
+  private searchXYInIndexedBlock(
+    i: number,
+    j: number,
+    x: number,
+    y: number,
+    handler: (range: Range2d, tag: T) => boolean
+  ): boolean {
     const rangesInBlock = this.getBlock(i, j);
-    if (!rangesInBlock)
-      return true;
+    if (!rangesInBlock) return true;
     return rangesInBlock.searchXY(x, y, handler);
   }
   /**
@@ -116,10 +128,14 @@ export class GriddedRaggedRange2dSet<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  private searchRange2dInIndexedBlock(i: number, j: number, testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean {
+  private searchRange2dInIndexedBlock(
+    i: number,
+    j: number,
+    testRange: LowAndHighXY,
+    handler: (range: Range2d, tag: T) => boolean
+  ): boolean {
     const rangesInBlock = this.getBlock(i, j);
-    if (!rangesInBlock)
-      return true;
+    if (!rangesInBlock) return true;
     return rangesInBlock.searchRange2d(testRange, handler);
   }
   /**
@@ -130,13 +146,19 @@ export class GriddedRaggedRange2dSet<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchXY(x: number, y: number, handler: (range: Range2d, tag: T) => boolean): boolean {
+  public searchXY(
+    x: number,
+    y: number,
+    handler: (range: Range2d, tag: T) => boolean
+  ): boolean {
     const i = this.xIndex(x);
     const j = this.yIndex(y);
-    return this.searchXYInIndexedBlock(i, j, x, y, handler)
-      && this.searchXYInIndexedBlock(i - 1, j, x, y, handler)
-      && this.searchXYInIndexedBlock(i, j - 1, x, y, handler)
-      && this.searchXYInIndexedBlock(i - 1, j - 1, x, y, handler);
+    return (
+      this.searchXYInIndexedBlock(i, j, x, y, handler) &&
+      this.searchXYInIndexedBlock(i - 1, j, x, y, handler) &&
+      this.searchXYInIndexedBlock(i, j - 1, x, y, handler) &&
+      this.searchXYInIndexedBlock(i - 1, j - 1, x, y, handler)
+    );
   }
   /**
    * * Search for ranges overlapping testRange
@@ -146,7 +168,10 @@ export class GriddedRaggedRange2dSet<T> {
    * @param handler function to receive range and tag hits.
    * @return false if search terminated by handler.  Return true if no handler returned false.
    */
-  public searchRange2d(testRange: LowAndHighXY, handler: (range: Range2d, tag: T) => boolean): boolean {
+  public searchRange2d(
+    testRange: LowAndHighXY,
+    handler: (range: Range2d, tag: T) => boolean
+  ): boolean {
     const xIndex0 = this.xIndex(testRange.low.x) - 1;
     const xIndex1 = this.xIndex(testRange.high.x);
     const yIndex0 = this.yIndex(testRange.low.y) - 1;
@@ -159,11 +184,13 @@ export class GriddedRaggedRange2dSet<T> {
     }
     return true;
   }
-  public visitChildren(initialDepth: number, handler: (depth: number, child: LinearSearchRange2dArray<T>) => void) {
+  public visitChildren(
+    initialDepth: number,
+    handler: (depth: number, child: LinearSearchRange2dArray<T>) => void
+  ) {
     for (const row of this._rangesInBlock) {
       for (const block of row) {
-        if (block)
-          handler(initialDepth, block);
+        if (block) handler(initialDepth, block);
       }
     }
   }

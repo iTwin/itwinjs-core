@@ -1,14 +1,14 @@
 # Element Codes
 
-A *Code* is a human-readable string identifier of the real-world entity that an Element represents.
+A _Code_ is a human-readable string identifier of the real-world entity that an Element represents.
 
-A Code conveys information to people and programs that understand the structure of the string and are therefore able to *decode* it.
+A Code conveys information to people and programs that understand the structure of the string and are therefore able to _decode_ it.
 
-Different domains and organizations have different ways of *encoding* business information into the *Code*, which they can express as [Code Specifications](#codespec).
+Different domains and organizations have different ways of _encoding_ business information into the _Code_, which they can express as [Code Specifications](#codespec).
 
 ## CodeValue Property
 
-Each `Element` has a (nullable) `CodeValue` string property that holds its *Code*.
+Each `Element` has a (nullable) `CodeValue` string property that holds its _Code_.
 
 When present, a `CodeValue` should be a human-understandable string.
 
@@ -27,8 +27,8 @@ When present, a `CodeValue` should be a human-understandable string.
 - Room Number
 - Etc.
 
-When the identified entity is physical in nature, it will often have its *code* physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on an instrument).
-When the identified entity is non-physical, it may have its *code* semi-permanently attached to a related physical entity.
+When the identified entity is physical in nature, it will often have its _code_ physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on an instrument).
+When the identified entity is non-physical, it may have its _code_ semi-permanently attached to a related physical entity.
 For example, a physical valve will have its serial number permanently affixed to it. The "Tag Number" of the "function" that the valve is performing in the process is stamped onto a "Tag" attached to the valve with a wire. If the valve is replaced with a new one (with a new serial number) the Tag holding function's "Tag Number" will be moved to the new valve.
 
 ### Example misuses of Code
@@ -39,9 +39,9 @@ For example, a physical valve will have its serial number permanently affixed to
 
 ## CodeSpec
 
-A `CodeSpec` (aka **Code Specification**) names and specifies a new *classification* for Codes.
+A `CodeSpec` (aka **Code Specification**) names and specifies a new _classification_ for Codes.
 A `CodeSpec` also captures the rules for encoding and decoding significant business information into and from a Code.
-For example, the Codes for ViewDefinitions and the Codes for Equipment have different *encoding* rules and uniqueness constraints, so would each have a separate `CodeSpec`.
+For example, the Codes for ViewDefinitions and the Codes for Equipment have different _encoding_ rules and uniqueness constraints, so would each have a separate `CodeSpec`.
 
 Typically, a `CodeSpec` has a strong correlation with a branch of the Element class hierarchy and is often named after an abstract base class that defines the starting point of that branch. It is common for all subclasses (direct or indirect) descending from that base class to share the same `CodeSpec`.
 
@@ -78,5 +78,6 @@ In this example, the Building instance is providing the CodeScope for the Floor.
 For a given Element, the combination of it `CodeSpec`, `CodeScope`, and `CodeValue` properties must be unique within the BIS repository. All `null` values are considered to be unique.
 
 ---
+
 | Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
 |:---

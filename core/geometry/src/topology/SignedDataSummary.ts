@@ -50,8 +50,7 @@ export class SignedDataSummary<T> {
     if (data < 0) {
       this.numNegative++;
       this.negativeSum += data;
-      if (this.negativeItemArray)
-        this.negativeItemArray.push(item);
+      if (this.negativeItemArray) this.negativeItemArray.push(item);
       if (data < this.largestNegativeValue) {
         this.largestNegativeValue = data;
         this.largestNegativeItem = item;
@@ -59,16 +58,14 @@ export class SignedDataSummary<T> {
     } else if (data > 0) {
       this.numPositive++;
       this.positiveSum += data;
-      if (this.positiveItemArray)
-        this.positiveItemArray.push(item);
+      if (this.positiveItemArray) this.positiveItemArray.push(item);
       if (data > this.largestPositiveValue) {
         this.largestPositiveValue = data;
         this.largestPositiveItem = item;
       }
     } else {
       this.numZero++;
-      if (this.zeroItemArray)
-        this.zeroItemArray.push(item);
+      if (this.zeroItemArray) this.zeroItemArray.push(item);
     }
   }
 }

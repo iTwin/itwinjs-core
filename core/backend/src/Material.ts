@@ -8,7 +8,16 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  DefinitionElementProps,
+  NormalMapProps,
+  RenderMaterialAssetMapsProps,
+  RenderMaterialProps,
+  RgbFactorProps,
+  TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -21,15 +30,27 @@ import { IModelDb } from "./IModelDb";
  */
 export abstract class PhysicalMaterial extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "PhysicalMaterial"; }
+  public static override get className(): string {
+    return "PhysicalMaterial";
+  }
   /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param definitionModelId The Id of the DefinitionModel that will contain the PhysicalMaterial and provide the scope for its name.
    * @param name The name (codeValue) of the PhysicalMaterial
    */
-  public static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.physicalMaterial);
-    return new Code({ spec: codeSpec.id, scope: definitionModelId, value: name });
+  public static createCode(
+    iModel: IModelDb,
+    definitionModelId: CodeScopeProps,
+    name: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.physicalMaterial
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: definitionModelId,
+      value: name,
+    });
   }
   /** Create a PhysicalMaterial
    * @param iModelDb The IModelDb
@@ -38,7 +59,11 @@ export abstract class PhysicalMaterial extends DefinitionElement {
    * @returns The newly constructed PhysicalMaterial
    * @throws [[IModelError]] if there is a problem creating the PhysicalMaterial
    */
-  public static create<T extends PhysicalMaterial>(iModelDb: IModelDb, definitionModelId: CodeScopeProps, name: string): T {
+  public static create<T extends PhysicalMaterial>(
+    iModelDb: IModelDb,
+    definitionModelId: CodeScopeProps,
+    name: string
+  ): T {
     const elementProps: DefinitionElementProps = {
       classFullName: this.classFullName,
       model: definitionModelId,
@@ -54,7 +79,9 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  */
 export class RenderMaterialElement extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "RenderMaterial"; }
+  public static override get className(): string {
+    return "RenderMaterial";
+  }
 
   /** The name of a palette that can be used to categorize multiple materials. */
   public paletteName: string;
@@ -78,9 +105,15 @@ export class RenderMaterialElement extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the RenderMaterial and provides the scope for its name.
    * @param name The RenderMaterial name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code {
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    name: string
+  ): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.texture);
-    return 0 === name.length ? Code.createEmpty() : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
+    return 0 === name.length
+      ? Code.createEmpty()
+      : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
   }
   /**
    * Create a RenderMaterial with given parameters.
@@ -91,7 +124,12 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The newly constructed RenderMaterial element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    materialName: string,
+    params: RenderMaterialElementParams
+  ): RenderMaterialElement {
     let maps: RenderMaterialAssetMapsProps | undefined;
     const pbr_normal = params.normalMap?.scale;
     if (params.patternMap || params.normalMap) {
@@ -99,8 +137,7 @@ export class RenderMaterialElement extends DefinitionElement {
       type TexMap = Omit<TextureMapProps, "TextureId">;
       function choose<K extends keyof TexMap>(obj: TexMap, key: K): void {
         const pat = params.patternMap;
-        if (pat && undefined !== pat[key])
-          obj[key] = pat[key];
+        if (pat && undefined !== pat[key]) obj[key] = pat[key];
         else if (params.normalMap && undefined !== params.normalMap[key])
           obj[key] = params.normalMap[key];
       }
@@ -180,14 +217,25 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
-    const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    materialName: string,
+    params: RenderMaterialElementParams
+  ): Id64String {
+    const renderMaterial = this.create(
+      iModelDb,
+      definitionModelId,
+      materialName,
+      params
+    );
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 }
 
 /** @public */
-export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
+export namespace RenderMaterialElement {
+  // eslint-disable-line no-redeclare
   /** Parameters used to construct a [[RenderMaterial]].
    * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
    * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
@@ -248,5 +296,7 @@ export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
  * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
  * @public
  */
-export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-empty-interface
+export interface RenderMaterialElementParams
+  extends RenderMaterialElement.Params {
+  // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-empty-interface
 }

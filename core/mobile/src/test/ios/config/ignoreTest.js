@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 "use strict";
 
@@ -28,5 +28,5 @@ module.exports = [
   "read view thumbnail",
   "should be able to create a snapshot IModel",
   "should create elements exercising the LinearReferencing domain",
-  "Create Table, Insert, Select with ECDb"
+  "Create Table, Insert, Select with ECDb",
 ];

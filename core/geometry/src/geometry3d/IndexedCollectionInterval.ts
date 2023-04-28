@@ -28,16 +28,26 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
     this.end = limit;
   }
   /** Create an interval which matches a complete indexed collection. */
-  public static createComplete<T extends CollectionWithLength>(points: T): IndexedCollectionInterval<T> {
+  public static createComplete<T extends CollectionWithLength>(
+    points: T
+  ): IndexedCollectionInterval<T> {
     return new this(points, 0, points.length);
   }
   /** Create an interval which matches a collection from `start <= i < end`. */
-  public static createBeginEnd<T extends CollectionWithLength>(points: T, begin: number, end: number): IndexedCollectionInterval<T> {
+  public static createBeginEnd<T extends CollectionWithLength>(
+    points: T,
+    begin: number,
+    end: number
+  ): IndexedCollectionInterval<T> {
     return new this(points, begin, end);
   }
 
   /** Create an interval which matches a collection from `start <= i < end`. */
-  public static createBeginLength<T extends CollectionWithLength>(points: T, begin: number, length: number): IndexedCollectionInterval<T> {
+  public static createBeginLength<T extends CollectionWithLength>(
+    points: T,
+    begin: number,
+    length: number
+  ): IndexedCollectionInterval<T> {
     return new this(points, begin, begin + length);
   }
   /** Add one to this.begin.  Return true if the interval is still live. */
@@ -48,16 +58,14 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
   /** advance this.end (but do not go beyond this.points.length)   return true if the interval is still live. */
   public advanceEnd(): boolean {
     this.end++;
-    if (this.end > this.points.length)
-      this.end = this.points.length;
+    if (this.end > this.points.length) this.end = this.points.length;
     return this.begin < this.end;
   }
   /** Return (if possible) the parent index corresponding to `localIndex` */
   public localIndexToParentIndex(localIndex: number): number | undefined {
     if (localIndex >= 0) {
       const parentIndex = this.begin + localIndex;
-      if (parentIndex < this.points.length)
-        return parentIndex;
+      if (parentIndex < this.points.length) return parentIndex;
     }
     return undefined;
   }
@@ -66,14 +74,15 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
    * * all indices in its range are valid.
    */
   public get isValidSubset(): boolean {
-    return this.length === 0
-      || (this.localIndexToParentIndex(0) !== undefined
-        && this.localIndexToParentIndex(this.length - 1) !== undefined);
+    return (
+      this.length === 0 ||
+      (this.localIndexToParentIndex(0) !== undefined &&
+        this.localIndexToParentIndex(this.length - 1) !== undefined)
+    );
   }
   /** restrict this.end to this.points.length */
   public restrictEnd() {
-    if (this.end > this.points.length)
-      this.end = this.points.length;
+    if (this.end > this.points.length) this.end = this.points.length;
   }
   /** Return true if length is 1 or more */
   public get isNonEmpty(): boolean {
@@ -95,7 +104,11 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
    * * use optional begin and end arguments if present; if not take begin and and from other.
    * * cap end at points.length.
    */
-  public setFrom(other: IndexedCollectionInterval<T>, base?: number, limit?: number) {
+  public setFrom(
+    other: IndexedCollectionInterval<T>,
+    base?: number,
+    limit?: number
+  ) {
     this.points = other.points;
     this.begin = base === undefined ? other.begin : base;
     this.end = limit === undefined ? other.end : limit;
@@ -115,6 +128,4 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
  * Reference to an interval of the indices of an IndexedXYZCollection.
  * @public
  */
-export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<IndexedXYZCollection> {
-
-}
+export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<IndexedXYZCollection> {}

@@ -41,7 +41,7 @@ The renderer renders nothing when property value is `undefined`. When it's defin
 
 The property value is passed through the [Type Converter](../../learning/ui/components/TypeConverters.md) system to calculate displayed string. When the text clicked on, the user is navigated to the URL set to that text. **Note:** the renderer doesn't validate the text to really be a URL.
 
-| Default rendering                                                                                  | `url`  rendering                                                          |
+| Default rendering                                                                                  | `url` rendering                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | ![Default url property value rendering](./media/property-value-renderers/default-url-property.png) | ![Url property value rendering](./media/property-value-renderers/url.png) |
 

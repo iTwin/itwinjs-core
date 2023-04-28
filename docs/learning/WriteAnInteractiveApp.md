@@ -17,7 +17,7 @@ Some apps can use an already deployed Web service. In that case, there is no nee
 
 To write a [customized backend](../learning/App.md#app-backend), see the [backend learning articles](./backend/index.md).
 
-Note that the backend of an *interactive* app typically does not open an iModel on its own initiative. Instead, the app frontend will ask the backend to open an iModel, and then the frontend will pass the resulting [IModelRpcProps]($common) to methods of the backend. The backend should therefore always initialize the [IModelReadRpcInterface]($common).
+Note that the backend of an _interactive_ app typically does not open an iModel on its own initiative. Instead, the app frontend will ask the backend to open an iModel, and then the frontend will pass the resulting [IModelRpcProps]($common) to methods of the backend. The backend should therefore always initialize the [IModelReadRpcInterface]($common).
 
 ## 3. Tailor, Package, and Deploy the App
 

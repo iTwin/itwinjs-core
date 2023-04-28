@@ -129,10 +129,20 @@ export interface WebGLRenderCompatibilityInfo {
 /** A function that creates and returns a WebGLContext given an HTMLCanvasElement, a boolean specifying whether to use WebGL2, and a WebGLContextAttributes object describing the desired context attributes.
  * @public
  */
-export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLContext | undefined;
+export type ContextCreator = (
+  canvas: HTMLCanvasElement,
+  useWebGL2: boolean,
+  inputContextAttributes?: WebGLContextAttributes
+) => WebGLContext | undefined;
 
-function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = true, attributes?: WebGLContextAttributes): WebGLContext | undefined {
-  let context = useWebGL2 ? canvas.getContext("webgl2", attributes) : canvas.getContext("webgl", attributes);
+function createDefaultContext(
+  canvas: HTMLCanvasElement,
+  useWebGL2: boolean = true,
+  attributes?: WebGLContextAttributes
+): WebGLContext | undefined {
+  let context = useWebGL2
+    ? canvas.getContext("webgl2", attributes)
+    : canvas.getContext("webgl", attributes);
   if (context === null && useWebGL2)
     context = canvas.getContext("webgl", attributes);
   return context ?? undefined;
@@ -145,21 +155,37 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
  * @see [[WebGLRenderCompatibilityInfo]]
  * @public
  */
-export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
+export function queryRenderCompatibility(
+  useWebGL2: boolean,
+  createContext?: ContextCreator
+): WebGLRenderCompatibilityInfo {
   const canvas = document.createElement("canvas");
   if (null === canvas)
-    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent, driverBugs: { } };
+    return {
+      status: WebGLRenderCompatibilityStatus.CannotCreateContext,
+      missingOptionalFeatures: [],
+      missingRequiredFeatures: [],
+      userAgent: navigator.userAgent,
+      driverBugs: {},
+    };
 
   let errorMessage: string | undefined;
-  canvas.addEventListener("webglcontextcreationerror", (event) => {
-    errorMessage = (event as WebGLContextEvent).statusMessage || "webglcontextcreationerror was triggered with no error provided";
-  }, false);
+  canvas.addEventListener(
+    "webglcontextcreationerror",
+    (event) => {
+      errorMessage =
+        (event as WebGLContextEvent).statusMessage ||
+        "webglcontextcreationerror was triggered with no error provided";
+    },
+    false
+  );
 
-  if (undefined === createContext)
-    createContext = createDefaultContext;
+  if (undefined === createContext) createContext = createDefaultContext;
 
   let hasMajorPerformanceCaveat = false;
-  let context = createContext(canvas, useWebGL2, { failIfMajorPerformanceCaveat: true });
+  let context = createContext(canvas, useWebGL2, {
+    failIfMajorPerformanceCaveat: true,
+  });
   if (undefined === context) {
     hasMajorPerformanceCaveat = true;
     context = createContext(canvas, useWebGL2); // try to create context without black-listed GPU
@@ -178,8 +204,13 @@ export function queryRenderCompatibility(useWebGL2: boolean, createContext?: Con
   const compatibility = capabilities.init(context, undefined);
   compatibility.contextErrorMessage = errorMessage;
 
-  if (hasMajorPerformanceCaveat && compatibility.status !== WebGLRenderCompatibilityStatus.MissingRequiredFeatures)
-    compatibility.status = WebGLRenderCompatibilityStatus.MajorPerformanceCaveat;
+  if (
+    hasMajorPerformanceCaveat &&
+    compatibility.status !==
+      WebGLRenderCompatibilityStatus.MissingRequiredFeatures
+  )
+    compatibility.status =
+      WebGLRenderCompatibilityStatus.MajorPerformanceCaveat;
 
   return compatibility;
 }

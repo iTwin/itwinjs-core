@@ -6,13 +6,31 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+  AccessToken,
+  assert,
+  BeDuration,
+  BentleyError,
+  IModelStatus,
+  Logger,
+} from "@itwin/core-bentley";
+import {
+  BriefcaseProps,
+  IModelConnectionProps,
+  IModelRpcOpenProps,
+  IModelRpcProps,
+  IModelVersion,
+  RpcActivity,
+  RpcPendingResponse,
+  SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import {
+  CheckpointManager,
+  CheckpointProps,
+  V1CheckpointManager,
+} from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -33,8 +51,9 @@ export interface DownloadAndOpenArgs {
  * @internal
  */
 export class RpcBriefcaseUtility {
-
-  private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
+  private static async downloadAndOpen(
+    args: DownloadAndOpenArgs
+  ): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
     assert(undefined !== tokenProps.iModelId);
@@ -45,10 +64,15 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
-      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
+      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({
+        accessToken,
+        iModelId,
+      });
     }
 
-    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
+    const resolvers = args.fileNameResolvers ?? [
+      (arg) => BriefcaseManager.getFileName(arg),
+    ];
 
     // see if we can open any of the briefcaseIds we already acquired from iModelHub
     if (resolvers) {
@@ -57,23 +81,36 @@ export class RpcBriefcaseUtility {
           const fileName = resolver({ briefcaseId, iModelId });
           if (IModelJsFs.existsSync(fileName)) {
             const briefcaseDb = BriefcaseDb.findByFilename(fileName);
-            if (briefcaseDb !== undefined)
-              return briefcaseDb as BriefcaseDb;
+            if (briefcaseDb !== undefined) return briefcaseDb as BriefcaseDb;
             try {
-              if (args.forceDownload)
-                throw new Error(); // causes delete below
+              if (args.forceDownload) throw new Error(); // causes delete below
               const db = await BriefcaseDb.open({ fileName });
               if (db.changeset.id !== tokenProps.changeset?.id) {
                 assert(undefined !== tokenProps.changeset);
-                const toIndex = tokenProps.changeset?.index ??
-                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
-                await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
+                const toIndex =
+                  tokenProps.changeset?.index ??
+                  (
+                    await IModelHost.hubAccess.getChangesetFromVersion({
+                      accessToken,
+                      iModelId,
+                      version: IModelVersion.asOfChangeSet(
+                        tokenProps.changeset.id
+                      ),
+                    })
+                  ).index;
+                await BriefcaseManager.pullAndApplyChangesets(db, {
+                  accessToken,
+                  toIndex,
+                });
               }
               return db;
             } catch (error: any) {
               if (!(error.errorNumber === IModelStatus.AlreadyOpen))
                 // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-                await BriefcaseManager.deleteBriefcaseFiles(fileName, accessToken);
+                await BriefcaseManager.deleteBriefcaseFiles(
+                  fileName,
+                  accessToken
+                );
             }
           }
         }
@@ -94,15 +131,16 @@ export class RpcBriefcaseUtility {
   }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
-  private static async openBriefcase(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
-    if (this._briefcasePromise)
-      return this._briefcasePromise;
+  private static async openBriefcase(
+    args: DownloadAndOpenArgs
+  ): Promise<BriefcaseDb> {
+    if (this._briefcasePromise) return this._briefcasePromise;
 
     try {
       this._briefcasePromise = this.downloadAndOpen(args); // save the fact that we're working on downloading so if we timeout, we'll reuse this request.
       return await this._briefcasePromise;
     } finally {
-      this._briefcasePromise = undefined;  // the download and open is now done
+      this._briefcasePromise = undefined; // the download and open is now done
     }
   }
 
@@ -111,7 +149,10 @@ export class RpcBriefcaseUtility {
    * to refresh the daemon, even though it will be used for all authorized users.
    * @param the IModelRpcProps to locate the opened iModel.
    */
-  public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
+  public static async findOpenIModel(
+    accessToken: AccessToken,
+    iModel: IModelRpcProps
+  ) {
     const iModelDb = IModelDb.findByKey(iModel.key);
 
     // call refreshContainerSas, just in case this is a V2 checkpoint whose sasToken is about to expire.
@@ -125,14 +166,21 @@ export class RpcBriefcaseUtility {
    */
   public static async open(args: DownloadAndOpenArgs): Promise<IModelDb> {
     const { activity, tokenProps, syncMode } = args;
-    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({ ...tokenProps }));
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({
+      ...tokenProps,
+    }));
 
     const timeout = args.timeout ?? 1000;
     if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
-      const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(args));
+      const briefcaseDb = await BeDuration.race(
+        timeout,
+        this.openBriefcase(args)
+      );
 
       if (briefcaseDb === undefined) {
-        Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({ ...tokenProps }));
+        Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({
+          ...tokenProps,
+        }));
         throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
       }
       // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
@@ -155,7 +203,9 @@ export class RpcBriefcaseUtility {
     // first check if it's already open
     db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(checkpoint));
     if (db) {
-      Logger.logTrace(loggerCategory, "Checkpoint was already open", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "Checkpoint was already open", () => ({
+        ...tokenProps,
+      }));
       BriefcaseManager.logUsage(db);
       return db;
     }
@@ -163,9 +213,15 @@ export class RpcBriefcaseUtility {
     try {
       // now try V2 checkpoint
       db = await SnapshotDb.openCheckpointV2(checkpoint);
-      Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({
+        ...tokenProps,
+      }));
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
+      Logger.logTrace(
+        loggerCategory,
+        "unable to open V2 checkpoint - falling back to V1 checkpoint",
+        () => ({ error: BentleyError.getErrorProps(e), ...tokenProps })
+      );
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {
@@ -173,23 +229,37 @@ export class RpcBriefcaseUtility {
         localFile: V1CheckpointManager.getFileName(checkpoint),
         aliasFiles: [],
       };
-      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
+      db = await BeDuration.race(
+        timeout,
+        V1CheckpointManager.getCheckpointDb(request)
+      );
 
       if (db === undefined) {
-        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));
+        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({
+          ...tokenProps,
+        }));
         throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
       }
-      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({
+        ...tokenProps,
+      }));
     }
 
     BriefcaseManager.logUsage(db, activity);
     return db;
   }
 
-  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
+  public static async openWithTimeout(
+    activity: RpcActivity,
+    tokenProps: IModelRpcOpenProps,
+    syncMode: SyncMode,
+    timeout: number = 1000
+  ): Promise<IModelConnectionProps> {
+    // eslint-disable-line deprecation/deprecation
     if (tokenProps.iModelId)
       await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
-    return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
+    return (
+      await this.open({ activity, tokenProps, syncMode, timeout })
+    ).toJSON();
   }
-
 }

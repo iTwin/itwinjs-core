@@ -6,7 +6,12 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
+import {
+  ScreenSpaceEffectBuilder,
+  Tool,
+  UniformType,
+  VaryingType,
+} from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -17,8 +22,12 @@ import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 export class VignetteEffect extends AddEffectTool {
   public static override toolId = "VignetteEffect";
 
-  protected get effectName() { return "Vignette"; }
-  protected get textureCoordFromPosition() { return true; }
+  protected get effectName() {
+    return "Vignette";
+  }
+  protected get textureCoordFromPosition() {
+    return true;
+  }
 
   protected get source() {
     return {
@@ -81,8 +90,12 @@ export class VignetteEffect extends AddEffectTool {
  */
 export class VignetteConfig extends Tool {
   public static override toolId = "VignetteConfig";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   /** Size of the vignette in the form (width/2, height/2). e.g., to make the vignette start fading in halfway between the center and edges of
    * UV space, use (0.25, 0.25).
@@ -97,7 +110,12 @@ export class VignetteConfig extends Tool {
    */
   public static smoothness = 0.5;
 
-  public override async run(width?: number, height?: number, roundness?: number, smoothness?: number): Promise<boolean> {
+  public override async run(
+    width?: number,
+    height?: number,
+    roundness?: number,
+    smoothness?: number
+  ): Promise<boolean> {
     const config = VignetteConfig;
     config.size[0] = width ?? config.size[0];
     config.size[1] = height ?? config.size[1];
@@ -110,6 +128,11 @@ export class VignetteConfig extends Tool {
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
-    return this.run(args.getFloat("w"), args.getFloat("h"), args.getFloat("r"), args.getFloat("s"));
+    return this.run(
+      args.getFloat("w"),
+      args.getFloat("h"),
+      args.getFloat("r"),
+      args.getFloat("s")
+    );
   }
 }

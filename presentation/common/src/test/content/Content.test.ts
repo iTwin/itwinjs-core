@@ -4,15 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Content, ContentJSON } from "../../presentation-common/content/Content";
+import {
+  Content,
+  ContentJSON,
+} from "../../presentation-common/content/Content";
 import { Item } from "../../presentation-common/content/Item";
 import { createTestContentDescriptor } from "../_helpers/Content";
-import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
+import {
+  createRandomECClassInfo,
+  createRandomECInstanceKey,
+  createRandomLabelDefinition,
+} from "../_helpers/random";
 
 describe("Content", () => {
-
   describe("constructor", () => {
-
     it("creates a new instance", () => {
       const descriptor = createTestContentDescriptor({ fields: [] });
       const contentSet = new Array<Item>();
@@ -20,11 +25,9 @@ describe("Content", () => {
       expect(content.descriptor).to.eq(descriptor);
       expect(content.contentSet).to.eq(contentSet);
     });
-
   });
 
   describe("fromJSON", () => {
-
     let testContentJSON!: ContentJSON;
     beforeEach(() => {
       testContentJSON = {
@@ -39,19 +42,21 @@ describe("Content", () => {
           fields: [],
           classesMap: {},
         },
-        contentSet: [{
-          classInfo: createRandomECClassInfo(),
-          primaryKeys: [createRandomECInstanceKey()],
-          labelDefinition: createRandomLabelDefinition(),
-          imageId: faker.random.uuid(),
-          mergedFieldNames: [],
-          values: {
-            test: faker.random.number(),
+        contentSet: [
+          {
+            classInfo: createRandomECClassInfo(),
+            primaryKeys: [createRandomECInstanceKey()],
+            labelDefinition: createRandomLabelDefinition(),
+            imageId: faker.random.uuid(),
+            mergedFieldNames: [],
+            values: {
+              test: faker.random.number(),
+            },
+            displayValues: {
+              test: faker.random.words(),
+            },
           },
-          displayValues: {
-            test: faker.random.words(),
-          },
-        }],
+        ],
       };
     });
 
@@ -77,11 +82,12 @@ describe("Content", () => {
     });
 
     it("skips undefined items in content set", () => {
-      const json = { ...testContentJSON, contentSet: [...testContentJSON.contentSet, undefined] } as any;
+      const json = {
+        ...testContentJSON,
+        contentSet: [...testContentJSON.contentSet, undefined],
+      } as any;
       const content = Content.fromJSON(json);
       expect(content!.contentSet.length).to.eq(1);
     });
-
   });
-
 });

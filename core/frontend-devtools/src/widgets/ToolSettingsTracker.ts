@@ -8,10 +8,18 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { IModelApp, ScreenViewport, ToolSettings, Viewport } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  ScreenViewport,
+  ToolSettings,
+  Viewport,
+} from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNestedMenu } from "../ui/NestedMenu";
-import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput";
+import {
+  createLabeledNumericInput,
+  createNumericInput,
+} from "../ui/NumericInput";
 
 /** Allows the global settings controlling the behavior of viewing tools to be customized.
  * @alpha
@@ -28,7 +36,8 @@ export class ToolSettingsTracker {
       label: "Tool Settings",
       parent,
       expand: ToolSettingsTracker._expandToolSettings,
-      handler: (expanded) => ToolSettingsTracker._expandToolSettings = expanded,
+      handler: (expanded) =>
+        (ToolSettingsTracker._expandToolSettings = expanded),
       body: settingsDiv,
     });
 
@@ -47,10 +56,15 @@ export class ToolSettingsTracker {
     div.style.textAlign = "left";
 
     // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-    settingsDiv.style.display = ToolSettingsTracker._expandToolSettings ? "block" : "none";
+    settingsDiv.style.display = ToolSettingsTracker._expandToolSettings
+      ? "block"
+      : "none";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
-    let label = IModelApp.makeHTMLElement("label", { innerText: "Animation Duration (ms): ", parent: div });
+    let label = IModelApp.makeHTMLElement("label", {
+      innerText: "Animation Duration (ms): ",
+      parent: div,
+    });
     label.style.display = "inline";
     label.htmlFor = "ts_animationTime";
     createNumericInput({
@@ -61,7 +75,8 @@ export class ToolSettingsTracker {
       step: 1,
       value: ScreenViewport.animation.time.normal.milliseconds,
       handler: (value, _input) => {
-        ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value);
+        ScreenViewport.animation.time.normal =
+          BeDuration.fromMilliseconds(value);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         IModelApp.toolAdmin.exitViewTool();
       },
@@ -70,24 +85,30 @@ export class ToolSettingsTracker {
     div.style.textAlign = "left";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
-    label = IModelApp.makeHTMLElement("label", { innerText: "Pick Radius (inches): ", parent: div });
+    label = IModelApp.makeHTMLElement("label", {
+      innerText: "Pick Radius (inches): ",
+      parent: div,
+    });
     label.style.display = "inline";
     label.htmlFor = "ts_viewToolPickRadiusInches";
     label.innerText = "Pick Radius (inches): ";
-    createNumericInput({
-      parent: div,
-      id: "ts_viewToolPickRadiusInches",
-      display: "inline",
-      min: 0,
-      step: 0.01,
-      value: ToolSettings.viewToolPickRadiusInches,
-      handler: (value, _input) => {
-        ToolSettings.viewToolPickRadiusInches = value;
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+    createNumericInput(
+      {
+        parent: div,
+        id: "ts_viewToolPickRadiusInches",
+        display: "inline",
+        min: 0,
+        step: 0.01,
+        value: ToolSettings.viewToolPickRadiusInches,
+        handler: (value, _input) => {
+          ToolSettings.viewToolPickRadiusInches = value;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          IModelApp.toolAdmin.exitViewTool();
+        },
+        parseAsFloat: true,
       },
-      parseAsFloat: true,
-    }, true);
+      true
+    );
     div.style.display = "block";
     div.style.textAlign = "left";
 
@@ -107,85 +128,109 @@ export class ToolSettingsTracker {
     div.style.textAlign = "left";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
-    label = IModelApp.makeHTMLElement("label", { innerText: "Walk Camera Angle (degrees): ", parent: div });
+    label = IModelApp.makeHTMLElement("label", {
+      innerText: "Walk Camera Angle (degrees): ",
+      parent: div,
+    });
     label.style.display = "inline";
     label.htmlFor = "ts_walkCameraAngle";
-    createNumericInput({
-      parent: div,
-      id: "ts_walkCameraAngle",
-      display: "inline",
-      min: 0,
-      step: 0.1,
-      value: ToolSettings.walkCameraAngle.degrees,
-      handler: (value, _input) => {
-        ToolSettings.walkCameraAngle.setDegrees(value);
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+    createNumericInput(
+      {
+        parent: div,
+        id: "ts_walkCameraAngle",
+        display: "inline",
+        min: 0,
+        step: 0.1,
+        value: ToolSettings.walkCameraAngle.degrees,
+        handler: (value, _input) => {
+          ToolSettings.walkCameraAngle.setDegrees(value);
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          IModelApp.toolAdmin.exitViewTool();
+        },
+        parseAsFloat: true,
       },
-      parseAsFloat: true,
-    }, true);
+      true
+    );
     div.style.display = "block";
     div.style.textAlign = "left";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
-    label = IModelApp.makeHTMLElement("label", { innerText: "Walk Velocity (meters per second): ", parent: div });
+    label = IModelApp.makeHTMLElement("label", {
+      innerText: "Walk Velocity (meters per second): ",
+      parent: div,
+    });
     label.style.display = "inline";
     label.htmlFor = "ts_walkVelocity";
-    createNumericInput({
-      parent: div,
-      id: "ts_walkVelocity",
-      display: "inline",
-      min: 0,
-      step: 0.1,
-      value: ToolSettings.walkVelocity,
-      handler: (value, _input) => {
-        ToolSettings.walkVelocity = value;
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+    createNumericInput(
+      {
+        parent: div,
+        id: "ts_walkVelocity",
+        display: "inline",
+        min: 0,
+        step: 0.1,
+        value: ToolSettings.walkVelocity,
+        handler: (value, _input) => {
+          ToolSettings.walkVelocity = value;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          IModelApp.toolAdmin.exitViewTool();
+        },
+        parseAsFloat: true,
       },
-      parseAsFloat: true,
-    }, true);
+      true
+    );
     div.style.display = "block";
     div.style.textAlign = "left";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
-    label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Bump Distance (meters): ", parent: div });
+    label = IModelApp.makeHTMLElement("label", {
+      innerText: "Wheel Zoom Bump Distance (meters): ",
+      parent: div,
+    });
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomBumpDistance";
-    createNumericInput({
-      parent: div,
-      id: "ts_wheelZoomBumpDistance",
-      display: "inline",
-      min: 0,
-      step: 0.025,
-      value: ToolSettings.wheelZoomBumpDistance,
-      handler: (value, _input) => {
-        ToolSettings.wheelZoomBumpDistance = value;
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+    createNumericInput(
+      {
+        parent: div,
+        id: "ts_wheelZoomBumpDistance",
+        display: "inline",
+        min: 0,
+        step: 0.025,
+        value: ToolSettings.wheelZoomBumpDistance,
+        handler: (value, _input) => {
+          ToolSettings.wheelZoomBumpDistance = value;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          IModelApp.toolAdmin.exitViewTool();
+        },
+        parseAsFloat: true,
       },
-      parseAsFloat: true,
-    }, true);
+      true
+    );
     div.style.display = "block";
     div.style.textAlign = "left";
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
-    label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Ratio: ", parent: div });
+    label = IModelApp.makeHTMLElement("label", {
+      innerText: "Wheel Zoom Ratio: ",
+      parent: div,
+    });
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomRatio";
-    createNumericInput({
-      parent: div,
-      id: "ts_wheelZoomRatio",
-      display: "inline",
-      min: 1.0,
-      step: 0.025,
-      value: ToolSettings.wheelZoomRatio,
-      handler: async (value, _input) => {
-        ToolSettings.wheelZoomRatio = value;
-        return IModelApp.toolAdmin.exitViewTool();
+    createNumericInput(
+      {
+        parent: div,
+        id: "ts_wheelZoomRatio",
+        display: "inline",
+        min: 1.0,
+        step: 0.025,
+        value: ToolSettings.wheelZoomRatio,
+        handler: async (value, _input) => {
+          ToolSettings.wheelZoomRatio = value;
+          return IModelApp.toolAdmin.exitViewTool();
+        },
+        parseAsFloat: true,
       },
-      parseAsFloat: true,
-    }, true);
+      true
+    );
     div.style.display = "block";
     div.style.textAlign = "left";
 
@@ -208,7 +253,9 @@ export class ToolSettingsTracker {
       parent: settingsDiv,
       value: ToolSettings.viewingInertia.duration.milliseconds / 1000,
       handler: async (value, _) => {
-        ToolSettings.viewingInertia.duration = BeDuration.fromMilliseconds(value * 1000);
+        ToolSettings.viewingInertia.duration = BeDuration.fromMilliseconds(
+          value * 1000
+        );
         return IModelApp.toolAdmin.exitViewTool();
       },
       min: 0,
@@ -219,5 +266,5 @@ export class ToolSettingsTracker {
     });
   }
 
-  public dispose(): void { }
+  public dispose(): void {}
 }

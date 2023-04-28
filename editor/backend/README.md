@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/editor-backend__ package contains backend classes for editing iModels.
+The **@itwin/editor-backend** package contains backend classes for editing iModels.
 
 ## Documentation
 

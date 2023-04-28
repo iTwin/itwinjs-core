@@ -10,7 +10,7 @@ Defines a constant that can be referenced in a Unit's definition.
 
 **description** A user-facing description of the Constant. Localized and may be shown in a UI.
 
-**phenomenon** The physical quantity that this unit measures (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
+**phenomenon** The physical quantity that this unit measures (e.g., length, temperature, pressure). Only units in the same phenomenon can be converted between.
 
 **definition** The expression that defines the unit this constant's factor is measured in.
 

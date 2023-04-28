@@ -7,10 +7,34 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
+  AuxChannel,
+  AuxChannelData,
+  Point2d,
+  Point3d,
+  Range3d,
+} from "@itwin/core-geometry";
+import {
+  ColorIndex,
+  EdgeArgs,
+  Feature,
+  FeatureIndex,
+  FeatureIndexType,
+  FeatureTable,
+  FillFlags,
+  LinePixels,
+  MeshEdges,
+  MeshPolyline,
+  MeshPolylineList,
+  OctEncodedNormal,
+  PolylineData,
+  PolylineEdgeArgs,
+  PolylineFlags,
+  QParams3d,
+  QPoint3dList,
+  RenderMaterial,
+  RenderTexture,
+  SilhouetteEdgeArgs,
 } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
@@ -55,27 +79,28 @@ export interface PolylineArgs {
 /** @internal */
 export namespace PolylineArgs {
   export function fromMesh(mesh: Mesh): PolylineArgs | undefined {
-    if (!mesh.polylines || mesh.polylines.length === 0)
-      return undefined;
+    if (!mesh.polylines || mesh.polylines.length === 0) return undefined;
 
     const polylines = [];
     for (const polyline of mesh.polylines) {
       const polylineData = new PolylineData();
-      if (polylineData.init(polyline))
-        polylines.push(polylineData);
+      if (polylineData.init(polyline)) polylines.push(polylineData);
     }
 
-    if (polylines.length === 0)
-      return undefined;
+    if (polylines.length === 0) return undefined;
 
     const flags = new PolylineFlags(mesh.is2d, mesh.isPlanar);
     flags.isDisjoint = mesh.type === Mesh.PrimitiveType.Point;
-    if (mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline) {
+    if (
+      mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline
+    ) {
       // This polyline is behaving as the edges of a region surface.
-      if (!mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
+      if (
+        !mesh.displayParams.gradient ||
+        mesh.displayParams.gradient.isOutlined
+      )
         flags.setIsNormalEdge();
-      else
-        flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed
+      else flags.setIsOutlineEdge(); // edges only displayed if fill undisplayed
     }
 
     const colors = new ColorIndex();
@@ -113,7 +138,11 @@ export class MeshArgsEdges {
     this.width = 0;
     this.linePixels = LinePixels.Solid;
   }
-  public get isValid(): boolean { return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid; }
+  public get isValid(): boolean {
+    return (
+      this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid
+    );
+  }
 }
 
 /* A carrier of information needed to describe a triangle mesh and its edges.
@@ -146,7 +175,10 @@ export namespace MeshArgs {
       return undefined;
 
     const texture = mesh.displayParams.textureMapping?.texture;
-    const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
+    const textureMapping =
+      texture && mesh.uvParams.length > 0
+        ? { texture, uvParams: mesh.uvParams }
+        : undefined;
 
     const colors = new ColorIndex();
     mesh.colorMap.toColorIndex(colors, mesh.colors);
@@ -165,8 +197,7 @@ export namespace MeshArgs {
       const polylines = [];
       for (const meshPolyline of mesh.edges.polylines) {
         const polyline = new PolylineData();
-        if (polyline.init(meshPolyline))
-          polylines.push(polyline);
+        if (polyline.init(meshPolyline)) polylines.push(polyline);
       }
 
       edges.polylines.init(polylines);
@@ -175,7 +206,10 @@ export namespace MeshArgs {
     return {
       vertIndices: mesh.triangles.indices,
       points: mesh.points,
-      normals: !mesh.displayParams.ignoreLighting && mesh.normals.length > 0 ? mesh.normals : undefined,
+      normals:
+        !mesh.displayParams.ignoreLighting && mesh.normals.length > 0
+          ? mesh.normals
+          : undefined,
       textureMapping,
       colors,
       features,
@@ -211,14 +245,17 @@ export class Mesh {
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
+    this._data =
+      Mesh.PrimitiveType.Mesh === type
+        ? new TriangleList()
+        : new MeshPolylineList();
     this.displayParams = displayParams;
     this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;
     this.is2d = is2d;
     this.isPlanar = isPlanar;
-    this.hasBakedLighting = (true === props.hasBakedLighting);
-    this.isVolumeClassifier = (true === props.isVolumeClassifier);
+    this.hasBakedLighting = true === props.hasBakedLighting;
+    this.isVolumeClassifier = true === props.isVolumeClassifier;
     if (props.quantizePositions) {
       this.points = new QPoint3dList(QParams3d.fromRange(range));
     } else {
@@ -233,39 +270,59 @@ export class Mesh {
     }
   }
 
-  public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
+  public static create(props: Mesh.Props): Mesh {
+    return new Mesh(props);
+  }
 
   public get triangles(): TriangleList | undefined {
-    return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined;
+    return Mesh.PrimitiveType.Mesh === this.type
+      ? (this._data as TriangleList)
+      : undefined;
   }
 
   public get polylines(): MeshPolylineList | undefined {
-    return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined;
+    return Mesh.PrimitiveType.Mesh !== this.type
+      ? (this._data as MeshPolylineList)
+      : undefined;
   }
 
   public get auxChannels(): ReadonlyArray<AuxChannel> | undefined {
     return this._auxChannels;
   }
 
-  public addAuxChannels(channels: ReadonlyArray<AuxChannel>, srcIndex: number): void {
+  public addAuxChannels(
+    channels: ReadonlyArray<AuxChannel>,
+    srcIndex: number
+  ): void {
     // The native version of this function appears to assume that all polyfaces added to the Mesh will have
     // the same number + type of aux channels.
     // ###TODO We should really produce a separate Mesh for each unique combination. For now just bail on mismatch.
     if (this._auxChannels) {
-      if (this._auxChannels.length !== channels.length)
-        return;
+      if (this._auxChannels.length !== channels.length) return;
 
       for (let i = 0; i < channels.length; i++) {
         const src = channels[i];
         const dst = this._auxChannels[i];
-        if (src.dataType !== dst.dataType || src.name !== dst.name || src.inputName !== dst.inputName)
+        if (
+          src.dataType !== dst.dataType ||
+          src.name !== dst.name ||
+          src.inputName !== dst.inputName
+        )
           return;
       }
     }
 
     if (!this._auxChannels) {
       // Copy the channels, leaving each AuxData's values array empty.
-      this._auxChannels = channels.map((x) => new AuxChannel(x.data.map((y) => new AuxChannelData(y.input, [])), x.dataType, x.name, x.inputName));
+      this._auxChannels = channels.map(
+        (x) =>
+          new AuxChannel(
+            x.data.map((y) => new AuxChannelData(y.input, [])),
+            x.dataType,
+            x.name,
+            x.inputName
+          )
+      );
     }
 
     // Append the value at srcIndex from each source channel's data to our channels.
@@ -275,14 +332,18 @@ export class Mesh {
       const dstIndex = dstChannel.valueCount;
       for (let dataIndex = 0; dataIndex < srcChannel.data.length; dataIndex++) {
         const dstData = dstChannel.data[dataIndex];
-        dstData.copyValues(srcChannel.data[dataIndex], dstIndex, srcIndex, dstChannel.entriesPerValue);
+        dstData.copyValues(
+          srcChannel.data[dataIndex],
+          dstIndex,
+          srcIndex,
+          dstChannel.entriesPerValue
+        );
       }
     }
   }
 
   public toFeatureIndex(index: FeatureIndex): void {
-    if (undefined !== this.features)
-      this.features.toFeatureIndex(index);
+    if (undefined !== this.features) this.features.toFeatureIndex(index);
   }
 
   public toMeshArgs(): MeshArgs | undefined {
@@ -293,26 +354,31 @@ export class Mesh {
     return PolylineArgs.fromMesh(this);
   }
 
-  public getGraphics(system: RenderSystem, instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public getGraphics(
+    system: RenderSystem,
+    instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d
+  ): RenderGraphic | undefined {
     const meshArgs = this.toMeshArgs();
     if (meshArgs)
       return system.createTriMesh(meshArgs, instancesOrViewIndependentOrigin);
 
     const plArgs = this.toPolylineArgs();
-    return plArgs ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin) : undefined;
+    return plArgs
+      ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin)
+      : undefined;
   }
 
   public addPolyline(poly: MeshPolyline): void {
     const { type, polylines } = this;
 
-    assert(Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type);
+    assert(
+      Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type
+    );
     assert(undefined !== polylines);
 
-    if (Mesh.PrimitiveType.Polyline === type && poly.indices.length < 2)
-      return;
+    if (Mesh.PrimitiveType.Polyline === type && poly.indices.length < 2) return;
 
-    if (undefined !== polylines)
-      polylines.push(poly);
+    if (undefined !== polylines) polylines.push(poly);
   }
 
   public addTriangle(triangle: Triangle): void {
@@ -321,8 +387,7 @@ export class Mesh {
     assert(Mesh.PrimitiveType.Mesh === type);
     assert(undefined !== triangles);
 
-    if (undefined !== triangles)
-      triangles.addTriangle(triangle);
+    if (undefined !== triangles) triangles.addTriangle(triangle);
   }
 
   public addVertex(props: VertexKeyProps): number {
@@ -330,11 +395,9 @@ export class Mesh {
 
     this.points.add(position);
 
-    if (undefined !== normal)
-      this.normals.push(normal);
+    if (undefined !== normal) this.normals.push(normal);
 
-    if (undefined !== uvParam)
-      this.uvParams.push(uvParam);
+    if (undefined !== uvParam) this.uvParams.push(uvParam);
 
     if (feature) {
       assert(undefined !== this.features);
@@ -348,8 +411,7 @@ export class Mesh {
       assert(0 === this.colorMap.indexOf(fillColor));
     } else if (!this.colorMap.isUniform || !this.colorMap.hasColor(fillColor)) {
       // Back-fill uniform value (index=0) for existing vertices if previously uniform
-      if (0 === this.colors.length)
-        this.colors.length = this.points.length - 1;
+      if (0 === this.colors.length) this.colors.length = this.points.length - 1;
 
       this.colors.push(this.colorMap.insert(fillColor));
       assert(!this.colorMap.isUniform);
@@ -360,7 +422,8 @@ export class Mesh {
 }
 
 /** @internal */
-export namespace Mesh { // eslint-disable-line no-redeclare
+export namespace Mesh {
+  // eslint-disable-line no-redeclare
   export enum PrimitiveType {
     Mesh, // eslint-disable-line @typescript-eslint/no-shadow
     Polyline,
@@ -373,7 +436,9 @@ export namespace Mesh { // eslint-disable-line no-redeclare
     public uniform = 0;
     public initialized = false;
 
-    public constructor(table: FeatureTable) { this.table = table; }
+    public constructor(table: FeatureTable) {
+      this.table = table;
+    }
 
     public add(feat: Feature, numVerts: number): void {
       const index = this.table.insert(feat);
@@ -399,14 +464,12 @@ export namespace Mesh { // eslint-disable-line no-redeclare
       this.initialized = 0 < indices.length;
 
       assert(0 < indices.length);
-      if (1 === indices.length)
-        this.uniform = indices[0];
-      else if (1 < indices.length)
-        this.indices = indices;
+      if (1 === indices.length) this.uniform = indices[0];
+      else if (1 < indices.length) this.indices = indices;
     }
 
     public toFeatureIndex(output?: FeatureIndex): FeatureIndex {
-      const index = output ?? new  FeatureIndex();
+      const index = output ?? new FeatureIndex();
       if (!this.initialized) {
         index.type = FeatureIndexType.Empty;
       } else if (this.indices.length === 0) {

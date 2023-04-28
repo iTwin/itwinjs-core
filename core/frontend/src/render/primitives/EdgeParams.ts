@@ -7,7 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
+import {
+  LinePixels,
+  MeshEdge,
+  OctEncodedNormalPair,
+  PolylineData,
+} from "@itwin/core-common";
 import { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
 import { VertexIndices } from "./VertexTable";
 import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
@@ -30,14 +35,15 @@ export interface SegmentEdgeParams {
   readonly endPointAndQuadIndices: Uint8Array;
 }
 
-function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
+function convertPolylinesAndEdges(
+  polylines?: PolylineData[],
+  edges?: MeshEdge[]
+): SegmentEdgeParams | undefined {
   let numIndices = undefined !== edges ? edges.length : 0;
   if (undefined !== polylines)
-    for (const pd of polylines)
-      numIndices += (pd.vertIndices.length - 1);
+    for (const pd of polylines) numIndices += pd.vertIndices.length - 1;
 
-  if (0 === numIndices)
-    return undefined;
+  if (0 === numIndices) return undefined;
 
   numIndices *= 6;
   const indexBytes = new Uint8Array(numIndices * 3);
@@ -60,7 +66,8 @@ function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]
       for (let i = 0; i < num; ++i) {
         let p0 = pd.vertIndices[i];
         let p1 = pd.vertIndices[i + 1];
-        if (p1 < p0) { // swap so that lower index is first.
+        if (p1 < p0) {
+          // swap so that lower index is first.
           p0 = p1;
           p1 = pd.vertIndices[i];
         }
@@ -104,10 +111,12 @@ export interface SilhouetteParams extends SegmentEdgeParams {
   readonly normalPairs: Uint8Array;
 }
 
-function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair[]): SilhouetteParams | undefined {
+function convertSilhouettes(
+  edges: MeshEdge[],
+  normalPairs: OctEncodedNormalPair[]
+): SilhouetteParams | undefined {
   const base = convertPolylinesAndEdges(undefined, edges);
-  if (undefined === base)
-    return undefined;
+  if (undefined === base) return undefined;
 
   const normalPairBytes = new Uint8Array(normalPairs.length * 6 * 4);
   const normalPair16 = new Uint16Array(normalPairBytes.buffer);
@@ -171,7 +180,11 @@ export interface EdgeTableInfo {
   readonly silhouetteStartByteIndex: number;
 }
 
-export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo {
+export function calculateEdgeTableParams(
+  numSegmentEdges: number,
+  numSilhouettes: number,
+  maxSize: number
+): EdgeTableInfo {
   // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
   // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.
   let nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
@@ -184,8 +197,7 @@ export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes
     width = Math.ceil(Math.sqrt(nRgbaRequired));
     // Each entry's data must fit on the same row. 15 RGBA = 60 bytes = lowest common multiple of 6, 10, and 4.
     const remainder = width % 15;
-    if (0 !== remainder)
-      width += 15 - remainder;
+    if (0 !== remainder) width += 15 - remainder;
 
     // If the table contains both segments and silhouettes, there may be one row containing a mix of the two where padding
     // is required between them.
@@ -196,8 +208,7 @@ export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes
     }
 
     height = Math.ceil(nRgbaRequired / width);
-    if (width * height < nRgbaRequired)
-      height++;
+    if (width * height < nRgbaRequired) height++;
   }
 
   return {
@@ -208,26 +219,35 @@ export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes
   };
 }
 
-function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: number): IndexedEdgeParams | undefined {
+function buildIndexedEdges(
+  args: MeshArgsEdges,
+  doPolylines: boolean,
+  maxSize: number
+): IndexedEdgeParams | undefined {
   const hardEdges = args.edges?.edges;
   const silhouettes = args.silhouettes;
   const polylines = doPolylines ? args.polylines?.lines : undefined;
 
   const numHardEdges = hardEdges?.length ?? 0;
   const numSilhouettes = silhouettes?.edges?.length ?? 0;
-  const numPolylines = polylines ? polylines.reduce((count: number, pd: PolylineData) => count + Math.max(0, pd.vertIndices.length - 1), 0) : 0;
+  const numPolylines = polylines
+    ? polylines.reduce(
+        (count: number, pd: PolylineData) =>
+          count + Math.max(0, pd.vertIndices.length - 1),
+        0
+      )
+    : 0;
   const numSegmentEdges = numHardEdges + numPolylines;
   const numTotalEdges = numSegmentEdges + numSilhouettes;
-  if (numTotalEdges === 0)
-    return undefined;
+  if (numTotalEdges === 0) return undefined;
 
   // Each edge is a quad consisting of six vertices. Each vertex is an identical 24-bit index into the lookup table.
   const indices = new VertexIndices(new Uint8Array(numTotalEdges * 6 * 3));
   for (let i = 0; i < numTotalEdges; i++)
-    for (let j = 0; j < 6; j++)
-      indices.setNthIndex(i * 6 + j, i);
+    for (let j = 0; j < 6; j++) indices.setNthIndex(i * 6 + j, i);
 
-  const {width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams (numSegmentEdges, numSilhouettes, maxSize);
+  const { width, height, silhouettePadding, silhouetteStartByteIndex } =
+    calculateEdgeTableParams(numSegmentEdges, numSilhouettes, maxSize);
 
   const data = new Uint8Array(width * height * 4);
   function setUint24(byteIndex: number, value: number): void {
@@ -236,7 +256,11 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     data[byteIndex + 2] = (value & 0xff0000) >>> 16;
   }
 
-  function setEdge(index: number, startPointIndex: number, endPointIndex: number): void {
+  function setEdge(
+    index: number,
+    startPointIndex: number,
+    endPointIndex: number
+  ): void {
     const byteIndex = index * 6;
     setUint24(byteIndex, startPointIndex);
     setUint24(byteIndex + 3, endPointIndex);
@@ -254,10 +278,8 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
         const p0 = pd.vertIndices[i];
         const p1 = pd.vertIndices[i + 1];
         // Ensure lower index is first.
-        if (p0 < p1)
-          setEdge(curIndex++, p0, p1);
-        else
-          setEdge(curIndex++, p1, p0);
+        if (p0 < p1) setEdge(curIndex++, p0, p1);
+        else setEdge(curIndex++, p1, p0);
       }
     }
   }
@@ -265,8 +287,14 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
   if (silhouettes?.edges) {
     assert(undefined !== silhouettes.normals);
     assert(silhouettes.normals.length === silhouettes.edges.length);
-    function setSilhouette(index: number, start: number, end: number, normals: OctEncodedNormalPair): void {
-      const byteIndex = silhouetteStartByteIndex + silhouettePadding + index * 10;
+    function setSilhouette(
+      index: number,
+      start: number,
+      end: number,
+      normals: OctEncodedNormalPair
+    ): void {
+      const byteIndex =
+        silhouetteStartByteIndex + silhouettePadding + index * 10;
       setUint24(byteIndex, start);
       setUint24(byteIndex + 3, end);
       data[byteIndex + 6] = normals.first.value & 0xff;
@@ -277,7 +305,12 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
 
     curIndex = 0;
     for (let i = 0; i < silhouettes.edges.length; i++)
-      setSilhouette(curIndex++, silhouettes.edges[i].indices[0], silhouettes.edges[i].indices[1], silhouettes.normals[i]);
+      setSilhouette(
+        curIndex++,
+        silhouettes.edges[i].indices[0],
+        silhouettes.edges[i].indices[1],
+        silhouettes.normals[i]
+      );
   }
 
   return {
@@ -310,27 +343,37 @@ export interface EdgeParams {
 
 /** @internal */
 export namespace EdgeParams {
-  export function fromMeshArgs(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
+  export function fromMeshArgs(
+    meshArgs: MeshArgs,
+    maxWidth?: number
+  ): EdgeParams | undefined {
     const args = meshArgs.edges;
-    if (!args)
-      return undefined;
+    if (!args) return undefined;
 
     const doJoints = wantJointTriangles(args.width, true === meshArgs.is2d);
-    const polylines = doJoints ? TesselatedPolyline.fromMesh(meshArgs) : undefined;
+    const polylines = doJoints
+      ? TesselatedPolyline.fromMesh(meshArgs)
+      : undefined;
 
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
     let indexed: IndexedEdgeParams | undefined;
 
     if (IModelApp.tileAdmin.enableIndexedEdges) {
-      indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
+      indexed = buildIndexedEdges(
+        args,
+        !doJoints,
+        maxWidth ?? IModelApp.renderSystem.maxTextureSize
+      );
     } else {
       segments = convertPolylinesAndEdges(undefined, args.edges.edges);
-      silhouettes = args.silhouettes.edges && args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;
+      silhouettes =
+        args.silhouettes.edges && args.silhouettes.normals
+          ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals)
+          : undefined;
     }
 
-    if (!segments && !silhouettes && !polylines && !indexed)
-      return undefined;
+    if (!segments && !silhouettes && !polylines && !indexed) return undefined;
 
     return {
       weight: args.width,

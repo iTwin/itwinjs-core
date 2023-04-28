@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@itwin/core-bentley";
-import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
+import {
+  DevToolsRpcInterface,
+  DevToolsStatsOptions,
+  IModelRpcProps,
+} from "@itwin/core-common";
 
 /**
  * Results of the ping test
@@ -23,7 +27,6 @@ export interface PingTestResult {
  * @internal
  */
 export class DevTools {
-
   /** Create a new connection with a specific backend instance.
    * @param tokenProps The iModelToken that identifies that backend instance.
    * Supply a dummy token if contacting the backend without the Orchestrator.
@@ -33,9 +36,7 @@ export class DevTools {
   }
 
   /** Constructor */
-  private constructor(
-    private readonly _tokenProps: IModelRpcProps) {
-  }
+  private constructor(private readonly _tokenProps: IModelRpcProps) {}
 
   /** Measures the round trip times for one or more pings to the backend
    * @param count Number of pings to send to the backend
@@ -55,41 +56,46 @@ export class DevTools {
 
     const pingTimes: Array<number | undefined> = await Promise.all(pings);
 
-    const min: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (!acc)
-        return curr;
+    const min: number | undefined = pingTimes.reduce(
+      (acc: number | undefined, curr: number | undefined) => {
+        if (!acc) return curr;
 
-      if (!curr)
-        return acc;
+        if (!curr) return acc;
 
-      return Math.min(acc, curr);
-    }, undefined);
+        return Math.min(acc, curr);
+      },
+      undefined
+    );
 
-    const max: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (typeof acc === "undefined")
-        return undefined;
+    const max: number | undefined = pingTimes.reduce(
+      (acc: number | undefined, curr: number | undefined) => {
+        if (typeof acc === "undefined") return undefined;
 
-      if (!curr)
-        return curr;
+        if (!curr) return curr;
 
-      return Math.max(acc, curr);
-    }, 0);
+        return Math.max(acc, curr);
+      },
+      0
+    );
 
-    const total: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (typeof acc === "undefined")
-        return undefined;
-      if (!curr)
-        return undefined;
+    const total: number | undefined = pingTimes.reduce(
+      (acc: number | undefined, curr: number | undefined) => {
+        if (typeof acc === "undefined") return undefined;
+        if (!curr) return undefined;
 
-      return acc + curr;
-    }, 0);
+        return acc + curr;
+      },
+      0
+    );
 
     const avg = total ? total / count : undefined;
     return { min, max, avg };
   }
 
   /** Returns JSON object with backend statistics */
-  public async stats(options: DevToolsStatsOptions = DevToolsStatsOptions.FormatUnits): Promise<any> {
+  public async stats(
+    options: DevToolsStatsOptions = DevToolsStatsOptions.FormatUnits
+  ): Promise<any> {
     return DevToolsRpcInterface.getClient().stats(this._tokenProps, options);
   }
 
@@ -99,7 +105,14 @@ export class DevTools {
   }
 
   /** Sets up a log level at the backend and returns the old log level */
-  public async setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined> {
-    return DevToolsRpcInterface.getClient().setLogLevel(this._tokenProps, inLoggerCategory, newLevel);
+  public async setLogLevel(
+    inLoggerCategory: string,
+    newLevel: LogLevel
+  ): Promise<LogLevel | undefined> {
+    return DevToolsRpcInterface.getClient().setLogLevel(
+      this._tokenProps,
+      inLoggerCategory,
+      newLevel
+    );
   }
 }

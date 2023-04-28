@@ -17,8 +17,17 @@ import * as elementsModule from "./FunctionalElements";
 
 /** @public */
 export class FunctionalSchema extends Schema {
-  public static override get schemaName(): string { return "Functional"; }
-  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", `${FunctionalSchema.schemaName}.ecschema.xml`); }
+  public static override get schemaName(): string {
+    return "Functional";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(
+      KnownLocations.nativeAssetsDir,
+      "ECSchemas",
+      "Domain",
+      `${FunctionalSchema.schemaName}.ecschema.xml`
+    );
+  }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -29,8 +38,7 @@ export class FunctionalSchema extends Schema {
 
   /** @public */
   public static async importSchema(iModelDb: IModelDb) {
-    if (iModelDb.isBriefcaseDb())
-      await iModelDb.acquireSchemaLock();
+    if (iModelDb.isBriefcaseDb()) await iModelDb.acquireSchemaLock();
 
     const stat = iModelDb.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {

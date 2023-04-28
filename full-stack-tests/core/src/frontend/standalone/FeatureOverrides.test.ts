@@ -4,8 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
-import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
+import {
+  Feature,
+  FeatureTable,
+  GeometryClass,
+  PackedFeatureTable,
+} from "@itwin/core-common";
+import {
+  HiliteSet,
+  IModelApp,
+  IModelConnection,
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+  StandardViewId,
+  Target,
+} from "@itwin/core-frontend";
 import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUtility } from "../TestUtility";
 
@@ -27,10 +41,11 @@ describe("FeatureOverrides", () => {
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => {
+    // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
+    spatialView = (await imodel.views.load("0x34")) as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
@@ -48,7 +63,11 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+    const ovr = FeatureOverrides.createFromTarget(
+      vp.target as Target,
+      {},
+      undefined
+    );
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -67,14 +86,17 @@ describe("FeatureOverrides", () => {
   });
 
   it("should create a non-uniform feature overrides object", () => {
-    if (!IModelApp.hasRenderSystem)
-      return;
+    if (!IModelApp.hasRenderSystem) return;
 
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+    const ovr = FeatureOverrides.createFromTarget(
+      vp.target as Target,
+      {},
+      undefined
+    );
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
@@ -103,7 +125,11 @@ describe("FeatureTable", () => {
       new Feature("0x4", "0xabcdabcdabcdabcd", GeometryClass.Primary),
       new Feature("0xabcdabcdabcdabce", "0x63", GeometryClass.Construction),
       new Feature("0xabcdabcdabcdabcc", "0xc8", GeometryClass.Primary),
-      new Feature("0xabcdabcdabcdabc7", "0xabcdabcdabcdabd1", GeometryClass.Construction),
+      new Feature(
+        "0xabcdabcdabcdabc7",
+        "0xabcdabcdabcdabd1",
+        GeometryClass.Construction
+      ),
       new Feature("0x2", "0xabcdabcdabcdabcd", GeometryClass.Primary),
       new Feature("0x1", "0x1", GeometryClass.Construction),
     ];

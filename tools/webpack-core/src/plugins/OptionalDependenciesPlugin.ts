@@ -24,42 +24,72 @@ import { getSourcePosition } from "../utils/paths";
 export class IgnoreOptionalDependenciesPlugin {
   private _requestRegex: RegExp;
   constructor(packages: string[]) {
-    this._requestRegex = new RegExp(`[\\\\\\/]node_modules[\\\\\\/](${packages.map(escapeRegex).join("|")})[\\\\\\/]`);
+    this._requestRegex = new RegExp(
+      `[\\\\\\/]node_modules[\\\\\\/](${packages
+        .map(escapeRegex)
+        .join("|")})[\\\\\\/]`
+    );
   }
 
   public apply(compiler: Compiler) {
-    compiler.hooks.normalModuleFactory.tap("IgnoreOptionalDependenciesPlugin", (nmf) => {
-      nmf.hooks.parser.for("javascript/auto").tap("IgnoreOptionalDependenciesPlugin", (parser: any) => {
-        parser.hooks.call.for("require").tap("IgnoreOptionalDependenciesPlugin", (expr: any) => {
-          if (expr.arguments.length !== 1)
-            return;
+    compiler.hooks.normalModuleFactory.tap(
+      "IgnoreOptionalDependenciesPlugin",
+      (nmf) => {
+        nmf.hooks.parser
+          .for("javascript/auto")
+          .tap("IgnoreOptionalDependenciesPlugin", (parser: any) => {
+            parser.hooks.call
+              .for("require")
+              .tap("IgnoreOptionalDependenciesPlugin", (expr: any) => {
+                if (expr.arguments.length !== 1) return;
 
-          if (!this._requestRegex.test(parser.state.current.request))
-            return;
+                if (!this._requestRegex.test(parser.state.current.request))
+                  return;
 
-          const logger = parser.state.compilation.getLogger("IgnoreOptionalDependenciesPlugin");
-          const param = parser.evaluateExpression(expr.arguments[0]);
-          if (param.isString()) {
-            if (!parser.scope.inTry)
-              return;
+                const logger = parser.state.compilation.getLogger(
+                  "IgnoreOptionalDependenciesPlugin"
+                );
+                const param = parser.evaluateExpression(expr.arguments[0]);
+                if (param.isString()) {
+                  if (!parser.scope.inTry) return;
 
-            logger.log(`Ignoring require("${param.string}") at ${getSourcePosition(parser.state.current, expr.loc)}`);
-            return true;
-          }
+                  logger.log(
+                    `Ignoring require("${param.string}") at ${getSourcePosition(
+                      parser.state.current,
+                      expr.loc
+                    )}`
+                  );
+                  return true;
+                }
 
-          logger.log(`Ignoring require(<<expression>>) at ${getSourcePosition(parser.state.current, expr.loc)}`);
-          return true;
-        });
-        parser.hooks.expression.for("require").tap("IgnoreOptionalDependenciesPlugin", (expr: any) => {
-          if (!this._requestRegex.test(parser.state.current.request))
-            return;
+                logger.log(
+                  `Ignoring require(<<expression>>) at ${getSourcePosition(
+                    parser.state.current,
+                    expr.loc
+                  )}`
+                );
+                return true;
+              });
+            parser.hooks.expression
+              .for("require")
+              .tap("IgnoreOptionalDependenciesPlugin", (expr: any) => {
+                if (!this._requestRegex.test(parser.state.current.request))
+                  return;
 
-          const logger = parser.state.compilation.getLogger("IgnoreOptionalDependenciesPlugin");
-          logger.log(`Ignoring non-call require expression at ${getSourcePosition(parser.state.current, expr.loc)}`);
-          return true;
-        });
-      });
-    });
+                const logger = parser.state.compilation.getLogger(
+                  "IgnoreOptionalDependenciesPlugin"
+                );
+                logger.log(
+                  `Ignoring non-call require expression at ${getSourcePosition(
+                    parser.state.current,
+                    expr.loc
+                  )}`
+                );
+                return true;
+              });
+          });
+      }
+    );
   }
 }
 

@@ -23,7 +23,10 @@ export interface TextBox {
 export type TextBoxHandler = (textbox: HTMLInputElement) => void;
 
 /** @alpha */
-export type TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void;
+export type TextBoxKeyPressHandler = (
+  textbox: HTMLInputElement,
+  ev: KeyboardEvent
+) => void;
 
 /** @alpha */
 export interface TextBoxProps {
@@ -41,28 +44,24 @@ export interface TextBoxProps {
 /** @alpha */
 export function createTextBox(props: TextBoxProps): TextBox {
   const div = document.createElement("div");
-  if (true === props.inline)
-    div.style.display = "inline";
+  if (true === props.inline) div.style.display = "inline";
 
   let label;
   if (undefined !== props.label) {
     label = document.createElement("label");
     label.innerText = props.label;
-    if (undefined !== props.id)
-      label.htmlFor = props.id;
+    if (undefined !== props.id) label.htmlFor = props.id;
 
     div.appendChild(label);
   }
 
   const textbox = document.createElement("input");
   textbox.type = "text";
-  if (undefined !== props.id)
-    textbox.id = props.id;
+  if (undefined !== props.id) textbox.id = props.id;
 
   div.appendChild(textbox);
 
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
+  if (undefined !== props.parent) props.parent.appendChild(div);
 
   const handler = props.handler;
   if (undefined !== handler) {
@@ -74,7 +73,8 @@ export function createTextBox(props: TextBoxProps): TextBox {
   textbox.onkeydown = textbox.onkeyup = stopPropagation;
   const keypresshandler = props.keypresshandler;
   if (undefined !== keypresshandler) {
-    textbox.onkeypress = (ev: KeyboardEvent) => { // eslint-disable-line deprecation/deprecation
+    textbox.onkeypress = (ev: KeyboardEvent) => {
+      // eslint-disable-line deprecation/deprecation
       keypresshandler(textbox, ev);
       ev.stopPropagation();
     };
@@ -91,8 +91,7 @@ export function createTextBox(props: TextBoxProps): TextBox {
     textbox.setAttribute("list", props.list);
   }
 
-  if (undefined !== props.tooltip)
-    div.title = props.tooltip;
+  if (undefined !== props.tooltip) div.title = props.tooltip;
 
   return { label, textbox, div };
 }

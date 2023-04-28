@@ -6,8 +6,19 @@
  * @module Codes
  */
 
-import { BentleyError, DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, CodeSpecProperties, IModelError } from "@itwin/core-common";
+import {
+  BentleyError,
+  DbResult,
+  Id64,
+  Id64String,
+  IModelStatus,
+} from "@itwin/core-bentley";
+import {
+  CodeScopeSpec,
+  CodeSpec,
+  CodeSpecProperties,
+  IModelError,
+} from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { CodeService } from "./CodeService";
 
@@ -22,22 +33,26 @@ export class CodeSpecs {
   constructor(imodel: IModelDb) {
     this._imodel = imodel;
     if (imodel.isBriefcaseDb()) {
-      imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+      imodel.onChangesetApplied.addListener(
+        () => (this._loadedCodeSpecs.length = 0)
+      );
     }
   }
 
   private findByName(name: string): Id64String | undefined {
-    return this._imodel.withSqliteStatement(`SELECT Id FROM ${CodeSpecs.tableName} WHERE Name=?`, (stmt) => {
-      stmt.bindString(1, name);
-      return stmt.nextRow() ? stmt.getValueId(0) : undefined;
-    });
+    return this._imodel.withSqliteStatement(
+      `SELECT Id FROM ${CodeSpecs.tableName} WHERE Name=?`,
+      (stmt) => {
+        stmt.bindString(1, name);
+        return stmt.nextRow() ? stmt.getValueId(0) : undefined;
+      }
+    );
   }
 
   /** Look up the Id of the CodeSpec with the specified name. */
   public queryId(name: string): Id64String {
     const id = this.findByName(name);
-    if (!id)
-      throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+    if (!id) throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
     return id;
   }
 
@@ -48,9 +63,10 @@ export class CodeSpecs {
    */
   public getById(codeSpecId: Id64String): CodeSpec {
     // good chance it is already loaded - check there before running a query
-    const found = this._loadedCodeSpecs.find((codeSpec) => codeSpec.id === codeSpecId);
-    if (found !== undefined)
-      return found;
+    const found = this._loadedCodeSpecs.find(
+      (codeSpec) => codeSpec.id === codeSpecId
+    );
+    if (found !== undefined) return found;
 
     // must load this codespec
     const loadedCodeSpec = this.load(codeSpecId);
@@ -74,9 +90,10 @@ export class CodeSpecs {
    */
   public getByName(name: string): CodeSpec {
     // good chance it is already loaded - check there before running a query
-    const found = this._loadedCodeSpecs.find((codeSpec) => codeSpec.name === name);
-    if (found !== undefined)
-      return found;
+    const found = this._loadedCodeSpecs.find(
+      (codeSpec) => codeSpec.name === name
+    );
+    if (found !== undefined) return found;
     const codeSpecId = this.queryId(name);
     if (codeSpecId === undefined)
       throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
@@ -92,11 +109,20 @@ export class CodeSpecs {
     }
   }
 
-  private insertCodeSpec(specName: string, properties: CodeSpecProperties): Id64String {
+  private insertCodeSpec(
+    specName: string,
+    properties: CodeSpecProperties
+  ): Id64String {
     const iModel = this._imodel;
-    const spec: CodeService.BisCodeSpecIndexProps = { name: specName.trim(), props: JSON.stringify(properties) };
+    const spec: CodeService.BisCodeSpecIndexProps = {
+      name: specName.trim(),
+      props: JSON.stringify(properties),
+    };
     if (this.findByName(spec.name))
-      throw new IModelError(IModelStatus.DuplicateName, "CodeSpec already exists");
+      throw new IModelError(
+        IModelStatus.DuplicateName,
+        "CodeSpec already exists"
+      );
 
     const internalCodes = iModel.codeService?.internalCodes;
     if (internalCodes) {
@@ -108,18 +134,24 @@ export class CodeSpecs {
     } else {
       // If this iModel doesn't have an internal code index, we have no way of coordinating the Ids for CodeSpecs across multiple users.
       // Just look in this briefcase to find the currently highest used Id and hope for the best.
-      spec.id = iModel.withSqliteStatement(`SELECT MAX(Id) FROM ${CodeSpecs.tableName}`, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
+      spec.id = iModel.withSqliteStatement(
+        `SELECT MAX(Id) FROM ${CodeSpecs.tableName}`,
+        (stmt) => (stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1)
+      );
     }
 
     const id = spec.id!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    iModel.withSqliteStatement(`INSERT INTO ${CodeSpecs.tableName}(Id,Name,JsonProperties) VALUES(?,?,?)`, (stmt) => {
-      stmt.bindInteger(1, id);
-      stmt.bindString(2, spec.name);
-      stmt.bindString(3, spec.props);
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new BentleyError(rc, "Error inserting codeSpec");
-    });
+    iModel.withSqliteStatement(
+      `INSERT INTO ${CodeSpecs.tableName}(Id,Name,JsonProperties) VALUES(?,?,?)`,
+      (stmt) => {
+        stmt.bindInteger(1, id);
+        stmt.bindString(2, spec.name);
+        stmt.bindString(3, spec.props);
+        const rc = stmt.step();
+        if (rc !== DbResult.BE_SQLITE_DONE)
+          throw new BentleyError(rc, "Error inserting codeSpec");
+      }
+    );
 
     return Id64.fromLocalAndBriefcaseIds(id, 0);
   }
@@ -138,10 +170,19 @@ export class CodeSpecs {
    * @returns The Id of the persistent CodeSpec.
    * @throws IModelError if the insertion fails
    */
-  public insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
-  public insert(codeSpecOrName: CodeSpec | string, props?: CodeSpecProperties | CodeScopeSpec.Type): Id64String {
+  public insert(
+    name: string,
+    properties: CodeSpecProperties | CodeScopeSpec.Type
+  ): Id64String;
+  public insert(
+    codeSpecOrName: CodeSpec | string,
+    props?: CodeSpecProperties | CodeScopeSpec.Type
+  ): Id64String {
     if (codeSpecOrName instanceof CodeSpec) {
-      const id = this.insertCodeSpec(codeSpecOrName.name, codeSpecOrName.properties);
+      const id = this.insertCodeSpec(
+        codeSpecOrName.name,
+        codeSpecOrName.properties
+      );
       codeSpecOrName.id = id;
       return id;
     }
@@ -156,16 +197,22 @@ export class CodeSpecs {
   }
 
   /** Update the Json properties of an existing CodeSpec.
- * @param codeSpec The codeSpec holding Json properties values to update
- * @throws if unable to update the codeSpec.
- */
+   * @param codeSpec The codeSpec holding Json properties values to update
+   * @throws if unable to update the codeSpec.
+   */
   public updateProperties(codeSpec: CodeSpec): void {
-    this._imodel.withSqliteStatement(`UPDATE ${CodeSpecs.tableName} SET JsonProperties=? WHERE Id=?`, (stmt) => {
-      stmt.bindString(1, JSON.stringify(codeSpec.properties));
-      stmt.bindId(2, codeSpec.id);
-      if (DbResult.BE_SQLITE_DONE !== stmt.step())
-        throw new IModelError(IModelStatus.BadArg, "error updating CodeSpec properties");
-    });
+    this._imodel.withSqliteStatement(
+      `UPDATE ${CodeSpecs.tableName} SET JsonProperties=? WHERE Id=?`,
+      (stmt) => {
+        stmt.bindString(1, JSON.stringify(codeSpec.properties));
+        stmt.bindId(2, codeSpec.id);
+        if (DbResult.BE_SQLITE_DONE !== stmt.step())
+          throw new IModelError(
+            IModelStatus.BadArg,
+            "error updating CodeSpec properties"
+          );
+      }
+    );
   }
 
   /** Load a CodeSpec from the iModel
@@ -175,12 +222,20 @@ export class CodeSpecs {
     if (Id64.isInvalid(id))
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId");
 
-    return this._imodel.withSqliteStatement(`SELECT Name,JsonProperties FROM ${CodeSpecs.tableName} WHERE Id=?`, (stmt) => {
-      stmt.bindId(1, id);
-      if (!stmt.nextRow())
-        throw new IModelError(IModelStatus.InvalidId, "CodeSpec not found");
+    return this._imodel.withSqliteStatement(
+      `SELECT Name,JsonProperties FROM ${CodeSpecs.tableName} WHERE Id=?`,
+      (stmt) => {
+        stmt.bindId(1, id);
+        if (!stmt.nextRow())
+          throw new IModelError(IModelStatus.InvalidId, "CodeSpec not found");
 
-      return CodeSpec.createFromJson(this._imodel, id, stmt.getValueString(0), JSON.parse(stmt.getValueString(1)));
-    });
+        return CodeSpec.createFromJson(
+          this._imodel,
+          id,
+          stmt.getValueString(0),
+          JSON.parse(stmt.getValueString(1))
+        );
+      }
+    );
   }
 }

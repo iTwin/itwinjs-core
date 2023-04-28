@@ -86,10 +86,18 @@ export interface UnitExtraData {
  * @beta
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+  findUnit(
+    unitLabel: string,
+    schemaName?: string,
+    phenomenon?: string,
+    unitSystem?: string
+  ): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
-  getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+  getConversion(
+    fromUnit: UnitProps,
+    toUnit: UnitProps
+  ): Promise<UnitConversionProps>;
 }
 
 /**

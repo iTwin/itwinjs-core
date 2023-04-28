@@ -19,7 +19,7 @@ describe("ArcGisUtilities", () => {
   });
 
   it("should compute resolution and scale for LOD range", async () => {
-    let scales = ArcGisUtilities.computeZoomLevelsScales(5,10);
+    let scales = ArcGisUtilities.computeZoomLevelsScales(5, 10);
     expect(scales.length).to.equals(6);
     expect(scales[0].zoom).to.equals(5);
     expect(scales[5].zoom).to.equals(10);
@@ -27,38 +27,58 @@ describe("ArcGisUtilities", () => {
     // Test scales for 256px tiles
     scales = ArcGisUtilities.computeZoomLevelsScales();
     expect(scales.length).to.equals(wsg84Lods256px.length);
-    for (let i=0 ; i < scales.length; i++) {
-      expect(Math.abs(scales[i].resolution - wsg84Lods256px[i].resolution)).to.be.lessThan(tolerance);
-      expect(Math.abs(scales[i].scale - wsg84Lods256px[i].scale)).to.be.lessThan(tolerance);
+    for (let i = 0; i < scales.length; i++) {
+      expect(
+        Math.abs(scales[i].resolution - wsg84Lods256px[i].resolution)
+      ).to.be.lessThan(tolerance);
+      expect(
+        Math.abs(scales[i].scale - wsg84Lods256px[i].scale)
+      ).to.be.lessThan(tolerance);
     }
 
     // Test scales for 512px tiles
-    scales = ArcGisUtilities.computeZoomLevelsScales(0,20,0,512);
+    scales = ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, 512);
     expect(scales.length).to.equals(wsg84Lods512px.length);
-    for (let i=0 ; i < scales.length; i++) {
-      expect(Math.abs(scales[i].resolution - wsg84Lods512px[i].resolution)).to.be.lessThan(tolerance);
-      expect(Math.abs(scales[i].scale - wsg84Lods512px[i].scale)).to.be.lessThan(tolerance);
+    for (let i = 0; i < scales.length; i++) {
+      expect(
+        Math.abs(scales[i].resolution - wsg84Lods512px[i].resolution)
+      ).to.be.lessThan(tolerance);
+      expect(
+        Math.abs(scales[i].scale - wsg84Lods512px[i].scale)
+      ).to.be.lessThan(tolerance);
     }
 
     // Make sure we can get zooms level one by one.
-    for (let i=0 ; i < wsg84Lods256px.length; i++) {
-      scales = ArcGisUtilities.computeZoomLevelsScales(i,i,0,256);
+    for (let i = 0; i < wsg84Lods256px.length; i++) {
+      scales = ArcGisUtilities.computeZoomLevelsScales(i, i, 0, 256);
       expect(scales.length).to.equals(1);
-      expect(Math.abs(scales[0].resolution - wsg84Lods256px[i].resolution)).to.be.lessThan(tolerance);
-      expect(Math.abs(scales[0].scale - wsg84Lods256px[i].scale)).to.be.lessThan(tolerance);
+      expect(
+        Math.abs(scales[0].resolution - wsg84Lods256px[i].resolution)
+      ).to.be.lessThan(tolerance);
+      expect(
+        Math.abs(scales[0].scale - wsg84Lods256px[i].scale)
+      ).to.be.lessThan(tolerance);
     }
 
     // Test parameters validation
-    expect(ArcGisUtilities.computeZoomLevelsScales(-1,20,0,0, 256).length).to.equals(0);
-    expect(ArcGisUtilities.computeZoomLevelsScales(0,-20,0,0, 256).length).to.equals(0);
-    expect(ArcGisUtilities.computeZoomLevelsScales(4,1,0,256).length).to.equals(0);
-    expect(ArcGisUtilities.computeZoomLevelsScales(0,20,0,-256).length).to.equals(0);
-    expect(ArcGisUtilities.computeZoomLevelsScales(0,20,0,256,0).length).to.equals(0);
-
+    expect(
+      ArcGisUtilities.computeZoomLevelsScales(-1, 20, 0, 0, 256).length
+    ).to.equals(0);
+    expect(
+      ArcGisUtilities.computeZoomLevelsScales(0, -20, 0, 0, 256).length
+    ).to.equals(0);
+    expect(
+      ArcGisUtilities.computeZoomLevelsScales(4, 1, 0, 256).length
+    ).to.equals(0);
+    expect(
+      ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, -256).length
+    ).to.equals(0);
+    expect(
+      ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, 256, 0).length
+    ).to.equals(0);
   });
 
   it("should match minScale/maxScale to corresponding LOD", async () => {
-
     let lods = ArcGisUtilities.getZoomLevelsScales(22, 256);
     expect(lods.minLod).to.be.undefined;
     expect(lods.maxLod).to.be.undefined;
@@ -79,20 +99,50 @@ describe("ArcGisUtilities", () => {
   });
 
   it("should validate proper source ", async () => {
-
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false};
-    });
-    const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS", []);
+    sandbox
+      .stub(ArcGisUtilities, "getServiceJson")
+      .callsFake(async function _(
+        _url: string,
+        _formatId: string,
+        _userName?: string,
+        _password?: string,
+        _ignoreCache?: boolean
+      ) {
+        return {
+          content: ArcGISMapLayerDataset.UsaTopoMaps,
+          accessTokenRequired: false,
+        };
+      });
+    const result = ArcGisUtilities.validateSource(
+      "https:/localhost/Mapserver",
+      "ArcGIS",
+      []
+    );
     expect((await result).status).to.equals(MapLayerSourceStatus.Valid);
   });
 
   it("validate should detect invalid coordinate system ", async () => {
-
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false};
-    });
-    const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS",[]);
-    expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
+    sandbox
+      .stub(ArcGisUtilities, "getServiceJson")
+      .callsFake(async function _(
+        _url: string,
+        _formatId: string,
+        _userName?: string,
+        _password?: string,
+        _ignoreCache?: boolean
+      ) {
+        return {
+          content: ArcGISMapLayerDataset.TilesOnlyDataset26918,
+          accessTokenRequired: false,
+        };
+      });
+    const result = ArcGisUtilities.validateSource(
+      "https:/localhost/Mapserver",
+      "ArcGIS",
+      []
+    );
+    expect((await result).status).to.equals(
+      MapLayerSourceStatus.InvalidCoordinateSystem
+    );
   });
 });

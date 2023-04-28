@@ -8,9 +8,19 @@
 
 import { assert, Mutable } from "@itwin/core-bentley";
 import {
-  AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
+  AuxChannelDataType,
+  Point3d,
+  AuxChannel as PolyfaceAuxChannel,
+  Range1d,
+  Range3d,
+  Vector3d,
 } from "@itwin/core-geometry";
-import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import {
+  OctEncodedNormal,
+  QParams3d,
+  QPoint3d,
+  Quantization,
+} from "@itwin/core-common";
 import { computeDimensions } from "./VertexTable";
 
 /** @internal */
@@ -109,7 +119,12 @@ export class AuxChannelTable {
   /** Scalar params used for animations. */
   public readonly params?: AuxParamChannel[];
 
-  private constructor(props: AuxChannelTableProps, displacements?: AuxDisplacementChannel[], normals?: AuxChannel[], params?: AuxParamChannel[]) {
+  private constructor(
+    props: AuxChannelTableProps,
+    displacements?: AuxDisplacementChannel[],
+    normals?: AuxChannel[],
+    params?: AuxParamChannel[]
+  ) {
     this.data = props.data;
     this.width = props.width;
     this.height = props.height;
@@ -120,7 +135,9 @@ export class AuxChannelTable {
     this.params = params;
   }
 
-  public static fromJSON(props: AuxChannelTableProps): AuxChannelTable | undefined {
+  public static fromJSON(
+    props: AuxChannelTableProps
+  ): AuxChannelTable | undefined {
     let displacements: AuxDisplacementChannel[] | undefined;
     let normals: AuxChannel[] | undefined;
     let params: AuxParamChannel[] | undefined;
@@ -133,27 +150,31 @@ export class AuxChannelTable {
 
     if (undefined !== props.normals && 0 < props.normals.length) {
       normals = [];
-      for (const normal of props.normals)
-        normals.push(new AuxChannel(normal));
+      for (const normal of props.normals) normals.push(new AuxChannel(normal));
     }
 
     if (undefined !== props.params && 0 < props.params.length) {
       params = [];
-      for (const param of props.params)
-        params.push(new AuxParamChannel(param));
+      for (const param of props.params) params.push(new AuxParamChannel(param));
     }
 
-    return undefined !== displacements || undefined !== normals || undefined !== params ? new AuxChannelTable(props, displacements, normals, params) : undefined;
+    return undefined !== displacements ||
+      undefined !== normals ||
+      undefined !== params
+      ? new AuxChannelTable(props, displacements, normals, params)
+      : undefined;
   }
 
-  public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
+  public static fromChannels(
+    channels: ReadonlyArray<PolyfaceAuxChannel>,
+    numVertices: number
+  ): AuxChannelTable | undefined {
     return AuxChannelTableBuilder.buildAuxChannelTable(channels, numVertices);
   }
 }
 
 function invert(num: number): number {
-  if (0 !== num)
-    num = 1 / num;
+  if (0 !== num) num = 1 / num;
 
   return num;
 }
@@ -163,16 +184,24 @@ class AuxChannelTableBuilder {
   private readonly _props: Mutable<AuxChannelTableProps>;
   private readonly _numBytesPerVertex: number;
 
-  private constructor(props: Mutable<AuxChannelTableProps>, numBytesPerVertex: number) {
+  private constructor(
+    props: Mutable<AuxChannelTableProps>,
+    numBytesPerVertex: number
+  ) {
     this._props = props;
     this._numBytesPerVertex = numBytesPerVertex;
     this._view = new DataView(props.data.buffer);
   }
 
-  public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
-    const numBytesPerVertex = channels.reduce((accum, channel) => accum + computeNumBytesPerVertex(channel), 0);
-    if (!numBytesPerVertex)
-      return undefined;
+  public static buildAuxChannelTable(
+    channels: ReadonlyArray<PolyfaceAuxChannel>,
+    numVertices: number
+  ): AuxChannelTable | undefined {
+    const numBytesPerVertex = channels.reduce(
+      (accum, channel) => accum + computeNumBytesPerVertex(channel),
+      0
+    );
+    if (!numBytesPerVertex) return undefined;
 
     const nRgbaPerVertex = Math.floor((numBytesPerVertex + 3) / 4);
     const nUnusedBytesPerVertex = nRgbaPerVertex * 4 - numBytesPerVertex;
@@ -181,9 +210,12 @@ class AuxChannelTableBuilder {
     // We don't want any unused bytes. If we've got 2 extra, make every other vertex's channel start in the middle of the first texel.
     let dimensions;
     if (0 !== nUnusedBytesPerVertex)
-      dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0); // twice as many RGBA for half as many vertices.
-    else
-      dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
+      dimensions = computeDimensions(
+        Math.floor((numVertices + 1) / 2),
+        numBytesPerVertex / 2,
+        0
+      ); // twice as many RGBA for half as many vertices.
+    else dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
     const props: Mutable<AuxChannelTableProps> = {
@@ -206,8 +238,7 @@ class AuxChannelTableBuilder {
         this.addNormals(channel, byteOffset);
       else if (AuxChannelDataType.Vector === channel.dataType)
         this.addDisplacements(channel, byteOffset);
-      else
-        this.addParams(channel, byteOffset);
+      else this.addParams(channel, byteOffset);
 
       byteOffset += computeNumBytesPerVertex(channel);
     }
@@ -278,7 +309,10 @@ class AuxChannelTableBuilder {
     });
   }
 
-  private addDisplacements(channel: PolyfaceAuxChannel, byteOffset: number): void {
+  private addDisplacements(
+    channel: PolyfaceAuxChannel,
+    byteOffset: number
+  ): void {
     const inputs = [];
     const indices = [];
 
@@ -310,7 +344,8 @@ class AuxChannelTableBuilder {
       }
     }
 
-    const displacements = this._props.displacements ?? (this._props.displacements = []);
+    const displacements =
+      this._props.displacements ?? (this._props.displacements = []);
     displacements.push({
       inputs,
       indices,

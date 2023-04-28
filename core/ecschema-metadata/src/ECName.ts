@@ -20,7 +20,12 @@ function isDigit(character: string): boolean {
 
 function isValidAlphaNumericCharacter(c: string): boolean {
   assert(1 === c.length);
-  return (((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c === "_"));
+  return (
+    (c >= "0" && c <= "9") ||
+    (c >= "A" && c <= "Z") ||
+    (c >= "a" && c <= "z") ||
+    c === "_"
+  );
 }
 
 /** The name of an item in a [[Schema]], encoded to meet restrictions on the characters usable in such names.
@@ -78,15 +83,12 @@ export class ECName {
 
     // First character cannot be a digit.
     const firstCharIsDigit = isDigit(input[0]);
-    if (firstCharIsDigit)
-      appendEncodedCharacter(0);
+    if (firstCharIsDigit) appendEncodedCharacter(0);
 
     for (let i = firstCharIsDigit ? 1 : 0; i < input.length; i++) {
       const char = input[i];
-      if (!isValidAlphaNumericCharacter(char))
-        appendEncodedCharacter(i);
-      else
-        output += char;
+      if (!isValidAlphaNumericCharacter(char)) appendEncodedCharacter(i);
+      else output += char;
     }
 
     return new ECName(output);
@@ -94,6 +96,8 @@ export class ECName {
 
   /** Decode this ECName, replacing encoded special characters with the characters they encode. */
   public decode(): string {
-    return this.name.replace(ecNameReplacerRegex, (_match, hex) => String.fromCharCode(Number.parseInt(hex, 16)));
+    return this.name.replace(ecNameReplacerRegex, (_match, hex) =>
+      String.fromCharCode(Number.parseInt(hex, 16))
+    );
   }
 }

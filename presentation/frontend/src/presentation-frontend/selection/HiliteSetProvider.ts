@@ -9,7 +9,15 @@
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  Content, ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
+  Content,
+  ContentFlags,
+  DEFAULT_KEYS_BATCH_SIZE,
+  DefaultContentDisplayTypes,
+  DescriptorOverrides,
+  Item,
+  Key,
+  KeySet,
+  Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
@@ -47,7 +55,7 @@ export interface HiliteSetProviderProps {
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;
-  private _cached: undefined | { keysGuid: string, result: HiliteSet };
+  private _cached: undefined | { keysGuid: string; result: HiliteSet };
 
   private constructor(props: HiliteSetProviderProps) {
     this._imodel = props.imodel;
@@ -56,7 +64,9 @@ export class HiliteSetProvider {
   /**
    * Create a hilite set provider for the specified iModel.
    */
-  public static create(props: HiliteSetProviderProps) { return new HiliteSetProvider(props); }
+  public static create(props: HiliteSetProviderProps) {
+    return new HiliteSetProvider(props);
+  }
 
   private async getRecords(keys: KeySet): Promise<Item[]> {
     const descriptor: DescriptorOverrides = {
@@ -70,24 +80,28 @@ export class HiliteSetProvider {
     };
     const contentPromises = new Array<Promise<Content | undefined>>();
     keys.forEachBatch(DEFAULT_KEYS_BATCH_SIZE, (batch: KeySet) => {
-      contentPromises.push(Presentation.presentation.getContent({ ...options, keys: batch }));
+      contentPromises.push(
+        Presentation.presentation.getContent({ ...options, keys: batch })
+      );
     });
     return (await Promise.all(contentPromises)).reduce((items, content) => {
-      if (content)
-        items.push(...content.contentSet);
+      if (content) items.push(...content.contentSet);
       return items;
     }, new Array<Item>());
   }
 
   private createHiliteSet(records: Item[], transientIds: Id64String[]) {
-    if (!records.length)
-      return { elements: transientIds };
+    if (!records.length) return { elements: transientIds };
 
     const modelIds = new Array<Id64String>();
     const subCategoryIds = new Array<Id64String>();
     const elementIds = transientIds; // note: not making a copy here since we're throwing away `transientIds` anyway
     records.forEach((rec) => {
-      const ids = isModelRecord(rec) ? modelIds : isSubCategoryRecord(rec) ? subCategoryIds : elementIds;
+      const ids = isModelRecord(rec)
+        ? modelIds
+        : isSubCategoryRecord(rec)
+        ? subCategoryIds
+        : elementIds;
       rec.primaryKeys.forEach((pk) => ids.push(pk.id));
     });
     return {
@@ -111,7 +125,10 @@ export class HiliteSetProvider {
       const transientIds = new Array<Id64String>();
       const keys = new KeySet();
       keys.add(selection, (key: Key) => {
-        if (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) {
+        if (
+          Key.isInstanceKey(key) &&
+          key.className === TRANSIENT_ELEMENT_CLASSNAME
+        ) {
           transientIds.push(key.id);
           return false;
         }
@@ -125,6 +142,8 @@ export class HiliteSetProvider {
   }
 }
 
-const isModelRecord = (rec: Item) => (rec.extendedData && rec.extendedData.isModel);
+const isModelRecord = (rec: Item) =>
+  rec.extendedData && rec.extendedData.isModel;
 
-const isSubCategoryRecord = (rec: Item) => (rec.extendedData && rec.extendedData.isSubCategory);
+const isSubCategoryRecord = (rec: Item) =>
+  rec.extendedData && rec.extendedData.isSubCategory;

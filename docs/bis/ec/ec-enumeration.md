@@ -6,7 +6,7 @@ ECEnumerations share the same namespace as ECClasses so its type name must be un
 
 ## Attributes
 
-**typeName** defines the name of this ECEnumeration. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.  (Required)
+**typeName** defines the name of this ECEnumeration. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema. (Required)
 
 **backingTypeName** The type for the value of each enumerator (Required)
 
@@ -22,7 +22,7 @@ ECEnumerations share the same namespace as ECClasses so its type name must be un
 
 ## Sub-Elements
 
-[ECEnumerator](#ecenumerator) _(0..*)_
+[ECEnumerator](#ecenumerator) _(0..\*)_
 
 ### ECEnumerator
 

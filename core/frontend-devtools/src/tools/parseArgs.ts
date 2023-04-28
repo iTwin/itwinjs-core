@@ -31,15 +31,12 @@ export function parseArgs(args: string[]): ToolArgs {
   const map = new Map<string, string>();
   for (const arg of args) {
     const parts = arg.split("=");
-    if (2 === parts.length)
-      map.set(parts[0].toLowerCase(), parts[1]);
+    if (2 === parts.length) map.set(parts[0].toLowerCase(), parts[1]);
   }
 
   const findArgValue = (name: string) => {
     name = name.toLowerCase();
-    for (const key of map.keys())
-      if (key.startsWith(name))
-        return map.get(key);
+    for (const key of map.keys()) if (key.startsWith(name)) return map.get(key);
 
     return undefined;
   };
@@ -49,16 +46,14 @@ export function parseArgs(args: string[]): ToolArgs {
 
     getBoolean: (name: string) => {
       const val = findArgValue(name);
-      if (undefined !== val && (val === "0" || val === "1"))
-        return val === "1";
+      if (undefined !== val && (val === "0" || val === "1")) return val === "1";
 
       return undefined;
     },
 
     getInteger: (name: string) => {
       const val = findArgValue(name);
-      if (undefined === val)
-        return undefined;
+      if (undefined === val) return undefined;
 
       const num = Number.parseInt(val, 10);
       return Number.isNaN(num) ? undefined : num;
@@ -66,8 +61,7 @@ export function parseArgs(args: string[]): ToolArgs {
 
     getFloat: (name: string) => {
       const val = findArgValue(name);
-      if (undefined === val)
-        return undefined;
+      if (undefined === val) return undefined;
 
       const num = Number.parseFloat(val);
       return Number.isNaN(num) ? undefined : num;

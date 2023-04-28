@@ -9,8 +9,8 @@ This feature can be enabled in one of two ways:
 [Viewport.antialiasSamples]($frontend) gets or sets the number of MSAA samples for the viewport.
 
 ```ts
-  viewport.antialiasSamples = 8; // Enable 8x MSAA
-  viewport.antialiasSamples = 1; // Disable MSAA
+viewport.antialiasSamples = 8; // Enable 8x MSAA
+viewport.antialiasSamples = 1; // Disable MSAA
 ```
 
 ## Controlling anti-aliasing for all viewports
@@ -18,8 +18,8 @@ This feature can be enabled in one of two ways:
 [ViewManager.setAntialiasingAllViews]($frontend) sets the number of MSAA samples for all currently- and subsequently-opened [Viewport]($frontend)s.
 
 ```ts
-  IModelApp.viewManager.setAntialiasingAllViews(8); // Enable 8x MSAA
-  IModelApp.viewManager.setAntialiasingAllViews(1); // Disable MSAA
+IModelApp.viewManager.setAntialiasingAllViews(8); // Enable 8x MSAA
+IModelApp.viewManager.setAntialiasingAllViews(1); // Disable MSAA
 ```
 
 ## Comparison images

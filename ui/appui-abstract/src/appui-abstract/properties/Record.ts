@@ -22,7 +22,7 @@ export interface LinkElementsInfo {
    * Letters will be picked from __start__ index to __end__ index. __end__ index is not included.
    * For a string _"example"_ and a match ```{ start: 1, end: 3 }```, _"xa"_ will be clickable.
    */
-  matcher?: (displayValue: string) => Array<{ start: number, end: number }>;
+  matcher?: (displayValue: string) => Array<{ start: number; end: number }>;
 }
 
 /**
@@ -59,8 +59,14 @@ export class PropertyRecord {
   }
 
   /** Creates a copy of this PropertyRecord with a new value and optionally a new PropertyDescription */
-  public copyWithNewValue(newValue: PropertyValue, newDescription?: PropertyDescription): PropertyRecord {
-    const rec = new PropertyRecord(newValue, newDescription ? newDescription : this.property);
+  public copyWithNewValue(
+    newValue: PropertyValue,
+    newDescription?: PropertyDescription
+  ): PropertyRecord {
+    const rec = new PropertyRecord(
+      newValue,
+      newDescription ? newDescription : this.property
+    );
     assignMemberIfExists(rec, this, "description");
     assignMemberIfExists(rec, this, "isReadonly");
     assignMemberIfExists(rec, this, "isDisabled");
@@ -84,7 +90,10 @@ export class PropertyRecord {
   }
 
   /** Creates a PropertyRecord based on a value string and an optional property description or name */
-  public static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord {
+  public static fromString(
+    value: string,
+    descriptionOrName?: PropertyDescription | string
+  ): PropertyRecord {
     let description: PropertyDescription;
     if (descriptionOrName && typeof descriptionOrName === "object") {
       description = descriptionOrName;
@@ -101,15 +110,22 @@ export class PropertyRecord {
         typename: StandardTypeNames.String,
       };
     }
-    return new PropertyRecord({
-      valueFormat: PropertyValueFormat.Primitive,
-      value,
-      displayValue: value,
-    }, description);
+    return new PropertyRecord(
+      {
+        valueFormat: PropertyValueFormat.Primitive,
+        value,
+        displayValue: value,
+      },
+      description
+    );
   }
 }
 
-function assignMemberIfExists<T extends Object>(target: T, source: T, memberName: keyof T) {
+function assignMemberIfExists<T extends Object>(
+  target: T,
+  source: T,
+  memberName: keyof T
+) {
   if (source.hasOwnProperty(memberName))
     target[memberName] = source[memberName];
 }

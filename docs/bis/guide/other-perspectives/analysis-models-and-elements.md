@@ -55,5 +55,6 @@ The complete results of the thermal analysis would likely be large and would not
 ![Analytical Hierarchy](../media/analytical-hierarchy.png)
 
 ---
+
 | Next: [Information Models and Elements](./information-models-and-elements.md)
 |:---

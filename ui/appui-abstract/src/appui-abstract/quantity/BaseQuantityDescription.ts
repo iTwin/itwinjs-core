@@ -6,8 +6,16 @@
  * @module Properties
  */
 
-import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
-import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
+import {
+  PropertyDescription,
+  PropertyEditorInfo,
+} from "../properties/Description";
+import {
+  CustomFormattedNumberParams,
+  IconEditorParams,
+  ParseResults,
+  PropertyEditorParamTypes,
+} from "../properties/EditorParams";
 import { StandardTypeNames } from "../properties/StandardTypeNames";
 import { StandardEditorNames } from "../properties/StandardEditorNames";
 
@@ -27,11 +35,12 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     this.typename = StandardTypeNames.Number;
     this.editor = {
       name: StandardEditorNames.NumberCustom,
-      params: [{
-        type: PropertyEditorParamTypes.CustomFormattedNumber,
-        formatFunction: this.format,
-        parseFunction: this.parse,
-      } as CustomFormattedNumberParams,
+      params: [
+        {
+          type: PropertyEditorParamTypes.CustomFormattedNumber,
+          formatFunction: this.format,
+          parseFunction: this.parse,
+        } as CustomFormattedNumberParams,
       ],
     };
 
@@ -59,5 +68,4 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public abstract get quantityType(): string;
 
   public abstract get parseError(): string;
-
 }

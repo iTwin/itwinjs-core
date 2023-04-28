@@ -3,17 +3,40 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription, Field, InstanceKey, Item, LabelDefinition,
-  NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
-  TypeDescription, ValuesMap,
+  CategoryDescription,
+  ClassInfo,
+  Descriptor,
+  DescriptorSource,
+  DisplayValuesMap,
+  EditorDescription,
+  Field,
+  InstanceKey,
+  Item,
+  LabelDefinition,
+  NestedContentField,
+  PropertiesField,
+  Property,
+  PropertyValueFormat,
+  RelationshipPath,
+  RendererDescription,
+  SelectClassInfo,
+  StructTypeDescription,
+  TypeDescription,
+  ValuesMap,
 } from "../../presentation-common";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
-import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
+import {
+  createTestECClassInfo,
+  createTestECInstanceKey,
+  createTestRelationshipPath,
+} from "./EC";
 
 /**
  * @internal Used for testing only.
  */
-export const createTestCategoryDescription = (props?: Partial<CategoryDescription>) => ({
+export const createTestCategoryDescription = (
+  props?: Partial<CategoryDescription>
+) => ({
   name: "test-category",
   label: "Test Category",
   description: "Test category description",
@@ -25,7 +48,9 @@ export const createTestCategoryDescription = (props?: Partial<CategoryDescriptio
 /**
  * @internal Used for testing only.
  */
-export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => ({
+export const createTestSelectClassInfo = (
+  props?: Partial<SelectClassInfo>
+) => ({
   selectClassInfo: createTestECClassInfo(),
   isSelectPolymorphic: false,
   ...props,
@@ -48,7 +73,10 @@ export function createTestSimpleContentField(props?: {
     props?.category ?? createTestCategoryDescription(),
     props?.name ?? "SimpleField",
     props?.label ?? "Simple Field",
-    props?.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+    props?.type ?? {
+      valueFormat: PropertyValueFormat.Primitive,
+      typeName: "string",
+    },
     props?.isReadonly ?? false,
     props?.priority ?? 0,
     props?.editor,
@@ -74,7 +102,10 @@ export function createTestPropertiesContentField(props: {
     props.category ?? createTestCategoryDescription(),
     props.name ?? "PropertiesField",
     props.label ?? "Properties Field",
-    props.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+    props.type ?? {
+      valueFormat: PropertyValueFormat.Primitive,
+      typeName: "string",
+    },
     props.isReadonly ?? false,
     props.priority ?? 0,
     props.properties,
@@ -121,7 +152,7 @@ export function createTestNestedContentField(props: {
     props.nestedFields,
     props.editor,
     !!props.autoExpand,
-    props.renderer,
+    props.renderer
   );
   if (props.relationshipMeaning)
     field.relationshipMeaning = props.relationshipMeaning;
@@ -132,7 +163,9 @@ export function createTestNestedContentField(props: {
 /**
  * @internal Used for testing only.
  */
-export function createTestContentDescriptor(props: Partial<DescriptorSource> & { fields: Field[] }) {
+export function createTestContentDescriptor(
+  props: Partial<DescriptorSource> & { fields: Field[] }
+) {
   return new Descriptor({
     connectionId: "",
     displayType: "",
@@ -164,6 +197,6 @@ export function createTestContentItem(props: {
     props.values,
     props.displayValues,
     props.mergedFieldNames ?? [],
-    props.extendedData,
+    props.extendedData
   );
 }

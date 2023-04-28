@@ -12,7 +12,15 @@ import { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
 import {
-  Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
+  Tile,
+  TileContent,
+  TileContentDecodingStatistics,
+  TileLoadPriority,
+  TileLoadStatus,
+  TileRequest,
+  TileRequestChannel,
+  TileRequestChannelStatistics,
+  TileTree,
 } from "../../tile/internal";
 
 async function runMicroTasks(): Promise<void> {
@@ -32,11 +40,14 @@ class TestTile extends Tile {
   public displayable?: boolean;
 
   public constructor(tree: TestTree, channel: LoggingChannel, priority = 0) {
-    super({
-      contentId: priority.toString(),
-      range: new Range3d(0, 0, 0, 1, 1, 1),
-      maximumSize: 42,
-    }, tree);
+    super(
+      {
+        contentId: priority.toString(),
+        range: new Range3d(0, 0, 0, 1, 1, 1),
+        maximumSize: 42,
+      },
+      tree
+    );
 
     this.requestChannel = channel;
     this.priority = priority;
@@ -66,7 +77,9 @@ class TestTile extends Tile {
     return this.empty ?? super.isEmpty;
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void
+  ): void {
     resolve(undefined);
   }
 
@@ -98,9 +111,10 @@ class TestTile extends Tile {
     });
   }
 
-  public resolveRequest(response: TileRequest.Response | "undefined" = new Uint8Array(1)): void {
-    if ("undefined" === response)
-      response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
+  public resolveRequest(
+    response: TileRequest.Response | "undefined" = new Uint8Array(1)
+  ): void {
+    if ("undefined" === response) response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
 
     expect(this._resolveRequest).not.to.be.undefined;
     this._resolveRequest!(response);
@@ -143,7 +157,11 @@ class TestTile extends Tile {
 class TestTree extends TileTree {
   private readonly _rootTile: TestTile;
 
-  public constructor(iModel: IModelConnection, channel: LoggingChannel, priority = TileLoadPriority.Primary) {
+  public constructor(
+    iModel: IModelConnection,
+    channel: LoggingChannel,
+    priority = TileLoadPriority.Primary
+  ) {
     super({
       iModel,
       id: "test",
@@ -155,20 +173,30 @@ class TestTree extends TileTree {
     this._rootTile = new TestTile(this, channel);
   }
 
-  public get rootTile(): TestTile { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return {}; }
-  protected _selectTiles(): Tile[] { return []; }
-  public draw() { }
-  public prune() { }
+  public get rootTile(): TestTile {
+    return this._rootTile;
+  }
+  public get is3d() {
+    return true;
+  }
+  public get maxDepth() {
+    return undefined;
+  }
+  public get viewFlagOverrides() {
+    return {};
+  }
+  protected _selectTiles(): Tile[] {
+    return [];
+  }
+  public draw() {}
+  public prune() {}
 }
 
 function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
   return {
     viewportId,
     iModel,
-    invalidateScene: () => { },
+    invalidateScene: () => {},
   } as Viewport;
 }
 
@@ -213,14 +241,16 @@ class LoggingChannel extends TileRequestChannel {
   }
 
   public isActive(tile: Tile): boolean {
-    for (const active of this.active)
-      if (active.tile === tile)
-        return true;
+    for (const active of this.active) if (active.tile === tile) return true;
 
     return false;
   }
 
-  public override recordCompletion(tile: Tile, content: TileContent, elapsedMS: number): void {
+  public override recordCompletion(
+    tile: Tile,
+    content: TileContent,
+    elapsedMS: number
+  ): void {
     this.log("recordCompletion");
     super.recordCompletion(tile, content, elapsedMS);
   }
@@ -285,7 +315,10 @@ class LoggingChannel extends TileRequestChannel {
     super.cancel(request);
   }
 
-  public override async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public override async requestContent(
+    tile: Tile,
+    isCanceled: () => boolean
+  ): Promise<TileRequest.Response> {
     this.log("requestContent");
     return super.requestContent(tile, isCanceled);
   }
@@ -306,8 +339,7 @@ describe("TileRequestChannel", () => {
 
   afterEach(async () => {
     await imodel.close();
-    if (IModelApp.initialized)
-      await MockRender.App.shutdown();
+    if (IModelApp.initialized) await MockRender.App.shutdown();
   });
 
   it("completes one request", async () => {
@@ -324,20 +356,37 @@ describe("TileRequestChannel", () => {
 
     IModelApp.tileAdmin.process();
     tree.rootTile.expectStatus(TileLoadStatus.Queued);
-    channel.expect(["swapPending", "append", "process", "processCancellations", "dispatch", "requestContent"]);
+    channel.expect([
+      "swapPending",
+      "append",
+      "process",
+      "processCancellations",
+      "dispatch",
+      "requestContent",
+    ]);
     channel.expectRequests(1, 0);
 
     channel.clear();
     tree.rootTile.resolveRequest();
     await processOnce();
-    channel.expect(["swapPending", "process", "processCancellations", "dropActiveRequest"]);
+    channel.expect([
+      "swapPending",
+      "process",
+      "processCancellations",
+      "dropActiveRequest",
+    ]);
     channel.expectRequests(0, 0);
     tree.rootTile.expectStatus(TileLoadStatus.Loading);
 
     channel.clear();
     tree.rootTile.resolveRead();
     await processOnce();
-    channel.expect(["swapPending", "process", "processCancellations", "recordCompletion"]);
+    channel.expect([
+      "swapPending",
+      "process",
+      "processCancellations",
+      "recordCompletion",
+    ]);
     channel.expectRequests(0, 0);
     tree.rootTile.expectStatus(TileLoadStatus.Ready);
   });
@@ -355,12 +404,20 @@ describe("TileRequestChannel", () => {
 
     tiles[0].resolveRequest();
     await processOnce();
-    tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Loading : TileLoadStatus.Queued));
+    tiles.forEach((x) =>
+      x.expectStatus(
+        x === tiles[0] ? TileLoadStatus.Loading : TileLoadStatus.Queued
+      )
+    );
     channel.expectRequests(1, 3);
 
     tiles[0].resolveRead();
     await processOnce();
-    tiles.forEach((x) => x.expectStatus(x === tiles[0] ? TileLoadStatus.Ready : TileLoadStatus.Queued));
+    tiles.forEach((x) =>
+      x.expectStatus(
+        x === tiles[0] ? TileLoadStatus.Ready : TileLoadStatus.Queued
+      )
+    );
     channel.expectRequests(2, 2);
 
     tiles[1].rejectRequest();
@@ -645,7 +702,8 @@ describe("TileRequestChannel", () => {
 
     function expectStats(expected: Partial<TileRequestChannelStatistics>) {
       const stats = channel.statistics;
-      for (const propName in expected) { // eslint-disable-line guard-for-in
+      for (const propName in expected) {
+        // eslint-disable-line guard-for-in
         const key = propName as keyof TileRequestChannelStatistics;
         expect(stats[key]).to.equal(expected[key]);
       }
@@ -662,28 +720,54 @@ describe("TileRequestChannel", () => {
 
     requestTiles(vp, tiles);
     IModelApp.tileAdmin.process();
-    expectStats({ numActiveRequests: 4, numPendingRequests: 3, totalDispatchedRequests: 4 });
+    expectStats({
+      numActiveRequests: 4,
+      numPendingRequests: 3,
+      totalDispatchedRequests: 4,
+    });
 
     requestTiles(vp, []);
     IModelApp.tileAdmin.process();
-    expectStats({ numActiveRequests: 4, numPendingRequests: 0, numCanceled: 7 });
+    expectStats({
+      numActiveRequests: 4,
+      numPendingRequests: 0,
+      numCanceled: 7,
+    });
 
     tiles[0].rejectRequest(new ServerTimeoutError("oh no!"));
     await runMicroTasks();
-    expectStats({ numActiveRequests: 3, numPendingRequests: 0, totalCompletedRequests: 0, totalFailedRequests: 0, totalTimedOutRequests: 1 });
+    expectStats({
+      numActiveRequests: 3,
+      numPendingRequests: 0,
+      totalCompletedRequests: 0,
+      totalFailedRequests: 0,
+      totalTimedOutRequests: 1,
+    });
 
     await tiles[1].resolveBoth();
-    expectStats({ numActiveRequests: 2, numPendingRequests: 0, totalCompletedRequests: 1 });
+    expectStats({
+      numActiveRequests: 2,
+      numPendingRequests: 0,
+      totalCompletedRequests: 1,
+    });
 
     tiles[2].rejectRequest();
     await runMicroTasks();
-    expectStats({ numActiveRequests: 1, numPendingRequests: 0, totalFailedRequests: 1 });
+    expectStats({
+      numActiveRequests: 1,
+      numPendingRequests: 0,
+      totalFailedRequests: 1,
+    });
 
     tiles[3].resolveRequest();
     await runMicroTasks();
     tiles[3].rejectRead();
     await runMicroTasks();
-    expectStats({ numActiveRequests: 0, numPendingRequests: 0, totalFailedRequests: 2 });
+    expectStats({
+      numActiveRequests: 0,
+      numPendingRequests: 0,
+      totalFailedRequests: 2,
+    });
 
     expectStats({ totalUndisplayableTiles: 0, totalEmptyTiles: 0 });
     tiles[4].empty = true;
@@ -695,7 +779,12 @@ describe("TileRequestChannel", () => {
     expectStats({ numActiveRequests: 3, numPendingRequests: 0 });
 
     await Promise.all(tiles.slice(4).map(async (x) => x.resolveBoth()));
-    expectStats({ numActiveRequests: 0, numPendingRequests: 0, totalEmptyTiles: 2, totalUndisplayableTiles: 1 });
+    expectStats({
+      numActiveRequests: 0,
+      numPendingRequests: 0,
+      totalEmptyTiles: 2,
+      totalUndisplayableTiles: 1,
+    });
 
     IModelApp.tileAdmin.process();
     expectStats({
@@ -767,13 +856,18 @@ describe("TileRequestChannel", () => {
     await processOnce();
     channel1.expectRequests(0, 0);
     channel2.expectRequests(0, 0);
-    expect(tiles.map((x) => x.loadStatus)).to.deep.equal([TileLoadStatus.NotFound, TileLoadStatus.Ready, TileLoadStatus.Ready, TileLoadStatus.NotFound]);
+    expect(tiles.map((x) => x.loadStatus)).to.deep.equal([
+      TileLoadStatus.NotFound,
+      TileLoadStatus.Ready,
+      TileLoadStatus.Ready,
+      TileLoadStatus.NotFound,
+    ]);
   });
 
   it("records decoding time statistics", () => {
     const channel = new TileRequestChannel("test", 100);
     const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
-    const content = { };
+    const content = {};
 
     const expectStats = (expected: TileContentDecodingStatistics) => {
       const actual = channel.statistics.decoding;
@@ -783,7 +877,12 @@ describe("TileRequestChannel", () => {
       expect(actual.max).to.equal(expected.max);
     };
 
-    expectStats({ total: 0, mean: 0, min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER });
+    expectStats({
+      total: 0,
+      mean: 0,
+      min: Number.MAX_SAFE_INTEGER,
+      max: Number.MIN_SAFE_INTEGER,
+    });
     channel.recordCompletion(tile, content, 20);
     expectStats({ total: 20, mean: 20, min: 20, max: 20 });
     channel.recordCompletion(tile, content, 10);

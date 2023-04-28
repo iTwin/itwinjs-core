@@ -5,8 +5,18 @@
 
 import { expect } from "chai";
 import {
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON, NodeInsertionInfo, NodeInsertionInfoJSON, NodeJSON,
-  NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes,
+  HierarchyCompareInfo,
+  HierarchyCompareInfoJSON,
+  Node,
+  NodeDeletionInfo,
+  NodeDeletionInfoJSON,
+  NodeInsertionInfo,
+  NodeInsertionInfoJSON,
+  NodeJSON,
+  NodeUpdateInfo,
+  NodeUpdateInfoJSON,
+  PartialHierarchyModification,
+  StandardNodeTypes,
 } from "../presentation-common";
 
 /* eslint-disable deprecation/deprecation */

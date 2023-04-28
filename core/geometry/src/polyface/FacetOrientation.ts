@@ -19,10 +19,8 @@ class OrientedComponentData {
   }
   // announce a new facet orientation.
   public recordOrientation(orientation: number) {
-    if (orientation > 0)
-      this.numPositive++;
-    else if (orientation < 0)
-      this.numNegative++;
+    if (orientation > 0) this.numPositive++;
+    else if (orientation < 0) this.numNegative++;
   }
 }
 export class FacetOrientationFixup {
@@ -60,8 +58,7 @@ export class FacetOrientationFixup {
     const numEdges = this._edges.edges.length;
     for (let i = 0; i < numEdges; i++) {
       const facetIndex = this._edges.edges[i].facetIndex;
-      if (facetIndex > maxFacetIndex)
-        maxFacetIndex = facetIndex;
+      if (facetIndex > maxFacetIndex) maxFacetIndex = facetIndex;
       this._edgeToEdgeInComponent.push(i);
       this._edgeToPartnerEdge.push(i);
     }
@@ -75,8 +72,7 @@ export class FacetOrientationFixup {
     for (let i = 0; i < numEdges; i++) {
       const facetIndex = this._edges.edges[i].facetIndex;
       const j = this._facetToFirstEdgeInComponent[facetIndex];
-      if (j === -1)
-        this._facetToFirstEdgeInComponent[facetIndex] = i;
+      if (j === -1) this._facetToFirstEdgeInComponent[facetIndex] = i;
       else {
         FacetOrientationFixup.swapEntries(this._edgeToEdgeInComponent, i, j);
       }
@@ -85,14 +81,23 @@ export class FacetOrientationFixup {
     // edge i is initially always a singleton.
     for (let edgeIndex0 = 0; edgeIndex0 < numEdges; edgeIndex0++) {
       let edgeIndex1 = edgeIndex0 + 1;
-      while (edgeIndex1 < numEdges && SortableEdge.areUndirectedPartners(edgeArray[edgeIndex0], edgeArray[edgeIndex1])) {
+      while (
+        edgeIndex1 < numEdges &&
+        SortableEdge.areUndirectedPartners(
+          edgeArray[edgeIndex0],
+          edgeArray[edgeIndex1]
+        )
+      ) {
         // splice the loops ...
-        FacetOrientationFixup.swapEntries(this._edgeToPartnerEdge, edgeIndex0, edgeIndex1);
+        FacetOrientationFixup.swapEntries(
+          this._edgeToPartnerEdge,
+          edgeIndex0,
+          edgeIndex1
+        );
         edgeIndex1++;
       }
       // BUT .. everything else will fail if more than 2 anywhere .....
-      if (edgeIndex1 > edgeIndex0 + 2)
-        return false;
+      if (edgeIndex1 > edgeIndex0 + 2) return false;
     }
     return true;
   }
@@ -110,7 +115,11 @@ export class FacetOrientationFixup {
   private _workArray: number[] = [];
 
   private pushFacetEdgesOnStack(seedEdge: number, stack: number[]) {
-    FacetOrientationFixup.extractCyclicIndices(this._edgeToEdgeInComponent, seedEdge, this._workArray);
+    FacetOrientationFixup.extractCyclicIndices(
+      this._edgeToEdgeInComponent,
+      seedEdge,
+      this._workArray
+    );
     for (const edgeIndex of this._workArray) {
       stack.push(edgeIndex);
     }
@@ -137,7 +146,11 @@ export class FacetOrientationFixup {
         while (undefined !== (baseEdgeIndex = edgeStack.pop())) {
           const baseFacet = edgeArray[baseEdgeIndex].facetIndex;
           const baseOrientation = this._facetOrientation[baseFacet];
-          FacetOrientationFixup.extractCyclicIndices(this._edgeToPartnerEdge, baseEdgeIndex, neighborEdges);
+          FacetOrientationFixup.extractCyclicIndices(
+            this._edgeToPartnerEdge,
+            baseEdgeIndex,
+            neighborEdges
+          );
           for (const neighborEdgeIndex of neighborEdges) {
             if (neighborEdgeIndex !== baseEdgeIndex) {
               const neighborFacet = edgeArray[neighborEdgeIndex].facetIndex;
@@ -145,13 +158,25 @@ export class FacetOrientationFixup {
               if (neighborOrientation === 0) {
                 // first visit to this facet !
                 // orientations of baseEdge and neighborEdge tell us how to orient it.
-                const newOrientation = SortableEdge.areDirectedPartners(edgeArray[baseEdgeIndex], edgeArray[neighborEdgeIndex]) ? baseOrientation : -baseOrientation;
+                const newOrientation = SortableEdge.areDirectedPartners(
+                  edgeArray[baseEdgeIndex],
+                  edgeArray[neighborEdgeIndex]
+                )
+                  ? baseOrientation
+                  : -baseOrientation;
                 this.recordFacetInComponent(neighborFacet, newOrientation);
                 this.pushFacetEdgesOnStack(neighborEdgeIndex, edgeStack);
-                FacetOrientationFixup.swapEntries(this._edgeToEdgeInComponent, baseEdgeIndex, neighborEdgeIndex);
+                FacetOrientationFixup.swapEntries(
+                  this._edgeToEdgeInComponent,
+                  baseEdgeIndex,
+                  neighborEdgeIndex
+                );
               } else {
                 // looking across to an already-visited facet ..
-                const edgeOrientation = SortableEdge.relativeOrientation(edgeArray[baseEdgeIndex], edgeArray[neighborEdgeIndex]);
+                const edgeOrientation = SortableEdge.relativeOrientation(
+                  edgeArray[baseEdgeIndex],
+                  edgeArray[neighborEdgeIndex]
+                );
                 if (edgeOrientation * baseOrientation * neighborOrientation > 0)
                   return false;
               }
@@ -165,7 +190,7 @@ export class FacetOrientationFixup {
   }
   private doFacetReversals(): number {
     let numReverse = 0;
-    for (this._visitor.reset(); this._visitor.moveToNextFacet();) {
+    for (this._visitor.reset(); this._visitor.moveToNextFacet(); ) {
       const facetIndex = this._visitor.currentReadIndex();
       if (this._facetOrientation[facetIndex] < 0) {
         numReverse++;
@@ -176,11 +201,9 @@ export class FacetOrientationFixup {
   }
   public static doFixup(mesh: IndexedPolyface): boolean {
     const context = new FacetOrientationFixup(mesh);
-    if (!context.setupUnoriented())
-      return false;
+    if (!context.setupUnoriented()) return false;
     const ok = context.doFlood();
-    if (ok)
-      context.doFacetReversals();
+    if (ok) context.doFacetReversals();
     return ok;
   }
   /** swap entries at indices in a number array.
@@ -195,7 +218,11 @@ export class FacetOrientationFixup {
    *
    * @param data an array of cyclically linked loops.
    */
-  private static extractCyclicIndices(data: number[], index0: number, loopIndices: number[]) {
+  private static extractCyclicIndices(
+    data: number[],
+    index0: number,
+    loopIndices: number[]
+  ) {
     loopIndices.length = 0;
     let i = index0;
     do {

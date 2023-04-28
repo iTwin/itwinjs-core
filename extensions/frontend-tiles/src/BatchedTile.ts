@@ -6,8 +6,23 @@
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
-  TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
+  GltfReaderProps,
+  GraphicBuilder,
+  ImdlReader,
+  IModelApp,
+  RealityTileLoader,
+  RenderSystem,
+  Tile,
+  TileBoundingBoxes,
+  TileContent,
+  TileDrawArgs,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTreeLoadStatus,
+  TileUser,
+  TileVisibility,
+  Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
@@ -34,7 +49,7 @@ export class BatchedTile extends Tile {
     super(params, tree);
 
     // The root tile never has content, so it doesn't count toward max levels to skip.
-    this._unskippable = 0 === (this.depth % getMaxLevelsToSkip());
+    this._unskippable = 0 === this.depth % getMaxLevelsToSkip();
 
     if (params.childrenProps?.length)
       this._childrenProps = params.childrenProps;
@@ -50,15 +65,25 @@ export class BatchedTile extends Tile {
     return this.children as BatchedTile[] | undefined;
   }
 
-  public override computeLoadPriority(viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
+  public override computeLoadPriority(
+    viewports: Iterable<Viewport>,
+    _users: Iterable<TileUser>
+  ): number {
     // Prioritize tiles closer to camera and center of attention (zoom point or screen center).
-    return RealityTileLoader.computeTileLocationPriority(this, viewports, this.tree.iModelTransform);
+    return RealityTileLoader.computeTileLocationPriority(
+      this,
+      viewports,
+      this.tree.iModelTransform
+    );
   }
 
-  public selectTiles(selected: Set<BatchedTile>, args: TileDrawArgs, closestDisplayableAncestor: BatchedTile | undefined): void {
+  public selectTiles(
+    selected: Set<BatchedTile>,
+    args: TileDrawArgs,
+    closestDisplayableAncestor: BatchedTile | undefined
+  ): void {
     const vis = this.computeVisibility(args);
-    if (TileVisibility.OutsideFrustum === vis)
-      return;
+    if (TileVisibility.OutsideFrustum === vis) return;
 
     if (this._unskippable) {
       // Prevent this tile's content from being unloaded due to memory pressure.
@@ -66,8 +91,13 @@ export class BatchedTile extends Tile {
       args.markUsed(this);
     }
 
-    closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
-    if (TileVisibility.TooCoarse === vis && (this.isReady || !this._unskippable)) {
+    closestDisplayableAncestor = this.hasGraphics
+      ? this
+      : closestDisplayableAncestor;
+    if (
+      TileVisibility.TooCoarse === vis &&
+      (this.isReady || !this._unskippable)
+    ) {
       args.markUsed(this);
       args.markReady(this);
       const childrenLoadStatus = this.loadChildren();
@@ -87,16 +117,21 @@ export class BatchedTile extends Tile {
     if ((TileVisibility.Visible === vis || this._unskippable) && !this.isReady)
       args.insertMissing(this);
 
-    if (closestDisplayableAncestor)
-      selected.add(closestDisplayableAncestor);
+    if (closestDisplayableAncestor) selected.add(closestDisplayableAncestor);
   }
 
-  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
+  protected override _loadChildren(
+    resolve: (children: Tile[] | undefined) => void,
+    reject: (error: Error) => void
+  ): void {
     let children: BatchedTile[] | undefined;
     if (this._childrenProps) {
       try {
         for (const childProps of this._childrenProps) {
-          const params = this.batchedTree.reader.readTileParams(childProps, this);
+          const params = this.batchedTree.reader.readTileParams(
+            childProps,
+            this
+          );
           const child = new BatchedTile(params, this.batchedTree);
           children = children ?? [];
           children.push(child);
@@ -104,8 +139,7 @@ export class BatchedTile extends Tile {
       } catch (err) {
         Logger.logException(loggerCategory, err);
         children = undefined;
-        if (err instanceof Error)
-          reject(err);
+        if (err instanceof Error) reject(err);
       }
     }
 
@@ -121,33 +155,43 @@ export class BatchedTile extends Tile {
     return channel;
   }
 
-  public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public override async requestContent(
+    _isCanceled: () => boolean
+  ): Promise<TileRequest.Response> {
     const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
     url.search = this.batchedTree.reader.baseUrl.search;
     const response = await fetch(url.toString());
     return response.arrayBuffer();
   }
 
-  public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, shouldAbort?: () => boolean): Promise<TileContent> {
+  public override async readContent(
+    data: TileRequest.ResponseData,
+    system: RenderSystem,
+    shouldAbort?: () => boolean
+  ): Promise<TileContent> {
     assert(data instanceof Uint8Array);
-    if (!(data instanceof Uint8Array))
-      return { };
+    if (!(data instanceof Uint8Array)) return {};
 
-    let reader: ImdlReader | BatchedTileContentReader | undefined = ImdlReader.create({
-      stream: ByteStream.fromUint8Array(data),
-      iModel: this.tree.iModel,
-      modelId: this.tree.modelId,
-      is3d: true,
-      isLeaf: this.isLeaf,
-      system,
-      isCanceled: shouldAbort,
-      options: {
-        tileId: this.contentId,
-      },
-    });
+    let reader: ImdlReader | BatchedTileContentReader | undefined =
+      ImdlReader.create({
+        stream: ByteStream.fromUint8Array(data),
+        iModel: this.tree.iModel,
+        modelId: this.tree.modelId,
+        is3d: true,
+        isLeaf: this.isLeaf,
+        system,
+        isCanceled: shouldAbort,
+        options: {
+          tileId: this.contentId,
+        },
+      });
 
     if (!reader) {
-      const gltfProps = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
+      const gltfProps = GltfReaderProps.create(
+        data,
+        false,
+        this.batchedTree.reader.baseUrl
+      );
       if (gltfProps) {
         reader = new BatchedTileContentReader({
           props: gltfProps,
@@ -162,13 +206,15 @@ export class BatchedTile extends Tile {
       }
     }
 
-    if (!reader)
-      return { };
+    if (!reader) return {};
 
     return reader.read();
   }
 
-  protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
+  protected override addRangeGraphic(
+    builder: GraphicBuilder,
+    type: TileBoundingBoxes
+  ): void {
     if (TileBoundingBoxes.ChildVolumes !== type) {
       super.addRangeGraphic(builder, type);
       return;
@@ -179,10 +225,13 @@ export class BatchedTile extends Tile {
 
     this.loadChildren();
     const children = this.children;
-    if (!children)
-      return;
+    if (!children) return;
 
-    builder.setSymbology(ColorDef.blue, ColorDef.blue.withTransparency(0xdf), 1);
+    builder.setSymbology(
+      ColorDef.blue,
+      ColorDef.blue.withTransparency(0xdf),
+      1
+    );
     for (const child of children) {
       const range = child.range;
       builder.addRangeBox(range);
@@ -192,14 +241,12 @@ export class BatchedTile extends Tile {
 
   public prune(olderThan: BeTimePoint): void {
     const children = this._batchedChildren;
-    if (!children)
-      return;
+    if (!children) return;
 
     if (this.usageMarker.isExpired(olderThan)) {
       this.disposeChildren();
     } else {
-      for (const child of children)
-        child.prune(olderThan);
+      for (const child of children) child.prune(olderThan);
     }
   }
 }

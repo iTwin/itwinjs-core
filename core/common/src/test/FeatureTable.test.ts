@@ -5,7 +5,13 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import {
-  Feature, FeatureTable, ModelFeature, MultiModelPackedFeatureTable, PackedFeature, PackedFeatureModelTable, PackedFeatureTable,
+  Feature,
+  FeatureTable,
+  ModelFeature,
+  MultiModelPackedFeatureTable,
+  PackedFeature,
+  PackedFeatureModelTable,
+  PackedFeatureTable,
 } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
 
@@ -39,7 +45,10 @@ describe("PackedFeatureTable", () => {
     });
 
     it("minimizes allocation", () => {
-      function expectType(maxNodeId: number, type: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array) {
+      function expectType(
+        maxNodeId: number,
+        type: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array
+      ) {
         const table = makePackedFeatureTable(1);
         const nodeId = Math.ceil(maxNodeId / 2);
         table.populateAnimationNodeIds(() => nodeId, maxNodeId);
@@ -64,7 +73,9 @@ describe("PackedFeatureTable", () => {
 });
 
 // models is [modelId, indexOfLastFeatureInModel] where modelId and indexOfLastFeatureInModel are both strictly increasing.
-function makeModelTable(models: Array<[string, number]>): PackedFeatureModelTable {
+function makeModelTable(
+  models: Array<[string, number]>
+): PackedFeatureModelTable {
   const data = new Uint32Array(3 * models.length);
   for (let i = 0; i < models.length; i++) {
     const model = models[i];
@@ -90,12 +101,20 @@ describe("PackedFeatureModelTable", () => {
     ]);
 
     const modelByFeatureIndex = [
-      Id64.invalid, Id64.invalid, Id64.invalid,
+      Id64.invalid,
+      Id64.invalid,
+      Id64.invalid,
       "0x2",
-      "0x321", "0x321", "0x321",
-      "0x20000000123", "0x20000000123",
+      "0x321",
+      "0x321",
+      "0x321",
+      "0x20000000123",
+      "0x20000000123",
       "0x555555555555",
-      "0xffffffffffff", "0xffffffffffff", "0xffffffffffff", "0xffffffffffff",
+      "0xffffffffffff",
+      "0xffffffffffff",
+      "0xffffffffffff",
+      "0xffffffffffff",
     ];
 
     for (let i = 0; i < modelByFeatureIndex.length; i++) {
@@ -114,7 +133,9 @@ describe("PackedFeatureModelTable", () => {
       ["0xffffffffffff", 13],
     ]);
 
-    expect(Id64.fromUint32PairObject(table.getModelIdPair(13))).to.equal("0xffffffffffff");
+    expect(Id64.fromUint32PairObject(table.getModelIdPair(13))).to.equal(
+      "0xffffffffffff"
+    );
     for (let i = 14; i < 20; i++) {
       const pair = table.getModelIdPair(i);
       expect(pair.lower).to.equal(0);
@@ -124,10 +145,16 @@ describe("PackedFeatureModelTable", () => {
 });
 
 describe("MultiModelPackedFeatureTable", () => {
-  function makeTable(numFeatures: number, models: Array<[string, number]>): MultiModelPackedFeatureTable {
+  function makeTable(
+    numFeatures: number,
+    models: Array<[string, number]>
+  ): MultiModelPackedFeatureTable {
     const featureTable = makeFeatureTable(numFeatures);
     const modelTable = makeModelTable(models);
-    return new MultiModelPackedFeatureTable(PackedFeatureTable.pack(featureTable), modelTable);
+    return new MultiModelPackedFeatureTable(
+      PackedFeatureTable.pack(featureTable),
+      modelTable
+    );
   }
 
   it("accesses features by index", () => {
@@ -138,12 +165,12 @@ describe("MultiModelPackedFeatureTable", () => {
     ]);
 
     const expectedFeatures = [
-      [ "0x1", "0xa" ],
-      [ "0x2", "0xb" ],
-      [ "0x3", "0xb" ],
-      [ "0x4", "0xb" ],
-      [ "0x5", "0xc" ],
-      [ "0x6", "0xc" ],
+      ["0x1", "0xa"],
+      ["0x2", "0xb"],
+      ["0x3", "0xb"],
+      ["0x4", "0xb"],
+      ["0x5", "0xc"],
+      ["0x6", "0xc"],
     ];
 
     for (let i = 0; i < expectedFeatures.length; i++) {
@@ -164,12 +191,12 @@ describe("MultiModelPackedFeatureTable", () => {
     ]);
 
     const expectedFeatures = [
-      [ "0x1", "0xa" ],
-      [ "0x2", "0xb" ],
-      [ "0x3", "0xb" ],
-      [ "0x4", "0xb" ],
-      [ "0x5", "0xc" ],
-      [ "0x6", "0xc" ],
+      ["0x1", "0xa"],
+      ["0x2", "0xb"],
+      ["0x3", "0xb"],
+      ["0x4", "0xb"],
+      ["0x5", "0xc"],
+      ["0x6", "0xc"],
     ];
 
     let i = 0;
@@ -184,12 +211,12 @@ describe("MultiModelPackedFeatureTable", () => {
   });
 
   it("produces invalid model Id during iteration if feature index is greater than maximum", () => {
-    const table = makeTable(4, [ ["0xa", 1] ]);
+    const table = makeTable(4, [["0xa", 1]]);
     const expectedFeatures = [
-      [ "0x1", "0xa" ],
-      [ "0x2", "0xa" ],
-      [ "0x3", "0" ],
-      [ "0x4", "0" ],
+      ["0x1", "0xa"],
+      ["0x2", "0xa"],
+      ["0x3", "0"],
+      ["0x4", "0"],
     ];
 
     let i = 0;

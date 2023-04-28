@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { ClipStyle, ClipStyleProps, CutStyle } from "../ClipStyle";
 import {
-  ClipStyle,
-  ClipStyleProps,
-  CutStyle,
-} from "../ClipStyle";
-import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
+  DisplayStyleSettings,
+  DisplayStyleSettingsProps,
+} from "../DisplayStyleSettings";
 
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {
-    const roundTrip = (props: ClipStyleProps | undefined, expected: ClipStyleProps | undefined | "input") => {
-      if ("input" === expected)
-        expected = props;
+    const roundTrip = (
+      props: ClipStyleProps | undefined,
+      expected: ClipStyleProps | undefined | "input"
+    ) => {
+      if ("input" === expected) expected = props;
 
       const style = ClipStyle.fromJSON(props);
       const actual = style.toJSON();
@@ -28,18 +29,30 @@ describe("ClipStyle", () => {
     roundTrip({ produceCutGeometry: false }, undefined);
     roundTrip({ cutStyle: undefined, produceCutGeometry: false }, undefined);
     roundTrip(ClipStyle.create(false, CutStyle.defaults).toJSON(), undefined);
-    roundTrip({
-      cutStyle: CutStyle.defaults.toJSON(),
-      produceCutGeometry: false,
-    }, undefined);
+    roundTrip(
+      {
+        cutStyle: CutStyle.defaults.toJSON(),
+        produceCutGeometry: false,
+      },
+      undefined
+    );
 
     roundTrip({ produceCutGeometry: true }, "input");
     roundTrip({ cutStyle: { appearance: { weight: 5 } } }, "input");
-    roundTrip({ produceCutGeometry: true, cutStyle: { appearance: { weight: 5 } } }, "input");
+    roundTrip(
+      { produceCutGeometry: true, cutStyle: { appearance: { weight: 5 } } },
+      "input"
+    );
 
     roundTrip({ insideColor: { r: 0, g: 127, b: 255 } }, "input");
     roundTrip({ outsideColor: { r: 255, g: 127, b: 0 } }, "input");
-    roundTrip({ insideColor: { r: 1, g: 2, b: 3 }, outsideColor: { r: 254, g: 253, b: 252 } }, "input");
+    roundTrip(
+      {
+        insideColor: { r: 1, g: 2, b: 3 },
+        outsideColor: { r: 254, g: 253, b: 252 },
+      },
+      "input"
+    );
     roundTrip({ insideColor: undefined, outsideColor: undefined }, undefined);
   });
 

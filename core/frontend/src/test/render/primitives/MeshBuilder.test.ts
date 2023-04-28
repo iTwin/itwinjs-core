@@ -3,7 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
+import {
+  Arc3d,
+  AuxChannel,
+  AuxChannelData,
+  AuxChannelDataType,
+  LineString3d,
+  Loop,
+  Point3d,
+  PolyfaceAuxData,
+  PolyfaceBuilder,
+  Range3d,
+  Transform,
+} from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
@@ -12,12 +24,24 @@ import { ScreenViewport } from "../../../Viewport";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
+import {
+  PolyfacePrimitive,
+  PolyfacePrimitiveList,
+} from "../../../render/primitives/Polyface";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
-import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
-import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
+import {
+  StrokesPrimitiveList,
+  StrokesPrimitivePointLists,
+} from "../../../render/primitives/Strokes";
+import {
+  ToleranceRatio,
+  Triangle,
+} from "../../../render/primitives/Primitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
-import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
+import {
+  MeshBuilder,
+  MeshEdgeCreationOptions,
+} from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
 
 class FakeDisplayParams extends DisplayParams {
@@ -26,12 +50,15 @@ class FakeDisplayParams extends DisplayParams {
   }
 }
 
-const edgeOptions = new MeshEdgeCreationOptions(MeshEdgeCreationOptions.Type.NoEdges);
+const edgeOptions = new MeshEdgeCreationOptions(
+  MeshEdgeCreationOptions.Type.NoEdges
+);
 
 describe("Mesh Builder Tests", () => {
   let viewport: ScreenViewport;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => {
+    // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     viewport = openBlankViewport();
   });
@@ -50,7 +77,16 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
     expect(mb.currentPolyface).to.be.undefined;
     expect(mb.mesh.displayParams).to.equal(displayParams);
     expect(mb.mesh.type).to.equal(type);
@@ -61,30 +97,31 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {
+      type: GraphicType.Scene,
+      viewport,
+    });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
+    if (arc === undefined || !(arc instanceof Arc3d)) return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!primBuilder.accum.geometries.isEmpty);
 
     const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
     assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
+    if (arcGeom === undefined) return;
 
-    const strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    const strokesPrimList: StrokesPrimitiveList | undefined =
+      arcGeom.getStrokes(0.22);
 
     assert(strokesPrimList !== undefined);
-    if (strokesPrimList === undefined)
-      return;
+    if (strokesPrimList === undefined) return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
     const strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
@@ -93,13 +130,25 @@ describe("Mesh Builder Tests", () => {
 
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Polyline;
-    const range = Range3d.createArray([new Point3d(), new Point3d(10000, 10000, 10000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(10000, 10000, 10000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    let mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     // calls addPolyline for each stroke points list in strokes
     expect(mb.mesh.polylines!.length).to.equal(0);
@@ -110,7 +159,16 @@ describe("Mesh Builder Tests", () => {
     expect(lengthA).to.be.lte(lengthB);
     expect(mb.mesh.points.length).to.be.greaterThan(0);
     // calls addPointString for each stroke points list in strokes
-    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
     expect(mb.mesh.polylines!.length).to.equal(0);
     expect(mb.mesh.points.length).to.equal(0);
     mb.addStrokePointLists(strksPrims, true, fillColor, undefined);
@@ -131,42 +189,67 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(
+      gfParams,
+      false
+    );
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
+    const loopGeom = Geometry.createFromLoop(
+      loop,
+      Transform.createIdentity(),
+      loopRange,
+      displayParams,
+      false,
+      undefined
+    );
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined =
+      loopGeom.getPolyfaces(0);
     assert(pfPrimList !== undefined);
-    if (pfPrimList === undefined)
-      return;
+    if (pfPrimList === undefined) return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyface(pfPrim.indexedPolyface, { edgeOptions, includeParams, fillColor }, undefined);
+    mb.addFromPolyface(
+      pfPrim.indexedPolyface,
+      { edgeOptions, includeParams, fillColor },
+      undefined
+    );
 
     expect(mb.triangleSet.length).to.equal(2);
   });
 
   it("addFromPolyfaceVisitor", () => {
-
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -179,37 +262,63 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(
+      gfParams,
+      false
+    );
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
+    const loopGeom = Geometry.createFromLoop(
+      loop,
+      Transform.createIdentity(),
+      loopRange,
+      displayParams,
+      false,
+      undefined
+    );
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined =
+      loopGeom.getPolyfaces(0);
     assert(pfPrimList !== undefined);
-    if (pfPrimList === undefined)
-      return;
+    if (pfPrimList === undefined) return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
 
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     const visitor = pfPrim.indexedPolyface.createVisitor();
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyfaceVisitor(visitor, { edgeOptions, includeParams, fillColor }, undefined);
+    mb.addFromPolyfaceVisitor(
+      visitor,
+      { edgeOptions, includeParams, fillColor },
+      undefined
+    );
 
     expect(mb.triangleSet.length).to.equal(1);
   });
@@ -227,31 +336,53 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(
+      gfParams,
+      false
+    );
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
     expect(loopRange).to.not.be.null;
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
+    const loopGeom = Geometry.createFromLoop(
+      loop,
+      Transform.createIdentity(),
+      loopRange,
+      displayParams,
+      false,
+      undefined
+    );
 
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
+    const pfPrimList: PolyfacePrimitiveList | undefined =
+      loopGeom.getPolyfaces(0);
     assert(pfPrimList !== undefined);
-    if (pfPrimList === undefined)
-      return;
+    if (pfPrimList === undefined) return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     const includeParams = false;
     const visitor = pfPrim.indexedPolyface.createVisitor();
@@ -259,7 +390,12 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const vertices = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount }, undefined);
+    const vertices = mb.createTriangleVertices(
+      triangleIndex,
+      visitor,
+      { edgeOptions, fillColor, includeParams, haveParam, triangleCount },
+      undefined
+    );
 
     expect(vertices!.length).to.equal(3);
   });
@@ -277,24 +413,46 @@ describe("Mesh Builder Tests", () => {
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
     gfParams.fillColor = ColorDef.black; // forces region outline flag
-    const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams, false);
+    const displayParams: DisplayParams = DisplayParams.createForMesh(
+      gfParams,
+      false
+    );
 
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
+    const loopGeom = Geometry.createFromLoop(
+      loop,
+      Transform.createIdentity(),
+      loopRange,
+      displayParams,
+      false,
+      undefined
+    );
     // query polyface list from loopGeom
-    const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
-    if (pfPrimList === undefined)
-      return;
+    const pfPrimList: PolyfacePrimitiveList | undefined =
+      loopGeom.getPolyfaces(0);
+    if (pfPrimList === undefined) return;
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     const includeParams = false;
     const visitor = pfPrim.indexedPolyface.createVisitor();
@@ -302,7 +460,12 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const triangle = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount }, undefined);
+    const triangle = mb.createTriangleVertices(
+      triangleIndex,
+      visitor,
+      { edgeOptions, fillColor, includeParams, haveParam, triangleCount },
+      undefined
+    );
 
     expect(triangle).to.not.be.undefined;
   });
@@ -310,27 +473,61 @@ describe("Mesh Builder Tests", () => {
   it("addPolyline", () => {
     const displayParams = new FakeDisplayParams();
     let type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    let mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
-    let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
+    let points = [
+      new Point3d(),
+      new Point3d(100, 100, 100),
+      new Point3d(200, 200, 200),
+    ];
     const fillColor = ColorDef.white.tbgr;
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
-    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addPolyline(points, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
-    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
@@ -341,27 +538,61 @@ describe("Mesh Builder Tests", () => {
   it("addPointString", () => {
     const displayParams = new FakeDisplayParams();
     let type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    let mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
-    let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
+    let points = [
+      new Point3d(),
+      new Point3d(100, 100, 100),
+      new Point3d(200, 200, 200),
+    ];
     const fillColor = ColorDef.white.tbgr;
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
-    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addPointString(points, fillColor, undefined);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
-    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
@@ -375,27 +606,44 @@ describe("Mesh Builder Tests", () => {
 
     const displayParams = new FakeDisplayParams();
     const type = Mesh.PrimitiveType.Mesh;
-    const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
+    const range = Range3d.createArray([
+      new Point3d(),
+      new Point3d(1000, 1000, 1000),
+    ]);
     const is2d = false;
     const isPlanar = true;
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({
+      quantizePositions: false,
+      displayParams,
+      type,
+      range,
+      is2d,
+      isPlanar,
+      tolerance,
+      areaTolerance,
+    });
     expect(mb.mesh.triangles!.length).to.equal(0);
     mb.addTriangle(triangle);
     expect(mb.mesh.triangles!.length).to.equal(1);
   });
 
-  function createMeshBuilder(type: Mesh.PrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
-    options = options ?? { };
+  function createMeshBuilder(
+    type: Mesh.PrimitiveType,
+    range: Range3d,
+    options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>
+  ): MeshBuilder {
+    options = options ?? {};
     const tolerance = options.tolerance ?? 0.15;
     return MeshBuilder.create({
       quantizePositions: false,
       type,
       range,
       tolerance,
-      areaTolerance: options.areaTolerance ?? ToleranceRatio.facetArea * tolerance,
+      areaTolerance:
+        options.areaTolerance ?? ToleranceRatio.facetArea * tolerance,
       displayParams: options.displayParams ?? new FakeDisplayParams(),
       is2d: options.is2d ?? false,
       isPlanar: options.isPlanar ?? true,
@@ -403,26 +651,46 @@ describe("Mesh Builder Tests", () => {
   }
 
   describe("aux data", () => {
-    function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
+    function expectAuxChannelTable(
+      mesh: Mesh,
+      expectedUint16Data: number[]
+    ): void {
       const args = mesh.toMeshArgs()!;
       expect(args).not.to.be.undefined;
       const meshParams = MeshParams.create(args);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
-      expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);
+      expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(
+        expectedUint16Data
+      );
     }
 
     it("preserves aux data for triangle facets", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addTriangleFacet([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0)]);
+      pfBuilder.addTriangleFacet([
+        new Point3d(0, 0, 0),
+        new Point3d(1, 0, 0),
+        new Point3d(1, 1, 0),
+      ]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0, 0x7fff, 0xffff]);
-      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
+      const channel = new AuxChannel(
+        [channelData],
+        AuxChannelDataType.Scalar,
+        "s"
+      );
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2]);
 
-      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
+      const meshBuilder = createMeshBuilder(
+        Mesh.PrimitiveType.Mesh,
+        Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
+      );
+      meshBuilder.addFromPolyface(
+        pf,
+        { edgeOptions, includeParams: false, fillColor: 0 },
+        undefined
+      );
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(3);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -433,15 +701,31 @@ describe("Mesh Builder Tests", () => {
 
     it("preserves aux data for facets with more than 3 sides", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
+      pfBuilder.addQuadFacet([
+        new Point3d(0, 0, 0),
+        new Point3d(0, 1, 0),
+        new Point3d(1, 1, 0),
+        new Point3d(1, 0, 0),
+      ]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0, 0x4fff, 0xbfff, 0xffff]);
-      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
+      const channel = new AuxChannel(
+        [channelData],
+        AuxChannelDataType.Scalar,
+        "s"
+      );
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2, 3]);
 
-      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
+      const meshBuilder = createMeshBuilder(
+        Mesh.PrimitiveType.Mesh,
+        Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
+      );
+      meshBuilder.addFromPolyface(
+        pf,
+        { edgeOptions, includeParams: false, fillColor: 0 },
+        undefined
+      );
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -455,46 +739,82 @@ describe("Mesh Builder Tests", () => {
 
     it("maps aux data to vertices based on indices", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
+      pfBuilder.addQuadFacet([
+        new Point3d(0, 0, 0),
+        new Point3d(0, 1, 0),
+        new Point3d(1, 1, 0),
+        new Point3d(1, 0, 0),
+      ]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0x4000, 0x6000, 0x8000]);
-      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
+      const channel = new AuxChannel(
+        [channelData],
+        AuxChannelDataType.Scalar,
+        "s"
+      );
       pf.data.auxData = new PolyfaceAuxData([channel], [2, 0, 0, 1]);
 
-      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
+      const meshBuilder = createMeshBuilder(
+        Mesh.PrimitiveType.Mesh,
+        Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
+      );
+      meshBuilder.addFromPolyface(
+        pf,
+        { edgeOptions, includeParams: false, fillColor: 0 },
+        undefined
+      );
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
 
       const aux = mesh.auxChannels![0];
       expect(aux.data.length).to.equal(1);
-      expect(aux.data[0].values).to.deep.equal([0x8000, 0x4000, 0x4000, 0x8000, 0x4000, 0x6000]);
+      expect(aux.data[0].values).to.deep.equal([
+        0x8000, 0x4000, 0x4000, 0x8000, 0x4000, 0x6000,
+      ]);
       expectAuxChannelTable(mesh, [0xffff, 0, 0, 0xffff, 0, 0x8000]);
     });
 
     it("produces aux data for vector channel", () => {
       const pfBuilder = PolyfaceBuilder.create();
-      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
+      pfBuilder.addQuadFacet([
+        new Point3d(0, 0, 0),
+        new Point3d(0, 1, 0),
+        new Point3d(1, 1, 0),
+        new Point3d(1, 0, 0),
+      ]);
 
       const pf = pfBuilder.claimPolyface();
       const channelData = new AuxChannelData(1, [0, 1, 2, 3, 4, 0xffff]);
-      const channel = new AuxChannel([channelData], AuxChannelDataType.Vector, "v");
+      const channel = new AuxChannel(
+        [channelData],
+        AuxChannelDataType.Vector,
+        "v"
+      );
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 1, 0]);
 
-      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
+      const meshBuilder = createMeshBuilder(
+        Mesh.PrimitiveType.Mesh,
+        Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] })
+      );
+      meshBuilder.addFromPolyface(
+        pf,
+        { edgeOptions, includeParams: false, fillColor: 0 },
+        undefined
+      );
 
       const aux = meshBuilder.mesh.auxChannels![0];
       expect(aux.data[0].values).to.deep.equal([
-        0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff,
-        0, 1, 2, 3, 4, 0xffff, 0, 1, 2,
+        0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff, 0, 1, 2, 3, 4, 0xffff, 0, 1, 2,
       ]);
-      expectAuxChannelTable(meshBuilder.mesh, [
-        0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
-        0, 0, 0, 0xffff, 0xffff, 0xffff, 0, 0, 0,
-      ]);
+      expectAuxChannelTable(
+        meshBuilder.mesh,
+        [
+          0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0,
+          0xffff, 0xffff, 0xffff, 0, 0, 0,
+        ]
+      );
     });
   });
 });

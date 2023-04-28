@@ -33,8 +33,7 @@ export class PascalCoefficients {
       const oldRow = allRows[k - 1];
       const newRow = new Float64Array(k + 1);
       newRow[0] = 1.0;
-      for (let i = 1; i < k; i++)
-        newRow[i] = oldRow[i - 1] + oldRow[i];
+      for (let i = 1; i < k; i++) newRow[i] = oldRow[i - 1] + oldRow[i];
       newRow[k] = 1.0;
       allRows.push(newRow);
     }
@@ -48,22 +47,25 @@ export class PascalCoefficients {
    * @note if the destination array is larger than needed, its leading `row+1` values are filled,
    *     and the array is returned.
    */
-  public static getBezierBasisValues(order: number, u: number, result?: Float64Array): Float64Array {
+  public static getBezierBasisValues(
+    order: number,
+    u: number,
+    result?: Float64Array
+  ): Float64Array {
     const row = order - 1;
     const pascalRow = PascalCoefficients.getRow(row);
     if (result === undefined || result.length < order)
       result = new Float64Array(order);
-    for (let i = 0; i < order; i++)
-      result[i] = pascalRow[i];
+    for (let i = 0; i < order; i++) result[i] = pascalRow[i];
     // multiply by increasing powers of u ...
     let p = u;
-    for (let i = 1; i < order; i++ , p *= u) {
+    for (let i = 1; i < order; i++, p *= u) {
       result[i] *= p;
     }
     // multiply by powers of (1-u), working from right
     const v = 1.0 - u;
     p = v;
-    for (let i = order - 2; i >= 0; i-- , p *= v) {
+    for (let i = order - 2; i >= 0; i--, p *= v) {
       result[i] *= p;
     }
     return result;
@@ -77,7 +79,11 @@ export class PascalCoefficients {
    * @note if the destination array is larger than needed, its leading `row+1` values are filled,
    *     and the array is returned.
    */
-  public static getBezierBasisDerivatives(order: number, u: number, result?: Float64Array): Float64Array {
+  public static getBezierBasisDerivatives(
+    order: number,
+    u: number,
+    result?: Float64Array
+  ): Float64Array {
     result = this.getBezierBasisValues(order - 1, u, result);
     // derivative is df/du = (order-1 ) * sum ( q[i+1] - q[i])   summed on 0 <= i < order - 1.\
     // evaluate lower order basis, overwrite in place from right to left
@@ -86,7 +92,7 @@ export class PascalCoefficients {
     for (let k = order - 2; k > 0; k--) {
       result[k] = f * (result[k - 1] - result[k]);
     }
-    result[0] = - f * result[0];
+    result[0] = -f * result[0];
     return result;
   }
 }

@@ -44,19 +44,22 @@ export class ChainCollectorContext {
    */
   private pushNewChain(primitive?: CurvePrimitive) {
     const chain = [];
-    if (primitive)
-      chain.push(primitive);
+    if (primitive) chain.push(primitive);
     this._chains.push(chain);
   }
   private findOrCreateTailChain(): CurvePrimitive[] {
-    if (this._chains.length === 0)
-      this.pushNewChain();
+    if (this._chains.length === 0) this.pushNewChain();
     return this._chains[this._chains.length - 1];
   }
   private _xyzWork0?: Point3d;
-  private findAnyChainToConnect(xyz: Point3d): { chainIndex: number, atEnd: boolean } | undefined {
-
-    for (let chainIndexA = 0; chainIndexA < this._chains.length; chainIndexA++) {
+  private findAnyChainToConnect(
+    xyz: Point3d
+  ): { chainIndex: number; atEnd: boolean } | undefined {
+    for (
+      let chainIndexA = 0;
+      chainIndexA < this._chains.length;
+      chainIndexA++
+    ) {
       const path = this._chains[chainIndexA];
       this._xyzWork1 = path[path.length - 1].endPoint(this._xyzWork1);
       if (this._xyzWork1.isAlmostEqual(xyz))
@@ -84,21 +87,28 @@ export class ChainCollectorContext {
    *   * true ==> search for any connection, reversing direction as needed.
    * * Otherwise start a new chain.
    */
-  public announceCurvePrimitive(candidate: CurvePrimitive, searchAllChains: boolean = false) {
+  public announceCurvePrimitive(
+    candidate: CurvePrimitive,
+    searchAllChains: boolean = false
+  ) {
     if (candidate) {
       if (this._makeClones) {
         const candidate1 = candidate.clone();
-        if (!candidate1 || !(candidate1 instanceof CurvePrimitive))
-          return;
+        if (!candidate1 || !(candidate1 instanceof CurvePrimitive)) return;
         this.transferMarkup(candidate, candidate1);
         candidate = candidate1;
       }
       if (!searchAllChains) {
         const activeChain = this.findOrCreateTailChain();
-        if (activeChain.length === 0 || !ChainCollectorContext.needBreakBetweenPrimitives(activeChain[activeChain.length - 1], candidate))
+        if (
+          activeChain.length === 0 ||
+          !ChainCollectorContext.needBreakBetweenPrimitives(
+            activeChain[activeChain.length - 1],
+            candidate
+          )
+        )
           activeChain.push(candidate);
-        else
-          this.pushNewChain(candidate);
+        else this.pushNewChain(candidate);
       } else {
         this._xyzWork0 = candidate.startPoint(this._xyzWork0);
         let connect = this.findAnyChainToConnect(this._xyzWork0);
@@ -112,7 +122,8 @@ export class ChainCollectorContext {
         } else {
           this._xyzWork0 = candidate.endPoint(this._xyzWork0);
           connect = this.findAnyChainToConnect(this._xyzWork0);
-          if (connect) {  // START of new primitive ..
+          if (connect) {
+            // START of new primitive ..
             if (connect.atEnd) {
               candidate.reverseInPlace();
               this._chains[connect.chainIndex].push(candidate);
@@ -137,24 +148,34 @@ export class ChainCollectorContext {
    * * The input array is assumed to be connected appropriately to act as the curves of a Path.
    * * When a path is created the curves array is CAPTURED.
    */
-  private promoteArrayToCurves(curves: CurvePrimitive[], makeLoopIfClosed: boolean): CurvePrimitive | Path | Loop | undefined {
-    if (curves.length === 0)
-      return undefined;
+  private promoteArrayToCurves(
+    curves: CurvePrimitive[],
+    makeLoopIfClosed: boolean
+  ): CurvePrimitive | Path | Loop | undefined {
+    if (curves.length === 0) return undefined;
     if (makeLoopIfClosed) {
-      ChainCollectorContext._staticPointA = curves[0].startPoint(ChainCollectorContext._staticPointA);
-      ChainCollectorContext._staticPointB = curves[curves.length - 1].endPoint(ChainCollectorContext._staticPointB);
-      if (ChainCollectorContext._staticPointA.isAlmostEqual(ChainCollectorContext._staticPointB))
+      ChainCollectorContext._staticPointA = curves[0].startPoint(
+        ChainCollectorContext._staticPointA
+      );
+      ChainCollectorContext._staticPointB = curves[curves.length - 1].endPoint(
+        ChainCollectorContext._staticPointB
+      );
+      if (
+        ChainCollectorContext._staticPointA.isAlmostEqual(
+          ChainCollectorContext._staticPointB
+        )
+      )
         return Loop.createArray(curves);
     }
-    if (curves.length === 1)
-      return curves[0];
+    if (curves.length === 1) return curves[0];
     return Path.createArray(curves);
   }
   /** Return the collected results, structured as the simplest possible type. */
-  public grabResult(makeLoopIfClosed: boolean = false): CurvePrimitive | Path | BagOfCurves | Loop | undefined {
+  public grabResult(
+    makeLoopIfClosed: boolean = false
+  ): CurvePrimitive | Path | BagOfCurves | Loop | undefined {
     const chains = this._chains;
-    if (chains.length === 0)
-      return undefined;
+    if (chains.length === 0) return undefined;
     if (chains.length === 1)
       return this.promoteArrayToCurves(chains[0], makeLoopIfClosed);
     const bag = BagOfCurves.create();
@@ -169,19 +190,27 @@ export class ChainCollectorContext {
    * * primitiveB.startCut
    * * physical gap between primitives.
    */
-  public static needBreakBetweenPrimitives(primitiveA: CurvePrimitive | undefined, primitiveB: CurvePrimitive | undefined, isXYOnly: boolean = false): boolean {
-    if (primitiveA === undefined)
-      return true;
-    if (primitiveB === undefined)
-      return true;
-    if (primitiveA.endCut !== undefined)
-      return true;
-    if (primitiveB.startCut !== undefined)
-      return true;
-    ChainCollectorContext._staticPointA = primitiveA.endPoint(ChainCollectorContext._staticPointA);
-    ChainCollectorContext._staticPointB = primitiveB.startPoint(ChainCollectorContext._staticPointB);
+  public static needBreakBetweenPrimitives(
+    primitiveA: CurvePrimitive | undefined,
+    primitiveB: CurvePrimitive | undefined,
+    isXYOnly: boolean = false
+  ): boolean {
+    if (primitiveA === undefined) return true;
+    if (primitiveB === undefined) return true;
+    if (primitiveA.endCut !== undefined) return true;
+    if (primitiveB.startCut !== undefined) return true;
+    ChainCollectorContext._staticPointA = primitiveA.endPoint(
+      ChainCollectorContext._staticPointA
+    );
+    ChainCollectorContext._staticPointB = primitiveB.startPoint(
+      ChainCollectorContext._staticPointB
+    );
     return isXYOnly
-      ? !ChainCollectorContext._staticPointA.isAlmostEqualXY(ChainCollectorContext._staticPointB)
-      : !ChainCollectorContext._staticPointA.isAlmostEqual(ChainCollectorContext._staticPointB);
+      ? !ChainCollectorContext._staticPointA.isAlmostEqualXY(
+          ChainCollectorContext._staticPointB
+        )
+      : !ChainCollectorContext._staticPointA.isAlmostEqual(
+          ChainCollectorContext._staticPointB
+        );
   }
 }

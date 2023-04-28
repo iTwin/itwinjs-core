@@ -27,8 +27,7 @@ export class GraphSplitData {
   public numPopOut = 0;
   public numA0B0 = 0;
   public numA0B1 = 0;
-  public constructor() {
-  }
+  public constructor() {}
 }
 /**
  * Structure for data used when sorting outbound edges "around a node"
@@ -38,7 +37,12 @@ export class VertexNeighborhoodSortData {
   public radiusOfCurvature: number;
   public node: HalfEdge;
   public radians?: number;
-  public constructor(index: number, key: number, node: HalfEdge, radians?: number) {
+  public constructor(
+    index: number,
+    key: number,
+    node: HalfEdge,
+    radians?: number
+  ) {
     this.index = index;
     this.radiusOfCurvature = key;
     this.node = node;
@@ -47,27 +51,24 @@ export class VertexNeighborhoodSortData {
 }
 
 /** Function signature for announcing a vertex neighborhood during sorting. */
-export type AnnounceVertexNeighborhoodSortData = (data: VertexNeighborhoodSortData[]) => any;
+export type AnnounceVertexNeighborhoodSortData = (
+  data: VertexNeighborhoodSortData[]
+) => any;
 /**
  * * Assorted methods used in algorithms on HalfEdgeGraph.
  * @internal
  */
 export class HalfEdgeGraphOps {
-
   /** Compare function for sorting with primary y compare, secondary  x compare. */
   public static compareNodesYXUp(a: HalfEdge, b: HalfEdge) {
     // Check y's
     // if (!Geometry.isSameCoordinate(a.y, b.y))
-    if (a.y < b.y)
-      return -1;
-    else if (a.y > b.y)
-      return 1;
+    if (a.y < b.y) return -1;
+    else if (a.y > b.y) return 1;
     // Check x's
     // if (!Geometry.isSameCoordinate(a.x, b.x))
-    if (a.x < b.x)
-      return -1;
-    else if (a.x > b.x)
-      return 1;
+    if (a.x < b.x) return -1;
+    else if (a.x > b.x) return 1;
     return 0;
   }
 
@@ -75,9 +76,11 @@ export class HalfEdgeGraphOps {
   public static isDownPeak(nodeB: HalfEdge) {
     const nodeA = nodeB.facePredecessor;
     const nodeC = nodeB.faceSuccessor;
-    return this.compareNodesYXUp(nodeB, nodeA) < 0
-      && this.compareNodesYXUp(nodeB, nodeC) < 0
-      && this.crossProductToTargets(nodeB, nodeA, nodeC) > 0;
+    return (
+      this.compareNodesYXUp(nodeB, nodeA) < 0 &&
+      this.compareNodesYXUp(nodeB, nodeC) < 0 &&
+      this.crossProductToTargets(nodeB, nodeA, nodeC) > 0
+    );
   }
 
   /** return the cross product of vectors from base to targetA and base to targetB
@@ -85,8 +88,17 @@ export class HalfEdgeGraphOps {
    * @param targetA target vertex of first vector
    * @param targetB target vertex of second vector
    */
-  public static crossProductToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
-    return Geometry.crossProductXYXY(targetA.x - base.x, targetA.y - base.y, targetB.x - base.x, targetB.y - base.y);
+  public static crossProductToTargets(
+    base: HalfEdge,
+    targetA: HalfEdge,
+    targetB: HalfEdge
+  ): number {
+    return Geometry.crossProductXYXY(
+      targetA.x - base.x,
+      targetA.y - base.y,
+      targetB.x - base.x,
+      targetB.y - base.y
+    );
   }
 
   // ---------------------------------------------------------------------------------------------------------------------
@@ -100,23 +112,31 @@ export class HalfEdgeGraphOps {
     return range;
   }
   /** Returns an array of all nodes (both ends) of edges created from segments. */
-  public static segmentArrayToGraphEdges(segments: LineSegment3d[], returnGraph: HalfEdgeGraph, mask: HalfEdgeMask): HalfEdge[] {
+  public static segmentArrayToGraphEdges(
+    segments: LineSegment3d[],
+    returnGraph: HalfEdgeGraph,
+    mask: HalfEdgeMask
+  ): HalfEdge[] {
     const result = [];
     let idxCounter = 0;
 
     // Push the endpoints of each segment onto arr[] in the form {(x, y, theta), Node}
     for (const segment of segments) {
-
       const node0 = returnGraph.createEdgeXYZXYZ(
-        segment.point0Ref.x, segment.point0Ref.y, segment.point0Ref.z,
+        segment.point0Ref.x,
+        segment.point0Ref.y,
+        segment.point0Ref.z,
         idxCounter,
-        segment.point1Ref.x, segment.point1Ref.y, segment.point1Ref.z,
-        idxCounter + 1);
+        segment.point1Ref.x,
+        segment.point1Ref.y,
+        segment.point1Ref.z,
+        idxCounter + 1
+      );
 
       const node1 = node0.edgeMate;
       idxCounter += 2;
 
-      node0.setMaskAroundFace(mask);   // Original given coordinates must be part of boundary
+      node0.setMaskAroundFace(mask); // Original given coordinates must be part of boundary
       result.push(node0);
       result.push(node1);
     }
@@ -144,23 +164,25 @@ export class HalfEdgeGraphOps {
    * @param barrier edges with this mask (on either side) will not be removed
    * @return whether removing the edge at base would create a convex sector in the super-face
    */
-  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge, ignore: HalfEdgeMask, barrier: HalfEdgeMask): boolean {
+  private static isSectorConvexAfterEdgeRemoval(
+    base: HalfEdge,
+    ignore: HalfEdgeMask,
+    barrier: HalfEdgeMask
+  ): boolean {
     let vs = base;
-    do { // loop ccw around vertex looking for a super-face predecessor
-      if (vs.isMaskSet(barrier) || vs.edgeMate.isMaskSet(barrier))
-        break;
+    do {
+      // loop ccw around vertex looking for a super-face predecessor
+      if (vs.isMaskSet(barrier) || vs.edgeMate.isMaskSet(barrier)) break;
       vs = vs.vertexSuccessor;
     } while (vs !== base && vs.isMaskSet(ignore));
-    if (vs === base)
-      return false;
+    if (vs === base) return false;
     let vp = base;
-    do { // loop cw around vertex looking for a super-face successor
-      if (vp.isMaskSet(barrier) || vp.edgeMate.isMaskSet(barrier))
-        break;
+    do {
+      // loop cw around vertex looking for a super-face successor
+      if (vp.isMaskSet(barrier) || vp.edgeMate.isMaskSet(barrier)) break;
       vp = vp.vertexPredecessor;
     } while (vp !== base && vp.isMaskSet(ignore));
-    if (vp === base)
-      return false;
+    if (vp === base) return false;
     return HalfEdge.isSectorConvex(vs.edgeMate, base, vp.faceSuccessor);
   }
 
@@ -173,15 +195,21 @@ export class HalfEdgeGraphOps {
    * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return number of edges masked (half the number of HalfEdges masked)
    */
-  public static markRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, mark: HalfEdgeMask, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
-    if (HalfEdgeMask.NULL_MASK === mark)
-      return 0;
+  public static markRemovableEdgesToExpandConvexFaces(
+    graph: HalfEdgeGraph,
+    mark: HalfEdgeMask,
+    barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE
+  ): number {
+    if (HalfEdgeMask.NULL_MASK === mark) return 0;
     const visit = graph.grabMask(true);
     let numMarked = 0;
     for (const node of graph.allHalfEdges) {
       if (!node.isMaskSet(visit)) {
         if (!node.isMaskSet(barrier) && !node.edgeMate.isMaskSet(barrier)) {
-          if (this.isSectorConvexAfterEdgeRemoval(node, mark, barrier) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier)) {
+          if (
+            this.isSectorConvexAfterEdgeRemoval(node, mark, barrier) &&
+            this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier)
+          ) {
             node.setMaskAroundEdge(mark);
             ++numMarked;
           }
@@ -200,7 +228,10 @@ export class HalfEdgeGraphOps {
    * @param barrier edges with this mask (on either side) will not be collected. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return one HalfEdge per removable edge
    */
-  public static collectRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): HalfEdge[] | undefined {
+  public static collectRemovableEdgesToExpandConvexFaces(
+    graph: HalfEdgeGraph,
+    barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE
+  ): HalfEdge[] | undefined {
     const removable: HalfEdge[] = [];
     const mark = graph.grabMask(true);
     if (0 < this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier)) {
@@ -225,9 +256,16 @@ export class HalfEdgeGraphOps {
    * @param barrier edges with this mask (on either side) will not be removed. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return number of edges deleted
    */
-  public static expandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
+  public static expandConvexFaces(
+    graph: HalfEdgeGraph,
+    barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE
+  ): number {
     const mark = graph.grabMask(true);
-    const numRemovedEdges = this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier);
+    const numRemovedEdges = this.markRemovableEdgesToExpandConvexFaces(
+      graph,
+      mark,
+      barrier
+    );
     if (numRemovedEdges > 0)
       graph.yankAndDeleteEdges((node: HalfEdge) => node.getMask(mark));
     graph.dropMask(mark);
@@ -240,13 +278,14 @@ export class HalfEdgeGraphOps {
    * @param avoid faces with this mask will not be examined. Defaults to HalfEdgeMask.EXTERIOR.
    * @return whether every face in the graph is convex
    */
-  public static isEveryFaceConvex(graph: HalfEdgeGraph, avoid: HalfEdgeMask = HalfEdgeMask.EXTERIOR): boolean {
+  public static isEveryFaceConvex(
+    graph: HalfEdgeGraph,
+    avoid: HalfEdgeMask = HalfEdgeMask.EXTERIOR
+  ): boolean {
     const allFaces = graph.collectFaceLoops();
     for (const node of allFaces) {
-      if (node.isMaskedAroundFace(avoid))
-        continue;
-      if (!node.isFaceConvex())
-        return false;
+      if (node.isMaskedAroundFace(avoid)) continue;
+      if (!node.isFaceConvex()) return false;
     }
     return true;
   }
@@ -259,7 +298,12 @@ export class HalfEdgeGraphMerge {
   // return kC such that all angles k are equal, with kA <= k < kC <= kB.
   // * Assume: angles k are stored at extra data index 0.
   // * Note that the usual case (when angle at kA is not repeated) is kA+1 === kC
-  public static getCommonThetaEndIndex(clusters: ClusterableArray, order: Uint32Array, kA: number, kB: number): number {
+  public static getCommonThetaEndIndex(
+    clusters: ClusterableArray,
+    order: Uint32Array,
+    kA: number,
+    kB: number
+  ): number {
     let kC = kA + 1;
     const thetaA = clusters.getExtraData(order[kA], 0);
     while (kC < kB) {
@@ -275,8 +319,18 @@ export class HalfEdgeGraphMerge {
   /**
    * public property setter for a function to be called with sorted edge data around a vertex.
    */
-  public static set announceVertexNeighborhoodFunction(func: AnnounceVertexNeighborhoodSortData | undefined) { this._announceVertexNeighborhoodFunction = func; }
-  private static doAnnounceVertexNeighborhood(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
+  public static set announceVertexNeighborhoodFunction(
+    func: AnnounceVertexNeighborhoodSortData | undefined
+  ) {
+    this._announceVertexNeighborhoodFunction = func;
+  }
+  private static doAnnounceVertexNeighborhood(
+    clusters: ClusterableArray,
+    order: Uint32Array,
+    allNodes: HalfEdge[],
+    k0: number,
+    k1: number
+  ) {
     if (this._announceVertexNeighborhoodFunction) {
       const sortData: VertexNeighborhoodSortData[] = [];
       // build and share the entire vertex order
@@ -285,11 +339,12 @@ export class HalfEdgeGraphMerge {
         const theta = clusters.getExtraData(order[k], 0);
         const node = allNodes[index];
         const signedDistance = this.curvatureSortKey(node);
-        sortData.push(new VertexNeighborhoodSortData(order[k], signedDistance, node, theta));
+        sortData.push(
+          new VertexNeighborhoodSortData(order[k], signedDistance, node, theta)
+        );
       }
       this._announceVertexNeighborhoodFunction(sortData);
     }
-
   }
   // assumptions about cluster array:
   //   * data order is: x,y,theta,nodeIndex
@@ -297,10 +352,16 @@ export class HalfEdgeGraphMerge {
   //   * only want to do anything here when curves are present.
   //   * k0<=k<k1 are around a vertex
   //   * These are sorted by theta.
-  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
+  private static secondarySortAroundVertex(
+    clusters: ClusterableArray,
+    order: Uint32Array,
+    allNodes: HalfEdge[],
+    k0: number,
+    k1: number
+  ) {
     const sortData: VertexNeighborhoodSortData[] = [];
 
-    for (let k = k0; k < k1;) {
+    for (let k = k0; k < k1; ) {
       const kB = this.getCommonThetaEndIndex(clusters, order, k, k1);
       if (k + 1 < kB) {
         sortData.length = 0;
@@ -308,9 +369,14 @@ export class HalfEdgeGraphMerge {
           const index = clusters.getExtraData(order[kA], 1);
           const node = allNodes[index];
           const signedDistance = this.curvatureSortKey(node);
-          sortData.push(new VertexNeighborhoodSortData(order[kA], signedDistance, node));
+          sortData.push(
+            new VertexNeighborhoodSortData(order[kA], signedDistance, node)
+          );
         }
-        sortData.sort((a: VertexNeighborhoodSortData, b: VertexNeighborhoodSortData) => (a.radiusOfCurvature - b.radiusOfCurvature));
+        sortData.sort(
+          (a: VertexNeighborhoodSortData, b: VertexNeighborhoodSortData) =>
+            a.radiusOfCurvature - b.radiusOfCurvature
+        );
         for (let i = 0; i < sortData.length; i++) {
           order[k + i] = sortData[i].index;
         }
@@ -329,8 +395,7 @@ export class HalfEdgeGraphMerge {
       const curve = cld.curve;
       if (curve) {
         let radius = curve.fractionToSignedXYRadiusOfCurvature(fraction);
-        if (node.sortData !== undefined && node.sortData < 0)
-          radius = -radius;
+        if (node.sortData !== undefined && node.sortData < 0) radius = -radius;
         return radius;
       }
     }
@@ -344,16 +409,19 @@ export class HalfEdgeGraphMerge {
    * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
    * * Mask.NULL_FACE is cleared throughout and applied within null faces.
    */
-  public static clusterAndMergeXYTheta(graph: HalfEdgeGraph, outboundRadiansFunction?: (he: HalfEdge) => number) {
+  public static clusterAndMergeXYTheta(
+    graph: HalfEdgeGraph,
+    outboundRadiansFunction?: (he: HalfEdge) => number
+  ) {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
     graph.clearMask(HalfEdgeMask.NULL_FACE);
-    const clusters = new ClusterableArray(2, 2, numNodes);  // data order: x,y,theta,nodeIndex.  But theta is not set in first round.
+    const clusters = new ClusterableArray(2, 2, numNodes); // data order: x,y,theta,nodeIndex.  But theta is not set in first round.
     for (let i = 0; i < numNodes; i++) {
       const nodeA = allNodes[i];
       const xA = nodeA.x;
       const yA = nodeA.y;
-      HalfEdge.pinch(nodeA, nodeA.vertexSuccessor);  // pull it out of its current vertex loop.
+      HalfEdge.pinch(nodeA, nodeA.vertexSuccessor); // pull it out of its current vertex loop.
       clusters.addDirect(xA, yA, 0.0, i);
     }
     const clusterTol = Geometry.smallMetricDistance;
@@ -389,10 +457,16 @@ export class HalfEdgeGraphMerge {
         if (getPrecomputedRadians) {
           // Recompute theta when edge geometry is completely determined by the vertices, which may have been perturbed by clustering.
           const detail = nodeA.edgeTag as CurveLocationDetail;
-          if (undefined === detail || undefined === detail.curve || detail.curve instanceof LineSegment3d)
+          if (
+            undefined === detail ||
+            undefined === detail.curve ||
+            detail.curve instanceof LineSegment3d
+          )
             getPrecomputedRadians = undefined;
         }
-        let radians = getPrecomputedRadians ? getPrecomputedRadians(nodeA) : Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
+        let radians = getPrecomputedRadians
+          ? getPrecomputedRadians(nodeA)
+          : Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, -Math.PI))
           radians = Math.PI;
         clusters.setExtraData(clusterTableIndex, 0, radians);
@@ -424,17 +498,23 @@ export class HalfEdgeGraphMerge {
             const nodeB = allNodes[iB];
             if (nodeA.isMaskSet(HalfEdgeMask.NULL_FACE)) {
               // nope, this edge was flagged and pinched from the other end.
-              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeA === node);
+              const j = unmatchedNullFaceNodes.findIndex(
+                (node: HalfEdge) => nodeA === node
+              );
               if (j >= 0) {
-                unmatchedNullFaceNodes[j] = unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
+                unmatchedNullFaceNodes[j] =
+                  unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
                 unmatchedNullFaceNodes.pop();
               }
               nodeA = nodeB;
               thetaA = thetaB;
             } else if (nodeB.isMaskSet(HalfEdgeMask.NULL_FACE)) {
-              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeB === node);
+              const j = unmatchedNullFaceNodes.findIndex(
+                (node: HalfEdge) => nodeB === node
+              );
               if (j >= 0) {
-                unmatchedNullFaceNodes[j] = unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
+                unmatchedNullFaceNodes[j] =
+                  unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
                 unmatchedNullFaceNodes.pop();
               }
               // NO leave nodeA and thetaA   ignore nodeB -- later step will get the outside of its banana.
@@ -452,7 +532,8 @@ export class HalfEdgeGraphMerge {
                 if (nodeA1.isEqualXY(nodeB1)) {
                   const cA = this.curvatureSortKey(nodeA);
                   const cB = this.curvatureSortKey(nodeB);
-                  if (Geometry.isSameCoordinate(cA, cB, clusterTol)) {  // rule out banana
+                  if (Geometry.isSameCoordinate(cA, cB, clusterTol)) {
+                    // rule out banana
                     HalfEdge.pinch(nodeA1, nodeB1);
                     nodeA.setMask(HalfEdgeMask.NULL_FACE);
                     nodeB1.setMask(HalfEdgeMask.NULL_FACE);
@@ -470,22 +551,37 @@ export class HalfEdgeGraphMerge {
     }
   }
 
-  private static buildVerticalSweepPriorityQueue(graph: HalfEdgeGraph): HalfEdgePriorityQueueWithPartnerArray {
+  private static buildVerticalSweepPriorityQueue(
+    graph: HalfEdgeGraph
+  ): HalfEdgePriorityQueueWithPartnerArray {
     const sweepHeap = new HalfEdgePriorityQueueWithPartnerArray();
     for (const p of graph.allHalfEdges) {
-
       if (HalfEdgeGraphOps.compareNodesYXUp(p, p.faceSuccessor) < 0) {
         sweepHeap.priorityQueue.push(p);
       }
     }
     return sweepHeap;
   }
-  private static snapFractionToNode(xy: Point2d, fraction: number, node: HalfEdge, nodeFraction: number): number {
-    if (Geometry.isSameCoordinate(xy.x, node.x) && Geometry.isSameCoordinate(xy.y, node.y))
+  private static snapFractionToNode(
+    xy: Point2d,
+    fraction: number,
+    node: HalfEdge,
+    nodeFraction: number
+  ): number {
+    if (
+      Geometry.isSameCoordinate(xy.x, node.x) &&
+      Geometry.isSameCoordinate(xy.y, node.y)
+    )
       return nodeFraction;
     return fraction;
   }
-  private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
+  private static computeIntersectionFractionsOnEdges(
+    nodeA0: HalfEdge,
+    nodeB0: HalfEdge,
+    fractions: Vector2d,
+    pointA: Point2d,
+    pointB: Point2d
+  ): boolean {
     const nodeA1 = nodeA0.faceSuccessor;
     const ax0 = nodeA0.x;
     const ay0 = nodeA0.y;
@@ -497,8 +593,19 @@ export class HalfEdgeGraphMerge {
     const vx = nodeB1.x - bx0;
     const vy = nodeB1.y - by0;
     // cspell:word lineSegmentXYUVTransverseIntersectionUnbounded
-    if (SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(ax0, ay0, ux, uy,
-      bx0, by0, vx, vy, fractions)) {
+    if (
+      SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(
+        ax0,
+        ay0,
+        ux,
+        uy,
+        bx0,
+        by0,
+        vx,
+        vy,
+        fractions
+      )
+    ) {
       pointA.x = ax0 + fractions.x * ux;
       pointA.y = ay0 + fractions.x * uy;
       pointB.x = bx0 + fractions.y * vx;
@@ -537,21 +644,33 @@ export class HalfEdgeGraphMerge {
         nodeB0 = sweepHeap.activeEdges[i];
         nodeB1 = nodeB0.faceSuccessor;
         // const nodeB1 = nodeB0.faceSuccessor;
-        if (Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y)) {
+        if (
+          Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y)
+        ) {
           data.numA0B0++;
-        } else if (Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y)) {
+        } else if (
+          Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y)
+        ) {
           data.numA0B1++;
         } else {
           data.numIntersectionTest++;
-          if (this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, fractions, pointA, pointB)) {
+          if (
+            this.computeIntersectionFractionsOnEdges(
+              nodeA0,
+              nodeB0,
+              fractions,
+              pointA,
+              pointB
+            )
+          ) {
             if (fractions.x > smallFraction && fractions.x < largeFraction) {
               const nodeC0 = graph.splitEdgeAtFraction(nodeA0, fractions.x);
-              sweepHeap.priorityQueue.push(nodeC0);  // The upper portion will be reviewed as a nodeA0 later !!!
+              sweepHeap.priorityQueue.push(nodeC0); // The upper portion will be reviewed as a nodeA0 later !!!
               data.numSplit++;
             }
             if (fractions.y > smallFraction && fractions.y < largeFraction) {
               const nodeD0 = graph.splitEdgeAtFraction(nodeB0, fractions.y);
-              sweepHeap.priorityQueue.push(nodeD0);  // The upper portion will be reviewed as a nodeA0 later !!!
+              sweepHeap.priorityQueue.push(nodeD0); // The upper portion will be reviewed as a nodeA0 later !!!
               data.numSplit++;
             }
             // existing nodeA0 and its shortened edge remain for further intersections
@@ -572,10 +691,16 @@ export class HalfEdgeGraphMerge {
    * *  For vertices that match up, pinch the nodes to create vertex loops, which in closed objects, will also eventually form face
    *      loops
    */
-  public static formGraphFromSegments(lineSegments: LineSegment3d[]): HalfEdgeGraph {
+  public static formGraphFromSegments(
+    lineSegments: LineSegment3d[]
+  ): HalfEdgeGraph {
     // Structure of an index of the array: { xyTheta: Point3d, node: Node }
     const graph = new HalfEdgeGraph();
-    HalfEdgeGraphOps.segmentArrayToGraphEdges(lineSegments, graph, HalfEdgeMask.BOUNDARY_EDGE);
+    HalfEdgeGraphOps.segmentArrayToGraphEdges(
+      lineSegments,
+      graph,
+      HalfEdgeMask.BOUNDARY_EDGE
+    );
     this.splitIntersectingEdges(graph);
     this.clusterAndMergeXYTheta(graph);
 
@@ -587,13 +712,18 @@ export class HalfEdgeGraphMerge {
    * * Graph gets full splitEdges, regularize, and triangulate.
    * @returns triangulated graph, or undefined if bad data.
    */
-  public static formGraphFromChains(chains: MultiLineStringDataVariant, regularize: boolean = true, mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE): HalfEdgeGraph | undefined {
-    if (chains.length < 1)
-      return undefined;
+  public static formGraphFromChains(
+    chains: MultiLineStringDataVariant,
+    regularize: boolean = true,
+    mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE
+  ): HalfEdgeGraph | undefined {
+    if (chains.length < 1) return undefined;
     const graph = new HalfEdgeGraph();
-    const chainSeeds = Triangulator.directCreateChainsFromCoordinates(graph, chains);
-    for (const seed of chainSeeds)
-      seed.setMaskAroundFace(mask);
+    const chainSeeds = Triangulator.directCreateChainsFromCoordinates(
+      graph,
+      chains
+    );
+    for (const seed of chainSeeds) seed.setMaskAroundFace(mask);
 
     this.splitIntersectingEdges(graph);
     this.clusterAndMergeXYTheta(graph);
@@ -603,5 +733,4 @@ export class HalfEdgeGraphMerge {
     }
     return graph;
   }
-
 }

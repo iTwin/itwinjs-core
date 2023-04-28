@@ -9,31 +9,43 @@
 import { SectionType } from "@itwin/core-common";
 import { IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
-import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
+import {
+  SectionGraphicsConfig,
+  SectionMarkerConfig,
+} from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 
 /** Parses a string case-insensitively returning true for "ON", false for "OFF", undefined for "TOGGLE" or undefined, and the input string for anything else. */
 function parseToggle(arg: string | undefined): string | boolean | undefined {
-  if (undefined === arg)
-    return undefined;
+  if (undefined === arg) return undefined;
 
   switch (arg.toLowerCase()) {
-    case "on": return true;
-    case "off": return false;
-    case "toggle": return undefined;
-    default: return arg;
+    case "on":
+      return true;
+    case "off":
+      return false;
+    case "toggle":
+      return undefined;
+    default:
+      return arg;
   }
 }
 
 class HyperModelingTool extends Tool {
   public static override toolId = "HyperModeling";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
-  public override async run(enable?: boolean, vp?: ScreenViewport): Promise<boolean> {
+  public override async run(
+    enable?: boolean,
+    vp?: ScreenViewport
+  ): Promise<boolean> {
     vp = vp ?? IModelApp.viewManager.selectedView;
-    if (vp)
-      await HyperModeling.startOrStop(vp, enable);
+    if (vp) await HyperModeling.startOrStop(vp, enable);
 
     return true;
   }
@@ -55,8 +67,12 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
  */
 class SectionGraphicsConfigTool extends Tool {
   public static override toolId = "HyperModeling.Graphics.Config";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override async run(config?: SectionGraphicsConfig): Promise<boolean> {
     if (!config) {
@@ -73,18 +89,15 @@ class SectionGraphicsConfigTool extends Tool {
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    if (0 === args.length)
-      return this.run(); // restore defaults...
+    if (0 === args.length) return this.run(); // restore defaults...
 
     const config: Writeable<SectionGraphicsConfig> = {};
     for (const arg of args) {
       const parts = arg.toLowerCase().split("=");
-      if (2 !== parts.length)
-        continue;
+      if (2 !== parts.length) continue;
 
       const value = Number.parseInt(parts[1], 10);
-      if (Number.isNaN(value) || (0 !== value && 1 !== value))
-        continue;
+      if (Number.isNaN(value) || (0 !== value && 1 !== value)) continue;
 
       const enable = 1 === value;
       switch (parts[0][0]) {
@@ -108,26 +121,32 @@ class SectionGraphicsConfigTool extends Tool {
 }
 
 abstract class SectionMarkerConfigTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   protected abstract update(config: SectionMarkerConfig): void;
 
   public override async run(config?: SectionMarkerConfig): Promise<boolean> {
-    config = config ?? { ignoreModelSelector: false, ignoreCategorySelector: false, hiddenSectionTypes: [] };
+    config = config ?? {
+      ignoreModelSelector: false,
+      ignoreCategorySelector: false,
+      hiddenSectionTypes: [],
+    };
     this.update(config);
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    if (0 === args.length)
-      return this.run(); // restore defaults...
+    if (0 === args.length) return this.run(); // restore defaults...
 
     const config: Writeable<SectionMarkerConfig> = {};
     for (const arg of args) {
       const parts = arg.toLowerCase().split("=");
-      if (2 !== parts.length)
-        continue;
+      if (2 !== parts.length) continue;
 
       const setting = parts[0][0];
       switch (setting) {
@@ -155,10 +174,8 @@ abstract class SectionMarkerConfigTool extends Tool {
         default: {
           const intVal = Number.parseInt(parts[1], 10);
           if (!Number.isNaN(intVal) && (0 === intVal || 1 === intVal)) {
-            if ("c" === setting)
-              config.ignoreCategorySelector = 0 === intVal;
-            else if ("m" === setting)
-              config.ignoreModelSelector = 0 === intVal;
+            if ("c" === setting) config.ignoreCategorySelector = 0 === intVal;
+            else if ("m" === setting) config.ignoreModelSelector = 0 === intVal;
           }
 
           break;
@@ -183,15 +200,17 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 
   protected update(config: SectionMarkerConfig): void {
     const vp = IModelApp.viewManager.selectedView;
-    const decorator = vp ? HyperModelingDecorator.getForViewport(vp) : undefined;
-    if (decorator)
-      decorator.updateConfiguration(config);
+    const decorator = vp
+      ? HyperModelingDecorator.getForViewport(vp)
+      : undefined;
+    if (decorator) decorator.updateConfiguration(config);
   }
 }
 
 /** @internal */
 export function registerTools(namespace: string): void {
-  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace);
+  const register = (tool: typeof Tool) =>
+    IModelApp.tools.register(tool, namespace);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);
   register(SectionMarkerDecoratorConfigTool);

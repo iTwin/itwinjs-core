@@ -23,7 +23,7 @@ export class TileLoadIndicator {
       total += vp.numReadyTiles + vp.numRequestedTiles;
     }
 
-    const pctComplete = (total > 0) ? (ready / total) : 1.0;
+    const pctComplete = total > 0 ? ready / total : 1.0;
     this._progress.value = pctComplete;
   }
 }

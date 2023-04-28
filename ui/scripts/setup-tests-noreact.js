@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 const path = require("path");
 
 // A workaround to @testing-library/react {@testing-library/dom {wait-for-expect}} breaking somewhere,
 // because somewhere (most likely in jsdom) window.Date becomes undefined.
 // Similar issue mentioned in https://github.com/vuejs/vue-test-utils/issues/936
-require('jsdom-global')();
+require("jsdom-global")();
 window.Date = Date;
 document.elementFromPoint = () => null;
-window.HTMLElement.prototype.scrollIntoView = () => { };
+window.HTMLElement.prototype.scrollIntoView = () => {};
 
 // Fill in more missing functions left out by jsdom or mocha
 performance = window.performance;
@@ -32,14 +32,14 @@ global.DOMRect = class DOMRect {
     this.bottom = this.y + this.height;
   }
   toJSON() {
-    return { ...this }
+    return { ...this };
   }
 };
 global.DOMRect.fromRect = function (rect) {
   return new DOMRect(rect.x, rect.y, rect.width, rect.height);
 };
 
-const { JSDOM } = require('jsdom');
+const { JSDOM } = require("jsdom");
 global.DOMParser = new JSDOM().window.DOMParser;
 
 const chai = require("chai");
@@ -63,7 +63,7 @@ chai.use(spies);
 chai.use(sinonChai);
 try {
   chai.use(require("chai-string"));
-} catch (e) { }
+} catch (e) {}
 
 before(function () {
   chaiJestSnapshot.resetSnapshotRegistry();
@@ -88,7 +88,9 @@ beforeEach(function () {
   }
 
   // set up snapshot name
-  const sourceFilePath = currentTest.file.replace(path.join("lib", "cjs", "test"), path.join("src", "test")).replace(/\.(jsx?|tsx?)$/, "");
+  const sourceFilePath = currentTest.file
+    .replace(path.join("lib", "cjs", "test"), path.join("src", "test"))
+    .replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
@@ -100,7 +102,7 @@ afterEach(async () => {
   try {
     const sinon = require("sinon");
     sinon.restore();
-  } catch (e) { }
+  } catch (e) {}
 });
 
 // This is required by our I18n module (specifically the i18next-http-backend package).

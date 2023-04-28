@@ -12,7 +12,7 @@ As long as the tile is displayed at roughly the intended size in screen pixels, 
 
 ![House root tile - enlarged](./assets/root-tile-enlarge.jpg)
 
-The level of detail of a tile is expressed as the tile's "chord tolerance" - that is, the maximum [chord](https://en.wikipedia.org/wiki/Chord_(geometry)) length that can be used to approximate a curve. Generally we want the chord length (in meters) to correspond to roughly the size of one pixel in screen-space. When we zoom in, the chords become larger than a pixel and therefore perceptible, so we must request new tiles of a higher level of detail (i.e., smaller chord tolerance). In the image below, the green and blue rectangles represent the higher-resolution tiles that are direct children of the root tile:
+The level of detail of a tile is expressed as the tile's "chord tolerance" - that is, the maximum [chord](<https://en.wikipedia.org/wiki/Chord_(geometry)>) length that can be used to approximate a curve. Generally we want the chord length (in meters) to correspond to roughly the size of one pixel in screen-space. When we zoom in, the chords become larger than a pixel and therefore perceptible, so we must request new tiles of a higher level of detail (i.e., smaller chord tolerance). In the image below, the green and blue rectangles represent the higher-resolution tiles that are direct children of the root tile:
 
 ![House child tiles](./assets/child-tiles.jpg)
 

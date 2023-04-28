@@ -13,12 +13,7 @@ import { onExit, spawnChildProcess } from "./SpawnUtils";
  */
 export async function relaunchForCoverage(): Promise<number> {
   const nyc = require.resolve("nyc/bin/nyc");
-  const relaunchArgs = [
-    nyc,
-    "--silent",
-    "--",
-    ...process.argv,
-  ];
+  const relaunchArgs = [nyc, "--silent", "--", ...process.argv];
 
   // By splitting "instrument/runTests" and "report coverage" into two steps, we allow test runners the option of
   // running separate (concurrent) instrumented processes that also write to `nyc`'s temp directory.
@@ -26,7 +21,10 @@ export async function relaunchForCoverage(): Promise<number> {
   const instrumentedStatus = await onExit(instrumentedProcess);
 
   // Now create a *combined* report for everything in `nyc`'s temp directory.
-  const reporterProcess = spawnChildProcess("node", [require.resolve("nyc/bin/nyc"), "report"]);
+  const reporterProcess = spawnChildProcess("node", [
+    require.resolve("nyc/bin/nyc"),
+    "report",
+  ]);
   const reporterStatus = await onExit(reporterProcess);
 
   // Certa should exit with an error code if _either_ step failed.
@@ -36,8 +34,7 @@ export async function relaunchForCoverage(): Promise<number> {
 /** Gets the current effective nyc config from `process.env`. Assumes we're running as a child process of `nyc`. */
 function getNycConfig(): any {
   const nycConfig = process.env.NYC_CONFIG;
-  if (!nycConfig)
-    throw new Error("NYC_CONFIG is not set in environment");
+  if (!nycConfig) throw new Error("NYC_CONFIG is not set in environment");
 
   return JSON.parse(nycConfig);
 }
@@ -56,9 +53,14 @@ export function writeCoverageData(coverageData: any): void {
 
   const nycTempDirAbsolute = path.resolve(nycCWD, nycTempDir);
   if (!fs.existsSync(nycTempDirAbsolute))
-    throw new Error(`Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`);
+    throw new Error(
+      `Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`
+    );
 
   // Generate a unique filename, just like `nyc` does.
-  const coverageFileName = path.join(nycTempDirAbsolute, `${Math.random().toString(36).substring(2)}.json`);
+  const coverageFileName = path.join(
+    nycTempDirAbsolute,
+    `${Math.random().toString(36).substring(2)}.json`
+  );
   fs.writeFileSync(coverageFileName, JSON.stringify(coverageData));
 }

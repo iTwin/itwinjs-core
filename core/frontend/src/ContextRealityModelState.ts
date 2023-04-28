@@ -7,12 +7,23 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
+import {
+  ContextRealityModel,
+  ContextRealityModelProps,
+  FeatureAppearance,
+  RealityDataFormat,
+  RealityDataSourceKey,
+} from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { RealityDataSource } from "./RealityDataSource";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import {
+  createOrbitGtTileTreeReference,
+  createRealityTileTreeReference,
+  RealityModelTileTree,
+  TileTreeReference,
+} from "./tile/internal";
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
  * reality model in a [[Viewport]].
@@ -30,48 +41,65 @@ export class ContextRealityModelState extends ContextRealityModel {
   public override readonly rdSourceKey: RealityDataSourceKey;
 
   /** @internal */
-  public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
+  public constructor(
+    props: ContextRealityModelProps,
+    iModel: IModelConnection,
+    displayStyle: DisplayStyleState
+  ) {
     super(props);
     this.iModel = iModel;
-    this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
+    this._appearanceOverrides = props.appearanceOverrides
+      ? FeatureAppearance.fromJSON(props.appearanceOverrides)
+      : undefined;
     if (undefined === props.orbitGtBlob) {
-      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromUrl(props.tilesetUrl);
+      this.rdSourceKey = props.rdSourceKey
+        ? props.rdSourceKey
+        : RealityDataSource.createKeyFromUrl(props.tilesetUrl);
     } else {
-      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
+      this.rdSourceKey = props.rdSourceKey
+        ? props.rdSourceKey
+        : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }
-    const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
-    this._treeRef = (!useOrbitGtTileTreeReference) ?
-      createRealityTileTreeReference({
-        iModel,
-        source: displayStyle,
-        rdSourceKey: this.rdSourceKey,
-        url: props.tilesetUrl,
-        name: props.name,
-        classifiers: this.classifiers,
-        planarClipMask: this.planarClipMaskSettings,
-        getDisplaySettings: () => this.displaySettings,
-      }) :
-      createOrbitGtTileTreeReference({
-        iModel,
-        orbitGtBlob: props.orbitGtBlob!,
-        rdSourceKey: this.rdSourceKey,
-        name: props.name,
-        classifiers: this.classifiers,
-        source: displayStyle,
-        getDisplaySettings: () => this.displaySettings,
-      });
+    const useOrbitGtTileTreeReference =
+      this.rdSourceKey.format === RealityDataFormat.OPC;
+    this._treeRef = !useOrbitGtTileTreeReference
+      ? createRealityTileTreeReference({
+          iModel,
+          source: displayStyle,
+          rdSourceKey: this.rdSourceKey,
+          url: props.tilesetUrl,
+          name: props.name,
+          classifiers: this.classifiers,
+          planarClipMask: this.planarClipMaskSettings,
+          getDisplaySettings: () => this.displaySettings,
+        })
+      : createOrbitGtTileTreeReference({
+          iModel,
+          orbitGtBlob: props.orbitGtBlob!,
+          rdSourceKey: this.rdSourceKey,
+          name: props.name,
+          classifiers: this.classifiers,
+          source: displayStyle,
+          getDisplaySettings: () => this.displaySettings,
+        });
 
     this.onPlanarClipMaskChanged.addListener((newSettings) => {
-      this._treeRef.planarClipMask = newSettings ? PlanarClipMaskState.create(newSettings) : undefined;
+      this._treeRef.planarClipMask = newSettings
+        ? PlanarClipMaskState.create(newSettings)
+        : undefined;
     });
   }
 
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
-  public get treeRef(): TileTreeReference { return this._treeRef; }
+  public get treeRef(): TileTreeReference {
+    return this._treeRef;
+  }
 
   /** The transient Id assigned to this reality model at run-time. */
   public get modelId(): Id64String | undefined {
-    return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;
+    return this._treeRef instanceof RealityModelTileTree.Reference
+      ? this._treeRef.modelId
+      : undefined;
   }
 
   /** Whether the reality model spans the entire globe ellipsoid. */

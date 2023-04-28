@@ -12,11 +12,7 @@
       "description": "array of workspace databases",
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "dbName",
-          "containerName"
-        ],
+        "required": ["name", "dbName", "containerName"],
         "properties": {
           "name": {
             "type": "string",

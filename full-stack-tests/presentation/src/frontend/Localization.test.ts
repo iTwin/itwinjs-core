@@ -3,33 +3,48 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import {
+  IModelApp,
+  IModelConnection,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
+import {
+  ChildNodeSpecificationTypes,
+  Ruleset,
+  RuleTypes,
+} from "@itwin/presentation-common";
+import {
+  Presentation,
+  PresentationManager,
+} from "@itwin/presentation-frontend";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "localization test",
-  rules: [{
-    ruleType: RuleTypes.RootNodes,
-    specifications: [{
-      specType: ChildNodeSpecificationTypes.CustomNode,
-      type: "root",
-      label: "@Test:string@",
-      description: "@Test:nested.string@",
-    }],
-  }],
+  rules: [
+    {
+      ruleType: RuleTypes.RootNodes,
+      specifications: [
+        {
+          specType: ChildNodeSpecificationTypes.CustomNode,
+          type: "root",
+          label: "@Test:string@",
+          description: "@Test:nested.string@",
+        },
+      ],
+    },
+  ],
 };
 
 describe("Localization", async () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize({ localization: testLocalization });
     await IModelApp.localization.registerNamespace("Test");
     Presentation.presentation.activeLocale = "en";
-    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string =
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
@@ -40,18 +55,22 @@ describe("Localization", async () => {
   });
 
   it("localizes using app/test supplied localized strings", async () => {
-    const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: RULESET });
+    const nodes = await Presentation.presentation.getNodes({
+      imodel,
+      rulesetOrId: RULESET,
+    });
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label.displayValue).to.eq("test value");
     expect(nodes[0].description).to.eq("test nested value");
   });
 
   describe("Multiple frontends for one backend", async () => {
-
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
-      frontends = ["en", "test"].map((locale) => PresentationManager.create({ activeLocale: locale }));
+      frontends = ["en", "test"].map((locale) =>
+        PresentationManager.create({ activeLocale: locale })
+      );
     });
 
     afterEach(async () => {
@@ -72,7 +91,5 @@ describe("Localization", async () => {
         expect(nodes.test[0].description).to.eq("_test_ nested string");
       }
     });
-
   });
-
 });

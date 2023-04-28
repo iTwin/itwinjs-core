@@ -22,12 +22,19 @@ export interface LinearLocationReference {
 /** Enum capturing range-comparison options for from/to distanceAlong in QueryParams
  * @beta
  */
-export enum ComparisonOption { Inclusive, Exclusive }
+export enum ComparisonOption {
+  Inclusive,
+  Exclusive,
+}
 
 /** Enum enabling LinearElement.queryLinearLocations performance optimization when the target Linearly-Located classes are all either At or FromTo.
  * @beta
  */
-export enum LinearlyReferencedLocationType { At, FromTo, Any }
+export enum LinearlyReferencedLocationType {
+  At,
+  FromTo,
+  Any,
+}
 
 /** Interface capturing various parameters for the execution of LinearElement.queryLinearLocations API
  * @beta

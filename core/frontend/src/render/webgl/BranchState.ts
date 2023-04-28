@@ -8,7 +8,14 @@
 
 import { Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
+  BatchType,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
+  GeometryClass,
+  HiddenLine,
+  RealityModelDisplaySettings,
+  RenderMode,
+  ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -38,7 +45,7 @@ export interface BranchStateOptions {
    * in 3d we use the pick buffers.
    */
   is3d: boolean;
-  frustumScale?: { x: number, y: number };
+  frustumScale?: { x: number; y: number };
   readonly appearanceProvider?: FeatureAppearanceProvider;
   readonly realityModelDisplaySettings?: RealityModelDisplaySettings;
   forceViewCoords?: boolean;
@@ -52,20 +59,48 @@ export interface BranchStateOptions {
 export class BranchState {
   private readonly _opts: BranchStateOptions;
 
-  public get transform() { return this._opts.transform; }
-  public get viewFlags() { return this._opts.viewFlags; }
-  public set viewFlags(vf: ViewFlags) { this._opts.viewFlags = vf.normalize(); }
-  public get clipVolume() { return this._opts.clipVolume; }
-  public get forceViewCoords(): boolean { return true === this._opts.forceViewCoords; }
-  public get planarClassifier() { return this._opts.planarClassifier; }
-  public get textureDrape() { return this._opts.textureDrape; }
-  public get edgeSettings() { return this._opts.edgeSettings; }
-  public get iModel() { return this._opts.iModel; }
-  public get is3d() { return this._opts.is3d; }
-  public get frustumScale() { return this._opts.frustumScale!; }
-  public get appearanceProvider() { return this._opts.appearanceProvider; }
-  public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
-  public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
+  public get transform() {
+    return this._opts.transform;
+  }
+  public get viewFlags() {
+    return this._opts.viewFlags;
+  }
+  public set viewFlags(vf: ViewFlags) {
+    this._opts.viewFlags = vf.normalize();
+  }
+  public get clipVolume() {
+    return this._opts.clipVolume;
+  }
+  public get forceViewCoords(): boolean {
+    return true === this._opts.forceViewCoords;
+  }
+  public get planarClassifier() {
+    return this._opts.planarClassifier;
+  }
+  public get textureDrape() {
+    return this._opts.textureDrape;
+  }
+  public get edgeSettings() {
+    return this._opts.edgeSettings;
+  }
+  public get iModel() {
+    return this._opts.iModel;
+  }
+  public get is3d() {
+    return this._opts.is3d;
+  }
+  public get frustumScale() {
+    return this._opts.frustumScale!;
+  }
+  public get appearanceProvider() {
+    return this._opts.appearanceProvider;
+  }
+  public get secondaryClassifiers() {
+    return this._opts.secondaryClassifiers;
+  }
+  public get realityModelDisplaySettings() {
+    return this._opts.realityModelDisplaySettings;
+  }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -74,7 +109,11 @@ export class BranchState {
     this._opts.symbologyOverrides = ovrs;
   }
 
-  public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+  public changeRenderPlan(
+    viewFlags: ViewFlags,
+    is3d: boolean,
+    hline: HiddenLine.Settings | undefined
+  ): void {
     this.viewFlags = viewFlags;
     this._opts.is3d = is3d;
     this.edgeSettings.init(hline);
@@ -84,34 +123,90 @@ export class BranchState {
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
     return new BranchState({
       viewFlags: branch.branch.getViewFlags(prev.viewFlags),
-      transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
-      symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
+      transform: prev.transform.multiplyTransformTransform(
+        branch.localToWorldTransform
+      ),
+      symbologyOverrides:
+        branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
       iModel: branch.iModel ?? prev.iModel,
-      planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
+      planarClassifier:
+        undefined !== branch.planarClassifier &&
+        undefined !== branch.planarClassifier.texture
+          ? branch.planarClassifier
+          : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,
       forceViewCoords: prev.forceViewCoords,
       edgeSettings: branch.edgeSettings ?? prev.edgeSettings,
       is3d: branch.frustum?.is3d ?? prev.is3d,
       frustumScale: branch.frustum?.scale ?? prev.frustumScale,
-      secondaryClassifiers: branch.secondaryClassifiers?? prev.secondaryClassifiers,
+      secondaryClassifiers:
+        branch.secondaryClassifiers ?? prev.secondaryClassifiers,
       // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
-      appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
-      realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
+      appearanceProvider:
+        branch.appearanceProvider ??
+        (branch.branch.symbologyOverrides
+          ? undefined
+          : prev.appearanceProvider),
+      realityModelDisplaySettings:
+        branch.branch.realityModelDisplaySettings ??
+        prev.realityModelDisplaySettings,
     });
   }
 
-  public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+  public getFeatureAppearance(
+    overrides: FeatureSymbology.Overrides,
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number
+  ): FeatureAppearance | undefined {
     if (this._opts.appearanceProvider)
-      return this._opts.appearanceProvider.getFeatureAppearance(overrides, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      return this._opts.appearanceProvider.getFeatureAppearance(
+        overrides,
+        elemLo,
+        elemHi,
+        subcatLo,
+        subcatHi,
+        geomClass,
+        modelLo,
+        modelHi,
+        type,
+        animationNodeId
+      );
 
-    return overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+    return overrides.getAppearance(
+      elemLo,
+      elemHi,
+      subcatLo,
+      subcatHi,
+      geomClass,
+      modelLo,
+      modelHi,
+      type,
+      animationNodeId
+    );
   }
 
   public static createForDecorations(): BranchState {
-    const vf = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
+    const vf = new ViewFlags({
+      renderMode: RenderMode.SmoothShade,
+      lighting: false,
+      whiteOnWhiteReversal: false,
+    });
 
-    return new BranchState({ viewFlags: vf, transform: Transform.createIdentity(), symbologyOverrides: new FeatureSymbology.Overrides(), edgeSettings: EdgeSettings.create(undefined), is3d: true });
+    return new BranchState({
+      viewFlags: vf,
+      transform: Transform.createIdentity(),
+      symbologyOverrides: new FeatureSymbology.Overrides(),
+      edgeSettings: EdgeSettings.create(undefined),
+      is3d: true,
+    });
   }
 
   public withViewCoords(): BranchState {
@@ -119,8 +214,7 @@ export class BranchState {
   }
 
   public constructor(opts: BranchStateOptions) {
-    if (!opts.frustumScale)
-      opts.frustumScale = { x: 1, y: 1 };
+    if (!opts.frustumScale) opts.frustumScale = { x: 1, y: 1 };
 
     this._opts = opts;
     this._opts.viewFlags = this._opts.viewFlags.normalize();

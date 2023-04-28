@@ -34,7 +34,10 @@ export interface RulesetManager {
    * Modify the given pre-registered ruleset
    * @beta
    */
-  modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
+  modify(
+    ruleset: RegisteredRuleset,
+    newRules: Omit<Ruleset, "id">
+  ): Promise<RegisteredRuleset>;
 
   /**
    * Unregister the supplied ruleset
@@ -49,9 +52,10 @@ export interface RulesetManager {
 
 /** @internal */
 export class RulesetManagerImpl implements RulesetManager {
-
   private _clientRulesets = new Map<string, RegisteredRuleset[]>();
-  public onRulesetModified = new BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>();
+  public onRulesetModified = new BeEvent<
+    (curr: RegisteredRuleset, prev: Ruleset) => void
+  >();
 
   public static create() {
     return new RulesetManagerImpl();
@@ -62,8 +66,7 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
     const m = this._clientRulesets.get(id);
-    if (!m)
-      return undefined;
+    if (!m) return undefined;
     return m[0];
   }
 
@@ -71,7 +74,11 @@ export class RulesetManagerImpl implements RulesetManager {
    * Register the supplied ruleset
    */
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    const registered = new RegisteredRuleset(ruleset, Guid.createValue(), async (r: RegisteredRuleset) => this.remove(r));
+    const registered = new RegisteredRuleset(
+      ruleset,
+      Guid.createValue(),
+      async (r: RegisteredRuleset) => this.remove(r)
+    );
     if (!this._clientRulesets.has(ruleset.id))
       this._clientRulesets.set(ruleset.id, []);
     this._clientRulesets.get(ruleset.id)!.push(registered);
@@ -81,7 +88,10 @@ export class RulesetManagerImpl implements RulesetManager {
   /**
    * Modifies the given pre-registered ruleset
    */
-  public async modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset> {
+  public async modify(
+    ruleset: RegisteredRuleset,
+    newRules: Omit<Ruleset, "id">
+  ): Promise<RegisteredRuleset> {
     await this.remove(ruleset);
     const modified = await this.add({ ...newRules, id: ruleset.id });
     this.onRulesetModified.raiseEvent(modified, ruleset.toJSON());
@@ -91,7 +101,9 @@ export class RulesetManagerImpl implements RulesetManager {
   /**
    * Unregister the supplied ruleset
    */
-  public async remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean> {
+  public async remove(
+    ruleset: RegisteredRuleset | [string, string]
+  ): Promise<boolean> {
     let rulesetId, uniqueIdentifier: string;
     if (Array.isArray(ruleset)) {
       rulesetId = ruleset[0];
@@ -102,8 +114,7 @@ export class RulesetManagerImpl implements RulesetManager {
     }
 
     const m = this._clientRulesets.get(rulesetId);
-    if (!m)
-      return false;
+    if (!m) return false;
 
     let didRemove = false;
     for (let i = 0; i < m.length; ++i) {
@@ -121,10 +132,8 @@ export class RulesetManagerImpl implements RulesetManager {
    * Remove all rulesets registered in this session.
    */
   public async clear(): Promise<void> {
-    if (0 === this._clientRulesets.size)
-      return;
+    if (0 === this._clientRulesets.size) return;
 
     this._clientRulesets.clear();
   }
-
 }

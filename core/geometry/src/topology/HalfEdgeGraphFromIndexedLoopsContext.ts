@@ -18,19 +18,21 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
  * @internal
  */
 export class HalfEdgeGraphFromIndexedLoopsContext {
-  public constructor(){
-    this._unmatchedEdges = new Map ();
-    this._graph = new HalfEdgeGraph ();
+  public constructor() {
+    this._unmatchedEdges = new Map();
+    this._graph = new HalfEdgeGraph();
     this._halfEdgesAroundCurrentLoop = [];
   }
   private _unmatchedEdges: Map<string, HalfEdge>;
   private _graph: HalfEdgeGraph;
-  public get graph(): HalfEdgeGraph {return this._graph;}
+  public get graph(): HalfEdgeGraph {
+    return this._graph;
+  }
 
   // for multiple uses by insert loop.
   private _halfEdgesAroundCurrentLoop: HalfEdge[];
-  private indexPairToString(index0: number, index1: number): string{
-    return `${index0.toString()  },${  index1.toString ()}`;
+  private indexPairToString(index0: number, index1: number): string {
+    return `${index0.toString()},${index1.toString()}`;
   }
   /** Create a loop with specified indices at its vertices.
    * * For an edge with index pair [indexA, indexB]:
@@ -48,33 +50,51 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
    * @param announceMatedHalfEdges optional function to be called as mated pairs are created. At the call,
    *     the given HalfEdge and its mate will have a pair of successive indices from the array.
    */
-  public insertLoop(indices: number[], announceMatedHalfEdges?: (halfEdge: HalfEdge) => void): HalfEdge | undefined{
+  public insertLoop(
+    indices: number[],
+    announceMatedHalfEdges?: (halfEdge: HalfEdge) => void
+  ): HalfEdge | undefined {
     const n = indices.length;
-    if (n > 1){
+    if (n > 1) {
       let index0 = indices[indices.length - 1];
       this._halfEdgesAroundCurrentLoop.length = 0;
-      for (const index1 of indices){
-        const insideString = this.indexPairToString (index0, index1);
-        const halfEdgePreviouslyConstructedFromOppositeSide: HalfEdge | undefined = this._unmatchedEdges.get (insideString);
-        if (halfEdgePreviouslyConstructedFromOppositeSide === undefined){
+      for (const index1 of indices) {
+        const insideString = this.indexPairToString(index0, index1);
+        const halfEdgePreviouslyConstructedFromOppositeSide:
+          | HalfEdge
+          | undefined = this._unmatchedEdges.get(insideString);
+        if (halfEdgePreviouslyConstructedFromOppositeSide === undefined) {
           // This is the first appearance of this edge in either direction.
-          const outsideString = this.indexPairToString (index1, index0); // string referencing the "other" side of the new edge.
-          const newHalfEdgeAroundLoop = this._graph.createEdgeIdId (index0, index1);
+          const outsideString = this.indexPairToString(index1, index0); // string referencing the "other" side of the new edge.
+          const newHalfEdgeAroundLoop = this._graph.createEdgeIdId(
+            index0,
+            index1
+          );
           if (announceMatedHalfEdges !== undefined)
-            announceMatedHalfEdges (newHalfEdgeAroundLoop);
-          this._unmatchedEdges.set (outsideString, newHalfEdgeAroundLoop.edgeMate);
-          this._halfEdgesAroundCurrentLoop.push (newHalfEdgeAroundLoop);
-          newHalfEdgeAroundLoop.edgeMate.setMask (HalfEdgeMask.EXTERIOR);
+            announceMatedHalfEdges(newHalfEdgeAroundLoop);
+          this._unmatchedEdges.set(
+            outsideString,
+            newHalfEdgeAroundLoop.edgeMate
+          );
+          this._halfEdgesAroundCurrentLoop.push(newHalfEdgeAroundLoop);
+          newHalfEdgeAroundLoop.edgeMate.setMask(HalfEdgeMask.EXTERIOR);
         } else {
-          this._halfEdgesAroundCurrentLoop.push (halfEdgePreviouslyConstructedFromOppositeSide);
-          halfEdgePreviouslyConstructedFromOppositeSide.clearMask (HalfEdgeMask.EXTERIOR);
+          this._halfEdgesAroundCurrentLoop.push(
+            halfEdgePreviouslyConstructedFromOppositeSide
+          );
+          halfEdgePreviouslyConstructedFromOppositeSide.clearMask(
+            HalfEdgeMask.EXTERIOR
+          );
         }
         index0 = index1;
       }
-      let halfEdgeA = this._halfEdgesAroundCurrentLoop[this._halfEdgesAroundCurrentLoop.length - 1];
-      for (const halfEdgeB of this._halfEdgesAroundCurrentLoop){
+      let halfEdgeA =
+        this._halfEdgesAroundCurrentLoop[
+          this._halfEdgesAroundCurrentLoop.length - 1
+        ];
+      for (const halfEdgeB of this._halfEdgesAroundCurrentLoop) {
         const halfEdgeC = halfEdgeA.faceSuccessor;
-        HalfEdge.pinch (halfEdgeB, halfEdgeC);
+        HalfEdge.pinch(halfEdgeB, halfEdgeC);
         halfEdgeA = halfEdgeB;
       }
       return this._halfEdgesAroundCurrentLoop[0];

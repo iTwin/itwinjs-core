@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 "use strict";
 
 const path = require("path");
@@ -40,13 +40,14 @@ function getWebpackConfig(srcFile, outDir, profile) {
       __dirname: false,
       __filename: false,
     },
-    stats: process.env.NODE_ENV === "production" ? "errors-warnings" : "verbose",
+    stats:
+      process.env.NODE_ENV === "production" ? "errors-warnings" : "verbose",
     externalsPresets: {
       electron: true,
     },
   };
-};
+}
 
 module.exports = {
   getWebpackConfig,
-}
+};

@@ -2,7 +2,7 @@
 
 A [Schema]($backend) represents an ECSchema in TypeScript. It is a collection of Entity-based classes. See [the BIS overview](../../bis/index.md) for how ECSchemas are used to model information. ECSchemas define classes for models, elements, and aspects, as well as ECRelationships.
 
-An [Element]($backend) object represents an *instance* of a [bis:Element](../../BIS/guide/fundamentals/element-fundamentals.md) class when it is read from an iModel. The Element object has properties that correspond to the bis class definition in the schema. An [ElementAspect]($backend) object represents an instance of a [bis:Aspect](../../BIS/guide/fundamentals/elementaspect-fundamentals.md) in memory.
+An [Element]($backend) object represents an _instance_ of a [bis:Element](../../BIS/guide/fundamentals/element-fundamentals.md) class when it is read from an iModel. The Element object has properties that correspond to the bis class definition in the schema. An [ElementAspect]($backend) object represents an instance of a [bis:Aspect](../../BIS/guide/fundamentals/elementaspect-fundamentals.md) in memory.
 
 ECSchemas typically define subclasses of bis:Element, bis:Aspect, and so on. The objects that are loaded into memory are instances of TypeScript/JavaScript classes that match the ECSchema definitions. So, for example, an instance of a bis:GeometricElement3d is an object of the class [GeometricElement3d]($backend).
 
@@ -10,9 +10,9 @@ ECSchemas typically define subclasses of bis:Element, bis:Aspect, and so on. The
 
 An ECSchema must be imported into an iModel before apps can insert and query instances of the ECClasses that it defines.
 
-*Example:*
+_Example:_
 
-``` ts
+```ts
 [[include:IModelDb.importSchema]]
 ```
 
@@ -20,15 +20,15 @@ ECSchema.xml files must be in the app backend's install set, as part of its asse
 
 The app can ensure that the underlying schema is imported by registering an onOpened event handler:
 
-*Example:*
+_Example:_
 
-``` ts
+```ts
 [[include:Schema.importSchema]]
 ```
 
 where the schema is:
 
-``` xml
+```xml
 [[include:RobotWorld.ecschema.xml]]
 ```
 
@@ -36,11 +36,11 @@ where the schema is:
 
 Once an ECSchema has been imported into an iModel, you can work with Elements, Models, and ElementAspects from that schema without writing TypeScript classes to represent them. A JavaScript class will be generated dynamically to represent each ECClass that you access, if there is no pre-registered TypeScript class to represent it.
 
-You *may* write a TypeScript Schema class to represent an ECSchema and TypeScript Element-based or ElementAspect-based classes to represent some or all of its ECClasses. The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods to provide and centralize business logic for applications to use when working with that specific class.
+You _may_ write a TypeScript Schema class to represent an ECSchema and TypeScript Element-based or ElementAspect-based classes to represent some or all of its ECClasses. The benefit of writing a TypeScript class to represent an ECClass is that you can add hand-coded methods to provide and centralize business logic for applications to use when working with that specific class.
 
-*Example:*
+_Example:_
 
-``` ts
+```ts
 [[include:Element.subclass]]
 ```
 
@@ -52,8 +52,8 @@ Note that you still have to import the underlying ECSchema before attempting to 
 
 If an app backend wants to use a pre-written TypeScript Schema class, it must first register it and all of the classes that it defines. The best practice is for the Schema class to do that in its constructor.
 
-*Example:*
+_Example:_
 
-``` ts
+```ts
 [[include:ClassRegistry.registerModule]]
 ```

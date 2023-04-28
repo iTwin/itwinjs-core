@@ -3,8 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaItem,
-  SchemaItemType, SchemaPartVisitorDelegate,
+import {
+  ECClass,
+  ISchemaPartVisitor,
+  RelationshipClass,
+  Schema,
+  SchemaItem,
+  SchemaItemType,
+  SchemaPartVisitorDelegate,
 } from "@itwin/ecschema-metadata";
 
 /**
@@ -45,8 +51,7 @@ export class SchemaWalker {
   private async traverseSchemaItem(schemaItem: SchemaItem): Promise<void> {
     await this._visitorHelper.visitSchemaPart(schemaItem);
 
-    if (ECClass.isECClass(schemaItem))
-      await this.traverseClass(schemaItem);
+    if (ECClass.isECClass(schemaItem)) await this.traverseClass(schemaItem);
   }
 
   private async traverseClass(ecClass: ECClass): Promise<void> {
@@ -57,8 +62,12 @@ export class SchemaWalker {
     }
 
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass) {
-      await this._visitorHelper.visitSchemaPart((ecClass as RelationshipClass).source);
-      await this._visitorHelper.visitSchemaPart((ecClass as RelationshipClass).target);
+      await this._visitorHelper.visitSchemaPart(
+        (ecClass as RelationshipClass).source
+      );
+      await this._visitorHelper.visitSchemaPart(
+        (ecClass as RelationshipClass).target
+      );
     }
   }
 }

@@ -26,17 +26,27 @@ export class BSpline1dNd {
   /** (property accessor) Return the number of numeric values per pole. */
   public poleLength: number;
   /** (property accessor) Return the degree of the polynomials. */
-  public get degree(): number { return this.knots.degree; }
+  public get degree(): number {
+    return this.knots.degree;
+  }
   /** (property accessor) Return the number of order (one more than degree) of the polynomials */
-  public get order(): number { return this.knots.degree + 1; }
+  public get order(): number {
+    return this.knots.degree + 1;
+  }
   /** (property accessor) Return the number of bezier spans (including null spans at multiple knots)*/
-  public get numSpan(): number { return this.numPoles - this.knots.degree; }
+  public get numSpan(): number {
+    return this.numPoles - this.knots.degree;
+  }
   /** (property accessor)  Return the number of poles*/
-  public get numPoles(): number { return this.packedData.length / this.poleLength; }
+  public get numPoles(): number {
+    return this.packedData.length / this.poleLength;
+  }
   /** copy 3 values of pole `i` into a point.
    * * The calling class is responsible for knowing if this is an appropriate access to the blocked data.
    */
-  public getPoint3dPole(i: number, result?: Point3d): Point3d | undefined { return Point3d.createFromPacked(this.packedData, i, result); }
+  public getPoint3dPole(i: number, result?: Point3d): Point3d | undefined {
+    return Point3d.createFromPacked(this.packedData, i, result);
+  }
   /** preallocated array (length === `order`) used as temporary in evaluations */
   public basisBuffer: Float64Array; // one set of basis function values.   ALLOCATED BY CTOR FOR FREQUENT REUSE
   /** preallocated array (length === `poleLength`) used as temporary in evaluations */
@@ -57,7 +67,12 @@ export class BSpline1dNd {
    * @param order number of poles in support for a section of the bspline
    * @param knots KnotVector.  This is captured, not cloned.
    */
-  protected constructor(numPoles: number, poleLength: number, order: number, knots: KnotVector) {
+  protected constructor(
+    numPoles: number,
+    poleLength: number,
+    order: number,
+    knots: KnotVector
+  ) {
     this.knots = knots;
     this.packedData = new Float64Array(numPoles * poleLength);
     this.poleLength = poleLength;
@@ -76,7 +91,12 @@ export class BSpline1dNd {
    * @param order number of poles in support for a section of the bspline
    * @param knots KnotVector.  This is captured, not cloned.
    */
-  public static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined {
+  public static create(
+    numPoles: number,
+    poleLength: number,
+    order: number,
+    knots: KnotVector
+  ): BSpline1dNd | undefined {
     return new BSpline1dNd(numPoles, poleLength, order, knots);
   }
   /** Map a span index and local fraction to knot value. */
@@ -85,14 +105,23 @@ export class BSpline1dNd {
   }
 
   /** Evaluate the `order` basis functions (and optionally one or two derivatives) at a given fractional position within indexed span. */
-  public evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array) {
+  public evaluateBasisFunctionsInSpan(
+    spanIndex: number,
+    spanFraction: number,
+    f: Float64Array,
+    df?: Float64Array,
+    ddf?: Float64Array
+  ) {
     if (spanIndex < 0) spanIndex = 0;
     if (spanIndex >= this.numSpan) spanIndex = this.numSpan - 1;
     const knotIndex0 = spanIndex + this.degree - 1;
-    const globalKnot = this.knots.baseKnotFractionToKnot(knotIndex0, spanFraction);
-    return df ?
-      this.knots.evaluateBasisFunctions1(knotIndex0, globalKnot, f, df, ddf) :
-      this.knots.evaluateBasisFunctions(knotIndex0, globalKnot, f);
+    const globalKnot = this.knots.baseKnotFractionToKnot(
+      knotIndex0,
+      spanFraction
+    );
+    return df
+      ? this.knots.evaluateBasisFunctions1(knotIndex0, globalKnot, f, df, ddf)
+      : this.knots.evaluateBasisFunctions(knotIndex0, globalKnot, f);
   }
   /**
    * * Evaluate the basis functions at spanIndex and fraction.
@@ -101,7 +130,11 @@ export class BSpline1dNd {
    *   * Summations are stored in the preallocated `this.poleBuffer`
    * */
   public evaluateBuffersInSpan(spanIndex: number, spanFraction: number) {
-    this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer);
+    this.evaluateBasisFunctionsInSpan(
+      spanIndex,
+      spanFraction,
+      this.basisBuffer
+    );
     this.sumPoleBufferForSpan(spanIndex);
   }
   /**
@@ -111,7 +144,12 @@ export class BSpline1dNd {
    *   * Summations are stored in the preallocated `this.poleBuffer` and `this.poleBuffer1`
    * */
   public evaluateBuffersInSpan1(spanIndex: number, spanFraction: number) {
-    this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer, this.basisBuffer1);
+    this.evaluateBasisFunctionsInSpan(
+      spanIndex,
+      spanFraction,
+      this.basisBuffer,
+      this.basisBuffer1
+    );
     this.sumPoleBufferForSpan(spanIndex);
     this.sumPoleBuffer1ForSpan(spanIndex);
   }
@@ -120,7 +158,9 @@ export class BSpline1dNd {
     this.poleBuffer.fill(0);
     let k = spanIndex * this.poleLength;
     for (const f of this.basisBuffer) {
-      for (let j = 0; j < this.poleLength; j++) { this.poleBuffer[j] += f * this.packedData[k++]; }
+      for (let j = 0; j < this.poleLength; j++) {
+        this.poleBuffer[j] += f * this.packedData[k++];
+      }
     }
   }
   /** sum poles in `poleBuffer1` at span `spanIndex` by the weights in the `basisBuffer1`, i.e. form first derivatives */
@@ -150,11 +190,22 @@ export class BSpline1dNd {
       this.knots.evaluateBasisFunctions(knotIndex0, u, this.basisBuffer);
       this.sumPoleBufferForSpan(knotIndex0 - this.degree + 1);
     } else if (numDerivative === 1) {
-      this.knots.evaluateBasisFunctions1(knotIndex0, u, this.basisBuffer, this.basisBuffer1);
+      this.knots.evaluateBasisFunctions1(
+        knotIndex0,
+        u,
+        this.basisBuffer,
+        this.basisBuffer1
+      );
       this.sumPoleBufferForSpan(knotIndex0 - this.degree + 1);
       this.sumPoleBuffer1ForSpan(knotIndex0 - this.degree + 1);
     } else {
-      this.knots.evaluateBasisFunctions1(knotIndex0, u, this.basisBuffer, this.basisBuffer1, this.basisBuffer2);
+      this.knots.evaluateBasisFunctions1(
+        knotIndex0,
+        u,
+        this.basisBuffer,
+        this.basisBuffer1,
+        this.basisBuffer2
+      );
       this.sumPoleBufferForSpan(knotIndex0 - this.degree + 1);
       this.sumPoleBuffer1ForSpan(knotIndex0 - this.degree + 1);
       this.sumPoleBuffer2ForSpan(knotIndex0 - this.degree + 1);
@@ -167,9 +218,7 @@ export class BSpline1dNd {
     // reverse poles in blocks ...
     const b = this.poleLength;
     const data = this.packedData;
-    for (let i0 = 0, j0 = b * (this.numPoles - 1);
-      i0 < j0;
-      i0 += b, j0 -= b) {
+    for (let i0 = 0, j0 = b * (this.numPoles - 1); i0 < j0; i0 += b, j0 -= b) {
       let t = 0;
       for (let i = 0; i < b; i++) {
         t = data[i0 + i];
@@ -185,8 +234,7 @@ export class BSpline1dNd {
    * @returns true if `degree` leading and trailing polygon blocks match
    */
   public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
-    if (mode === undefined)
-      mode = this.knots.wrappable;
+    if (mode === undefined) mode = this.knots.wrappable;
     const degree = this.degree;
     const blockSize = this.poleLength;
     const indexDelta = (this.numPoles - this.degree) * blockSize;
@@ -214,33 +262,38 @@ export class BSpline1dNd {
    * @param totalMultiplicity the total multiplicity of the knot on return
    */
   public addKnot(knot: number, totalMultiplicity: number): boolean {
-    if (knot < this.knots.leftKnot || knot > this.knots.rightKnot)
-      return false;   // invalid input
+    if (knot < this.knots.leftKnot || knot > this.knots.rightKnot) return false; // invalid input
     let iLeftKnot = this.knots.knotToLeftKnotIndex(knot);
 
     // snap input if too close to an existing knot
-    if (Math.abs(knot - this.knots.knots[iLeftKnot]) < KnotVector.knotTolerance) {
+    if (
+      Math.abs(knot - this.knots.knots[iLeftKnot]) < KnotVector.knotTolerance
+    ) {
       knot = this.knots.knots[iLeftKnot]; // snap to left knot of bracket
-    } else if (Math.abs(knot - this.knots.knots[iLeftKnot + 1]) < KnotVector.knotTolerance) {
+    } else if (
+      Math.abs(knot - this.knots.knots[iLeftKnot + 1]) <
+      KnotVector.knotTolerance
+    ) {
       iLeftKnot += this.knots.getKnotMultiplicityAtIndex(iLeftKnot + 1);
-      if (iLeftKnot > this.knots.rightKnotIndex)
-        return true;  // nothing to do
+      if (iLeftKnot > this.knots.rightKnotIndex) return true; // nothing to do
       knot = this.knots.knots[iLeftKnot]; // snap to left knot of next bracket
     }
-    const numKnotsToAdd = Math.min(totalMultiplicity, this.degree) - this.knots.getKnotMultiplicity(knot);
-    if (numKnotsToAdd <= 0)
-      return true;  // nothing to do
+    const numKnotsToAdd =
+      Math.min(totalMultiplicity, this.degree) -
+      this.knots.getKnotMultiplicity(knot);
+    if (numKnotsToAdd <= 0) return true; // nothing to do
 
     // working arrays and pole buffer
     let currKnotCount = this.knots.knots.length;
     const newKnots = new Float64Array(currKnotCount + numKnotsToAdd);
-    for (let i = 0; i < currKnotCount; ++i)
-      newKnots[i] = this.knots.knots[i];
+    for (let i = 0; i < currKnotCount; ++i) newKnots[i] = this.knots.knots[i];
     let currPoleCount = this.numPoles;
-    const newPackedData = new Float64Array(this.packedData.length + (numKnotsToAdd * this.poleLength));
+    const newPackedData = new Float64Array(
+      this.packedData.length + numKnotsToAdd * this.poleLength
+    );
     for (let i = 0; i < this.packedData.length; ++i)
       newPackedData[i] = this.packedData[i];
-    const dataBuf = new Float64Array(this.degree * this.poleLength);  // holds degree poles
+    const dataBuf = new Float64Array(this.degree * this.poleLength); // holds degree poles
 
     // each iteration adds one knot and one pole to the working arrays (cf. Farin 4e)
     for (let iter = 0; iter < numKnotsToAdd; ++iter) {
@@ -248,17 +301,26 @@ export class BSpline1dNd {
       let iBuf = 0;
       const iStart = iLeftKnot - this.degree + 2;
       for (let i = iStart; i < iStart + this.degree; ++i) {
-        const fraction = (knot - newKnots[i - 1]) / (newKnots[i + this.degree - 1] - newKnots[i - 1]);
+        const fraction =
+          (knot - newKnots[i - 1]) /
+          (newKnots[i + this.degree - 1] - newKnots[i - 1]);
         for (let j = i * this.poleLength; j < (i + 1) * this.poleLength; ++j) {
-          dataBuf[iBuf++] = Geometry.interpolate(newPackedData[j - this.poleLength], fraction, newPackedData[j]);
+          dataBuf[iBuf++] = Geometry.interpolate(
+            newPackedData[j - this.poleLength],
+            fraction,
+            newPackedData[j]
+          );
         }
       }
 
       // overwrite degree-1 poles with degree new poles, shifting tail to the right by one
-      newPackedData.copyWithin((iStart + this.degree) * this.poleLength, (iStart + this.degree - 1) * this.poleLength, currPoleCount * this.poleLength);
+      newPackedData.copyWithin(
+        (iStart + this.degree) * this.poleLength,
+        (iStart + this.degree - 1) * this.poleLength,
+        currPoleCount * this.poleLength
+      );
       let iData = iStart * this.poleLength;
-      for (const d of dataBuf)
-        newPackedData[iData++] = d;  // overwrite degree new poles
+      for (const d of dataBuf) newPackedData[iData++] = d; // overwrite degree new poles
 
       // add the knot to newKnots in position, shifting tail to the right by one
       newKnots.copyWithin(iLeftKnot + 2, iLeftKnot + 1, currKnotCount);

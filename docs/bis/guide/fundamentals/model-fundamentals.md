@@ -14,21 +14,21 @@ The Model contents are driven by:
 
 ## Core Model Types
 
-| Model subclass            | Type of Elements contained        |
-|---------------------------|-----------------------------------------------|
-| `PhysicalModel`           | PhysicalElements, SpatialLocationElements, GraphicalElement3d and InformationContentElements |
-| `SpatialLocationModel`    | SpatialLocationElements, GraphicalElement3d and InformationContentElements |
-| `DrawingModel`            | GeometricElement2d elements                       |
-| `GraphicalModel3d`        | GraphicalElement3d elements                       |
-| `DefinitionModel`         | DefinitionElements and InformationContentElements |
-| `InformationRecordModel`  | InformationRecordElements                         |
-| `GroupInformationModel`   | GroupInformationElements                          |
-| `DocumentListModel`       | Document elements                                 |
-| `RoleModel`               | RoleElements and InformationContentElements       |
+| Model subclass           | Type of Elements contained                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| `PhysicalModel`          | PhysicalElements, SpatialLocationElements, GraphicalElement3d and InformationContentElements |
+| `SpatialLocationModel`   | SpatialLocationElements, GraphicalElement3d and InformationContentElements                   |
+| `DrawingModel`           | GeometricElement2d elements                                                                  |
+| `GraphicalModel3d`       | GraphicalElement3d elements                                                                  |
+| `DefinitionModel`        | DefinitionElements and InformationContentElements                                            |
+| `InformationRecordModel` | InformationRecordElements                                                                    |
+| `GroupInformationModel`  | GroupInformationElements                                                                     |
+| `DocumentListModel`      | Document elements                                                                            |
+| `RoleModel`              | RoleElements and InformationContentElements                                                  |
 
 ### Model Identity
 
-Models are also a key building block of the information hierarchy within a BIS repository. Looking down the information hierarchy, Models are collections of Elements. Looking up the information hierarchy, Models are more detail about an Element from a higher level. This higher-level Element is known as the *modeled element*. The *modeled element* is what gives a
+Models are also a key building block of the information hierarchy within a BIS repository. Looking down the information hierarchy, Models are collections of Elements. Looking up the information hierarchy, Models are more detail about an Element from a higher level. This higher-level Element is known as the _modeled element_. The _modeled element_ is what gives a
 Model its identity. The value of the model's Id matches the value of the modeled element's Id.
 
 The Model is related to its modeled Element via the `ModelModelsElement` relationship. Also, a Model does not store a name of its own. Instead, its name comes from the `CodeValue` of its modeled element.
@@ -46,5 +46,6 @@ TODO - Replace diagrams with better ones?
 -->
 
 ---
+
 | Next: [Relationship Fundamentals](./relationship-fundamentals.md)
 |:---

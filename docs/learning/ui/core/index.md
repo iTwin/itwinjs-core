@@ -17,7 +17,7 @@ It also contains various input components, such as Input, Radio, Checkbox, Numbe
 - [Popup](./Popup.md) - Components for working with a Popup.
 - [RadialMenu](./RadialMenu.md) - Components for working with a RadialMenu.
 - [SearchBox](./SearchBox.md) - Components for working with a SearchBox.
-- [Settings](./Settings.md) -  Manager and UI Components that allow users to modify preferences for registered settings providers.
+- [Settings](./Settings.md) - Manager and UI Components that allow users to modify preferences for registered settings providers.
 
 - [Style](./Style.md) - Sass variables and mixins for breakpoints, colors, color themes, opacity, sizing, spacing and typography.
 - [Text](./Text.md) - Components for working with styled text and different text sizes.

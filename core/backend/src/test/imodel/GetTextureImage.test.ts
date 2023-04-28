@@ -12,7 +12,10 @@ describe("IModelDb.queryTextureData", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"),
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
+    );
   });
 
   after(() => imodel.close());
@@ -23,15 +26,30 @@ describe("IModelDb.queryTextureData", () => {
 
   describe("throws", () => {
     it("if name is not a valid Id", async () => {
-      await expect(imodel.queryTextureData({} as unknown as TextureLoadProps)).to.be.rejectedWith("name property must be a valid Id64String");
-      await expect(imodel.queryTextureData({ name: "0" })).to.be.rejectedWith("name property must be a valid Id64String");
-      await expect(imodel.queryTextureData({ name: "NotAnId" })).to.be.rejectedWith("name property must be a valid Id64String");
+      await expect(
+        imodel.queryTextureData({} as unknown as TextureLoadProps)
+      ).to.be.rejectedWith("name property must be a valid Id64String");
+      await expect(imodel.queryTextureData({ name: "0" })).to.be.rejectedWith(
+        "name property must be a valid Id64String"
+      );
+      await expect(
+        imodel.queryTextureData({ name: "NotAnId" })
+      ).to.be.rejectedWith("name property must be a valid Id64String");
     });
 
     it("if max size is not a positive number", async () => {
-      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: "25" } as unknown as TextureLoadProps)).to.be.rejectedWith("maxTextureSize property must be a positive number");
-      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: 0 })).to.be.rejectedWith("maxTextureSize property must be a positive number");
-      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: -1 })).to.be.rejectedWith("maxTextureSize property must be a positive number");
+      await expect(
+        imodel.queryTextureData({
+          name: "0x123",
+          maxTextureSize: "25",
+        } as unknown as TextureLoadProps)
+      ).to.be.rejectedWith("maxTextureSize property must be a positive number");
+      await expect(
+        imodel.queryTextureData({ name: "0x123", maxTextureSize: 0 })
+      ).to.be.rejectedWith("maxTextureSize property must be a positive number");
+      await expect(
+        imodel.queryTextureData({ name: "0x123", maxTextureSize: -1 })
+      ).to.be.rejectedWith("maxTextureSize property must be a positive number");
     });
   });
 });

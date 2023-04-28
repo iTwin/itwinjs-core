@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-if (typeof (WebGLRenderingContext) === "undefined") {
+if (typeof WebGLRenderingContext === "undefined") {
   (global as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });
 }
 

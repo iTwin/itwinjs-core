@@ -10,22 +10,27 @@ import { Compiler } from "webpack";
 export class WatchBackendPlugin {
   private _prevTimestamp = Date.now();
 
-  constructor(private _backendOutputPath: string) { }
+  constructor(private _backendOutputPath: string) {}
 
   public apply(compiler: Compiler) {
     compiler.hooks.emit.tap("WatchBackendPlugin", (compilation: any) => {
-      const newTimestamp = compilation.fileTimestamps.get(this._backendOutputPath);
-      const didBackendChange = this._prevTimestamp < (newTimestamp || -Infinity);
-      if (!didBackendChange)
-        return;
+      const newTimestamp = compilation.fileTimestamps.get(
+        this._backendOutputPath
+      );
+      const didBackendChange =
+        this._prevTimestamp < (newTimestamp || -Infinity);
+      if (!didBackendChange) return;
 
       this._prevTimestamp = newTimestamp || 0;
       compilation.modifyHash(`${newTimestamp}`);
       return true;
     });
 
-    compiler.hooks.afterCompile.tap("WatchBackendPlugin", (compilation: any) => {
-      compilation.fileDependencies.add(this._backendOutputPath);
-    });
+    compiler.hooks.afterCompile.tap(
+      "WatchBackendPlugin",
+      (compilation: any) => {
+        compilation.fileDependencies.add(this._backendOutputPath);
+      }
+    );
   }
 }

@@ -2,15 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcProtocol, OpenAPIInfo } from "@itwin/core-common";
+import {
+  BentleyCloudRpcConfiguration,
+  BentleyCloudRpcProtocol,
+  OpenAPIInfo,
+} from "@itwin/core-common";
 import * as http from "http";
 import * as sinon from "sinon";
 import { IModelJsExpressServer } from "../ExpressServer";
 
 export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration {
-
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" }; // eslint-disable-line deprecation/deprecation
+  private static info: OpenAPIInfo = {
+    title: "randomTitle",
+    version: "randomVersion",
+  }; // eslint-disable-line deprecation/deprecation
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private protocolClass = class extends BentleyCloudRpcProtocol {
@@ -33,7 +39,9 @@ const fakeHttpServer = {
 } as any;
 
 export class TestIModelJsExpressServer extends IModelJsExpressServer {
-  public get expressApp() { return this._app; }
+  public get expressApp() {
+    return this._app;
+  }
 
   // Wrap base initialize so we configure express app, but don't actually listen on any ports
   public override async initialize(port: number) {

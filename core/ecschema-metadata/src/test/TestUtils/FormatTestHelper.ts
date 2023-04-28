@@ -13,16 +13,22 @@ import { SchemaKey } from "../../SchemaKey";
 const formatsKey = new SchemaKey("Formats", 1, 0, 0);
 
 export class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    if (!schemaKey.matches(formatsKey, matchType))
-      return undefined;
+  public async getSchema<T extends Schema>(
+    schemaKey: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): Promise<T | undefined> {
+    if (!schemaKey.matches(formatsKey, matchType)) return undefined;
 
     return (await Schema.fromJson(testFormatSchema, context)) as T;
   }
 
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    if (!schemaKey.matches(formatsKey, matchType))
-      return undefined;
+  public getSchemaSync<T extends Schema>(
+    schemaKey: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): T | undefined {
+    if (!schemaKey.matches(formatsKey, matchType)) return undefined;
 
     return Schema.fromJsonSync(testFormatSchema, context) as T;
   }

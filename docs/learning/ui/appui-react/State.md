@@ -1,10 +1,10 @@
 # State
 
-[State]($appui-react:State) refers to the runtime application state that is managed by the Redux store. For detailed information about Redux and its API see  [Redux](https://redux.js.org/).
+[State]($appui-react:State) refers to the runtime application state that is managed by the Redux store. For detailed information about Redux and its API see [Redux](https://redux.js.org/).
 
 ## Reducer Registry
 
-The [ReducerRegistry]($appui-react) class provides a registry of individual reducers that are used to define names actions dispatched to change the state of the Redux store. The use of the Reducer Registry allows the redux store to be incrementally constructed as different code is loaded.  This allows independently developed packages to register their specific reducers without the parent application having to know at build time that the Redux store should include reducers from the other modules. As reducers are registered the [StateManager]($appui-react) is informed of them and the StageManager will combine the new reducer with all the existing reducers and update the Redux store.
+The [ReducerRegistry]($appui-react) class provides a registry of individual reducers that are used to define names actions dispatched to change the state of the Redux store. The use of the Reducer Registry allows the redux store to be incrementally constructed as different code is loaded. This allows independently developed packages to register their specific reducers without the parent application having to know at build time that the Redux store should include reducers from the other modules. As reducers are registered the [StateManager]($appui-react) is informed of them and the StageManager will combine the new reducer with all the existing reducers and update the Redux store.
 
 ## StateManager
 
@@ -51,11 +51,15 @@ class SamplePackageStateManager {
 
   private static _reducerName = "samplePackageState";
 
-  public static SET_PACKAGE_UI_VISIBLE = SamplePackageStateManager.createActionName("SET_PACKAGE_UI_VISIBLE");
+  public static SET_PACKAGE_UI_VISIBLE =
+    SamplePackageStateManager.createActionName("SET_PACKAGE_UI_VISIBLE");
 
   private static _packageActions: ActionCreatorsObject = {
     setDialogVisible: (packageUiVisible: boolean) =>
-      createAction(SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE, packageUiVisible),
+      createAction(
+        SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE,
+        packageUiVisible
+      ),
   };
 
   private static createActionName(name: string) {
@@ -66,9 +70,11 @@ class SamplePackageStateManager {
   // reducer
   public static reducer(
     state: ISamplePackageState = SamplePackageStateManager._initialState,
-    action: any,
+    action: any
   ): ISamplePackageState {
-    type PackageActionsUnion = ActionsUnion<typeof SamplePackageStateManager._packageActions>;
+    type PackageActionsUnion = ActionsUnion<
+      typeof SamplePackageStateManager._packageActions
+    >;
 
     const packageActionsParam = action as PackageActionsUnion;
 
@@ -83,7 +89,7 @@ class SamplePackageStateManager {
   public static initialize() {
     ReducerRegistryInstance.registerReducer(
       SamplePackageStateManager._reducerName,
-      SamplePackageStateManager.reducer,
+      SamplePackageStateManager.reducer
     );
     SamplePackageStateManager.packageStateManagerLoaded = true;
   }
@@ -98,7 +104,11 @@ class SamplePackageStateManager {
 
   public static set isPackageUiVisible(visible: boolean) {
     // dispatch both action to update store and UiSyncEvent.
-    UiFramework.dispatchActionToStore(SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE, visible, true);
+    UiFramework.dispatchActionToStore(
+      SamplePackageStateManager.SET_PACKAGE_UI_VISIBLE,
+      visible,
+      true
+    );
   }
 }
 ```

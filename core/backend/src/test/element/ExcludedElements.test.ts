@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import {
+  BisCodeSpec,
+  DisplayStyleProps,
+  IModel,
+  QueryBinder,
+  QueryRowFormat,
+} from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -14,7 +20,10 @@ describe("ExcludedElements", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("IModel", "test.bim"),
+      IModelTestUtils.resolveAssetFile("test.bim")
+    );
   });
 
   after(() => {
@@ -32,7 +41,9 @@ describe("ExcludedElements", () => {
         isPrivate: false,
         jsonProperties: {
           styles: {
-            excludedElements: compressed ? excludedElements : excludedElementIds,
+            excludedElements: compressed
+              ? excludedElements
+              : excludedElementIds,
           },
         },
       };
@@ -42,7 +53,11 @@ describe("ExcludedElements", () => {
       imodel.saveChanges();
 
       const rows: any[] = [];
-      for await (const queryRow of imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      for await (const queryRow of imodel.createQueryReader(
+        "SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?",
+        QueryBinder.from([styleId]),
+        { rowFormat: QueryRowFormat.UseJsPropertyNames }
+      ))
         rows.push(queryRow.toRow());
 
       expect(rows.length).to.equal(1);
@@ -50,15 +65,24 @@ describe("ExcludedElements", () => {
       expect(json.styles.excludedElements).to.equal(excludedElements);
 
       const getStyle = (compressExcludedElementIds?: boolean) => {
-        const loadProps = { id: styleId, displayStyle: { compressExcludedElementIds } };
+        const loadProps = {
+          id: styleId,
+          displayStyle: { compressExcludedElementIds },
+        };
         return imodel.elements.getElement<DisplayStyle3d>(loadProps);
       };
 
       // Unless compressed Ids explicitly requested, the Ids are always decompressed regardless of how they are stored.
       // This is to preserve compatibility with older front-ends that don't understand the compressed Ids; it's an unfortunate default.
-      expect(getStyle().jsonProperties.styles.excludedElements).to.deep.equal(excludedElementIds);
-      expect(getStyle(false).jsonProperties.styles.excludedElements).to.deep.equal(excludedElementIds);
-      expect(getStyle(true).jsonProperties.styles.excludedElements).to.equal(excludedElements);
+      expect(getStyle().jsonProperties.styles.excludedElements).to.deep.equal(
+        excludedElementIds
+      );
+      expect(
+        getStyle(false).jsonProperties.styles.excludedElements
+      ).to.deep.equal(excludedElementIds);
+      expect(getStyle(true).jsonProperties.styles.excludedElements).to.equal(
+        excludedElements
+      );
     };
 
     await test(true);

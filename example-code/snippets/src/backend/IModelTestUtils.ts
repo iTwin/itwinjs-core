@@ -6,7 +6,14 @@ import { assert } from "chai";
 import * as path from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
-import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import {
+  IModelHost,
+  IModelJsFs,
+  IModelJsFsStats,
+  KnownLocations,
+  SnapshotDb,
+  StandaloneDb,
+} from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -16,7 +23,6 @@ export interface IModelTestUtilsOpenOptions {
 }
 
 export class KnownTestLocations {
-
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
     // Assume that we are running in nodejs
@@ -28,7 +34,6 @@ export class KnownTestLocations {
     // Assume that we are running in nodejs
     return path.join(__dirname, "output");
   }
-
 }
 
 export class IModelTestUtils {
@@ -49,13 +54,18 @@ export class IModelTestUtils {
     return stat;
   }
 
-  private static copyIModelForOpen(filename: string, opts: IModelTestUtilsOpenOptions): string {
+  private static copyIModelForOpen(
+    filename: string,
+    opts: IModelTestUtilsOpenOptions
+  ): string {
     const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
+    if (!IModelJsFs.existsSync(destPath)) IModelJsFs.mkdirSync(destPath);
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename : filename));
+    const dbName = path.join(
+      destPath,
+      opts.copyFilename ? opts.copyFilename : filename
+    );
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
     if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs)
@@ -64,14 +74,20 @@ export class IModelTestUtils {
     return dbName;
   }
 
-  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): SnapshotDb {
+  public static openSnapshotFromSeed(
+    filename: string,
+    opts?: IModelTestUtilsOpenOptions
+  ): SnapshotDb {
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
     const iModel = SnapshotDb.openFile(dbName); // could throw Error
     assert.exists(iModel);
     return iModel;
   }
 
-  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneDb {
+  public static openIModelForWrite(
+    filename: string,
+    opts?: IModelTestUtilsOpenOptions
+  ): StandaloneDb {
     opts = opts || {};
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
     const iModel = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
@@ -95,7 +111,6 @@ export class IModelTestUtils {
     await IModelHost.startup({ cacheDir });
   }
   // __PUBLISH_EXTRACT_END__
-
 }
 
 // Start the backend

@@ -9,7 +9,9 @@ export class ProjectExtentsExample {
   // __PUBLISH_EXTRACT_START__ ProjectExtents_toCartographic
 
   /** get a 5 point shape of Cartographic points that encloses the project on the ground plane. */
-  public async convertExtentsToCartographicShape(iModel: IModelConnection): Promise<Cartographic[]> {
+  public async convertExtentsToCartographicShape(
+    iModel: IModelConnection
+  ): Promise<Cartographic[]> {
     const shape: Cartographic[] = [];
 
     // convert extents to an 8 point array

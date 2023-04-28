@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-frontend__ package contains the frontend (specific to running in a web browser) classes for querying iModels and showing views.
+The **@itwin/core-frontend** package contains the frontend (specific to running in a web browser) classes for querying iModels and showing views.
 
 ## Documentation
 

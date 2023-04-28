@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@itwin/core-common";
+import {
+  RpcConfiguration,
+  RpcEndpoint,
+  RpcInterfaceDefinition,
+} from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
@@ -24,13 +28,18 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** @internal */
   public static setup = {
     obtainPort: () => 0,
-    checkPlatform: () => typeof (process) !== "undefined" && (process.platform as any) === "ios",
+    checkPlatform: () =>
+      typeof process !== "undefined" && (process.platform as any) === "ios",
   };
 
   public abstract override protocol: MobileRpcProtocol;
   private static _args: any;
   private static getArgs(): any {
-    if (typeof window !== "object" || typeof window.location !== "object" || typeof window.location.hash !== "string") {
+    if (
+      typeof window !== "object" ||
+      typeof window.location !== "object" ||
+      typeof window.location.hash !== "string"
+    ) {
       return Object.freeze({});
     }
     const queryArgs: any = {};
@@ -46,19 +55,21 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
           }
         }
       }
-    } catch { }
+    } catch {}
     return Object.freeze(queryArgs);
   }
   private static getMobilePlatform(): RpcMobilePlatform {
-    if (!MobileRpcConfiguration.args.platform)
-      return RpcMobilePlatform.Unknown;
+    if (!MobileRpcConfiguration.args.platform) return RpcMobilePlatform.Unknown;
 
     const win: any = window;
     if (/android/i.test(MobileRpcConfiguration.args.platform)) {
       return RpcMobilePlatform.Android;
     }
 
-    if (/iOS|iPadOS/i.test(MobileRpcConfiguration.args.platform) && !win.MSStream) {
+    if (
+      /iOS|iPadOS/i.test(MobileRpcConfiguration.args.platform) &&
+      !win.MSStream
+    ) {
       return RpcMobilePlatform.iOS;
     }
 
@@ -73,7 +84,9 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   }
 
   /** Return type of mobile platform using browser userAgent */
-  public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
+  public static get platform(): RpcMobilePlatform {
+    return MobileRpcConfiguration.getMobilePlatform();
+  }
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.
@@ -91,10 +104,16 @@ export class MobileRpcManager {
     });
   }
 
-  private static performInitialization(interfaces: RpcInterfaceDefinition[], endPoint: RpcEndpoint): MobileRpcConfiguration {
+  private static performInitialization(
+    interfaces: RpcInterfaceDefinition[],
+    endPoint: RpcEndpoint
+  ): MobileRpcConfiguration {
     const config = class extends MobileRpcConfiguration {
       public interfaces = () => interfaces;
-      public protocol: MobileRpcProtocol = new MobileRpcProtocol(this, endPoint);
+      public protocol: MobileRpcProtocol = new MobileRpcProtocol(
+        this,
+        endPoint
+      );
     };
 
     for (const def of interfaces) {
@@ -108,12 +127,21 @@ export class MobileRpcManager {
   }
 
   /** Initializes MobileRpcManager for the frontend of an application. */
-  public static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
-    return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Frontend);
+  public static initializeClient(
+    interfaces: RpcInterfaceDefinition[]
+  ): MobileRpcConfiguration {
+    return MobileRpcManager.performInitialization(
+      interfaces,
+      RpcEndpoint.Frontend
+    );
   }
   /** Initializes MobileRpcManager for the backend of an application. */
-  public static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
-    return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
+  public static initializeImpl(
+    interfaces: RpcInterfaceDefinition[]
+  ): MobileRpcConfiguration {
+    return MobileRpcManager.performInitialization(
+      interfaces,
+      RpcEndpoint.Backend
+    );
   }
 }
-

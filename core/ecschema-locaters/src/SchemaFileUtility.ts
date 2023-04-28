@@ -16,14 +16,16 @@ import { Schema } from "@itwin/ecschema-metadata";
  * @beta
  */
 export class SchemaFileUtility {
-
   /**
    * Writes a Schema to an xml file to the specified output path.
    * @param schema The Schema to serialize.
    * @param outputPath The directory in which to create the file.
    */
   public static async writeSchemaXmlFile(schema: Schema, outputPath: string) {
-    let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+    let xmlDoc = new DOMParser().parseFromString(
+      `<?xml version="1.0" encoding="UTF-8"?>`,
+      "application/xml"
+    );
     const baseFile = this.getSchemaPath(schema, outputPath);
 
     xmlDoc = await schema.toXml(xmlDoc);

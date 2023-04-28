@@ -10,9 +10,22 @@ import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
-  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
+  DecorateContext,
+  GraphicType,
+  HitDetail,
+  imageElementFromUrl,
+  IModelApp,
+  IModelConnection,
+  ParticleCollectionBuilder,
+  ParticleProps,
+  Tool,
 } from "@itwin/core-frontend";
-import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
+import {
+  randomFloat,
+  randomFloatInRange,
+  randomIntegerInRange,
+  randomPositionInRange,
+} from "./Random";
 
 /** Represents one particle in the system. */
 class Particle implements ParticleProps {
@@ -29,18 +42,31 @@ class Particle implements ParticleProps {
   /** Particle transparency in [0..255]. */
   public transparency = 0;
 
-  public get x() { return this.position.x; }
-  public get y() { return this.position.y; }
-  public get z() { return this.position.z; }
+  public get x() {
+    return this.position.x;
+  }
+  public get y() {
+    return this.position.y;
+  }
+  public get z() {
+    return this.position.z;
+  }
 
-  public constructor(position: Point3d, velocity: Vector3d, lifetime: number, size: number) {
+  public constructor(
+    position: Point3d,
+    velocity: Vector3d,
+    lifetime: number,
+    size: number
+  ) {
     this.position = position;
     this.velocity = velocity;
     this.lifetime = lifetime;
     this.size = size;
   }
 
-  public get isExpired() { return this.age >= this.lifetime; }
+  public get isExpired() {
+    return this.age >= this.lifetime;
+  }
 }
 
 /** Emits particles in a sphere with its center at the origin.
@@ -61,13 +87,19 @@ class ParticleEmitter {
     const particles = [];
     const numParticles = randomIntegerInRange(this.numParticlesRange);
     for (let i = 0; i < numParticles; i++) {
-      const velocity = new Vector3d(randomFloat(-1.0, 1.0), randomFloat(-1.0, 1.0), randomFloat(-1.0, 1.0));
+      const velocity = new Vector3d(
+        randomFloat(-1.0, 1.0),
+        randomFloat(-1.0, 1.0),
+        randomFloat(-1.0, 1.0)
+      );
       velocity.normalizeInPlace();
       velocity.scaleInPlace(randomFloatInRange(this.speedRange));
 
       const lifetime = randomFloatInRange(this.lifetimeRange);
       const size = randomFloatInRange(this.sizeRange);
-      particles.push(new Particle(new Point3d(0, 0, 0), velocity, lifetime, size));
+      particles.push(
+        new Particle(new Point3d(0, 0, 0), velocity, lifetime, size)
+      );
     }
 
     return particles;
@@ -89,7 +121,11 @@ class ParticleSystem {
 
   public static numEmissionsRange = Range1d.createXX(1, 5);
 
-  public constructor(texture: RenderTexture, iModel: IModelConnection, numEmissions: number) {
+  public constructor(
+    texture: RenderTexture,
+    iModel: IModelConnection,
+    numEmissions: number
+  ) {
     this._texture = texture;
     this._pickableId = iModel.transientIds.getNext();
     this._numEmissions = numEmissions;
@@ -119,10 +155,8 @@ class ParticleSystem {
     let numParticles = this._particles.length;
     if (numParticles === 0) {
       this._numEmissions--;
-      if (this._numEmissions < 0)
-        this.dispose();
-      else
-        this._particles = this._emitter.emit();
+      if (this._numEmissions < 0) this.dispose();
+      else this._particles = this._emitter.emit();
 
       return;
     }
@@ -152,8 +186,7 @@ class ParticleSystem {
   }
 
   public decorate(context: DecorateContext): void {
-    if (!context.viewport.view.isSpatialView())
-      return;
+    if (!context.viewport.view.isSpatialView()) return;
 
     this.update();
 
@@ -166,8 +199,7 @@ class ParticleSystem {
       pickableId: this._pickableId,
     });
 
-    for (const particle of this._particles)
-      builder.addParticle(particle);
+    for (const particle of this._particles) builder.addParticle(particle);
 
     const graphic = builder.finish();
     if (graphic) {
@@ -180,19 +212,29 @@ class ParticleSystem {
     return id === this._pickableId;
   }
 
-  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> {
+  public async getDecorationToolTip(
+    _hit: HitDetail
+  ): Promise<HTMLElement | string> {
     return "Explosion effect";
   }
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-    const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
+    const image = await imageElementFromUrl(
+      `${IModelApp.publicPath}sprites/particle_explosion.png`
+    );
     const texture = IModelApp.renderSystem.createTexture({
       ownership: "external",
       image: { source: image, transparency: TextureTransparency.Mixed },
     });
     if (texture)
-      IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
+      IModelApp.viewManager.addDecorator(
+        new ParticleSystem(
+          texture,
+          iModel,
+          randomIntegerInRange(this.numEmissionsRange)
+        )
+      );
   }
 }
 
@@ -205,8 +247,7 @@ export class ExplosionEffect extends Tool {
   /** This method runs the tool, applying an explosion particle effect. */
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      await ParticleSystem.addDecorator(vp.iModel);
+    if (vp) await ParticleSystem.addDecorator(vp.iModel);
 
     return true;
   }

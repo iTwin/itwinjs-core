@@ -2,18 +2,18 @@
 
 > TypeScript type: [ContentRule]($presentation-common).
 
-Content rules are used to define content that is displayed for specific type of [input](./Terminology.md#input-instance). Input consists of either ECInstances or [nodes](../hierarchies/Terminology.md#node) and to make things simpler everything is considered a [node](../hierarchies/Terminology.md#node) - instances get converted to *ECInstance nodes* (thus the `SelectedNode` symbol in [`condition` ECExpression](./ECExpressions.md#rule-condition)).
+Content rules are used to define content that is displayed for specific type of [input](./Terminology.md#input-instance). Input consists of either ECInstances or [nodes](../hierarchies/Terminology.md#node) and to make things simpler everything is considered a [node](../hierarchies/Terminology.md#node) - instances get converted to _ECInstance nodes_ (thus the `SelectedNode` symbol in [`condition` ECExpression](./ECExpressions.md#rule-condition)).
 
 ## Attributes
 
 | Name                                              | Required? | Type                                                                 | Default |
 | ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Picking attributes*                              |
+| _Picking attributes_                              |
 | [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 | [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
-| *Content attributes*                              |
+| _Content attributes_                              |
 | [`specifications`](#attribute-specifications)     | Yes       | `ContentSpecification[]`                                             |         |
 
 ### Attribute: `condition`

@@ -53,76 +53,74 @@ Programmer monitors are almost always wider than they are tall. It is common for
 On the other hand, vertical whitespace can contribute significantly to code readability by making the logical structure clearer. The following guidelines are intended to strike a balance between readability and code density.
 
 1. Some codebases advocate breaking lines at 80 columns. With current screen sizes, this is silly and wasteful. Don't break lines before 120 columns.
-2. Don't use blank lines unnecessarily. For example the first line of a function *not* should be a blank line.
+2. Don't use blank lines unnecessarily. For example the first line of a function _not_ should be a blank line.
 3. There should never be more than one blank line in a row.
 4. **Don't use** clever/pretty multi-line comment blocks to separate sections of code. One line suffices, if you absolutely feel the need to include them. Usually they aren't necessary. Your well written, accurate and complete documentation and logical source organization is all the help anyone needs to understand your code.
 5. Don't put each import in an import statement on a separate line. If you use Visual Studio Code as your editor, use the [TypeScript Import Sorter extension](https://marketplace.visualstudio.com/items?itemName=mike-co.import-sorter) with its default settings to automatically format import statements.
 6. If a function has only a single statement, it should **not** be on one line. Many debuggers refuse to allow breakpoints to be set on single-line functions.
 
-    > Note: This recommendation is now the exact opposite of the previous recommendation.
+   > Note: This recommendation is now the exact opposite of the previous recommendation.
 
-    ```ts
-    // No, cannot set breakpoint !!!
-    public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
-    ```
+   ```ts
+   // No, cannot set breakpoint !!!
+   public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
+   ```
 
-    ```ts
-    // Correct, breakpoint may be set on body of function !!!
-    public middle(): number {
-        return this.minimum + ((this.maximum - this.minimum) / 2.0);
-    }
-    ```
+   ```ts
+   // Correct, breakpoint may be set on body of function !!!
+   public middle(): number {
+       return this.minimum + ((this.maximum - this.minimum) / 2.0);
+   }
+   ```
 
 7. The body of an `if` statement or a loop should be on a separate line, even if the body contains only a single line of code.
 
-    ```ts
-    // No (body on same line as conditional, cannot set breakpoint) !!!
-    if (meow) return "cat";
-    ```
+   ```ts
+   // No (body on same line as conditional, cannot set breakpoint) !!!
+   if (meow) return "cat";
+   ```
 
-    ```ts
-    // Correct (body on separate line from conditional) !!!
-    if (meow)
-      return "cat";
-    ```
+   ```ts
+   // Correct (body on separate line from conditional) !!!
+   if (meow) return "cat";
+   ```
 
 8. A closing curly brace should be followed by a blank line.
 
-    ```ts
-    // No (missing blank line after closing brace) !!!
-    if (minimum > maximum) {
-      const temp = minimum;
-      minimum = maximum;
-      maximum = temp;
-    }
-    return maximum - minimum;
-    ```
+   ```ts
+   // No (missing blank line after closing brace) !!!
+   if (minimum > maximum) {
+     const temp = minimum;
+     minimum = maximum;
+     maximum = temp;
+   }
+   return maximum - minimum;
+   ```
 
-    ```ts
-    // Correct (blank line after closing brace) !!!
-    if (minimum > maximum) {
-      const temp = minimum;
-      minimum = maximum;
-      maximum = temp;
-    }
+   ```ts
+   // Correct (blank line after closing brace) !!!
+   if (minimum > maximum) {
+     const temp = minimum;
+     minimum = maximum;
+     maximum = temp;
+   }
 
-    return maximum - minimum;
-    ```
+   return maximum - minimum;
+   ```
 
 9. Omit curly braces from single-line code blocks...
 
-    ```ts
-    // No (closing brace wastes a line) !!!
-    if (meow) {
-      return "cat";
-    }
-    ```
+   ```ts
+   // No (closing brace wastes a line) !!!
+   if (meow) {
+     return "cat";
+   }
+   ```
 
-    ```ts
-    // Correct (no braces) !!!
-    if (meow)
-      return "cat";
-    ```
+   ```ts
+   // Correct (no braces) !!!
+   if (meow) return "cat";
+   ```
 
 10. ...unless related blocks require braces
 
@@ -131,8 +129,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
     if (woof) {
       rollover();
       animal = "dog";
-    } else if (meow)
-      animal = "cat";
+    } else if (meow) animal = "cat";
     ```
 
     ```ts
@@ -162,15 +159,15 @@ On the other hand, vertical whitespace can contribute significantly to code read
 
 If a return statement has a value you should not use parenthesis () around the value.
 
-``` ts
-return ("Hello World!"); // bad
+```ts
+return "Hello World!"; // bad
 
 return "Hello World!"; // good
 ```
 
-Certain schools of programming advice hold that every method should have only one return statement. This could not be more misguided. *Always* return as soon as you know there's *no reason to proceed*.
+Certain schools of programming advice hold that every method should have only one return statement. This could not be more misguided. _Always_ return as soon as you know there's _no reason to proceed_.
 
-``` ts
+```ts
 // bad!!
 public getFirstUser(): Person | undefined {
   let firstUser?: Person;
@@ -205,7 +202,7 @@ public getFirstUser(): Person | undefined {
 
 Always explicitly define a return type for methods that are more than one line. This can help TypeScript validate that you are always returning something that matches the correct type.
 
-``` ts
+```ts
 // bad!! No return type specified
 public getOwner(name: string) {
   if (this.isReady)
@@ -225,7 +222,7 @@ public getOwner(name: string): Person {
 
 for methods that are one line and for which the return type is obvious, it is not necessary to include the return type:
 
-``` ts
+```ts
 // fine, return type is obvious
 public getCorner() {
   return new Point3d(this.x, this.y);
@@ -234,7 +231,7 @@ public getCorner() {
 
 When calling methods, the best practice would be to explicitly specify the return type. In the case of async methods calls, these calls almost always involve awaiting the results, and this practice guards against omitting the await keyword - a frequent cause of hard to debug race conditions.
 
-``` ts
+```ts
 // bad!! no return type specified for async call, and missing await is not caught by the compiler
 const iModels = iModelHub.getIModels(projectId);
 
@@ -246,27 +243,31 @@ const iModel: IModel[] = await iModelHub.getIModels(projectId);
 
 A common pattern is to have a `private` member that is read/write privately within the class, but read-only to the public API. This can be a good use for a getter. For example:
 
-``` ts
+```ts
 class Person {
   private _name: string;
-  public get name(): string { return _name; } // read-only to public API, so no setter provided
+  public get name(): string {
+    return _name;
+  } // read-only to public API, so no setter provided
 }
 ```
 
-Note, however, if the value supplied by the getter is established in the constructor and *can never be changed*, the following may be preferable:
+Note, however, if the value supplied by the getter is established in the constructor and _can never be changed_, the following may be preferable:
 
-``` ts
+```ts
 class Person {
-   constructor(public readonly name: string) { }
+  constructor(public readonly name: string) {}
 }
 ```
 
 Another valid use of getters and setters is when you want to give the appearance of having a public member but you don't actually store the data that way. For example:
 
-``` ts
+```ts
 class PersonName {
-  constructor (public firstName: string, public lastName: string) { }
-  public get fullName(): string { return this.firstName + " " + this.lastName; }
+  constructor(public firstName: string, public lastName: string) {}
+  public get fullName(): string {
+    return this.firstName + " " + this.lastName;
+  }
   public set fullName(name: string): void {
     const names: string[] = name.split(" ");
     this.firstName = names[0] || "";
@@ -279,10 +280,10 @@ It is also good to use getters and setters if data validation is required (which
 
 There are cases where getters and setters would be overkill. For example:
 
-``` ts
+```ts
 // This is fine!
 class Corner {
-  constructor(public x: number, public y: number, public z: number) { }
+  constructor(public x: number, public y: number, public z: number) {}
 }
 ```
 
@@ -339,7 +340,7 @@ However, as stated above, it is a good idea to always include the return type of
 
 For public-facing APIs we have decided to prefer exceptions (`throw new Error`) and rejecting promises (`Promise.reject`) over returning status codes. The reasons include:
 
-1. Exceptions can keep your code clean of *if error status then return* clutter. For example, a series of API calls could each be affected by network outages but the error handling would be the same regardless of which call failed.
+1. Exceptions can keep your code clean of _if error status then return_ clutter. For example, a series of API calls could each be affected by network outages but the error handling would be the same regardless of which call failed.
 2. Exceptions let you return the natural return value of success rather than an unnatural composite object.
 3. Exceptions can carry more information than a status return.
 4. Status returns can be ignored, but exceptions can't. If the immediate layer does not handle the exception it will be bubbled up to the outer layer.
@@ -367,14 +368,16 @@ The following JavaDoc tags are supported by TypeDoc:
   - Use plain `@param`. Do not use `@param[in]` or `@param[out]` as this confuses TypeDoc.
   - The parameter description should start with a capital letter.
 - `@returns`
+
   - The return type is automatically propagated into the generated documentation, so `@returns` should only be included when more of a description is necessary.
-  - The `@returns` description (when provided) should start with *Returns* for readability within the generated documentation.
+  - The `@returns` description (when provided) should start with _Returns_ for readability within the generated documentation.
   - The `@return` JavaDoc tag is also supported, but `@returns` is preferred for readability and consistency with `@throws`.
   <!--
 
-  - *TODO:*
-    - *Need to decide how to document methods returning `Promise<T>`. Should the description mention a `Promise` or just `T` since the return type will clearly indicate `Promise` and using `await` will cause `T` to be returned.*
-  -->
+
+  - _TODO:_
+    - _Need to decide how to document methods returning `Promise<T>`. Should the description mention a `Promise` or just `T` since the return type will clearly indicate `Promise` and using `await` will cause `T` to be returned._
+      -->
 
 - `@throws`
   - If a method can potentially throw an `Error`, it should be documented with `@throws` as there is no automated way that thrown errors make it into the generated documentation.
@@ -408,13 +411,13 @@ A common pattern in JavaScript is to transfer information from one context to an
 
 For example:
 
-- from a *backend* program to a *frontend* program, or vice-versa
+- from a _backend_ program to a _frontend_ program, or vice-versa
 - from C++ to JavaScript, or vice-versa
 - saving object state to/from a persistent store, such as a database
 
 Since JSON strings are often sent over an internet connection, these strings are commonly referred to as "wire formats".
 
-This pattern is *built-in* to JavaScript via [JSON](https://www.json.org/), using the methods [JSON.stringify](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) and [JSON.parse](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse). However, those methods are defined to take/generate objects of type `any`. That gives callers no help interpreting the contents of the `JSON.parse` result or supplying the correct input to `JSON.stringify`. Fortunately TypeScript has very nice techniques for defining the *shape* of an object, via [Interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html) and [Type Aliases](https://www.typescriptlang.org/docs/handbook/advanced-types.html).
+This pattern is _built-in_ to JavaScript via [JSON](https://www.json.org/), using the methods [JSON.stringify](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) and [JSON.parse](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse). However, those methods are defined to take/generate objects of type `any`. That gives callers no help interpreting the contents of the `JSON.parse` result or supplying the correct input to `JSON.stringify`. Fortunately TypeScript has very nice techniques for defining the _shape_ of an object, via [Interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html) and [Type Aliases](https://www.typescriptlang.org/docs/handbook/advanced-types.html).
 
 Our convention is to define either a `Type Alias` or an `interface` with the suffix `Props` (for properties) for any information that can be serialized to/from JSON. There will often be an eponymous class without the `Props` suffice to supply methods for working with instances of that type. A serializeable class `Abc` will usually implement `AbcProps`, if it is an `interface`. Then, either its constructor or a static `fomJson` method will take an `AbcProps` as its argument, and it will override the `toJSON` method to return an `AbcProps`. Anyone implementing the "other end" of a JSON serialized type will then know what properties to expect/include.
 
@@ -465,9 +468,9 @@ Every .ts file should have this notice as its **first lines**:
 
 ```ts
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 ```
 
 ## Source Code Editor
@@ -478,11 +481,11 @@ While not an absolute requirement, we recommend and optimize for [Visual Studio 
 
 There are a few different techniques for defining a React function component:
 
-1. ```const Xyz: React.FunctionComponent<XyzProps> = (props) => {...}```
-1. ```const Xyz: React.FC<XyzProps> = (props) => {...}```
-1. ```function Xyz(props: XyzProps) {...}```
+1. `const Xyz: React.FunctionComponent<XyzProps> = (props) => {...}`
+1. `const Xyz: React.FC<XyzProps> = (props) => {...}`
+1. `function Xyz(props: XyzProps) {...}`
 
-The first two techniques require a Lint rule to disable the camel case naming rule; the last way does not. Therefore, we prefer the ```function Xyz(props: XyzProps)``` technique.
+The first two techniques require a Lint rule to disable the camel case naming rule; the last way does not. Therefore, we prefer the `function Xyz(props: XyzProps)` technique.
 It is also the most concise. All 3 techniques generate the same documentation.
 
 ```tsx

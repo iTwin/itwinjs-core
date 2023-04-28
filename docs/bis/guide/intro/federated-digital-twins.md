@@ -1,4 +1,3 @@
-
 # Federated Digital Twins for Infrastructure Engineering
 
 Bentley defines "Digital Twin" as a digital representation of physical things and (optionally) related processes, including the functionality of systems and the roles of people and organizations. The Digital Twin may also include analysis and simulation models of the things and processes.
@@ -15,7 +14,7 @@ Models of the physical reality (including physical attributes like geometry, mat
 
 ## Shared, not siloed
 
-Another distinguishing characteristic of a Digital Twin is that it is not application-specific, but is intended to be shared by multiple apps and services, in contrast to traditional applications that each have their own siloed database.  This is especially true of the Physical Backbone. Nearly every app and service will either use it or relate their information to it. This affects how information is factored in the Digital Twin.
+Another distinguishing characteristic of a Digital Twin is that it is not application-specific, but is intended to be shared by multiple apps and services, in contrast to traditional applications that each have their own siloed database. This is especially true of the Physical Backbone. Nearly every app and service will either use it or relate their information to it. This affects how information is factored in the Digital Twin.
 
 ## Aligned
 
@@ -46,12 +45,13 @@ There are two key ideas stemming from our sharing of the Physical Backbone acros
 - Begin with the end in mind.
 - All projects are brownfield projects.
 
-*Begin with the end in mind* reminds us that the Physical Backbone is shared across phases and should include the physical characteristics that operations requires (e.g. serial numbers on tracked items). As much as practical, operations data should naturally be developed during the design and construction phases, e.g. capture serial numbers as equipment is being installed.
+_Begin with the end in mind_ reminds us that the Physical Backbone is shared across phases and should include the physical characteristics that operations requires (e.g. serial numbers on tracked items). As much as practical, operations data should naturally be developed during the design and construction phases, e.g. capture serial numbers as equipment is being installed.
 
-*All projects are brownfield projects* reminds us that projects occur in an existing context, either a “brownfield” of existing infrastructure or a natural context. One should be able to use the Physical Backbone of an operations Digital Twin as the starting point for new design Digital Twin.
+_All projects are brownfield projects_ reminds us that projects occur in an existing context, either a “brownfield” of existing infrastructure or a natural context. One should be able to use the Physical Backbone of an operations Digital Twin as the starting point for new design Digital Twin.
 
 Conversely, data that is completely phase-specific should be segregated from the Physical Backbone, as described in other topics of this documentation.
 
 ---
+
 | Next: [Modeling with BIS](./modeling-with-bis.md)
 |:---

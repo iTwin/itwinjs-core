@@ -21,10 +21,14 @@ export interface IModelIdArg {
 /** @public */
 export interface FrontendHubAccess {
   getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId>;
-  getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId>;
+  getChangesetFromVersion(
+    arg: IModelIdArg & { version: IModelVersion }
+  ): Promise<ChangesetIndexAndId>;
   /**
    * Fetches the changeset with the given named version.
    * @param versionName If omitted will default to the latest named version.
    */
-  getChangesetFromNamedVersion(arg: IModelIdArg & { versionName?: string }): Promise<ChangesetIndexAndId>;
+  getChangesetFromNamedVersion(
+    arg: IModelIdArg & { versionName?: string }
+  ): Promise<ChangesetIndexAndId>;
 }

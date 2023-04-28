@@ -6,17 +6,39 @@
  * @module Rendering
  */
 
-import { ByteStream, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley";
+import {
+  ByteStream,
+  JsonUtils,
+  Logger,
+  utf8ToString,
+} from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import {
-  getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl,
+  getImageSourceFormatForMimeType,
+  imageBitmapFromImageSource,
+  imageElementFromImageSource,
+  tryImageElementFromUrl,
 } from "../ImageUtil";
 import { TextureImageSource } from "../render/RenderTexture";
 import {
-  DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
+  DracoMeshCompression,
+  getGltfNodeMeshIds,
+  GltfAccessor,
+  GltfBuffer,
+  GltfBufferViewProps,
+  GltfDictionary,
+  gltfDictionaryIterator,
+  GltfDocument,
+  GltfId,
+  GltfImage,
+  GltfMesh,
+  GltfMeshMode,
+  GltfMeshPrimitive,
+  GltfNode,
+  traverseGltfNodes,
 } from "./GltfSchema";
 import { Gltf } from "./GltfModel";
 
@@ -41,7 +63,9 @@ export interface ParseGltfArgs {
  * This implementation is incomplete and not currently used.
  * @internal
  */
-export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undefined> {
+export async function parseGltf(
+  args: ParseGltfArgs
+): Promise<Gltf.Model | undefined> {
   const source = args.gltf;
   let version: number;
   let json: GltfDocument;
@@ -53,8 +77,7 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     if (TileFormat.Gltf !== buffer.readUint32()) {
       try {
         const utf8Json = utf8ToString(source);
-        if (!utf8Json)
-          return undefined;
+        if (!utf8Json) return undefined;
 
         json = JSON.parse(utf8Json);
         version = 2;
@@ -64,18 +87,24 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     } else {
       buffer.reset();
       const header = new GlbHeader(buffer);
-      if (!header.isValid)
-        return undefined;
+      if (!header.isValid) return undefined;
 
       version = header.version;
       if (header.binaryChunk)
-        binary = new Uint8Array(source.buffer, source.byteOffset + header.binaryChunk.offset, header.binaryChunk.length);
+        binary = new Uint8Array(
+          source.buffer,
+          source.byteOffset + header.binaryChunk.offset,
+          header.binaryChunk.length
+        );
 
       try {
-        const jsonBytes = new Uint8Array(source.buffer, source.byteOffset + header.jsonChunk.offset, header.jsonChunk.length);
+        const jsonBytes = new Uint8Array(
+          source.buffer,
+          source.byteOffset + header.jsonChunk.offset,
+          header.jsonChunk.length
+        );
         const jsonStr = utf8ToString(jsonBytes);
-        if (undefined === jsonStr)
-          return undefined;
+        if (undefined === jsonStr) return undefined;
 
         json = JSON.parse(jsonStr);
       } catch (_) {
@@ -89,8 +118,7 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
 
   // asset is required in glTF 2, optional in glTF 1
   const asset = JsonUtils.asObject(json.asset);
-  if (version === 2 && !asset)
-    return undefined;
+  if (version === 2 && !asset) return undefined;
 
   const document: GltfDocument = {
     asset,
@@ -111,13 +139,17 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     techniques: JsonUtils.asObject(json.techniques),
   };
 
-  if (!document.meshes)
-    return undefined;
+  if (!document.meshes) return undefined;
 
   const logger = args.logger ?? {
     log: (message: string, type: "error" | "warning" | "info") => {
       const category = `${FrontendLoggerCategory.Package}.gltf`;
-      const fn = type === "error" ? "logError" : (type === "warning" ? "logWarning" : "logInfo");
+      const fn =
+        type === "error"
+          ? "logError"
+          : type === "warning"
+          ? "logWarning"
+          : "logInfo";
       Logger[fn](category, message);
     },
   };
@@ -130,9 +162,9 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
     baseUrl: args.baseUrl,
     logger,
     isCanceled: () => args.isCanceled ?? false,
-    imageFromImageSource: (args.noCreateImageBitmap ?
-      async (imgSrc) => imageElementFromImageSource(imgSrc) :
-      async (imgSrc) => imageBitmapFromImageSource(imgSrc)),
+    imageFromImageSource: args.noCreateImageBitmap
+      ? async (imgSrc) => imageElementFromImageSource(imgSrc)
+      : async (imgSrc) => imageBitmapFromImageSource(imgSrc),
   });
 
   return parser.parse();
@@ -165,7 +197,9 @@ class GltfParser {
   private readonly _accessors: GltfDictionary<GltfAccessor>;
   private readonly _sceneNodes: GltfId[];
   private readonly _bufferViews: GltfDictionary<GltfBufferViewProps>;
-  private readonly _imageFromImageSource: (source: ImageSource) => Promise<TextureImageSource>;
+  private readonly _imageFromImageSource: (
+    source: ImageSource
+  ) => Promise<TextureImageSource>;
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
 
   public constructor(options: GltfParserOptions) {
@@ -176,7 +210,7 @@ class GltfParser {
     this._isCanceled = options.isCanceled;
     this._imageFromImageSource = options.imageFromImageSource;
 
-    const emptyDict = { };
+    const emptyDict = {};
     const doc = options.document;
     this._buffers = doc.buffers ?? emptyDict;
     this._images = doc.images ?? emptyDict;
@@ -204,8 +238,7 @@ class GltfParser {
     const toWorld = undefined;
 
     await this.resolveResources();
-    if (this._isCanceled())
-      return undefined;
+    if (this._isCanceled()) return undefined;
 
     // ###TODO_GLTF compute content range (maybe do so elsewhere?)
     // I think spec says POSITION must specify min and max?
@@ -213,8 +246,7 @@ class GltfParser {
     const nodes: Gltf.Node[] = [];
     for (const nodeKey of this._sceneNodes) {
       const node = this._nodes[nodeKey];
-      if (node)
-        nodes.push(this.parseNode(node));
+      if (node) nodes.push(this.parseNode(node));
     }
 
     return {
@@ -227,31 +259,64 @@ class GltfParser {
     const primitives = [];
     for (const meshId of getGltfNodeMeshIds(node)) {
       const mesh = this._meshes[meshId];
-      if (!mesh)
-        continue;
+      if (!mesh) continue;
 
       const parsedPrimitives = this.parsePrimitives(mesh);
-      for (const primitive of parsedPrimitives)
-        primitives.push(primitive);
+      for (const primitive of parsedPrimitives) primitives.push(primitive);
     }
 
     let toParent;
     if (node.matrix) {
-      const origin = Point3d.create(node.matrix[12], node.matrix[13], node.matrix[14]);
+      const origin = Point3d.create(
+        node.matrix[12],
+        node.matrix[13],
+        node.matrix[14]
+      );
       const matrix = Matrix3d.createRowValues(
-        node.matrix[0], node.matrix[4], node.matrix[8],
-        node.matrix[1], node.matrix[5], node.matrix[9],
-        node.matrix[2], node.matrix[6], node.matrix[10],
+        node.matrix[0],
+        node.matrix[4],
+        node.matrix[8],
+        node.matrix[1],
+        node.matrix[5],
+        node.matrix[9],
+        node.matrix[2],
+        node.matrix[6],
+        node.matrix[10]
       );
 
       toParent = Transform.createOriginAndMatrix(origin, matrix);
     } else if (node.rotation || node.scale || node.translation) {
       // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
       // first the scale is applied to the vertices, then the rotation, and then the translation.
-      const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
-      const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
+      const scale = Transform.createRefs(
+        undefined,
+        node.scale
+          ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2])
+          : Matrix3d.identity
+      );
+      const rot = Transform.createRefs(
+        undefined,
+        node.rotation
+          ? Matrix3d.createFromQuaternion(
+              Point4d.create(
+                node.rotation[0],
+                node.rotation[1],
+                node.rotation[2],
+                node.rotation[3]
+              )
+            )
+          : Matrix3d.identity
+      );
       rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
-      const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
+      const trans = Transform.createTranslation(
+        node.translation
+          ? new Point3d(
+              node.translation[0],
+              node.translation[1],
+              node.translation[2]
+            )
+          : Point3d.createZero()
+      );
 
       toParent = scale.multiplyTransformTransform(rot);
       trans.multiplyTransformTransform(toParent, toParent);
@@ -265,19 +330,19 @@ class GltfParser {
 
   private parsePrimitives(mesh: GltfMesh): Gltf.AnyPrimitive[] {
     const primitives: Gltf.AnyPrimitive[] = [];
-    if (!mesh.primitives)
-      return primitives;
+    if (!mesh.primitives) return primitives;
 
     for (const primitive of mesh.primitives) {
       const parsedPrimitive = this.parsePrimitive(primitive);
-      if (parsedPrimitive)
-        primitives.push(parsedPrimitive);
+      if (parsedPrimitive) primitives.push(parsedPrimitive);
     }
 
     return primitives;
   }
 
-  private parsePrimitive(primitive: GltfMeshPrimitive): Gltf.AnyPrimitive | undefined {
+  private parsePrimitive(
+    primitive: GltfMeshPrimitive
+  ): Gltf.AnyPrimitive | undefined {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.TriangleStrip:
@@ -288,11 +353,12 @@ class GltfParser {
     }
   }
 
-  private parseTrianglesPrimitive(primitive: GltfMeshPrimitive): Gltf.TrianglesPrimitive | undefined {
+  private parseTrianglesPrimitive(
+    primitive: GltfMeshPrimitive
+  ): Gltf.TrianglesPrimitive | undefined {
     const posId = primitive.attributes.POSITION;
     const pos = undefined !== posId ? this._accessors[posId] : undefined;
-    if (!pos)
-      return undefined;
+    if (!pos) return undefined;
 
     return undefined; // ###TODO_GLTF
   }
@@ -318,14 +384,18 @@ class GltfParser {
       }
     }
 
-    if (dracoMeshes.length === 0)
-      return;
+    if (dracoMeshes.length === 0) return;
 
     try {
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+      await Promise.all(
+        dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader))
+      );
     } catch (err) {
-      Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
+      Logger.logWarning(
+        FrontendLoggerCategory.Render,
+        "Failed to decode draco-encoded glTF mesh"
+      );
       Logger.logException(FrontendLoggerCategory.Render, err);
     }
   }
@@ -336,17 +406,14 @@ class GltfParser {
     const promises: Array<Promise<void>> = [];
     try {
       for (const buffer of gltfDictionaryIterator(this._buffers))
-        if (!buffer.resolvedBuffer)
-          promises.push(this.resolveBuffer(buffer));
+        if (!buffer.resolvedBuffer) promises.push(this.resolveBuffer(buffer));
 
       await Promise.all(promises);
-      if (this._isCanceled())
-        return;
+      if (this._isCanceled()) return;
 
       promises.length = 0;
       for (const image of gltfDictionaryIterator(this._images))
-        if (!image.resolvedImage)
-          promises.push(this.resolveImage(image));
+        if (!image.resolvedImage) promises.push(this.resolveImage(image));
 
       await Promise.all(promises);
     } catch (_) {
@@ -363,41 +430,49 @@ class GltfParser {
   }
 
   private async resolveBuffer(buffer: ParserBuffer): Promise<void> {
-    if (buffer.resolvedBuffer || undefined === buffer.uri)
-      return;
+    if (buffer.resolvedBuffer || undefined === buffer.uri) return;
 
     try {
       const url = this.resolveUrl(buffer.uri);
       const response = url ? await fetch(url) : undefined;
-      if (this._isCanceled())
-        return;
+      if (this._isCanceled()) return;
 
       const data = await response?.arrayBuffer();
-      if (this._isCanceled())
-        return;
+      if (this._isCanceled()) return;
 
-      if (data)
-        buffer.resolvedBuffer = { data: new Uint8Array(data) };
+      if (data) buffer.resolvedBuffer = { data: new Uint8Array(data) };
     } catch (_) {
       //
     }
   }
 
   private async resolveImage(image: ParserImage): Promise<void> {
-    if (image.resolvedImage)
-      return;
+    if (image.resolvedImage) return;
 
-    interface BufferViewSource { bufferView?: GltfId, mimeType?: string }
-    const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
+    interface BufferViewSource {
+      bufferView?: GltfId;
+      mimeType?: string;
+    }
+    const bvSrc: BufferViewSource | undefined =
+      undefined !== image.bufferView
+        ? image
+        : image.extensions?.KHR_binary_glTF;
     if (undefined !== bvSrc?.bufferView) {
-      const format = undefined !== bvSrc.mimeType ? getImageSourceFormatForMimeType(bvSrc.mimeType) : undefined;
+      const format =
+        undefined !== bvSrc.mimeType
+          ? getImageSourceFormatForMimeType(bvSrc.mimeType)
+          : undefined;
       const bufferView = this._bufferViews[bvSrc.bufferView];
-      if (undefined === format || !bufferView || !bufferView.byteLength || bufferView.byteLength < 0)
+      if (
+        undefined === format ||
+        !bufferView ||
+        !bufferView.byteLength ||
+        bufferView.byteLength < 0
+      )
         return;
 
       const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer?.data;
-      if (!bufferData)
-        return;
+      if (!bufferData) return;
 
       const offset = bufferView.byteOffset ?? 0;
       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
@@ -411,24 +486,25 @@ class GltfParser {
       return;
     }
 
-    const url = undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
+    const url =
+      undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
     if (undefined !== url)
       image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+  private async decodeDracoMesh(
+    ext: DracoMeshCompression,
+    loader: typeof DracoLoader
+  ): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
-    if (!bv || !bv.byteLength)
-      return;
+    if (!bv || !bv.byteLength) return;
 
     let buf = this._buffers[bv.buffer]?.resolvedBuffer?.data;
-    if (!buf)
-      return;
+    if (!buf) return;
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
-    if (mesh)
-      this._dracoMeshes.set(ext, mesh);
+    const mesh = await loader.parse(buf, {}); // NB: `options` argument declared optional but will produce exception if not supplied.
+    if (mesh) this._dracoMeshes.set(ext, mesh);
   }
 }

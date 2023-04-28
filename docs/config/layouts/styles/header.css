@@ -12,9 +12,11 @@
 
   --header-nav-height: 54px;
 
-  --itwin-gradient: linear-gradient(90deg,
-      #32b1d1 4.349046015712743%,
-      #30f1cf 92.31200897867573%);
+  --itwin-gradient: linear-gradient(
+    90deg,
+    #32b1d1 4.349046015712743%,
+    #30f1cf 92.31200897867573%
+  );
   --itwin-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.2);
 
   /* colors */
@@ -66,7 +68,6 @@
   font-weight: 600;
   margin: 0 4px;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-
 }
 
 #itwin-branding a::after {
@@ -130,7 +131,6 @@ header nav {
   align-items: center;
 }
 
-
 #main-nav a {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -174,7 +174,6 @@ header nav {
   vertical-align: middle;
 }
 
-
 .version-dropdown-toggle:hover,
 .version-dropdown-toggle:focus {
   color: #e3e1e1;
@@ -188,7 +187,6 @@ header nav {
   height: 44px;
   padding-left: 10px;
   color: #a2a2a2;
-
 }
 
 .version-dropdown-menu {
@@ -303,9 +301,7 @@ header #search-component input[type="search"]::placeholder {
     height: 100%;
   }
 
-
-
-  main>section {
+  main > section {
     padding: 20px 0 5px 0;
   }
 
@@ -362,14 +358,11 @@ header #search-component input[type="search"]::placeholder {
     cursor: pointer;
   }
 
-
   #itwin-branding a .itwin-logo {
     text-indent: -9999px;
     margin: 0;
   }
-
 }
-
 
 @media screen and (max-width: 450px) {
   header #search-component {
@@ -392,7 +385,7 @@ header #search-component input[type="search"]::placeholder {
     width: 100%;
   }
 
-  span.search-bar>li {
+  span.search-bar > li {
     width: 100%;
   }
 }

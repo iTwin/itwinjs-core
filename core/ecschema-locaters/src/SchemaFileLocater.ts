@@ -6,7 +6,12 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import {
+  Schema,
+  SchemaContext,
+  SchemaKey,
+  SchemaMatchType,
+} from "@itwin/ecschema-metadata";
 
 /** @packageDocumentation
  * @module Locaters
@@ -14,15 +19,13 @@ import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecsche
 
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {
-    return typeof args[theNumber] !== "undefined"
-      ? args[theNumber]
-      : match;
+    return typeof args[theNumber] !== "undefined" ? args[theNumber] : match;
   });
 };
 
 const padStartEx = (str: string, targetLength: number, padString: string) => {
   targetLength = targetLength >> 0; // truncate if number or convert non-number to 0;
-  padString = String((typeof padString !== "undefined" ? padString : " "));
+  padString = String(typeof padString !== "undefined" ? padString : " ");
   if (str.length > targetLength) {
     return String(str);
   } else {
@@ -72,13 +75,13 @@ export abstract class SchemaFileLocater {
     this.searchPaths = [];
   }
 
-  public async readUtf8FileToString(filePath: string): Promise<string | undefined> {
+  public async readUtf8FileToString(
+    filePath: string
+  ): Promise<string | undefined> {
     return new Promise<string | undefined>((resolve, reject) => {
       fs.readFile(filePath, "utf-8", (err, data) => {
-        if (err)
-          reject(err);
-        else
-          resolve(data);
+        if (err) reject(err);
+        else resolve(data);
       });
     });
   }
@@ -106,8 +109,7 @@ export abstract class SchemaFileLocater {
    */
   public addSchemaSearchPaths(schemaPaths: string[]) {
     // If the path is not in the schemaPaths array, add it
-    for (const schemaPath of schemaPaths)
-      this.addSchemaSearchPath(schemaPath);
+    for (const schemaPath of schemaPaths) this.addSchemaSearchPath(schemaPath);
   }
 
   /**
@@ -133,17 +135,22 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType to use when comparing the desiredKey and the keys found during the search.
    * @param format The type of file that the schema key refers to. json or xml
    */
-  private addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
+  private addCandidateNoExtSchemaKey(
+    foundFiles: FileSchemaKey[],
+    schemaPath: string,
+    schemaName: string,
+    desiredKey: SchemaKey,
+    matchType: SchemaMatchType,
+    format: string
+  ) {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     // If the file does not exist, end
-    if (!fs.existsSync(fullPath))
-      return;
+    if (!fs.existsSync(fullPath)) return;
 
     // Read the file
     const file = fs.readFileSync(fullPath);
-    if (!file)
-      return;
+    if (!file) return;
 
     // Get the schema key
     const key = this.getSchemaKey(file.toString());
@@ -162,12 +169,19 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType to use when comparing the desired Key and the keys found during the search.
    * @param format The type of file that the schema key refers to. json or xml
    */
-  private addCandidateSchemaKeys(foundFiles: FileSchemaKey[], schemaPath: string, fileFilter: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
+  private addCandidateSchemaKeys(
+    foundFiles: FileSchemaKey[],
+    schemaPath: string,
+    fileFilter: string,
+    desiredKey: SchemaKey,
+    matchType: SchemaMatchType,
+    format: string
+  ) {
     const fullPath = path.join(schemaPath, fileFilter);
 
     const result = new glob.GlobSync(fullPath, { sync: true });
     for (const match of result.found) {
-      let fileName = path.basename(match, (`.ecschema.${format}`));
+      let fileName = path.basename(match, `.ecschema.${format}`);
       // TODO: should this be moved or handled elsewhere?
       // Handles two version file names - SchemaKey.parseString supports only 3 version names.
       if (/[^\d]\.\d?\d\.\d?\d$/.test(fileName)) {
@@ -177,8 +191,7 @@ export abstract class SchemaFileLocater {
       }
 
       const file = fs.readFileSync(match);
-      if (!file)
-        continue;
+      if (!file) continue;
 
       const schemaKey = SchemaKey.parseString(fileName);
       if (schemaKey.matches(desiredKey, matchType))
@@ -193,7 +206,11 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType.
    * @param format The type of file that the schema key refers to. json or xml
    */
-  protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
+  protected findEligibleSchemaKeys(
+    desiredKey: SchemaKey,
+    matchType: SchemaMatchType,
+    format: string
+  ): FileSchemaKey[] {
     const foundFiles = new Array<FileSchemaKey>();
 
     let twoVersionSuffix: string;
@@ -203,32 +220,79 @@ export abstract class SchemaFileLocater {
     const minorVersion = desiredKey.minorVersion.toString();
 
     if (matchType === SchemaMatchType.Latest) {
-      twoVersionSuffix = (`.*.*.ecschema.${format}`);
-      threeVersionSuffix = (`.*.*.*.ecschema.${format}`);
+      twoVersionSuffix = `.*.*.ecschema.${format}`;
+      threeVersionSuffix = `.*.*.*.ecschema.${format}`;
     } else if (matchType === SchemaMatchType.LatestWriteCompatible) {
-      twoVersionSuffix = formatString(`.{0}.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"));
-      threeVersionSuffix = formatString(`.{0}.{1}.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
+      twoVersionSuffix = formatString(
+        `.{0}.*.ecschema.${format}`,
+        padStartEx(readVersion, 2, "0")
+      );
+      threeVersionSuffix = formatString(
+        `.{0}.{1}.*.ecschema.${format}`,
+        padStartEx(readVersion, 2, "0"),
+        padStartEx(writeVersion, 2, "0")
+      );
     } else if (matchType === SchemaMatchType.LatestReadCompatible) {
-      twoVersionSuffix = formatString(`.{0}.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"));
-      threeVersionSuffix = formatString(`.{0}.*.*.ecschema.${format}`, padStartEx(readVersion, 2, "0"));
+      twoVersionSuffix = formatString(
+        `.{0}.*.ecschema.${format}`,
+        padStartEx(readVersion, 2, "0")
+      );
+      threeVersionSuffix = formatString(
+        `.{0}.*.*.ecschema.${format}`,
+        padStartEx(readVersion, 2, "0")
+      );
     } else {
-      twoVersionSuffix = formatString(`.{0}.{1}.ecschema.${format}`, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
-      threeVersionSuffix = formatString(`.{0}.{1}.{2}.ecschema.${format}`, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"), padStartEx(minorVersion, 2, "0"));
+      twoVersionSuffix = formatString(
+        `.{0}.{1}.ecschema.${format}`,
+        padStartEx(readVersion, 2, "0"),
+        padStartEx(writeVersion, 2, "0")
+      );
+      threeVersionSuffix = formatString(
+        `.{0}.{1}.{2}.ecschema.${format}`,
+        padStartEx(readVersion, 2, "0"),
+        padStartEx(writeVersion, 2, "0"),
+        padStartEx(minorVersion, 2, "0")
+      );
     }
 
     const twoVersionExpression = desiredKey.name + twoVersionSuffix;
     const threeVersionExpression = desiredKey.name + threeVersionSuffix;
 
     for (const searchPath of this.searchPaths) {
-      this.addCandidateNoExtSchemaKey(foundFiles, searchPath, desiredKey.name, desiredKey, matchType, format);
-      this.addCandidateSchemaKeys(foundFiles, searchPath, twoVersionExpression, desiredKey, matchType, format);
-      this.addCandidateSchemaKeys(foundFiles, searchPath, threeVersionExpression, desiredKey, matchType, format);
+      this.addCandidateNoExtSchemaKey(
+        foundFiles,
+        searchPath,
+        desiredKey.name,
+        desiredKey,
+        matchType,
+        format
+      );
+      this.addCandidateSchemaKeys(
+        foundFiles,
+        searchPath,
+        twoVersionExpression,
+        desiredKey,
+        matchType,
+        format
+      );
+      this.addCandidateSchemaKeys(
+        foundFiles,
+        searchPath,
+        threeVersionExpression,
+        desiredKey,
+        matchType,
+        format
+      );
     }
 
     return foundFiles;
   }
 
-  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+  public abstract getSchema<T extends Schema>(
+    key: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): Promise<T | undefined>;
 
   /**
    * Compares two Schema versions.  If the left-hand version is greater, 1 is returned. If the
@@ -236,7 +300,10 @@ export abstract class SchemaFileLocater {
    * @param lhs The 'left-hand' FileSchemaKey.
    * @param rhs The 'right-hand' FileSchemaKey.
    */
-  public compareSchemaKeyByVersion = (lhs: FileSchemaKey, rhs: FileSchemaKey): number => {
+  public compareSchemaKeyByVersion = (
+    lhs: FileSchemaKey,
+    rhs: FileSchemaKey
+  ): number => {
     return lhs.compareByVersion(rhs);
   };
 }

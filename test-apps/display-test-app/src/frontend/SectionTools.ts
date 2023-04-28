@@ -4,9 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
 import { createButton, createComboBox } from "@itwin/frontend-devtools";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
+import {
+  ClipPlane,
+  ClipPrimitive,
+  ClipVector,
+  ConvexClipPlaneSet,
+  Point3d,
+  Vector3d,
+} from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
-import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
+import {
+  AccuDrawHintBuilder,
+  IModelApp,
+  ScreenViewport,
+  ViewClipDecorationProvider,
+  Viewport,
+} from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 
@@ -26,7 +39,10 @@ export class SectionsPanel extends ToolBarDropDown {
   public constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
     this._vp = vp;
-    this._element = IModelApp.makeHTMLElement("div", { className: "toolMenu", parent });
+    this._element = IModelApp.makeHTMLElement("div", {
+      className: "toolMenu",
+      parent,
+    });
     this._element.style.cssFloat = "left";
     this._element.style.display = "block";
 
@@ -35,7 +51,7 @@ export class SectionsPanel extends ToolBarDropDown {
       id: "section_Type",
       name: "Clip type: ",
       value: this._toolName,
-      handler: (select: HTMLSelectElement) => this._toolName = select.value,
+      handler: (select: HTMLSelectElement) => (this._toolName = select.value),
       entries: [
         { name: "Plane", value: "ViewClip.ByPlane" },
         { name: "Range", value: "ViewClip.ByRange" },
@@ -50,7 +66,10 @@ export class SectionsPanel extends ToolBarDropDown {
     createButton({
       value: "Define",
       handler: async () => {
-        await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create());
+        await IModelApp.tools.run(
+          this._toolName,
+          ViewClipDecorationProvider.create()
+        );
         setFocusToHome();
       },
       parent: div,
@@ -59,14 +78,19 @@ export class SectionsPanel extends ToolBarDropDown {
     });
     createButton({
       value: "Edit",
-      handler: async () => ViewClipDecorationProvider.create().toggleDecoration(this._vp),
+      handler: async () =>
+        ViewClipDecorationProvider.create().toggleDecoration(this._vp),
       parent: div,
       inline: true,
       tooltip: "Show clip edit handles",
     });
     createButton({
       value: "Clear",
-      handler: async () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
+      handler: async () =>
+        IModelApp.tools.run(
+          "ViewClip.Clear",
+          ViewClipDecorationProvider.create()
+        ),
       parent: div,
       inline: true,
       tooltip: "Clear clips",
@@ -82,7 +106,12 @@ export class SectionsPanel extends ToolBarDropDown {
           bounds: vp.getClientRect(),
           buffer: 10,
           parent: vp.canvas.parentElement!,
-          onDragged: (left, _right) => ModelClipTool.applyModelClipping(vp, new Point3d(left, (vp.getClientRect().height / 2), 0), negate),
+          onDragged: (left, _right) =>
+            ModelClipTool.applyModelClipping(
+              vp,
+              new Point3d(left, vp.getClientRect().height / 2, 0),
+              negate
+            ),
         };
         const divider = new TwoPanelDivider(props);
         divider.dividerElem.style.zIndex = "10";
@@ -93,25 +122,36 @@ export class SectionsPanel extends ToolBarDropDown {
     });
     createButton({
       value: "Negate Plane",
-      handler: () => { negate = !negate; },
+      handler: () => {
+        negate = !negate;
+      },
       parent: div,
       inline: true,
       tooltip: "Negate Plane",
     });
   }
 
-  protected _open(): void { this._element.style.display = "block"; }
-  protected _close(): void { this._element.style.display = "none"; }
-  public get isOpen(): boolean { return "block" === this._element.style.display; }
+  protected _open(): void {
+    this._element.style.display = "block";
+  }
+  protected _close(): void {
+    this._element.style.display = "none";
+  }
+  public get isOpen(): boolean {
+    return "block" === this._element.style.display;
+  }
 }
 
 class ModelClipTool {
   private static _leftModels: string[] = [];
   private static _rightModels: string[] = [];
-  public static applyModelClipping(vp: Viewport, clipPoint: Point3d, negate: boolean): void {
+  public static applyModelClipping(
+    vp: Viewport,
+    clipPoint: Point3d,
+    negate: boolean
+  ): void {
     const view = vp.view;
-    if (!view || !view.isSpatialView())
-      return;
+    if (!view || !view.isSpatialView()) return;
     const createClip = (vector: Vector3d, p: Point3d) => {
       const plane = ClipPlane.createNormalAndPoint(vector, p)!;
       const planes = ConvexClipPlaneSet.createPlanes([plane]);
@@ -132,12 +172,14 @@ class ModelClipTool {
         (left ? this._leftModels : this._rightModels).push(id);
         left = !left;
       });
-    if (negate)
-      normal = normal.negate();
+    if (negate) normal = normal.negate();
 
     view.details.modelClipGroups = new ModelClipGroups([
       ModelClipGroup.create(createClip(normal, point), this._rightModels),
-      ModelClipGroup.create(createClip(normal.negate(), point), this._leftModels),
+      ModelClipGroup.create(
+        createClip(normal.negate(), point),
+        this._leftModels
+      ),
     ]);
 
     vp.invalidateScene();
@@ -156,7 +198,10 @@ export interface DividingLineProps {
 
 export class TwoPanelDivider {
   private limitToBounds(n: number): number {
-    n = Math.min(n, this._bounds.right - (this.dividerElem.clientWidth + this._buffer));
+    n = Math.min(
+      n,
+      this._bounds.right - (this.dividerElem.clientWidth + this._buffer)
+    );
     n = Math.max(n, this._bounds.left + this._buffer);
     return n;
   }
@@ -166,7 +211,9 @@ export class TwoPanelDivider {
   private _oldPosition: number = 0;
 
   public dividerElem: HTMLElement;
-  public onDraggedEvent: BeEvent<(leftPanelWidth: number, rightPanelWidth: number) => void>;
+  public onDraggedEvent: BeEvent<
+    (leftPanelWidth: number, rightPanelWidth: number) => void
+  >;
 
   public setDivider(left: number): void {
     this.dividerElem.style.left = `${left}px`;
@@ -180,34 +227,36 @@ export class TwoPanelDivider {
   constructor(props: DividingLineProps) {
     this._bounds = props.bounds;
     this._buffer = undefined === props.buffer ? 0 : props.buffer;
-    this.onDraggedEvent = new BeEvent<(leftPanelWidth: number, rightPanelWidth: number) => void>();
+    this.onDraggedEvent = new BeEvent<
+      (leftPanelWidth: number, rightPanelWidth: number) => void
+    >();
 
     let left: number;
-    if (undefined !== props.sideL)
-      left = props.sideL;
-    else if (undefined !== props.sideR)
-      left = props.bounds.width - props.sideR;
-    else
-      left = props.bounds.width / 2;
+    if (undefined !== props.sideL) left = props.sideL;
+    else if (undefined !== props.sideR) left = props.bounds.width - props.sideR;
+    else left = props.bounds.width / 2;
 
     this.dividerElem = IModelApp.makeHTMLElement("div");
-    this.dividerElem.setAttribute("style", "width: 4px; position: fixed; display: flex; background-color: #f1f1f1; border: 1px solid #d3d3d3; /*dde0e3*/ pointer-events: visible;");
+    this.dividerElem.setAttribute(
+      "style",
+      "width: 4px; position: fixed; display: flex; background-color: #f1f1f1; border: 1px solid #d3d3d3; /*dde0e3*/ pointer-events: visible;"
+    );
 
-    if (props.id !== undefined)
-      this.dividerElem.id = props.id;
+    if (props.id !== undefined) this.dividerElem.id = props.id;
 
     this.updateBounds(this._bounds);
     this.setDivider(left);
     this.dividerElem.onmousedown = this._mouseDownDraggable;
-    if (props.parent)
-      props.parent.appendChild(this.dividerElem);
+    if (props.parent) props.parent.appendChild(this.dividerElem);
 
     const handle = IModelApp.makeHTMLElement("div");
-    handle.setAttribute("style", "position: relative;  box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.25);  left: -10px;  padding: 12px;  height: 32px;  border-radius: 1.5px;  cursor: col-resize;  align-self: center;  background-color: #69ade3; /* dde0e3 */  /* dots c8ccd0*/  color: #fff;");
+    handle.setAttribute(
+      "style",
+      "position: relative;  box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.25);  left: -10px;  padding: 12px;  height: 32px;  border-radius: 1.5px;  cursor: col-resize;  align-self: center;  background-color: #69ade3; /* dde0e3 */  /* dots c8ccd0*/  color: #fff;"
+    );
     this.dividerElem.appendChild(handle);
 
-    if (props.onDragged)
-      this.onDraggedEvent.addListener(props.onDragged);
+    if (props.onDragged) this.onDraggedEvent.addListener(props.onDragged);
   }
 
   private _mouseDownDraggable = (e: MouseEvent) => {
@@ -219,10 +268,11 @@ export class TwoPanelDivider {
 
   private _mouseMoveDraggable = (e: MouseEvent) => {
     e.preventDefault();
-    if (undefined === this.dividerElem)
-      return;
+    if (undefined === this.dividerElem) return;
 
-    const newPosition = this.limitToBounds(this.dividerElem.offsetLeft - (this._oldPosition - e.clientX));
+    const newPosition = this.limitToBounds(
+      this.dividerElem.offsetLeft - (this._oldPosition - e.clientX)
+    );
     this._oldPosition = this.limitToBounds(e.clientX);
 
     this.setDivider(newPosition);

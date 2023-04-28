@@ -5,9 +5,11 @@ WITH [RECURSIVE] cte-table-name AS ( select-stmt )[,...] primary-select-stmt
 ```
 
 ## What are Common Table Expressions?
+
 Common table expressions ("CTEs") act like temporary views that exist only for the duration of a single ECSQL statement. There are two types of CTE:
 
 ### Ordinary Common Table Expressions
+
 This is mainly used to factor out subqueries, making the overall ECSQL statement easier to read and understand. It contains just a `SELECT` statement with or without `RECURSIVE` keyword.
 
 ```sql

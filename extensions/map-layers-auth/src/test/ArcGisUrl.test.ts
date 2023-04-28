@@ -17,35 +17,44 @@ describe("ArcGisUrl", () => {
   });
 
   it("should extract REST base url", async () => {
-    const sampleUrl1 = new URL("https://dtlgeoarcgis.adtl.com/server/rest/services/NewYork/NewYork3857/MapServer");
+    const sampleUrl1 = new URL(
+      "https://dtlgeoarcgis.adtl.com/server/rest/services/NewYork/NewYork3857/MapServer"
+    );
     const extractedBaseUrl1 = ArcGisUrl.extractRestBaseUrl(sampleUrl1);
     chai.assert.isFalse(extractedBaseUrl1 === undefined);
-    chai.assert.equal("https://dtlgeoarcgis.adtl.com/server/rest/", extractedBaseUrl1?.toString());
+    chai.assert.equal(
+      "https://dtlgeoarcgis.adtl.com/server/rest/",
+      extractedBaseUrl1?.toString()
+    );
 
     const sampleUrl2 = new URL("https://dtlgeoarcgis.adtl.com/server/rest/");
     const extractedBaseUrl2 = ArcGisUrl.extractRestBaseUrl(sampleUrl2);
     chai.assert.isFalse(extractedBaseUrl2 === undefined);
-    chai.assert.equal("https://dtlgeoarcgis.adtl.com/server/rest/", extractedBaseUrl2?.toString());
+    chai.assert.equal(
+      "https://dtlgeoarcgis.adtl.com/server/rest/",
+      extractedBaseUrl2?.toString()
+    );
 
     const sampleUrl3 = new URL("https://dtlgeoarcgis.adtl.com/server/");
     const extractedBaseUrl3 = ArcGisUrl.extractRestBaseUrl(sampleUrl3);
     chai.assert.isTrue(extractedBaseUrl3 === undefined);
-
   });
 
   it("should extract RestUrl From GenerateToken Url", async () => {
-    const fetchJsonStub = sandbox.stub(ArcGisUrl, "fetchJson" as any).callsFake(async function _(_url: unknown) {
-      return Promise.resolve({
-        authInfo: { tokenServicesUrl: sampleGenerateTokenUrl },
+    const fetchJsonStub = sandbox
+      .stub(ArcGisUrl, "fetchJson" as any)
+      .callsFake(async function _(_url: unknown) {
+        return Promise.resolve({
+          authInfo: { tokenServicesUrl: sampleGenerateTokenUrl },
+        });
       });
-    });
 
     let restUrl;
     try {
-      restUrl = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(new URL(sampleRestUrl));
-    } catch {
-
-    }
+      restUrl = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(
+        new URL(sampleRestUrl)
+      );
+    } catch {}
 
     // The returned URL should match
     chai.assert.isDefined(restUrl);
@@ -56,5 +65,4 @@ describe("ArcGisUrl", () => {
     const urlArg = fetchJsonStub.getCalls()[0].args[0] as URL;
     chai.expect(urlArg?.toString()).to.equals(`${sampleRestUrl}info?f=json`);
   });
-
 });

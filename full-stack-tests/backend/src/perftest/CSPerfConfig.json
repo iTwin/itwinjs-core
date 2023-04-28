@@ -25,16 +25,8 @@
   "ownDataTest": {
     "projectId": "23383876-c4a1-4c6b-9dc4-f3f2cf828606",
     "dbSize": 1000000,
-    "opSizes": [
-      1000,
-      2000,
-      3000
-    ],
-    "baseNames": [
-      "I",
-      "D",
-      "U"
-    ],
+    "opSizes": [1000, 2000, 3000],
+    "baseNames": ["I", "D", "U"],
     "schema": {
       "name": "PerfTestDomain",
       "classBase": "PerfElement",

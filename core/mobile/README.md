@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-mobile__ package contains the mobile utilities to write an iTwin.js application for mobile devices.
+The **@itwin/core-mobile** package contains the mobile utilities to write an iTwin.js application for mobile devices.
 
 ## Documentation
 

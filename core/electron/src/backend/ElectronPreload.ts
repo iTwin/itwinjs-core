@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { contextBridge, ipcRenderer } from "electron";
-import type { ElectronListener, ITwinElectronApi } from "../common/ITwinElectronApi";
+import type {
+  ElectronListener,
+  ITwinElectronApi,
+} from "../common/ITwinElectronApi";
 
 /**
  * This file is loaded as an Electron preload script

@@ -32,7 +32,11 @@ export interface PropertyEditorSpecification {
  * Parameters for [[PropertyEditorSpecification]]
  * @public
  */
-export declare type PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEditorMultilineParameters | PropertyEditorRangeParameters | PropertyEditorSliderParameters;
+export declare type PropertyEditorParameters =
+  | PropertyEditorJsonParameters
+  | PropertyEditorMultilineParameters
+  | PropertyEditorRangeParameters
+  | PropertyEditorSliderParameters;
 
 /**
  * Used for serializing array of [[PropertyEditorParameters]] to JSON
@@ -62,7 +66,8 @@ export interface PropertyEditorParametersBase {
  * Arbitrary JSON parameters for custom property editors
  * @public
  */
-export interface PropertyEditorJsonParameters extends PropertyEditorParametersBase {
+export interface PropertyEditorJsonParameters
+  extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: "Json";
 
@@ -74,7 +79,8 @@ export interface PropertyEditorJsonParameters extends PropertyEditorParametersBa
  * Multiline parameters for property editors that support multiline display
  * @public
  */
-export interface PropertyEditorMultilineParameters extends PropertyEditorParametersBase {
+export interface PropertyEditorMultilineParameters
+  extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: "Multiline";
 
@@ -91,7 +97,8 @@ export interface PropertyEditorMultilineParameters extends PropertyEditorParamet
  * Range parameters for property editors that support ranges
  * @public
  */
-export interface PropertyEditorRangeParameters extends PropertyEditorParametersBase {
+export interface PropertyEditorRangeParameters
+  extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: "Range";
 
@@ -106,7 +113,8 @@ export interface PropertyEditorRangeParameters extends PropertyEditorParametersB
  * Slider parameters for property editors that support slider display
  * @public
  */
-export interface PropertyEditorSliderParameters extends PropertyEditorParametersBase {
+export interface PropertyEditorSliderParameters
+  extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: "Slider";
 

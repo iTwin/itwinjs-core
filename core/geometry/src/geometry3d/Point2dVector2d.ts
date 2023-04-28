@@ -56,11 +56,17 @@ export class XY implements XAndY {
   }
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqual(other: XAndY, tol?: number): boolean {
-    return Geometry.isSameCoordinate(this.x, other.x, tol) && Geometry.isSameCoordinate(this.y, other.y, tol);
+    return (
+      Geometry.isSameCoordinate(this.x, other.x, tol) &&
+      Geometry.isSameCoordinate(this.y, other.y, tol)
+    );
   }
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
   public isAlmostEqualXY(x: number, y: number, tol?: number): boolean {
-    return Geometry.isSameCoordinate(this.x, x, tol) && Geometry.isSameCoordinate(this.y, y, tol);
+    return (
+      Geometry.isSameCoordinate(this.x, x, tol) &&
+      Geometry.isSameCoordinate(this.y, y, tol)
+    );
   }
   /** Return a json array  `[x,y]`   */
   public toJSON(): XYProps {
@@ -104,16 +110,13 @@ export class XY implements XAndY {
   }
   /** Return the x,y component corresponding to 0,1 */
   public at(index: number): number {
-    if (index < 0.5)
-      return this.x;
+    if (index < 0.5) return this.x;
     return this.y;
   }
   /** Set value at index 0 or 1 */
   public setAt(index: number, value: number): void {
-    if (index < 0.5)
-      this.x = value;
-    else
-      this.y = value;
+    if (index < 0.5) this.x = value;
+    else this.y = value;
   }
   /** Return the index (0,1) of the x,y component with largest absolute value */
   public indexOfMaxAbs(): number {
@@ -127,7 +130,10 @@ export class XY implements XAndY {
   }
   /** Returns true if the x,y components are both small by metric metric tolerance */
   public get isAlmostZero(): boolean {
-    return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
+    return (
+      Geometry.isSmallMetricDistance(this.x) &&
+      Geometry.isSmallMetricDistance(this.y)
+    );
   }
   /** Return the largest absolute value of any component */
   public maxAbs(): number {
@@ -146,24 +152,32 @@ export class XY implements XAndY {
     return this.x === other.x && this.y === other.y;
   }
   /** Returns true if x,y match `other` within metric tolerance */
-  public isAlmostEqualMetric(other: XAndY, distanceTol: number = Geometry.smallMetricDistance): boolean {
+  public isAlmostEqualMetric(
+    other: XAndY,
+    distanceTol: number = Geometry.smallMetricDistance
+  ): boolean {
     return this.maxDiff(other) <= distanceTol;
   }
   /** Return a (full length) vector from this point to other */
   public vectorTo(other: XAndY, result?: Vector2d): Vector2d {
-    return Vector2d.create(
-      other.x - this.x,
-      other.y - this.y,
-      result);
+    return Vector2d.create(other.x - this.x, other.y - this.y, result);
   }
   /** Return a unit vector from this point to other */
   public unitVectorTo(other: XAndY, result?: Vector2d): Vector2d | undefined {
     return this.vectorTo(other, result).normalize(result);
   }
   /** Cross product of vectors from origin to targets */
-  public static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number {
+  public static crossProductToPoints(
+    origin: XAndY,
+    targetA: XAndY,
+    targetB: XAndY
+  ): number {
     return Geometry.crossProductXYXY(
-      targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
+      targetA.x - origin.x,
+      targetA.y - origin.y,
+      targetB.x - origin.x,
+      targetB.y - origin.y
+    );
   }
 }
 
@@ -185,7 +199,11 @@ export class Point2d extends XY implements BeJSONFunctions {
    * @param y y coordinate
    * @param result optional result
    */
-  public static create(x: number = 0, y: number = 0, result?: Point2d): Point2d {
+  public static create(
+    x: number = 0,
+    y: number = 0,
+    result?: Point2d
+  ): Point2d {
     if (result) {
       result.x = x;
       result.y = y;
@@ -205,8 +223,7 @@ export class Point2d extends XY implements BeJSONFunctions {
   }
   /** Create (or optionally reuse) a Point2d from another object with fields x and y */
   public static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d {
-    if (xy)
-      return Point2d.create(xy.x, xy.y, result);
+    if (xy) return Point2d.create(xy.x, xy.y, result);
     return Point2d.create(0, 0, result);
   }
   /** Create a Point2d with both coordinates zero. */
@@ -220,7 +237,11 @@ export class Point2d extends XY implements BeJSONFunctions {
    * @param leftFraction distance to move perpendicular to the vector, as a fraction of the rotated vector
    * @param vector the other vector
    */
-  public addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d): Point2d {
+  public addForwardLeft(
+    tangentFraction: number,
+    leftFraction: number,
+    vector: Vector2d
+  ): Point2d {
     const dx = vector.x;
     const dy = vector.y;
     return Point2d.create(
@@ -232,7 +253,11 @@ export class Point2d extends XY implements BeJSONFunctions {
    * Interpolate at tangentFraction between this instance and point, and then Move by leftFraction
    * along the xy perpendicular of the vector between the points.
    */
-  public forwardLeftInterpolate(tangentFraction: number, leftFraction: number, point: XAndY): Point2d {
+  public forwardLeftInterpolate(
+    tangentFraction: number,
+    leftFraction: number,
+    point: XAndY
+  ): Point2d {
     const dx = point.x - this.x;
     const dy = point.y - this.y;
     return Point2d.create(
@@ -241,7 +266,11 @@ export class Point2d extends XY implements BeJSONFunctions {
     );
   }
   /** Return a point interpolated between this point and the right param. */
-  public interpolate(fraction: number, other: XAndY, result?: Point2d): Point2d {
+  public interpolate(
+    fraction: number,
+    other: XAndY,
+    result?: Point2d
+  ): Point2d {
     if (fraction <= 0.5)
       return Point2d.create(
         this.x + fraction * (other.x - this.x),
@@ -256,7 +285,12 @@ export class Point2d extends XY implements BeJSONFunctions {
     );
   }
   /** Return a point with independent x,y fractional interpolation. */
-  public interpolateXY(fractionX: number, fractionY: number, other: XAndY, result?: Point2d): Point2d {
+  public interpolateXY(
+    fractionX: number,
+    fractionY: number,
+    other: XAndY,
+    result?: Point2d
+  ): Point2d {
     return Point2d.create(
       Geometry.interpolate(this.x, fractionX, other.x),
       Geometry.interpolate(this.y, fractionY, other.y),
@@ -265,29 +299,22 @@ export class Point2d extends XY implements BeJSONFunctions {
   }
   /** Return this point minus vector */
   public minus(vector: XAndY, result?: Point2d): Point2d {
-    return Point2d.create(
-      this.x - vector.x,
-      this.y - vector.y,
-      result
-    );
+    return Point2d.create(this.x - vector.x, this.y - vector.y, result);
   }
   /** Return point plus vector */
   public plus(vector: XAndY, result?: Point2d): Point2d {
-    return Point2d.create(
-      this.x + vector.x,
-      this.y + vector.y,
-      result
-    );
+    return Point2d.create(this.x + vector.x, this.y + vector.y, result);
   }
   /** Return point plus vector */
   public plusXY(dx: number = 0, dy: number = 0, result?: Point2d): Point2d {
-    return Point2d.create(
-      this.x + dx,
-      this.y + dy, result
-    );
+    return Point2d.create(this.x + dx, this.y + dy, result);
   }
   /** Return point + vector * scalar */
-  public plusScaled(vector: XAndY, scaleFactor: number, result?: Point2d): Point2d {
+  public plusScaled(
+    vector: XAndY,
+    scaleFactor: number,
+    result?: Point2d
+  ): Point2d {
     return Point2d.create(
       this.x + vector.x * scaleFactor,
       this.y + vector.y * scaleFactor,
@@ -295,7 +322,13 @@ export class Point2d extends XY implements BeJSONFunctions {
     );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
-  public plus2Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, result?: Point2d): Point2d {
+  public plus2Scaled(
+    vectorA: XAndY,
+    scalarA: number,
+    vectorB: XAndY,
+    scalarB: number,
+    result?: Point2d
+  ): Point2d {
     return Point2d.create(
       this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
@@ -303,8 +336,15 @@ export class Point2d extends XY implements BeJSONFunctions {
     );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
-  public plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number,
-    vectorC: XAndY, scalarC: number, result?: Point2d): Point2d {
+  public plus3Scaled(
+    vectorA: XAndY,
+    scalarA: number,
+    vectorB: XAndY,
+    scalarB: number,
+    vectorC: XAndY,
+    scalarC: number,
+    result?: Point2d
+  ): Point2d {
     return Point2d.create(
       this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
@@ -317,7 +357,10 @@ export class Point2d extends XY implements BeJSONFunctions {
    * @param targetB target of second vector
    */
   public dotVectorsToTargets(targetA: XAndY, targetB: XAndY): number {
-    return (targetA.x - this.x) * (targetB.x - this.x) + (targetA.y - this.y) * (targetB.y - this.y);
+    return (
+      (targetA.x - this.x) * (targetB.x - this.x) +
+      (targetA.y - this.y) * (targetB.y - this.y)
+    );
   }
   /**
    * Returns the (scalar) cross product of vector from this to targetA and vector from this to targetB
@@ -338,7 +381,11 @@ export class Point2d extends XY implements BeJSONFunctions {
    * @param endPoint end point of line
    * @param defaultFraction fraction to return if startPoint and endPoint are equal.
    */
-  public fractionOfProjectionToLine(startPoint: Point2d, endPoint: Point2d, defaultFraction: number = 0): number {
+  public fractionOfProjectionToLine(
+    startPoint: Point2d,
+    endPoint: Point2d,
+    defaultFraction: number = 0
+  ): number {
     const denominator = startPoint.distanceSquared(endPoint);
     if (denominator < Geometry.smallMetricDistanceSquared)
       return defaultFraction;
@@ -360,7 +407,11 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return Vector2d.create(this.x, this.y, result);
   }
   /** Return a new Vector2d with given x and y */
-  public static create(x: number = 0, y: number = 0, result?: Vector2d): Vector2d {
+  public static create(
+    x: number = 0,
+    y: number = 0,
+    result?: Vector2d
+  ): Vector2d {
     if (result) {
       result.x = x;
       result.y = y;
@@ -387,12 +438,13 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return Vector2d.create(0, 0, result);
   }
   /** Copy contents from another Point3d, Point2d, Vector2d, or Vector3d, or leading entries of Float64Array */
-  public static createFrom(data: XAndY | Float64Array, result?: Vector2d): Vector2d {
+  public static createFrom(
+    data: XAndY | Float64Array,
+    result?: Vector2d
+  ): Vector2d {
     if (data instanceof Float64Array) {
-      if (data.length >= 2)
-        return Vector2d.create(data[0], data[1]);
-      if (data.length >= 1)
-        return Vector2d.create(data[0], 0);
+      if (data.length >= 2) return Vector2d.create(data[0], data[1]);
+      if (data.length >= 1) return Vector2d.create(data[0], 0);
       return Vector2d.create(0, 0);
     }
     return Vector2d.create(data.x, data.y, result);
@@ -412,7 +464,11 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return Vector2d.create(r * theta.cos(), r * theta.sin());
   }
   /** Return a new Vector2d extending from point0 to point1 */
-  public static createStartEnd(point0: XAndY, point1: XAndY, result?: Vector2d): Vector2d {
+  public static createStartEnd(
+    point0: XAndY,
+    point1: XAndY,
+    result?: Vector2d
+  ): Vector2d {
     return Vector2d.create(point1.x - point0.x, point1.y - point0.y, result);
   }
   /**
@@ -423,7 +479,11 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param unitPerpB  unit perpendicular to outgoing direction
    * @param offset offset distance
    */
-  public static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined {
+  public static createOffsetBisector(
+    unitPerpA: Vector2d,
+    unitPerpB: Vector2d,
+    offset: number
+  ): Vector2d | undefined {
     let bisector: Vector2d | undefined = unitPerpA.plus(unitPerpB);
     bisector = bisector.normalize();
     if (bisector) {
@@ -437,7 +497,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * Return a (new or optionally reused) vector which is `this` divided by `denominator`
    * * return undefined if denominator is zero.
    */
-  public safeDivideOrNull(denominator: number, result?: Vector2d): Vector2d | undefined {
+  public safeDivideOrNull(
+    denominator: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     if (denominator !== 0.0) {
       return this.scale(1.0 / denominator, result);
     }
@@ -456,7 +519,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param target the target vector
    * @param defaultFraction the returned value in case magnitude square of target vector is very small
    */
-  public fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number {
+  public fractionOfProjectionToVector(
+    target: Vector2d,
+    defaultFraction?: number
+  ): number {
     /*
      * projection length is (this.target)/||target||
      * but here we return (this.target)/||target||^2
@@ -524,12 +590,16 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /**
    * Return a vector computed at fractional position between this vector and vectorB
-  * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
-  *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
-  * @param vectorB second vector
-  * @param result optional preallocated result.
-  */
-  public interpolate(fraction: number, vectorB: Vector2d, result?: Vector2d): Vector2d {
+   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
+   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
+   * @param vectorB second vector
+   * @param result optional preallocated result.
+   */
+  public interpolate(
+    fraction: number,
+    vectorB: Vector2d,
+    result?: Vector2d
+  ): Vector2d {
     result = result ? result : new Vector2d();
     /*
      * For best last-bit behavior, if fraction is below 0.5, use this as base point.
@@ -560,24 +630,44 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return result;
   }
   /** Return {point + vector \* scalar} */
-  public plusScaled(vector: XAndY, scaleFactor: number, result?: Vector2d): Vector2d {
+  public plusScaled(
+    vector: XAndY,
+    scaleFactor: number,
+    result?: Vector2d
+  ): Vector2d {
     result = result ? result : new Vector2d();
     result.x = this.x + vector.x * scaleFactor;
     result.y = this.y + vector.y * scaleFactor;
     return result;
   }
   /** Return {point + vectorA \* scalarA + vectorB \* scalarB} */
-  public plus2Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, result?: Vector2d): Vector2d {
+  public plus2Scaled(
+    vectorA: XAndY,
+    scalarA: number,
+    vectorB: XAndY,
+    scalarB: number,
+    result?: Vector2d
+  ): Vector2d {
     result = result ? result : new Vector2d();
     result.x = this.x + vectorA.x * scalarA + vectorB.x * scalarB;
     result.y = this.y + vectorA.y * scalarA + vectorB.y * scalarB;
     return result;
   }
   /** Return {this + vectorA \* scalarA + vectorB \* scalarB + vectorC \* scalarC} */
-  public plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, vectorC: XAndY, scalarC: number, result?: Vector2d): Vector2d {
+  public plus3Scaled(
+    vectorA: XAndY,
+    scalarA: number,
+    vectorB: XAndY,
+    scalarB: number,
+    vectorC: XAndY,
+    scalarC: number,
+    result?: Vector2d
+  ): Vector2d {
     result = result ? result : new Vector2d();
-    result.x = this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC;
-    result.y = this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC;
+    result.x =
+      this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC;
+    result.y =
+      this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC;
     return result;
   }
   /** Return {this * scale} */
@@ -588,10 +678,12 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return result;
   }
   /** Return a vector parallel to this but with specified length */
-  public scaleToLength(length: number, result?: Vector2d): Vector2d | undefined {
+  public scaleToLength(
+    length: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     const mag = Geometry.correctSmallFraction(this.magnitude());
-    if (mag === 0)
-      return undefined;
+    if (mag === 0) return undefined;
     return this.scale(length / mag, result);
   }
   /** Return the dot product of this with vectorB */
@@ -628,17 +720,22 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel.
    * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false,
-    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
-    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
-    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
+  public isParallelTo(
+    other: Vector2d,
+    oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions
+  ): boolean {
+    const radianSquaredTol: number =
+      options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number =
+      options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();
     if (a2 < distanceSquaredTol || b2 < distanceSquaredTol)
       return returnValueIfAnInputIsZeroLength;
     const dot = this.dotProduct(other);
-    if (dot < 0.0 && !oppositeIsParallel)
-      return false;
+    if (dot < 0.0 && !oppositeIsParallel) return false;
     const cross = this.crossProduct(other);
     /* a2,b2,cross2 are squared lengths of respective vectors */
     /* cross2 = sin^2(theta) * a2 * b2 */
@@ -654,10 +751,14 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param options optional radian and distance tolerances.
    */
   public isPerpendicularTo(
-    other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions
+    other: Vector2d,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions
   ): boolean {
-    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
-    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
+    const radianSquaredTol: number =
+      options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number =
+      options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const aa = this.magnitudeSquared();
     const bb = other.magnitudeSquared();
     if (aa < distanceSquaredTol || bb < distanceSquaredTol)

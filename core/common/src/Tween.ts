@@ -33,7 +33,9 @@ export class Tweens {
   private _tweens: any = {};
   private _tweensAddedDuringUpdate: any = {};
   private _nextId = 0;
-  public nextId() { return this._nextId++; }
+  public nextId() {
+    return this._nextId++;
+  }
 
   public getAll() {
     return Object.keys(this._tweens).map((tweenId) => this._tweens[tweenId]);
@@ -56,8 +58,7 @@ export class Tweens {
   public update(time?: number, preserve?: boolean) {
     let tweenIds = Object.keys(this._tweens);
 
-    if (tweenIds.length === 0)
-      return false;
+    if (tweenIds.length === 0) return false;
 
     time = time !== undefined ? time : Date.now();
 
@@ -87,16 +88,19 @@ export class Tweens {
   }
 
   /** Create a new Tween owned by this Group. Equivalent to `new TWEEN.Tween` in tween.js library. */
-  public create(from: any, opts?: {
-    to: any;
-    duration: number;
-    onUpdate: UpdateCallback;
-    onComplete?: TweenCallback;
-    delay?: number;
-    start?: boolean;
-    easing?: EasingFunction;
-    interpolation?: InterpolationFunction;
-  }) {
+  public create(
+    from: any,
+    opts?: {
+      to: any;
+      duration: number;
+      onUpdate: UpdateCallback;
+      onComplete?: TweenCallback;
+      delay?: number;
+      start?: boolean;
+      easing?: EasingFunction;
+      interpolation?: InterpolationFunction;
+    }
+  ) {
     const t = new Tween(this, from);
     if (opts) {
       t.to(opts.to)
@@ -106,8 +110,7 @@ export class Tweens {
         .easing(opts.easing)
         .interpolation(opts.interpolation)
         .onComplete(opts.onComplete);
-      if (opts.start)
-        t.start();
+      if (opts.start) t.start();
     }
     return t;
   }
@@ -167,15 +170,20 @@ export class Tween {
     this._id = _group.nextId();
   }
 
-  public getId() { return this._id; }
-  public get isPlaying() { return this._isPlaying; }
-  public get isPaused() { return this._isPaused; }
+  public getId() {
+    return this._id;
+  }
+  public get isPlaying() {
+    return this._isPlaying;
+  }
+  public get isPaused() {
+    return this._isPaused;
+  }
 
   public to(properties: any, duration?: number) {
     this._valuesEnd = Object.create(properties);
 
-    if (duration !== undefined)
-      this._duration = duration;
+    if (duration !== undefined) this._duration = duration;
 
     return this;
   }
@@ -190,29 +198,34 @@ export class Tween {
     this._isPlaying = true;
     this._isPaused = false;
     this._onStartCallbackFired = false;
-    this._startTime = time !== undefined ? typeof time === "string" ? Date.now() + parseFloat(time) : time : Date.now();
+    this._startTime =
+      time !== undefined
+        ? typeof time === "string"
+          ? Date.now() + parseFloat(time)
+          : time
+        : Date.now();
     this._startTime += this._delayTime;
 
     for (const property in this._valuesEnd) {
       // Check if an Array was provided as property value
       if (this._valuesEnd[property] instanceof Array) {
-        if (this._valuesEnd[property].length === 0)
-          continue;
+        if (this._valuesEnd[property].length === 0) continue;
 
         // Create a local copy of the Array with the start value at the front
-        this._valuesEnd[property] = [this._object[property]].concat(this._valuesEnd[property]);
+        this._valuesEnd[property] = [this._object[property]].concat(
+          this._valuesEnd[property]
+        );
       }
 
       // If `to()` specifies a property that doesn't exist in the source object,
       // we should not set that property in the object
-      if (this._object[property] === undefined)
-        continue;
+      if (this._object[property] === undefined) continue;
 
       // Save the starting value, but only once.
-      if (typeof (this._valuesStart[property]) === "undefined")
+      if (typeof this._valuesStart[property] === "undefined")
         this._valuesStart[property] = this._object[property];
 
-      if ((this._valuesStart[property] instanceof Array) === false)
+      if (this._valuesStart[property] instanceof Array === false)
         this._valuesStart[property] *= 1.0; // Ensures we're using numbers, not strings
 
       this._valuesStartRepeat[property] = this._valuesStart[property] || 0;
@@ -222,15 +235,13 @@ export class Tween {
   }
 
   public stop() {
-    if (!this._isPlaying)
-      return this;
+    if (!this._isPlaying) return this;
 
     this._group.remove(this);
     this._isPlaying = false;
     this._isPaused = false;
 
-    if (this._onStopCallback !== undefined)
-      this._onStopCallback(this._object);
+    if (this._onStopCallback !== undefined) this._onStopCallback(this._object);
 
     this.stopChainedTweens();
     return this;
@@ -242,8 +253,7 @@ export class Tween {
   }
 
   public pause(time: number) {
-    if (this._isPaused || !this._isPlaying)
-      return this;
+    if (this._isPaused || !this._isPlaying) return this;
 
     this._isPaused = true;
     this._pauseStart = time === undefined ? Date.now() : time;
@@ -252,18 +262,22 @@ export class Tween {
   }
 
   public resume(time?: number) {
-    if (!this._isPaused || !this._isPlaying)
-      return this;
+    if (!this._isPaused || !this._isPlaying) return this;
 
     this._isPaused = false;
-    this._startTime! += (time === undefined ? Date.now() : time) - this._pauseStart!;
+    this._startTime! +=
+      (time === undefined ? Date.now() : time) - this._pauseStart!;
     this._pauseStart = 0;
     this._group.add(this);
     return this;
   }
 
   public stopChainedTweens() {
-    for (let i = 0, numChainedTweens = this._chainedTweens.length; i < numChainedTweens; i++) {
+    for (
+      let i = 0, numChainedTweens = this._chainedTweens.length;
+      i < numChainedTweens;
+      i++
+    ) {
       this._chainedTweens[i].stop();
     }
   }
@@ -274,8 +288,7 @@ export class Tween {
   }
 
   public delay(amount?: number) {
-    if (undefined !== amount)
-      this._delayTime = amount;
+    if (undefined !== amount) this._delayTime = amount;
     return this;
   }
 
@@ -295,8 +308,7 @@ export class Tween {
   }
 
   public easing(easingFunction?: EasingFunction) {
-    if (easingFunction)
-      this._easingFunction = easingFunction;
+    if (easingFunction) this._easingFunction = easingFunction;
     return this;
   }
 
@@ -337,8 +349,7 @@ export class Tween {
   }
 
   public update(time: number) {
-    if (undefined === this._startTime || time < this._startTime)
-      return true;
+    if (undefined === this._startTime || time < this._startTime) return true;
 
     if (this._onStartCallbackFired === false) {
       if (this._onStartCallback !== undefined) {
@@ -349,7 +360,7 @@ export class Tween {
     }
 
     let elapsed = (time - this._startTime) / this._duration;
-    elapsed = (this._duration === 0 || elapsed > 1) ? 1 : elapsed;
+    elapsed = this._duration === 0 || elapsed > 1 ? 1 : elapsed;
 
     const value = this._easingFunction(elapsed);
 
@@ -357,8 +368,7 @@ export class Tween {
 
     for (property in this._valuesEnd) {
       // Don't update properties that do not exist in the source object
-      if (this._valuesStart[property] === undefined)
-        continue;
+      if (this._valuesStart[property] === undefined) continue;
 
       const start = this._valuesStart[property] || 0;
       let end = this._valuesEnd[property];
@@ -367,16 +377,14 @@ export class Tween {
         this._object[property] = this._interpolationFunction(end, value);
       } else {
         // Parses relative end values with start as base (e.g.: +10, -3)
-        if (typeof (end) === "string") {
-
+        if (typeof end === "string") {
           if (end.charAt(0) === "+" || end.charAt(0) === "-")
             end = start + parseFloat(end);
-          else
-            end = parseFloat(end);
+          else end = parseFloat(end);
         }
 
         // Protect against non numeric properties.
-        if (typeof (end) === "number")
+        if (typeof end === "number")
           this._object[property] = start + (end - start) * value;
       }
     }
@@ -386,14 +394,14 @@ export class Tween {
 
     if (elapsed === 1) {
       if (this._repeat > 0) {
-        if (isFinite(this._repeat))
-          this._repeat--;
+        if (isFinite(this._repeat)) this._repeat--;
 
         // Reassign starting values, restart by making startTime = now
         for (property in this._valuesStartRepeat) {
-
-          if (typeof (this._valuesEnd[property]) === "string") {
-            this._valuesStartRepeat[property] = this._valuesStartRepeat[property] + parseFloat(this._valuesEnd[property]);
+          if (typeof this._valuesEnd[property] === "string") {
+            this._valuesStartRepeat[property] =
+              this._valuesStartRepeat[property] +
+              parseFloat(this._valuesEnd[property]);
           }
 
           if (this._yoyo) {
@@ -406,32 +414,31 @@ export class Tween {
           this._valuesStart[property] = this._valuesStartRepeat[property];
         }
 
-        if (this._yoyo)
-          this._reversed = !this._reversed;
+        if (this._yoyo) this._reversed = !this._reversed;
 
         if (this._repeatDelayTime !== undefined)
           this._startTime = time + this._repeatDelayTime;
-        else
-          this._startTime = time + this._delayTime;
+        else this._startTime = time + this._delayTime;
 
         if (this._onRepeatCallback !== undefined)
           this._onRepeatCallback(this._object);
 
         return true;
-
       } else {
-
         if (this._onCompleteCallback !== undefined)
           this._onCompleteCallback(this._object);
 
-        for (let i = 0, numChainedTweens = this._chainedTweens.length; i < numChainedTweens; i++) {
+        for (
+          let i = 0, numChainedTweens = this._chainedTweens.length;
+          i < numChainedTweens;
+          i++
+        ) {
           // Make the chained tweens start exactly at the time they should,
           // even if the `update()` method was called way past the duration of the tween
           this._chainedTweens[i].start(this._startTime + this._duration);
         }
         return false;
       }
-
     }
     return true;
   }
@@ -460,7 +467,7 @@ export const Easing = {
       if ((k *= 2) < 1) {
         return 0.5 * k * k;
       }
-      return - 0.5 * (--k * (k - 2) - 1);
+      return -0.5 * (--k * (k - 2) - 1);
     },
   },
 
@@ -488,7 +495,7 @@ export const Easing = {
     },
 
     Out: (k: number) => {
-      return 1 - (--k * k * k * k);
+      return 1 - --k * k * k * k;
     },
 
     InOut: (k: number) => {
@@ -496,7 +503,7 @@ export const Easing = {
         return 0.5 * k * k * k * k;
       }
 
-      return - 0.5 * ((k -= 2) * k * k * k - 2);
+      return -0.5 * ((k -= 2) * k * k * k - 2);
     },
   },
 
@@ -520,11 +527,11 @@ export const Easing = {
 
   Sinusoidal: {
     In: (k: number) => {
-      return 1 - Math.cos(k * Math.PI / 2);
+      return 1 - Math.cos((k * Math.PI) / 2);
     },
 
     Out: (k: number) => {
-      return Math.sin(k * Math.PI / 2);
+      return Math.sin((k * Math.PI) / 2);
     },
 
     InOut: (k: number) => {
@@ -538,20 +545,17 @@ export const Easing = {
     },
 
     Out: (k: number) => {
-      return k === 1 ? 1 : 1 - Math.pow(2, - 10 * k);
+      return k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
     },
 
     InOut: (k: number) => {
-      if (k === 0)
-        return 0;
+      if (k === 0) return 0;
 
-      if (k === 1)
-        return 1;
+      if (k === 1) return 1;
 
-      if ((k *= 2) < 1)
-        return 0.5 * Math.pow(1024, k - 1);
+      if ((k *= 2) < 1) return 0.5 * Math.pow(1024, k - 1);
 
-      return 0.5 * (- Math.pow(2, - 10 * (k - 1)) + 2);
+      return 0.5 * (-Math.pow(2, -10 * (k - 1)) + 2);
     },
   },
 
@@ -561,12 +565,11 @@ export const Easing = {
     },
 
     Out: (k: number) => {
-      return Math.sqrt(1 - (--k * k));
+      return Math.sqrt(1 - --k * k);
     },
 
     InOut: (k: number) => {
-      if ((k *= 2) < 1)
-        return - 0.5 * (Math.sqrt(1 - k * k) - 1);
+      if ((k *= 2) < 1) return -0.5 * (Math.sqrt(1 - k * k) - 1);
 
       return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
     },
@@ -574,38 +577,36 @@ export const Easing = {
 
   Elastic: {
     In: (k: number) => {
-      if (k === 0)
-        return 0;
+      if (k === 0) return 0;
 
-      if (k === 1)
-        return 1;
+      if (k === 1) return 1;
 
       return -Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI);
     },
 
     Out: (k: number) => {
-      if (k === 0)
-        return 0;
+      if (k === 0) return 0;
 
-      if (k === 1)
-        return 1;
+      if (k === 1) return 1;
 
       return Math.pow(2, -10 * k) * Math.sin((k - 0.1) * 5 * Math.PI) + 1;
     },
 
     InOut: (k: number) => {
-      if (k === 0)
-        return 0;
+      if (k === 0) return 0;
 
-      if (k === 1)
-        return 1;
+      if (k === 1) return 1;
 
       k *= 2;
 
       if (k < 1)
-        return -0.5 * Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI);
+        return (
+          -0.5 * Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI)
+        );
 
-      return 0.5 * Math.pow(2, -10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI) + 1;
+      return (
+        0.5 * Math.pow(2, -10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI) + 1
+      );
     },
   },
 
@@ -622,8 +623,7 @@ export const Easing = {
 
     InOut: (k: number) => {
       const s = 1.70158 * 1.525;
-      if ((k *= 2) < 1)
-        return 0.5 * (k * k * ((s + 1) * k - s));
+      if ((k *= 2) < 1) return 0.5 * (k * k * ((s + 1) * k - s));
 
       return 0.5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
     },
@@ -635,18 +635,14 @@ export const Easing = {
     },
 
     Out: (k: number) => {
-      if (k < (1 / 2.75))
-        return 7.5625 * k * k;
-      if (k < (2 / 2.75))
-        return 7.5625 * (k -= (1.5 / 2.75)) * k + 0.75;
-      if (k < (2.5 / 2.75))
-        return 7.5625 * (k -= (2.25 / 2.75)) * k + 0.9375;
-      return 7.5625 * (k -= (2.625 / 2.75)) * k + 0.984375;
+      if (k < 1 / 2.75) return 7.5625 * k * k;
+      if (k < 2 / 2.75) return 7.5625 * (k -= 1.5 / 2.75) * k + 0.75;
+      if (k < 2.5 / 2.75) return 7.5625 * (k -= 2.25 / 2.75) * k + 0.9375;
+      return 7.5625 * (k -= 2.625 / 2.75) * k + 0.984375;
     },
 
     InOut: (k: number) => {
-      if (k < 0.5)
-        return Easing.Bounce.In(k * 2) * 0.5;
+      if (k < 0.5) return Easing.Bounce.In(k * 2) * 0.5;
 
       return Easing.Bounce.Out(k * 2 - 1) * 0.5 + 0.5;
     },
@@ -657,18 +653,15 @@ export const Easing = {
  *  @public
  */
 export const Interpolation = {
-
   Linear: (v: any, k: number) => {
     const m = v.length - 1;
     const f = m * k;
     const i = Math.floor(f);
     const fn = Interpolation.Utils.Linear;
 
-    if (k < 0)
-      return fn(v[0], v[1], f);
+    if (k < 0) return fn(v[0], v[1], f);
 
-    if (k > 1)
-      return fn(v[m], v[m - 1], m - f);
+    if (k > 1) return fn(v[m], v[m - 1], m - f);
 
     return fn(v[i], v[i + 1 > m ? m : i + 1], f - i);
   },
@@ -693,17 +686,28 @@ export const Interpolation = {
 
     if (v[0] === v[m]) {
       if (k < 0) {
-        i = Math.floor(f = m * (1 + k));
+        i = Math.floor((f = m * (1 + k)));
       }
-      return fn(v[(i - 1 + m) % m], v[i], v[(i + 1) % m], v[(i + 2) % m], f - i);
+      return fn(
+        v[(i - 1 + m) % m],
+        v[i],
+        v[(i + 1) % m],
+        v[(i + 2) % m],
+        f - i
+      );
     } else {
-      if (k < 0)
-        return v[0] - (fn(v[0], v[0], v[1], v[1], -f) - v[0]);
+      if (k < 0) return v[0] - (fn(v[0], v[0], v[1], v[1], -f) - v[0]);
 
       if (k > 1)
         return v[m] - (fn(v[m], v[m], v[m - 1], v[m - 1], f - m) - v[m]);
 
-      return fn(v[i ? i - 1 : 0], v[i], v[m < i + 1 ? m : i + 1], v[m < i + 2 ? m : i + 2], f - i);
+      return fn(
+        v[i ? i - 1 : 0],
+        v[i],
+        v[m < i + 1 ? m : i + 1],
+        v[m < i + 2 ? m : i + 2],
+        f - i
+      );
     }
   },
 
@@ -722,16 +726,13 @@ export const Interpolation = {
       return (n: number) => {
         let s = 1;
 
-        if (a[n])
-          return a[n];
+        if (a[n]) return a[n];
 
-        for (let i = n; i > 1; i--)
-          s *= i;
+        for (let i = n; i > 1; i--) s *= i;
 
         a[n] = s;
         return s;
       };
-
     })(),
 
     CatmullRom: (p0: number, p1: number, p2: number, p3: number, t: number) => {
@@ -739,7 +740,12 @@ export const Interpolation = {
       const v1 = (p3 - p1) * 0.5;
       const t2 = t * t;
       const t3 = t * t2;
-      return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (- 3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
+      return (
+        (2 * p1 - 2 * p2 + v0 + v1) * t3 +
+        (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 +
+        v0 * t +
+        p1
+      );
     },
   },
 };

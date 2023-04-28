@@ -5,9 +5,16 @@
 
 import { expect } from "chai";
 import {
-  ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer,
+  ContextRealityModel,
+  ContextRealityModelProps,
+  ContextRealityModels,
+  ContextRealityModelsContainer,
 } from "../ContextRealityModel";
-import { SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
+import {
+  SpatialClassifier,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+} from "../SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { FeatureAppearance } from "../FeatureSymbology";
 
@@ -16,7 +23,10 @@ describe("ContextRealityModel", () => {
     return new ContextRealityModel(props);
   }
 
-  function expectProps(actual: ContextRealityModelProps, expected: ContextRealityModelProps): void {
+  function expectProps(
+    actual: ContextRealityModelProps,
+    expected: ContextRealityModelProps
+  ): void {
     expect(actual).to.deep.equal(expected);
   }
 
@@ -34,20 +44,32 @@ describe("ContextRealityModel", () => {
 
     m = makeModel({
       rdSourceKey: {
-        provider: "ContextShare", format: "ThreeDTile", id: "dummy",
+        provider: "ContextShare",
+        format: "ThreeDTile",
+        id: "dummy",
       },
       tilesetUrl: "b",
       name: "c",
       description: "d",
       realityDataId: "e",
       appearanceOverrides: { transparency: 0.5 },
-      classifiers: [{
-        modelId: "0x1", expand: 2, name: "3", flags: {
-          inside: SpatialClassifierInsideDisplay.On, outside: SpatialClassifierOutsideDisplay.Off,
+      classifiers: [
+        {
+          modelId: "0x1",
+          expand: 2,
+          name: "3",
+          flags: {
+            inside: SpatialClassifierInsideDisplay.On,
+            outside: SpatialClassifierOutsideDisplay.Off,
+          },
         },
-      }],
+      ],
       orbitGtBlob: {
-        rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
+        rdsUrl: "rdsUrl",
+        containerName: "container",
+        blobFileName: "blob",
+        sasToken: "token",
+        accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
     });
@@ -67,11 +89,17 @@ describe("ContextRealityModel", () => {
       tilesetUrl: "a",
       planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: 321 },
       appearanceOverrides: { transparency: 0.5 },
-      classifiers: [{
-        modelId: "0x1", expand: 2, name: "3", flags: {
-          inside: SpatialClassifierInsideDisplay.On, outside: SpatialClassifierOutsideDisplay.Off,
+      classifiers: [
+        {
+          modelId: "0x1",
+          expand: 2,
+          name: "3",
+          flags: {
+            inside: SpatialClassifierInsideDisplay.On,
+            outside: SpatialClassifierOutsideDisplay.Off,
+          },
         },
-      }],
+      ],
     };
 
     let props = ContextRealityModelProps.clone(initialProps);
@@ -86,33 +114,54 @@ describe("ContextRealityModel", () => {
     model = makeModel(props);
     model.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 5 });
     model.classifiers!.add(new SpatialClassifier("0x123", "new"));
-    model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 123 });
+    model.planarClipMaskSettings = PlanarClipMaskSettings.create({
+      priority: 123,
+    });
 
     expectProps(props, {
       tilesetUrl: "a",
       planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: 123 },
       appearanceOverrides: { weight: 5 },
-      classifiers: [{
-        modelId: "0x1", expand: 2, name: "3", flags: {
-          inside: SpatialClassifierInsideDisplay.On, outside: SpatialClassifierOutsideDisplay.Off,
+      classifiers: [
+        {
+          modelId: "0x1",
+          expand: 2,
+          name: "3",
+          flags: {
+            inside: SpatialClassifierInsideDisplay.On,
+            outside: SpatialClassifierOutsideDisplay.Off,
+          },
         },
-      }, {
-        modelId: "0x123", name: "new", expand: 0, isActive: false, flags: {
-          inside: SpatialClassifierInsideDisplay.ElementColor, outside: SpatialClassifierOutsideDisplay.Dimmed,
+        {
+          modelId: "0x123",
+          name: "new",
+          expand: 0,
+          isActive: false,
+          flags: {
+            inside: SpatialClassifierInsideDisplay.ElementColor,
+            outside: SpatialClassifierOutsideDisplay.Dimmed,
+          },
         },
-      }],
+      ],
     });
   });
 
   it("defaults tilesetUrl to empty string", () => {
-    const m = makeModel({ } as unknown as ContextRealityModelProps);
+    const m = makeModel({} as unknown as ContextRealityModelProps);
     expect(m.url).to.equal("");
   });
 
   it("normalizes JSON when cloning", () => {
     const props: ContextRealityModelProps = {
-      rdSourceKey: undefined, tilesetUrl: "a", name: "", description: undefined, realityDataId: "", appearanceOverrides: undefined,
-      classifiers: undefined, orbitGtBlob: undefined, planarClipMask: undefined,
+      rdSourceKey: undefined,
+      tilesetUrl: "a",
+      name: "",
+      description: undefined,
+      realityDataId: "",
+      appearanceOverrides: undefined,
+      classifiers: undefined,
+      orbitGtBlob: undefined,
+      planarClipMask: undefined,
     };
     (props as any).tilesetUrl = undefined;
 
@@ -123,20 +172,32 @@ describe("ContextRealityModel", () => {
   it("clones deeply", () => {
     const props = {
       rdSourceKey: {
-        provider: "ContextShare", format: "ThreeDTile", id: "dummy",
+        provider: "ContextShare",
+        format: "ThreeDTile",
+        id: "dummy",
       },
       tilesetUrl: "b",
       name: "c",
       description: "d",
       realityDataId: "e",
       appearanceOverrides: { rgb: { r: 1, g: 2, b: 3 } },
-      classifiers: [{
-        modelId: "0x1", expand: 2, name: "3", flags: {
-          inside: SpatialClassifierInsideDisplay.On, outside: SpatialClassifierOutsideDisplay.Off,
+      classifiers: [
+        {
+          modelId: "0x1",
+          expand: 2,
+          name: "3",
+          flags: {
+            inside: SpatialClassifierInsideDisplay.On,
+            outside: SpatialClassifierOutsideDisplay.Off,
+          },
         },
-      }],
+      ],
       orbitGtBlob: {
-        rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
+        rdsUrl: "rdsUrl",
+        containerName: "container",
+        blobFileName: "blob",
+        sasToken: "token",
+        accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
     };
@@ -150,11 +211,15 @@ describe("ContextRealityModel", () => {
     expect(clone.planarClipMask).not.to.equal(props.planarClipMask);
 
     expect(clone.appearanceOverrides).not.to.equal(props.appearanceOverrides);
-    expect(clone.appearanceOverrides!.rgb).not.to.equal(props.appearanceOverrides.rgb);
+    expect(clone.appearanceOverrides!.rgb).not.to.equal(
+      props.appearanceOverrides.rgb
+    );
 
     expect(clone.classifiers).not.to.equal(props.classifiers);
     expect(clone.classifiers![0]).not.to.equal(props.classifiers[0]);
-    expect(clone.classifiers![0].flags).not.to.equal(props.classifiers[0].flags);
+    expect(clone.classifiers![0].flags).not.to.equal(
+      props.classifiers[0].flags
+    );
   });
 
   it("dispatches events", () => {
@@ -171,7 +236,8 @@ describe("ContextRealityModel", () => {
       app = x;
     });
 
-    const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1234 });
+    const newMask = (model.planarClipMaskSettings =
+      PlanarClipMaskSettings.create({ priority: 1234 }));
     expect(mask).to.equal(newMask);
     expect(model.planarClipMaskSettings).to.equal(newMask);
 
@@ -179,7 +245,9 @@ describe("ContextRealityModel", () => {
     expect(mask).to.be.undefined;
     expect(model.planarClipMaskSettings).to.be.undefined;
 
-    const newApp = model.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 2 });
+    const newApp = (model.appearanceOverrides = FeatureAppearance.fromJSON({
+      weight: 2,
+    }));
     expect(app).to.equal(newApp);
     expect(model.appearanceOverrides).to.equal(newApp);
 
@@ -190,26 +258,34 @@ describe("ContextRealityModel", () => {
 });
 
 describe("ContextRealityModels", () => {
-  function expectProps(actual: ContextRealityModelProps[] | undefined, expected: ContextRealityModelProps[] | undefined) {
+  function expectProps(
+    actual: ContextRealityModelProps[] | undefined,
+    expected: ContextRealityModelProps[] | undefined
+  ) {
     expect(actual).to.deep.equal(expected);
   }
 
   it("populates from JSON", () => {
     expect(new ContextRealityModels({}).models.length).to.equal(0);
 
-    const props = { contextRealityModels: [
-      { tilesetUrl: "a" },
-      { tilesetUrl: "b", name: "bb" },
-      { tilesetUrl: "c", description: "ccc" },
-    ]};
+    const props = {
+      contextRealityModels: [
+        { tilesetUrl: "a" },
+        { tilesetUrl: "b", name: "bb" },
+        { tilesetUrl: "c", description: "ccc" },
+      ],
+    };
 
     const models = new ContextRealityModels(props).models;
     expect(models.length).to.equal(3);
-    expectProps(models.map((x) => x.toJSON()), props.contextRealityModels);
+    expectProps(
+      models.map((x) => x.toJSON()),
+      props.contextRealityModels
+    );
   });
 
   it("adds models", () => {
-    const container: ContextRealityModelsContainer = { };
+    const container: ContextRealityModelsContainer = {};
     const models = new ContextRealityModels(container);
     expect(models.models.length).to.equal(0);
     expect(container.contextRealityModels).to.be.undefined;
@@ -224,17 +300,26 @@ describe("ContextRealityModels", () => {
     expect(models.models.length).to.equal(2);
     expect(models.models[1]).to.equal(m1);
 
-    expectProps(container.contextRealityModels, [{
-      tilesetUrl: "a",
-    }, {
-      tilesetUrl: "b", name: "bb", description: "bbb",
-    }]);
+    expectProps(container.contextRealityModels, [
+      {
+        tilesetUrl: "a",
+      },
+      {
+        tilesetUrl: "b",
+        name: "bb",
+        description: "bbb",
+      },
+    ]);
   });
 
   it("deletes models", () => {
-    const container = { contextRealityModels: [
-      { tilesetUrl: "a" }, { tilesetUrl: "b" }, { tilesetUrl: "c" },
-    ]};
+    const container = {
+      contextRealityModels: [
+        { tilesetUrl: "a" },
+        { tilesetUrl: "b" },
+        { tilesetUrl: "c" },
+      ],
+    };
 
     const models = new ContextRealityModels(container);
     expect(models.models.length).to.equal(3);
@@ -249,13 +334,16 @@ describe("ContextRealityModels", () => {
     expect(models.delete(b)).to.be.true;
     expect(models.models.length).to.equal(2);
     expect(models.models.indexOf(b)).to.equal(-1);
-    expectProps(container.contextRealityModels, [ {tilesetUrl: "a"}, {tilesetUrl: "c"} ]);
+    expectProps(container.contextRealityModels, [
+      { tilesetUrl: "a" },
+      { tilesetUrl: "c" },
+    ]);
     expect(models.delete(b)).to.be.false;
 
     expect(models.delete(c)).to.be.true;
     expect(models.models.length).to.equal(1);
     expect(models.models.indexOf(c)).to.equal(-1);
-    expectProps(container.contextRealityModels, [ {tilesetUrl: "a"} ]);
+    expectProps(container.contextRealityModels, [{ tilesetUrl: "a" }]);
     expect(models.delete(c)).to.be.false;
 
     expect(models.delete(a)).to.be.true;
@@ -267,7 +355,9 @@ describe("ContextRealityModels", () => {
   });
 
   it("clears", () => {
-    const container = { contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }] };
+    const container = {
+      contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }],
+    };
     const models = new ContextRealityModels(container);
     expect(models.models.length).to.equal(2);
 
@@ -277,7 +367,9 @@ describe("ContextRealityModels", () => {
   });
 
   it("replaces models", () => {
-    const container = { contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }] };
+    const container = {
+      contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }],
+    };
     const models = new ContextRealityModels(container);
 
     const a = models.models[0];
@@ -285,25 +377,36 @@ describe("ContextRealityModels", () => {
     expect(models.models.indexOf(a)).to.equal(-1);
     expect(models.models.indexOf(a1)).to.equal(0);
     expect(models.models.length).to.equal(2);
-    expectProps(container.contextRealityModels, [{ tilesetUrl: "aa", name: "newA" }, { tilesetUrl: "b" }]);
+    expectProps(container.contextRealityModels, [
+      { tilesetUrl: "aa", name: "newA" },
+      { tilesetUrl: "b" },
+    ]);
 
     expect(() => models.replace(a, { tilesetUrl: "aaa" })).to.throw(Error);
 
     const b = models.models[1];
     expect(models.replace(b, { tilesetUrl: "b" })).not.to.equal(b);
     expect(models.models.indexOf(b)).to.equal(-1);
-    expectProps(container.contextRealityModels, [{ tilesetUrl: "aa", name: "newA" }, { tilesetUrl: "b" }]);
+    expectProps(container.contextRealityModels, [
+      { tilesetUrl: "aa", name: "newA" },
+      { tilesetUrl: "b" },
+    ]);
   });
 
   it("updates models", () => {
-    const container = { contextRealityModels: [{tilesetUrl: "a"}, {tilesetUrl: "b"}] };
+    const container = {
+      contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }],
+    };
     const models = new ContextRealityModels(container);
 
     const a = models.models[0];
     const a1 = models.update(a, { name: "aa", description: "aaa" });
     expect(models.models.indexOf(a)).to.equal(-1);
     expect(models.models.indexOf(a1)).to.equal(0);
-    expectProps(container.contextRealityModels, [{tilesetUrl: "a", name: "aa", description: "aaa"}, {tilesetUrl: "b"}]);
+    expectProps(container.contextRealityModels, [
+      { tilesetUrl: "a", name: "aa", description: "aaa" },
+      { tilesetUrl: "b" },
+    ]);
 
     expect(() => models.update(a, { name: "aaaa" })).to.throw(Error);
 
@@ -311,15 +414,21 @@ describe("ContextRealityModels", () => {
     expect(a2.url).to.equal("a2");
     expect(a2.name).to.be.equal("");
     expect(a2.description).to.equal("aaa");
-    expectProps(container.contextRealityModels, [{tilesetUrl: "a2", description: "aaa"}, {tilesetUrl: "b"}]);
+    expectProps(container.contextRealityModels, [
+      { tilesetUrl: "a2", description: "aaa" },
+      { tilesetUrl: "b" },
+    ]);
 
-    const a3 = models.update(a2, {tilesetUrl: undefined});
+    const a3 = models.update(a2, { tilesetUrl: undefined });
     expect(a3.url).to.equal("a2");
-    expectProps(container.contextRealityModels, [{tilesetUrl: "a2", description: "aaa"}, {tilesetUrl: "b"}]);
+    expectProps(container.contextRealityModels, [
+      { tilesetUrl: "a2", description: "aaa" },
+      { tilesetUrl: "b" },
+    ]);
   });
 
   it("instantiates correct type", () => {
-    class MyRealityModel extends ContextRealityModel { }
+    class MyRealityModel extends ContextRealityModel {}
 
     const container = { contextRealityModels: [{ tilesetUrl: "a" }] };
     let models = new ContextRealityModels(container);
@@ -329,7 +438,10 @@ describe("ContextRealityModels", () => {
       expect(model instanceof MyRealityModel).to.be.false;
     }
 
-    models = new ContextRealityModels(container, (props) => new MyRealityModel(props));
+    models = new ContextRealityModels(
+      container,
+      (props) => new MyRealityModel(props)
+    );
     models.add({ tilesetUrl: "b" });
     models.add({ tilesetUrl: "c" });
     models.update(models.models[2], { name: "cc" });
@@ -348,22 +460,22 @@ describe("ContextRealityModels", () => {
       type ModelEvent = [string, "add" | "delete" | "update"];
       const events: ModelEvent[] = [];
 
-      const models = new ContextRealityModels({ contextRealityModels: [{tilesetUrl: "a"}] });
+      const models = new ContextRealityModels({
+        contextRealityModels: [{ tilesetUrl: "a" }],
+      });
       models.onChanged.addListener((prev, cur) => {
         expect(undefined !== prev || undefined !== cur).to.be.true;
-        if (prev)
-          expect(models.models.indexOf(prev)).not.to.equal(-1);
+        if (prev) expect(models.models.indexOf(prev)).not.to.equal(-1);
 
-        if (cur)
-          expect(models.models.indexOf(cur)).to.equal(-1);
+        if (cur) expect(models.models.indexOf(cur)).to.equal(-1);
 
         const model = prev ?? cur!;
         events.push([model.url, prev ? (cur ? "update" : "delete") : "add"]);
       });
 
-      models.add({tilesetUrl: "b"});
-      models.update(models.models[0], {name: "aa"});
-      models.replace(models.models[1], {tilesetUrl: "bb"});
+      models.add({ tilesetUrl: "b" });
+      models.update(models.models[0], { name: "aa" });
+      models.replace(models.models[1], { tilesetUrl: "bb" });
       models.delete(models.models[0]);
       models.clear();
 
@@ -384,9 +496,15 @@ describe("ContextRealityModels", () => {
 
     beforeEach(() => {
       events.length = 0;
-      models = new ContextRealityModels({ contextRealityModels: [{tilesetUrl: "a"}, {tilesetUrl: "b"}] });
-      models.onPlanarClipMaskChanged.addListener((model) => events.push([model.url, "mask"]));
-      models.onAppearanceOverridesChanged.addListener((model) => events.push([model.url, "appearance"]));
+      models = new ContextRealityModels({
+        contextRealityModels: [{ tilesetUrl: "a" }, { tilesetUrl: "b" }],
+      });
+      models.onPlanarClipMaskChanged.addListener((model) =>
+        events.push([model.url, "mask"])
+      );
+      models.onAppearanceOverridesChanged.addListener((model) =>
+        events.push([model.url, "appearance"])
+      );
     });
 
     function expectEvents(expected: ModelChangeEvent[]): void {
@@ -395,16 +513,22 @@ describe("ContextRealityModels", () => {
     }
 
     it("are dispatched when clip mask or appearance is changed", () => {
-      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
-      models.models[1].appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
-      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
+      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.create({
+        priority: 1,
+      });
+      models.models[1].appearanceOverrides = FeatureAppearance.fromJSON({
+        weight: 1,
+      });
+      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.create({
+        priority: 2,
+      });
       models.models[0].appearanceOverrides = undefined;
 
       expectEvents([
-        [ "a", "mask" ],
-        [ "b", "appearance" ],
-        [ "b", "mask" ],
-        [ "a", "appearance" ],
+        ["a", "mask"],
+        ["b", "appearance"],
+        ["b", "mask"],
+        ["a", "appearance"],
       ]);
     });
 
@@ -412,17 +536,21 @@ describe("ContextRealityModels", () => {
       const m0 = models.models[0];
       const m1 = models.models[1];
 
-      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({
+        priority: 1,
+      });
       models.delete(m0);
-      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({
+        priority: 2,
+      });
 
       m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
       models.clear();
       m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 2 });
 
       expectEvents([
-        [ "a", "mask" ],
-        [ "b", "appearance" ],
+        ["a", "mask"],
+        ["b", "appearance"],
       ]);
     });
 
@@ -435,9 +563,9 @@ describe("ContextRealityModels", () => {
       m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 3 });
       m2.planarClipMaskSettings = undefined;
       expectEvents([
-        [ "aa", "appearance" ],
-        [ "b", "appearance" ],
-        [ "c", "mask" ],
+        ["aa", "appearance"],
+        ["b", "appearance"],
+        ["c", "mask"],
       ]);
     });
   });

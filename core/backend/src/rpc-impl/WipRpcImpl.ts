@@ -7,7 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
+import {
+  ChangedElements,
+  IModelRpcProps,
+  RpcInterface,
+  RpcManager,
+  WipRpcInterface,
+} from "@itwin/core-common";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";
@@ -15,25 +21,47 @@ import { BriefcaseDb } from "../IModelDb";
 /** The backend implementation of WipRpcInterface.
  * @internal
  */
-export class WipRpcImpl extends RpcInterface implements WipRpcInterface { // eslint-disable-line deprecation/deprecation
+export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
+  // eslint-disable-line deprecation/deprecation
 
-  public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); }
-  public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
+  public static register() {
+    RpcManager.registerImpl(WipRpcInterface, WipRpcImpl);
+  }
+  public async placeholder(_tokenProps: IModelRpcProps): Promise<string> {
+    return "placeholder";
+  }
 
-  public async isChangeCacheAttached(tokenProps: IModelRpcProps): Promise<boolean> {
-    return ChangeSummaryManager.isChangeCacheAttached(BriefcaseDb.findByKey(tokenProps.key));
+  public async isChangeCacheAttached(
+    tokenProps: IModelRpcProps
+  ): Promise<boolean> {
+    return ChangeSummaryManager.isChangeCacheAttached(
+      BriefcaseDb.findByKey(tokenProps.key)
+    );
   }
 
   public async attachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
-    ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByKey(tokenProps.key));
+    ChangeSummaryManager.attachChangeCache(
+      BriefcaseDb.findByKey(tokenProps.key)
+    );
   }
 
-  public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
+  public async getChangedElements(
+    tokenProps: IModelRpcProps,
+    startChangesetId: string,
+    endChangesetId: string
+  ): Promise<ChangedElements | undefined> {
     assert(undefined !== tokenProps.iModelId);
-    return ChangedElementsManager.getChangedElements(tokenProps.iModelId, startChangesetId, endChangesetId);
+    return ChangedElementsManager.getChangedElements(
+      tokenProps.iModelId,
+      startChangesetId,
+      endChangesetId
+    );
   }
 
-  public async isChangesetProcessed(tokenProps: IModelRpcProps, changesetId: string): Promise<boolean> {
+  public async isChangesetProcessed(
+    tokenProps: IModelRpcProps,
+    changesetId: string
+  ): Promise<boolean> {
     assert(undefined !== tokenProps.iModelId);
     return ChangedElementsManager.isProcessed(tokenProps.iModelId, changesetId);
   }

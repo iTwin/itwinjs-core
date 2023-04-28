@@ -39,9 +39,16 @@ export interface SyncTarget {
 /** Returns true if the target and observer are already synchronized.
  * @internal
  */
-export function isSynchronized(target: SyncTarget, observer: SyncObserver): boolean {
+export function isSynchronized(
+  target: SyncTarget,
+  observer: SyncObserver
+): boolean {
   const token = observer.syncToken;
-  return undefined !== token && token.target === target && token.syncKey === target.syncKey;
+  return (
+    undefined !== token &&
+    token.target === target &&
+    token.syncKey === target.syncKey
+  );
 }
 
 /** If the observer is already synchronized with the target, returns true.
@@ -58,8 +65,7 @@ export function sync(target: SyncTarget, observer: SyncObserver): boolean {
     return false;
   }
 
-  if (token.syncKey === syncKey && token.target === target)
-    return true;
+  if (token.syncKey === syncKey && token.target === target) return true;
 
   token.syncKey = syncKey;
   token.target = target;
@@ -72,8 +78,6 @@ export function sync(target: SyncTarget, observer: SyncObserver): boolean {
  */
 export function desync(target: SyncTarget): void {
   // Let's make the relatively safe assumption that we will never roll over, and the even safer assumption that if we do, no outstanding SyncTokens holding a very small value will exist at that time.
-  if (target.syncKey < Number.MAX_SAFE_INTEGER)
-    ++target.syncKey;
-  else
-    target.syncKey = Number.MIN_SAFE_INTEGER;
+  if (target.syncKey < Number.MAX_SAFE_INTEGER) ++target.syncKey;
+  else target.syncKey = Number.MIN_SAFE_INTEGER;
 }

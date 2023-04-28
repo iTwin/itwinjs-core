@@ -25,7 +25,10 @@ import { Transform } from "../geometry3d/Transform";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
+import {
+  MultiLineStringDataVariant,
+  Triangulator,
+} from "../topology/Triangulation";
 
 /**
  * Sweepable contour with Transform for local to world interaction.
@@ -40,7 +43,11 @@ export class SweepContour {
   /** Axis used only in rotational case. */
   public axis: Ray3d | undefined;
 
-  private constructor(contour: CurveCollection, map: Transform, axis: Ray3d | undefined) {
+  private constructor(
+    contour: CurveCollection,
+    map: Transform,
+    axis: Ray3d | undefined
+  ) {
     this.curves = contour;
     this.localToWorld = map;
     this.axis = axis;
@@ -49,10 +56,16 @@ export class SweepContour {
    * * The optional default normal may be useful for guiding coordinate frame setup.
    * * the contour is CAPTURED.
    */
-  public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
-    const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
+  public static createForLinearSweep(
+    contour: CurveCollection,
+    defaultNormal?: Vector3d
+  ): SweepContour | undefined {
+    const localToWorld = FrameBuilder.createRightHandedFrame(
+      defaultNormal,
+      contour
+    );
     if (localToWorld) {
-    return new SweepContour(contour, localToWorld, undefined);
+      return new SweepContour(contour, localToWorld, undefined);
     }
     return undefined;
   }
@@ -61,8 +74,14 @@ export class SweepContour {
    * * The optional default normal may be useful for guiding coordinate frame setup.
    * * the points are captured into linestrings and Loops as needed.
    */
-  public static createForPolygon(points: MultiLineStringDataVariant, defaultNormal?: Vector3d): SweepContour | undefined {
-    const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, points);
+  public static createForPolygon(
+    points: MultiLineStringDataVariant,
+    defaultNormal?: Vector3d
+  ): SweepContour | undefined {
+    const localToWorld = FrameBuilder.createRightHandedFrame(
+      defaultNormal,
+      points
+    );
     if (localToWorld) {
       if (defaultNormal !== undefined) {
         if (localToWorld.matrix.dotColumnZ(defaultNormal))
@@ -77,7 +96,11 @@ export class SweepContour {
       if (loops.length === 1) {
         return new SweepContour(loops[0], localToWorld, undefined);
       } else if (loops.length > 1) {
-        return new SweepContour(ParityRegion.createLoops(loops), localToWorld, undefined);
+        return new SweepContour(
+          ParityRegion.createLoops(loops),
+          localToWorld,
+          undefined
+        );
       }
     }
     return undefined;
@@ -87,27 +110,40 @@ export class SweepContour {
    * * The axis ray is retained.
    * * the contour is CAPTURED.
    */
-  public static createForRotation(contour: CurveCollection, axis: Ray3d): SweepContour | undefined {
+  public static createForRotation(
+    contour: CurveCollection,
+    axis: Ray3d
+  ): SweepContour | undefined {
     // createRightHandedFrame -- the axis is a last-gasp resolver for in-plane vectors.
-    const localToWorld = FrameBuilder.createRightHandedFrame(undefined, contour, axis);
+    const localToWorld = FrameBuilder.createRightHandedFrame(
+      undefined,
+      contour,
+      axis
+    );
     if (localToWorld) {
       return new SweepContour(contour, localToWorld, axis.clone());
     }
     return undefined;
   }
   /** Return (Reference to) the curves */
-  public getCurves(): CurveCollection { return this.curves; }
+  public getCurves(): CurveCollection {
+    return this.curves;
+  }
   /** Apply `transform` to the curves, axis.
    * * The local to world frame is reconstructed for the transformed curves.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (this.curves.tryTransformInPlace(transform)) {
-      if (this.axis)
-        this.axis.transformInPlace(transform);
+      if (this.axis) this.axis.transformInPlace(transform);
 
-      const localToWorld = this.axis !== undefined
-        ? FrameBuilder.createRightHandedFrame(undefined, this.curves, this.axis)
-        : FrameBuilder.createRightHandedFrame(undefined, this.curves);
+      const localToWorld =
+        this.axis !== undefined
+          ? FrameBuilder.createRightHandedFrame(
+              undefined,
+              this.curves,
+              this.axis
+            )
+          : FrameBuilder.createRightHandedFrame(undefined, this.curves);
       if (localToWorld) {
         this.localToWorld.setFrom(localToWorld);
         return true;
@@ -117,26 +153,34 @@ export class SweepContour {
   }
   /** Return a deep clone. */
   public clone(): SweepContour {
-    return new SweepContour(this.curves.clone(), this.localToWorld.clone(), this.axis);
+    return new SweepContour(
+      this.curves.clone(),
+      this.localToWorld.clone(),
+      this.axis
+    );
   }
   /** Return a transformed clone. */
   public cloneTransformed(transform: Transform): SweepContour | undefined {
     const newContour = this.clone();
-    if (newContour.tryTransformInPlace(transform))
-      return newContour;
+    if (newContour.tryTransformInPlace(transform)) return newContour;
     return undefined;
   }
   /** Test for near equality of cures and local frame. */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof SweepContour) {
-      return this.curves.isAlmostEqual(other.curves) && this.localToWorld.isAlmostEqual(other.localToWorld);
+      return (
+        this.curves.isAlmostEqual(other.curves) &&
+        this.localToWorld.isAlmostEqual(other.localToWorld)
+      );
     }
     return false;
   }
 
   private _xyStrokes?: AnyCurve;
   private _facets?: IndexedPolyface;
-  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes;}
+  public get xyStrokes(): AnyCurve | undefined {
+    return this._xyStrokes;
+  }
   /**
    * build the (cached) internal facets.
    * @param options options for stroking the curves.
@@ -145,21 +189,32 @@ export class SweepContour {
     if (!this._facets) {
       if (this.curves instanceof Loop) {
         this._xyStrokes = this.curves.cloneStroked(options);
-        if (this._xyStrokes instanceof Loop && this._xyStrokes.children.length === 1) {
+        if (
+          this._xyStrokes instanceof Loop &&
+          this._xyStrokes.children.length === 1
+        ) {
           const children = this._xyStrokes.children;
           const linestring = children[0] as LineString3d;
           const points = linestring.points;
           this.localToWorld.multiplyInversePoint3dArrayInPlace(points);
-          if (PolygonOps.sumTriangleAreasXY(points) < 0)
-            points.reverse();
-          const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+          if (PolygonOps.sumTriangleAreasXY(points) < 0) points.reverse();
+          const graph =
+            Triangulator.createTriangulatedGraphFromSingleLoop(points);
           if (graph) {
             Triangulator.flipTriangles(graph);
-            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
+            const unflippedPoly = PolyfaceBuilder.graphToPolyface(
+              graph,
+              options
+            );
             this._facets = unflippedPoly;
             this._facets.tryTransformInPlace(this.localToWorld);
-          } else {  // earcut failed (e.g., on a split washer polygon, where the bridge edge is traversed twice)
-            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(points, [], true);
+          } else {
+            // earcut failed (e.g., on a split washer polygon, where the bridge edge is traversed twice)
+            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(
+              points,
+              [],
+              true
+            );
             if (polyface) {
               this._facets = polyface as IndexedPolyface;
               this._facets.tryTransformInPlace(this.localToWorld);
@@ -168,7 +223,7 @@ export class SweepContour {
         }
       } else if (this.curves instanceof ParityRegion) {
         this._xyStrokes = this.curves.cloneStroked(options);
-        if (this._xyStrokes instanceof (ParityRegion)) {
+        if (this._xyStrokes instanceof ParityRegion) {
           const worldToLocal = this.localToWorld.inverse()!;
           this._xyStrokes.tryTransformInPlace(worldToLocal);
           const strokes = [];
@@ -176,21 +231,30 @@ export class SweepContour {
             const loopCurves = childLoop.children;
             if (loopCurves.length === 1) {
               const c = loopCurves[0];
-              if (c instanceof LineString3d)
-                strokes.push(c.packedPoints);
+              if (c instanceof LineString3d) strokes.push(c.packedPoints);
             }
           }
           const numLoops = strokes.length;
           /** Try the earcut algorithm first -- lots less machinery, but can't handle any form of overlap */
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
-          if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)) {
+          if (
+            graph &&
+            HalfEdgeGraphSearch.isTriangulatedCCW(graph, true, numLoops - 1)
+          ) {
             Triangulator.flipTriangles(graph);
-            const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
+            const unflippedPoly = PolyfaceBuilder.graphToPolyface(
+              graph,
+              options
+            );
             this._facets = unflippedPoly;
             this._facets.tryTransformInPlace(this.localToWorld);
           } else {
             // earcut failed. Restart with full merge and parity analysis.
-            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(strokes, [], true);
+            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(
+              strokes,
+              [],
+              true
+            );
             if (polyface) {
               this._facets = polyface as IndexedPolyface;
               this._facets.tryTransformInPlace(this.localToWorld);
@@ -210,7 +274,11 @@ export class SweepContour {
   /** Emit facets to a builder.
    * This method may cache and reuse facets over multiple calls.
    */
-  public emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform) {
+  public emitFacets(
+    builder: PolyfaceBuilder,
+    reverse: boolean,
+    transform?: Transform
+  ) {
     this.buildFacets(builder.options);
     if (this._facets)
       builder.addIndexedPolyface(this._facets, reverse, transform);
@@ -219,10 +287,12 @@ export class SweepContour {
   /** Emit facets to a function
    * This method may cache and reuse facets over multiple calls.
    */
-  public announceFacets(announce: (facets: IndexedPolyface) => void, options: StrokeOptions | undefined) {
+  public announceFacets(
+    announce: (facets: IndexedPolyface) => void,
+    options: StrokeOptions | undefined
+  ) {
     this.buildFacets(options);
-    if (this._facets)
-      announce(this._facets);
+    if (this._facets) announce(this._facets);
   }
 
   /**
@@ -234,11 +304,14 @@ export class SweepContour {
    * * If cap1 is true, the cap plane is at `anyPointOnPlane + sweepVector`.  That is, the sweep vector indicates both direction and distance.
    * * caps are NOT created of sweepVector is not given.
    */
-  public sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0: boolean = false, cap1: boolean = false): UnionOfConvexClipPlaneSets | undefined {
+  public sweepToUnionOfConvexClipPlaneSets(
+    sweepVector?: Vector3d,
+    cap0: boolean = false,
+    cap1: boolean = false
+  ): UnionOfConvexClipPlaneSets | undefined {
     const builder = PolyfaceBuilder.create();
     // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
-    if (!sweepVector)
-      cap0 = cap1 = false;
+    if (!sweepVector) cap0 = cap1 = false;
     this.buildFacets(builder.options);
     if (sweepVector === undefined)
       sweepVector = this.localToWorld.matrix.columnZ();
@@ -254,21 +327,29 @@ export class SweepContour {
 
       const result = UnionOfConvexClipPlaneSets.createEmpty();
       const visitor = facets.createVisitor(1);
-      for (visitor.reset(); visitor.moveToNextFacet();) {
+      for (visitor.reset(); visitor.moveToNextFacet(); ) {
         const numEdges = visitor.point.length - 1;
         const clipper = ConvexClipPlaneSet.createEmpty();
         for (let i = 0; i < numEdges; i++) {
           visitor.point.getPoint3dAtUncheckedPointIndex(i, point0);
           visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, point1);
-          const plane = ClipPlane.createEdgeAndUpVector(point1, point0, sweepVector);
+          const plane = ClipPlane.createEdgeAndUpVector(
+            point1,
+            point0,
+            sweepVector
+          );
           const visible = visitor.edgeVisible[i];
           plane?.setFlags(!visible, !visible);
           clipper.addPlaneToConvexSet(plane);
         }
         if (cap0)
-          clipper.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(inwardNormal0, plane0Origin));
+          clipper.addPlaneToConvexSet(
+            ClipPlane.createNormalAndPoint(inwardNormal0, plane0Origin)
+          );
         if (cap1)
-          clipper.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(inwardNormal1, plane1Origin));
+          clipper.addPlaneToConvexSet(
+            ClipPlane.createNormalAndPoint(inwardNormal1, plane1Origin)
+          );
         result.addConvexSet(clipper);
       }
       return result;

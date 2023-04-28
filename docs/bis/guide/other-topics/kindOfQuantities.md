@@ -23,5 +23,6 @@ The [RoadRailUnits](../../domains/RoadRailUnits.ecschema.md) schema is an exampl
 When an iModel Connector or Application faces the need of a special `KindOfQuantity` not covered by existing lower-level schemas, such special `KindOfQuantity` shall be defined in a Connector or Application-specific schema. It is still recommended to introduce these special KindOfQuantities into a separate schema in order to achieve better control over schema upgrades.
 
 ---
+
 | Next: [BIS Schema Validation](./bis-schema-validation.md)
 |:---

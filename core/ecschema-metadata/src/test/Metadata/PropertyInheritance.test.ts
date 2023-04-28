@@ -34,7 +34,8 @@ describe("Property Inheritance", () => {
           ],
         },
         MiddleClass: {
-          schemaItemType: "StructClass", baseClass: "TestSchema.RootClass",
+          schemaItemType: "StructClass",
+          baseClass: "TestSchema.RootClass",
           properties: [
             { name: "P2", type: "PrimitiveProperty", typeName: "string" },
             { name: "P1", type: "PrimitiveProperty", typeName: "string" },
@@ -42,18 +43,28 @@ describe("Property Inheritance", () => {
           ],
         },
         TestClass: {
-          schemaItemType: "StructClass", baseClass: "TestSchema.MiddleClass",
+          schemaItemType: "StructClass",
+          baseClass: "TestSchema.MiddleClass",
           properties: [
             { name: "P4", type: "PrimitiveProperty", typeName: "string" },
-            { name: "P3", type: "PrimitiveProperty", typeName: "string" }],
+            { name: "P3", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
       },
     };
 
-    const expectedResult = ["P1(MiddleClass)", "P2(MiddleClass)", "P3(TestClass)", "P4(TestClass)"];
+    const expectedResult = [
+      "P1(MiddleClass)",
+      "P2(MiddleClass)",
+      "P3(TestClass)",
+      "P4(TestClass)",
+    ];
 
     it("async iteration", async () => {
-      const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
+      const schema = (await Schema.fromJson(
+        schemaJson,
+        new SchemaContext()
+      )) as MutableSchema;
       const testClass = await schema.getItem<ECClass>("TestClass");
       const props = await testClass!.getProperties();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
@@ -61,7 +72,10 @@ describe("Property Inheritance", () => {
     });
 
     it("sync iteration", () => {
-      const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
+      const schema = Schema.fromJsonSync(
+        schemaJson,
+        new SchemaContext()
+      ) as MutableSchema;
       const testClass = schema.getItemSync<ECClass>("TestClass");
       const props = testClass!.getPropertiesSync();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
@@ -89,7 +103,8 @@ describe("Property Inheritance", () => {
           ],
         },
         MiddleClass: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass",
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.RootClass",
           properties: [
             { name: "P2", type: "PrimitiveProperty", typeName: "string" },
             { name: "P1", type: "PrimitiveProperty", typeName: "string" },
@@ -97,7 +112,8 @@ describe("Property Inheritance", () => {
           ],
         },
         TestClass: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.MiddleClass",
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.MiddleClass",
           properties: [
             { name: "P4", type: "PrimitiveProperty", typeName: "string" },
             { name: "P3", type: "PrimitiveProperty", typeName: "string" },
@@ -106,10 +122,18 @@ describe("Property Inheritance", () => {
       },
     };
 
-    const expectedResult = ["P1(MiddleClass)", "P2(MiddleClass)", "P3(TestClass)", "P4(TestClass)"];
+    const expectedResult = [
+      "P1(MiddleClass)",
+      "P2(MiddleClass)",
+      "P3(TestClass)",
+      "P4(TestClass)",
+    ];
 
     it("async iteration", async () => {
-      const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
+      const schema = (await Schema.fromJson(
+        schemaJson,
+        new SchemaContext()
+      )) as MutableSchema;
       const testClass = await schema.getItem<ECClass>("TestClass");
       const props = await testClass!.getProperties();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
@@ -117,7 +141,10 @@ describe("Property Inheritance", () => {
     });
 
     it("sync iteration", () => {
-      const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
+      const schema = Schema.fromJsonSync(
+        schemaJson,
+        new SchemaContext()
+      ) as MutableSchema;
       const testClass = schema.getItemSync<ECClass>("TestClass");
       const props = testClass!.getPropertiesSync();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
@@ -139,24 +166,41 @@ describe("Property Inheritance", () => {
       items: {
         RootClass: {
           schemaItemType: "EntityClass",
-          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }],
+          properties: [
+            { name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
         Mixin: {
-          schemaItemType: "Mixin", appliesTo: "TestSchema.RootClass",
-          properties: [{ name: "P5", type: "PrimitiveProperty", typeName: "string" }],
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.RootClass",
+          properties: [
+            { name: "P5", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
-        TestClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass", mixins: ["TestSchema.Mixin"] },
+        TestClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.RootClass",
+          mixins: ["TestSchema.Mixin"],
+        },
       },
     };
 
     const expectedResult = ["P1(RootClass)", "P5(Mixin)"];
     const expectedResult2 = ["P1(RootClass)", "P2(RootClass)", "P5(Mixin)"];
-    const expectedResult3 = ["P1(RootClass)", "P2(RootClass)", "P5(Mixin)", "P3(TestClass)"];
+    const expectedResult3 = [
+      "P1(RootClass)",
+      "P2(RootClass)",
+      "P5(Mixin)",
+      "P3(TestClass)",
+    ];
 
     it("async iteration", async () => {
-      const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
-      const testClass = await schema.getItem("TestClass") as MutableClass;
-      const rootClass = await schema.getItem("RootClass") as MutableClass;
+      const schema = (await Schema.fromJson(
+        schemaJson,
+        new SchemaContext()
+      )) as MutableSchema;
+      const testClass = (await schema.getItem("TestClass")) as MutableClass;
+      const rootClass = (await schema.getItem("RootClass")) as MutableClass;
       let props = await testClass.getProperties();
       let names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
@@ -185,7 +229,10 @@ describe("Property Inheritance", () => {
     });
 
     it("sync iteration", () => {
-      const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
+      const schema = Schema.fromJsonSync(
+        schemaJson,
+        new SchemaContext()
+      ) as MutableSchema;
       const testClass = schema.getItemSync("TestClass") as MutableClass;
       const rootClass = schema.getItemSync("RootClass") as MutableClass;
       let props = testClass.getPropertiesSync();
@@ -230,9 +277,14 @@ describe("Property Inheritance", () => {
       items: {
         RootClass: {
           schemaItemType: "StructClass",
-          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }],
+          properties: [
+            { name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
-        TestClass: { schemaItemType: "StructClass", baseClass: "TestSchema.RootClass" },
+        TestClass: {
+          schemaItemType: "StructClass",
+          baseClass: "TestSchema.RootClass",
+        },
       },
     };
 
@@ -241,9 +293,12 @@ describe("Property Inheritance", () => {
     const expectedResult3 = ["P1(RootClass)", "P2(RootClass)", "P3(TestClass)"];
 
     it("async iteration", async () => {
-      const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
-      const testClass = await schema.getItem("TestClass") as MutableClass;
-      const rootClass = await schema.getItem("RootClass") as MutableClass;
+      const schema = (await Schema.fromJson(
+        schemaJson,
+        new SchemaContext()
+      )) as MutableSchema;
+      const testClass = (await schema.getItem("TestClass")) as MutableClass;
+      const rootClass = (await schema.getItem("RootClass")) as MutableClass;
       let props = await testClass.getProperties();
       let names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
@@ -272,7 +327,10 @@ describe("Property Inheritance", () => {
     });
 
     it("sync iteration", () => {
-      const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
+      const schema = Schema.fromJsonSync(
+        schemaJson,
+        new SchemaContext()
+      ) as MutableSchema;
       const testClass = schema.getItemSync("TestClass") as MutableClass;
       const rootClass = schema.getItemSync("RootClass") as MutableClass;
       let props = testClass.getPropertiesSync();
@@ -328,26 +386,44 @@ describe("Property Inheritance", () => {
         },
         B: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
         C: {
-          schemaItemType: "Mixin", appliesTo: "TestSchema.A",
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.A",
           properties: [
             { name: "P3", type: "PrimitiveProperty", typeName: "string" },
           ],
         },
         D: {
-          schemaItemType: "Mixin", appliesTo: "TestSchema.A",
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.A",
           properties: [
             { name: "P4", type: "PrimitiveProperty", typeName: "string" },
           ],
         },
-        E: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
-        F: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
+        E: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.A",
+          baseClass: "TestSchema.C",
+        },
+        F: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.A",
+          baseClass: "TestSchema.D",
+        },
         G: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.A", mixins: ["TestSchema.B"],
-          properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }],
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.A",
+          mixins: ["TestSchema.B"],
+          properties: [
+            { name: "P1", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
         H: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.G", mixins: ["TestSchema.E", "TestSchema.F"],
-          properties: [{ name: "P2", type: "PrimitiveProperty", typeName: "string" }],
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.G",
+          mixins: ["TestSchema.E", "TestSchema.F"],
+          properties: [
+            { name: "P2", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
       },
     };

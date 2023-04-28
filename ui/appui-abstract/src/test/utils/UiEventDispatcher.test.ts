@@ -9,14 +9,11 @@ import { UiEventDispatcher, UiSyncEventArgs } from "../../appui-abstract";
 const timeToWaitForUiSyncCallback = 60;
 
 describe("UiEventDispatcher", () => {
-  before(async () => {
-  });
+  before(async () => {});
 
-  after(() => {
-  });
+  after(() => {});
 
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   it("test hasEventOfInterest", () => {
     const eventDispatcher = new UiEventDispatcher();
@@ -27,14 +24,20 @@ describe("UiEventDispatcher", () => {
     eventIds.add("cat");
     eventIds.add("rabbit");
 
-    expect(eventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat", "rabbit"])).to.be.true;
-    expect(eventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat"])).to.be.true;
+    expect(
+      eventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat", "rabbit"])
+    ).to.be.true;
+    expect(eventDispatcher.hasEventOfInterest(eventIds, ["dog", "cat"])).to.be
+      .true;
     expect(eventDispatcher.hasEventOfInterest(eventIds, ["dog"])).to.be.true;
-    expect(eventDispatcher.hasEventOfInterest(eventIds, ["cat", "rabbit"])).to.be.true;
+    expect(eventDispatcher.hasEventOfInterest(eventIds, ["cat", "rabbit"])).to
+      .be.true;
     expect(eventDispatcher.hasEventOfInterest(eventIds, ["rabbit"])).to.be.true;
     // idsOfInterest are now case insensitive - the set of eventIds held by the dispacther are in lower case.
     expect(eventDispatcher.hasEventOfInterest(eventIds, ["Rabbit"])).to.be.true;
-    expect(eventDispatcher.hasEventOfInterest(eventIds, ["DOG", "cAT", "Rabbit"])).to.be.true;
+    expect(
+      eventDispatcher.hasEventOfInterest(eventIds, ["DOG", "cAT", "Rabbit"])
+    ).to.be.true;
     expect(eventDispatcher.hasEventOfInterest(eventIds, ["horse"])).to.be.false;
   });
 
@@ -105,7 +108,8 @@ describe("UiEventDispatcher", () => {
 
     const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       callbackCalled = true;
-      callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2");
+      callbackHasExpectedEventIds =
+        args.eventIds.has("event1") && args.eventIds.has("event2");
     };
 
     eventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
@@ -130,7 +134,10 @@ describe("UiEventDispatcher", () => {
 
     const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       callbackCalled = true;
-      callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2") && args.eventIds.has("event3");
+      callbackHasExpectedEventIds =
+        args.eventIds.has("event1") &&
+        args.eventIds.has("event2") &&
+        args.eventIds.has("event3");
     };
 
     eventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
@@ -147,5 +154,4 @@ describe("UiEventDispatcher", () => {
     expect(callbackHasExpectedEventIds).to.be.true;
     eventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
-
 });

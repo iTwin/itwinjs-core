@@ -3,6 +3,7 @@
 This library potentially incorporates work from the following third-party code:
 
 ## [Graphlib](https://github.com/dagrejs/graphlib)
+
 Copyright (c) 2012-2014 Chris Pettitt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

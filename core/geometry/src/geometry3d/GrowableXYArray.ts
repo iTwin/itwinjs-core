@@ -14,7 +14,10 @@ import { IndexedXYCollection } from "./IndexedXYCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d } from "./Point3dVector3d";
-import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
+import {
+  PointStreamGrowableXYZArrayCollector,
+  VariantPointDataStream,
+} from "./PointStreaming";
 import { Range2d } from "./Range";
 import { Transform } from "./Transform";
 import { XAndY, XYAndZ } from "./XYZProps";
@@ -46,10 +49,11 @@ export class GrowableXYArray extends IndexedXYCollection {
    */
   public constructor(numPoints: number = 8, growthFactor?: number) {
     super();
-    this._data = new Float64Array(numPoints * 2);   // 2 values per point
+    this._data = new Float64Array(numPoints * 2); // 2 values per point
     this._xyInUse = 0;
     this._xyCapacity = numPoints;
-    this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
+    this._growthFactor =
+      undefined !== growthFactor && growthFactor >= 1.0 ? growthFactor : 1.5;
   }
 
   /** Copy xy points from source array. Does not reallocate or change active point count.
@@ -58,49 +62,56 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    * @return count and offset of points copied
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+  protected copyData(
+    source: Float64Array | number[],
+    sourceCount?: number,
+    destOffset?: number
+  ): { count: number; offset: number } {
     // validate inputs and convert from points to entries
-    let myOffset = (undefined !== destOffset) ? destOffset * 2 : 0;
-    if (myOffset < 0)
-      myOffset = 0;
-    if (myOffset >= this._data.length)
-      return {count: 0, offset: 0};
-    let myCount = (undefined !== sourceCount) ? sourceCount * 2 : source.length;
+    let myOffset = undefined !== destOffset ? destOffset * 2 : 0;
+    if (myOffset < 0) myOffset = 0;
+    if (myOffset >= this._data.length) return { count: 0, offset: 0 };
+    let myCount = undefined !== sourceCount ? sourceCount * 2 : source.length;
     if (myCount > 0) {
-      if (myCount > source.length)
-        myCount = source.length;
+      if (myCount > source.length) myCount = source.length;
       if (myOffset + myCount > this._data.length)
         myCount = this._data.length - myOffset;
-      if (myCount % 2 !== 0)
-        myCount -= myCount % 2;
+      if (myCount % 2 !== 0) myCount -= myCount % 2;
     }
-    if (myCount <= 0)
-      return {count: 0, offset: 0};
-    if (myCount === source.length)
-      this._data.set(source, myOffset);
+    if (myCount <= 0) return { count: 0, offset: 0 };
+    if (myCount === source.length) this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, myCount), myOffset);
-    else
-      this._data.set(source.slice(0, myCount), myOffset);
-    return {count: myCount / 2, offset: myOffset / 2};
+    else this._data.set(source.slice(0, myCount), myOffset);
+    return { count: myCount / 2, offset: myOffset / 2 };
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
-  public override get length() { return this._xyInUse; }
-  public set length(newLength: number) { this.resize(newLength, true); }
+  public override get length() {
+    return this._xyInUse;
+  }
+  public set length(newLength: number) {
+    this.resize(newLength, true);
+  }
 
   /** Return the number of float64 in use. */
-  public get float64Length() { return this._xyInUse * 2; }
+  public get float64Length() {
+    return this._xyInUse * 2;
+  }
   /** Return the raw packed data.
    * * Note that the length of the returned Float64Array is a count of doubles, and includes the excess capacity
    */
-  public float64Data(): Float64Array { return this._data; }
+  public float64Data(): Float64Array {
+    return this._data;
+  }
 
   /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
-  public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
+  public ensureCapacity(
+    pointCapacity: number,
+    applyGrowthFactor: boolean = true
+  ) {
     if (pointCapacity > this._xyCapacity) {
-      if (applyGrowthFactor)
-        pointCapacity *= this._growthFactor;
+      if (applyGrowthFactor) pointCapacity *= this._growthFactor;
       const prevData = this._data;
       this._data = new Float64Array(pointCapacity * 2);
       this.copyData(prevData, this._xyInUse);
@@ -113,13 +124,12 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param pointCount new number of active points in array
    * @param padWithZero when increasing point count, whether to zero out new points (default false)
    */
-   public resize(pointCount: number, padWithZero?: boolean) {
+  public resize(pointCount: number, padWithZero?: boolean) {
     if (pointCount >= 0 && pointCount < this._xyInUse)
       this._xyInUse = pointCount;
     else if (pointCount > this._xyInUse) {
       this.ensureCapacity(pointCount, false);
-      if (padWithZero ?? false)
-        this._data.fill(0, this._xyInUse * 2);
+      if (padWithZero ?? false) this._data.fill(0, this._xyInUse * 2);
       this._xyInUse = pointCount;
     }
   }
@@ -150,7 +160,9 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Restructure MultiLineStringDataVariant as array of GrowableXYZArray */
-  public static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined {
+  public static createArrayOfGrowableXYZArray(
+    data: MultiLineStringDataVariant
+  ): GrowableXYZArray[] | undefined {
     const collector = new PointStreamGrowableXYZArrayCollector();
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimArrayOfGrowableXYZArray();
@@ -205,16 +217,14 @@ export class GrowableXYArray extends IndexedXYCollection {
    * * Use `back ()` to get the last x,y assembled into a `Point2d `
    */
   public pop() {
-    if (this._xyInUse > 0)
-      this._xyInUse--;
+    if (this._xyInUse > 0) this._xyInUse--;
   }
   /**
    * Test if index is valid for an xy (point or vector) within this array
    * @param index xy index to test.
    */
   public isIndexValid(index: number): boolean {
-    if (index >= this._xyInUse || index < 0)
-      return false;
+    if (index >= this._xyInUse || index < 0) return false;
     return true;
   }
   /**
@@ -228,7 +238,10 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param pointIndex index to access
    * @param result optional result
    */
-  public getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d {
+  public getPoint2dAtUncheckedPointIndex(
+    pointIndex: number,
+    result?: Point2d
+  ): Point2d {
     const index = 2 * pointIndex;
     return Point2d.create(this._data[index], this._data[index + 1], result);
   }
@@ -262,7 +275,10 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xy into strongly typed Point2d */
-  public override getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
+  public override getPoint2dAtCheckedPointIndex(
+    pointIndex: number,
+    result?: Point2d
+  ): Point2d | undefined {
     if (this.isIndexValid(pointIndex)) {
       const index = 2 * pointIndex;
       return Point2d.create(this._data[index], this._data[index + 1], result);
@@ -271,7 +287,10 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** copy xy into strongly typed Vector2d */
-  public override getVector2dAtCheckedVectorIndex(vectorIndex: number, result?: Vector2d): Vector2d | undefined {
+  public override getVector2dAtCheckedVectorIndex(
+    vectorIndex: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     if (this.isIndexValid(vectorIndex)) {
       const index = 2 * vectorIndex;
       return Vector2d.create(this._data[index], this._data[index + 1], result);
@@ -286,7 +305,11 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
    */
-  public transferFromGrowableXYArray(destIndex: number, source: GrowableXYArray, sourceIndex: number): boolean {
+  public transferFromGrowableXYArray(
+    destIndex: number,
+    source: GrowableXYArray,
+    sourceIndex: number
+  ): boolean {
     if (this.isIndexValid(destIndex) && source.isIndexValid(sourceIndex)) {
       const i = destIndex * 2;
       const j = sourceIndex * 2;
@@ -303,7 +326,10 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param sourceIndex xy index within the source.  If undefined, push entire contents of source
    * @returns number of points pushed.
    */
-  public pushFromGrowableXYArray(source: GrowableXYArray, sourceIndex?: number): number {
+  public pushFromGrowableXYArray(
+    source: GrowableXYArray,
+    sourceIndex?: number
+  ): number {
     // full array push  . . .
     if (sourceIndex === undefined) {
       const numXYAdd = source.length;
@@ -325,7 +351,12 @@ export class GrowableXYArray extends IndexedXYCollection {
    * * Compute a point at fractional coordinate between points i and j of source
    * * push onto this array.
    */
-  public pushInterpolatedFromGrowableXYArray(source: GrowableXYArray, i: number, fraction: number, j: number) {
+  public pushInterpolatedFromGrowableXYArray(
+    source: GrowableXYArray,
+    i: number,
+    fraction: number,
+    j: number
+  ) {
     if (source.isIndexValid(i) && source.isIndexValid(j)) {
       const fraction0 = 1.0 - fraction;
       const data = source._data;
@@ -333,7 +364,8 @@ export class GrowableXYArray extends IndexedXYCollection {
       j = 2 * j;
       this.pushXY(
         fraction0 * data[i] + fraction * data[j],
-        fraction0 * data[i + 1] + fraction * data[j + 1]);
+        fraction0 * data[i + 1] + fraction * data[j + 1]
+      );
     }
   }
 
@@ -343,10 +375,13 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param transform optional transform to apply to xyz points.
    * @param dest optional result.
    */
-  public static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray) {
+  public static createFromGrowableXYZArray(
+    source: GrowableXYZArray,
+    transform?: Transform,
+    dest?: GrowableXYArray
+  ) {
     const numPoints = source.length;
-    if (!dest)
-      dest = new GrowableXYArray(numPoints);
+    if (!dest) dest = new GrowableXYArray(numPoints);
     else {
       dest.ensureCapacity(numPoints, false);
       dest.clear();
@@ -359,7 +394,10 @@ export class GrowableXYArray extends IndexedXYCollection {
         x = packedXYZ[i];
         y = packedXYZ[i + 1];
         z = packedXYZ[i + 2];
-        dest.pushXY(transform.multiplyComponentXYZ(0, x, y, z), transform.multiplyComponentXYZ(1, x, y, z));
+        dest.pushXY(
+          transform.multiplyComponentXYZ(0, x, y, z),
+          transform.multiplyComponentXYZ(1, x, y, z)
+        );
       }
     } else {
       dest.pushAllXYAndZ(source);
@@ -386,8 +424,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param value coordinates to set
    */
   public setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean {
-    if (!this.isIndexValid(pointIndex))
-      return false;
+    if (!this.isIndexValid(pointIndex)) return false;
     const index = pointIndex * 2;
     this._data[index] = value.x;
     this._data[index + 1] = value.y;
@@ -399,9 +436,12 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param x x coordinate
    * @param y y coordinate
    */
-  public setXYAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
-    if (!this.isIndexValid(pointIndex))
-      return false;
+  public setXYAtCheckedPointIndex(
+    pointIndex: number,
+    x: number,
+    y: number
+  ): boolean {
+    if (!this.isIndexValid(pointIndex)) return false;
     const index = pointIndex * 2;
     this._data[index] = x;
     this._data[index + 1] = y;
@@ -411,7 +451,11 @@ export class GrowableXYArray extends IndexedXYCollection {
    * Set the coordinates of a single point given as coordinates.
    * @deprecated in 3.x. Use setXYAtCheckedPointIndex instead
    */
-   public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
+  public setXYZAtCheckedPointIndex(
+    pointIndex: number,
+    x: number,
+    y: number
+  ): boolean {
     return this.setXYAtCheckedPointIndex(pointIndex, x, y);
   }
 
@@ -435,10 +479,14 @@ export class GrowableXYArray extends IndexedXYCollection {
     for (let i0 = 0, i1 = n - 1; i0 < i1; i0++, i1--) {
       j0 = 2 * i0;
       j1 = 2 * i1;
-      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      a = data[j0];
+      data[j0] = data[j1];
+      data[j1] = a;
       j0++;
       j1++;
-      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      a = data[j0];
+      data[j0] = data[j1];
+      data[j1] = a;
     }
   }
 
@@ -482,8 +530,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     const matrix = transform.matrix;
     matrix.computeCachedInverse(true);
     const coffs = matrix.inverseCoffs;
-    if (!coffs)
-      return false;
+    if (!coffs) return false;
     const origin = transform.origin;
     const x0 = origin.x;
     const y0 = origin.y;
@@ -507,17 +554,18 @@ export class GrowableXYArray extends IndexedXYCollection {
     } else {
       for (let i = 0; i + 1 < numDouble; i += 2)
         rangeToExtend.extendXY(data[i], data[i + 1]);
-
     }
   }
   /** sum the lengths of segments between points. */
   public sumLengths(): number {
     let sum = 0.0;
-    const n = 2 * (this._xyInUse - 1);  // Length already takes into account what specifically is in use
+    const n = 2 * (this._xyInUse - 1); // Length already takes into account what specifically is in use
     const data = this._data;
-    for (let i = 0; i < n; i += 2) sum += Geometry.hypotenuseXY(
-      data[i + 2] - data[i],
-      data[i + 3] - data[i + 1]);
+    for (let i = 0; i < n; i += 2)
+      sum += Geometry.hypotenuseXY(
+        data[i + 2] - data[i],
+        data[i + 3] - data[i + 1]
+      );
     return sum;
   }
   /**
@@ -527,12 +575,16 @@ export class GrowableXYArray extends IndexedXYCollection {
   public scaleInPlace(factor: number) {
     if (this._data) {
       const numFloat = this.float64Length;
-      for (let i = 0; i < numFloat; i++)
-        this._data[i] = this._data[i] * factor;
+      for (let i = 0; i < numFloat; i++) this._data[i] = this._data[i] * factor;
     }
   }
   /** Compute a point at fractional coordinate between points i and j */
-  public interpolate(i: number, fraction: number, j: number, result?: Point2d): Point2d | undefined {
+  public interpolate(
+    i: number,
+    fraction: number,
+    j: number,
+    result?: Point2d
+  ): Point2d | undefined {
     if (this.isIndexValid(i) && this.isIndexValid(j)) {
       const fraction0 = 1.0 - fraction;
       const data = this._data;
@@ -540,7 +592,9 @@ export class GrowableXYArray extends IndexedXYCollection {
       j = 2 * j;
       return Point2d.create(
         fraction0 * data[i] + fraction * data[j],
-        fraction0 * data[i + 1] + fraction * data[j + 1], result);
+        fraction0 * data[i + 1] + fraction * data[j + 1],
+        result
+      );
     }
     return undefined;
   }
@@ -548,7 +602,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   /** Sum the signed areas of the projection to xy plane */
   public areaXY(): number {
     let area = 0.0;
-    const n = 2 * this._xyInUse;    // float count !!
+    const n = 2 * this._xyInUse; // float count !!
     if (n > 4) {
       const x0 = this._data[n - 2];
       const y0 = this._data[n - 1];
@@ -566,50 +620,81 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Compute a vector from index origin i to indexed target j  */
-  public override vectorIndexIndex(i: number, j: number, result?: Vector2d): Vector2d | undefined {
-    if (!this.isIndexValid(i) || !this.isIndexValid(j))
-      return undefined;
+  public override vectorIndexIndex(
+    i: number,
+    j: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
+    if (!this.isIndexValid(i) || !this.isIndexValid(j)) return undefined;
     const data = this._data;
     i = 2 * i;
     j = 2 * j;
-    return Vector2d.create(data[j] - data[i], data[j + 1] - data[i + 1], result);
+    return Vector2d.create(
+      data[j] - data[i],
+      data[j + 1] - data[i + 1],
+      result
+    );
   }
 
   /** Compute a vector from origin to indexed target j */
-  public override vectorXAndYIndex(origin: XAndY, j: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorXAndYIndex(
+    origin: XAndY,
+    j: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     if (this.isIndexValid(j)) {
       const data = this._data;
       j = 2 * j;
       return Vector2d.create(
         data[j] - origin.x,
-        data[j + 1] - origin.y, result);
+        data[j + 1] - origin.y,
+        result
+      );
     }
     return undefined;
   }
 
   /** Compute the cross product of vectors from from indexed origin to indexed targets i and j */
-  public override crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined {
-    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
+  public override crossProductIndexIndexIndex(
+    originIndex: number,
+    targetAIndex: number,
+    targetBIndex: number
+  ): number | undefined {
+    if (
+      this.isIndexValid(originIndex) &&
+      this.isIndexValid(targetAIndex) &&
+      this.isIndexValid(targetBIndex)
+    ) {
       const i = originIndex * 2;
       const j = targetAIndex * 2;
       const k = targetBIndex * 2;
       const data = this._data;
       return Geometry.crossProductXYXY(
-        data[j] - data[i], data[j + 1] - data[i + 1],
-        data[k] - data[i], data[k + 1] - data[i + 1]);
+        data[j] - data[i],
+        data[j + 1] - data[i + 1],
+        data[k] - data[i],
+        data[k + 1] - data[i + 1]
+      );
     }
     return undefined;
   }
 
   /** Compute the cross product of vectors from from origin to indexed targets i and j */
-  public override crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined {
+  public override crossProductXAndYIndexIndex(
+    origin: XAndY,
+    targetAIndex: number,
+    targetBIndex: number
+  ): number | undefined {
     if (this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const j = targetAIndex * 2;
       const k = targetBIndex * 2;
       const data = this._data;
       return Geometry.crossProductXYXY(
-        data[j] - origin.x, data[j + 1] - origin.y,
-        data[k] - origin.x, data[k + 1] - origin.y);
+        data[j] - origin.x,
+        data[j + 1] - origin.y,
+        data[k] - origin.x,
+        data[k + 1] - origin.y
+      );
     }
     return undefined;
   }
@@ -621,32 +706,43 @@ export class GrowableXYArray extends IndexedXYCollection {
       const j0 = 2 * j;
       return Geometry.hypotenuseXY(
         this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1]);
+        this._data[j0 + 1] - this._data[i0 + 1]
+      );
     }
     return undefined;
   }
   /** Return the distance between an array point and the input point. */
-  public distanceIndexToPoint(i: number, spacePoint: Point2d): number | undefined {
+  public distanceIndexToPoint(
+    i: number,
+    spacePoint: Point2d
+  ): number | undefined {
     if (this.isIndexValid(i)) {
       const i0 = 2 * i;
       return Geometry.hypotenuseXY(
         spacePoint.x - this._data[i0],
-        spacePoint.y - this._data[i0 + 1]);
+        spacePoint.y - this._data[i0 + 1]
+      );
     }
     return undefined;
   }
   /** Test for nearly equal arrays. */
-  public static isAlmostEqual(dataA: GrowableXYArray | undefined, dataB: GrowableXYArray | undefined): boolean {
+  public static isAlmostEqual(
+    dataA: GrowableXYArray | undefined,
+    dataB: GrowableXYArray | undefined
+  ): boolean {
     if (dataA && dataB) {
-      if (dataA.length !== dataB.length)
-        return false;
+      if (dataA.length !== dataB.length) return false;
       for (let i = 0; i < dataA.length; i++)
-        if (!dataA.getPoint2dAtUncheckedPointIndex(i).isAlmostEqual(dataB.getPoint2dAtUncheckedPointIndex(i)))
+        if (
+          !dataA
+            .getPoint2dAtUncheckedPointIndex(i)
+            .isAlmostEqual(dataB.getPoint2dAtUncheckedPointIndex(i))
+        )
           return false;
       return true;
     }
     // if both are null it is equal, otherwise unequal
-    return (!dataA && !dataB);
+    return !dataA && !dataB;
   }
 
   /** Return an array of block indices sorted per compareLexicalBlock function */
@@ -655,11 +751,10 @@ export class GrowableXYArray extends IndexedXYCollection {
     // let numCompare = 0;
     const result = new Uint32Array(n);
     for (let i = 0; i < n; i++) result[i] = i;
-    result.sort(
-      (blockIndexA: number, blockIndexB: number) => {
-        // numCompare++;
-        return this.compareLexicalBlock(blockIndexA, blockIndexB);
-      });
+    result.sort((blockIndexA: number, blockIndexB: number) => {
+      // numCompare++;
+      return this.compareLexicalBlock(blockIndexA, blockIndexB);
+    });
     // console.log (n, numCompare);
     return result;
   }
@@ -682,15 +777,16 @@ export class GrowableXYArray extends IndexedXYCollection {
     return this._data[2 * pointIndex + componentIndex];
   }
   /** Toleranced equality test */
-  public isAlmostEqual(other: GrowableXYArray, tolerance: number = Geometry.smallMetricDistance): boolean {
+  public isAlmostEqual(
+    other: GrowableXYArray,
+    tolerance: number = Geometry.smallMetricDistance
+  ): boolean {
     const numXY = this._xyInUse;
-    if (other._xyInUse !== numXY)
-      return false;
+    if (other._xyInUse !== numXY) return false;
     const dataA = this._data;
     const dataB = other._data;
     for (let i = 0; i < 2 * numXY; i++) {
-      if (Math.abs(dataA[i] - dataB[i]) > tolerance)
-        return false;
+      if (Math.abs(dataA[i] - dataB[i]) > tolerance) return false;
     }
     return true;
   }

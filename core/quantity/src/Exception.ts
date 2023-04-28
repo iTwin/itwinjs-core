@@ -13,7 +13,7 @@ import { assert, BentleyError } from "@itwin/core-bentley";
  * @beta
  */
 export enum QuantityStatus {
-  QUANTITY_ERROR_BASE = 0x88DF,
+  QUANTITY_ERROR_BASE = 0x88df,
   Success = 0,
   InvalidJson = QUANTITY_ERROR_BASE + 1,
   InvalidCompositeFormat = QUANTITY_ERROR_BASE + 2,
@@ -28,7 +28,10 @@ export enum QuantityStatus {
  * @beta
  */
 export class QuantityError extends BentleyError {
-  public constructor(public override readonly errorNumber: number, message?: string) {
+  public constructor(
+    public override readonly errorNumber: number,
+    message?: string
+  ) {
     super(errorNumber, message);
     assert(errorNumber !== QuantityStatus.Success, message);
   }

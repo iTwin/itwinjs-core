@@ -57,17 +57,19 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     this._workPoint1 = Point3d.create();
     this._workData0 = new Float64Array(blockSize);
     this._workData1 = new Float64Array(blockSize);
-
   }
   /** reverse the poles in place */
-  public reverseInPlace(): void { this._polygon.reverseInPlace(); }
+  public reverseInPlace(): void {
+    this._polygon.reverseInPlace();
+  }
   /** saturate the pole in place, using knot intervals from `spanIndex` of the `knotVector` */
   public saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean {
     const boolStat = this._polygon.saturateInPlace(knotVector, spanIndex);
     if (boolStat) {
       this.setInterval(
         knotVector.spanFractionToFraction(spanIndex, 0.0),
-        knotVector.spanFractionToFraction(spanIndex, 1.0));
+        knotVector.spanFractionToFraction(spanIndex, 1.0)
+      );
     }
     return boolStat;
   }
@@ -76,26 +78,40 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return this._polygon.order - 1;
   }
   /** (property accessor) Return the polynomial order */
-  public get order(): number { return this._polygon.order; }
+  public get order(): number {
+    return this._polygon.order;
+  }
   /** (property accessor) Return the number of poles (aka control points) */
-  public get numPoles(): number { return this._polygon.order; }
+  public get numPoles(): number {
+    return this._polygon.order;
+  }
   /** Get pole `i` as a Point3d.
    * * For 3d curve, this is simple a pole access, and only fails (return `undefined`) for invalid index
    * * For 4d curve, this deweights the homogeneous pole and can fail due to 0 weight.
    */
-  public abstract getPolePoint3d(i: number, point?: Point3d): Point3d | undefined;
+  public abstract getPolePoint3d(
+    i: number,
+    point?: Point3d
+  ): Point3d | undefined;
 
   /** Get pole `i` as a Point4d.
    * * For 3d curve, this accesses the simple pole and returns with weight 1.
    * * For 4d curve, this accesses the (weighted) pole.
    */
-  public abstract getPolePoint4d(i: number, point?: Point4d): Point4d | undefined;
+  public abstract getPolePoint4d(
+    i: number,
+    point?: Point4d
+  ): Point4d | undefined;
   /** Set mapping to parent curve (e.g. if this bezier is a span extracted from a bspline, this is the knot interval of the span) */
-  public setInterval(a: number, b: number) { this._polygon.setInterval(a, b); }
+  public setInterval(a: number, b: number) {
+    this._polygon.setInterval(a, b);
+  }
   /** map `fraction` from this Bezier curves inherent 0..1 range to the (a,b) range of parent
    * * ( The parent range should have been previously defined with `setInterval`)
    */
-  public fractionToParentFraction(fraction: number): number { return this._polygon.fractionToParentFraction(fraction); }
+  public fractionToParentFraction(fraction: number): number {
+    return this._polygon.fractionToParentFraction(fraction);
+  }
 
   /** append stroke points to a linestring, based on `strokeCount` and `fractionToPoint` from derived class*/
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
@@ -108,29 +124,31 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
   }
   /** announce intervals with stroke counts */
-  public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
+  public emitStrokableParts(
+    handler: IStrokeHandler,
+    _options?: StrokeOptions
+  ): void {
     const numPerSpan = this.computeStrokeCountForOptions(_options);
     handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
   }
   /** Return a simple array of arrays with the control points as `[[x,y,z],[x,y,z],..]` */
-  public copyPolesAsJsonArray(): any[] { return this._polygon.unpackToJsonArrays(); }
+  public copyPolesAsJsonArray(): any[] {
+    return this._polygon.unpackToJsonArrays();
+  }
 
   /** return true if all poles are on a plane. */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     let point: Point3d | undefined = this._workPoint0;
     for (let i = 0; ; i++) {
       point = this.getPolePoint3d(i, point);
-      if (!point)
-        return true;
-      if (!plane.isPointInPlane(point))
-        break;    // which gets to return false, which is otherwise unreachable . . .
+      if (!point) return true;
+      if (!plane.isPointInPlane(point)) break; // which gets to return false, which is otherwise unreachable . . .
     }
     return false;
   }
   /** Return the length of the control polygon. */
   public polygonLength(): number {
-    if (!this.getPolePoint3d(0, this._workPoint0))
-      return 0.0;
+    if (!this.getPolePoint3d(0, this._workPoint0)) return 0.0;
     let i = 0;
     let sum = 0.0;
     while (this.getPolePoint3d(++i, this._workPoint1)) {
@@ -141,18 +159,23 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   }
   /** Return the start point.  (first control point) */
   public override startPoint(): Point3d {
-    const result = this.getPolePoint3d(0)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
+    const result = this.getPolePoint3d(0)!; // ASSUME non-trivial pole set -- if null comes back, it bubbles out
     return result;
   }
   /** Return the end point.  (last control point) */
   public override endPoint(): Point3d {
-    const result = this.getPolePoint3d(this.order - 1)!;    // ASSUME non-trivial pole set
+    const result = this.getPolePoint3d(this.order - 1)!; // ASSUME non-trivial pole set
     return result;
   }
   /** Return the control polygon length as a quick length estimate. */
-  public quickLength(): number { return this.polygonLength(); }
+  public quickLength(): number {
+    return this.polygonLength();
+  }
   /** Concrete classes must implement extendRange . . .  */
-  public abstract override extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+  public abstract override extendRange(
+    rangeToExtend: Range3d,
+    transform?: Transform
+  ): void;
   /**
    * 1D bezier coefficients for use in range computations.
    * @internal
@@ -171,24 +194,28 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param orderA length of _workCoffsA (simple array)
    * @param orderB length of _workCoffsB (simple array)
    */
-  protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
+  protected allocateAndZeroBezierWorkData(
+    primaryBezierOrder: number,
+    orderA: number,
+    orderB: number
+  ) {
     if (primaryBezierOrder > 0) {
-      if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
+      if (
+        this._workBezier !== undefined &&
+        this._workBezier.order === primaryBezierOrder
+      ) {
         this._workBezier.zero();
-      } else
-        this._workBezier = new UnivariateBezier(primaryBezierOrder);
+      } else this._workBezier = new UnivariateBezier(primaryBezierOrder);
     }
     if (orderA > 0) {
       if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
         this._workCoffsA.fill(0);
-      else
-        this._workCoffsA = new Float64Array(orderA);
+      else this._workCoffsA = new Float64Array(orderA);
     }
     if (orderB > 0) {
       if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
         this._workCoffsB.fill(0);
-      else
-        this._workCoffsB = new Float64Array(orderB);
+      else this._workCoffsB = new Float64Array(orderB);
     }
   }
   /**
@@ -199,7 +226,6 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param options stroke options structure.
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
-
     this.getPolePoint3d(0, this._workPoint0);
     this.getPolePoint3d(1, this._workPoint1);
     let numStrokes = 1;
@@ -219,7 +245,14 @@ export abstract class BezierCurveBase extends CurvePrimitive {
         dx1 = this._workPoint1.x - this._workPoint0.x;
         dy1 = this._workPoint1.y - this._workPoint0.y;
         dz1 = this._workPoint1.z - this._workPoint0.z;
-        thisRadians = Angle.radiansBetweenVectorsXYZ(dx0, dy0, dz0, dx1, dy1, dz1);
+        thisRadians = Angle.radiansBetweenVectorsXYZ(
+          dx0,
+          dy0,
+          dz0,
+          dx1,
+          dy1,
+          dz1
+        );
         sumRadians += thisRadians;
         maxRadians = Geometry.maxAbsXY(thisRadians, maxRadians);
         thisLength = Geometry.hypotenuseXYZ(dx1, dy1, dz1);
@@ -230,17 +263,24 @@ export abstract class BezierCurveBase extends CurvePrimitive {
         dz0 = dz1;
         this._workPoint0.setFrom(this._workPoint1);
       }
-      const length1 = maxLength * this.degree;    // This may be larger than sumLength
-      const length2 = Math.sqrt(length1 * sumLength);  // This is in between
-      let radians1 = maxRadians * (this.degree - 1);  // As if worst case keeps happening.
-      if (this.degree < 3)
-        radians1 *= 3;  // so quadratics aren't under-stroked
+      const length1 = maxLength * this.degree; // This may be larger than sumLength
+      const length2 = Math.sqrt(length1 * sumLength); // This is in between
+      let radians1 = maxRadians * (this.degree - 1); // As if worst case keeps happening.
+      if (this.degree < 3) radians1 *= 3; // so quadratics aren't under-stroked
       const radians2 = Math.sqrt(radians1 * sumRadians);
       const minCount = this.degree; // NOTE: this means 1) a small, nontrivial, straight Bezier is over-stroked, and 2) options.minStrokesPerPrimitive is ignored
-      numStrokes = StrokeOptions.applyAngleTol(options,
-        StrokeOptions.applyMaxEdgeLength(options, minCount, length2), radians2, 0.1);
+      numStrokes = StrokeOptions.applyAngleTol(
+        options,
+        StrokeOptions.applyMaxEdgeLength(options, minCount, length2),
+        radians2,
+        0.1
+      );
       if (options) {
-        numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
+        numStrokes = options.applyChordTolToLengthAndRadians(
+          numStrokes,
+          sumLength,
+          radians1
+        );
       }
     }
     return numStrokes;
@@ -262,7 +302,9 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
-  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public override constructOffsetXY(
+    offsetDistanceOrOptions: number | OffsetOptions
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     const options = OffsetOptions.create(offsetDistanceOrOptions);
     const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
     this.emitStrokableParts(handler, options.strokeOptions);
@@ -273,7 +315,10 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-   public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
+  public override clonePartialCurve(
+    fractionA: number,
+    fractionB: number
+  ): BezierCurveBase {
     const partialCurve = this.clone();
     partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
     return partialCurve;
@@ -284,7 +329,14 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
    */
-  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
-    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  public override projectedParameterRange(
+    ray: Vector3d | Ray3d,
+    lowHigh?: Range1d
+  ): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(
+      this,
+      ray,
+      lowHigh
+    );
   }
 }

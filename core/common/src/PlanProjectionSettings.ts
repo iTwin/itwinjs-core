@@ -47,15 +47,22 @@ export class PlanProjectionSettings {
       elevation: this.elevation,
       transparency: this.transparency,
       overlay: true === this.overlay ? true : undefined,
-      enforceDisplayPriority: true === this.enforceDisplayPriority ? true : undefined,
+      enforceDisplayPriority:
+        true === this.enforceDisplayPriority ? true : undefined,
     };
   }
 
-  public static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined {
-    if (undefined === props)
-      return undefined;
+  public static fromJSON(
+    props: PlanProjectionSettingsProps | undefined
+  ): PlanProjectionSettings | undefined {
+    if (undefined === props) return undefined;
 
-    if (undefined === props.elevation && undefined === props.transparency && undefined === props.overlay && undefined === props.enforceDisplayPriority)
+    if (
+      undefined === props.elevation &&
+      undefined === props.transparency &&
+      undefined === props.overlay &&
+      undefined === props.enforceDisplayPriority
+    )
       return undefined;
 
     return new PlanProjectionSettings(props);
@@ -78,9 +85,10 @@ export class PlanProjectionSettings {
    * @param changedProps JSON representation of the properties to change.
    * @returns A PlanProjectionSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
-  public clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings {
-    if (undefined === changedProps)
-      return this;
+  public clone(
+    changedProps?: PlanProjectionSettingsProps
+  ): PlanProjectionSettings {
+    if (undefined === changedProps) return this;
 
     const props: PlanProjectionSettingsProps = this.toJSON();
     if (undefined !== changedProps.elevation)

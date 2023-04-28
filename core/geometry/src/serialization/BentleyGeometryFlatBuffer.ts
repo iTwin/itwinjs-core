@@ -14,13 +14,19 @@ import { BGFBWriter } from "./BGFBWriter";
  * @public
  */
 export class BentleyGeometryFlatBuffer {
-  private constructor() { }
+  private constructor() {}
   /**
    * Serialize bytes to a flatbuffer.
    * @public
    */
-  public static geometryToBytes(data: GeometryQuery | GeometryQuery[], addVersionSignature: boolean = false): Uint8Array | undefined {
-    return BGFBWriter.geometryToBytes(data, addVersionSignature ? signatureBytes : undefined);
+  public static geometryToBytes(
+    data: GeometryQuery | GeometryQuery[],
+    addVersionSignature: boolean = false
+  ): Uint8Array | undefined {
+    return BGFBWriter.geometryToBytes(
+      data,
+      addVersionSignature ? signatureBytes : undefined
+    );
   }
 
   /**
@@ -28,8 +34,14 @@ export class BentleyGeometryFlatBuffer {
    *  @public
    * @param justTheBytes FlatBuffer bytes as created by BGFBWriter.createFlatBuffer (g);
    */
-  public static bytesToGeometry(justTheBytes: Uint8Array, hasVersionSignature: boolean = false): GeometryQuery | GeometryQuery[] | undefined {
-    return BGFBReader.bytesToGeometry(justTheBytes, hasVersionSignature ? signatureBytes : undefined);
+  public static bytesToGeometry(
+    justTheBytes: Uint8Array,
+    hasVersionSignature: boolean = false
+  ): GeometryQuery | GeometryQuery[] | undefined {
+    return BGFBReader.bytesToGeometry(
+      justTheBytes,
+      hasVersionSignature ? signatureBytes : undefined
+    );
   }
 }
 

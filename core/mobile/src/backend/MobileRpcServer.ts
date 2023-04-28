@@ -5,7 +5,10 @@
 
 import * as ws from "ws";
 import { BentleyStatus, IModelError } from "@itwin/core-common";
-import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
+import {
+  MobileRpcGateway,
+  MobileRpcProtocol,
+} from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 import { ProcessDetector } from "@itwin/core-bentley";
@@ -24,9 +27,15 @@ export class MobileRpcServer {
   private static _nextId = -1;
 
   public static interop: MobileRpcGateway = {
-    handler: (_payload: ArrayBuffer | string) => { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); },
-    sendString: (_message: string, _connectionId: number) => { throw new IModelError(BentleyStatus.ERROR, "No connection."); },
-    sendBinary: (_message: Uint8Array, _connectionId: number) => { throw new IModelError(BentleyStatus.ERROR, "No connection."); },
+    handler: (_payload: ArrayBuffer | string) => {
+      throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+    },
+    sendString: (_message: string, _connectionId: number) => {
+      throw new IModelError(BentleyStatus.ERROR, "No connection.");
+    },
+    sendBinary: (_message: Uint8Array, _connectionId: number) => {
+      throw new IModelError(BentleyStatus.ERROR, "No connection.");
+    },
     port: 0,
     connectionId: 0,
   };
@@ -46,7 +55,7 @@ export class MobileRpcServer {
      * clear the timer. Here we use setInterval() just to make sure otherwise setTimeout() could equally
      * be effective
      */
-    this._pingTimer = setInterval(() => { }, 5);
+    this._pingTimer = setInterval(() => {}, 5);
     this._port = MobileRpcConfiguration.setup.obtainPort();
     this._server = new ws.Server({ port: this._port });
     this._connectionId = ++MobileRpcServer._nextId;
@@ -109,8 +118,15 @@ export class MobileRpcServer {
     }
 
     if (Buffer.isBuffer(message)) {
-      if (message.byteOffset !== 0 || message.byteLength !== message.buffer.byteLength) {
-        message = new Uint8Array(message.buffer, message.byteOffset, message.byteLength);
+      if (
+        message.byteOffset !== 0 ||
+        message.byteLength !== message.buffer.byteLength
+      ) {
+        message = new Uint8Array(
+          message.buffer,
+          message.byteOffset,
+          message.byteLength
+        );
       } else {
         message = message.buffer;
       }
@@ -122,8 +138,8 @@ export class MobileRpcServer {
   public dispose() {
     clearInterval(this._pingTimer);
     if (this._connection) {
-      MobileRpcServer.interop.sendString = () => { };
-      MobileRpcServer.interop.sendBinary = () => { };
+      MobileRpcServer.interop.sendString = () => {};
+      MobileRpcServer.interop.sendBinary = () => {};
       this._connection.close();
     }
 
@@ -160,7 +176,7 @@ export function setupMobileRpc() {
       return;
     }
 
-    retainUvLoop = setInterval(() => { }, 1000);
+    retainUvLoop = setInterval(() => {}, 1000);
     server.dispose();
     server = null;
   });
@@ -176,7 +192,7 @@ export function setupMobileRpc() {
   });
 
   MobileHost.onWillTerminate.addListener(() => {
-    if (typeof (retainUvLoop) !== "undefined") {
+    if (typeof retainUvLoop !== "undefined") {
       clearInterval(retainUvLoop);
       retainUvLoop = undefined;
     }

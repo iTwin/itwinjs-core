@@ -21,7 +21,9 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class CategorySelectorState extends ElementState {
-  public static override get className() { return "CategorySelector"; }
+  public static override get className() {
+    return "CategorySelector";
+  }
 
   private readonly _categories = new ObservableSet<string>();
 
@@ -37,8 +39,7 @@ export class CategorySelectorState extends ElementState {
 
   public set categories(categories: Set<string>) {
     this._categories.clear();
-    for (const category of categories)
-      this._categories.add(category);
+    for (const category of categories) this._categories.add(category);
   }
 
   /** @internal */
@@ -57,35 +58,42 @@ export class CategorySelectorState extends ElementState {
    * Two category selectors are logically equivalent if they have the same name and Id and contain the same set of category Ids.
    */
   public equalState(other: CategorySelectorState): boolean {
-    if (this.categories.size !== other.categories.size || this.name !== other.name || this.id !== other.id)
+    if (
+      this.categories.size !== other.categories.size ||
+      this.name !== other.name ||
+      this.id !== other.id
+    )
       return false;
 
     for (const cat of this.categories)
-      if (!other.categories.has(cat))
-        return false;
+      if (!other.categories.has(cat)) return false;
 
     return true;
   }
 
   /** The name of this CategorySelector */
-  public get name(): string { return this.code.value; }
+  public get name(): string {
+    return this.code.value;
+  }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
-  public has(id: Id64String): boolean { return this.categories.has(id); }
+  public has(id: Id64String): boolean {
+    return this.categories.has(id);
+  }
 
   /** Determine whether this CategorySelector includes the specified category */
-  public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
+  public isCategoryViewed(categoryId: Id64String): boolean {
+    return this.has(categoryId);
+  }
 
   /** Add one or more categories to this CategorySelector */
   public addCategories(arg: Id64Arg): void {
-    for (const id of Id64.iterable(arg))
-      this.categories.add(id);
+    for (const id of Id64.iterable(arg)) this.categories.add(id);
   }
 
   /** Remove one or more categories from this CategorySelector */
   public dropCategories(arg: Id64Arg) {
-    for (const id of Id64.iterable(arg))
-      this.categories.delete(id);
+    for (const id of Id64.iterable(arg)) this.categories.delete(id);
   }
 
   /** Add or remove categories from this CategorySelector.
@@ -93,9 +101,7 @@ export class CategorySelectorState extends ElementState {
    * @param add If true, categories will be added; otherwise they will be removed.
    */
   public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
-    if (add)
-      this.addCategories(arg);
-    else
-      this.dropCategories(arg);
+    if (add) this.addCategories(arg);
+    else this.dropCategories(arg);
   }
 }

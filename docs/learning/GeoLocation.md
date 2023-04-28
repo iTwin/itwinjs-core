@@ -1,6 +1,6 @@
 # GeoLocation of iModels
 
-An iModel is a digital representation of an infrastructure asset or project, as a part of an Infrastructure Digital Twin. As such, the expectation is that every iModel can be positioned at one permanent location on the earth. The conversion from [Cartesian](https://en.wikipedia.org/wiki/Cartesian_coordinate_system) points in [SpatialModel]($backend)s to a location on the earth in [Cartographic]($common) coordinates is referred to as the *GeoLocation* of an iModel.
+An iModel is a digital representation of an infrastructure asset or project, as a part of an Infrastructure Digital Twin. As such, the expectation is that every iModel can be positioned at one permanent location on the earth. The conversion from [Cartesian](https://en.wikipedia.org/wiki/Cartesian_coordinate_system) points in [SpatialModel]($backend)s to a location on the earth in [Cartographic]($common) coordinates is referred to as the _GeoLocation_ of an iModel.
 
 That conversion can be in 3 different forms for any given iModel, depending on the source data:
 
@@ -10,11 +10,11 @@ That conversion can be in 3 different forms for any given iModel, depending on t
 
 If no location information is available, we say that such an iModel is **not GeoLocated**, and GeoLocation conversion attempts will fail.
 
-One simple way to understand the difference between a *Linear GeoLocation* iModel and a *Projected GeoLocation* iModel is to examine "what does the z axis mean"?
+One simple way to understand the difference between a _Linear GeoLocation_ iModel and a _Projected GeoLocation_ iModel is to examine "what does the z axis mean"?
 
-- For iModels of structures such as a Plant, Building, Substation, or even a Campus, the z axis typically means *height above the ground floor* or some other base point. Then, Z=0 is an infinite plane with no consideration for the curvature of the earth (i.e. lines in the z direction are *not* necessarily directed towards the center of the earth.) Obviously such iModels can only encompass a small area, so that the curvature of the earth doesn't really matter - generally a few kilometers. The conversion from [Cartesian](https://en.wikipedia.org/wiki/Cartesian_coordinate_system) **{x,y,z}** to [Cartographic]($common) **{lat,long,height}** coordinates is accomplished through a [linear transform](#ecef-transform) about a single point. Source applications such as Bentley's Open Building Designer, OpenPlant, and Revit create iModels with Linear GeoLocation.
+- For iModels of structures such as a Plant, Building, Substation, or even a Campus, the z axis typically means _height above the ground floor_ or some other base point. Then, Z=0 is an infinite plane with no consideration for the curvature of the earth (i.e. lines in the z direction are _not_ necessarily directed towards the center of the earth.) Obviously such iModels can only encompass a small area, so that the curvature of the earth doesn't really matter - generally a few kilometers. The conversion from [Cartesian](https://en.wikipedia.org/wiki/Cartesian_coordinate_system) **{x,y,z}** to [Cartographic]($common) **{lat,long,height}** coordinates is accomplished through a [linear transform](#ecef-transform) about a single point. Source applications such as Bentley's Open Building Designer, OpenPlant, and Revit create iModels with Linear GeoLocation.
 
-- For iModels that are created from mapping data, the z axis usually means some form of *height above the earth's surface* (e.g. sea level, terrain, ellipsoid, etc.) Therefore the Z=0 plane in the iModel *projects*  the earth's ellipsoid, and lines in the z-direction always point towards the center (elliptical centroid) of the earth. Cartesian **{x,y,z}** values are converted to [Cartographic]($common) **{lat,long,height}** coordinates via a non-linear [map projection](https://en.wikipedia.org/wiki/Map_projection), the description of which is stored in the iModel as as [Geographic Coordinate System](#the-geographic-coordinate-system). Source applications such as Bentley Map, OpenRoads, Civil 3D, GIS applications, etc. create iModels with Projected GeoLocation.
+- For iModels that are created from mapping data, the z axis usually means some form of _height above the earth's surface_ (e.g. sea level, terrain, ellipsoid, etc.) Therefore the Z=0 plane in the iModel _projects_ the earth's ellipsoid, and lines in the z-direction always point towards the center (elliptical centroid) of the earth. Cartesian **{x,y,z}** values are converted to [Cartographic]($common) **{lat,long,height}** coordinates via a non-linear [map projection](https://en.wikipedia.org/wiki/Map_projection), the description of which is stored in the iModel as as [Geographic Coordinate System](#the-geographic-coordinate-system). Source applications such as Bentley Map, OpenRoads, Civil 3D, GIS applications, etc. create iModels with Projected GeoLocation.
 
 ## The IModel class
 
@@ -27,11 +27,11 @@ Information about GeoLocation is available in iTwin.js from the [IModel]($common
 
 There is only one spatial coordinate system in an iModel for all [SpatialModel]($backend)s. This allows iModels to have an index of all [SpatialElement]($backend)s for fast [Spatial Queries](./SpatialQueries.md).
 
-> Coordinates in iModels are always stored in Meters, regardless of the units used by source applications. There ways to display coordinate/distance/volume/etc. values in other units, but internally they are *always* Meters.
+> Coordinates in iModels are always stored in Meters, regardless of the units used by source applications. There ways to display coordinate/distance/volume/etc. values in other units, but internally they are _always_ Meters.
 
 ### The Project Extents
 
-It is often helpful to know the *volume of space of interest* for an iModel (e.g. for a "zoom to extents" command, or limiting volumes for Geometric queries.) To facilitate this, iModels hold a property called **Project Extents** that is an [Axis Aligned Bounding Box](https://en.wikipedia.org/wiki/Minimum_bounding_box#Axis-aligned_minimum_bounding_box) that defines the extrema for {X,Y,Z} coordinates in the iModel. Any elements, or parts of elements, outside of [IModel.projectExtents]($common) are considered invalid and are not displayed.
+It is often helpful to know the _volume of space of interest_ for an iModel (e.g. for a "zoom to extents" command, or limiting volumes for Geometric queries.) To facilitate this, iModels hold a property called **Project Extents** that is an [Axis Aligned Bounding Box](https://en.wikipedia.org/wiki/Minimum_bounding_box#Axis-aligned_minimum_bounding_box) that defines the extrema for {X,Y,Z} coordinates in the iModel. Any elements, or parts of elements, outside of [IModel.projectExtents]($common) are considered invalid and are not displayed.
 
 As mentioned above, the Project Extents are aligned with the axes of of the project. To convert the Project Extents into a shape in [Cartographic]($common) coordinates, or to determine the minimum and maximum lat/long, you can use logic like:
 
@@ -41,12 +41,12 @@ As mentioned above, the Project Extents are aligned with the axes of of the proj
 
 ### The Global Origin
 
-All spatial coordinate values are stored in an iModel in [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) floating point numbers. As such, the highest precision is obtained by numbers close to zero. For this reason, it is sometimes desireable to store a *bias distance* to be added to all coordinates. This value is called the **Global Origin** for an iModel, and it applies to all spatial coordinates. The Global Origin may be obtained by [IModel.globalOrigin]($common).
+All spatial coordinate values are stored in an iModel in [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) floating point numbers. As such, the highest precision is obtained by numbers close to zero. For this reason, it is sometimes desireable to store a _bias distance_ to be added to all coordinates. This value is called the **Global Origin** for an iModel, and it applies to all spatial coordinates. The Global Origin may be obtained by [IModel.globalOrigin]($common).
 
 > Notes about Global Origin:
 
 - Global Origin only apples to Spatial Models.
-- The Global Origin is added to spatial coordinates *before* converting them to Cartographic coordinates.
+- The Global Origin is added to spatial coordinates _before_ converting them to Cartographic coordinates.
 
 ### The ECEF Location
 
@@ -59,7 +59,7 @@ The [Earth Centered Earth Fixed](https://en.wikipedia.org/wiki/ECEF) coordinate 
 
 - For iModels that are not GeoLocated, [IModel.ecefLocation]($common) will be undefined.
 - For iModels with Linear GeoLocation, there will be a ECEF Location, but no GCS.
-- For iModels with Projected GeoLocation, there *will* be a valid ECEF Location. This can be used as a (sometimes very rough) approximation for converting to Cartographic coordinates without requiring a (sometimes very expensive) round-trip to a server for the full non-linear projection calculation. The approximation gets worse as the distance from the center of the project extents increases.
+- For iModels with Projected GeoLocation, there _will_ be a valid ECEF Location. This can be used as a (sometimes very rough) approximation for converting to Cartographic coordinates without requiring a (sometimes very expensive) round-trip to a server for the full non-linear projection calculation. The approximation gets worse as the distance from the center of the project extents increases.
 
 - There is a convenience method [IModel.getEcefTransform]($common) to get the ECEF location as a [Transform]($geometry).
 

@@ -25,8 +25,12 @@ export abstract class CubicEvaluator extends XYCurveEvaluator {
     this._axisLength = axisLength;
     this._cubicM = cubicM;
   }
-  public get axisLength() { return this._axisLength; }
-  public get cubicM() { return this._cubicM; }
+  public get axisLength() {
+    return this._axisLength;
+  }
+  public get cubicM() {
+    return this._cubicM;
+  }
   /**
    * Apply `scaleFactor` to the xLength and cubicM.
    * * Derived classes commonly call this as `super.scaleInPlace()`, and additionally apply the scale to their members.
@@ -35,16 +39,24 @@ export abstract class CubicEvaluator extends XYCurveEvaluator {
   public scaleInPlace(scaleFactor: number) {
     this._axisLength *= scaleFactor;
     // "x" arriving at "m * x^3" will be scaled. "m" has to be divided by the scale to cancel 2 of the 3 . .
-    this._cubicM /= (scaleFactor * scaleFactor);
+    this._cubicM /= scaleFactor * scaleFactor;
   }
   /** Evaluate X at fraction. */
-  public fractionToX(fraction: number): number { return fraction * this._axisLength; }
+  public fractionToX(fraction: number): number {
+    return fraction * this._axisLength;
+  }
   /** Evaluate derivative of X with respect to fraction */
-  public fractionToDX(_fraction: number): number { return this._axisLength; }
+  public fractionToDX(_fraction: number): number {
+    return this._axisLength;
+  }
   /** Evaluate second derivative of X with respect to fraction */
-  public fractionToDDX(_fraction: number): number { return 0.0; }
+  public fractionToDDX(_fraction: number): number {
+    return 0.0;
+  }
   /** Evaluate third derivative of X with respect to fraction */
-  public fractionToD3X(_fraction: number): number { return 0.0; }
+  public fractionToD3X(_fraction: number): number {
+    return 0.0;
+  }
   /** Evaluate Y at fraction. */
   public fractionToY(fraction: number): number {
     const x = fraction * this._axisLength;
@@ -62,8 +74,16 @@ export abstract class CubicEvaluator extends XYCurveEvaluator {
   }
   /** Evaluate third derivative of Y with respect to fraction. */
   public fractionToD3Y(_fraction: number): number {
-    return 6.0 * this._cubicM * this._axisLength * this._axisLength * this._axisLength;
+    return (
+      6.0 *
+      this._cubicM *
+      this._axisLength *
+      this._axisLength *
+      this._axisLength
+    );
   }
   /** Evaluate fraction at x. */
-  public xToFraction(x: number): number { return x / this._axisLength; }
+  public xToFraction(x: number): number {
+    return x / this._axisLength;
+  }
 }

@@ -3,14 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Matrix3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import {
+  Matrix3d,
+  Point3d,
+  Transform,
+  YawPitchRollAngles,
+} from "@itwin/core-geometry";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class TransformProvider {
-  public constructor(private readonly _models: Set<string>, private readonly _transform: Transform) { }
+  public constructor(
+    private readonly _models: Set<string>,
+    private readonly _transform: Transform
+  ) {}
 
-  public getModelDisplayTransform(modelId: string): Transform | undefined{
+  public getModelDisplayTransform(modelId: string): Transform | undefined {
     return this._models.has(modelId) ? this._transform.clone() : undefined;
   }
 }
@@ -18,17 +26,22 @@ class TransformProvider {
 /** Apply a display transform to all currently displayed models. */
 export class ApplyModelTransformTool extends Tool {
   public static override toolId = "ApplyModelTransform";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 5; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 5;
+  }
 
-  public override async run(origin?: Point3d, ypr?: YawPitchRollAngles): Promise<boolean> {
+  public override async run(
+    origin?: Point3d,
+    ypr?: YawPitchRollAngles
+  ): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return false;
+    if (!vp) return false;
 
     if (!origin || origin.isAlmostZero)
-      if (!ypr || ypr.isIdentity())
-        return false;
+      if (!ypr || ypr.isIdentity()) return false;
 
     const models = new Set<string>();
     vp.view.forEachModel((model) => models.add(model.id));
@@ -41,8 +54,16 @@ export class ApplyModelTransformTool extends Tool {
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
-    const origin = new Point3d(args.getInteger("x") ?? 0, args.getInteger("y") ?? 0, args.getInteger("z") ?? 0);
-    const ypr = YawPitchRollAngles.createDegrees(0, args.getFloat("p") ?? 0, args.getFloat("r") ?? 0);
+    const origin = new Point3d(
+      args.getInteger("x") ?? 0,
+      args.getInteger("y") ?? 0,
+      args.getInteger("z") ?? 0
+    );
+    const ypr = YawPitchRollAngles.createDegrees(
+      0,
+      args.getFloat("p") ?? 0,
+      args.getFloat("r") ?? 0
+    );
     return this.run(origin, ypr);
   }
 }

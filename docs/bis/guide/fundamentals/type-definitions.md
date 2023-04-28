@@ -6,7 +6,7 @@ A `TypeDefinitionElement` is similar to a [IfcTypeObject](https://standards.buil
 
 Practically, these "types" tend to correspond to product-models (not to be confused with bis:Model) such as a Mazda model "RX-7" car. The product-model numbers typically identify entries in a catalog. The catalog entry will include other attributes whose values are shared by all instances of the product of the given product-model. A `TypeDefinitionElement` represents such a catalog entry, with a `Code` being a product-model-number. Even if a primary `Element` is "custom" and does not actually come from a catalog, if can still have a custom "catalog entry", e.g. an instance of `TypeDefinitionElement` with custom values that are not in-common with other instances. It is essentially a "type" for which there is only one instance.
 
-`TypeDefinitionElement`s *complement* class inheritance. They differ from it in two important ways:
+`TypeDefinitionElement`s _complement_ class inheritance. They differ from it in two important ways:
 
 - `TypeDefinitionElement`s are "instance data" in a BIS Repository. You can add new instances of `TypeDefinitionElement`s without changing the BIS Domain Schema.
 - `TypeDefinitionElement`s contain values for ECProperties defined by their `TypeDefinitionElement` ECEntityClass, but cannot introduce new ECProperties.
@@ -24,5 +24,6 @@ The following diagram shows both the class hierarchy for a `PhysicalElement` mod
 Though we describe types here in terms of PhysicalElements, this pattern can be applied to other kinds of Elements. The relationships `GeometricElement2dHasTypeDefinition` and `GeometricElement3dHasTypeDefinition` make the pattern usable for geometric elements, but new relationships classes could be added to support a "type-system" for other kinds of Elements.
 
 ---
+
 | Next: [Categories](./categories.md)
 |:---

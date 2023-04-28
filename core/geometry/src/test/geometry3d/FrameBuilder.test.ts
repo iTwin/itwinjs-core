@@ -5,7 +5,10 @@
 import { expect } from "chai";
 
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
+import {
+  InterpolationCurve3d,
+  InterpolationCurve3dOptions,
+} from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveChain";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -29,22 +32,27 @@ import { prettyPrint } from "../testFunctions";
 import { MatrixTests } from "./Matrix3d.test";
 
 describe("FrameBuilder", () => {
-
   it("HelloWorldA", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
     ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
 
     for (const points of [
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(0, 1, 0)],
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)],
-      [Point3d.create(1, 2, -1),
-      Point3d.create(1, 3, 5),
-      Point3d.create(-2, 1, 7)],
+      [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(0, 1, 0),
+      ],
+      [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+      ],
+      [
+        Point3d.create(1, 2, -1),
+        Point3d.create(1, 3, 5),
+        Point3d.create(-2, 1, 7),
+      ],
     ]) {
       builder.clear();
       const point0 = points[0];
@@ -55,7 +63,10 @@ describe("FrameBuilder", () => {
       const count1 = builder.announcePoint(point0); // exercise the quick out.
       ck.testExactNumber(count0, count1, "repeat point ignored");
       ck.testTrue(builder.hasOrigin, "frameBuilder.hasOrigin with point");
-      ck.testUndefined(builder.getValidatedFrame(), "no frame for minimal data");
+      ck.testUndefined(
+        builder.getValidatedFrame(),
+        "no frame for minimal data"
+      );
       ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
 
       builder.announcePoint(point1);
@@ -66,8 +77,11 @@ describe("FrameBuilder", () => {
       builder.announcePoint(point2);
       ck.testUndefined(builder.getValidatedFrame(true), "frame in progress");
       const rFrame = builder.getValidatedFrame(false);
-      if (ck.testPointer(rFrame, "expect right handed frame") && rFrame
-        && ck.testBoolean(true, rFrame.matrix.isRigid(), "good frame")) {
+      if (
+        ck.testPointer(rFrame, "expect right handed frame") &&
+        rFrame &&
+        ck.testBoolean(true, rFrame.matrix.isRigid(), "good frame")
+      ) {
         const inverse = rFrame.inverse();
         if (ck.testPointer(inverse, "invertible frame") && inverse) {
           const product = rFrame.multiplyTransformTransform(inverse);
@@ -94,17 +108,23 @@ describe("FrameBuilder", () => {
     const builder = new FrameBuilder();
 
     for (const points of [
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(0, 1, 0)],
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0),
-      Point3d.create(2, 1, 0)],
-      [Point3d.create(1, 2, -1),
-      Point3d.create(1, 3, 5),
-      Point3d.create(2, 4, 3),
-      Point3d.create(-2, 1, 7)],
+      [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(0, 1, 0),
+      ],
+      [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(2, 1, 0),
+      ],
+      [
+        Point3d.create(1, 2, -1),
+        Point3d.create(1, 3, 5),
+        Point3d.create(2, 4, 3),
+        Point3d.create(-2, 1, 7),
+      ],
     ]) {
       builder.clear();
       const linestring = LineString3d.create(points);
@@ -115,8 +135,17 @@ describe("FrameBuilder", () => {
       builder.clear();
       builder.announce(bcurve);
       const frameB = builder.getValidatedFrame();
-      if (ck.testDefined(frameA) && frameA && ck.testDefined(frameB) && frameB) {
-        ck.testTransform(frameA, frameB, "Frame from linestring versus bspline");
+      if (
+        ck.testDefined(frameA) &&
+        frameA &&
+        ck.testDefined(frameB) &&
+        frameB
+      ) {
+        ck.testTransform(
+          frameA,
+          frameB,
+          "Frame from linestring versus bspline"
+        );
       }
     }
     expect(ck.getNumErrors()).equals(0);
@@ -126,21 +155,29 @@ describe("FrameBuilder", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
     for (const points of [
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(0, 1, 0)],
-      [Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0),
-      Point3d.create(2, 1, 0)],
-      [Point3d.create(1, 2, -1),
-      Point3d.create(1, 3, 5),
-      Point3d.create(2, 4, 3),
-      Point3d.create(-2, 1, 7)],
+      [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(0, 1, 0),
+      ],
+      [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(2, 1, 0),
+      ],
+      [
+        Point3d.create(1, 2, -1),
+        Point3d.create(1, 3, 5),
+        Point3d.create(2, 4, 3),
+        Point3d.create(-2, 1, 7),
+      ],
     ]) {
       builder.clear();
       const linestring = LineString3d.create(points);
-      const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({ fitPoints: points }));
+      const curve = InterpolationCurve3d.create(
+        InterpolationCurve3dOptions.create({ fitPoints: points })
+      );
       builder.clear();
       builder.announce(linestring);
       const frameA = builder.getValidatedFrame();
@@ -148,7 +185,11 @@ describe("FrameBuilder", () => {
       builder.announce(curve);
       const frameB = builder.getValidatedFrame();
       if (ck.testDefined(frameA) && frameA && ck.testDefined(frameB) && frameB)
-        ck.testTransform(frameA, frameB, "Frame from linestring versus interpolation curve");
+        ck.testTransform(
+          frameA,
+          frameB,
+          "Frame from linestring versus interpolation curve"
+        );
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -157,14 +198,25 @@ describe("FrameBuilder", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const builder = new FrameBuilder();
-    const localToWorld = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(55)));
+    const localToWorld = Transform.createOriginAndMatrix(
+      Point3d.createZero(),
+      Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(55))
+    );
     const spiral = DirectSpiral3d.createCzechCubic(localToWorld, 20, 21);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral);
     builder.announce(spiral);
     const frame = builder.getValidatedFrame();
     if (ck.testDefined(frame) && frame)
-      ck.testTransform(localToWorld, frame, "Frame from spiral ctor versus frenet");
-    GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "GenericCurve");
+      ck.testTransform(
+        localToWorld,
+        frame,
+        "Frame from spiral ctor versus frenet"
+      );
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "FrameBuilder",
+      "GenericCurve"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -180,9 +232,11 @@ describe("FrameBuilder", () => {
 
     // loop body assumes each set of points has 3 leading independent vectors
     for (const vectors of [
-      [Vector3d.create(1, 0, 0),
-      Vector3d.create(0, 1, 0),
-      Vector3d.create(0, 0, 1)],
+      [
+        Vector3d.create(1, 0, 0),
+        Vector3d.create(0, 1, 0),
+        Vector3d.create(0, 0, 1),
+      ],
     ]) {
       builder.clear();
       const vector0 = vectors[0];
@@ -196,10 +250,12 @@ describe("FrameBuilder", () => {
       ck.testExactNumber(1, builder.savedVectorCount());
 
       ck.testExactNumber(2, builder.announceVector(vector1));
-      ck.testExactNumber(2, builder.announceVector(vector1.plusScaled(vector0, 2.0)));
+      ck.testExactNumber(
+        2,
+        builder.announceVector(vector1.plusScaled(vector0, 2.0))
+      );
 
       ck.testExactNumber(3, builder.announceVector(vector2));
-
     }
     ck.checkpoint("FrameBuilder");
     expect(ck.getNumErrors()).equals(0);
@@ -207,23 +263,42 @@ describe("FrameBuilder", () => {
   it("HelloWorldB", () => {
     const ck = new Checker();
 
-    const nullRangeLocalToWorld = FrameBuilder.createLocalToWorldTransformInRange(Range3d.createNull(), AxisScaleSelect.Unit, 0, 0, 0, 2.0);
-    ck.testTransform(Transform.createIdentity(), nullRangeLocalToWorld, "frame in null range");
+    const nullRangeLocalToWorld =
+      FrameBuilder.createLocalToWorldTransformInRange(
+        Range3d.createNull(),
+        AxisScaleSelect.Unit,
+        0,
+        0,
+        0,
+        2.0
+      );
+    ck.testTransform(
+      Transform.createIdentity(),
+      nullRangeLocalToWorld,
+      "frame in null range"
+    );
 
-    for (const range of [Range3d.createXYZXYZ(1, 2, 3, 5, 7, 9)]
-    ) {
+    for (const range of [Range3d.createXYZXYZ(1, 2, 3, 5, 7, 9)]) {
       for (const select of [
         AxisScaleSelect.Unit,
         AxisScaleSelect.LongestRangeDirection,
-        AxisScaleSelect.NonUniformRangeContainment]) {
-        const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
+        AxisScaleSelect.NonUniformRangeContainment,
+      ]) {
+        const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(
+          range,
+          select,
+          0,
+          0,
+          0,
+          2.0
+        );
         if (ck.testPointer(localToWorld)) {
           MatrixTests.checkProperties(
             ck,
             localToWorld.matrix,
-            select === AxisScaleSelect.Unit,  // unit axes in range are identity
-            select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
-            select === AxisScaleSelect.Unit,  // and of course rigid.
+            select === AxisScaleSelect.Unit, // unit axes in range are identity
+            select === AxisScaleSelect.Unit, // and of course unitPerpendicular
+            select === AxisScaleSelect.Unit, // and of course rigid.
             true, // always invertible
             true // always diagonal
           );
@@ -244,41 +319,71 @@ describe("FrameBuilder", () => {
     const y0 = 0.0;
     for (const zz of [-1, 0, 1]) {
       const loop = new Loop();
-      loop.tryAddChild(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(a, 0, 0), Point3d.create(a, a, 0), Point3d.create(0, a, 0)));
-      loop.tryAddChild(Arc3d.createCircularStartMiddleEnd(
-        Point3d.create(0, a, 0),
-        Point3d.create(-a / 2, a / 2, zz),
-        Point3d.create(0, 0, 0)));
+      loop.tryAddChild(
+        LineString3d.create(
+          Point3d.create(0, 0, 0),
+          Point3d.create(a, 0, 0),
+          Point3d.create(a, a, 0),
+          Point3d.create(0, a, 0)
+        )
+      );
+      loop.tryAddChild(
+        Arc3d.createCircularStartMiddleEnd(
+          Point3d.create(0, a, 0),
+          Point3d.create(-a / 2, a / 2, zz),
+          Point3d.create(0, 0, 0)
+        )
+      );
       ck.testBoolean(
-        Geometry.isSmallMetricDistance(zz), curvesToPlane(loop) !== undefined, "planarity test");
+        Geometry.isSmallMetricDistance(zz),
+        curvesToPlane(loop) !== undefined,
+        "planarity test"
+      );
 
       const rawSums = RegionOps.computeXYAreaMoments(loop)!;
-      GeometryCoreTestIO.consoleLog("curves", prettyPrint(IModelJson.Writer.toIModelJson(loop)));
-      GeometryCoreTestIO.consoleLog("raw moment products", prettyPrint(rawSums.toJSON()));
-      const principalMoments = MomentData.inertiaProductsToPrincipalAxes(rawSums.origin, rawSums.sums)!;
-      GeometryCoreTestIO.consoleLog("inertia", prettyPrint(principalMoments.toJSON()));
+      GeometryCoreTestIO.consoleLog(
+        "curves",
+        prettyPrint(IModelJson.Writer.toIModelJson(loop))
+      );
+      GeometryCoreTestIO.consoleLog(
+        "raw moment products",
+        prettyPrint(rawSums.toJSON())
+      );
+      const principalMoments = MomentData.inertiaProductsToPrincipalAxes(
+        rawSums.origin,
+        rawSums.sums
+      )!;
+      GeometryCoreTestIO.consoleLog(
+        "inertia",
+        prettyPrint(principalMoments.toJSON())
+      );
       GeometryCoreTestIO.captureGeometry(allGeometry, loop, x0, y0, 0);
       GeometryCoreTestIO.showMomentData(allGeometry, rawSums, false, x0, y0, 0);
       x0 += 2.0 * a;
-
     }
-    ck.testUndefined(curvesToPlane(LineSegment3d.createXYZXYZ(1, 2, 4, 5, 2, 3)));
-    GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "NonPlanarCurves");
+    ck.testUndefined(
+      curvesToPlane(LineSegment3d.createXYZXYZ(1, 2, 4, 5, 2, 3))
+    );
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "FrameBuilder",
+      "NonPlanarCurves"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
-
 });
 
 /** test if a curve collection is planar within tolerance.
  * * The plane considered is as returned by FrameBuilder.createRightHandedFrame ()
  */
-function curvesToPlane(curves: AnyCurve, tolerance: number = Geometry.smallMetricDistance): Transform | undefined {
+function curvesToPlane(
+  curves: AnyCurve,
+  tolerance: number = Geometry.smallMetricDistance
+): Transform | undefined {
   const localToWorldA = FrameBuilder.createRightHandedFrame(undefined, curves)!;
-  if (!localToWorldA)
-    return undefined;
+  if (!localToWorldA) return undefined;
   const worldToLocalA = localToWorldA.inverse()!;
   const rangeA = curves.range(worldToLocalA);
-  if (rangeA.zLength() <= tolerance)
-    return localToWorldA;
+  if (rangeA.zLength() <= tolerance) return localToWorldA;
   return undefined;
 }

@@ -2,7 +2,7 @@
 
 There are two basic ways to augment the UI of a host iModelApp.
 
-The simplest way is to use one or more `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, Backstage items, and Widgets.  In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host iModelApp.
+The simplest way is to use one or more `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, Backstage items, and Widgets. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host iModelApp.
 
 The second way is for a package to provide an entire stage definition. It is recommended that this be done using the [StandardFrontstageProvider]($appui-react), which will provide an empty stage that can then be populated via UiItemsProviders.
 
@@ -63,7 +63,7 @@ The UiItemsProvider function called when appui-react is populating StagePanels i
     provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
 ```
 
-Starting in version 2.17 Widgets can support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
+Starting in version 2.17 Widgets can support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
 
 Below is an example of implementation of a `provideWidgets` method that can work in Ninezone UI (UI-1) or AppUi (UI-2).
 
@@ -123,44 +123,56 @@ One last thing to point out in the above example. We specified default size for 
 
 When registering a [UiItemsProvider]($appui-abstract) with the [UiItemsManager]($appui-abstract) it is possible to pass an additional argument to limit when the provider is allowed to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) defines the parameters that can be used to limit when the provider is called to provide its items.
 
-In the example registration below the `commonToolSetProvider` is limited to be called to when the active stage has a StageUsage: `StageUsage.General`, `StageUsage.Edit`, or `StageUsage.ViewOnly`. Remember the StageUsage is defined by the FrontStageProvider that has been registered.  Since we want the same provider to provide a different set of tools to different stages we assign an override providerId for this instance of the provider. This is needed since the UiItemsManager does not allow providers with duplicate Ids. The `redlineToolSetProvider` is then registered to show only a subset of tools when the active stage has a StageUsage of `StageUsage.Redline`.
+In the example registration below the `commonToolSetProvider` is limited to be called to when the active stage has a StageUsage: `StageUsage.General`, `StageUsage.Edit`, or `StageUsage.ViewOnly`. Remember the StageUsage is defined by the FrontStageProvider that has been registered. Since we want the same provider to provide a different set of tools to different stages we assign an override providerId for this instance of the provider. This is needed since the UiItemsManager does not allow providers with duplicate Ids. The `redlineToolSetProvider` is then registered to show only a subset of tools when the active stage has a StageUsage of `StageUsage.Redline`.
 
 ```ts
 const commonToolSetProvider = new StandardContentToolsUiItemsProvider();
-UiItemsManager.register(commonToolSetProvider, {providerId: "general-content-tools",
- stageUsages: [StageUsage.General, StageUsage.Edit, StageUsage.ViewOnly]});
+UiItemsManager.register(commonToolSetProvider, {
+  providerId: "general-content-tools",
+  stageUsages: [StageUsage.General, StageUsage.Edit, StageUsage.ViewOnly],
+});
 
 const contentToolsToShow: DefaultContentTools = {
-      vertical: {
-        selectElement: true,
-      },
-      horizontal: {
-        clearSelection: true,
-      },
-    };
-const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(contentToolsToShow);
-UiItemsManager.register(redlineToolSetProvider, {providerId: "redline-content-tools",
-  stageUsages: [StageUsage.Redline]});
+  vertical: {
+    selectElement: true,
+  },
+  horizontal: {
+    clearSelection: true,
+  },
+};
+const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(
+  contentToolsToShow
+);
+UiItemsManager.register(redlineToolSetProvider, {
+  providerId: "redline-content-tools",
+  stageUsages: [StageUsage.Redline],
+});
 ```
 
 Alternately StageIds could be used to specify when the different tool set providers are used. This requires the caller the registers the UiItemsProvider to know all stageIds that are available in the application.
 
 ```ts
 const commonToolSetProvider = new StandardContentToolsUiItemsProvider();
-UiItemsManager.register(commonToolSetProvider, {providerId: "general-content-tools",
- stageIds: ["Main", "PlanAndProfile", "BasicEditing"]});
+UiItemsManager.register(commonToolSetProvider, {
+  providerId: "general-content-tools",
+  stageIds: ["Main", "PlanAndProfile", "BasicEditing"],
+});
 
 const contentToolsToShow: DefaultContentTools = {
-      vertical: {
-        selectElement: true,
-      },
-      horizontal: {
-        clearSelection: true,
-      },
-    };
-const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(contentToolsToShow);
-UiItemsManager.register(redlineToolSetProvider, {providerId: "redline-content-tools",
-  stageIds: ["Markup"]});
+  vertical: {
+    selectElement: true,
+  },
+  horizontal: {
+    clearSelection: true,
+  },
+};
+const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(
+  contentToolsToShow
+);
+UiItemsManager.register(redlineToolSetProvider, {
+  providerId: "redline-content-tools",
+  stageIds: ["Markup"],
+});
 ```
 
 There are three standard providers that can be used to serve as example of defining a UiItemsProvider. They are [StandardContentToolsUiItemsProvider]($appui-react), [StandardNavigationToolsUiItemsProvider]($appui-react), and [StandardStatusbarUiItemsProvider]($appui-react).
@@ -178,11 +190,13 @@ To see a more complete example of adding ToolButtons, Status Bar items, and Widg
 
 ## Adding a Frontstage
 
- The follow example shows how to define a new stage and register it with the `ConfigurableUiManager`. This stage defines the content to show and leaves all the tool and status bar item specifications to standard providers. This stage could then be registered in the package's initialize method by calling `MyFrontstage.register()`.
+The follow example shows how to define a new stage and register it with the `ConfigurableUiManager`. This stage defines the content to show and leaves all the tool and status bar item specifications to standard providers. This stage could then be registered in the package's initialize method by calling `MyFrontstage.register()`.
 
-``` ts
+```ts
 export class MyStageContentGroupProvider extends ContentGroupProvider {
-  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(
+    props: FrontstageProps
+  ): Promise<ContentGroup> {
     return new ContentGroup({
       id: "myPackage:my-stage-content",
       layout: StandardContentLayouts.singleView,
@@ -209,7 +223,7 @@ export class MyFrontstage {
     const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"} />;
     const myStageProps: StandardFrontstageProps = {
       id: NetworkTracingFrontstage.stageId,
-      version: 1.0,  // stage version used when save stage's state
+      version: 1.0, // stage version used when save stage's state
       contentGroupProps: MyFrontstage._contentGroupProvider,
       hideNavigationAid: false,
       cornerButton,
@@ -217,29 +231,36 @@ export class MyFrontstage {
       applicationData: undefined,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(myStageProps));
+    ConfigurableUiManager.addFrontstageProvider(
+      new StandardFrontstageProvider(myStageProps)
+    );
     MyFrontstage.registerToolProviders();
   }
 
   private static registerToolProviders() {
-
     // =============== using stage ids to filter when provider is called ===================
     const contentToolOptions = {
-        horizontal: {
-          clearSelection: true,
-          clearDisplayOverrides: true,
-          hide: "group",
-          isolate: "group",
-          emphasize: "element",
-        },
-      };
+      horizontal: {
+        clearSelection: true,
+        clearDisplayOverrides: true,
+        hide: "group",
+        isolate: "group",
+        emphasize: "element",
+      },
+    };
 
-    UiItemsManager.register(new StandardContentToolsUiItemsProvider(contentToolOptions), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
-    UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
-    UiItemsManager.register(new StandardStatusbarItemsProvider(), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
+    UiItemsManager.register(
+      new StandardContentToolsUiItemsProvider(contentToolOptions),
+      { stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"] }
+    );
+    UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), {
+      stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"],
+    });
+    UiItemsManager.register(new StandardStatusbarItemsProvider(), {
+      stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"],
+    });
   }
 }
-
 ```
 
 ## StateManager and ReducerRegistry
@@ -249,7 +270,7 @@ The example below shows the call that adds a Reducer to the store managed by the
 ```ts
 ReducerRegistryInstance.registerReducer(
   PackageStateManager._reducerName,
-  PackageStateManager.reducer,
+  PackageStateManager.reducer
 );
 ```
 

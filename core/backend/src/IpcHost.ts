@@ -6,11 +6,35 @@
  * @module NativeApp
  */
 
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
-  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
-  PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  assert,
+  BentleyError,
+  IModelStatus,
+  Logger,
+  LogLevel,
+  OpenMode,
+} from "@itwin/core-bentley";
+import {
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  EditingScopeNotifications,
+  getPullChangesIpcChannel,
+  IModelConnectionProps,
+  IModelError,
+  IModelRpcProps,
+  IpcAppChannel,
+  IpcAppFunctions,
+  IpcAppNotifications,
+  IpcInvokeReturn,
+  IpcListener,
+  IpcSocketBackend,
+  iTwinChannel,
+  OpenBriefcaseProps,
+  PullChangesOptions,
+  RemoveFunction,
+  StandaloneOpenOptions,
+  TileTreeContentIds,
+  TxnNotifications,
 } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
@@ -19,9 +43,9 @@ import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 
 /**
-  * Options for [[IpcHost.startup]]
-  * @public
-  */
+ * Options for [[IpcHost.startup]]
+ * @public
+ */
 export interface IpcHostOpts {
   iModelHost?: IModelHostOptions;
   ipcHost?: {
@@ -44,9 +68,13 @@ export class IpcHost {
   public static noStack = false;
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
-  private static get ipc(): IpcSocketBackend { return this._ipc!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  private static get ipc(): IpcSocketBackend {
+    return this._ipc!;
+  } // eslint-disable-line @typescript-eslint/no-non-null-assertion
   /** Determine whether Ipc is available for this backend. This will only be true if [[startup]] has been called on this class. */
-  public static get isValid(): boolean { return undefined !== this._ipc; }
+  public static get isValid(): boolean {
+    return undefined !== this._ipc;
+  }
 
   /**
    * Send a message to the frontend over an Ipc channel.
@@ -63,7 +91,10 @@ export class IpcHost {
    * @param handler A function that supplies the implementation for `channel`
    * @note returns A function to call to remove the handler.
    */
-  public static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction {
+  public static handle(
+    channel: string,
+    handler: (...args: any[]) => Promise<any>
+  ): RemoveFunction {
     return this.ipc.handle(iTwinChannel(channel), handler);
   }
   /**
@@ -72,7 +103,10 @@ export class IpcHost {
    * @param listener A function called when messages are sent over `channel`
    * @note returns A function to call to remove the listener.
    */
-  public static addListener(channel: string, listener: IpcListener): RemoveFunction {
+  public static addListener(
+    channel: string,
+    listener: IpcListener
+  ): RemoveFunction {
     return this.ipc.addListener(iTwinChannel(channel), listener);
   }
   /**
@@ -84,23 +118,39 @@ export class IpcHost {
     this.ipc.removeListener(iTwinChannel(channel), listener);
   }
 
-  private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
+  private static notify(
+    channel: string,
+    briefcase: BriefcaseDb | StandaloneDb,
+    methodName: string,
+    ...args: any[]
+  ) {
     if (this.isValid)
       return this.send(`${channel}:${briefcase.key}`, methodName, ...args);
   }
 
   /** @internal */
-  public static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>) {
+  public static notifyIpcFrontend<T extends keyof IpcAppNotifications>(
+    methodName: T,
+    ...args: Parameters<IpcAppNotifications[T]>
+  ) {
     return IpcHost.send(IpcAppChannel.AppNotify, methodName, ...args);
   }
 
   /** @internal */
-  public static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>) {
+  public static notifyTxns<T extends keyof TxnNotifications>(
+    briefcase: BriefcaseDb | StandaloneDb,
+    methodName: T,
+    ...args: Parameters<TxnNotifications[T]>
+  ) {
     this.notify(IpcAppChannel.Txns, briefcase, methodName, ...args);
   }
 
   /** @internal */
-  public static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>) {
+  public static notifyEditingScope<T extends keyof EditingScopeNotifications>(
+    briefcase: BriefcaseDb | StandaloneDb,
+    methodName: T,
+    ...args: Parameters<EditingScopeNotifications[T]>
+  ) {
     this.notify(IpcAppChannel.EditingScope, briefcase, methodName, ...args);
   }
 
@@ -111,10 +161,10 @@ export class IpcHost {
    */
   public static async startup(opt?: IpcHostOpts): Promise<void> {
     this._ipc = opt?.ipcHost?.socket;
-    if (opt?.ipcHost?.exceptions?.noStack)
-      this.noStack = true;
+    if (opt?.ipcHost?.exceptions?.noStack) this.noStack = true;
 
-    if (this.isValid) { // for tests, we use IpcHost but don't have a frontend
+    if (this.isValid) {
+      // for tests, we use IpcHost but don't have a frontend
       IpcAppHandler.register();
     }
 
@@ -152,26 +202,38 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
-    return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
-      try {
-        const func = (impl as any)[funcName];
-        if (typeof func !== "function")
-          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
+    return IpcHost.handle(
+      impl.channelName,
+      async (
+        _evt: Event,
+        funcName: string,
+        ...args: any[]
+      ): Promise<IpcInvokeReturn> => {
+        try {
+          const func = (impl as any)[funcName];
+          if (typeof func !== "function")
+            throw new IModelError(
+              IModelStatus.FunctionNotFound,
+              `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`
+            );
 
-        return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        const ret: IpcInvokeReturn = {
-          error: {
-            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-            message: err.message ?? BentleyError.getErrorMessage(err),
-            errorNumber: err.errorNumber ?? 0,
-          },
-        };
-        if (!IpcHost.noStack)
-          ret.error.stack = BentleyError.getErrorStack(err);
-        return ret;
+          return { result: await func.call(impl, ...args) };
+        } catch (err: any) {
+          const ret: IpcInvokeReturn = {
+            error: {
+              name: err.hasOwnProperty("name")
+                ? err.name
+                : err.constructor?.name ?? "Unknown Error",
+              message: err.message ?? BentleyError.getErrorMessage(err),
+              errorNumber: err.errorNumber ?? 0,
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.error.stack = BentleyError.getErrorStack(err);
+          return ret;
+        }
       }
-    });
+    );
   }
 }
 
@@ -179,11 +241,19 @@ export abstract class IpcHandler {
  * Implementation  of IpcAppFunctions
  */
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
-  public get channelName() { return IpcAppChannel.Functions; }
+  public get channelName() {
+    return IpcAppChannel.Functions;
+  }
 
   private _iModelKeyToPullStatus = new Map<string, ProgressStatus>();
 
-  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
+  public async log(
+    _timestamp: number,
+    level: LogLevel,
+    category: string,
+    message: string,
+    metaData?: any
+  ): Promise<void> {
     switch (level) {
       case LogLevel.Error:
         Logger.logError(category, message, metaData);
@@ -200,17 +270,31 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     }
   }
 
-  public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
+  public async cancelTileContentRequests(
+    tokenProps: IModelRpcProps,
+    contentIds: TileTreeContentIds[]
+  ): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
-  public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
-    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
+  public async cancelElementGraphicsRequests(
+    key: string,
+    requestIds: string[]
+  ): Promise<void> {
+    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(
+      requestIds
+    );
   }
-  public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
+  public async openBriefcase(
+    args: OpenBriefcaseProps
+  ): Promise<IModelConnectionProps> {
     const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }
-  public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
+  public async openStandalone(
+    filePath: string,
+    openMode: OpenMode,
+    opts?: StandaloneOpenOptions
+  ): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
   public async closeIModel(key: string): Promise<void> {
@@ -236,19 +320,31 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
 
-  public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
+  public async pullChanges(
+    key: string,
+    toIndex?: ChangesetIndex,
+    options?: PullChangesOptions
+  ): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
 
     this._iModelKeyToPullStatus.set(key, ProgressStatus.Continue);
-    const checkAbort = () => this._iModelKeyToPullStatus.get(key) ?? ProgressStatus.Continue;
+    const checkAbort = () =>
+      this._iModelKeyToPullStatus.get(key) ?? ProgressStatus.Continue;
 
     let onProgress: ProgressFunction | undefined;
     if (options?.reportProgress) {
       const progressCallback: ProgressFunction = (loaded, total) => {
-        IpcHost.send(getPullChangesIpcChannel(iModelDb.iModelId), { loaded, total });
+        IpcHost.send(getPullChangesIpcChannel(iModelDb.iModelId), {
+          loaded,
+          total,
+        });
         return checkAbort();
       };
-      onProgress = throttleProgressCallback(progressCallback, checkAbort, options?.progressInterval);
+      onProgress = throttleProgressCallback(
+        progressCallback,
+        checkAbort,
+        options?.progressInterval
+      );
     } else if (options?.enableCancellation) {
       onProgress = checkAbort;
     }
@@ -265,16 +361,28 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     this._iModelKeyToPullStatus.set(key, ProgressStatus.Abort);
   }
 
-  public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
+  public async pushChanges(
+    key: string,
+    description: string
+  ): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
     await iModelDb.pushChanges({ description });
     return iModelDb.changeset as ChangesetIndexAndId;
   }
 
-  public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
+  public async toggleGraphicalEditingScope(
+    key: string,
+    startSession: boolean
+  ): Promise<boolean> {
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> =
+      IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(
+        startSession
+      );
     if (val.error)
-      throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
+      throw new IModelError(
+        val.error.status,
+        "Failed to toggle graphical editing scope"
+      );
     assert(undefined !== val.result);
     return val.result;
   }
@@ -282,7 +390,10 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
 
-  public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
+  public async reverseTxns(
+    key: string,
+    numOperations: number
+  ): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
@@ -304,7 +415,11 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
  * Prevents progress callback being called more frequently when provided interval.
  * @internal
  */
-export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction {
+export function throttleProgressCallback(
+  func: ProgressFunction,
+  checkAbort: () => ProgressStatus,
+  progressInterval?: number
+): ProgressFunction {
   const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
   let nextTime = Date.now() + interval;
   const progressCallback: ProgressFunction = (loaded, total) => {

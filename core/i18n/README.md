@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-i18n__ package contains classes related to internationalization and localization.
+The **@itwin/core-i18n** package contains classes related to internationalization and localization.
 
 ## Documentation
 

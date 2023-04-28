@@ -6,7 +6,14 @@
  * @module Tiles
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import {
+  Angle,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Transform,
+  Vector3d,
+} from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
@@ -35,12 +42,12 @@ export abstract class MapTilingScheme {
 
   /** Convert a longitude in [-pi, pi] radisn to a fraction in [0, 1] along the X axis. */
   public longitudeToXFraction(longitude: number) {
-    return longitude / Angle.pi2Radians + .5;
+    return longitude / Angle.pi2Radians + 0.5;
   }
 
   /** Convert a fraction in [0, 1] along the X axis into a longitude in [-pi, pi] radians. */
   public xFractionToLongitude(xFraction: number) {
-    return Angle.pi2Radians * (xFraction - .5);
+    return Angle.pi2Radians * (xFraction - 0.5);
   }
 
   /** Convert a fraction in [0, 1] along the Y axis into a latitude in [-pi/2, pi/2] radians. */
@@ -49,7 +56,11 @@ export abstract class MapTilingScheme {
   /** Convert a latitude in [-pi/2, pi/2] radians into a fraction in [0, 1] along the Y axis. */
   public abstract latitudeToYFraction(latitude: number): number;
 
-  protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean) {
+  protected constructor(
+    numberOfLevelZeroTilesX: number,
+    numberOfLevelZeroTilesY: number,
+    rowZeroAtNorthPole: boolean
+  ) {
     this.rowZeroAtNorthPole = rowZeroAtNorthPole;
     this.numberOfLevelZeroTilesX = numberOfLevelZeroTilesX;
     this.numberOfLevelZeroTilesY = numberOfLevelZeroTilesY;
@@ -66,12 +77,14 @@ export abstract class MapTilingScheme {
    * @param level The level of detail, with 0 corresponding to the root tile.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return  level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
+    return level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
   }
 
   /** @alpha */
   public get rootLevel() {
-    return this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1 ? -1 : 0;
+    return this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1
+      ? -1
+      : 0;
   }
 
   /** @alpha */
@@ -117,9 +130,13 @@ export abstract class MapTilingScheme {
   }
 
   /** Given the components of a [[QuadId]], compute its fractional coordinates in the XY plane. */
-  public tileXYToFraction(x: number, y: number, level: number, result?: Point2d): Point2d {
-    if (undefined === result)
-      result = Point2d.createZero();
+  public tileXYToFraction(
+    x: number,
+    y: number,
+    level: number,
+    result?: Point2d
+  ): Point2d {
+    if (undefined === result) result = Point2d.createZero();
 
     result.x = this.tileXToFraction(x, level);
     result.y = this.tileYToFraction(y, level);
@@ -134,46 +151,76 @@ export abstract class MapTilingScheme {
    * @param height The elevation above the ellipsoid.
    * @returns the corresponding cartographic position.
    */
-  public tileXYToCartographic(x: number, y: number, level: number, result: Cartographic, height = 0): Cartographic {
+  public tileXYToCartographic(
+    x: number,
+    y: number,
+    level: number,
+    result: Cartographic,
+    height = 0
+  ): Cartographic {
     const pt = this.tileXYToFraction(x, y, level, this._scratchFraction);
     return this.fractionToCartographic(pt.x, pt.y, result, height);
   }
 
   /** Given the components of a [[QuadId]], compute the corresponding region of the Earth's surface. */
-  public tileXYToRectangle(x: number, y: number, level: number, result?: MapCartoRectangle) {
-    if (level < 0)
-      return MapCartoRectangle.createMaximum();
+  public tileXYToRectangle(
+    x: number,
+    y: number,
+    level: number,
+    result?: MapCartoRectangle
+  ) {
+    if (level < 0) return MapCartoRectangle.createMaximum();
 
     return MapCartoRectangle.fromRadians(
       this.tileXToLongitude(x, level),
-      this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level),
+      this.tileYToLatitude(this.rowZeroAtNorthPole ? y + 1 : y, level),
       this.tileXToLongitude(x + 1, level),
-      this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level),
+      this.tileYToLatitude(this.rowZeroAtNorthPole ? y : y + 1, level),
       result
     );
   }
 
   /** Returns true if the tile at the specified X coordinate and level is adjacent to the north pole. */
   public tileBordersNorthPole(row: number, level: number) {
-    return this.rowZeroAtNorthPole ? this.tileYToFraction(row, level) === 0.0 : this.tileYToFraction(row + 1, level) === 1.0;
+    return this.rowZeroAtNorthPole
+      ? this.tileYToFraction(row, level) === 0.0
+      : this.tileYToFraction(row + 1, level) === 1.0;
   }
 
   /** Returns true if the tile at the specified X coordinate and level is adjacent to the south pole. */
   public tileBordersSouthPole(row: number, level: number) {
-    return this.rowZeroAtNorthPole ? this.tileYToFraction(row + 1, level) === 1.0 : this.tileYToFraction(row, level) === 0.0;
+    return this.rowZeroAtNorthPole
+      ? this.tileYToFraction(row + 1, level) === 1.0
+      : this.tileYToFraction(row, level) === 0.0;
   }
 
   /** Given a cartographic position, compute the corresponding position on the surface of the Earth as fractional distances along the
    * X and Y axes.
    */
-  public cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d {
-    const fraction = this.cartographicToFraction(carto.latitude, carto.longitude, this._scratchPoint2d);
-    return Point2d.create(this.xFractionToTileX(fraction.x, level), this.yFractionToTileY(fraction.y, level), result);
-
+  public cartographicToTileXY(
+    carto: Cartographic,
+    level: number,
+    result?: Point2d
+  ): Point2d {
+    const fraction = this.cartographicToFraction(
+      carto.latitude,
+      carto.longitude,
+      this._scratchPoint2d
+    );
+    return Point2d.create(
+      this.xFractionToTileX(fraction.x, level),
+      this.yFractionToTileY(fraction.y, level),
+      result
+    );
   }
 
   /** Given fractional coordinates in the XY plane and an elevation, compute the corresponding cartographic position. */
-  public fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height = 0): Cartographic {
+  public fractionToCartographic(
+    xFraction: number,
+    yFraction: number,
+    result: Cartographic,
+    height = 0
+  ): Cartographic {
     result.longitude = this.xFractionToLongitude(xFraction);
     result.latitude = this.yFractionToLatitude(yFraction);
     result.height = height;
@@ -181,7 +228,11 @@ export abstract class MapTilingScheme {
   }
 
   /** Given a cartographic location on the surface of the Earth, convert it to fractional coordinates in the XY plane. */
-  public cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d {
+  public cartographicToFraction(
+    latitudeRadians: number,
+    longitudeRadians: number,
+    result: Point2d
+  ): Point2d {
     result.x = this.longitudeToXFraction(longitudeRadians);
     result.y = this.latitudeToYFraction(latitudeRadians);
     return result;
@@ -190,33 +241,65 @@ export abstract class MapTilingScheme {
   /** @alpha */
   private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
     const cartoGraphic = Cartographic.fromEcef(point)!;
-    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
+    return Point3d.create(
+      this.longitudeToXFraction(cartoGraphic.longitude),
+      this.latitudeToYFraction(cartoGraphic.latitude),
+      applyTerrain ? cartoGraphic.height : 0
+    );
   }
 
   /** @alpha */
-  public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean) {
+  public computeMercatorFractionToDb(
+    ecefToDb: Transform,
+    bimElevationOffset: number,
+    iModel: IModelConnection,
+    applyTerrain: boolean
+  ) {
     const dbToEcef = ecefToDb.inverse()!;
 
-    const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, bimElevationOffset);
+    const projectCenter = Point3d.create(
+      iModel.projectExtents.center.x,
+      iModel.projectExtents.center.y,
+      bimElevationOffset
+    );
     const projectEast = projectCenter.plusXYZ(1, 0, 0);
     const projectNorth = projectCenter.plusXYZ(0, 1, 0);
 
-    const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter), applyTerrain);
-    const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast), applyTerrain);
-    const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth), applyTerrain);
+    const mercatorOrigin = this.ecefToPixelFraction(
+      dbToEcef.multiplyPoint3d(projectCenter),
+      applyTerrain
+    );
+    const mercatorX = this.ecefToPixelFraction(
+      dbToEcef.multiplyPoint3d(projectEast),
+      applyTerrain
+    );
+    const mercatorY = this.ecefToPixelFraction(
+      dbToEcef.multiplyPoint3d(projectNorth),
+      applyTerrain
+    );
 
     const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
     const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
-    const matrix = Matrix3d.createColumns(deltaX, deltaY, Vector3d.create(0, 0, 1));
+    const matrix = Matrix3d.createColumns(
+      deltaX,
+      deltaY,
+      Vector3d.create(0, 0, 1)
+    );
 
-    const dbToMercator = Transform.createMatrixPickupPutdown(matrix, projectCenter, mercatorOrigin);
+    const dbToMercator = Transform.createMatrixPickupPutdown(
+      matrix,
+      projectCenter,
+      mercatorOrigin
+    );
     const mercatorToDb = dbToMercator.inverse();
-    return mercatorToDb === undefined ? Transform.createIdentity() : mercatorToDb;
+    return mercatorToDb === undefined
+      ? Transform.createIdentity()
+      : mercatorToDb;
   }
 
   /** @alpha */
   protected yFractionFlip(fraction: number) {
-    return this.rowZeroAtNorthPole ? (1.0 - fraction) : fraction;
+    return this.rowZeroAtNorthPole ? 1.0 - fraction : fraction;
   }
 }
 
@@ -225,18 +308,22 @@ export abstract class MapTilingScheme {
  * @beta
  */
 export class GeographicTilingScheme extends MapTilingScheme {
-  public constructor(numberOfLevelZeroTilesX = 2, numberOfLevelZeroTilesY = 1, rowZeroAtNorthPole = false) {
+  public constructor(
+    numberOfLevelZeroTilesX = 2,
+    numberOfLevelZeroTilesY = 1,
+    rowZeroAtNorthPole = false
+  ) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
   /** @internal override */
   public yFractionToLatitude(yFraction: number): number {
-    return Math.PI * (this.yFractionFlip(yFraction) - .5);
+    return Math.PI * (this.yFractionFlip(yFraction) - 0.5);
   }
 
   /** @internal override */
   public latitudeToYFraction(latitude: number): number {
-    return this.yFractionFlip(.5 + latitude / Math.PI);
+    return this.yFractionFlip(0.5 + latitude / Math.PI);
   }
 }
 
@@ -250,10 +337,11 @@ export class WebMercatorProjection {
    * @returns {Number} The geodetic latitude in radians.
    */
   public static mercatorAngleToGeodeticLatitude(mercatorAngle: number) {
-    return Angle.piOver2Radians - (2.0 * Math.atan(Math.exp(-mercatorAngle)));
+    return Angle.piOver2Radians - 2.0 * Math.atan(Math.exp(-mercatorAngle));
   }
 
-  public static maximumLatitude = WebMercatorProjection.mercatorAngleToGeodeticLatitude(Angle.piRadians);
+  public static maximumLatitude =
+    WebMercatorProjection.mercatorAngleToGeodeticLatitude(Angle.piRadians);
 
   public static geodeticLatitudeToMercatorAngle(latitude: number) {
     // Clamp the latitude coordinate to the valid Mercator bounds.
@@ -272,13 +360,19 @@ export class WebMercatorProjection {
  * @beta
  */
 export class WebMercatorTilingScheme extends MapTilingScheme {
-  public constructor(numberOfLevelZeroTilesX = 1, numberOfLevelZeroTilesY = 1, rowZeroAtNorthPole = true) {
+  public constructor(
+    numberOfLevelZeroTilesX = 1,
+    numberOfLevelZeroTilesY = 1,
+    rowZeroAtNorthPole = true
+  ) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
   /** @internal override */
   public yFractionToLatitude(yFraction: number): number {
-    const mercatorAngle = Angle.pi2Radians * (this.rowZeroAtNorthPole ? (.5 - yFraction) : (yFraction - .5));
+    const mercatorAngle =
+      Angle.pi2Radians *
+      (this.rowZeroAtNorthPole ? 0.5 - yFraction : yFraction - 0.5);
     return WebMercatorProjection.mercatorAngleToGeodeticLatitude(mercatorAngle);
   }
 
@@ -291,6 +385,10 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
       latitude = -WebMercatorProjection.maximumLatitude;
     }
     const sinLatitude = Math.sin(latitude);
-    return (0.5 - Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Angle.piRadians));   // https://msdn.microsoft.com/en-us/library/bb259689.aspx
+    return (
+      0.5 -
+      Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) /
+        (4.0 * Angle.piRadians)
+    ); // https://msdn.microsoft.com/en-us/library/bb259689.aspx
   }
 }

@@ -21,11 +21,13 @@
  */
 export abstract class NormalizedTransition {
   /** Constructor initializes with 0..1 values .. call "setBearingCurvatureLengthCurvature" to apply real values */
-  constructor() { }
+  constructor() {}
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public abstract fractionToCurvatureFraction(fractionX: number): number;
   /** Return the derivative of the (normalized) curvature fraction */
-  public abstract fractionToCurvatureFractionDerivative(fractionX: number): number;
+  public abstract fractionToCurvatureFractionDerivative(
+    fractionX: number
+  ): number;
   /** Return the integrated area under the curve
    * * This is equal to the accumulated angle change.
    */
@@ -50,15 +52,25 @@ export abstract class NormalizedTransition {
    */
   public static findEvaluator(name: string): NormalizedTransition | undefined {
     if (name === "clothoid")
-      return this._clothoidEvaluator ? this._clothoidEvaluator : (this._clothoidEvaluator = new NormalizedClothoidTransition());
+      return this._clothoidEvaluator
+        ? this._clothoidEvaluator
+        : (this._clothoidEvaluator = new NormalizedClothoidTransition());
     if (name === "bloss")
-      return this._blossEvaluator ? this._blossEvaluator : (this._blossEvaluator = new NormalizedBlossTransition());
+      return this._blossEvaluator
+        ? this._blossEvaluator
+        : (this._blossEvaluator = new NormalizedBlossTransition());
     if (name === "biquadratic")
-      return this._biquadraticEvaluator ? this._biquadraticEvaluator : (this._biquadraticEvaluator = new NormalizedBiQuadraticTransition());
+      return this._biquadraticEvaluator
+        ? this._biquadraticEvaluator
+        : (this._biquadraticEvaluator = new NormalizedBiQuadraticTransition());
     if (name === "sine")
-      return this._sineEvaluator ? this._sineEvaluator : (this._sineEvaluator = new NormalizedSineTransition());
+      return this._sineEvaluator
+        ? this._sineEvaluator
+        : (this._sineEvaluator = new NormalizedSineTransition());
     if (name === "cosine")
-      return this._cosineEvaluator ? this._cosineEvaluator : (this._cosineEvaluator = new NormalizedCosineTransition());
+      return this._cosineEvaluator
+        ? this._cosineEvaluator
+        : (this._cosineEvaluator = new NormalizedCosineTransition());
     return undefined;
   }
 }
@@ -68,11 +80,17 @@ export abstract class NormalizedTransition {
  * @internal
  */
 export class NormalizedClothoidTransition extends NormalizedTransition {
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
-  public fractionToCurvatureFraction(fractionX: number): number { return fractionX; }
+  public fractionToCurvatureFraction(fractionX: number): number {
+    return fractionX;
+  }
   /** Return the derivative of the (normalized) curvature fraction */
-  public fractionToCurvatureFractionDerivative(_u: number): number { return 1.0; }
+  public fractionToCurvatureFractionDerivative(_u: number): number {
+    return 1.0;
+  }
   /** Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
@@ -93,9 +111,13 @@ export class NormalizedBlossTransition extends NormalizedTransition {
   //     derivatives zero at 0,1
   //     inflection zero at 0.5
   //   integral is   x^3 - x^4 / 2 = x^3 ( 1-x/2)
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
-  public fractionToCurvatureFraction(u: number): number { return u * u * (3 - 2 * u); }
+  public fractionToCurvatureFraction(u: number): number {
+    return u * u * (3 - 2 * u);
+  }
   /** Return the derivative of the (normalized) curvature fraction */
   public fractionToCurvatureFractionDerivative(u: number): number {
     return 6.0 * u * (1.0 - u);
@@ -116,10 +138,18 @@ export class NormalizedBlossTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedBiQuadraticTransition extends NormalizedTransition {
-  constructor() { super(); }
-  private integratedBasis(u: number): number { return u * u * u * (2.0 / 3.0); }
-  private basis(u: number): number { return 2 * u * u; }
-  private basisDerivative(u: number): number { return 4 * u; }
+  constructor() {
+    super();
+  }
+  private integratedBasis(u: number): number {
+    return u * u * u * (2.0 / 3.0);
+  }
+  private basis(u: number): number {
+    return 2 * u * u;
+  }
+  private basisDerivative(u: number): number {
+    return 4 * u;
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction.
    *  * * For [u <= 0.5, u >= 0.5]
    *   * f(u) = [2 u^2, 1 - 2 (1-u)^2]
@@ -137,8 +167,7 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
-    if (u <= 0.5)
-      return this.integratedBasis(u);
+    if (u <= 0.5) return this.integratedBasis(u);
     const v = 1 - u;
     return 0.5 - v + this.integratedBasis(v);
   }
@@ -152,7 +181,9 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedSineTransition extends NormalizedTransition {
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     const a = 2.0 * Math.PI;
@@ -177,7 +208,9 @@ export class NormalizedSineTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedCosineTransition extends NormalizedTransition {
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     const a = Math.PI;
@@ -193,6 +226,6 @@ export class NormalizedCosineTransition extends NormalizedTransition {
    */
   public fractionToArea(u: number): number {
     const a = Math.PI;
-    return 0.5 * u - 0.5 * Math.sin(u * a) / a;
+    return 0.5 * u - (0.5 * Math.sin(u * a)) / a;
   }
 }

@@ -7,7 +7,12 @@
  */
 
 import { Point2d } from "@itwin/core-geometry";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import {
+  ImageBuffer,
+  ImageBufferFormat,
+  ImageSource,
+  ImageSourceFormat,
+} from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {
@@ -47,7 +52,12 @@ function rgbaFromRgba(rgba: Rgba, src: Uint8Array, idx: number): number {
  * @public
  * @extensions
  */
-export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize = new Point2d(0, 0), barStyle = "#C0C0C0"): HTMLCanvasElement {
+export function canvasToResizedCanvasWithBars(
+  canvasIn: HTMLCanvasElement,
+  targetSize: Point2d,
+  barSize = new Point2d(0, 0),
+  barStyle = "#C0C0C0"
+): HTMLCanvasElement {
   const canvasOut = document.createElement("canvas");
   canvasOut.width = targetSize.x + barSize.x;
   canvasOut.height = targetSize.y + barSize.y;
@@ -65,7 +75,13 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
   const context = canvasOut.getContext("2d")!;
   context.fillStyle = barStyle;
   context.fillRect(0, 0, canvasOut.width, canvasOut.height);
-  context.drawImage(canvasIn, adjustImageX, adjustImageY, targetSize.x, targetSize.y);
+  context.drawImage(
+    canvasIn,
+    adjustImageX,
+    adjustImageY,
+    targetSize.x,
+    targetSize.y
+  );
   return canvasOut;
 }
 
@@ -76,20 +92,26 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
  * @public
  * @extensions
  */
-export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean = true): HTMLCanvasElement | undefined {
+export function imageBufferToCanvas(
+  buffer: ImageBuffer,
+  preserveAlpha: boolean = true
+): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
-  if (null === canvas)
-    return undefined;
+  if (null === canvas) return undefined;
 
   canvas.width = buffer.width;
   canvas.height = buffer.height;
 
   const context = canvas.getContext("2d");
-  if (null === context)
-    return undefined;
+  if (null === context) return undefined;
 
   const imageData = context.createImageData(buffer.width, buffer.height);
-  const extractRgba = ImageBufferFormat.Alpha === buffer.format ? rgbaFromAlpha : (ImageBufferFormat.Rgb === buffer.format ? rgbaFromRgb : rgbaFromRgba);
+  const extractRgba =
+    ImageBufferFormat.Alpha === buffer.format
+      ? rgbaFromAlpha
+      : ImageBufferFormat.Rgb === buffer.format
+      ? rgbaFromRgb
+      : rgbaFromRgba;
 
   const bufferData = buffer.data;
   let i = 0;
@@ -115,10 +137,12 @@ export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean 
  * @public
  * @extensions
  */
-export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBufferFormat.Rgba): ImageBuffer | undefined {
+export function canvasToImageBuffer(
+  canvas: HTMLCanvasElement,
+  format = ImageBufferFormat.Rgba
+): ImageBuffer | undefined {
   const context = canvas.getContext("2d");
-  if (null === context)
-    return undefined;
+  if (null === context) return undefined;
 
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -132,8 +156,7 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBuf
     imageBufferData = new Uint8Array(imageData.data.length / 4);
   }
 
-  if (undefined === imageBufferData)
-    return undefined;
+  if (undefined === imageBufferData) return undefined;
 
   let i = 0;
   let j = 0;
@@ -164,7 +187,6 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBuf
  * @extensions
  */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
-
   switch (format) {
     case ImageSourceFormat.Jpeg:
       return "image/jpeg";
@@ -180,12 +202,18 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
  * @public
  * @extensions
  */
-export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
+export function getImageSourceFormatForMimeType(
+  mimeType: string
+): ImageSourceFormat | undefined {
   switch (mimeType) {
-    case "image/jpeg": return ImageSourceFormat.Jpeg;
-    case "image/png": return ImageSourceFormat.Png;
-    case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
-    default: return undefined;
+    case "image/jpeg":
+      return ImageSourceFormat.Jpeg;
+    case "image/png":
+      return ImageSourceFormat.Png;
+    case "image/svg+xml;charset=utf-8":
+      return ImageSourceFormat.Svg;
+    default:
+      return undefined;
   }
 }
 
@@ -195,8 +223,12 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
  * @public
  * @extensions
  */
-export async function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement> {
-  const blob = new Blob([source.data], { type: getImageSourceMimeType(source.format) });
+export async function imageElementFromImageSource(
+  source: ImageSource
+): Promise<HTMLImageElement> {
+  const blob = new Blob([source.data], {
+    type: getImageSourceMimeType(source.format),
+  });
   return imageElementFromUrl(URL.createObjectURL(blob));
 }
 
@@ -205,8 +237,12 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
  * @returns a Promise which resolves to an ImageBitmap containing the uncompressed bitmap image in RGBA format.
  * @public
  */
-export async function imageBitmapFromImageSource(source: ImageSource): Promise<ImageBitmap> {
-  const blob = new Blob([source.data], { type: getImageSourceMimeType(source.format) });
+export async function imageBitmapFromImageSource(
+  source: ImageSource
+): Promise<ImageBitmap> {
+  const blob = new Blob([source.data], {
+    type: getImageSourceMimeType(source.format),
+  });
   return createImageBitmap(blob, {
     premultiplyAlpha: "none",
     colorSpaceConversion: "none",
@@ -221,7 +257,10 @@ export async function imageBitmapFromImageSource(source: ImageSource): Promise<I
  * @public
  * @extensions
  */
-export async function imageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement> {
+export async function imageElementFromUrl(
+  url: string,
+  skipCrossOriginCheck = false
+): Promise<HTMLImageElement> {
   // We must set crossorigin property so that images loaded from same origin can be used with texImage2d.
   // We must do that outside of the promise constructor or it won't work, for reasons.
   const image = new Image();
@@ -244,7 +283,10 @@ export async function imageElementFromUrl(url: string, skipCrossOriginCheck = fa
  * @see imageElementFromUrl
  * @public
  */
-export async function tryImageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement | undefined> {
+export async function tryImageElementFromUrl(
+  url: string,
+  skipCrossOriginCheck = false
+): Promise<HTMLImageElement | undefined> {
   try {
     return await imageElementFromUrl(url, skipCrossOriginCheck);
   } catch {
@@ -258,7 +300,9 @@ export async function tryImageElementFromUrl(url: string, skipCrossOriginCheck =
  * @public
  * @extensions
  */
-export async function extractImageSourceDimensions(source: ImageSource): Promise<Point2d> {
+export async function extractImageSourceDimensions(
+  source: ImageSource
+): Promise<Point2d> {
   const image = await imageElementFromImageSource(source);
   return new Point2d(image.naturalWidth, image.naturalHeight);
 }
@@ -271,7 +315,10 @@ export async function extractImageSourceDimensions(source: ImageSource): Promise
  * @public
  * @extensions
  */
-export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
+export function imageBufferToPngDataUrl(
+  buffer: ImageBuffer,
+  preserveAlpha = true
+): string | undefined {
   // The default format (and the only format required to be supported) for toDataUrl() is "image/png".
   const canvas = imageBufferToCanvas(buffer, preserveAlpha);
   return undefined !== canvas ? canvas.toDataURL() : undefined;
@@ -285,11 +332,13 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = tru
  * @public
  * @extensions
  */
-export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
+export function imageBufferToBase64EncodedPng(
+  buffer: ImageBuffer,
+  preserveAlpha = true
+): string | undefined {
   const urlPrefix = "data:image/png;base64,";
   const url = imageBufferToPngDataUrl(buffer, preserveAlpha);
-  if (undefined === url || !url.startsWith(urlPrefix))
-    return undefined;
+  if (undefined === url || !url.startsWith(urlPrefix)) return undefined;
 
   return url.substring(urlPrefix.length);
 }
@@ -301,14 +350,12 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
   const win = window.open();
-  if (null === win)
-    return;
+  if (null === win) return;
 
   const div = win.document.createElement("div");
   div.innerHTML = `<img src='${url}'/>`;
   win.document.body.append(div);
-  if (undefined !== title)
-    win.document.title = title;
+  if (undefined !== title) win.document.title = title;
 }
 
 /** Determine the maximum [[ViewRect]] that can be fitted and centered in specified ViewRect given a required aspect ratio.
@@ -317,7 +364,10 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void {
  * @returns A ViewRect centered in the input rectangle.
  * @public
  */
-export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4): ViewRect {
+export function getCenteredViewRect(
+  viewRect: ViewRect,
+  aspectRatio = 1.4
+): ViewRect {
   // Determine scale that ensures ability to return an image with the prescribed aspectRatio
   const scale = Math.min(viewRect.width / aspectRatio, viewRect.height);
   const finalWidth = scale * aspectRatio;
@@ -337,7 +387,11 @@ export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4): View
  * @public
  * @extensions
  */
-export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes = 60000, minCompressionQuality = 0.1): string | undefined {
+export function getCompressedJpegFromCanvas(
+  canvas: HTMLCanvasElement,
+  maxBytes = 60000,
+  minCompressionQuality = 0.1
+): string | undefined {
   const decrements = 0.1; // Decrements of quality
   const bytesPerCharacter = 2; // Assume 16-bit per character
   let quality = 1.0; // JPEG Compression quality
@@ -345,8 +399,7 @@ export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes 
   while (quality > minCompressionQuality) {
     const data = canvas.toDataURL("image/jpeg", quality);
     // If we are less than 60 Kb, we are good
-    if (data.length * bytesPerCharacter < maxBytes)
-      return data;
+    if (data.length * bytesPerCharacter < maxBytes) return data;
 
     quality -= decrements;
   }

@@ -6,7 +6,14 @@
  * @module IModelApp
  */
 
-import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
+import {
+  InterceptedRpcRequest,
+  IpcSession,
+  IpcWebSocket,
+  IpcWebSocketFrontend,
+  IpcWebSocketMessage,
+  IpcWebSocketTransport,
+} from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
@@ -85,7 +92,9 @@ export class LocalhostIpcApp {
   public static buildUrlForSocket(base: URL, path = "ipc"): URL {
     const url = new URL(base);
     url.protocol = "ws";
-    url.pathname = [...url.pathname.split("/"), path].filter((v) => v).join("/");
+    url.pathname = [...url.pathname.split("/"), path]
+      .filter((v) => v)
+      .join("/");
     return url;
   }
 

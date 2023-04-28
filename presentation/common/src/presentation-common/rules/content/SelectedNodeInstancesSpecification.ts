@@ -14,7 +14,8 @@ import { ContentSpecificationBase } from "./ContentSpecification";
  * @see [Selected node instances specification reference documentation page]($docs/presentation/content/SelectedNodeInstances.md)
  * @public
  */
-export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
+export interface SelectedNodeInstancesSpecification
+  extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
   specType: "SelectedNodeInstances";
 

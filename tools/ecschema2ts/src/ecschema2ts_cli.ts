@@ -19,12 +19,18 @@ function commaSeparatedList(value: string): string[] {
 // Program options
 const program = new commander.Command("ecschema2ts");
 program.option("-i, --input <required>", "ECSchemaXml file");
-program.option("-o, --output <required>", "Directory to put the out typescript file.");
-program.option("-r, --references <optional>", "A comma-separated list of reference schema paths", commaSeparatedList);
+program.option(
+  "-o, --output <required>",
+  "Directory to put the out typescript file."
+);
+program.option(
+  "-r, --references <optional>",
+  "A comma-separated list of reference schema paths",
+  commaSeparatedList
+);
 program.parse(process.argv);
 
-if (process.argv.length === 0)
-  program.help();
+if (process.argv.length === 0) program.help();
 
 if (!program.input || !program.output) {
   console.log(chalk.red("Invalid input. For help use the '-h' option."));
@@ -43,7 +49,11 @@ if (undefined !== program.references) {
       fs.accessSync(refPath);
     } catch (err: any) {
       console.warn(chalk.yellow(err.toString()));
-      console.warn(chalk.yellow(`The reference path ${refPath} does not exist.  Skipping...`));
+      console.warn(
+        chalk.yellow(
+          `The reference path ${refPath} does not exist.  Skipping...`
+        )
+      );
       continue;
     }
 
@@ -52,12 +62,17 @@ if (undefined !== program.references) {
   }
 }
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+(async () => {
+  // eslint-disable-line @typescript-eslint/no-floating-promises
   // convert schema file to typescript
   let createdFiles;
   try {
     const writer = new ECSchemaToTsXmlWriter(program.output);
-    createdFiles = await writer.convertSchemaFile(new SchemaContext(), program.input, referencePaths);
+    createdFiles = await writer.convertSchemaFile(
+      new SchemaContext(),
+      program.input,
+      referencePaths
+    );
   } catch (err: any) {
     console.log(chalk.red(`Failed to create: ${err.message}`));
     process.exit(1);

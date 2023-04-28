@@ -3,7 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { DisplayStyle, DrawingViewDefinition, IModelDb, ViewDefinition } from "@itwin/core-backend";
+import {
+  DisplayStyle,
+  DrawingViewDefinition,
+  IModelDb,
+  ViewDefinition,
+} from "@itwin/core-backend";
 import { ColorDef, ViewQueryParams } from "@itwin/core-common";
 
 // __PUBLISH_EXTRACT_START__ IModelDb.Views.iterateViews
@@ -14,16 +19,21 @@ import { ColorDef, ViewQueryParams } from "@itwin/core-common";
  * @param includePrivate Whether or not to include views marked as 'private'
  * @return An array of all of the views which are configured to view the specified drawing model.
  */
-function findViewsOfDrawingModel(iModel: IModelDb, drawingModelId: Id64String, includePrivate: boolean = false): DrawingViewDefinition[] {
+function findViewsOfDrawingModel(
+  iModel: IModelDb,
+  drawingModelId: Id64String,
+  includePrivate: boolean = false
+): DrawingViewDefinition[] {
   let where = `BaseModel.Id=${drawingModelId}`; // Limit query to those views which look at the specified model
-  if (!includePrivate)
-    where += " AND IsPrivate=FALSE"; // Exclude private views if specified
+  if (!includePrivate) where += " AND IsPrivate=FALSE"; // Exclude private views if specified
 
   const views: DrawingViewDefinition[] = [];
-  const params: ViewQueryParams = { from: "BisCore.DrawingViewDefinition", where };
+  const params: ViewQueryParams = {
+    from: "BisCore.DrawingViewDefinition",
+    where,
+  };
   iModel.views.iterateViews(params, (view: ViewDefinition) => {
-    if (view.isDrawingView())
-      views.push(view);
+    if (view.isDrawingView()) views.push(view);
 
     return true; // indicates we want to continue iterating the set of views.
   });

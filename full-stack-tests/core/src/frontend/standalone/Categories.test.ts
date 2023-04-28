@@ -40,12 +40,20 @@ describe("IModelConnection.Categories", () => {
 
   afterEach(() => reset());
 
-  function expectSubCategory(subcat: IModelConnection.Categories.SubCategoryInfo, id: string, categoryId: string): void {
+  function expectSubCategory(
+    subcat: IModelConnection.Categories.SubCategoryInfo,
+    id: string,
+    categoryId: string
+  ): void {
     expect(subcat.id).to.equal(id);
     expect(subcat.categoryId).to.equal(categoryId);
   }
 
-  function expectCategory(cat: IModelConnection.Categories.CategoryInfo, id: string, expectedSubCategoryIds: string | string[]): void {
+  function expectCategory(
+    cat: IModelConnection.Categories.CategoryInfo,
+    id: string,
+    expectedSubCategoryIds: string | string[]
+  ): void {
     expect(cat.id).to.equal(id);
     if ("string" === typeof expectedSubCategoryIds)
       expectedSubCategoryIds = [expectedSubCategoryIds];
@@ -73,7 +81,10 @@ describe("IModelConnection.Categories", () => {
   });
 
   it("queries subcategories", async () => {
-    const subcats = await imodel.categories.getSubCategoryInfo({ category: c4, subCategories: [s41, s42] });
+    const subcats = await imodel.categories.getSubCategoryInfo({
+      category: c4,
+      subCategories: [s41, s42],
+    });
     expect(subcats.size).to.equal(2);
     expectSubCategory(subcats.get(s41)!, s41, c4);
     expectSubCategory(subcats.get(s42)!, s42, c4);
@@ -86,28 +97,46 @@ describe("IModelConnection.Categories", () => {
       expect(cats.size).to.equal(1);
       expectCategory(cats.get(catId)!, catId, []);
 
-      let subcats = await imodel.categories.getSubCategoryInfo({ category: catId, subCategories: badIds });
+      let subcats = await imodel.categories.getSubCategoryInfo({
+        category: catId,
+        subCategories: badIds,
+      });
       expect(subcats.size).to.equal(0);
-      subcats = await imodel.categories.getSubCategoryInfo({ category: c1, subCategories: badIds });
+      subcats = await imodel.categories.getSubCategoryInfo({
+        category: c1,
+        subCategories: badIds,
+      });
       expect(subcats.size).to.equal(0);
-      subcats = await imodel.categories.getSubCategoryInfo({ category: c1, subCategories: [...badIds, s1] });
+      subcats = await imodel.categories.getSubCategoryInfo({
+        category: c1,
+        subCategories: [...badIds, s1],
+      });
       expect(subcats.size).to.equal(1);
       expect(subcats.get(s1)).not.to.be.undefined;
     }
   });
 
   it("omits subcategories that don't belong to specified category", async () => {
-    const subcats = await imodel.categories.getSubCategoryInfo({ category: c1, subCategories: [s1, s2, s41, s42, s3] });
+    const subcats = await imodel.categories.getSubCategoryInfo({
+      category: c1,
+      subCategories: [s1, s2, s41, s42, s3],
+    });
     expect(subcats.size).to.equal(1);
     expect(subcats.get(s1)).not.to.be.undefined;
   });
 
   it("ignores duplicate Ids", async () => {
-    const cats = await imodel.categories.getCategoryInfo([...allCats, ...allCats]);
+    const cats = await imodel.categories.getCategoryInfo([
+      ...allCats,
+      ...allCats,
+    ]);
     expect(cats.size).to.equal(5);
     expect(Array.from(cats.keys()).sort()).to.deep.equal(allCats);
 
-    const subcats = await imodel.categories.getSubCategoryInfo({ category: c4, subCategories: [s41, s42, s42, s41] });
+    const subcats = await imodel.categories.getSubCategoryInfo({
+      category: c4,
+      subCategories: [s41, s42, s42, s41],
+    });
     expect(subcats.size).to.equal(2);
     expect(subcats.get(s41)).not.to.be.undefined;
     expect(subcats.get(s42)).not.to.be.undefined;

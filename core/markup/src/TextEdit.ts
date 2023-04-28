@@ -7,8 +7,16 @@
  */
 
 import {
-  BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
-  ToolAssistanceInstruction, ToolAssistanceSection,
+  BeButtonEvent,
+  CoreTools,
+  EventHandled,
+  IModelApp,
+  InputSource,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
 } from "@itwin/core-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
@@ -32,23 +40,38 @@ export class PlaceTextTool extends RedlineTool {
     return super.onPostInstall();
   }
 
-  protected override showPrompt(): void { this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(
+      `${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`,
+      true
+    );
+  }
 
-  protected override async createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
-    if (isDynamics && InputSource.Touch === ev.inputSource)
-      return;
+  protected override async createMarkup(
+    svg: G,
+    ev: BeButtonEvent,
+    isDynamics: boolean
+  ): Promise<void> {
+    if (isDynamics && InputSource.Touch === ev.inputSource) return;
     const start = MarkupApp.convertVpToVb(ev.viewPoint); // starting point in viewbox coordinates
     const text = new MarkupText().plain(this._value); // create a plain text element
     svg.put(text); // add it to the supplied container
     this.setCurrentTextStyle(text); // apply active text style
     text.translate(start.x, start.y); // and position it relative to the cursor
     if (isDynamics) {
-      svg.add(text.getOutline().attr(MarkupApp.props.text.edit.textBox).addClass(MarkupApp.textOutlineClass)); // in dynamics, draw the box around the text
+      svg.add(
+        text
+          .getOutline()
+          .attr(MarkupApp.props.text.edit.textBox)
+          .addClass(MarkupApp.textOutlineClass)
+      ); // in dynamics, draw the box around the text
     } else {
       await new EditTextTool(text, true).run(); // text is now positioned, open text editor
     }
   }
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(
+    _ev: BeButtonEvent
+  ): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
@@ -63,43 +86,89 @@ export class EditTextTool extends MarkupTool {
   public editor?: HTMLTextAreaElement;
   public editDiv?: HTMLDivElement;
   public boxed?: G;
-  constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
+  constructor(public text?: MarkupText | G, private _fromPlaceTool = false) {
+    super();
+  }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      IModelApp.localization.getLocalizedString(
+        `${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`
+      )
+    );
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     const acceptMsg = CoreTools.translate("ElementSet.Inputs.Accept");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Exit");
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.OneTouchTap,
+        acceptMsg,
+        false,
+        ToolAssistanceInputMethod.Touch
+      )
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.LeftClick,
+        acceptMsg,
+        false,
+        ToolAssistanceInputMethod.Mouse
+      )
+    );
+    touchInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.TwoTouchTap,
+        rejectMsg,
+        false,
+        ToolAssistanceInputMethod.Touch
+      )
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.RightClick,
+        rejectMsg,
+        false,
+        ToolAssistanceInputMethod.Mouse
+      )
+    );
 
     const sections: ToolAssistanceSection[] = [];
-    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
-    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+    sections.push(
+      ToolAssistance.createSection(
+        mouseInstructions,
+        ToolAssistance.inputsLabel
+      )
+    );
+    sections.push(
+      ToolAssistance.createSection(
+        touchInstructions,
+        ToolAssistance.inputsLabel
+      )
+    );
 
-    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    const instructions = ToolAssistance.createInstructions(
+      mainInstruction,
+      sections
+    );
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
   /** Open the text editor  */
   public startEditor() {
     let text = this.text;
-    if (text === undefined)
-      return;
+    if (text === undefined) return;
 
     if (text instanceof G) {
       this.boxed = text;
       text = text.children()[1] as MarkupText;
-      if (!(text instanceof MarkupText))
-        return;
+      if (!(text instanceof MarkupText)) return;
       this.text = text;
     }
     const markupDiv = this.markup.markupDiv;
-    const editDiv = this.editDiv = document.createElement("div"); // create a new DIV to hold the text editor
+    const editDiv = (this.editDiv = document.createElement("div")); // create a new DIV to hold the text editor
     const editProps = MarkupApp.props.text.edit;
     let style = editDiv.style;
     style.backgroundColor = editProps.background;
@@ -114,7 +183,7 @@ export class EditTextTool extends MarkupTool {
     const rbox = outline.rbox();
     const bbox = outline.bbox();
     outline.remove(); // take it out again.
-    const editor = this.editor = document.createElement("textarea");
+    const editor = (this.editor = document.createElement("textarea"));
     editDiv.appendChild(editor);
     editor.className = MarkupApp.textEditorClass;
     editor.contentEditable = "true";
@@ -122,22 +191,29 @@ export class EditTextTool extends MarkupTool {
     editor.wrap = "off";
     // so we don't send these events to the ToolAdmin and process them by tools. We want default handling
     const mouseListener = (ev: Event) => (ev.stopPropagation(), true);
-    (editor as any).onselectstart = editor.oncontextmenu = editor.onmousedown = editor.onmouseup = mouseListener; // enable default handling for these events
+    (editor as any).onselectstart =
+      editor.oncontextmenu =
+      editor.onmousedown =
+      editor.onmouseup =
+        mouseListener; // enable default handling for these events
 
     // Tab, Escape, ctrl-enter, or shift-enter all end the editor
     editor.onkeydown = async (ev: KeyboardEvent) => {
-      if (ev.key === "Tab" || ev.key === "Escape" || (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)))
+      if (
+        ev.key === "Tab" ||
+        ev.key === "Escape" ||
+        (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey))
+      )
         this.exitTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
       ev.stopPropagation();
-
     };
     const textElStyle = window.getComputedStyle(text.node);
 
     style = editor.style;
     style.pointerEvents = "auto";
     style.position = "absolute";
-    style.top = `${(rbox.cy - (bbox.h / 2)) - divRect.top}px`; // put the editor over the middle of the text element
-    style.left = `${(rbox.cx - (bbox.w / 2)) - divRect.left}px`;
+    style.top = `${rbox.cy - bbox.h / 2 - divRect.top}px`; // put the editor over the middle of the text element
+    style.left = `${rbox.cx - bbox.w / 2 - divRect.left}px`;
     style.height = editProps.size.height;
     style.width = editProps.size.width;
     style.resize = "both";
@@ -145,29 +221,34 @@ export class EditTextTool extends MarkupTool {
     style.textAnchor = textElStyle.textAnchor;
     style.fontSize = editProps.fontSize; // from app.props
 
-    const parentZ = parseInt(window.getComputedStyle(markupDiv).zIndex || "0", 10);
+    const parentZ = parseInt(
+      window.getComputedStyle(markupDiv).zIndex || "0",
+      10
+    );
     style.zIndex = (parentZ + 200).toString();
 
     editor.innerHTML = text.getMarkup(); // start with existing text
     this.editor.focus(); // give the editor focus
 
     // if we're started from the place text tool, select the entire current value, otherwise place the cursor at the end.
-    this.editor.setSelectionRange(this._fromPlaceTool ? 0 : editor.value.length, editor.value.length);
+    this.editor.setSelectionRange(
+      this._fromPlaceTool ? 0 : editor.value.length,
+      editor.value.length
+    );
   }
 
   /** Called when EditText exits, saves the edited value into the text element */
   public override async onCleanup() {
-    if (!this.editDiv)
-      return;
+    if (!this.editDiv) return;
 
     const text = this.text! as MarkupText;
     const original = this.boxed ? this.boxed : text;
     const undo = this.markup.undo;
     undo.performOperation(this.keyin, () => {
       const newVal = this.editor!.value;
-      if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
-        if (!this._fromPlaceTool)
-          undo.onDelete(original);
+      if (newVal.trim() === "") {
+        // if the result of the editing is blank, just delete the text element
+        if (!this._fromPlaceTool) undo.onDelete(original);
         original.remove(); // must do this *after* we call undo.onDelete
         return;
       }
@@ -180,10 +261,8 @@ export class EditTextTool extends MarkupTool {
         newText.matrix(original.matrix());
       }
       original.replace(newText);
-      if (this._fromPlaceTool)
-        undo.onAdded(newText);
-      else
-        undo.onModified(newText, original);
+      if (this._fromPlaceTool) undo.onAdded(newText);
+      else undo.onModified(newText, original);
     });
 
     const editSize = MarkupApp.props.text.edit.size;
@@ -196,23 +275,28 @@ export class EditTextTool extends MarkupTool {
   }
 
   public override async onInstall() {
-    if (!await super.onInstall())
-      return false;
+    if (!(await super.onInstall())) return false;
     this.startEditor();
     return true;
   }
 
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(
+    _ev: BeButtonEvent
+  ): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
 
-  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonUp(
+    _ev: BeButtonEvent
+  ): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }
 
-  public override async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMouseStartDrag(
+    _ev: BeButtonEvent
+  ): Promise<EventHandled> {
     await this.exitTool();
     return EventHandled.Yes;
   }

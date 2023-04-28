@@ -46,23 +46,29 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
 
   public announcePoint(point: Point3d) {
     const h = this.plane.altitude(point);
-    if (this.range.extendLow(h))
-      this.lowPoint = point.clone(this.lowPoint);
-    if (this.range.extendHigh(h))
-      this.highPoint = point.clone(this.highPoint);
+    if (this.range.extendLow(h)) this.lowPoint = point.clone(this.lowPoint);
+    if (this.range.extendHigh(h)) this.highPoint = point.clone(this.highPoint);
   }
 
   public announcePoints(points: GrowableXYZArray) {
     for (let i = 0; i < points.length; i++) {
       const h = points.evaluateUncheckedIndexPlaneAltitude(i, this.plane);
       if (this.range.extendLow(h))
-        this.lowPoint = points.getPoint3dAtUncheckedPointIndex(i, this.lowPoint);
+        this.lowPoint = points.getPoint3dAtUncheckedPointIndex(
+          i,
+          this.lowPoint
+        );
       if (this.range.extendHigh(h))
-        this.highPoint = points.getPoint3dAtUncheckedPointIndex(i, this.highPoint);
+        this.highPoint = points.getPoint3dAtUncheckedPointIndex(
+          i,
+          this.highPoint
+        );
     }
   }
 
-  public static createCapture(plane: PlaneAltitudeEvaluator): PlaneAltitudeRangeContext {
+  public static createCapture(
+    plane: PlaneAltitudeEvaluator
+  ): PlaneAltitudeRangeContext {
     const context = new PlaneAltitudeRangeContext(plane);
     return context;
   }
@@ -102,21 +108,32 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
   private _sineCosinePolynomial?: SineCosinePolynomial;
   private _workPoint?: Point3d;
   public override handleArc3d(g: Arc3d) {
-    this._sineCosinePolynomial = g.getPlaneAltitudeSineCosinePolynomial(this.plane, this._sineCosinePolynomial);
+    this._sineCosinePolynomial = g.getPlaneAltitudeSineCosinePolynomial(
+      this.plane,
+      this._sineCosinePolynomial
+    );
     let radians = this._sineCosinePolynomial.referenceMinMaxRadians();
     if (g.sweep.isRadiansInSweep(radians))
-      this.announcePoint((this._workPoint = g.radiansToPoint(radians, this._workPoint)));
+      this.announcePoint(
+        (this._workPoint = g.radiansToPoint(radians, this._workPoint))
+      );
     radians += Math.PI;
     if (g.sweep.isRadiansInSweep(radians))
-      this.announcePoint((this._workPoint = g.radiansToPoint(radians, this._workPoint)));
+      this.announcePoint(
+        (this._workPoint = g.radiansToPoint(radians, this._workPoint))
+      );
     this.announcePoint((this._workPoint = g.startPoint(this._workPoint)));
     this.announcePoint((this._workPoint = g.endPoint(this._workPoint)));
   }
 
-  private static findExtremesInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d): PlaneAltitudeRangeContext | undefined {
-    const origin = direction instanceof Ray3d ? direction.origin : Point3d.createZero();
+  private static findExtremesInDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[],
+    direction: Vector3d | Ray3d
+  ): PlaneAltitudeRangeContext | undefined {
+    const origin =
+      direction instanceof Ray3d ? direction.origin : Point3d.createZero();
     const vector = direction instanceof Ray3d ? direction.direction : direction;
-    const plane = Plane3dByOriginAndUnitNormal.create(origin, vector);  // vector is normalized, so altitudes are distances
+    const plane = Plane3dByOriginAndUnitNormal.create(origin, vector); // vector is normalized, so altitudes are distances
     if (plane) {
       const context = new PlaneAltitudeRangeContext(plane);
       if (geometry instanceof GeometryQuery) {
@@ -124,8 +141,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
       } else if (geometry instanceof GrowableXYZArray) {
         context.announcePoints(geometry);
       } else {
-        for (const pt of geometry)
-          context.announcePoint(pt);
+        for (const pt of geometry) context.announcePoint(pt);
       }
       return context;
     }
@@ -136,8 +152,12 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
    * @param geometry geometry to project
    * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
-  */
-  public static findExtremePointsInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: LineSegment3d): LineSegment3d | undefined {
+   */
+  public static findExtremePointsInDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[],
+    direction: Vector3d | Ray3d,
+    lowHigh?: LineSegment3d
+  ): LineSegment3d | undefined {
     const context = this.findExtremesInDirection(geometry, direction);
     if (context && context.highPoint && context.lowPoint)
       return LineSegment3d.create(context.lowPoint, context.highPoint, lowHigh);
@@ -148,8 +168,12 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
    * @param geometry geometry to project
    * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
-  */
-  public static findExtremeAltitudesInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+   */
+  public static findExtremeAltitudesInDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[],
+    direction: Vector3d | Ray3d,
+    lowHigh?: Range1d
+  ): Range1d | undefined {
     const context = this.findExtremesInDirection(geometry, direction);
     if (context && !context.range.isNull)
       return Range1d.createFrom(context.range, lowHigh);
@@ -160,10 +184,21 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
    * @param direction vector or ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
    */
-  public static findExtremeFractionsAlongDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
-    const range = this.findExtremeAltitudesInDirection(geometry, direction, lowHigh);
+  public static findExtremeFractionsAlongDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[],
+    direction: Vector3d | Ray3d,
+    lowHigh?: Range1d
+  ): Range1d | undefined {
+    const range = this.findExtremeAltitudesInDirection(
+      geometry,
+      direction,
+      lowHigh
+    );
     if (undefined !== range) {
-      const mag = (direction instanceof Vector3d) ? direction.magnitude() : direction.direction.magnitude();
+      const mag =
+        direction instanceof Vector3d
+          ? direction.magnitude()
+          : direction.direction.magnitude();
       const scaleToFraction = Geometry.conditionalDivideCoordinate(1.0, mag);
       if (undefined !== scaleToFraction) {
         range.low *= scaleToFraction;

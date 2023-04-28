@@ -11,8 +11,7 @@ import dotenvExpand from "dotenv-expand";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {

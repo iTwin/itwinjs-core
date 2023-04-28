@@ -8,7 +8,14 @@
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
+import {
+  ElementAlignedBox3d,
+  FeatureAppearanceProvider,
+  FrustumPlanes,
+  HiddenLine,
+  PlanarClipMaskPriority,
+  ViewFlagOverrides,
+} from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -16,7 +23,14 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, MapLayerFeatureInfo, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  DisclosedTileTreeSet,
+  GeometryTileTreeReference,
+  MapLayerFeatureInfo,
+  TileDrawArgs,
+  TileGeometryCollector,
+  TileTree,
+  TileTreeLoadStatus,
+  TileTreeOwner,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -57,15 +71,13 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     const tree = this.treeOwner.tileTree;
-    if (undefined !== tree)
-      trees.add(tree);
+    if (undefined !== tree) trees.add(tree);
   }
 
   /** Adds this reference's graphics to the scene. By default this invokes [[draw]]. */
   public addToScene(context: SceneContext): void {
     const args = this.createDrawArgs(context);
-    if (undefined !== args)
-      this.draw(args);
+    if (undefined !== args) this.draw(args);
   }
 
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.draw]] on the referenced TileTree, if it is loaded. */
@@ -74,32 +86,38 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Optionally return a tooltip describing the hit. */
-  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
+  public async getToolTip(
+    _hit: HitDetail
+  ): Promise<HTMLElement | string | undefined> {
+    return undefined;
+  }
 
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
    */
-  public async getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
+  public async getMapFeatureInfo(
+    _hit: HitDetail
+  ): Promise<MapLayerFeatureInfo[] | undefined> {
+    return undefined;
+  }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is currently only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.
    */
-  public decorate(_context: DecorateContext): void { }
+  public decorate(_context: DecorateContext): void {}
 
   /** Unions this reference's range with the supplied range to help compute a volume in world space for fitting a viewport to its contents.
    * Override this function if a reference's range should not be included in the fit range, or a range different from its tile tree's range should be used.
    */
   public unionFitRange(union: Range3d): void {
     const contentRange = this.computeWorldContentRange();
-    if (!contentRange.isNull)
-      union.extendRange(contentRange);
+    if (!contentRange.isNull) union.extendRange(contentRange);
   }
 
   /** Record graphics memory consumed by this tile tree reference. */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const tree = this.treeOwner.tileTree;
-    if (undefined !== tree)
-      tree.collectStatistics(stats);
+    if (undefined !== tree) tree.collectStatistics(stats);
   }
 
   /** Return true if the tile tree is fully loaded and ready to draw.
@@ -132,8 +150,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const tree = this.treeOwner.load();
-    if (undefined === tree)
-      return undefined;
+    if (undefined === tree) return undefined;
 
     return new TileDrawArgs({
       context,
@@ -175,7 +192,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     const range = new Range3d();
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree && !tree.rootTile.contentRange.isNull)
-      this.computeTransform(tree).multiplyRange(tree.rootTile.contentRange, range);
+      this.computeTransform(tree).multiplyRange(
+        tree.rootTile.contentRange,
+        range
+      );
 
     return range;
   }
@@ -191,34 +211,43 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Return overrides that *replace* any defined for the view. */
-  protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+  protected getSymbologyOverrides(
+    _tree: TileTree
+  ): FeatureSymbology.Overrides | undefined {
     return undefined;
   }
 
   /** Return a provider that can supplement the view's symbology overrides. */
-  protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
+  protected getAppearanceProvider(
+    _tree: TileTree
+  ): FeatureAppearanceProvider | undefined {
     return undefined;
   }
 
   /** Return hidden line settings to replace those defined for the view. */
-  protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined {
+  protected getHiddenLineSettings(
+    _tree: TileTree
+  ): HiddenLine.Settings | undefined {
     return undefined;
   }
 
   /* Extend range to include transformed range of this tile tree.
    * @internal
    */
-  public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
+  public accumulateTransformedRange(
+    range: Range3d,
+    matrix: Matrix4d,
+    frustumPlanes?: FrustumPlanes
+  ) {
     const tree = this.treeOwner.tileTree;
-    if (undefined === tree)
-      return;
+    if (undefined === tree) return;
 
     const location = this.computeTransform(tree);
     tree.accumulateTransformedRange(range, matrix, location, frustumPlanes);
   }
 
   /** @internal */
-  public getTerrainHeight(_terrainHeights: Range1d): void { }
+  public getTerrainHeight(_terrainHeights: Range1d): void {}
 
   /** Return whether the geometry exposed by this tile tree reference should cast shadows on other geometry. */
   public get castsShadows(): boolean {
@@ -226,23 +255,29 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
-  public get isGlobal(): boolean { return false; }
+  public get isGlobal(): boolean {
+    return false;
+  }
 
   /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.
    * BIM models have highest prioirty and are never clipped.
    * @alpha
    */
-  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
+  public get planarclipMaskPriority(): number {
+    return PlanarClipMaskPriority.DesignModel;
+  }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
-  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void {}
 
   /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * Return `undefined` if geometry collection is not supported.
    * @see [[createGeometryTreeReference]].
    * @beta
    */
-  protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+  protected _createGeometryTreeReference():
+    | GeometryTileTreeReference
+    | undefined {
     return undefined;
   }
 

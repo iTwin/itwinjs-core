@@ -9,7 +9,9 @@ import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BufferHandle", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  before(async () =>
+    IModelApp.startup({ localization: new EmptyLocalization() })
+  );
   after(async () => IModelApp.shutdown());
 
   it("disposes", () => {

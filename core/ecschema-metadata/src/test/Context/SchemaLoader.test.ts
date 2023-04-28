@@ -7,7 +7,6 @@ import { SchemaLoader } from "../../SchemaLoader";
 import { ECObjectsError } from "../../Exception";
 
 describe("SchemaLoader", () => {
-
   const getSchemaProps = (schemaName: string) => {
     if (schemaName === "SchemaD") {
       return {

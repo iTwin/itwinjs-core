@@ -13,22 +13,46 @@ import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter";
 import { ValuesDictionary } from "../Utils";
 import { Content } from "./Content";
 import { Field, PropertiesField } from "./Fields";
-import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
-import { DisplayValue, DisplayValuesMap, NestedContentValue, Value } from "./Value";
+import {
+  ArrayTypeDescription,
+  PrimitiveTypeDescription,
+  PropertyValueFormat,
+  StructTypeDescription,
+  TypeDescription,
+} from "./TypeDescription";
+import {
+  DisplayValue,
+  DisplayValuesMap,
+  NestedContentValue,
+  Value,
+} from "./Value";
 
 /** @alpha */
 export class ContentFormatter {
-  constructor(private _propertyValueFormatter: ContentPropertyValueFormatter, private _unitSystem?: UnitSystemKey) { }
+  constructor(
+    private _propertyValueFormatter: ContentPropertyValueFormatter,
+    private _unitSystem?: UnitSystemKey
+  ) {}
 
   public async formatContent(content: Content) {
     const descriptor = content.descriptor;
     for (const item of content.contentSet) {
-      await this.formatValues(item.values, item.displayValues, descriptor.fields, item.mergedFieldNames);
+      await this.formatValues(
+        item.values,
+        item.displayValues,
+        descriptor.fields,
+        item.mergedFieldNames
+      );
     }
     return content;
   }
 
-  private async formatValues(values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, fields: Field[], mergedFields: string[]) {
+  private async formatValues(
+    values: ValuesDictionary<Value>,
+    displayValues: ValuesDictionary<DisplayValue>,
+    fields: Field[],
+    mergedFields: string[]
+  ) {
     for (const field of fields) {
       const value = values[field.name];
 
@@ -45,28 +69,46 @@ export class ContentFormatter {
         continue;
       }
 
-      displayValues[field.name] = await this._propertyValueFormatter.formatPropertyValue(field, value, this._unitSystem);
+      displayValues[field.name] =
+        await this._propertyValueFormatter.formatPropertyValue(
+          field,
+          value,
+          this._unitSystem
+        );
     }
   }
 
-  private async formatNestedContentDisplayValues(nestedValues: NestedContentValue[], fields: Field[]) {
+  private async formatNestedContentDisplayValues(
+    nestedValues: NestedContentValue[],
+    fields: Field[]
+  ) {
     for (const nestedValue of nestedValues) {
-      await this.formatValues(nestedValue.values, nestedValue.displayValues, fields, nestedValue.mergedFieldNames);
+      await this.formatValues(
+        nestedValue.values,
+        nestedValue.displayValues,
+        fields,
+        nestedValue.mergedFieldNames
+      );
     }
   }
-
 }
 
 /** @alpha */
 export class ContentPropertyValueFormatter {
-  constructor(private _koqValueFormatter: KoqPropertyValueFormatter) { }
+  constructor(private _koqValueFormatter: KoqPropertyValueFormatter) {}
 
-  public async formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue> {
+  public async formatPropertyValue(
+    field: Field,
+    value: Value,
+    unitSystem?: UnitSystemKey
+  ): Promise<DisplayValue> {
     if (isFieldWithKoq(field) && typeof value === "number") {
       const koq = field.properties[0].property.kindOfQuantity;
-      const formattedValue = await this._koqValueFormatter.format(value, { koqName: koq.name, unitSystem });
-      if (formattedValue !== undefined)
-        return formattedValue;
+      const formattedValue = await this._koqValueFormatter.format(value, {
+        koqName: koq.name,
+        unitSystem,
+      });
+      if (formattedValue !== undefined) return formattedValue;
     }
 
     return this.formatValue(field.type, value);
@@ -84,14 +126,15 @@ export class ContentPropertyValueFormatter {
   }
 
   public formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value) {
-    if (value === undefined)
-      return "";
+    if (value === undefined) return "";
 
     if (type.typeName === "point2d" && isPoint2d(value)) {
       return `X: ${formatDouble(value.x)} Y: ${formatDouble(value.y)}`;
     }
     if (type.typeName === "point3d" && isPoint3d(value)) {
-      return `X: ${formatDouble(value.x)} Y: ${formatDouble(value.y)} Z: ${formatDouble(value.z)}`;
+      return `X: ${formatDouble(value.x)} Y: ${formatDouble(
+        value.y
+      )} Z: ${formatDouble(value.z)}`;
     }
     if (type.typeName === "dateTime") {
       assert(typeof value === "string");
@@ -118,19 +161,20 @@ export class ContentPropertyValueFormatter {
   }
 
   public formatStructValue(type: StructTypeDescription, value: Value) {
-    if (!Value.isMap(value))
-      return {};
+    if (!Value.isMap(value)) return {};
 
     const formattedMember: DisplayValuesMap = {};
     for (const member of type.members) {
-      formattedMember[member.name] = this.formatValue(member.type, value[member.name]);
+      formattedMember[member.name] = this.formatValue(
+        member.type,
+        value[member.name]
+      );
     }
     return formattedMember;
   }
 
   public formatArrayValue(type: ArrayTypeDescription, value: Value) {
-    if (!Value.isArray(value))
-      return [];
+    if (!Value.isArray(value)) return [];
 
     return value.map((arrayVal) => this.formatValue(type.memberType, arrayVal));
   }
@@ -141,24 +185,30 @@ function formatDouble(value: number) {
 }
 
 type FieldWithKoq = PropertiesField & {
-  properties: [{
-    property: PropertyInfo & {
-      kindOfQuantity: KindOfQuantityInfo;
-    };
-  }];
+  properties: [
+    {
+      property: PropertyInfo & {
+        kindOfQuantity: KindOfQuantityInfo;
+      };
+    }
+  ];
 };
 
 function isFieldWithKoq(field: Field): field is FieldWithKoq {
-  return field.isPropertiesField()
-    && field.properties.length > 0
-    && field.properties[0].property.kindOfQuantity !== undefined;
+  return (
+    field.isPropertiesField() &&
+    field.properties.length > 0 &&
+    field.properties[0].property.kindOfQuantity !== undefined
+  );
 }
 
-function isPoint2d(obj: Value): obj is { x: number, y: number } {
-  return obj !== undefined && isNumber((obj as any).x) && isNumber((obj as any).y);
+function isPoint2d(obj: Value): obj is { x: number; y: number } {
+  return (
+    obj !== undefined && isNumber((obj as any).x) && isNumber((obj as any).y)
+  );
 }
 
-function isPoint3d(obj: Value): obj is { x: number, y: number, z: number } {
+function isPoint3d(obj: Value): obj is { x: number; y: number; z: number } {
   return isPoint2d(obj) && isNumber((obj as any).z);
 }
 

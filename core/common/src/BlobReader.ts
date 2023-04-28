@@ -7,7 +7,14 @@
  */
 import { Id64String } from "@itwin/core-bentley";
 import {
-  BlobOptions, BlobOptionsBuilder, BlobRange, DbBlobRequest, DbBlobResponse, DbQueryError, DbRequestExecutor, DbRequestKind,
+  BlobOptions,
+  BlobOptionsBuilder,
+  BlobRange,
+  DbBlobRequest,
+  DbBlobResponse,
+  DbQueryError,
+  DbRequestExecutor,
+  DbRequestKind,
 } from "./ConcurrentQuery";
 
 /** @beta */
@@ -16,8 +23,12 @@ export class Uint8Chunks implements Iterable<Uint8Array> {
   public append(chunk: Uint8Array) {
     this._chunks.push(chunk);
   }
-  public at(idx: number) { return this._chunks[idx]; }
-  public get length() { return this._chunks.length; }
+  public at(idx: number) {
+    return this._chunks[idx];
+  }
+  public get length() {
+    return this._chunks.length;
+  }
   public [Symbol.iterator](): Iterator<Uint8Array, any, undefined> {
     return (this._chunks as any)[Symbol.iterator];
   }
@@ -37,11 +48,13 @@ export class BlobReader {
   private _chunks = new Uint8Chunks();
   private _lengthToRead: number = -1;
   private _options = new BlobOptionsBuilder().getOptions();
-  public constructor(private _executor: DbRequestExecutor<DbBlobRequest, DbBlobResponse>,
+  public constructor(
+    private _executor: DbRequestExecutor<DbBlobRequest, DbBlobResponse>,
     public readonly className: string,
     public readonly accessString: string,
     public readonly instanceId: Id64String,
-    options?: BlobOptions) {
+    options?: BlobOptions
+  ) {
     this.reset(options);
   }
   public reset(options?: BlobOptions) {
@@ -51,7 +64,9 @@ export class BlobReader {
     this._chunks = new Uint8Chunks();
     this._lengthToRead = this.range.count!;
   }
-  public get range(): BlobRange { return this._options.range!; }
+  public get range(): BlobRange {
+    return this._options.range!;
+  }
   public async step(): Promise<boolean> {
     if (this._lengthToRead === this._chunks.length) {
       return false;
@@ -63,7 +78,10 @@ export class BlobReader {
       instanceId: this.instanceId,
       ...this._options,
     };
-    request.range = {offset: this._chunks.length, count: this.range ? this._lengthToRead - this._chunks.length : 0};
+    request.range = {
+      offset: this._chunks.length,
+      count: this.range ? this._lengthToRead - this._chunks.length : 0,
+    };
     const resp = await this._executor.execute(request);
     DbQueryError.throwIfError(resp, request);
 
@@ -76,7 +94,7 @@ export class BlobReader {
     return true;
   }
   public async readToEnd(): Promise<Uint8Array> {
-    while (await this.step()) { }
+    while (await this.step()) {}
     return this._chunks.combine();
   }
   public get current(): Uint8Array {
@@ -85,5 +103,7 @@ export class BlobReader {
     }
     return this._chunks.at(this._chunks.length);
   }
-  public get chunks(): Uint8Chunks { return this._chunks; }
+  public get chunks(): Uint8Chunks {
+    return this._chunks;
+  }
 }

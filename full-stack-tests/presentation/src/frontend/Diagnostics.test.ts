@@ -10,12 +10,12 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Diagnostics", async () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+    const testIModelName: string =
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
@@ -49,18 +49,17 @@ describe("Diagnostics", async () => {
     expect(handler).to.be.calledOnce;
     expect(handler.firstCall.args[0].backendVersion).to.match(/\d+\.\d+\.\d+/);
   });
-
 });
 
 describe("Learning Snippets", () => {
-
   describe("Diagnostics", async () => {
-
     let imodel: IModelConnection;
 
     before(async () => {
       await initialize();
-      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = await SnapshotConnection.openFile(
+        "assets/datasets/Properties_60InstancesWithUrl2.ibim"
+      );
     });
 
     after(async () => {
@@ -87,10 +86,11 @@ describe("Learning Snippets", () => {
       });
       // __PUBLISH_EXTRACT_END__
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const expectedBackendVersion = require("@itwin/presentation-backend/package.json").version;
-      expect(log).to.be.calledOnceWith(`Backend version: ${expectedBackendVersion}`);
+      const expectedBackendVersion =
+        require("@itwin/presentation-backend/package.json").version;
+      expect(log).to.be.calledOnceWith(
+        `Backend version: ${expectedBackendVersion}`
+      );
     });
-
   });
-
 });

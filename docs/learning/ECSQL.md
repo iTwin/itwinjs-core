@@ -16,8 +16,8 @@ standard SQL.
 
 Anyone familiar with SQL should intuitively understand ECSQL.
 
-The **key difference between ECSQL and SQL** is that ECSQL targets the *logical* schema, and not the
-underlying database’s *persistence* schema.
+The **key difference between ECSQL and SQL** is that ECSQL targets the _logical_ schema, and not the
+underlying database’s _persistence_ schema.
 
 ![ECSQL versus SQL](./ecsql_vs_sql.png "ECSQL versus SQL")
 
@@ -56,10 +56,10 @@ SELECT Model, CodeValue, Parent FROM bis.Element
 To bind values to an ECSQL statement after preparation, the following parameter placeholders are
 supported.
 
-Parameter type | Description
---- | ---
-`?` | Positional parameter. Its index is one greater than the previous parameter in the ECSQL statement.
-`:aaa` | Named parameter. This allows to bind the same value to more than one placeholder.
+| Parameter type | Description                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| `?`            | Positional parameter. Its index is one greater than the previous parameter in the ECSQL statement. |
+| `:aaa`         | Named parameter. This allows to bind the same value to more than one placeholder.                  |
 
 ### Example
 
@@ -77,12 +77,12 @@ See also sections [ECInstanceId and ECClassId](#ecinstanceid-and-ecclassid) and 
 
 ECSQL defines a set of built-in system properties. They don't have to be defined in the ECSchemas.
 
-Property | Description
--- | --
-ECInstanceId | Is the unique identifier for an ECInstance.
-ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel.
+| Property     | Description                                                                             |
+| ------------ | --------------------------------------------------------------------------------------- |
+| ECInstanceId | Is the unique identifier for an ECInstance.                                             |
+| ECClassId    | Refers to the ECClassId of an ECClass. It uniquely identifies an ECClass in the iModel. |
 
-> In iTwin.js the *ECClassId* is formatted as fully qualified class name when used in the SELECT clause.
+> In iTwin.js the _ECClassId_ is formatted as fully qualified class name when used in the SELECT clause.
 
 ### Example
 
@@ -137,11 +137,11 @@ The time stamp format matches the [ISO 8601 standard](https://www.iso.org/iso-86
 
 #### Basic functions
 
-Function | Description
---- | ---
-`CURRENT_DATE` | returns the current date
-`CURRENT_TIMESTAMP` | returns the current timestamp in UTC.
-`CURRENT_TIME` | returns the current time of the day.
+| Function            | Description                           |
+| ------------------- | ------------------------------------- |
+| `CURRENT_DATE`      | returns the current date              |
+| `CURRENT_TIMESTAMP` | returns the current timestamp in UTC. |
+| `CURRENT_TIME`      | returns the current time of the day.  |
 
 #### Example
 
@@ -189,11 +189,11 @@ Points are a built-in primitive type in ECSchemas and are therefore supported in
 In the context of ECSQL Point ECProperties are interpreted as structs made up of the
 following system properties:
 
-Property | Description
---- | ---
-X | X coordinate of the Point2d or Point3d
-Y | Y coordinate of the Point2d or Point3d
-Z | Z coordinate of the Point3d
+| Property | Description                            |
+| -------- | -------------------------------------- |
+| X        | X coordinate of the Point2d or Point3d |
+| Y        | Y coordinate of the Point2d or Point3d |
+| Z        | Z coordinate of the Point3d            |
 
 #### Example
 
@@ -211,12 +211,12 @@ The operator for referencing members of structs in an ECSQL is the '.'.
 
 ### Examples
 
-ECSQL | Description
---- | ---
-`SELECT Location FROM myschema.Company WHERE Name='ACME'` | Returns the Location struct property as a whole
-`SELECT Name,Location.Street,Location.City FROM myschema.Company WHERE ECInstanceId=?` | Returns the Street and City members of the Location struct property
-`SELECT Name FROM myschema.Company WHERE Location=?` | Returns rows that match the bound Location value. The Location must be bound as a whole.
-`SELECT Name FROM myschema.Company WHERE Location.Zip=12314` | Returns rows that match the Location's Zip member value
+| ECSQL                                                                                  | Description                                                                              |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `SELECT Location FROM myschema.Company WHERE Name='ACME'`                              | Returns the Location struct property as a whole                                          |
+| `SELECT Name,Location.Street,Location.City FROM myschema.Company WHERE ECInstanceId=?` | Returns the Street and City members of the Location struct property                      |
+| `SELECT Name FROM myschema.Company WHERE Location=?`                                   | Returns rows that match the bound Location value. The Location must be bound as a whole. |
+| `SELECT Name FROM myschema.Company WHERE Location.Zip=12314`                           | Returns rows that match the Location's Zip member value                                  |
 
 based on this ECSchema snippet:
 
@@ -238,10 +238,10 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 
 ### Examples
 
-ECSQL | Description
---- | ---
-`SELECT PhoneNumbers FROM myschema.Company WHERE Name='ACME'` | Returns the PhoneNumbers array of the ACME company
-`SELECT Name FROM myschema.Company WHERE PhoneNumbers=?` | Returns the companies that match the bound PhoneNumber array. The array must be bound as a whole.
+| ECSQL                                                         | Description                                                                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `SELECT PhoneNumbers FROM myschema.Company WHERE Name='ACME'` | Returns the PhoneNumbers array of the ACME company                                                |
+| `SELECT Name FROM myschema.Company WHERE PhoneNumbers=?`      | Returns the companies that match the bound PhoneNumber array. The array must be bound as a whole. |
 
 based on this ECSchema snippet:
 
@@ -259,10 +259,10 @@ Navigation properties are ECProperties that point to a related object. They are 
 In the context of ECSQL navigation properties are interpreted as structs made up of the
 following system properties:
 
-Property | Description
---- | ---
-`Id` | ECInstanceId of the related instance
-`RelECClassId` | ECClassId of the ECRelationshipClass backing the navigation property. It is mainly relevant when the ECRelationshipClass has subclasses.
+| Property       | Description                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `Id`           | ECInstanceId of the related instance                                                                                                     |
+| `RelECClassId` | ECClassId of the ECRelationshipClass backing the navigation property. It is mainly relevant when the ECRelationshipClass has subclasses. |
 
 > Navigation properties are a convenient short-cut for [ECSQL Joins](#joins).
 
@@ -270,36 +270,36 @@ See also [ECRelationshipClasses](#ecrelationshipclasses).
 
 ### Examples
 
-ECSQL | Description
---- | ---
-`SELECT Parent FROM bis.Element WHERE ECInstanceId=?` | Returns the Parent navigation property as a whole (including Id and RelECClassId)
-`SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=?` | Returns just the Id member of the Parent navigation property
-`SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId=?` | Returns the Id, and the RelECClassId member of the Parent navigation property as two separate columns
+| ECSQL                                                                         | Description                                                                                           |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `SELECT Parent FROM bis.Element WHERE ECInstanceId=?`                         | Returns the Parent navigation property as a whole (including Id and RelECClassId)                     |
+| `SELECT Parent.Id FROM bis.Element WHERE ECInstanceId=?`                      | Returns just the Id member of the Parent navigation property                                          |
+| `SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId=?` | Returns the Id, and the RelECClassId member of the Parent navigation property as two separate columns |
 
 ## ECRelationshipClasses
 
 As ECRelationshipClasses are ECClasses as well, they can be used in ECSQL like ECClasses. Their additional relationship semantics is expressed by these system properties.
 
-Property | Description
---- | ---
-`SourceECInstanceId` | ECInstanceId of the instance on the *source* end of the relationship
-`SourceECClassId` | ECClassId of the instance on the *source* end of the relationship
-`TargetECInstanceId` | ECInstanceId of the instance on the *target* end of the relationship
-`TargetECClassId` | ECClassId of the instance on the *target* end of the relationship
+| Property             | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| `SourceECInstanceId` | ECInstanceId of the instance on the _source_ end of the relationship |
+| `SourceECClassId`    | ECClassId of the instance on the _source_ end of the relationship    |
+| `TargetECInstanceId` | ECInstanceId of the instance on the _target_ end of the relationship |
+| `TargetECClassId`    | ECClassId of the instance on the _target_ end of the relationship    |
 
 > - If the ECRelationshipClass is backed by a [Navigation property](#navigation-properties), it is usually much easier to use the navigation property in your ECSQL than the ECRelationshipClass.
 > - `SourceECClassId` and `TargetECClassId` are skipped when performing a `SELECT * FROM` statement or an `INSERT INTO` statement without a property name list.
 
 ### Examples
 
-ECSQL | Description
---- | ---
-`SELECT SourceECInstanceId FROM bis.ElementDrivesElement WHERE TargetECInstanceId=? AND Status=?` | Returns the ECInstanceId of all Elements that drive the Element bound to the first parameter
-`SELECT TargetECInstanceId,TargetECClassId FROM bis.ModelHasElements WHERE SourceECInstanceId=?` | Returns the ECInstanceId and ECClassId of all Elements contained by the Model bound to the parameter
+| ECSQL                                                                                             | Description                                                                                          |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `SELECT SourceECInstanceId FROM bis.ElementDrivesElement WHERE TargetECInstanceId=? AND Status=?` | Returns the ECInstanceId of all Elements that drive the Element bound to the first parameter         |
+| `SELECT TargetECInstanceId,TargetECClassId FROM bis.ModelHasElements WHERE SourceECInstanceId=?`  | Returns the ECInstanceId and ECClassId of all Elements contained by the Model bound to the parameter |
 
 ## Joins
 
-Joins between ECClasses are specified with the standard SQL join syntax (either `JOIN` ... `ON` ... or the *theta* style).
+Joins between ECClasses are specified with the standard SQL join syntax (either `JOIN` ... `ON` ... or the _theta_ style).
 
 In ECSchemas ECRelationshipClasses are used to relate two ECClasses. ECRelationshipClasses can therefore be seen as virtual link tables between those two classes. If you want to join two ECClasses via their ECRelationshipClass, you need to join the first class to the relationship class and then the relationship class to the second class.
 
@@ -335,11 +335,11 @@ By default, any ECClass in the FROM clause of an ECSQL is treated polymorphicall
 
 ### Examples
 
-ECSQL | Description
---- | ---
-`SELECT ECInstanceId FROM bis.Element WHERE Model=?``  | Returns all Elements of any subclass in the specified Model
-`SELECT ECInstanceId FROM bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns SpatialViewDefinitions rows and rows of its subclasses for the specified ModelSelector
-`SELECT ECInstanceId FROM ONLY bis.SpatialViewDefinition WHERE ModelSelector=?``  | Returns only SpatialViewDefinitions rows for the specified ModelSelect, but no rows from its subclasses.
+| ECSQL                                                                            | Description                                                                                              |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `SELECT ECInstanceId FROM bis.Element WHERE Model=?``                            | Returns all Elements of any subclass in the specified Model                                              |
+| `SELECT ECInstanceId FROM bis.SpatialViewDefinition WHERE ModelSelector=?``      | Returns SpatialViewDefinitions rows and rows of its subclasses for the specified ModelSelector           |
+| `SELECT ECInstanceId FROM ONLY bis.SpatialViewDefinition WHERE ModelSelector=?`` | Returns only SpatialViewDefinitions rows for the specified ModelSelect, but no rows from its subclasses. |
 
 ## LIMIT and OFFSET
 

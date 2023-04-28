@@ -1,6 +1,6 @@
 # Wire Format
 
-The *wire format* describes the way entities are serialized to JSON.
+The _wire format_ describes the way entities are serialized to JSON.
 
 Here is some sample code that dumps the entire iModel to JSON.
 
@@ -8,7 +8,7 @@ Here is some sample code that dumps the entire iModel to JSON.
 [[include:WireFormat_DumpIModel.code]]
 ```
 
--------------------------------------------------
+---
 
 Below are examples of wire formats for a few interesting iTwin.js classes.
 
@@ -26,7 +26,7 @@ Produces the following result:
 [[include:WireFormat_RootSubject.json]]
 ```
 
--------------------------------------------------
+---
 
 ## RepositoryModel
 
@@ -42,7 +42,7 @@ Produces the following result:
 [[include:WireFormat_RepositoryModel.json]]
 ```
 
--------------------------------------------------
+---
 
 ## GeometricElement3d
 
@@ -94,4 +94,4 @@ This shows that the JSON from the `GeometricElement3d` contains the JSON from th
 [[include:WireFormat_GeometricElement3d_Element.json]]
 ```
 
--------------------------------------------------
+---

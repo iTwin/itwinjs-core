@@ -8,7 +8,11 @@
  */
 
 import { saveAs } from "file-saver";
-import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@itwin/core-frontend";
+import {
+  GLTimerResult,
+  IModelApp,
+  RenderSystemDebugControl,
+} from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Trace Event Format, viewable with chrome://tracing
@@ -33,7 +37,9 @@ interface ChromeTraceEvent {
   args: ChromeTraceEventArgs;
 }
 
-interface ChromeTraceEventArgs { 0: 0 }
+interface ChromeTraceEventArgs {
+  0: 0;
+}
 const dummyArgs: ChromeTraceEventArgs = { 0: 0 }; // Reuse instead of allocating for each entry
 
 /**
@@ -41,7 +47,11 @@ const dummyArgs: ChromeTraceEventArgs = { 0: 0 }; // Reuse instead of allocating
  * @param start Timestamp in microseconds of when trace event started
  * @param duration Duration in microseconds of trace event
  */
-function createTraceEvent(name: string, start: number, duration: number): ChromeTraceEvent {
+function createTraceEvent(
+  name: string,
+  start: number,
+  duration: number
+): ChromeTraceEvent {
   return {
     pid: 1,
     ts: start,
@@ -52,17 +62,17 @@ function createTraceEvent(name: string, start: number, duration: number): Chrome
   };
 }
 
-function createTraceFromTimerResults(timerResults: GLTimerResult[]): ChromeTrace {
+function createTraceFromTimerResults(
+  timerResults: GLTimerResult[]
+): ChromeTrace {
   const traceEvents: ChromeTraceEvent[] = [];
 
   const addChildren = (startTime: number, children: GLTimerResult[]) => {
     for (const child of children) {
-      if (child.nanoseconds < 100)
-        continue;
-      const microseconds = child.nanoseconds / 1E3;
+      if (child.nanoseconds < 100) continue;
+      const microseconds = child.nanoseconds / 1e3;
       traceEvents.push(createTraceEvent(child.label, startTime, microseconds));
-      if (child.children)
-        addChildren(startTime, child.children);
+      if (child.children) addChildren(startTime, child.children);
       startTime += microseconds;
     }
   };
@@ -70,10 +80,11 @@ function createTraceFromTimerResults(timerResults: GLTimerResult[]): ChromeTrace
   let frameStartTime = 0;
   let frameNumber = 0;
   for (const tr of timerResults) {
-    const microseconds = tr.nanoseconds / 1E3;
-    traceEvents.push(createTraceEvent(`Frame ${frameNumber}`, frameStartTime, microseconds));
-    if (tr.children)
-      addChildren(frameStartTime, tr.children);
+    const microseconds = tr.nanoseconds / 1e3;
+    traceEvents.push(
+      createTraceEvent(`Frame ${frameNumber}`, frameStartTime, microseconds)
+    );
+    if (tr.children) addChildren(frameStartTime, tr.children);
     frameStartTime += microseconds;
     ++frameNumber;
   }
@@ -112,7 +123,8 @@ export class GpuProfiler {
 
     if (!this._debugControl.isGLTimerSupported) {
       checkBox.checkbox.disabled = true;
-      checkBox.div.title = "EXT_disjoint_timer_query is not available in this browser";
+      checkBox.div.title =
+        "EXT_disjoint_timer_query is not available in this browser";
     }
 
     this._div = document.createElement("div");
@@ -167,23 +179,27 @@ export class GpuProfiler {
 
     if (this._recordedResults.length !== 0) {
       const chromeTrace = createTraceFromTimerResults(this._recordedResults);
-      const blob = new Blob([JSON.stringify(chromeTrace)], { type: "application/json;charset=utf-8" });
+      const blob = new Blob([JSON.stringify(chromeTrace)], {
+        type: "application/json;charset=utf-8",
+      });
       saveAs(blob, "gpu-profile.json");
       this._recordedResults = [];
     }
   }
 
   private _resultsCallback = (result: GLTimerResult): void => {
-    if (this._isRecording)
-      this._recordedResults.push(result);
+    if (this._isRecording) this._recordedResults.push(result);
 
     const fragment = document.createDocumentFragment();
     const numSavedFrames = 120;
     let lastValue: string;
     const changedResults = new Array<boolean>(this._results.length); // default values false
     const printDepth = (depth: number, currentRes: GLTimerResult) => {
-      const index = this._results.findIndex((res) => res.label === currentRes.label);
-      if (index < 0) { // Add brand new entry
+      const index = this._results.findIndex(
+        (res) => res.label === currentRes.label
+      );
+      if (index < 0) {
+        // Add brand new entry
         const data: GpuProfilerResults = {
           label: currentRes.label,
           paddingLeft: `${depth}em`,
@@ -197,25 +213,29 @@ export class GpuProfiler {
           this._results.push(data); // Read Pixels should go at the end of the list
           changedResults.push(true);
         } else {
-          const prevIndex = this._results.findIndex((res) => res.label === lastValue);
+          const prevIndex = this._results.findIndex(
+            (res) => res.label === lastValue
+          );
           this._results.splice(prevIndex + 1, 0, data);
           changedResults.splice(prevIndex + 1, 0, true);
         }
-      } else { // Edit old entry
+      } else {
+        // Edit old entry
         let oldVal = 0.0;
         const savedResults = this._results[index];
-        if (savedResults.values.length >= numSavedFrames) { // keep up to numSavedFrames values to average between
+        if (savedResults.values.length >= numSavedFrames) {
+          // keep up to numSavedFrames values to average between
           oldVal = savedResults.values.shift()!;
         }
-        const newVal = currentRes.nanoseconds < 100 ? 0.0 : currentRes.nanoseconds; // high-pass filter, empty queries have some noise
+        const newVal =
+          currentRes.nanoseconds < 100 ? 0.0 : currentRes.nanoseconds; // high-pass filter, empty queries have some noise
         savedResults.sum += newVal - oldVal;
         savedResults.values.push(newVal);
         changedResults[index] = true;
       }
       lastValue = currentRes.label;
 
-      if (!currentRes.children)
-        return;
+      if (!currentRes.children) return;
 
       for (const childRes of currentRes.children)
         printDepth(depth + 1, childRes);
@@ -223,8 +243,10 @@ export class GpuProfiler {
     printDepth(0, result);
 
     this._results.forEach((value, index) => {
-      if (!changedResults[index]) { // if no data received on this item, add a value of 0.0 to the avg.
-        const oldVal = value.values.length >= numSavedFrames ? value.values.shift()! : 0.0;
+      if (!changedResults[index]) {
+        // if no data received on this item, add a value of 0.0 to the avg.
+        const oldVal =
+          value.values.length >= numSavedFrames ? value.values.shift()! : 0.0;
         value.sum -= oldVal;
         value.values.push(0.0);
       }
@@ -240,7 +262,9 @@ export class GpuProfiler {
       divLine.style.borderBottom = "dotted 1px";
       div.appendChild(divLine);
       const textValue = document.createElement("text");
-      textValue.innerText = `${(value.sum / value.values.length / 1.E6).toFixed(3)} ms\n`;
+      textValue.innerText = `${(value.sum / value.values.length / 1e6).toFixed(
+        3
+      )} ms\n`;
       div.appendChild(textValue);
       fragment.appendChild(div);
     });

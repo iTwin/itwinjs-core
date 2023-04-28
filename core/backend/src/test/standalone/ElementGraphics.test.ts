@@ -5,7 +5,14 @@
 
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
+import {
+  CurrentImdlVersion,
+  DynamicGraphicsRequest3dProps,
+  ElementGeometry,
+  ElementGeometryDataEntry,
+  ElementGraphicsRequestProps,
+  GeometryStreamIterator,
+} from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -14,17 +21,20 @@ describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"),
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
+    );
   });
 
   after(() => {
-    if (imodel && imodel.isOpen)
-      imodel.close();
+    if (imodel && imodel.isOpen) imodel.close();
   });
 
   it("obtains graphics for elements", async () => {
     const elementId = "0x29";
-    const element = imodel.elements.tryGetElement<GeometricElement3d>(elementId);
+    const element =
+      imodel.elements.tryGetElement<GeometricElement3d>(elementId);
     expect(element).not.to.be.undefined;
     expect(element).instanceof(GeometricElement3d);
 
@@ -35,7 +45,9 @@ describe("ElementGraphics", () => {
       formatVersion: CurrentImdlVersion.Major,
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel.nativeDb.generateElementGraphics(
+      request as any
+    ); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -47,7 +59,10 @@ describe("ElementGraphics", () => {
 
   it("obtains graphics for dynamics from json format geometry stream", async () => {
     const elementId = "0x29";
-    const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
+    const element = imodel.elements.tryGetElement<GeometricElement3d>({
+      id: elementId,
+      wantGeometry: true,
+    });
     expect(element).not.to.be.undefined;
     expect(element).instanceof(GeometricElement3d);
     expect(element?.geom).not.to.be.undefined;
@@ -64,7 +79,9 @@ describe("ElementGraphics", () => {
       geometry: { format: "json", data: element!.geom! },
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel.nativeDb.generateElementGraphics(
+      request as any
+    ); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -76,7 +93,10 @@ describe("ElementGraphics", () => {
 
   it("obtains graphics for dynamics from flatbuffers format geometry stream", async () => {
     const elementId = "0x29";
-    const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
+    const element = imodel.elements.tryGetElement<GeometricElement3d>({
+      id: elementId,
+      wantGeometry: true,
+    });
     expect(element).not.to.be.undefined;
     expect(element).instanceof(GeometricElement3d);
     expect(element?.geom).not.to.be.undefined;
@@ -85,13 +105,14 @@ describe("ElementGraphics", () => {
     const entries: ElementGeometryDataEntry[] = [];
     const it = new GeometryStreamIterator(element!.geom!, element!.category);
     for (const entry of it) {
-      if ("geometryQuery" !== entry.primitive.type)
-        continue;
+      if ("geometryQuery" !== entry.primitive.type) continue;
 
       if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
         continue;
 
-      const geomEntry = ElementGeometry.fromGeometryQuery(entry.primitive.geometry);
+      const geomEntry = ElementGeometry.fromGeometryQuery(
+        entry.primitive.geometry
+      );
       expect(geomEntry).not.to.be.undefined;
       entries.push(geomEntry!);
     }
@@ -107,7 +128,9 @@ describe("ElementGraphics", () => {
       geometry: { format: "flatbuffer", data: entries },
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel.nativeDb.generateElementGraphics(
+      request as any
+    ); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -118,7 +141,10 @@ describe("ElementGraphics", () => {
   });
 
   it("produces expected errors", async () => {
-    type TestCase = [ElementGraphicsStatus, Partial<ElementGraphicsRequestProps>];
+    type TestCase = [
+      ElementGraphicsStatus,
+      Partial<ElementGraphicsRequestProps>
+    ];
     const testCases: TestCase[] = [
       [ElementGraphicsStatus.ElementNotFound, { elementId: "0" }],
       [ElementGraphicsStatus.ElementNotFound, { elementId: "0x12345678" }],
@@ -131,8 +157,14 @@ describe("ElementGraphics", () => {
       [ElementGraphicsStatus.InvalidJson, { toleranceLog10: "tol" as any }],
 
       [ElementGraphicsStatus.Success, { formatVersion: undefined }],
-      [ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: CurrentImdlVersion.Major + 1 }],
-      [ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: "latest" as any }],
+      [
+        ElementGraphicsStatus.UnknownMajorFormatVersion,
+        { formatVersion: CurrentImdlVersion.Major + 1 },
+      ],
+      [
+        ElementGraphicsStatus.UnknownMajorFormatVersion,
+        { formatVersion: "latest" as any },
+      ],
     ];
 
     for (const testCase of testCases) {
@@ -144,7 +176,9 @@ describe("ElementGraphics", () => {
         ...testCase[1],
       };
 
-      const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+      const result = await imodel.nativeDb.generateElementGraphics(
+        request as any
+      ); // ###TODO update package versions in addon
       expect(result.status).to.equal(testCase[0]);
       if (result.status === ElementGraphicsStatus.Success)
         expect(result.content).not.to.be.undefined;

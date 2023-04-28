@@ -15,12 +15,10 @@ async function run() {
   const testTitle = process.env.ELECTRON_TEST_TITLE;
 
   const suiteToRun = testSuites.find((suite) => suite.title === suiteTitle);
-  if (suiteToRun === undefined)
-    process.exit(TestResult.InvalidArguments);
+  if (suiteToRun === undefined) process.exit(TestResult.InvalidArguments);
 
   const testToRun = suiteToRun.tests.find((test) => test.title === testTitle);
-  if (testToRun === undefined)
-    process.exit(TestResult.InvalidArguments);
+  if (testToRun === undefined) process.exit(TestResult.InvalidArguments);
 
   let exitCode = TestResult.Success;
   try {

@@ -10,7 +10,6 @@ import { MapLayerAccessToken } from "@itwin/core-frontend";
 
 /** @internal */
 export interface ArcGisOAuth2Token extends MapLayerAccessToken {
-
   // The expiration time of the token in milliseconds (UNIX time)
   expiresAt: number;
 
@@ -43,7 +42,6 @@ export enum ArcGisTokenClientType {
 
 /** @internal */
 export interface ArcGisGenerateTokenOptions {
-
   // The client type that will be granted access to the token.
   // Users will be able to specify whether the token will be generated for a client application's base URL,
   // a user-specified IP address, or the IP address that is making the request.
@@ -66,7 +64,7 @@ export interface ArcGisGenerateTokenOptions {
   // Requests for tokens larger than this time will be rejected.
   // Applications are responsible for renewing expired tokens;
   // expired tokens will be rejected by the server on subsequent requests that use the token.
-  expiration?: number;   // in minutes, defaults to 60 minutes
+  expiration?: number; // in minutes, defaults to 60 minutes
 }
 
 /** @internal */
@@ -77,33 +75,42 @@ export class ArcGisTokenGenerator {
   // Cache info url to avoid fetching/parsing twice for the same base url.
   private static _tokenServiceUrlCache = new Map<string, string>();
 
-  public static async fetchTokenServiceUrl(arcGisRestServiceUrl: string): Promise<string | undefined> {
+  public static async fetchTokenServiceUrl(
+    arcGisRestServiceUrl: string
+  ): Promise<string | undefined> {
     const lowerUrl = arcGisRestServiceUrl.toLowerCase();
     const restApiIdx = lowerUrl.indexOf(ArcGisTokenGenerator.restApiPath);
-    if (restApiIdx === -1)
-      return undefined;
-    const infoUrl = arcGisRestServiceUrl.substring(0, restApiIdx + ArcGisTokenGenerator.restApiPath.length) + ArcGisTokenGenerator.restApiInfoPath;
+    if (restApiIdx === -1) return undefined;
+    const infoUrl =
+      arcGisRestServiceUrl.substring(
+        0,
+        restApiIdx + ArcGisTokenGenerator.restApiPath.length
+      ) + ArcGisTokenGenerator.restApiInfoPath;
 
     let tokenServicesUrl: string | undefined;
     try {
       const response = await fetch(infoUrl, { method: "GET" });
       const json = await response.json();
       tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(json);
-    } catch (_error) {
-    }
+    } catch (_error) {}
     return tokenServicesUrl;
   }
 
   public static getTokenServiceFromInfoJson(json: any): string | undefined {
-    return json.authInfo?.isTokenBasedSecurity ? json?.authInfo?.tokenServicesUrl : undefined;
+    return json.authInfo?.isTokenBasedSecurity
+      ? json?.authInfo?.tokenServicesUrl
+      : undefined;
   }
 
-  public async getTokenServiceUrl(baseUrl: string): Promise<string | undefined> {
+  public async getTokenServiceUrl(
+    baseUrl: string
+  ): Promise<string | undefined> {
     const cached = ArcGisTokenGenerator._tokenServiceUrlCache.get(baseUrl);
-    if (cached !== undefined)
-      return cached;
+    if (cached !== undefined) return cached;
 
-    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(baseUrl);
+    const tokenServiceUrl = await ArcGisTokenGenerator.fetchTokenServiceUrl(
+      baseUrl
+    );
     if (tokenServiceUrl !== undefined)
       ArcGisTokenGenerator._tokenServiceUrlCache.set(baseUrl, tokenServiceUrl);
 
@@ -111,10 +118,14 @@ export class ArcGisTokenGenerator {
   }
 
   // base url:  ArcGis REST service base URL (format must be "https://<host>/<instance>/rest/")
-  public async generate(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
+  public async generate(
+    arcGisRestServiceUrl: string,
+    userName: string,
+    password: string,
+    options: ArcGisGenerateTokenOptions
+  ): Promise<any> {
     const tokenServiceUrl = await this.getTokenServiceUrl(arcGisRestServiceUrl);
-    if (!tokenServiceUrl)
-      return undefined;
+    if (!tokenServiceUrl) return undefined;
 
     let token: undefined;
     try {
@@ -132,15 +143,14 @@ export class ArcGisTokenGenerator {
       if (options.client === ArcGisTokenClientType.referer) {
         let refererStr = "";
         if (options.referer === undefined) {
-          refererStr = encodeURIComponent(location.origin);     // default to application origin
+          refererStr = encodeURIComponent(location.origin); // default to application origin
         } else {
           refererStr = encodeURIComponent(options.referer);
         }
 
         clientStr = `&client=referer&referer=${refererStr}`;
       } else if (options.client === ArcGisTokenClientType.ip) {
-        if (options.ip === undefined)
-          return token;
+        if (options.ip === undefined) return token;
         clientStr = `&client=ip&ip=${options.ip}`;
       } else if (options.client === ArcGisTokenClientType.requestIp) {
         clientStr = `&client=requestip&ip=`;
@@ -156,9 +166,7 @@ export class ArcGisTokenGenerator {
 
       // Check a token was really generated (an error could be part of the body)
       token = await response.json();
-
-    } catch (_error) {
-    }
+    } catch (_error) {}
     return token;
   }
 

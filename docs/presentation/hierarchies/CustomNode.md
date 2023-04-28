@@ -8,18 +8,18 @@ Returns a static custom-defined node that's not based on an ECInstance.
 
 | Name                                                      | Required? | Type                                             | Default     |
 | --------------------------------------------------------- | --------- | ------------------------------------------------ | ----------- |
-| *Node values*                                             |
+| _Node values_                                             |
 | [`type`](#attribute-type)                                 | Yes       | `string`                                         |             |
 | [`label`](#attribute-label)                               | Yes       | `string`                                         |             |
 | [`description`](#attribute-description)                   | No        | `string`                                         | `""`        |
 | [`imageId`](#attribute-imageid)                           | No        | `string`                                         | `""`        |
-| *Filtering*                                               |
+| _Filtering_                                               |
 | [`hideExpression`](#attribute-hideexpression)             | No        | [ECExpression](./ECExpressions.md#specification) | `""`        |
 | [`hideIfNoChildren`](#attribute-hideifnochildren)         | No        | `boolean`                                        | `false`     |
 | [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy) | No        | `boolean`                                        | `false`     |
-| *Ordering*                                                |
+| _Ordering_                                                |
 | [`priority`](#attribute-priority)                         | No        | `number`                                         | `1000`      |
-| *Misc.*                                                   |
+| _Misc._                                                   |
 | [`hasChildren`](#attribute-haschildren)                   | No        | `"Always" \| "Never" \| "Unknown"`               | `"Unknown"` |
 | [`nestedRules`](#attribute-nestedrules)                   | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        |
 
@@ -173,10 +173,10 @@ getting child nodes is expensive.
 In case when the attribute value "lies":
 
 - When set to `Always`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `true`. Requesting children for such nodes returns
-empty list. It's up to the UI component to handle the case of parent node saying it has children but data source not returning any.
+  empty list. It's up to the UI component to handle the case of parent node saying it has children but data source not returning any.
 
 - When set to `Never`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `false`. Requesting children for such nodes returns empty
-list even if there are child node rules that define children for it.
+  list even if there are child node rules that define children for it.
 
 |                   |                                    |
 | ----------------- | ---------------------------------- |

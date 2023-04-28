@@ -8,28 +8,37 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@itwin/core-frontend";
+import {
+  EmphasizeElements,
+  IModelApp,
+  QueryVisibleFeaturesOptions,
+  ScreenViewport,
+  Tool,
+} from "@itwin/core-frontend";
 import { parseArgs } from "./parseArgs";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.
  * @beta
  */
 export abstract class EmphasizeElementsTool extends Tool {
-  protected get _wantCreate(): boolean { return true; }
-  protected get _wantClear(): boolean { return false; }
+  protected get _wantCreate(): boolean {
+    return true;
+  }
+  protected get _wantClear(): boolean {
+    return false;
+  }
   protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
 
   public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp)
-      return true;
+    if (undefined === vp) return true;
 
-    if (this._wantClear)
-      EmphasizeElements.clear(vp);
+    if (this._wantClear) EmphasizeElements.clear(vp);
 
-    const emph = this._wantCreate ? EmphasizeElements.getOrCreate(vp) : EmphasizeElements.get(vp);
-    if (undefined !== emph)
-      this.execute(emph, vp);
+    const emph = this._wantCreate
+      ? EmphasizeElements.getOrCreate(vp)
+      : EmphasizeElements.get(vp);
+    if (undefined !== emph) this.execute(emph, vp);
 
     return true;
   }
@@ -47,13 +56,21 @@ const enum OverrideType { // eslint-disable-line no-restricted-syntax
  */
 export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
   public static override toolId = "EmphasizeSelectedElements";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
   private _type = OverrideType.None;
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
-    if (OverrideType.None === (this._type & OverrideType.Color) || emph.overrideSelectedElements(vp, ColorDef.white, undefined, true, false)) {
-      emph.wantEmphasis = OverrideType.None !== (this._type & OverrideType.Emphasis);
+    if (
+      OverrideType.None === (this._type & OverrideType.Color) ||
+      emph.overrideSelectedElements(vp, ColorDef.white, undefined, true, false)
+    ) {
+      emph.wantEmphasis =
+        OverrideType.None !== (this._type & OverrideType.Emphasis);
       if (emph.emphasizeSelectedElements(vp, undefined, true)) {
         vp.isFadeOutActive = true;
         return;
@@ -102,7 +119,9 @@ export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
  */
 export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
   public static override toolId = "ClearIsolatedElements";
-  protected override get _wantCreate() { return false; }
+  protected override get _wantCreate() {
+    return false;
+  }
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
     emph.clearIsolatedElements(vp);
   }
@@ -113,8 +132,12 @@ export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
  */
 export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
   public static override toolId = "ClearEmphasizedElements";
-  protected override get _wantCreate() { return false; }
-  protected override get _wantClear() { return true; }
+  protected override get _wantCreate() {
+    return false;
+  }
+  protected override get _wantClear() {
+    return true;
+  }
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
     emph.clearEmphasizedElements(vp);
@@ -127,10 +150,16 @@ export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
  */
 export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
   public static override toolId = "EmphasizeVisibleElements";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   private _options: QueryVisibleFeaturesOptions = { source: "screen" };
-  protected override get _wantClear() { return true; }
+  protected override get _wantClear() {
+    return true;
+  }
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
@@ -161,7 +190,6 @@ export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
     });
 
     emph.wantEmphasis = true;
-    if (emph.emphasizeElements(elementIds, vp))
-      vp.isFadeOutActive = true;
+    if (emph.emphasizeElements(elementIds, vp)) vp.isFadeOutActive = true;
   }
 }

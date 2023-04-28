@@ -40,25 +40,46 @@ const argv = yargs
   .string("classifiedName")
   .describe("classifiedURL", "Add classified reality model URL")
   .string("classifiedURL")
-  .describe("classifiedOutside", "Classifier Outside (on, off, dimmed, hilite, color)")
+  .describe(
+    "classifiedOutside",
+    "Classifier Outside (on, off, dimmed, hilite, color)"
+  )
   .choices("classifiedOutside", ["on", "off", "dimmed", "hilite", "color"])
-  .describe("classifiedInside", "Classifier Outside (on, off, dimmed, hilite, color)")
+  .describe(
+    "classifiedInside",
+    "Classifier Outside (on, off, dimmed, hilite, color)"
+  )
   .choices("classifiedInside", ["on", "off", "dimmed", "hilite", "color"])
   .demandOption(["input", "output"])
   .parseSync();
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+(async () => {
+  // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
   Logger.initializeToConsole();
 
   const geoJson = new GeoJson(argv.input);
-  const importer = new GeoJsonImporter(argv.output, geoJson, argv.append as boolean, argv.model_name as string, argv.label as string, argv.point_radius as number, argv.color as boolean,
-    argv.map as string, argv.mapBias as number,
-    argv.classifiedURL as string, argv.classifiedName as string, argv.classifiedOutside as string, argv.classifiedInside as string);
+  const importer = new GeoJsonImporter(
+    argv.output,
+    geoJson,
+    argv.append as boolean,
+    argv.model_name as string,
+    argv.label as string,
+    argv.point_radius as number,
+    argv.color as boolean,
+    argv.map as string,
+    argv.mapBias as number,
+    argv.classifiedURL as string,
+    argv.classifiedName as string,
+    argv.classifiedOutside as string,
+    argv.classifiedInside as string
+  );
 
   try {
     await importer.import();
-    process.stdout.write(`IModel: ${argv.output} Created for GeoJson: ${argv.input}\n`);
+    process.stdout.write(
+      `IModel: ${argv.output} Created for GeoJson: ${argv.input}\n`
+    );
     await IModelHost.shutdown();
   } catch (_error) {
     process.stdout.write("Error occurred\n");

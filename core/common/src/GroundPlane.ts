@@ -65,21 +65,25 @@ export class GroundPlane {
    * Any properties of `changedProps` explicitly set to `undefined` will be initialized to their default values.
    */
   public clone(changedProps?: Partial<GroundPlaneProperties>): GroundPlane {
-    if (!changedProps)
-      return this;
+    if (!changedProps) return this;
 
     return GroundPlane.create({ ...this, ...changedProps });
   }
 
   /** Create from JSON representation. */
   public static fromJSON(props?: GroundPlaneProps): GroundPlane {
-    if (!props)
-      return this.defaults;
+    if (!props) return this.defaults;
 
     return new this({
       elevation: props.elevation,
-      aboveColor: undefined !== props.aboveColor ? ColorDef.fromJSON(props.aboveColor) : undefined,
-      belowColor: undefined !== props.belowColor ? ColorDef.fromJSON(props.belowColor) : undefined,
+      aboveColor:
+        undefined !== props.aboveColor
+          ? ColorDef.fromJSON(props.aboveColor)
+          : undefined,
+      belowColor:
+        undefined !== props.belowColor
+          ? ColorDef.fromJSON(props.belowColor)
+          : undefined,
     });
   }
 
@@ -93,8 +97,7 @@ export class GroundPlane {
       belowColor: this.belowColor.toJSON(),
     };
 
-    if (undefined !== display)
-      props.display = display;
+    if (undefined !== display) props.display = display;
 
     return props;
   }

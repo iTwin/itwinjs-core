@@ -47,7 +47,11 @@ export class FrameBuilder {
   private _vector1: undefined | Vector3d;
   private _vector2: undefined | Vector3d;
   // test if both vectors are defined and have significant angle between.
-  private areStronglyIndependentVectors(vector0: Vector3d, vector1: Vector3d, radiansTolerance: number = Geometry.smallAngleRadians): boolean {
+  private areStronglyIndependentVectors(
+    vector0: Vector3d,
+    vector1: Vector3d,
+    radiansTolerance: number = Geometry.smallAngleRadians
+  ): boolean {
     if (vector0 !== undefined && vector1 !== undefined) {
       const q = vector0.smallerUnorientedRadiansTo(vector1);
       return q > radiansTolerance;
@@ -55,23 +59,40 @@ export class FrameBuilder {
     return false;
   }
   /** clear all accumulated point and vector data */
-  public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
-  constructor() { this.clear(); }
+  public clear() {
+    this._origin = undefined;
+    this._vector0 = undefined;
+    this._vector1 = undefined;
+    this._vector2 = undefined;
+  }
+  constructor() {
+    this.clear();
+  }
   /** Try to assemble the data into a non-singular transform.
    *
    * * If allowLeftHanded is false, vector0 and vector1 determine a right handed coordinate system.
    * * if allowLeftHanded is true, the z vector of the right handed system can be flipped to agree with vector2 direction.
    */
-  public getValidatedFrame(allowLeftHanded: boolean = false): Transform | undefined {
+  public getValidatedFrame(
+    allowLeftHanded: boolean = false
+  ): Transform | undefined {
     if (this._origin && this._vector0 && this._vector1) {
       if (!allowLeftHanded) {
-        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
+        const matrix = Matrix3d.createRigidFromColumns(
+          this._vector0,
+          this._vector1,
+          AxisOrder.XYZ
+        );
         if (matrix)
           return Transform.createOriginAndMatrix(this._origin, matrix);
         // uh oh -- vector1 was not really independent.  clear everything after vector0.
         this._vector1 = this._vector2 = undefined;
       } else if (this._vector2) {
-        const matrix = Matrix3d.createRigidFromColumns(this._vector0, this._vector1, AxisOrder.XYZ);
+        const matrix = Matrix3d.createRigidFromColumns(
+          this._vector0,
+          this._vector1,
+          AxisOrder.XYZ
+        );
         if (matrix) {
           if (this._vector0.tripleProduct(this._vector1, this._vector2) < 0)
             matrix.scaleColumns(1.0, 1.0, -1.0);
@@ -87,21 +108,25 @@ export class FrameBuilder {
   }
   /** If vector0 is known but vector1 is not, make vector1 the cross of the up-vector and vector0 */
   public applyDefaultUpVector(vector?: Vector3d) {
-    if (vector && this._vector0 && !this._vector1 && !vector.isParallelTo(this._vector0)) {
+    if (
+      vector &&
+      this._vector0 &&
+      !this._vector1 &&
+      !vector.isParallelTo(this._vector0)
+    ) {
       this._vector1 = vector.crossProduct(this._vector0);
     }
   }
   /** Ask if there is a defined origin for the evolving frame */
-  public get hasOrigin(): boolean { return this._origin !== undefined; }
+  public get hasOrigin(): boolean {
+    return this._origin !== undefined;
+  }
   /** Return the number of vectors saved.   Because the save process checks numerics, this should be the rank of the system.
    */
   public savedVectorCount(): number {
-    if (!this._vector0)
-      return 0;
-    if (!this._vector1)
-      return 1;
-    if (!this._vector2)
-      return 2;
+    if (!this._vector0) return 0;
+    if (!this._vector1) return 1;
+    if (!this._vector2) return 2;
     return 3;
   }
   /** announce a new point.  If this point is different from the origin, also compute and announce the vector from the origin.*/
@@ -111,16 +136,17 @@ export class FrameBuilder {
       return this.savedVectorCount();
     }
     // the new point may provide an additional vector
-    if (this._origin.isAlmostEqual(point))
-      return this.savedVectorCount();
+    if (this._origin.isAlmostEqual(point)) return this.savedVectorCount();
     return this.announceVector(this._origin.vectorTo(point));
   }
   /** announce a new vector. */
   public announceVector(vector: Vector3d): number {
-    if (vector.isAlmostZero)
-      return this.savedVectorCount();
+    if (vector.isAlmostZero) return this.savedVectorCount();
 
-    if (!this._vector0) { this._vector0 = vector.clone(this._vector0); return 1; }
+    if (!this._vector0) {
+      this._vector0 = vector.clone(this._vector0);
+      return 1;
+    }
 
     if (!this._vector1) {
       if (this.areStronglyIndependentVectors(vector, this._vector0, 1.0e-5)) {
@@ -133,7 +159,10 @@ export class FrameBuilder {
     // vector0 and vector1 are independent.
     if (!this._vector2) {
       const unitPerpendicular = this._vector0.unitCrossProduct(this._vector1);
-      if (unitPerpendicular && !Geometry.isSameCoordinate(0, unitPerpendicular.dotProduct(vector))) {
+      if (
+        unitPerpendicular &&
+        !Geometry.isSameCoordinate(0, unitPerpendicular.dotProduct(vector))
+      ) {
         this._vector2 = vector.clone(this._vector2);
         return 3;
       }
@@ -147,14 +176,11 @@ export class FrameBuilder {
    */
   public announce(data: any) {
     if (this.savedVectorCount() > 1) return;
-    if (data instanceof Point3d)
-      this.announcePoint(data);
-    else if (data instanceof Vector3d)
-      this.announceVector(data);
+    if (data instanceof Point3d) this.announcePoint(data);
+    else if (data instanceof Vector3d) this.announceVector(data);
     else if (Array.isArray(data)) {
       for (const child of data) {
-        if (this.savedVectorCount() > 1)
-          break;
+        if (this.savedVectorCount() > 1) break;
         this.announce(child);
       }
     } else if (data instanceof CurvePrimitive) {
@@ -169,8 +195,7 @@ export class FrameBuilder {
       } else if (data instanceof LineString3d) {
         for (const point of data.points) {
           this.announcePoint(point);
-          if (this.savedVectorCount() > 1)
-            break;
+          if (this.savedVectorCount() > 1) break;
         }
       } else if (data instanceof BSplineCurve3d) {
         const point = Point3d.create();
@@ -187,7 +212,8 @@ export class FrameBuilder {
             this.announcePoint(point);
           } else break;
         }
-      } else { // unimplemented CurvePrimitive type
+      } else {
+        // unimplemented CurvePrimitive type
         const frame = data.fractionToFrenetFrame(0.0);
         if (undefined !== frame) {
           this.announcePoint(frame.getOrigin());
@@ -199,8 +225,7 @@ export class FrameBuilder {
       if (data.children)
         for (const child of data.children) {
           this.announce(child);
-          if (this.savedVectorCount() > 1)
-            break;
+          if (this.savedVectorCount() > 1) break;
         }
     } else if (data instanceof GrowableXYZArray) {
       const point = Point3d.create();
@@ -217,7 +242,10 @@ export class FrameBuilder {
    * *  x axis in direction of first nonzero vector present or implied by the input.
    * *  y axis is perpendicular to x and contains (in positive side) the next vector present or implied by the input.
    */
-  public static createRightHandedFrame(defaultUpVector: Vector3d | undefined, ...params: any[]): Transform | undefined {
+  public static createRightHandedFrame(
+    defaultUpVector: Vector3d | undefined,
+    ...params: any[]
+  ): Transform | undefined {
     const builder = new FrameBuilder();
     for (const data of params) {
       builder.announce(data);
@@ -239,13 +267,11 @@ export class FrameBuilder {
           for (const curve of children) {
             if (curve instanceof CurvePrimitive) {
               const frenetFrame = curve.fractionToFrenetFrame(0.0);
-              if (frenetFrame)
-                return frenetFrame;
+              if (frenetFrame) return frenetFrame;
             }
           }
         }
       }
-
     }
     return undefined;
   }
@@ -254,13 +280,14 @@ export class FrameBuilder {
    * * The z column is perpendicular to that xy plane.
    * * The calculation favors the first points found.  It does not try to get a "best" plane.
    */
-  public static createRightHandedLocalToWorld(...params: any[]): Transform | undefined {
+  public static createRightHandedLocalToWorld(
+    ...params: any[]
+  ): Transform | undefined {
     const builder = new FrameBuilder();
     for (const data of params) {
       builder.announce(data);
       const localToWorld = builder.getValidatedFrame(false);
-      if (localToWorld !== undefined)
-        return localToWorld;
+      if (localToWorld !== undefined) return localToWorld;
     }
     return undefined;
   }
@@ -272,16 +299,26 @@ export class FrameBuilder {
    * point most distant from that line.
    * @param points array of points
    */
-  public static createFrameToDistantPoints(points: Point3d[]): Transform | undefined {
+  public static createFrameToDistantPoints(
+    points: Point3d[]
+  ): Transform | undefined {
     if (points.length > 2) {
       const origin = points[0].clone();
       const vector01 = Vector3d.create();
       Point3dArray.indexOfMostDistantPoint(points, points[0], vector01);
       const vector02 = Vector3d.create();
-      Point3dArray.indexOfPointWithMaxCrossProductMagnitude(points, origin, vector01, vector02);
-      const matrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
-      if (matrix)
-        return Transform.createRefs(origin, matrix);
+      Point3dArray.indexOfPointWithMaxCrossProductMagnitude(
+        points,
+        origin,
+        vector01,
+        vector02
+      );
+      const matrix = Matrix3d.createRigidFromColumns(
+        vector01,
+        vector02,
+        AxisOrder.XYZ
+      );
+      if (matrix) return Transform.createRefs(origin, matrix);
     }
     return undefined;
   }
@@ -292,7 +329,9 @@ export class FrameBuilder {
    * point most distant from that line.
    * @param points array of points
    */
-  public static createFrameWithCCWPolygon(points: Point3d[]): Transform | undefined {
+  public static createFrameWithCCWPolygon(
+    points: Point3d[]
+  ): Transform | undefined {
     if (points.length > 2) {
       const ray = PolygonOps.centroidAreaNormal(points);
       if (ray) {
@@ -316,20 +355,40 @@ export class FrameBuilder {
     fractionX: number = 0,
     fractionY: number = 0,
     fractionZ: number = 0,
-    defaultAxisLength: number = 1.0): Transform {
-    if (range.isNull)
-      return Transform.createIdentity();
+    defaultAxisLength: number = 1.0
+  ): Transform {
+    if (range.isNull) return Transform.createIdentity();
     let a = 1.0;
     let b = 1.0;
     let c = 1.0;
     if (scaleSelect === AxisScaleSelect.LongestRangeDirection) {
-      a = b = c = Geometry.correctSmallMetricDistance(range.maxLength(), defaultAxisLength);
+      a =
+        b =
+        c =
+          Geometry.correctSmallMetricDistance(
+            range.maxLength(),
+            defaultAxisLength
+          );
     } else if (scaleSelect === AxisScaleSelect.NonUniformRangeContainment) {
-      a = Geometry.correctSmallMetricDistance(range.xLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionX, 0, 1);
-      b = Geometry.correctSmallMetricDistance(range.yLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionY, 0, 1);
-      c = Geometry.correctSmallMetricDistance(range.zLength(), defaultAxisLength) * Geometry.maxAbsDiff(fractionZ, 0, 1);
+      a =
+        Geometry.correctSmallMetricDistance(
+          range.xLength(),
+          defaultAxisLength
+        ) * Geometry.maxAbsDiff(fractionX, 0, 1);
+      b =
+        Geometry.correctSmallMetricDistance(
+          range.yLength(),
+          defaultAxisLength
+        ) * Geometry.maxAbsDiff(fractionY, 0, 1);
+      c =
+        Geometry.correctSmallMetricDistance(
+          range.zLength(),
+          defaultAxisLength
+        ) * Geometry.maxAbsDiff(fractionZ, 0, 1);
     }
-    return Transform.createRefs(range.fractionToPoint(fractionX, fractionY, fractionZ), Matrix3d.createScale(a, b, c));
+    return Transform.createRefs(
+      range.fractionToPoint(fractionX, fractionY, fractionZ),
+      Matrix3d.createScale(a, b, c)
+    );
   }
-
 }

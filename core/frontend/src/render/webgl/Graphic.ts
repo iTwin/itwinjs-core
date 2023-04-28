@@ -7,11 +7,21 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import {
+  ElementAlignedBox3d,
+  FeatureAppearanceProvider,
+  RenderFeatureTable,
+  ThematicDisplayMode,
+  ViewFlags,
+} from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
+import {
+  GraphicBranch,
+  GraphicBranchFrustum,
+  GraphicBranchOptions,
+} from "../GraphicBranch";
 import { BatchOptions } from "../GraphicBuilder";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -32,8 +42,12 @@ export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
   public abstract get isPickable(): boolean;
-  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
-  public toPrimitive(): Primitive | undefined { return undefined; }
+  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void {
+    assert(false);
+  }
+  public toPrimitive(): Primitive | undefined {
+    return undefined;
+  }
 }
 
 export class GraphicOwner extends Graphic {
@@ -44,11 +58,17 @@ export class GraphicOwner extends Graphic {
     this._graphic = graphic;
   }
 
-  public get graphic(): RenderGraphic { return this._graphic; }
+  public get graphic(): RenderGraphic {
+    return this._graphic;
+  }
 
   private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
-  public dispose(): void { this._isDisposed = true; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
+  public dispose(): void {
+    this._isDisposed = true;
+  }
   public disposeGraphic(): void {
     this.graphic.dispose();
   }
@@ -62,7 +82,10 @@ export class GraphicOwner extends Graphic {
   public override get isPickable(): boolean {
     return this._graphic.isPickable;
   }
-  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(
+    commands: RenderCommands,
+    pass: RenderPass
+  ): void {
     this._graphic.addHiliteCommands(commands, pass);
   }
   public override toPrimitive(): Primitive | undefined {
@@ -81,7 +104,10 @@ export interface BatchContext {
 /** @internal exported strictly for tests. */
 export class PerTargetBatchData {
   public readonly target: Target;
-  protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
+  protected readonly _featureOverrides = new Map<
+    FeatureSymbology.Source | undefined,
+    FeatureOverrides
+  >();
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -90,14 +116,16 @@ export class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
-    for (const value of this._featureOverrides.values())
-      dispose(value);
+    for (const value of this._featureOverrides.values()) dispose(value);
 
     this._featureOverrides.clear();
   }
 
   public getThematicSensors(batch: Batch): ThematicSensors {
-    if (this._thematicSensors && !this._thematicSensors.matchesTarget(this.target))
+    if (
+      this._thematicSensors &&
+      !this._thematicSensors.matchesTarget(this.target)
+    )
       this._thematicSensors = dispose(this._thematicSensors);
 
     if (!this._thematicSensors)
@@ -111,8 +139,17 @@ export class PerTargetBatchData {
     const source = this.target.currentFeatureSymbologyOverrides?.source;
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
-      const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
-      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
+      const cleanup = source
+        ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source))
+        : undefined;
+      this._featureOverrides.set(
+        source,
+        (ovrs = FeatureOverrides.createFromTarget(
+          this.target,
+          batch.options,
+          cleanup
+        ))
+      );
       ovrs.initFromMap(batch.featureTable);
     }
 
@@ -129,7 +166,9 @@ export class PerTargetBatchData {
   }
 
   /** Exposed strictly for tests. */
-  public get featureOverrides() { return this._featureOverrides; }
+  public get featureOverrides() {
+    return this._featureOverrides;
+  }
 
   private onSourceDisposed(source: FeatureSymbology.Source): void {
     const ovrs = this._featureOverrides.get(source);
@@ -163,12 +202,13 @@ export class PerTargetData {
   }
 
   /** Exposed strictly for tests. */
-  public get data(): PerTargetBatchData[] { return this._data; }
+  public get data(): PerTargetBatchData[] {
+    return this._data;
+  }
 
   public onTargetDisposed(target: Target): void {
     const index = this._data.findIndex((x) => x.target === target);
-    if (-1 === index)
-      return;
+    if (-1 === index) return;
 
     const data = this._data[index];
     data.dispose();
@@ -176,8 +216,7 @@ export class PerTargetData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const data of this._data)
-      data.collectStatistics(stats);
+    for (const data of this._data) data.collectStatistics(stats);
   }
 
   public getThematicSensors(target: Target): ThematicSensors {
@@ -191,7 +230,7 @@ export class PerTargetData {
   private getBatchData(target: Target): PerTargetBatchData {
     let data = this._data.find((x) => x.target === target);
     if (!data) {
-      this._data.push(data = new PerTargetBatchData(target));
+      this._data.push((data = new PerTargetBatchData(target)));
       target.addBatch(this._batch);
     }
 
@@ -218,8 +257,12 @@ export class Batch extends Graphic {
     return true === this.options.locateOnly;
   }
 
-  public get batchId() { return this._context.batchId; }
-  public get batchIModel() { return this._context.iModel; }
+  public get batchId() {
+    return this._context.batchId;
+  }
+  public get batchIModel() {
+    return this._context.iModel;
+  }
   public setContext(batchId: number, iModel: IModelConnection | undefined) {
     this._context.batchId = batchId;
     this._context.iModel = iModel;
@@ -229,7 +272,12 @@ export class Batch extends Graphic {
     this._context.iModel = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
+  public constructor(
+    graphic: RenderGraphic,
+    features: RenderFeatureTable,
+    range: ElementAlignedBox3d,
+    options?: BatchOptions
+  ) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
@@ -265,9 +313,19 @@ export class Batch extends Graphic {
   }
 
   public getThematicSensors(target: Target): ThematicSensors {
-    assert(target.plan.thematic !== undefined, "thematic display settings must exist");
-    assert(target.plan.thematic.displayMode === ThematicDisplayMode.InverseDistanceWeightedSensors, "thematic display mode must be sensor-based");
-    assert(target.plan.thematic.sensorSettings.sensors.length > 0, "must have at least one sensor to process");
+    assert(
+      target.plan.thematic !== undefined,
+      "thematic display settings must exist"
+    );
+    assert(
+      target.plan.thematic.displayMode ===
+        ThematicDisplayMode.InverseDistanceWeightedSensors,
+      "thematic display mode must be sensor-based"
+    );
+    assert(
+      target.plan.thematic.sensorSettings.sensors.length > 0,
+      "must have at least one sensor to process"
+    );
 
     return this.perTargetData.getThematicSensors(target);
   }
@@ -295,24 +353,26 @@ export class Branch extends Graphic {
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
+  public constructor(
+    branch: GraphicBranch,
+    localToWorld: Transform,
+    viewFlags?: ViewFlags,
+    opts?: GraphicBranchOptions
+  ) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
 
-    if (undefined !== viewFlags)
-      branch.setViewFlags(viewFlags);
+    if (undefined !== viewFlags) branch.setViewFlags(viewFlags);
 
-    if (!opts)
-      return;
+    if (!opts) return;
 
     this.appearanceProvider = opts.appearanceProvider;
     this.clips = opts.clipVolume as ClipVolume | undefined;
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
 
-    if (opts.hline)
-      this.edgeSettings = EdgeSettings.create(opts.hline);
+    if (opts.hline) this.edgeSettings = EdgeSettings.create(opts.hline);
 
     if (opts.classifierOrDrape instanceof PlanarClassifier)
       this.planarClassifier = opts.classifierOrDrape;
@@ -345,18 +405,24 @@ export class Branch extends Graphic {
   }
 
   private shouldAddCommands(commands: RenderCommands): boolean {
-    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
-    return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
+    const nodeId = commands.target.getAnimationTransformNodeId(
+      this.branch.animationNodeId
+    );
+    return (
+      undefined === nodeId ||
+      nodeId === commands.target.currentAnimationTransformNodeId
+    );
   }
 
   public addCommands(commands: RenderCommands): void {
-    if (this.shouldAddCommands(commands))
-      commands.addBranch(this);
+    if (this.shouldAddCommands(commands)) commands.addBranch(this);
   }
 
-  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    if (this.shouldAddCommands(commands))
-      commands.addHiliteBranch(this, pass);
+  public override addHiliteCommands(
+    commands: RenderCommands,
+    pass: RenderPass
+  ): void {
+    if (this.shouldAddCommands(commands)) commands.addHiliteBranch(this, pass);
   }
 }
 
@@ -394,7 +460,10 @@ export class AnimationTransformBranch extends Graphic {
     commands.target.currentAnimationTransformNodeId = undefined;
   }
 
-  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass) {
+  public override addHiliteCommands(
+    commands: RenderCommands,
+    pass: RenderPass
+  ) {
     commands.target.currentAnimationTransformNodeId = this.nodeId;
     this.graphic.addHiliteCommands(commands, pass);
     commands.target.currentAnimationTransformNodeId = undefined;
@@ -420,17 +489,20 @@ export class WorldDecorations extends Branch {
 /** @internal */
 export class GraphicsArray extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
-  constructor(public graphics: RenderGraphic[]) { super(); }
+  constructor(public graphics: RenderGraphic[]) {
+    super();
+  }
 
-  public get isDisposed(): boolean { return 0 === this.graphics.length; }
+  public get isDisposed(): boolean {
+    return 0 === this.graphics.length;
+  }
 
   public override get isPickable(): boolean {
     return this.graphics.some((x) => (x as Graphic).isPickable);
   }
 
   public dispose() {
-    for (const graphic of this.graphics)
-      dispose(graphic);
+    for (const graphic of this.graphics) dispose(graphic);
     this.graphics.length = 0;
   }
 
@@ -440,14 +512,16 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(
+    commands: RenderCommands,
+    pass: RenderPass
+  ): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, pass);
     }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const graphic of this.graphics)
-      graphic.collectStatistics(stats);
+    for (const graphic of this.graphics) graphic.collectStatistics(stats);
   }
 }

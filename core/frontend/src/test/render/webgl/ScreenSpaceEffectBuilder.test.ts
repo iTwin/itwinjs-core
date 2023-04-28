@@ -7,7 +7,10 @@ import { EmptyLocalization } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType,
+  ScreenSpaceEffectBuilder,
+  ScreenSpaceEffectBuilderParams,
+  UniformType,
+  VaryingType,
 } from "../../../render/ScreenSpaceEffectBuilder";
 import { System } from "../../../render/webgl/System";
 
@@ -53,7 +56,9 @@ describe("ScreenSpaceEffectBuilder", () => {
   }
 
   function makeBuilder(name: string): ScreenSpaceEffectBuilder {
-    const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(makeBuilderParams(name))!;
+    const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(
+      makeBuilderParams(name)
+    )!;
     expect(builder).not.to.be.undefined;
     addUniform(builder);
     addVarying(builder);
@@ -66,8 +71,11 @@ describe("ScreenSpaceEffectBuilder", () => {
     const builder = makeBuilder("Test");
     builder.finish();
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Test")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).to.equal(
+      numTechniques + 1
+    );
+    expect(System.instance.techniques.getDynamicTechniqueId("Test")).not.to.be
+      .undefined;
   });
 
   it("creates an effect that flips the image horizontally", () => {
@@ -111,20 +119,25 @@ describe("ScreenSpaceEffectBuilder", () => {
     builder.addVarying("v_uv", VaryingType.Vec2);
     builder.finish();
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Flip Image")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).to.equal(
+      numTechniques + 1
+    );
+    expect(System.instance.techniques.getDynamicTechniqueId("Flip Image")).not
+      .to.be.undefined;
   });
 
   it("throws if shader fails to compile", () => {
     const numTechniques = System.instance.techniques.numTechniques;
 
     const params = makeBuilderParams("Test 2");
-    const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(params)!;
+    const builder =
+      IModelApp.renderSystem.createScreenSpaceEffectBuilder(params)!;
     addVarying(builder);
     expect(() => builder.finish()).to.throw(/u_color/);
 
     expect(System.instance.techniques.numTechniques).to.equal(numTechniques);
-    expect(System.instance.techniques.getDynamicTechniqueId(params.name)).to.be.undefined;
+    expect(System.instance.techniques.getDynamicTechniqueId(params.name)).to.be
+      .undefined;
   });
 
   it("throws if an effect already exists by the same name", () => {
@@ -133,13 +146,21 @@ describe("ScreenSpaceEffectBuilder", () => {
     let builder = makeBuilder("Test 4");
     builder.finish();
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).to.equal(
+      numTechniques + 1
+    );
+    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).not.to.be
+      .undefined;
 
     builder = makeBuilder("Test 4");
-    expect(() => builder.finish()).to.throw(`Screen-space effect "Test 4" is already registered.`);
+    expect(() => builder.finish()).to.throw(
+      `Screen-space effect "Test 4" is already registered.`
+    );
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).to.equal(
+      numTechniques + 1
+    );
+    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).not.to.be
+      .undefined;
   });
 });

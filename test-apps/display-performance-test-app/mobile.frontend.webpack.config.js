@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 
@@ -10,8 +10,8 @@ module.exports = {
   entry: "./lib/frontend/DisplayPerformanceTestApp.js",
   output: {
     path: path.resolve(__dirname, "./lib/mobile/public"),
-    filename: '[name].bundle.js',
-    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
+    filename: "[name].bundle.js",
+    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
   },
   devtool: "cheap-module-source-map",
   module: {
@@ -19,21 +19,21 @@ module.exports = {
       {
         test: /\.js$/,
         use: "source-map-loader",
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /azure-storage|AzureFileHandler|UrlFileHandler/,
-        use: "null-loader"
-      }
-    ]
+        use: "null-loader",
+      },
+    ],
   },
   stats: "errors-only",
   externals: {
-    "electron": "throw new Error('should never happen')",
-    "IModelJsFs": "{IModelJsFs: IModelJsFs}",
+    electron: "throw new Error('should never happen')",
+    IModelJsFs: "{IModelJsFs: IModelJsFs}",
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "../IModelJsFs": "{IModelJsFs: IModelJsFs}",
-    "fs": "IModelJsFs",
-    "fs-extra": "IModelJsFs"
+    fs: "IModelJsFs",
+    "fs-extra": "IModelJsFs",
   },
 };

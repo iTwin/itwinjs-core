@@ -21,13 +21,13 @@ The purpose of unified selection is to act as a single source of truth of what i
 
 By default, whenever a component changes unified selection, that happens at 0th (top) selection level. And similarly, whenever a component requests current selection from the storage, by default the top selection level is used. However, there are cases when we want to have multiple levels of selection.
 
-For example, let's say there're 3 components: *A*, *B* and *C*:
+For example, let's say there're 3 components: _A_, _B_ and _C_:
 
-- *Component A* shows a list of elements and allows selecting them.
-- *Component B* shows a list of elements selected in *Component A* and allows selecting them individually. Selecting an individual element should not change selection in *Component A* or content in *Component B* itself.
-- *Component C* shows properties of elements selected either in *Component A* or *Component B*.
+- _Component A_ shows a list of elements and allows selecting them.
+- _Component B_ shows a list of elements selected in _Component A_ and allows selecting them individually. Selecting an individual element should not change selection in _Component A_ or content in _Component B_ itself.
+- _Component C_ shows properties of elements selected either in _Component A_ or _Component B_.
 
-The behavior described above can't be achieved using just one level of selection, because as soon as selection is made in *Component B*, that selection would get represented in *Component A* and *Component B* would change what it's displaying to the individual element.
+The behavior described above can't be achieved using just one level of selection, because as soon as selection is made in _Component B_, that selection would get represented in _Component A_ and _Component B_ would change what it's displaying to the individual element.
 
 That can be fixed by introducing another selection level, but before the components can be configured, here are a few key facts about selection levels:
 
@@ -35,11 +35,11 @@ That can be fixed by introducing another selection level, but before the compone
 - Changing higher level selection clears all lower level selections.
 - Lower level selection doesn't have to be a sub-set of higher level selection.
 
-With that in mind, the above components *A*, *B* and *C* can be configured as follows:
+With that in mind, the above components _A_, _B_ and _C_ can be configured as follows:
 
-- *Component A* only cares about top level selection. Whenever something is selected in the component, unified selection is updated at the top level. Similarly, whenever unified selection changes, the component only reacts if that happened at the top level.
-- *Component B* reloads its content if the selection changes at the top level. Row selection is handled using lower level, so selecting a row doesn't affect *Component A's* selection or *Component B's* content.
-- *Component C* reloads its content no matter the selection level.
+- _Component A_ only cares about top level selection. Whenever something is selected in the component, unified selection is updated at the top level. Similarly, whenever unified selection changes, the component only reacts if that happened at the top level.
+- _Component B_ reloads its content if the selection changes at the top level. Row selection is handled using lower level, so selecting a row doesn't affect _Component A's_ selection or _Component B's_ content.
+- _Component C_ reloads its content no matter the selection level.
 
 ## Selection handling
 
@@ -47,44 +47,44 @@ The `@itwin/presentation-components` package delivers helper APIs for hooking fo
 
 ### Tree
 
-Tree components show a hierarchy of nodes. In case of unified selection-enabled tree, the nodes are expected to represent some kind of *ECInstance* (a *Model*, *Element* or basically anything from the [EC world](../../bis/ec/index.md)).
+Tree components show a hierarchy of nodes. In case of unified selection-enabled tree, the nodes are expected to represent some kind of _ECInstance_ (a _Model_, _Element_ or basically anything from the [EC world](../../bis/ec/index.md)).
 
 The rules for interacting with unified selection are very simple in this case:
 
-- when unified selection changes, we mark nodes as selected if *ECInstances* they represent are in the unified selection storage
-- when a node is selected, we add *ECInstance* represented by the node to unified selection storage
+- when unified selection changes, we mark nodes as selected if _ECInstances_ they represent are in the unified selection storage
+- when a node is selected, we add _ECInstance_ represented by the node to unified selection storage
 
-In short, this is similar to how *Component A* works in the [selection levels example](#selection-levels).
+In short, this is similar to how _Component A_ works in the [selection levels example](#selection-levels).
 
 See [Setting up a Tree component for Unified Selection](./Tree.md) page for an example.
 
 ### Table
 
-Table is a component that displays data in a table layout. In the context of [EC](../../bis/ec/index.md) it's used to display *ECInstance* properties - one column per property, one row per ECInstance.
+Table is a component that displays data in a table layout. In the context of [EC](../../bis/ec/index.md) it's used to display _ECInstance_ properties - one column per property, one row per ECInstance.
 
 The rules for interacting with unified selection are:
 
-- when unified selection changes at the 0th level, we load properties for selected *ECInstances*.
-- when unified selection changes at the 1st level, we highlight rows that represent selected *ECInstances*.
-- when a row is selected, we add the *ECInstance* it represents to unified selection at the 1st level.
+- when unified selection changes at the 0th level, we load properties for selected _ECInstances_.
+- when unified selection changes at the 1st level, we highlight rows that represent selected _ECInstances_.
+- when a row is selected, we add the _ECInstance_ it represents to unified selection at the 1st level.
 
-In short, this is similar to how *Component B* works in the [selection levels example](#selection-levels).
+In short, this is similar to how _Component B_ works in the [selection levels example](#selection-levels).
 
 See [Setting up a Table component for Unified Selection](./Table.md) page for an example.
 
 ### Property grid
 
-Property grid is a component that can show multiple categorized property label - value pairs. In the context of [EC](../../bis/ec/index.md), it shows properties of one *ECInstance*. It can also show properties of multiple *ECInstances* by merging them into one before displaying.
+Property grid is a component that can show multiple categorized property label - value pairs. In the context of [EC](../../bis/ec/index.md), it shows properties of one _ECInstance_. It can also show properties of multiple _ECInstances_ by merging them into one before displaying.
 
-The property grid has no way to change the selection and reacts to unified selection changes by simply displaying properties of *ECInstances* that got selected during the last selection change (no matter the selection level).
+The property grid has no way to change the selection and reacts to unified selection changes by simply displaying properties of _ECInstances_ that got selected during the last selection change (no matter the selection level).
 
-In short, this is similar to how *Component C* works in the [selection levels example](#selection-levels).
+In short, this is similar to how _Component C_ works in the [selection levels example](#selection-levels).
 
 See [Setting up a Property Grid component for Unified Selection](./PropertyGrid.md) page for an example.
 
 ### Viewport
 
-The Viewport component is used to display graphical `BisCore.Element` *ECInstances* simply called *Elements*. The component handles a container called the highlight (or often just hilite) set to represent selected elements.
+The Viewport component is used to display graphical `BisCore.Element` _ECInstances_ simply called _Elements_. The component handles a container called the highlight (or often just hilite) set to represent selected elements.
 
 The rules for interacting with unified selection are:
 
@@ -97,14 +97,14 @@ See [Setting up a Viewport component for Unified Selection](./Viewport.md) page 
 
 #### Hilite set
 
-This is a set of IDs that we want hilited for a given selection. The IDs are separated by type (model, sub-category and element) which is determined based on the types of *ECInstances* in selection and presentation rules to create the hilite set.
+This is a set of IDs that we want hilited for a given selection. The IDs are separated by type (model, sub-category and element) which is determined based on the types of _ECInstances_ in selection and presentation rules to create the hilite set.
 
 The rules are as follows:
 
 - for `BisCore.Subject` return IDs of all models that are recursively under that Subject
 - for `BisCore.Model` just return its ID
 - for `BisCore.PhysicalPartition` just return ID of a model that models it
-- for `BisCore.Category` return IDs of all its *SubCategories*
+- for `BisCore.Category` return IDs of all its _SubCategories_
 - for `BisCore.SubCategory` just return its ID
 - for `BisCore.GeometricElement` return ID of its own and all its child elements recursively
 
@@ -128,17 +128,20 @@ The key unified selection APIs are defined in [@itwin/presentation-frontend]($pr
 
 - [SelectionManager]($presentation-frontend) is where the selection is stored, it allows retrieving current selection, modifying it and listening to its changes. Accessed globally on the frontend through `Presentation.selection` accessor.
 - [SelectionScopesManager]($presentation-frontend) helps with [selection scopes](#selection-scopes), it may be used to get available selection scopes and compute selection given input element IDs and desired selection scope. Accessed globally through `Presentation.selection.scopes` accessor.
-- [HiliteSetProvider]($presentation-frontend) helps with computing [hilite sets](#hilite-set) for the given selection. The provider may be created on demand whenever a hilite set for custom input needs to be computed. For the *current* selection stored in [SelectionManager]($presentation-frontend), it's recommended to use the [SelectionManager.getHiliteSet]($presentation-frontend) method.
+- [HiliteSetProvider]($presentation-frontend) helps with computing [hilite sets](#hilite-set) for the given selection. The provider may be created on demand whenever a hilite set for custom input needs to be computed. For the _current_ selection stored in [SelectionManager]($presentation-frontend), it's recommended to use the [SelectionManager.getHiliteSet]($presentation-frontend) method.
 
 For each type of component described in [selection handling section](#selection-handling), the `@itwin/presentation-component` package delivers a set of React-based helper APIs:
 
 - Tree
+
   - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
 - Table
+
   - `usePresentationTableWithUnifiedSelection` (`@itwin/presentation-components`) hook registers a unified selection listener and causes the Table to be re-rendered with the new `KeySet` whenever the selection changes.
 
 - Property Grid
+
   - [usePropertyDataProviderWithUnifiedSelection]($presentation-components) hook takes an [IPresentationPropertyDataProvider]($presentation-components) as an input and ensures the provider is updated with current selection as soon as there are changes in unified selection storage. It also returns some cues about the selection that help the component with various edge cases, like nothing being selected or overly large number of selected elements.
 
 - Viewport

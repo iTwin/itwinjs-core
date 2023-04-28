@@ -3,11 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
+import {
+  ClipPlane,
+  ClipPrimitive,
+  ClipVector,
+  ConvexClipPlaneSet,
+  Vector3d,
+} from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
-  PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
+  IModelApp,
+  IModelConnection,
+  MarginOptions,
+  MarginPercent,
+  NotifyMessageDetails,
+  openImageDataUrlInNewWindow,
+  OutputMessagePriority,
+  PaddingPercent,
+  ScreenViewport,
+  Tool,
+  Viewport,
+  ViewState,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -43,7 +59,9 @@ export class ZoomToSelectedElementsTool extends Tool {
   private _padding?: PaddingPercent | number;
 
   public static override toolId = "ZoomToSelectedElements";
-  public static override get maxArgs() { return 4; }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -62,19 +80,26 @@ export class ZoomToSelectedElementsTool extends Tool {
     const padding = args.getFloat("p");
     if (undefined !== padding) {
       if (args.getBoolean("m"))
-        this._margin = { left: padding, right: padding, top: padding, bottom: padding };
-      else
-        this._padding = padding;
+        this._margin = {
+          left: padding,
+          right: padding,
+          top: padding,
+          bottom: padding,
+        };
+      else this._padding = padding;
     } else {
       const left = args.getFloat("l") ?? 0;
       const right = args.getFloat("r") ?? 0;
       const top = args.getFloat("t") ?? 0;
       const bottom = args.getFloat("b") ?? 0;
-      if (undefined !== left || undefined !== right || undefined !== top || undefined !== bottom) {
-        if (args.getBoolean("m"))
-          this._margin = { left, right, top, bottom };
-        else
-          this._padding = { left, right, top, bottom };
+      if (
+        undefined !== left ||
+        undefined !== right ||
+        undefined !== top ||
+        undefined !== bottom
+      ) {
+        if (args.getBoolean("m")) this._margin = { left, right, top, bottom };
+        else this._padding = { left, right, top, bottom };
       }
     }
 
@@ -90,7 +115,10 @@ export class ModelClipTool extends Tool {
       return true;
 
     const createClip = (vector: Vector3d) => {
-      const plane = ClipPlane.createNormalAndPoint(vector, view.iModel.projectExtents.center)!;
+      const plane = ClipPlane.createNormalAndPoint(
+        vector,
+        view.iModel.projectExtents.center
+      )!;
       const planes = ConvexClipPlaneSet.createPlanes([plane]);
       const primitive = ClipPrimitive.createCapture(planes);
       return ClipVector.createCapture([primitive]);
@@ -117,32 +145,43 @@ export class ModelClipTool extends Tool {
 export class MarkupTool extends Tool {
   public static override toolId = "Markup";
   public static savedData?: MarkupData;
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(wantSavedData: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp)
-      return true;
+    if (undefined === vp) return true;
 
     if (MarkupApp.isActive) {
       // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
-      const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
+      const startMarkupSelect =
+        IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId &&
+        (undefined === IModelApp.toolAdmin.activeTool ||
+          MarkupApp.markupSelectToolId !==
+            IModelApp.toolAdmin.activeTool.toolId);
       if (startMarkupSelect) {
         await IModelApp.toolAdmin.startDefaultTool();
         return true;
       }
       MarkupApp.props.result.maxWidth = 1500;
-      MarkupApp.stop().then((markupData) => {
-        if (wantSavedData)
-          MarkupTool.savedData = markupData;
-        if (undefined !== markupData.image)
-          openImageDataUrlInNewWindow(markupData.image, "Markup");
-      }).catch((_) => { });
+      MarkupApp.stop()
+        .then((markupData) => {
+          if (wantSavedData) MarkupTool.savedData = markupData;
+          if (undefined !== markupData.image)
+            openImageDataUrlInNewWindow(markupData.image, "Markup");
+        })
+        .catch((_) => {});
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      await MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined);
+      await MarkupApp.start(
+        vp,
+        wantSavedData ? MarkupTool.savedData : undefined
+      );
     }
 
     return true;
@@ -171,7 +210,10 @@ export class Viewer extends Window {
   private _isSavedView = false;
   private _debugWindow?: DebugWindow;
 
-  public static async create(surface: Surface, props: ViewerProps): Promise<Viewer> {
+  public static async create(
+    surface: Surface,
+    props: ViewerProps
+  ): Promise<Viewer> {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
     const view = await views.getDefaultView(props.iModel);
     const viewer = new Viewer(surface, view, views, props);
@@ -192,7 +234,8 @@ export class Viewer extends Window {
 
       // Offset position from top-left corner
       const style = getComputedStyle(this.container, null);
-      const pxToNum = (propName: string) => parseFloat(style.getPropertyValue(propName).replace("px", "")) + 40;
+      const pxToNum = (propName: string) =>
+        parseFloat(style.getPropertyValue(propName).replace("px", "")) + 40;
       viewer.container.style.top = `${pxToNum("top")}px`;
       viewer.container.style.left = `${pxToNum("left")}px`;
     }
@@ -201,12 +244,24 @@ export class Viewer extends Window {
   }
 
   private _maybeDisableEdges() {
-    if (this.disableEdges && (this.viewport.viewFlags.visibleEdges || this.viewport.viewFlags.hiddenEdges)) {
-      this.viewport.viewFlags = this.viewport.viewFlags.copy({ visibleEdges: false, hiddenEdges: false });
+    if (
+      this.disableEdges &&
+      (this.viewport.viewFlags.visibleEdges ||
+        this.viewport.viewFlags.hiddenEdges)
+    ) {
+      this.viewport.viewFlags = this.viewport.viewFlags.copy({
+        visibleEdges: false,
+        hiddenEdges: false,
+      });
     }
   }
 
-  private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
+  private constructor(
+    surface: Surface,
+    view: ViewState,
+    views: ViewList,
+    props: ViewerProps
+  ) {
     super(surface, { scrollbars: true });
 
     // Allow HTMLElements beneath viewport to be visible if background color has transparency.
@@ -221,28 +276,36 @@ export class Viewer extends Window {
 
     this._maybeDisableEdges();
 
-    this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
+    this.toolBar = new ToolBar(
+      IModelApp.makeHTMLElement("div", { className: "topdiv" })
+    );
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue90c", // properties
-      tooltip: "Debug info",
-      click: () => this.toggleDebugWindow(),
-    }));
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ue90c", // properties
+        tooltip: "Debug info",
+        click: () => this.toggleDebugWindow(),
+      })
+    );
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue9cc",
-      tooltip: "Open iModel from disk",
-      click: async () => {
-        await this.selectIModel();
-      },
-    }));
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ue9cc",
+        tooltip: "Open iModel from disk",
+        click: async () => {
+          await this.selectIModel();
+        },
+      })
+    );
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue9e0", // cloud-download
       tooltip: "Open iModel from hub",
       createDropDown: async (container: HTMLElement) => {
         const picker = new HubPicker(container, async (iModelId, iTwinId) => {
-          alert(`About to download and open hub iModel. Note that this could take quite some time without any feedback.`);
+          alert(
+            `About to download and open hub iModel. Note that this could take quite some time without any feedback.`
+          );
           await this.openIModel({
             iModelId,
             iTwinId,
@@ -256,8 +319,12 @@ export class Viewer extends Window {
     });
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
-    this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
-    this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
+    this._viewPicker.onSelectedViewChanged.addListener(async (id) =>
+      this.changeView(id)
+    );
+    this._viewPicker.element.addEventListener("click", () =>
+      this.toolBar.close()
+    );
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90b", // "model"
@@ -300,49 +367,69 @@ export class Viewer extends Window {
       },
     });
 
-    this.toolBar.addItem(createImageButton({
-      src: "zoom.svg",
-      click: async () => IModelApp.tools.run("SVTSelect"),
-      tooltip: "Element selection",
-    }));
+    this.toolBar.addItem(
+      createImageButton({
+        src: "zoom.svg",
+        click: async () => IModelApp.tools.run("SVTSelect"),
+        tooltip: "Element selection",
+      })
+    );
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ueb08",
-      click: async () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
-      tooltip: "Measure distance",
-    }));
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ueb08",
+        click: async () =>
+          IModelApp.tools.run(
+            "Measure.Distance",
+            IModelApp.viewManager.selectedView!
+          ),
+        tooltip: "Measure distance",
+      })
+    );
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90e",
       tooltip: "View settings",
       createDropDown: async (container: HTMLElement) => {
-        const panel = new ViewAttributesPanel(this.viewport, container, this.disableEdges);
+        const panel = new ViewAttributesPanel(
+          this.viewport,
+          container,
+          this.disableEdges
+        );
         await panel.populate();
         return panel;
       },
     });
 
-    this.toolBar.addItem(createImageButton({
-      src: "fit-to-view.svg",
-      click: async () => IModelApp.tools.run("View.Fit", this.viewport, true),
-      tooltip: "Fit view",
-    }));
+    this.toolBar.addItem(
+      createImageButton({
+        src: "fit-to-view.svg",
+        click: async () => IModelApp.tools.run("View.Fit", this.viewport, true),
+        tooltip: "Fit view",
+      })
+    );
 
-    this.toolBar.addItem(createImageButton({
-      src: "window-area.svg",
-      click: async () => IModelApp.tools.run("View.WindowArea", this.viewport),
-      tooltip: "Window area",
-    }));
+    this.toolBar.addItem(
+      createImageButton({
+        src: "window-area.svg",
+        click: async () =>
+          IModelApp.tools.run("View.WindowArea", this.viewport),
+        tooltip: "Window area",
+      })
+    );
 
-    this.toolBar.addItem(createImageButton({
-      src: "rotate-left.svg",
-      click: async () => IModelApp.tools.run("View.Rotate", this.viewport),
-      tooltip: "Rotate",
-    }));
+    this.toolBar.addItem(
+      createImageButton({
+        src: "rotate-left.svg",
+        click: async () => IModelApp.tools.run("View.Rotate", this.viewport),
+        tooltip: "Rotate",
+      })
+    );
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue909", // "gyroscope"
-      createDropDown: async (container: HTMLElement) => new StandardRotations(container, this.viewport),
+      createDropDown: async (container: HTMLElement) =>
+        new StandardRotations(container, this.viewport),
       tooltip: "Standard rotations",
       only3d: true,
     });
@@ -355,28 +442,34 @@ export class Viewer extends Window {
     this._3dOnly.push(walk);
     this.toolBar.addItem(walk);
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue982", // "undo"
-      click: async () => IModelApp.tools.run("View.Undo", this.viewport),
-      tooltip: "View undo",
-    }));
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ue982", // "undo"
+        click: async () => IModelApp.tools.run("View.Undo", this.viewport),
+        tooltip: "View undo",
+      })
+    );
 
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue983", // "redo"
-      click: async () => IModelApp.tools.run("View.Redo", this.viewport),
-      tooltip: "View redo",
-    }));
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ue983", // "redo"
+        click: async () => IModelApp.tools.run("View.Redo", this.viewport),
+        tooltip: "View redo",
+      })
+    );
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue931", // "animation"
-      createDropDown: async (container: HTMLElement) => createTimeline(this.viewport, container, 10),
+      createDropDown: async (container: HTMLElement) =>
+        createTimeline(this.viewport, container, 10),
       tooltip: "Animation / solar time",
     });
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue916", // "viewtop"
       tooltip: "Sectioning tools",
-      createDropDown: async (container: HTMLElement) => new SectionsPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) =>
+        new SectionsPanel(this.viewport, container),
     });
 
     this.toolBar.addDropDown({
@@ -392,7 +485,8 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90a", // "isolate"
-      createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) =>
+        new FeatureOverridesPanel(this.viewport, container),
       tooltip: "Override feature symbology",
     });
 
@@ -412,8 +506,7 @@ export class Viewer extends Window {
 
   private updateTitle(): void {
     let viewName = this.viewport.view.code.value;
-    if (undefined === viewName || 0 === viewName.length)
-      viewName = "UNNAMED";
+    if (undefined === viewName || 0 === viewName.length) viewName = "UNNAMED";
 
     const id = !this._isSavedView ? this.viewport.view.id : "Saved View";
     const dim = this.viewport.view.is2d() ? "2d" : "3d";
@@ -423,11 +516,13 @@ export class Viewer extends Window {
   private updateActiveSettings(): void {
     // NOTE: First category/model is fine for testing purposes...
     const view = this.viewport.view;
-    if (!view.iModel.isBriefcaseConnection())
-      return;
+    if (!view.iModel.isBriefcaseConnection()) return;
 
     const settings = view.iModel.editorToolSettings;
-    if (undefined === settings.category || !view.viewsCategory(settings.category)) {
+    if (
+      undefined === settings.category ||
+      !view.viewsCategory(settings.category)
+    ) {
       settings.category = undefined;
       for (const catId of view.categorySelector.categories) {
         settings.category = catId;
@@ -487,10 +582,15 @@ export class Viewer extends Window {
   private async resetIModel(props: OpenIModelProps): Promise<void> {
     const { fileName, iModelId } = props;
     let newIModel: IModelConnection;
-    const sameFile = (fileName !== undefined && fileName === this._imodel.key) || (iModelId !== undefined && iModelId === this._imodel.iModelId);
+    const sameFile =
+      (fileName !== undefined && fileName === this._imodel.key) ||
+      (iModelId !== undefined && iModelId === this._imodel.iModelId);
     if (!sameFile) {
       try {
-        newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
+        newIModel = await openIModel({
+          ...props,
+          writable: this.surface.openReadWrite,
+        });
       } catch (err: any) {
         alert(err.toString());
         return;
@@ -503,7 +603,10 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
+      newIModel = await openIModel({
+        ...props,
+        writable: this.surface.openReadWrite,
+      });
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -512,12 +615,16 @@ export class Viewer extends Window {
   }
 
   public async openFile(fileName?: string): Promise<void> {
-    return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : this.selectIModel();
+    return undefined !== fileName
+      ? this.openIModel({ fileName, writable: this.surface.openReadWrite })
+      : this.selectIModel();
   }
 
   private async selectIModel(): Promise<void> {
     const fileName = await this.surface.selectFileName();
-    return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : Promise.resolve();
+    return undefined !== fileName
+      ? this.openIModel({ fileName, writable: this.surface.openReadWrite })
+      : Promise.resolve();
   }
 
   private async openIModel(props: OpenIModelProps): Promise<void> {
@@ -552,7 +659,9 @@ export class Viewer extends Window {
     this.container.classList.remove("viewport-selected");
   }
 
-  public get windowId(): string { return this.viewport.viewportId.toString(); }
+  public get windowId(): string {
+    return this.viewport.viewportId.toString();
+  }
 
   public override onClosing(): void {
     this.toolBar.dispose();
@@ -566,16 +675,24 @@ export class Viewer extends Window {
 
   public override onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(
+          OutputMessagePriority.Info,
+          "Closing iModel..."
+        )
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.closeIModel().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed.")));
+      this.closeIModel().then(() =>
+        IModelApp.notifications.outputMessage(
+          new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed.")
+        )
+      );
     }
   }
 
   public toggleDebugWindow(): void {
-    if (!this._debugWindow)
-      this._debugWindow = new DebugWindow(this.viewport);
+    if (!this._debugWindow) this._debugWindow = new DebugWindow(this.viewport);
 
     this._debugWindow.toggle();
   }

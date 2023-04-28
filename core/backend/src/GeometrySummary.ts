@@ -3,16 +3,50 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
+  assert,
+  BentleyError,
+  Id64Array,
+  Id64String,
+  IModelStatus,
+} from "@itwin/core-bentley";
+import {
+  AkimaCurve3d,
+  AnyGeometryQuery,
+  Arc3d,
+  BezierCurveBase,
+  Box,
+  BSplineCurve3d,
+  Cone,
+  CurveChainWithDistanceIndex,
+  CurveCollection,
+  CurvePrimitive,
+  IModelJson,
   InterpolationCurve3d,
-  LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
-  TransitionSpiral3d, UVSelect,
+  LinearSweep,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Path,
+  Range3d,
+  RotationalSweep,
+  RuledSweep,
+  SolidPrimitive,
+  Sphere,
+  TorusPipe,
+  Transform,
+  TransitionSpiral3d,
+  UVSelect,
 } from "@itwin/core-geometry";
 import {
-  BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
-  IModelError, TextStringPrimitive,
+  BRepEntity,
+  GeometryParams,
+  GeometryStreamIterator,
+  GeometrySummaryRequestProps,
+  GeometrySummaryVerbosity,
+  ImagePrimitive,
+  IModelError,
+  TextStringPrimitive,
 } from "@itwin/core-common";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -33,14 +67,19 @@ class ResponseGenerator {
   public elementIds: Id64Array;
   public iModel: IModelDb;
 
-  public get wantSquish() { return GeometrySummaryVerbosity.Full !== this.verbosity; }
+  public get wantSquish() {
+    return GeometrySummaryVerbosity.Full !== this.verbosity;
+  }
 
   public constructor(request: GeometrySummaryRequestProps, iModel: IModelDb) {
     this.elementIds = request.elementIds;
     this.iModel = iModel;
     const opts = request.options;
     if (undefined !== opts) {
-      this.verbosity = undefined !== opts.geometryVerbosity ? opts.geometryVerbosity : GeometrySummaryVerbosity.Basic;
+      this.verbosity =
+        undefined !== opts.geometryVerbosity
+          ? opts.geometryVerbosity
+          : GeometrySummaryVerbosity.Basic;
       this.includePlacement = true === opts.includePlacement;
       this.includePartReferences = opts.includePartReferences;
       this.verboseSymbology = true === opts.verboseSymbology;
@@ -60,22 +99,35 @@ class ResponseGenerator {
     try {
       const geom = this.getElementGeom(id);
       if (undefined === geom)
-        throw new IModelError(IModelStatus.NoGeometry, "Element is neither a geometric element nor a geometry part");
+        throw new IModelError(
+          IModelStatus.NoGeometry,
+          "Element is neither a geometric element nor a geometry part"
+        );
 
       if (undefined !== geom.geometricElement)
         lines.push(this.summarizeElement(geom.geometricElement));
       else if (undefined !== this.includePartReferences)
-        lines.push(this.summarizePartReferences(id, "2d" === this.includePartReferences)); // NB: Hideously inefficient if more than one element's summary was requested.
+        lines.push(
+          this.summarizePartReferences(id, "2d" === this.includePartReferences)
+        ); // NB: Hideously inefficient if more than one element's summary was requested.
 
       let curGeomParams: GeometryParams | undefined;
       let curLocalRange: Range3d | undefined;
       for (const entry of geom.iterator) {
-        if (this.verboseSymbology && (undefined === curGeomParams || !curGeomParams.isEquivalent(entry.geomParams))) {
+        if (
+          this.verboseSymbology &&
+          (undefined === curGeomParams ||
+            !curGeomParams.isEquivalent(entry.geomParams))
+        ) {
           lines.push(`Symbology: ${this.stringify(entry.geomParams)}`);
           curGeomParams = entry.geomParams.clone();
         }
 
-        if (undefined !== entry.localRange && (undefined === curLocalRange || !curLocalRange.isAlmostEqual(entry.localRange))) {
+        if (
+          undefined !== entry.localRange &&
+          (undefined === curLocalRange ||
+            !curLocalRange.isAlmostEqual(entry.localRange))
+        ) {
           lines.push(this.summarizeRange3d(entry.localRange));
           curLocalRange = entry.localRange;
         }
@@ -93,7 +145,9 @@ class ResponseGenerator {
             this.summarizeGeometryQuery(lines, prim.geometry);
             break;
           case "partReference":
-            lines.push(this.summarizePartReference(prim.part.id, prim.part.toLocal));
+            lines.push(
+              this.summarizePartReference(prim.part.id, prim.part.toLocal)
+            );
             break;
         }
       }
@@ -123,16 +177,21 @@ class ResponseGenerator {
   }
 
   public getElementGeom(id: Id64String): ElementGeom | undefined {
-    const elem = this.iModel.elements.getElement<Element>({ id, wantGeometry: true });
+    const elem = this.iModel.elements.getElement<Element>({
+      id,
+      wantGeometry: true,
+    });
     let iterator: GeometryStreamIterator | undefined;
     let geometricElement: GeometricElement | undefined;
     if (elem instanceof GeometricElement) {
       geometricElement = elem;
       if (geometricElement.is2d()) {
-        iterator = GeometryStreamIterator.fromGeometricElement2d(geometricElement);
+        iterator =
+          GeometryStreamIterator.fromGeometricElement2d(geometricElement);
       } else {
         assert(geometricElement.is3d());
-        iterator = GeometryStreamIterator.fromGeometricElement3d(geometricElement);
+        iterator =
+          GeometryStreamIterator.fromGeometricElement3d(geometricElement);
       }
     } else if (elem instanceof GeometryPart) {
       iterator = GeometryStreamIterator.fromGeometryPart(elem);
@@ -145,14 +204,19 @@ class ResponseGenerator {
     return `SubGraphicRange: ${this.stringify(range)}`;
   }
 
-  public summarizePrimitive(lines: string[], primitive: TextStringPrimitive | ImagePrimitive): void {
+  public summarizePrimitive(
+    lines: string[],
+    primitive: TextStringPrimitive | ImagePrimitive
+  ): void {
     const summary = primitive.type;
     if (GeometrySummaryVerbosity.Basic >= this.verbosity) {
       lines.push(summary);
       return;
     }
 
-    const json = this.stringify(primitive.type === "textString" ? primitive.textString : primitive.image);
+    const json = this.stringify(
+      primitive.type === "textString" ? primitive.textString : primitive.image
+    );
     if (GeometrySummaryVerbosity.Detailed >= this.verbosity) {
       lines.push(`${summary}: ${json}`);
       return;
@@ -169,7 +233,11 @@ class ResponseGenerator {
       return;
     }
 
-    const json = this.stringify({ type: brep.type, transform: brep.transform, faceSymbology: brep.faceSymbology });
+    const json = this.stringify({
+      type: brep.type,
+      transform: brep.transform,
+      faceSymbology: brep.faceSymbology,
+    });
     if (GeometrySummaryVerbosity.Detailed >= this.verbosity) {
       lines.push(`${summary}: ${json}`);
       return;
@@ -179,7 +247,10 @@ class ResponseGenerator {
     lines.push(json);
   }
 
-  public summarizePartReference(partId: string, partToLocal?: Transform): string {
+  public summarizePartReference(
+    partId: string,
+    partToLocal?: Transform
+  ): string {
     let line = `part id: ${partId}`;
     if (undefined !== partToLocal)
       line = `${line} transform: ${this.stringify(partToLocal)}`;
@@ -187,7 +258,10 @@ class ResponseGenerator {
     return line;
   }
 
-  public summarizeGeometryQuery(lines: string[], query: AnyGeometryQuery): void {
+  public summarizeGeometryQuery(
+    lines: string[],
+    query: AnyGeometryQuery
+  ): void {
     switch (this.verbosity) {
       case GeometrySummaryVerbosity.Detailed:
         lines.push(this.summarizeGeometryQueryDetailed(query));
@@ -253,17 +327,31 @@ class ResponseGenerator {
         return `${summary}'
         ' poleDimension: ${query.poleDimension}'
         ' numPolesTotal: ${query.numPolesTotal()}'
-        ' degree[U,V]: ${JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])}'
-        ' order[U,V]: ${JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])}'
-        ' numSpan[U,V]: ${JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])}'
-        ' numPoles[U,V]: ${JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])}'
-        ' poleStep[U,V]: ${JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)])}`;
+        ' degree[U,V]: ${JSON.stringify([
+          query.degreeUV(UVSelect.uDirection),
+          query.degreeUV(UVSelect.VDirection),
+        ])}'
+        ' order[U,V]: ${JSON.stringify([
+          query.orderUV(UVSelect.uDirection),
+          query.orderUV(UVSelect.VDirection),
+        ])}'
+        ' numSpan[U,V]: ${JSON.stringify([
+          query.numSpanUV(UVSelect.uDirection),
+          query.numSpanUV(UVSelect.VDirection),
+        ])}'
+        ' numPoles[U,V]: ${JSON.stringify([
+          query.numPolesUV(UVSelect.uDirection),
+          query.numPolesUV(UVSelect.VDirection),
+        ])}'
+        ' poleStep[U,V]: ${JSON.stringify([
+          query.poleStepUV(UVSelect.uDirection),
+          query.poleStepUV(UVSelect.VDirection),
+        ])}`;
       case "polyface": {
         const data = query.data;
         summary = `${summary} pointCount: ${data.point.length}'
         ' pointIndexCount: ${data.pointIndex.length}`;
-        if (query.twoSided)
-          summary = `${summary} (two-sided)`;
+        if (query.twoSided) summary = `${summary} (two-sided)`;
         if (undefined !== data.normal)
           summary = `${summary} normalCount: ${data.normal.length}`;
         if (undefined !== data.param)
@@ -282,7 +370,7 @@ class ResponseGenerator {
     const summary: string = solid.capped ? " capped" : " uncapped";
     switch (solid.solidPrimitiveType) {
       case "box":
-        const box: Box = (solid as Box);
+        const box: Box = solid as Box;
         return `${summary}'
         ' origin: ${JSON.stringify(box.getBaseOrigin().toJSON())}'
         ' topOrigin: ${JSON.stringify(box.getTopOrigin().toJSON())}'
@@ -314,7 +402,11 @@ class ResponseGenerator {
         ' sweepAngle: ${rotationalSweep.getSweep().degrees}`;
       case "ruledSweep":
         const ruledSweep: RuledSweep = solid as RuledSweep;
-        const summarizedCollection = ruledSweep.cloneContours().map((curveCollection) => this.summarizeCurveCollection(curveCollection));
+        const summarizedCollection = ruledSweep
+          .cloneContours()
+          .map((curveCollection) =>
+            this.summarizeCurveCollection(curveCollection)
+          );
         return `${summary}'
         ' isClosedVolume${ruledSweep.isClosedVolume}'
         ' contours: ${JSON.stringify(summarizedCollection)}`;
@@ -345,11 +437,12 @@ class ResponseGenerator {
         summary = `${summary} center: ${JSON.stringify(arc.center.toJSON())}`;
         if (undefined !== arc.circularRadius)
           summary = `${summary} radius: ${arc.circularRadius()}`;
-        summary = `${summary}'
+        summary =
+          `${summary}'
         ' vectorX:${arc.vector0.toJSON()}'
         ' vectorY:${arc.vector90.toJSON()}'
-        ' sweepStartEnd [${arc.sweep.startDegrees}, ${arc.sweep.endDegrees}]`
-          + ` curveLength: ${curve.curveLength()}`;
+        ' sweepStartEnd [${arc.sweep.startDegrees}, ${arc.sweep.endDegrees}]` +
+          ` curveLength: ${curve.curveLength()}`;
         return summary;
       case "lineSegment":
         const lineSegment: LineSegment3d = curve as LineSegment3d;
@@ -369,7 +462,8 @@ class ResponseGenerator {
         ' curveLength: ${curve.curveLength()}`;
         return summary;
       case "interpolationCurve":
-        const interpolationCurve: InterpolationCurve3d = curve as InterpolationCurve3d;
+        const interpolationCurve: InterpolationCurve3d =
+          curve as InterpolationCurve3d;
         const interpolationProps = interpolationCurve.cloneProps();
         summary = `${summary}'
         ' curveOrder: ${interpolationProps.order}'
@@ -389,12 +483,14 @@ class ResponseGenerator {
         ' curveLength: ${curve.curveLength()}`;
         return summary;
       case "transitionSpiral":
-        const transitionSpiral: TransitionSpiral3d = curve as TransitionSpiral3d;
+        const transitionSpiral: TransitionSpiral3d =
+          curve as TransitionSpiral3d;
         const json = writer.handleTransitionSpiral(transitionSpiral);
         summary = summary + JSON.stringify(json);
         return summary;
       case "curveChainWithDistanceIndex":
-        const curveChainWithDistanceIndex: CurveChainWithDistanceIndex = curve as CurveChainWithDistanceIndex;
+        const curveChainWithDistanceIndex: CurveChainWithDistanceIndex =
+          curve as CurveChainWithDistanceIndex;
         const path = curveChainWithDistanceIndex.path;
         summary = `${summary}'
         ' curveLength: ${curve.curveLength()}'
@@ -423,7 +519,10 @@ class ResponseGenerator {
 }
 
 /** @internal */
-export function generateGeometrySummaries(request: GeometrySummaryRequestProps, iModel: IModelDb): string {
+export function generateGeometrySummaries(
+  request: GeometrySummaryRequestProps,
+  iModel: IModelDb
+): string {
   const generator = new ResponseGenerator(request, iModel);
   return generator.generateSummaries();
 }

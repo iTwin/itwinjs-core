@@ -14,7 +14,7 @@ Each of the logging output functions assigns a [LogLevel]($core-bentley) to the 
 
 ## Categories
 
-Each of the logging output functions takes the *category* of the message as its first argument and associates this string with the specified message. Category is like a property of a logging message. The app that produces logging messages can control output by filtering on category. And the dashboards that consume logging messages can filter and organize logging messages by categories.
+Each of the logging output functions takes the _category_ of the message as its first argument and associates this string with the specified message. Category is like a property of a logging message. The app that produces logging messages can control output by filtering on category. And the dashboards that consume logging messages can filter and organize logging messages by categories.
 
 Categories are freeform strings that are made up by the app that generates logging messages. A well-chosen category string make messages useful and manageable. In some cases, the category will be used to identify the source of the message. For example, when logging messages from many different services are streamed to a single file or dashboard, users will rely on the category of a message to identify its source. The category will also be used to group messages. For example, all logging messages that pertain to a certain module should have the same category.
 
@@ -44,7 +44,7 @@ There are two filtering strategies.
 
 In this strategy, you start by turning all categories on at a certain level by default and then setting the levels of specific categories to other levels.
 
-*Example:*
+_Example:_
 
 ```ts
 Logger.initializeToConsole();
@@ -58,7 +58,7 @@ This approach is mainly useful when you are just trying to find out what is happ
 
 In this strategy, you leave most categories off by default and then turn on the ones you do want.
 
-*Example:*
+_Example:_
 
 ```ts
 Logger.initializeToConsole();
@@ -71,32 +71,32 @@ This approach is useful when you want to monitor the activity in a small number 
 
 A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($core-bentley). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service.
 
-*Example:*
+_Example:_
 
-``` ts
+```ts
 [[include:Logging-configureLoggingAndStreams.example-code]]
 ```
 
 An example of the logging-related sections of a configuration .json file that is deployed with a service might be:
 
-``` json
+```json
 {
   "loggerConfig": {
-     "defaultLevel": "${ROBOT-WORLD-DEFAULT-LOG-LEVEL}",
-     "categoryLevels": [
-         {"category": "ROBOT-WORLD", "logLevel": "Trace"},
-         {"category": "imodeljs-rpc", "logLevel": "Trace"},
-         {"category": "imodeljs-backend.AutoPush", "logLevel": "Trace"},
-         {"category": "ECPresentation", "logLevel": "None"},
-         {"category": "Diagnostics.ECSqlStatement", "logLevel": "None"},
-         {"category": "ECObjectsNative", "logLevel": "None"},
-         {"category": "UnitsNative", "logLevel": "None"},
-         {"category": "BeSQLite", "logLevel": "None"}
-     ]
-   },
-   "seq": {
-     "hostURL": "${ROBOT-WORLD-SEQ-URL}",
-     "port": "${ROBOT-WORLD-SEQ-PORT}"
-   }
+    "defaultLevel": "${ROBOT-WORLD-DEFAULT-LOG-LEVEL}",
+    "categoryLevels": [
+      { "category": "ROBOT-WORLD", "logLevel": "Trace" },
+      { "category": "imodeljs-rpc", "logLevel": "Trace" },
+      { "category": "imodeljs-backend.AutoPush", "logLevel": "Trace" },
+      { "category": "ECPresentation", "logLevel": "None" },
+      { "category": "Diagnostics.ECSqlStatement", "logLevel": "None" },
+      { "category": "ECObjectsNative", "logLevel": "None" },
+      { "category": "UnitsNative", "logLevel": "None" },
+      { "category": "BeSQLite", "logLevel": "None" }
+    ]
+  },
+  "seq": {
+    "hostURL": "${ROBOT-WORLD-SEQ-URL}",
+    "port": "${ROBOT-WORLD-SEQ-PORT}"
+  }
 }
 ```

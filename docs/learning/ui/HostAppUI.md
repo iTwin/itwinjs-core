@@ -4,7 +4,7 @@ The following topics provide information to help ensure the host iModelApp is pr
 
 ## StateManager and ReducerRegistry
 
-Redux is a common package used for maintaining state data in front-end web applications. To allow packages to also use [Redux](https://redux.js.org/) the appui-react package provides the [StateManager]($appui-react) and [ReducerRegistry]($appui-react).  The host app should not create the store itself using the function [createStore](https://redux.js.org/api/createstore) from Redux, but should instead instantiate a StateManager object passing in the set of reducers needed for its own state.  It should not typically include reducers from packages. The StateManager instance will register with the ReducerRegistry to be informed when a Reducer is added to the registry and it will do the work of combining all Reducers into a single Redux store.
+Redux is a common package used for maintaining state data in front-end web applications. To allow packages to also use [Redux](https://redux.js.org/) the appui-react package provides the [StateManager]($appui-react) and [ReducerRegistry]($appui-react). The host app should not create the store itself using the function [createStore](https://redux.js.org/api/createstore) from Redux, but should instead instantiate a StateManager object passing in the set of reducers needed for its own state. It should not typically include reducers from packages. The StateManager instance will register with the ReducerRegistry to be informed when a Reducer is added to the registry and it will do the work of combining all Reducers into a single Redux store.
 
 See example [StateManager](./appui-react/State.md#Example-of-Defining-Initial-Set-of-Reducers)
 
@@ -18,32 +18,58 @@ UI item definitions for Toolbars, Status Bar, and Backstage specify an item prio
 
 ## Toolbars
 
-Toolbars provide tool buttons that start registered Tools, execute defined functions, or show a grouping of tools.  Both Horizontal and Vertical toolbars are allowed. The Content Manipulation Tools (also referred to as the ToolsWidget) are displayed on the left side of the content area the View Navigation Tools (also referred to as the NavigationWidget) are displayed on the right.
+Toolbars provide tool buttons that start registered Tools, execute defined functions, or show a grouping of tools. Both Horizontal and Vertical toolbars are allowed. The Content Manipulation Tools (also referred to as the ToolsWidget) are displayed on the left side of the content area the View Navigation Tools (also referred to as the NavigationWidget) are displayed on the right.
 
 ToolWidgets should use the ToolWidgetComposer and specify toolbars using the ToolbarComposer component as shown below.
 
 ```tsx
-<ToolWidgetComposer className={className}
-      cornerItem={<BackstageAppButton icon={icon} />}
-      horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
-      verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
+<ToolWidgetComposer
+  className={className}
+  cornerItem={<BackstageAppButton icon={icon} />}
+  horizontalToolbar={
+    <ToolbarComposer
+      items={horizontalItems}
+      usage={ToolbarUsage.ContentManipulation}
+      orientation={ToolbarOrientation.Horizontal}
     />
- ```
+  }
+  verticalToolbar={
+    <ToolbarComposer
+      items={verticalItems}
+      usage={ToolbarUsage.ContentManipulation}
+      orientation={ToolbarOrientation.Vertical}
+    />
+  }
+/>
+```
 
 The cornerItem is optional and can be removed if the application is providing a different mechanism to open the backstage. The specification of the icon for the AppButton is also optional, if not specified the 'home' icon is used.
 
 Likewise the NavigationWidget should use the NavigationWidgetComposer.
 
 ```tsx
-    <NavigationWidgetComposer className={className}
-      horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
-      verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
+<NavigationWidgetComposer
+  className={className}
+  horizontalToolbar={
+    <ToolbarComposer
+      items={horizontalItems}
+      usage={ToolbarUsage.ViewNavigation}
+      orientation={ToolbarOrientation.Horizontal}
     />
- ```
+  }
+  verticalToolbar={
+    <ToolbarComposer
+      items={verticalItems}
+      usage={ToolbarUsage.ViewNavigation}
+      orientation={ToolbarOrientation.Vertical}
+    />
+  }
+/>
+```
 
 The ToolbarComposer class used above will automatically provide an overflow button if specified buttons will not fit in the allowable space. The items passed to ToolbarComposer define properties that satisfy the ToolbarItem interface. This interface supports buttons that initiate an action (ActionButton), buttons that contain a list of child actions (GroupButton), or a CustomButtonDefinition that can be used to specify React specific definitions. The appui-react package contains the [ToolbarHelper]($appui-react) class that will generate items of the proper type given a item definitions used in many toolbars in 1.x of iModeljs.
 
-Both the original item definitions, like ToolItemDef and the newer ToolbarItems definitions support the conditional display of a tool in the toolbar. In fact, the tool button label and icon can also be determined conditionally. There are several examples of specifying conditionals in [CoreTools]($appui-react). Below is one example.  In this case we want to use a different icon based on the viewports current ViewState. If the camera is on in the "active" view then the web-font icon "icon-camera-animation" is to be used else the web-font icon "icon-camera-animation-disabled" is displayed. The [ConditionalStringValue]($appui-abstract) also specifies the SyncUiEventIds that will trigger the conditional function to be re-run.
+Both the original item definitions, like ToolItemDef and the newer ToolbarItems definitions support the conditional display of a tool in the toolbar. In fact, the tool button label and icon can also be determined conditionally. There are several examples of specifying conditionals in [CoreTools]($appui-react). Below is one example. In this case we want to use a different icon based on the viewports current ViewState. If the camera is on in the "active" view then the web-font icon "icon-camera-animation" is to be used else the web-font icon "icon-camera-animation-disabled" is displayed. The [ConditionalStringValue]($appui-abstract) also specifies the SyncUiEventIds that will trigger the conditional function to be re-run.
 
 ```ts
   public static get toggleCameraViewCommand() {
@@ -72,7 +98,7 @@ The isHidden property above is specified as a [ConditionalBooleanValue]($appui-a
 
 To ensure that packages can add items to the status bar the [StatusBarWidgetControl]($appui-react) must return the
 [StatusBarComposer]($app
-ui-react) from the getReactNode method. Here is an [example](./appui-react/StatusBar) of defining a status bar.  Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
+ui-react) from the getReactNode method. Here is an [example](./appui-react/StatusBar) of defining a status bar. Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
 
 ## Backstage
 
@@ -80,32 +106,64 @@ The Backstage is a menu used to open frontstages and launch commands. It can als
 
 ## Selection Context Tools
 
-The appui-react package provide item definitions that can be used to insert a standard set of tool buttons that allow the user to hide, isolate, or emphasize the elements in the active selection set. If the active selection set is empty the tools are not displayed.  These tools are available when using the [BasicToolWidget]($appui-react) or if the stage developer adds the definitions to the items list for the [ToolWidgetComposer]($appui-react) when defining the stage's tool widget.  Below is an excerpt of code that uses the core definitions to specify tool buttons.
+The appui-react package provide item definitions that can be used to insert a standard set of tool buttons that allow the user to hide, isolate, or emphasize the elements in the active selection set. If the active selection set is empty the tools are not displayed. These tools are available when using the [BasicToolWidget]($appui-react) or if the stage developer adds the definitions to the items list for the [ToolWidgetComposer]($appui-react) when defining the stage's tool widget. Below is an excerpt of code that uses the core definitions to specify tool buttons.
 
 ```tsx
-  if (useCategoryAndModelsContextTools) {
-    items.push(
-      ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideSectionToolGroup),
-      ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateSelectionToolGroup),
-      ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
-    );
-  } else {
-    items.push(
-      ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideElementsItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateElementsItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
-    );
-  }
+if (useCategoryAndModelsContextTools) {
+  items.push(
+    ToolbarHelper.createToolbarItemFromItemDef(
+      10,
+      CoreTools.clearSelectionItemDef
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      20,
+      SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      30,
+      SelectionContextToolDefinitions.hideSectionToolGroup
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      40,
+      SelectionContextToolDefinitions.isolateSelectionToolGroup
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      50,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef
+    )
+  );
+} else {
+  items.push(
+    ToolbarHelper.createToolbarItemFromItemDef(
+      10,
+      CoreTools.clearSelectionItemDef
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      20,
+      SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      30,
+      SelectionContextToolDefinitions.hideElementsItemDef
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      40,
+      SelectionContextToolDefinitions.isolateElementsItemDef
+    ),
+    ToolbarHelper.createToolbarItemFromItemDef(
+      50,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef
+    )
+  );
+}
 ```
 
-The default processing of these tools are to modify only on the "active" ScreenViewport. There may be special cases where the application may want to apply the hide, isolate, or emphasize processing to more than a single viewport.  When this is the case, the application can register a handler to call once the active viewport is processed. Below is an example of registering a handler.
+The default processing of these tools are to modify only on the "active" ScreenViewport. There may be special cases where the application may want to apply the hide, isolate, or emphasize processing to more than a single viewport. When this is the case, the application can register a handler to call once the active viewport is processed. Below is an example of registering a handler.
 
 ```ts
-HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
+HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(
+  this._onEmphasizeElementsChangedHandler
+);
 ```
 
 Below is an example of applying the processing to other viewports.

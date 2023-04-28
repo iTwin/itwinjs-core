@@ -3,12 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, ThreeDTileFormatInterpreter, TileAdmin } from "@itwin/core-frontend";
+import {
+  CheckpointConnection,
+  IModelApp,
+  IModelConnection,
+  RealityDataSource,
+  SpatialModelState,
+  ThreeDTileFormatInterpreter,
+  TileAdmin,
+} from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
-import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import {
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+} from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
-import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
+import {
+  ITwinRealityData,
+  RealityDataAccessClient,
+  RealityDataClientOptions,
+  RealityDataQueryCriteria,
+  RealityDataResponse,
+} from "@itwin/reality-data-client";
 
 export interface IRealityDataModelInfo {
   key: RealityDataSourceKey;
@@ -44,42 +62,83 @@ describe("RealityDataAccess (#integration)", () => {
     });
     await TestUtility.initialize(TestUsers.regular);
     iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.realityDataAccess);
+    const iModelId = await TestUtility.queryIModelIdByName(
+      iTwinId,
+      TestUtility.testIModelNames.realityDataAccess
+    );
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
 
-  function getAttachmentURLFromModelProps(modelProps: any): {rdsUrl: string | undefined, blobFilename: string | undefined} {
+  function getAttachmentURLFromModelProps(modelProps: any): {
+    rdsUrl: string | undefined;
+    blobFilename: string | undefined;
+  } {
     // Special case for OPC file
-    if (modelProps.tilesetUrl !== undefined && modelProps.tilesetUrl.orbitGtBlob !== undefined ) {
-      return {rdsUrl: modelProps.tilesetUrl.orbitGtBlob.rdsUrl, blobFilename: modelProps.tilesetUrl.orbitGtBlob.blobFileName};
-    } else if (modelProps.orbitGtBlob !== undefined && modelProps.orbitGtBlob.rdsUrl ) {
-      return {rdsUrl: modelProps.orbitGtBlob.rdsUrl, blobFilename: modelProps.orbitGtBlob.blobFileName };
+    if (
+      modelProps.tilesetUrl !== undefined &&
+      modelProps.tilesetUrl.orbitGtBlob !== undefined
+    ) {
+      return {
+        rdsUrl: modelProps.tilesetUrl.orbitGtBlob.rdsUrl,
+        blobFilename: modelProps.tilesetUrl.orbitGtBlob.blobFileName,
+      };
+    } else if (
+      modelProps.orbitGtBlob !== undefined &&
+      modelProps.orbitGtBlob.rdsUrl
+    ) {
+      return {
+        rdsUrl: modelProps.orbitGtBlob.rdsUrl,
+        blobFilename: modelProps.orbitGtBlob.blobFileName,
+      };
     }
-    return {rdsUrl: modelProps.tilesetUrl, blobFilename: undefined };
+    return { rdsUrl: modelProps.tilesetUrl, blobFilename: undefined };
   }
 
-  async function getAttachedRealityDataModelInfoSet(iModel: IModelConnection): Promise<Set<IRealityDataModelInfo> > {
+  async function getAttachedRealityDataModelInfoSet(
+    iModel: IModelConnection
+  ): Promise<Set<IRealityDataModelInfo>> {
     // Get set of RealityDataModelInfo that are directly attached to the model.
     const modelRealityDataInfos = new Set<IRealityDataModelInfo>();
     if (iModel) {
-      const query = { from: SpatialModelState.classFullName, wantPrivate: false };
+      const query = {
+        from: SpatialModelState.classFullName,
+        wantPrivate: false,
+      };
       const iModelProps = await iModel.models.queryProps(query);
       for (const prop of iModelProps) {
-        if (prop.jsonProperties !== undefined && (prop.jsonProperties.tilesetUrl || prop.jsonProperties.orbitGtBlob) && prop.id !== undefined && prop.name) {
-          const attachmentUrl = getAttachmentURLFromModelProps(prop.jsonProperties);
-          if (attachmentUrl !== undefined && attachmentUrl.rdsUrl !== undefined) {
+        if (
+          prop.jsonProperties !== undefined &&
+          (prop.jsonProperties.tilesetUrl || prop.jsonProperties.orbitGtBlob) &&
+          prop.id !== undefined &&
+          prop.name
+        ) {
+          const attachmentUrl = getAttachmentURLFromModelProps(
+            prop.jsonProperties
+          );
+          if (
+            attachmentUrl !== undefined &&
+            attachmentUrl.rdsUrl !== undefined
+          ) {
             let fileFormat = RealityDataFormat.ThreeDTile;
             if (prop.jsonProperties.orbitGtBlob)
               fileFormat = RealityDataFormat.OPC;
-            const key = RealityDataSource.createKeyFromUrl(attachmentUrl.rdsUrl, undefined, fileFormat);
-            modelRealityDataInfos.add({key, modelId: prop.id, attachmentUrl: attachmentUrl.rdsUrl, attachmentName: prop.name});
+            const key = RealityDataSource.createKeyFromUrl(
+              attachmentUrl.rdsUrl,
+              undefined,
+              fileFormat
+            );
+            modelRealityDataInfos.add({
+              key,
+              modelId: prop.id,
+              attachmentUrl: attachmentUrl.rdsUrl,
+              attachmentName: prop.name,
+            });
           }
         }
       }
@@ -88,7 +147,7 @@ describe("RealityDataAccess (#integration)", () => {
   }
 
   enum RealityDataType {
-    REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+    REALITYMESH3DTILES = "REALITYMESH3DTILES",
     OSMBUILDINGS = "OSMBUILDINGS",
     OPC = "OPC",
     TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
@@ -98,8 +157,7 @@ describe("RealityDataAccess (#integration)", () => {
   }
 
   function isSupportedType(type: string | undefined): boolean {
-    if (type === undefined)
-      return false;
+    if (type === undefined) return false;
 
     switch (type.toUpperCase()) {
       case RealityDataType.REALITYMESH3DTILES:
@@ -119,8 +177,7 @@ describe("RealityDataAccess (#integration)", () => {
   }
 
   function isSupportedDisplayType(type: string | undefined): boolean {
-    if (type === undefined)
-      return false;
+    if (type === undefined) return false;
     if (isSupportedType(type)) {
       switch (type.toUpperCase()) {
         case RealityDataType.OMR:
@@ -132,25 +189,34 @@ describe("RealityDataAccess (#integration)", () => {
     return false;
   }
 
-  function createRealityDataListKeyFromITwinRealityData(iTwinRealityData: ITwinRealityData): RealityDataSourceKey {
+  function createRealityDataListKeyFromITwinRealityData(
+    iTwinRealityData: ITwinRealityData
+  ): RealityDataSourceKey {
     return {
       provider: RealityDataProvider.ContextShare,
-      format: iTwinRealityData.type === RealityDataType.OPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile,
+      format:
+        iTwinRealityData.type === RealityDataType.OPC
+          ? RealityDataFormat.OPC
+          : RealityDataFormat.ThreeDTile,
       id: iTwinRealityData.id,
     };
   }
-  function  getOSMBuildingsKey(): RealityDataSourceKey {
+  function getOSMBuildingsKey(): RealityDataSourceKey {
     // We don't always have access to url (which is internal) for OSMBuildings, create a special key for it
-    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id: "OSMBuildings"};
+    return {
+      provider: RealityDataProvider.CesiumIonAsset,
+      format: RealityDataFormat.ThreeDTile,
+      id: "OSMBuildings",
+    };
   }
 
   async function getAllRealityDataFromProject(): Promise<ITwinRealityData[]> {
     // Initialize on first call and then keep the result for other calls
     if (allProjectRealityDatas === undefined) {
       allProjectRealityDatas = [];
-      let projectRealityDatas: RealityDataResponse = {realityDatas: []};
+      let projectRealityDatas: RealityDataResponse = { realityDatas: [] };
       let continuationToken: string | undefined;
-      const top=100;
+      const top = 100;
       const criteria: RealityDataQueryCriteria = {
         getFullRepresentation: true,
         top,
@@ -159,7 +225,11 @@ describe("RealityDataAccess (#integration)", () => {
       do {
         criteria.continuationToken = projectRealityDatas.continuationToken;
         const accessToken = await IModelApp.getAccessToken();
-        projectRealityDatas = await realityDataAccess.getRealityDatas(accessToken, iTwinId, criteria);
+        projectRealityDatas = await realityDataAccess.getRealityDatas(
+          accessToken,
+          iTwinId,
+          criteria
+        );
         for (const rd of projectRealityDatas.realityDatas) {
           allProjectRealityDatas.push(rd);
         }
@@ -171,8 +241,9 @@ describe("RealityDataAccess (#integration)", () => {
   it("should get RealityDataSource for all supported reality data in itwin project", async () => {
     const realityDatas = await getAllRealityDataFromProject();
     for (const rd of realityDatas) {
-      if (isSupportedType(rd.type)){
-        const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
+      if (isSupportedType(rd.type)) {
+        const keyFromInput: RealityDataSourceKey =
+          createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
         expect(rdSource).not.undefined;
         expect(rdSource?.isContextShare).to.be.true;
@@ -184,8 +255,9 @@ describe("RealityDataAccess (#integration)", () => {
     const realityDatas = await getAllRealityDataFromProject();
     for (const rd of realityDatas) {
       // Some types are supported and return by Context Share but required extension to be displayed (e.g: OMR)
-      if (isSupportedDisplayType(rd.type)){
-        const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
+      if (isSupportedDisplayType(rd.type)) {
+        const keyFromInput: RealityDataSourceKey =
+          createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
         expect(rdSource).not.undefined;
         expect(rdSource?.isContextShare).to.be.true;
@@ -201,15 +273,17 @@ describe("RealityDataAccess (#integration)", () => {
     const realityDatas = await getAllRealityDataFromProject();
     for (const rd of realityDatas) {
       // Some types are supported and return by Context Share but required extension to be displayed (e.g: OMR)
-      if (isSupportedDisplayType(rd.type)){
-        const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
+      if (isSupportedDisplayType(rd.type)) {
+        const keyFromInput: RealityDataSourceKey =
+          createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
         expect(rdSource).not.undefined;
         expect(rdSource?.isContextShare).to.be.true;
         // We expect to be able to return this info for all 3dTile
         if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
           const rootDocument = await rdSource.getRootDocument(undefined);
-          const fileInfo = ThreeDTileFormatInterpreter.getFileInfo(rootDocument);
+          const fileInfo =
+            ThreeDTileFormatInterpreter.getFileInfo(rootDocument);
           expect(fileInfo).not.undefined;
         }
       }
@@ -220,8 +294,9 @@ describe("RealityDataAccess (#integration)", () => {
     const realityDatas = await getAllRealityDataFromProject();
     for (const rd of realityDatas) {
       // Some types are supported and return by Context Share but required extension to be displayed (e.g: OMR)
-      if (isSupportedDisplayType(rd.type)){
-        const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
+      if (isSupportedDisplayType(rd.type)) {
+        const keyFromInput: RealityDataSourceKey =
+          createRealityDataListKeyFromITwinRealityData(rd);
         const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
         expect(rdSource).not.undefined;
         expect(rdSource?.isContextShare).to.be.true;
@@ -233,7 +308,9 @@ describe("RealityDataAccess (#integration)", () => {
 
   it("should get RealityDataSource for reality data attachment in iModel", async () => {
     assert.isTrue(imodel !== undefined);
-    const modelRealityDataInfos = await getAttachedRealityDataModelInfoSet(imodel);
+    const modelRealityDataInfos = await getAttachedRealityDataModelInfoSet(
+      imodel
+    );
     expect(modelRealityDataInfos.size).to.equal(3);
     for (const entry of modelRealityDataInfos) {
       const rdSource = await RealityDataSource.fromKey(entry.key, iTwinId);
@@ -248,7 +325,10 @@ describe("RealityDataAccess (#integration)", () => {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iTwinId);
     // NOTE: This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file;
     const cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
-    assert.isDefined(cesiumIonKey, "This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file");
+    assert.isDefined(
+      cesiumIonKey,
+      "This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file"
+    );
     if (cesiumIonKey !== undefined) {
       expect(rdSource).not.undefined;
       expect(rdSource?.isContextShare).to.be.false;

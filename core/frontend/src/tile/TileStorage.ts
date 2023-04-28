@@ -2,15 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
-import { getTileObjectReference, IModelRpcProps, IModelTileRpcInterface } from "@itwin/core-common";
+import type {
+  FrontendStorage,
+  TransferConfig,
+} from "@itwin/object-storage-core/lib/frontend";
+import {
+  getTileObjectReference,
+  IModelRpcProps,
+  IModelTileRpcInterface,
+} from "@itwin/core-common";
 
 /** @beta */
 export class TileStorage {
-  public constructor(public readonly storage: FrontendStorage) { }
+  public constructor(public readonly storage: FrontendStorage) {}
 
   private _transferConfigs: Map<string, TransferConfig | undefined> = new Map();
-  private _pendingTransferConfigRequests: Map<string, Promise<TransferConfig | undefined>> = new Map();
+  private _pendingTransferConfigRequests: Map<
+    string,
+    Promise<TransferConfig | undefined>
+  > = new Map();
 
   public async downloadTile(
     tokenProps: IModelRpcProps,
@@ -21,11 +31,16 @@ export class TileStorage {
     guid?: string
   ): Promise<Uint8Array | undefined> {
     const transferConfig = await this.getTransferConfig(tokenProps, iModelId);
-    if(transferConfig === undefined)
-      return undefined;
+    if (transferConfig === undefined) return undefined;
     try {
       const buffer = await this.storage.download({
-        reference: getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
+        reference: getTileObjectReference(
+          iModelId,
+          changesetId,
+          treeId,
+          contentId,
+          guid
+        ),
         transferConfig,
         transferType: "buffer",
       });
@@ -37,26 +52,30 @@ export class TileStorage {
     }
   }
 
-  private async getTransferConfig(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
-    if(this._transferConfigs.has(iModelId)) {
+  private async getTransferConfig(
+    tokenProps: IModelRpcProps,
+    iModelId: string
+  ): Promise<TransferConfig | undefined> {
+    if (this._transferConfigs.has(iModelId)) {
       const transferConfig = this._transferConfigs.get(iModelId);
-      if(transferConfig === undefined)
-        return undefined;
-      if(transferConfig.expiration > new Date())
-        return transferConfig;
-      else // Refresh expired transferConfig
-        return this.sendTransferConfigRequest(tokenProps, iModelId);
+      if (transferConfig === undefined) return undefined;
+      if (transferConfig.expiration > new Date()) return transferConfig;
+      // Refresh expired transferConfig
+      else return this.sendTransferConfigRequest(tokenProps, iModelId);
     }
     return this.sendTransferConfigRequest(tokenProps, iModelId);
   }
 
-  private async sendTransferConfigRequest(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
+  private async sendTransferConfigRequest(
+    tokenProps: IModelRpcProps,
+    iModelId: string
+  ): Promise<TransferConfig | undefined> {
     const pendingRequest = this._pendingTransferConfigRequests.get(iModelId);
-    if(pendingRequest !== undefined)
-      return pendingRequest;
+    if (pendingRequest !== undefined) return pendingRequest;
 
     const request = (async () => {
-      const config = await IModelTileRpcInterface.getClient().getTileCacheConfig(tokenProps);
+      const config =
+        await IModelTileRpcInterface.getClient().getTileCacheConfig(tokenProps);
       this._transferConfigs.set(iModelId, config);
       this._pendingTransferConfigRequests.delete(iModelId);
       return config;

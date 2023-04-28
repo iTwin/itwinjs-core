@@ -9,7 +9,12 @@
 import { BeEvent, IDisposable, isIDisposable } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
+import {
+  ClassId,
+  Field,
+  NestedContentField,
+  PropertiesField,
+} from "@itwin/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
 
 /**
@@ -74,7 +79,10 @@ export class FavoritePropertiesManager implements IDisposable {
   private _globalProperties: Set<PropertyFullName> | undefined;
   private _iTwinProperties: Map<string, Set<PropertyFullName>>;
   private _imodelProperties: Map<string, Set<PropertyFullName>>;
-  private _imodelBaseClassesByClass: Map<string, { [className: string]: string[] }>;
+  private _imodelBaseClassesByClass: Map<
+    string,
+    { [className: string]: string[] }
+  >;
 
   /** Property order is saved only in iModel scope */
   private _propertiesOrder: Map<string, FavoritePropertiesOrderInfo[]>;
@@ -84,13 +92,15 @@ export class FavoritePropertiesManager implements IDisposable {
     this._iTwinProperties = new Map<string, Set<PropertyFullName>>();
     this._imodelProperties = new Map<string, Set<PropertyFullName>>();
     this._propertiesOrder = new Map<string, FavoritePropertiesOrderInfo[]>();
-    this._imodelBaseClassesByClass = new Map<string, { [className: string]: string[] }>();
+    this._imodelBaseClassesByClass = new Map<
+      string,
+      { [className: string]: string[] }
+    >();
   }
 
   public dispose() {
     // istanbul ignore else
-    if (isIDisposable(this._storage))
-      this._storage.dispose();
+    if (isIDisposable(this._storage)) this._storage.dispose();
   }
 
   /**
@@ -101,19 +111,31 @@ export class FavoritePropertiesManager implements IDisposable {
     const iTwinId = imodel.iTwinId!;
 
     if (this._globalProperties === undefined)
-      this._globalProperties = await this._storage.loadProperties() || new Set<PropertyFullName>();
+      this._globalProperties =
+        (await this._storage.loadProperties()) || new Set<PropertyFullName>();
 
     if (!this._iTwinProperties.has(iTwinId)) {
-      const iTwinProperties = await this._storage.loadProperties(iTwinId) || new Set<PropertyFullName>();
+      const iTwinProperties =
+        (await this._storage.loadProperties(iTwinId)) ||
+        new Set<PropertyFullName>();
       this._iTwinProperties.set(iTwinId, iTwinProperties);
     }
 
     if (!this._imodelProperties.has(getiModelInfo(iTwinId, imodelId))) {
-      const imodelProperties = await this._storage.loadProperties(iTwinId, imodelId) || new Set<PropertyFullName>();
-      this._imodelProperties.set(getiModelInfo(iTwinId, imodelId), imodelProperties);
+      const imodelProperties =
+        (await this._storage.loadProperties(iTwinId, imodelId)) ||
+        new Set<PropertyFullName>();
+      this._imodelProperties.set(
+        getiModelInfo(iTwinId, imodelId),
+        imodelProperties
+      );
     }
-    const propertiesOrder = await this._storage.loadPropertiesOrder(iTwinId, imodelId) || [];
-    this._propertiesOrder.set(getiModelInfo(iTwinId, imodelId), propertiesOrder);
+    const propertiesOrder =
+      (await this._storage.loadPropertiesOrder(iTwinId, imodelId)) || [];
+    this._propertiesOrder.set(
+      getiModelInfo(iTwinId, imodelId),
+      propertiesOrder
+    );
     await this._adjustPropertyOrderInfos(iTwinId, imodelId);
   };
 
@@ -121,38 +143,52 @@ export class FavoritePropertiesManager implements IDisposable {
    * Function that removes order information of properties that are no longer
    * favorited and adds missing order information for favorited properties.
    */
-  private _adjustPropertyOrderInfos = async (iTwinId: string, imodelId: string) => {
-    const propertiesOrder = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
+  private _adjustPropertyOrderInfos = async (
+    iTwinId: string,
+    imodelId: string
+  ) => {
+    const propertiesOrder = this._propertiesOrder.get(
+      getiModelInfo(iTwinId, imodelId)
+    )!;
 
     const globalProperties = this._globalProperties!;
     const iTwinProperties = this._iTwinProperties.get(iTwinId)!;
-    const imodelProperties = this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!;
+    const imodelProperties = this._imodelProperties.get(
+      getiModelInfo(iTwinId, imodelId)
+    )!;
     // favorite property infos that need to be added to the propertiesOrder array
-    const infosToAdd = new Set<string>([...globalProperties, ...iTwinProperties, ...imodelProperties]);
+    const infosToAdd = new Set<string>([
+      ...globalProperties,
+      ...iTwinProperties,
+      ...imodelProperties,
+    ]);
 
     for (let i = propertiesOrder.length - 1; i >= 0; i--) {
       if (infosToAdd.has(propertiesOrder[i].name))
         infosToAdd.delete(propertiesOrder[i].name);
-      else
-        propertiesOrder.splice(i, 1);
+      else propertiesOrder.splice(i, 1);
     }
 
-    infosToAdd.forEach((info) => propertiesOrder.push({
-      name: info,
-      parentClassName: getPropertyClassName(info),
-      orderedTimestamp: new Date(),
-      priority: 0,
-    }));
+    infosToAdd.forEach((info) =>
+      propertiesOrder.push({
+        name: info,
+        parentClassName: getPropertyClassName(info),
+        orderedTimestamp: new Date(),
+        priority: 0,
+      })
+    );
 
     let priority = propertiesOrder.length;
-    propertiesOrder.forEach((oi) => oi.priority = priority--);
+    propertiesOrder.forEach((oi) => (oi.priority = priority--));
   };
 
   private validateInitialization(imodel: IModelConnection) {
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
     if (!this._imodelProperties.has(getiModelInfo(iTwinId, imodelId)))
-      throw Error(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      throw Error(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`
+      );
   }
 
   /**
@@ -162,7 +198,11 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param scope FavoritePropertiesScope to put the favorite properties into.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
-  public async add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
+  public async add(
+    field: Field,
+    imodel: IModelConnection,
+    scope: FavoritePropertiesScope
+  ): Promise<void> {
     this.validateInitialization(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
@@ -172,15 +212,20 @@ export class FavoritePropertiesManager implements IDisposable {
     switch (scope) {
       case FavoritePropertiesScope.Global:
         favoriteProperties = this._globalProperties!;
-        saveProperties = async (properties) => this._storage.saveProperties(properties);
+        saveProperties = async (properties) =>
+          this._storage.saveProperties(properties);
         break;
       case FavoritePropertiesScope.ITwin:
         favoriteProperties = this._iTwinProperties.get(iTwinId)!;
-        saveProperties = async (properties) => this._storage.saveProperties(properties, iTwinId);
+        saveProperties = async (properties) =>
+          this._storage.saveProperties(properties, iTwinId);
         break;
       default:
-        favoriteProperties = this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!;
-        saveProperties = async (properties) => this._storage.saveProperties(properties, iTwinId, imodelId);
+        favoriteProperties = this._imodelProperties.get(
+          getiModelInfo(iTwinId, imodelId)
+        )!;
+        saveProperties = async (properties) =>
+          this._storage.saveProperties(properties, iTwinId, imodelId);
     }
 
     const countBefore = favoriteProperties.size;
@@ -190,9 +235,13 @@ export class FavoritePropertiesManager implements IDisposable {
       const saves: Array<Promise<void>> = [];
       saves.push(saveProperties(favoriteProperties));
 
-      const propertiesOrder = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
+      const propertiesOrder = this._propertiesOrder.get(
+        getiModelInfo(iTwinId, imodelId)
+      )!;
       addOrderInfos(propertiesOrder, createFieldOrderInfos(field));
-      saves.push(this._storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId));
+      saves.push(
+        this._storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId)
+      );
 
       await Promise.all(saves);
       this.onFavoritesChanged.raiseEvent();
@@ -206,27 +255,41 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param scope FavoritePropertiesScope to remove the favorite properties from. It also removes from more general scopes.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
-  public async remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
+  public async remove(
+    field: Field,
+    imodel: IModelConnection,
+    scope: FavoritePropertiesScope
+  ): Promise<void> {
     this.validateInitialization(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 
     const fieldInfos = getFieldInfos(field);
-    const workingScopes: Array<{ properties: Set<PropertyFullName>, save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
+    const workingScopes: Array<{
+      properties: Set<PropertyFullName>;
+      save: (properties: Set<PropertyFullName>) => Promise<void>;
+    }> = [];
     workingScopes.push({
       properties: this._globalProperties!,
       save: async (properties) => this._storage.saveProperties(properties),
     });
-    if (scope === FavoritePropertiesScope.ITwin || scope === FavoritePropertiesScope.IModel) {
+    if (
+      scope === FavoritePropertiesScope.ITwin ||
+      scope === FavoritePropertiesScope.IModel
+    ) {
       workingScopes.push({
         properties: this._iTwinProperties.get(iTwinId)!,
-        save: async (properties) => this._storage.saveProperties(properties, iTwinId),
+        save: async (properties) =>
+          this._storage.saveProperties(properties, iTwinId),
       });
     }
     if (scope === FavoritePropertiesScope.IModel) {
       workingScopes.push({
-        properties: this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!,
-        save: async (properties) => this._storage.saveProperties(properties, iTwinId, imodelId),
+        properties: this._imodelProperties.get(
+          getiModelInfo(iTwinId, imodelId)
+        )!,
+        save: async (properties) =>
+          this._storage.saveProperties(properties, iTwinId, imodelId),
       });
     }
 
@@ -240,12 +303,15 @@ export class FavoritePropertiesManager implements IDisposable {
         favoritesChanged = true;
       }
     }
-    if (!favoritesChanged)
-      return;
+    if (!favoritesChanged) return;
 
-    const propertiesOrder = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
+    const propertiesOrder = this._propertiesOrder.get(
+      getiModelInfo(iTwinId, imodelId)
+    )!;
     removeOrderInfos(propertiesOrder, createFieldOrderInfos(field));
-    saves.push(this._storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId));
+    saves.push(
+      this._storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId)
+    );
 
     await Promise.all(saves);
     this.onFavoritesChanged.raiseEvent();
@@ -257,7 +323,10 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param scope FavoritePropertiesScope to remove the favorite properties from.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
-  public async clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
+  public async clear(
+    imodel: IModelConnection,
+    scope: FavoritePropertiesScope
+  ): Promise<void> {
     this.validateInitialization(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
@@ -267,19 +336,27 @@ export class FavoritePropertiesManager implements IDisposable {
     switch (scope) {
       case FavoritePropertiesScope.Global:
         favoriteProperties = this._globalProperties!;
-        saveProperties = async () => this._storage.saveProperties(new Set<PropertyFullName>());
+        saveProperties = async () =>
+          this._storage.saveProperties(new Set<PropertyFullName>());
         break;
       case FavoritePropertiesScope.ITwin:
         favoriteProperties = this._iTwinProperties.get(iTwinId)!;
-        saveProperties = async () => this._storage.saveProperties(new Set<PropertyFullName>(), iTwinId);
+        saveProperties = async () =>
+          this._storage.saveProperties(new Set<PropertyFullName>(), iTwinId);
         break;
       default:
-        favoriteProperties = this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!;
-        saveProperties = async () => this._storage.saveProperties(new Set<PropertyFullName>(), iTwinId, imodelId);
+        favoriteProperties = this._imodelProperties.get(
+          getiModelInfo(iTwinId, imodelId)
+        )!;
+        saveProperties = async () =>
+          this._storage.saveProperties(
+            new Set<PropertyFullName>(),
+            iTwinId,
+            imodelId
+          );
     }
 
-    if (favoriteProperties.size === 0)
-      return;
+    if (favoriteProperties.size === 0) return;
 
     favoriteProperties.clear();
     const saves: Array<Promise<void>> = [];
@@ -296,15 +373,26 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
-  public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean {
+  public has(
+    field: Field,
+    imodel: IModelConnection,
+    scope: FavoritePropertiesScope
+  ): boolean {
     this.validateInitialization(imodel);
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 
     const fieldInfos = getFieldInfos(field);
-    return setHasAny(this._globalProperties!, fieldInfos) ||
-      (scope !== FavoritePropertiesScope.Global && setHasAny(this._iTwinProperties.get(iTwinId)!, fieldInfos)) ||
-      (scope === FavoritePropertiesScope.IModel && setHasAny(this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!, fieldInfos));
+    return (
+      setHasAny(this._globalProperties!, fieldInfos) ||
+      (scope !== FavoritePropertiesScope.Global &&
+        setHasAny(this._iTwinProperties.get(iTwinId)!, fieldInfos)) ||
+      (scope === FavoritePropertiesScope.IModel &&
+        setHasAny(
+          this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!,
+          fieldInfos
+        ))
+    );
   }
 
   /**
@@ -320,31 +408,45 @@ export class FavoritePropertiesManager implements IDisposable {
     const imodelId = imodel.iModelId!;
 
     const fieldPriority = new Map<Field, number>();
-    fields.forEach((field) => fieldPriority.set(field, this.getFieldPriority(field, iTwinId, imodelId)));
+    fields.forEach((field) =>
+      fieldPriority.set(field, this.getFieldPriority(field, iTwinId, imodelId))
+    );
 
     const sortFunction = (left: Field, right: Field): number => {
       const lp = fieldPriority.get(left)!;
       const rp = fieldPriority.get(right)!;
-      return lp < rp ? 1 :
-        lp > rp ? -1 :
-          left.priority < right.priority ? 1 : // if favorite fields have equal priorities, sort by field priority
-            left.priority > right.priority ? -1 :
-              left.name.localeCompare(right.name);
+      return lp < rp
+        ? 1
+        : lp > rp
+        ? -1
+        : left.priority < right.priority
+        ? 1 // if favorite fields have equal priorities, sort by field priority
+        : left.priority > right.priority
+        ? -1
+        : left.name.localeCompare(right.name);
     };
 
     return fields.sort(sortFunction);
   };
 
-  private getFieldPriority(field: Field, iTwinId: string, imodelId: string): number {
-    const orderInfos = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
+  private getFieldPriority(
+    field: Field,
+    iTwinId: string,
+    imodelId: string
+  ): number {
+    const orderInfos = this._propertiesOrder.get(
+      getiModelInfo(iTwinId, imodelId)
+    )!;
     const fieldOrderInfos = getFieldOrderInfos(field, orderInfos);
-    if (fieldOrderInfos.length === 0)
-      return -1;
+    if (fieldOrderInfos.length === 0) return -1;
     const mostRecent = getMostRecentOrderInfo(fieldOrderInfos);
     return mostRecent.priority;
   }
 
-  private _getBaseClassesByClass = async (imodel: IModelConnection, neededClasses: Set<string>): Promise<{ [className: string]: string[] }> => {
+  private _getBaseClassesByClass = async (
+    imodel: IModelConnection,
+    neededClasses: Set<string>
+  ): Promise<{ [className: string]: string[] }> => {
     const iTwinId = imodel.iTwinId!;
     const imodelId = imodel.iModelId!;
 
@@ -352,16 +454,13 @@ export class FavoritePropertiesManager implements IDisposable {
     let baseClasses: { [className: string]: string[] };
     if (this._imodelBaseClassesByClass.has(imodelInfo))
       baseClasses = this._imodelBaseClassesByClass.get(imodelInfo)!;
-    else
-      this._imodelBaseClassesByClass.set(imodelInfo, baseClasses = {});
+    else this._imodelBaseClassesByClass.set(imodelInfo, (baseClasses = {}));
 
     const missingClasses = new Set<string>();
     neededClasses.forEach((className) => {
-      if (!baseClasses.hasOwnProperty(className))
-        missingClasses.add(className);
+      if (!baseClasses.hasOwnProperty(className)) missingClasses.add(className);
     });
-    if (missingClasses.size === 0)
-      return baseClasses;
+    if (missingClasses.size === 0) return baseClasses;
 
     const query = `
     SELECT (derivedSchema.Name || ':' || derivedClass.Name) AS "ClassFullName", (baseSchema.Name || ':' || baseClass.Name) AS "BaseClassFullName"
@@ -370,8 +469,14 @@ export class FavoritePropertiesManager implements IDisposable {
     INNER JOIN ECDbMeta.ECSchemaDef derivedSchema ON derivedSchema.ECInstanceId = derivedClass.Schema.Id
     INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
     INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
-    const reader = imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[
+      ...missingClasses,
+    ]
+      .map((className) => `'${className}'`)
+      .join(",")})`;
+    const reader = imodel.createQueryReader(query, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    });
     while (await reader.step()) {
       const row = reader.current.toRow();
       if (!(row.classFullName in baseClasses))
@@ -388,7 +493,12 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param visibleFields Array of fields to move the field in.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
-  public async changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]) {
+  public async changeFieldPriority(
+    imodel: IModelConnection,
+    field: Field,
+    afterField: Field | undefined,
+    visibleFields: Field[]
+  ) {
     /**
      * How it works:
      * 1. Gets the orderInfo's for `field` (`orderInfo`) and `afterField` (`afterOrderInfo`) by selecting the most recent order informations for each field
@@ -408,7 +518,9 @@ export class FavoritePropertiesManager implements IDisposable {
     if (field === afterField)
       throw Error("`field` can not be the same as `afterField`.");
 
-    const allOrderInfos = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
+    const allOrderInfos = this._propertiesOrder.get(
+      getiModelInfo(iTwinId, imodelId)
+    )!;
 
     const findFieldOrderInfoData = (f: Field) => {
       if (!visibleFields.includes(f))
@@ -422,7 +534,10 @@ export class FavoritePropertiesManager implements IDisposable {
       return { infos, mostRecent: { info, index } };
     };
 
-    const { infos: movingOrderInfos, mostRecent: { index: orderInfoIndex } } = findFieldOrderInfoData(field);
+    const {
+      infos: movingOrderInfos,
+      mostRecent: { index: orderInfoIndex },
+    } = findFieldOrderInfoData(field);
 
     let afterOrderInfo: FavoritePropertiesOrderInfo | undefined;
     let afterOrderInfoIndex;
@@ -430,7 +545,9 @@ export class FavoritePropertiesManager implements IDisposable {
       afterOrderInfo = undefined;
       afterOrderInfoIndex = -1;
     } else {
-      ({ mostRecent: { info: afterOrderInfo, index: afterOrderInfoIndex } } = findFieldOrderInfoData(afterField));
+      ({
+        mostRecent: { info: afterOrderInfo, index: afterOrderInfoIndex },
+      } = findFieldOrderInfoData(afterField));
     }
 
     let direction: Direction; // where to go from `afterOrderInfo` to `orderInfo`
@@ -443,14 +560,23 @@ export class FavoritePropertiesManager implements IDisposable {
       startIndex = afterOrderInfoIndex + 1;
     }
 
-    const neededClassNames: Set<string> = allOrderInfos.reduce((classNames: Set<string>, oi) => {
-      if (oi.parentClassName)
-        classNames.add(oi.parentClassName);
-      return classNames;
-    }, new Set<string>());
-    const baseClassesByClass = await this._getBaseClassesByClass(imodel, neededClassNames);
+    const neededClassNames: Set<string> = allOrderInfos.reduce(
+      (classNames: Set<string>, oi) => {
+        if (oi.parentClassName) classNames.add(oi.parentClassName);
+        return classNames;
+      },
+      new Set<string>()
+    );
+    const baseClassesByClass = await this._getBaseClassesByClass(
+      imodel,
+      neededClassNames
+    );
 
-    const visibleOrderInfos = visibleFields.reduce((union: FavoritePropertiesOrderInfo[], currField) => union.concat(getFieldOrderInfos(currField, allOrderInfos)), []);
+    const visibleOrderInfos = visibleFields.reduce(
+      (union: FavoritePropertiesOrderInfo[], currField) =>
+        union.concat(getFieldOrderInfos(currField, allOrderInfos)),
+      []
+    );
     const irrelevantOrderInfos: FavoritePropertiesOrderInfo[] = []; // orderInfos's that won't change their logical order in respect to other properties
     const relevantClasses: Set<ClassId> = new Set<ClassId>(); // currently relevant classes
 
@@ -458,8 +584,7 @@ export class FavoritePropertiesManager implements IDisposable {
       const currOrderInfo = allOrderInfos[i];
 
       // primitive properties are always relevant, because we can't determine their relevance based on the class hierarchy
-      if (currOrderInfo.parentClassName === undefined)
-        continue;
+      if (currOrderInfo.parentClassName === undefined) continue;
 
       const visible = visibleOrderInfos.includes(currOrderInfo);
       if (visible) {
@@ -467,36 +592,49 @@ export class FavoritePropertiesManager implements IDisposable {
         continue;
       }
 
-      const hasBaseClasses = baseClassesByClass[currOrderInfo.parentClassName].some((classId) => relevantClasses.has(classId));
-      if (hasBaseClasses)
-        continue;
+      const hasBaseClasses = baseClassesByClass[
+        currOrderInfo.parentClassName
+      ].some((classId) => relevantClasses.has(classId));
+      if (hasBaseClasses) continue;
 
       if (direction === Direction.Down)
         irrelevantOrderInfos.push(currOrderInfo);
-      else
-        irrelevantOrderInfos.unshift(currOrderInfo);
+      else irrelevantOrderInfos.unshift(currOrderInfo);
     }
 
     // remove irrelevantOrderInfo's to add them after the `orderInfo`
     irrelevantOrderInfos.forEach((foi) => {
-      const index = allOrderInfos.findIndex((oi) => oi.parentClassName === foi.parentClassName && oi.name === foi.name);
+      const index = allOrderInfos.findIndex(
+        (oi) =>
+          oi.parentClassName === foi.parentClassName && oi.name === foi.name
+      );
       allOrderInfos.splice(index, 1);
     });
 
     // remove movingOrderInfos's to add them after the `afterOrderInfo`
     movingOrderInfos.forEach((foi) => {
-      const index = allOrderInfos.findIndex((oi) => oi.parentClassName === foi.parentClassName && oi.name === foi.name);
+      const index = allOrderInfos.findIndex(
+        (oi) =>
+          oi.parentClassName === foi.parentClassName && oi.name === foi.name
+      );
       allOrderInfos.splice(index, 1);
     });
-    movingOrderInfos.forEach((oi) => oi.orderedTimestamp = new Date());
+    movingOrderInfos.forEach((oi) => (oi.orderedTimestamp = new Date()));
 
-    afterOrderInfoIndex = afterOrderInfo === undefined ? -1 : allOrderInfos.indexOf(afterOrderInfo);
+    afterOrderInfoIndex =
+      afterOrderInfo === undefined ? -1 : allOrderInfos.indexOf(afterOrderInfo);
     allOrderInfos.splice(afterOrderInfoIndex + 1, 0, ...movingOrderInfos);
-    allOrderInfos.splice(afterOrderInfoIndex + 1 + (direction === Direction.Up ? movingOrderInfos.length : 0), 0, ...irrelevantOrderInfos);
+    allOrderInfos.splice(
+      afterOrderInfoIndex +
+        1 +
+        (direction === Direction.Up ? movingOrderInfos.length : 0),
+      0,
+      ...irrelevantOrderInfos
+    );
 
     // reassign priority numbers
     let priority = allOrderInfos.length;
-    allOrderInfos.forEach((oi) => oi.priority = priority--);
+    allOrderInfos.forEach((oi) => (oi.priority = priority--));
 
     await this._storage.savePropertiesOrder(allOrderInfos, iTwinId, imodelId);
     this.onFavoritesChanged.raiseEvent();
@@ -508,11 +646,15 @@ enum Direction {
   Down = 1,
 }
 
-const getiModelInfo = (iTwinId: string, imodelId: string) => `${iTwinId}/${imodelId}`;
+const getiModelInfo = (iTwinId: string, imodelId: string) =>
+  `${iTwinId}/${imodelId}`;
 
 const getPropertiesFieldPropertyNames = (field: PropertiesField) => {
   const nestingPrefix = getNestingPrefix(field.parent);
-  return field.properties.map((property) => `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`);
+  return field.properties.map(
+    (property) =>
+      `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`
+  );
 };
 
 const getNestedContentFieldPropertyName = (field: NestedContentField) => {
@@ -526,24 +668,29 @@ const getNestingPrefix = (field: NestedContentField | undefined) => {
   while (curr !== undefined) {
     curr.pathToPrimaryClass.forEach((rel) => {
       // Relationship directions are reversed, because we are generating a relationship list starting from the parent
-      path.push(`${rel.isForwardRelationship ? "B" : "F"}:${rel.relationshipInfo.name}`);
+      path.push(
+        `${rel.isForwardRelationship ? "B" : "F"}:${rel.relationshipInfo.name}`
+      );
       path.push(rel.targetClassInfo.name);
     });
     curr = curr.parent;
   }
-  if (path.length === 0)
-    return "";
+  if (path.length === 0) return "";
 
   path.reverse();
   return `${path.join("-")}-`;
 };
 
-const getPropertyClassName = (propertyName: PropertyFullName): string | undefined => {
+const getPropertyClassName = (
+  propertyName: PropertyFullName
+): string | undefined => {
   const propertyNameStart = propertyName.split("-")[0];
   const parts = propertyNameStart.split(":").length;
-  if (parts === 1) // primitive
+  if (parts === 1)
+    // primitive
     return undefined;
-  if (parts === 2) // nested property OR nested property parent class OR regular property parent class
+  if (parts === 2)
+    // nested property OR nested property parent class OR regular property parent class
     return propertyNameStart;
   // regular property without parent class
   return propertyNameStart.substring(0, propertyName.lastIndexOf(":"));
@@ -553,23 +700,29 @@ const getPropertyClassName = (propertyName: PropertyFullName): string | undefine
 export const getFieldInfos = (field: Field): Set<PropertyFullName> => {
   const fieldInfos: Set<PropertyFullName> = new Set<PropertyFullName>();
   if (field.isPropertiesField())
-    getPropertiesFieldPropertyNames(field).forEach((info) => fieldInfos.add(info));
+    getPropertiesFieldPropertyNames(field).forEach((info) =>
+      fieldInfos.add(info)
+    );
   else if (field.isNestedContentField())
     fieldInfos.add(getNestedContentFieldPropertyName(field));
   else
-    fieldInfos.add(`${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${field.name}`);
+    fieldInfos.add(
+      `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${field.name}`
+    );
   return fieldInfos;
 };
 
 const setHasAny = (set: Set<string>, lookup: Set<string>) => {
   for (const key of lookup) {
-    if (set.has(key))
-      return true;
+    if (set.has(key)) return true;
   }
   return false;
 };
 
-const addOrderInfos = (dest: FavoritePropertiesOrderInfo[], source: FavoritePropertiesOrderInfo[]) => {
+const addOrderInfos = (
+  dest: FavoritePropertiesOrderInfo[],
+  source: FavoritePropertiesOrderInfo[]
+) => {
   source.forEach((si) => {
     const index = dest.findIndex((di) => di.name === si.name);
     if (index === -1) {
@@ -578,28 +731,34 @@ const addOrderInfos = (dest: FavoritePropertiesOrderInfo[], source: FavoriteProp
     }
   });
   let priority = dest.length;
-  dest.forEach((info) => info.priority = priority--);
+  dest.forEach((info) => (info.priority = priority--));
 };
 
-const removeOrderInfos = (container: FavoritePropertiesOrderInfo[], toRemove: FavoritePropertiesOrderInfo[]) => {
+const removeOrderInfos = (
+  container: FavoritePropertiesOrderInfo[],
+  toRemove: FavoritePropertiesOrderInfo[]
+) => {
   toRemove.forEach((roi) => {
     const index = container.findIndex((oi) => oi.name === roi.name);
     /* istanbul ignore else */
-    if (index >= 0)
-      container.splice(index, 1);
+    if (index >= 0) container.splice(index, 1);
   });
 };
 
 /** @internal */
-export const createFieldOrderInfos = (field: Field): FavoritePropertiesOrderInfo[] => {
+export const createFieldOrderInfos = (
+  field: Field
+): FavoritePropertiesOrderInfo[] => {
   if (field.isNestedContentField()) {
     const propertyName = getNestedContentFieldPropertyName(field);
-    return [{
-      parentClassName: getPropertyClassName(propertyName),
-      name: propertyName,
-      priority: 0,
-      orderedTimestamp: new Date(),
-    }];
+    return [
+      {
+        parentClassName: getPropertyClassName(propertyName),
+        name: propertyName,
+        priority: 0,
+        orderedTimestamp: new Date(),
+      },
+    ];
   }
   if (field.isPropertiesField()) {
     return getPropertiesFieldPropertyNames(field).map((propertyName) => ({
@@ -609,31 +768,36 @@ export const createFieldOrderInfos = (field: Field): FavoritePropertiesOrderInfo
       orderedTimestamp: new Date(),
     }));
   }
-  return [{
-    parentClassName: undefined,
-    name: field.name,
-    priority: 0,
-    orderedTimestamp: new Date(),
-  }];
+  return [
+    {
+      parentClassName: undefined,
+      name: field.name,
+      priority: 0,
+      orderedTimestamp: new Date(),
+    },
+  ];
 };
 
-const getFieldOrderInfos = (field: Field, orderInfos: FavoritePropertiesOrderInfo[]): FavoritePropertiesOrderInfo[] => {
+const getFieldOrderInfos = (
+  field: Field,
+  orderInfos: FavoritePropertiesOrderInfo[]
+): FavoritePropertiesOrderInfo[] => {
   const fieldOrderInfos: FavoritePropertiesOrderInfo[] = [];
   const tryAddOrderInfo = (name: string) => {
     const fieldOrderInfo = orderInfos.find((oi) => oi.name === name);
-    if (fieldOrderInfo !== undefined)
-      fieldOrderInfos.push(fieldOrderInfo);
+    if (fieldOrderInfo !== undefined) fieldOrderInfos.push(fieldOrderInfo);
   };
 
   if (field.isPropertiesField())
     getPropertiesFieldPropertyNames(field).forEach(tryAddOrderInfo);
   else if (field.isNestedContentField())
     tryAddOrderInfo(getNestedContentFieldPropertyName(field));
-  else
-    tryAddOrderInfo(field.name);
+  else tryAddOrderInfo(field.name);
 
   return fieldOrderInfos;
 };
 
 const getMostRecentOrderInfo = (orderInfos: FavoritePropertiesOrderInfo[]) =>
-  orderInfos.reduce((recent, curr) => (recent && recent.orderedTimestamp >= curr.orderedTimestamp) ? recent : curr);
+  orderInfos.reduce((recent, curr) =>
+    recent && recent.orderedTimestamp >= curr.orderedTimestamp ? recent : curr
+  );

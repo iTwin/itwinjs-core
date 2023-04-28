@@ -25,24 +25,42 @@ export class Quadrature {
   public static readonly gaussW1Interval01 = new Float64Array([1.0]);
 
   /** x value for 2 point gauss rule in 0..1 interval */
-  public static readonly gaussX2Interval01 = new Float64Array([0.21132486540518708, 0.7886751345948129]);
+  public static readonly gaussX2Interval01 = new Float64Array([
+    0.21132486540518708, 0.7886751345948129,
+  ]);
   /** weight for 2 point gauss rule in 0..1 interval */
   public static readonly gaussW2Interval01 = new Float64Array([0.5, 0.5]);
 
   /** x value for 3 point gauss rule in 0..1 interval */
-  public static readonly gaussX3Interval01 = new Float64Array([0.1127016653792583, 0.5, 0.8872983346207417]);
+  public static readonly gaussX3Interval01 = new Float64Array([
+    0.1127016653792583, 0.5, 0.8872983346207417,
+  ]);
   /** weight for 3 point gauss rule in 0..1 interval */
-  public static readonly gaussW3Interval01 = new Float64Array([0.2777777777777778, 0.4444444444444444, 0.2777777777777778]);
+  public static readonly gaussW3Interval01 = new Float64Array([
+    0.2777777777777778, 0.4444444444444444, 0.2777777777777778,
+  ]);
 
   /** x value for 4 point gauss rule in 0..1 interval */
-  public static readonly gaussX4Interval01 = new Float64Array([0.06943184420297371, 0.33000947820757187, 0.6699905217924281, 0.9305681557970262]);
+  public static readonly gaussX4Interval01 = new Float64Array([
+    0.06943184420297371, 0.33000947820757187, 0.6699905217924281,
+    0.9305681557970262,
+  ]);
   /** weight for 4 point gauss rule in 0..1 interval */
-  public static readonly gaussW4Interval01 = new Float64Array([0.17392742256872692, 0.3260725774312731, 0.3260725774312731, 0.17392742256872692]);
+  public static readonly gaussW4Interval01 = new Float64Array([
+    0.17392742256872692, 0.3260725774312731, 0.3260725774312731,
+    0.17392742256872692,
+  ]);
 
   /** x value for 5 point gauss rule in 0..1 interval */
-  public static readonly gaussX5Interval01 = new Float64Array([0.04691007703066802, 0.23076534494715845, 0.5, 0.7692346550528415, 0.9530899229693319]);
+  public static readonly gaussX5Interval01 = new Float64Array([
+    0.04691007703066802, 0.23076534494715845, 0.5, 0.7692346550528415,
+    0.9530899229693319,
+  ]);
   /** weight for 5 point gauss rule in 0..1 interval */
-  public static readonly gaussW5Interval01 = new Float64Array([0.11846344252809454, 0.23931433524968324, 0.28444444444444444, 0.23931433524968324, 0.11846344252809454]);
+  public static readonly gaussW5Interval01 = new Float64Array([
+    0.11846344252809454, 0.23931433524968324, 0.28444444444444444,
+    0.23931433524968324, 0.11846344252809454,
+  ]);
 
   /**
    * Given points and weights in a reference interval (usually 0 to 1):
@@ -58,7 +76,14 @@ export class Quadrature {
    * @param xMapped x coordinates to evaluate integrands
    * @param wMapped weights for evaluated integrands
    */
-  public static mapWeights(xA: number, h: number, xRef: Float64Array, wRef: Float64Array, xMapped: Float64Array, wMapped: Float64Array): number {
+  public static mapWeights(
+    xA: number,
+    h: number,
+    xRef: Float64Array,
+    wRef: Float64Array,
+    xMapped: Float64Array,
+    wMapped: Float64Array
+  ): number {
     const n = xRef.length;
     for (let i = 0; i < n; i++) {
       xMapped[i] = xA + h * xRef[i];
@@ -68,13 +93,37 @@ export class Quadrature {
   }
 
   /** Install 1 (ONE) x and weight values for quadrature from xA to xB. */
-  public static setupGauss1(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
-    return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX1Interval01, Quadrature.gaussW1Interval01, xMapped, wMapped);
+  public static setupGauss1(
+    xA: number,
+    xB: number,
+    xMapped: Float64Array,
+    wMapped: Float64Array
+  ): number {
+    return Quadrature.mapWeights(
+      xA,
+      xB - xA,
+      Quadrature.gaussX1Interval01,
+      Quadrature.gaussW1Interval01,
+      xMapped,
+      wMapped
+    );
   }
 
   /** Install 2 (TWO) x and weight values for quadrature from xA to xB. */
-  public static setupGauss2(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
-    return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX2Interval01, Quadrature.gaussW2Interval01, xMapped, wMapped);
+  public static setupGauss2(
+    xA: number,
+    xB: number,
+    xMapped: Float64Array,
+    wMapped: Float64Array
+  ): number {
+    return Quadrature.mapWeights(
+      xA,
+      xB - xA,
+      Quadrature.gaussX2Interval01,
+      Quadrature.gaussW2Interval01,
+      xMapped,
+      wMapped
+    );
     /*  // exact formulas for interval xA..xB:
         const x0 = 0.5 * (xA + xB);
             const h = 0.5 * (xB - xA);
@@ -84,8 +133,20 @@ export class Quadrature {
             */
   }
   /** Install 3 (THREE) x and weight values for quadrature from xA to xB. */
-  public static setupGauss3(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
-    return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX3Interval01, Quadrature.gaussW3Interval01, xMapped, wMapped);
+  public static setupGauss3(
+    xA: number,
+    xB: number,
+    xMapped: Float64Array,
+    wMapped: Float64Array
+  ): number {
+    return Quadrature.mapWeights(
+      xA,
+      xB - xA,
+      Quadrature.gaussX3Interval01,
+      Quadrature.gaussW3Interval01,
+      xMapped,
+      wMapped
+    );
     /*  // exact formulas for interval xA..xB:
     const x0 = 0.5 * (xA + xB);
     const h = 0.5 * (xB - xA);
@@ -100,8 +161,20 @@ export class Quadrature {
   }
 
   /** Install 5 (FIVE) x and weight values for quadrature from xA to xB. */
-  public static setupGauss5(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
-    return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX5Interval01, Quadrature.gaussW5Interval01, xMapped, wMapped);
+  public static setupGauss5(
+    xA: number,
+    xB: number,
+    xMapped: Float64Array,
+    wMapped: Float64Array
+  ): number {
+    return Quadrature.mapWeights(
+      xA,
+      xB - xA,
+      Quadrature.gaussX5Interval01,
+      Quadrature.gaussW5Interval01,
+      xMapped,
+      wMapped
+    );
     /*  // exact formulas for interval xA..xB:
     const x0 = 0.5 * (xA + xB);
     const h = 0.5 * (xB - xA);
@@ -119,8 +192,20 @@ export class Quadrature {
   }
 
   /** Install 4 (FOUR) x and weight values for quadrature from xA to xB. */
-  public static setupGauss4(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
-    return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX4Interval01, Quadrature.gaussW4Interval01, xMapped, wMapped);
+  public static setupGauss4(
+    xA: number,
+    xB: number,
+    xMapped: Float64Array,
+    wMapped: Float64Array
+  ): number {
+    return Quadrature.mapWeights(
+      xA,
+      xB - xA,
+      Quadrature.gaussX4Interval01,
+      Quadrature.gaussW4Interval01,
+      xMapped,
+      wMapped
+    );
     /*  // exact formulas for interval xA..xB:
 const x0 = 0.5 * (xA + xB);
 const h = 0.5 * (xB - xA);
@@ -140,9 +225,10 @@ return 4;
     xx: Float64Array,
     ww: Float64Array,
     n: number,
-    f: (x: number) => number): number {
+    f: (x: number) => number
+  ): number {
     let sum = 0;
-    for (let i = 0; i < n; i++)sum += ww[i] * f(xx[i]);
+    for (let i = 0; i < n; i++) sum += ww[i] * f(xx[i]);
     return sum;
   }
   /**
@@ -153,15 +239,20 @@ return 4;
    * @param numInterval number of internal intervals
    * @param numGauss number of gauss points.    must be supported by GaussMapper, i.e. 1,2,3,4,5
    */
-  public static doGaussIntegral(x0: number, x1: number, f: (x: number) => number, numInterval: number, numGauss: number = 5) {
+  public static doGaussIntegral(
+    x0: number,
+    x1: number,
+    f: (x: number) => number,
+    numInterval: number,
+    numGauss: number = 5
+  ) {
     const mapper = new GaussMapper(numGauss);
-    if (numInterval < 1)
-      numInterval = 1;
+    if (numInterval < 1) numInterval = 1;
     const df = 1.0 / numInterval;
     let sum = 0;
     for (let i = 1; i <= numInterval; i++) {
       const xA = Geometry.interpolate(x0, (i - 1) * df, x1);
-      const xB = i === numInterval ? x1 : Geometry.interpolate(x0, (i) * df, x1);
+      const xB = i === numInterval ? x1 : Geometry.interpolate(x0, i * df, x1);
       const n = mapper.mapXAndW(xA, xB);
       for (let k = 0; k < n; k++) {
         sum += mapper.gaussW[k] * f(mapper.gaussX[k]);
@@ -182,7 +273,12 @@ export class GaussMapper {
   /** weights for integration */
   public gaussW: Float64Array;
   /** function to be called (at each interval) to map integration values */
-  public mapXAndWFunction: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
+  public mapXAndWFunction: (
+    xA: number,
+    xB: number,
+    xx: Float64Array,
+    ww: Float64Array
+  ) => number;
   /** Execute the mapXAndWFunction to set up arrays for integration from xA to xB */
   public mapXAndW(xA: number, xB: number): number {
     return this.mapXAndWFunction(xA, xB, this.gaussX, this.gaussW);
@@ -192,20 +288,28 @@ export class GaussMapper {
    * @param numGauss requested number of gauss points.
    */
   public constructor(numGaussPoints: number) {
-    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
+    const maxGauss = 7; // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
     this.gaussX = new Float64Array(maxGauss);
     this.gaussW = new Float64Array(maxGauss);
     // This sets the number of gauss points.  This integrates exactly for polynomials of (degree 2*numGauss - 1).
-    if (numGaussPoints > 5 || numGaussPoints < 1)
-      numGaussPoints = 5;
+    if (numGaussPoints > 5 || numGaussPoints < 1) numGaussPoints = 5;
     switch (numGaussPoints) {
-      case 1: this.mapXAndWFunction = Quadrature.setupGauss1; break;
-      case 2: this.mapXAndWFunction = Quadrature.setupGauss2; break;
-      case 3: this.mapXAndWFunction = Quadrature.setupGauss3; break;
-      case 4: this.mapXAndWFunction = Quadrature.setupGauss4; break;
-      default: this.mapXAndWFunction = Quadrature.setupGauss5; break;
+      case 1:
+        this.mapXAndWFunction = Quadrature.setupGauss1;
+        break;
+      case 2:
+        this.mapXAndWFunction = Quadrature.setupGauss2;
+        break;
+      case 3:
+        this.mapXAndWFunction = Quadrature.setupGauss3;
+        break;
+      case 4:
+        this.mapXAndWFunction = Quadrature.setupGauss4;
+        break;
+      default:
+        this.mapXAndWFunction = Quadrature.setupGauss5;
+        break;
     }
-
   }
 }
 // someday .... http://www.holoborodko.com/pavel/numerical-methods/numerical-integration/overlapped-newton-cotes-quadratures/

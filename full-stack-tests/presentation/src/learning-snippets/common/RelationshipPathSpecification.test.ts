@@ -10,12 +10,13 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openFile(
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
+    );
   });
 
   after(async () => {
@@ -24,7 +25,6 @@ describe("Learning Snippets", () => {
   });
 
   describe("RelationshipPathSpecification", () => {
-
     it("using single-step specification", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RelationshipPathSpecification.SingleStep.Ruleset
       // This ruleset defines a specification that returns content for given `bis.Model` instances. The
@@ -32,20 +32,30 @@ describe("Learning Snippets", () => {
       // relationship and picking only `bis.PhysicalElement` type of elements.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "Content",
-          condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
-          specifications: [
-            {
-              specType: "ContentRelatedInstances",
-              relationshipPaths: [{
-                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: "Forward",
-                targetClass: { schemaName: "BisCore", className: "PhysicalElement" },
-              }],
-            },
-          ],
-        }],
+        rules: [
+          {
+            ruleType: "Content",
+            condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
+            specifications: [
+              {
+                specType: "ContentRelatedInstances",
+                relationshipPaths: [
+                  {
+                    relationship: {
+                      schemaName: "BisCore",
+                      className: "ModelContainsElements",
+                    },
+                    direction: "Forward",
+                    targetClass: {
+                      schemaName: "BisCore",
+                      className: "PhysicalElement",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -60,12 +70,16 @@ describe("Learning Snippets", () => {
       expect(physicalModelContent!.contentSet.length).to.eq(62);
 
       // Ensure that non-physical model elements are not selected
-      const definitionModelContent = await Presentation.presentation.getContent({
-        imodel,
-        rulesetOrId: ruleset,
-        keys: new KeySet([{ className: "BisCore:DefinitionModel", id: "0x16" }]),
-        descriptor: {},
-      });
+      const definitionModelContent = await Presentation.presentation.getContent(
+        {
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([
+            { className: "BisCore:DefinitionModel", id: "0x16" },
+          ]),
+          descriptor: {},
+        }
+      );
       expect(definitionModelContent).to.be.undefined;
     });
 
@@ -76,22 +90,35 @@ describe("Learning Snippets", () => {
       // `bis.GeometricElement3dIsInCategory` relationships.
       const ruleset: Ruleset = {
         id: "example",
-        rules: [{
-          ruleType: "Content",
-          condition: `SelectedNode.IsOfClass("GeometricModel3d", "BisCore")`,
-          specifications: [
-            {
-              specType: "ContentRelatedInstances",
-              relationshipPaths: [[{
-                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: "Forward",
-              }, {
-                relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: "Forward",
-              }]],
-            },
-          ],
-        }],
+        rules: [
+          {
+            ruleType: "Content",
+            condition: `SelectedNode.IsOfClass("GeometricModel3d", "BisCore")`,
+            specifications: [
+              {
+                specType: "ContentRelatedInstances",
+                relationshipPaths: [
+                  [
+                    {
+                      relationship: {
+                        schemaName: "BisCore",
+                        className: "ModelContainsElements",
+                      },
+                      direction: "Forward",
+                    },
+                    {
+                      relationship: {
+                        schemaName: "BisCore",
+                        className: "GeometricElement3dIsInCategory",
+                      },
+                      direction: "Forward",
+                    },
+                  ],
+                ],
+              },
+            ],
+          },
+        ],
       };
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
@@ -105,7 +132,5 @@ describe("Learning Snippets", () => {
       });
       expect(physicalModelContent!.contentSet.length).to.eq(1);
     });
-
   });
-
 });

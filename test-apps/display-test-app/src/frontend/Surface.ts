@@ -5,7 +5,12 @@
 import { KeyinField, parseArgs } from "@itwin/frontend-devtools";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
+import {
+  BlankConnection,
+  BlankConnectionProps,
+  IModelApp,
+  Tool,
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -14,7 +19,13 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
-import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
+import {
+  Dock,
+  NamedWindow,
+  NamedWindowProps,
+  Window,
+  WindowProps,
+} from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
@@ -33,9 +44,16 @@ export class Surface {
   public readonly browserFileSelector?: BrowserFileSelector;
   public readonly openReadWrite: boolean;
 
-  public static get instance() { return DisplayTestApp.surface; }
+  public static get instance() {
+    return DisplayTestApp.surface;
+  }
 
-  public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined, openReadWrite: boolean) {
+  public constructor(
+    surfaceDiv: HTMLElement,
+    toolbarDiv: HTMLElement,
+    browserFileSelector: BrowserFileSelector | undefined,
+    openReadWrite: boolean
+  ) {
     // Ensure iModel gets closed on page close/reload
     window.onbeforeunload = () => this.closeAllViewers();
 
@@ -47,7 +65,9 @@ export class Surface {
     this._toolbarDiv.appendChild(this._toolbar.element);
 
     addSnapModes(document.getElementById("snapModesContainer")!);
-    new TileLoadIndicator(document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement);
+    new TileLoadIndicator(
+      document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement
+    );
     new FpsMonitor({
       checkbox: document.getElementById("fps-checkbox") as HTMLInputElement,
       label: document.getElementById("fps-label") as HTMLLabelElement,
@@ -70,7 +90,12 @@ export class Surface {
     this.keyinField.textBox.div.className = "keyin-entry";
     this.keyinField.textBox.textbox.className = "keyin-entry-textbox";
 
-    this.notifications = new NotificationsWindow(this, { title: "Notifications", width: 800, height: 800, maxStoredMessages: 50 });
+    this.notifications = new NotificationsWindow(this, {
+      title: "Notifications",
+      width: 800,
+      height: 800,
+      maxStoredMessages: 50,
+    });
     this.addWindow(this.notifications);
 
     document.addEventListener("keydown", (e) => {
@@ -83,10 +108,8 @@ export class Surface {
 
     window.onresize = () => {
       for (const window of this._windows) {
-        if (window.isDocked)
-          window.updateDock();
-        else
-          window.ensureInSurface();
+        if (window.isDocked) window.updateDock();
+        else window.ensureInSurface();
       }
     };
 
@@ -96,8 +119,7 @@ export class Surface {
 
       if (undefined !== args.previous) {
         const previous = this.findViewerByViewportId(args.previous.viewportId);
-        if (undefined !== previous)
-          previous.onDeselected();
+        if (undefined !== previous) previous.onDeselected();
       }
 
       if (undefined !== args.current) {
@@ -119,55 +141,72 @@ export class Surface {
     const div = IModelApp.makeHTMLElement("div", { className: "topdiv" });
     const tb = new ToolBar(div);
 
-    tb.addItem(createToolButton({
-      iconUnicode: "\ue9cc", // "briefcases"
-      tooltip: "Open iModel from disk",
-      click: async () => {
-        await this.openFileIModel();
-      },
-    }));
+    tb.addItem(
+      createToolButton({
+        iconUnicode: "\ue9cc", // "briefcases"
+        tooltip: "Open iModel from disk",
+        click: async () => {
+          await this.openFileIModel();
+        },
+      })
+    );
 
-    tb.addItem(createToolButton({
-      iconUnicode: "\ue9d8", // "property-data"
-      tooltip: "Open Blank Connection",
-      click: async () => {
-        await this.openBlankConnection();
-      },
-    }));
+    tb.addItem(
+      createToolButton({
+        iconUnicode: "\ue9d8", // "property-data"
+        tooltip: "Open Blank Connection",
+        click: async () => {
+          await this.openBlankConnection();
+        },
+      })
+    );
 
-    tb.addItem(createToolButton({
-      iconUnicode: "\uea32", // play
-      tooltip: "Analysis Style Example",
-      click: async () => {
-        const viewer = await this.openBlankConnection({
-          name: "Analysis Style Example",
-          extents: new Range3d(0, 0, -30, 100, 100, 20),
-        });
+    tb.addItem(
+      createToolButton({
+        iconUnicode: "\uea32", // play
+        tooltip: "Analysis Style Example",
+        click: async () => {
+          const viewer = await this.openBlankConnection({
+            name: "Analysis Style Example",
+            extents: new Range3d(0, 0, -30, 100, 100, 20),
+          });
 
-        await openAnalysisStyleExample(viewer);
-      },
-    }));
+          await openAnalysisStyleExample(viewer);
+        },
+      })
+    );
 
-    tb.addItem(createToolButton({
-      iconUnicode: "\ue9d8",
-      tooltip: "Decoration Geometry Example",
-      click: async () => {
-        const viewer = await this.openBlankConnection({
-          name: "Decoration Geometry Example",
-          extents: new Range3d(-1, -1, -1, 13, 2, 2),
-        });
-        void openDecorationGeometryExample(viewer);
-      },
-    }));
+    tb.addItem(
+      createToolButton({
+        iconUnicode: "\ue9d8",
+        tooltip: "Decoration Geometry Example",
+        click: async () => {
+          const viewer = await this.openBlankConnection({
+            name: "Decoration Geometry Example",
+            extents: new Range3d(-1, -1, -1, 13, 2, 2),
+          });
+          void openDecorationGeometryExample(viewer);
+        },
+      })
+    );
 
     return tb;
   }
 
   // create a new blank connection for testing backgroundMap and reality models.
-  private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
+  private async openBlankConnection(
+    props?: Partial<BlankConnectionProps>
+  ): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
-      extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      location:
+        props?.location ??
+        Cartographic.fromDegrees({
+          longitude: -75.686694,
+          latitude: 40.065757,
+          height: 0,
+        }), // near Exton pa
+      extents:
+        props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: props?.name ?? "blank connection test",
     });
 
@@ -199,27 +238,27 @@ export class Surface {
 
   public get firstViewer(): Viewer | undefined {
     for (const window of this._windows)
-      if (window instanceof Viewer)
-        return window;
+      if (window instanceof Viewer) return window;
 
     return undefined;
   }
 
   public async openFile(filename?: string): Promise<void> {
     const viewer = this.firstViewer;
-    return undefined !== viewer ? viewer.openFile(filename) : this.openFileIModel(filename);
+    return undefined !== viewer
+      ? viewer.openFile(filename)
+      : this.openFileIModel(filename);
   }
 
-  private getKeyboardShortcutHandler(e: KeyboardEvent): (() => void) | undefined {
-    if (e.repeat)
-      return undefined;
+  private getKeyboardShortcutHandler(
+    e: KeyboardEvent
+  ): (() => void) | undefined {
+    if (e.repeat) return undefined;
 
     const key = e.key;
-    if ("`" === key)
-      return () => this.keyinField.focus();
+    if ("`" === key) return () => this.keyinField.focus();
 
-    if (!e.ctrlKey)
-      return undefined;
+    if (!e.ctrlKey) return undefined;
 
     switch (key) {
       case "[":
@@ -228,25 +267,21 @@ export class Surface {
     }
 
     const focused = this.focusedWindow;
-    if (undefined === focused)
-      return undefined;
+    if (undefined === focused) return undefined;
 
     let dock: Dock | undefined;
     switch (key) {
       case "\\":
         return () => {
-          if (focused instanceof Viewer)
-            this.addViewer(focused.clone());
+          if (focused instanceof Viewer) this.addViewer(focused.clone());
         };
       case "|":
         return () => this.close(focused);
       case "n":
         // NB: This doesn't work in Chrome (it doesn't give us the keydown event for ctrl-n)
         return () => {
-          if (focused !== this.notifications)
-            this.notifications.focus();
-          else
-            this.focusNext();
+          if (focused !== this.notifications) this.notifications.focus();
+          else this.focusNext();
         };
       case "p":
         return () => this.togglePin(focused);
@@ -268,8 +303,7 @@ export class Surface {
         break;
     }
 
-    if (undefined !== dock)
-      return () => focused.addDock(dock!);
+    if (undefined !== dock) return () => focused.addDock(dock!);
 
     return undefined;
   }
@@ -306,8 +340,7 @@ export class Surface {
   public focus(window: Window): void {
     const index = this._windows.indexOf(window);
     if (index < 1) {
-      if (0 === index)
-        window.onFocus(); // for when we initially create the first window...
+      if (0 === index) window.onFocus(); // for when we initially create the first window...
 
       // not found, or already focused.
       return;
@@ -321,8 +354,12 @@ export class Surface {
     this.keyinField.loseFocus();
   }
 
-  public focusNext() { this.focusNextOrPrevious(true); }
-  public focusPrevious() { this.focusNextOrPrevious(false); }
+  public focusNext() {
+    this.focusNextOrPrevious(true);
+  }
+  public focusPrevious() {
+    this.focusNextOrPrevious(false);
+  }
   private focusNextOrPrevious(next: boolean): void {
     // Focusing a window moves it to the front of the _windows array. So that array is ordered by most-recently- to least-recently-focused.
     if (next) {
@@ -372,8 +409,7 @@ export class Surface {
     for (const window of this._windows) {
       if (window instanceof Viewer) {
         ++num;
-        if (num > 1)
-          return true;
+        if (num > 1) return true;
       }
     }
 
@@ -389,14 +425,12 @@ export class Surface {
   }
 
   public close(window: Window): void {
-    if (window.isCloseable)
-      this.forceClose(window);
+    if (window.isCloseable) this.forceClose(window);
   }
 
   public closeAllViewers(): void {
     const viewers = this._windows.filter((x) => x instanceof Viewer);
-    for (const viewer of viewers)
-      this.forceClose(viewer);
+    for (const viewer of viewers) this.forceClose(viewer);
   }
 
   public forceClose(window: Window): void {
@@ -430,8 +464,12 @@ export class Surface {
 
 export class CreateWindowTool extends Tool {
   public static override toolId = "CreateWindow";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async run(props: NamedWindowProps): Promise<boolean> {
     DisplayTestApp.surface.createNamedWindow(props);
@@ -444,18 +482,20 @@ export class CreateWindowTool extends Tool {
 
     const args = parseArgs(inputArgs);
     const id = args.get("id");
-    if (undefined !== id)
-      name = id;
+    if (undefined !== id) name = id;
 
     const title = args.get("title");
-    if (undefined !== title)
-      props.title = title;
+    if (undefined !== title) props.title = title;
 
-    const sides: Array<"top" | "left" | "width" | "height"> = ["top", "left", "width", "height"];
+    const sides: Array<"top" | "left" | "width" | "height"> = [
+      "top",
+      "left",
+      "width",
+      "height",
+    ];
     for (const key of sides) {
       const value = args.getInteger(key);
-      if (undefined !== value)
-        props[key] = value;
+      if (undefined !== value) props[key] = value;
     }
 
     if (undefined !== name) {
@@ -468,15 +508,21 @@ export class CreateWindowTool extends Tool {
 }
 
 export abstract class WindowIdTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public abstract execute(_window: Window): void;
 
   public override async run(windowId?: string): Promise<boolean> {
-    const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
-    if (undefined !== window)
-      this.execute(window);
+    const window =
+      undefined !== windowId
+        ? Surface.instance.findWindowById(windowId)
+        : Surface.instance.focusedWindow;
+    if (undefined !== window) this.execute(window);
 
     return true;
   }
@@ -496,8 +542,7 @@ export class FocusWindowTool extends WindowIdTool {
 export class MaximizeWindowTool extends WindowIdTool {
   public static override toolId = "MaximizeWindow";
   public execute(window: Window): void {
-    if (!window.isDocked)
-      window.dock(Dock.Full);
+    if (!window.isDocked) window.dock(Dock.Full);
   }
 }
 
@@ -516,13 +561,23 @@ export class CloseWindowTool extends WindowIdTool {
 }
 export class ResizeWindowTool extends Tool {
   public static override toolId = "ResizeWindow";
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 2;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
-  public override async run(width: number, height: number, id?: string): Promise<boolean> {
-    const window = undefined !== id ? Surface.instance.findWindowById(id) : Surface.instance.focusedWindow;
-    if (undefined !== window)
-      window.resizeContent(width, height);
+  public override async run(
+    width: number,
+    height: number,
+    id?: string
+  ): Promise<boolean> {
+    const window =
+      undefined !== id
+        ? Surface.instance.findWindowById(id)
+        : Surface.instance.focusedWindow;
+    if (undefined !== window) window.resizeContent(width, height);
 
     return true;
   }
@@ -531,8 +586,7 @@ export class ResizeWindowTool extends Tool {
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const w = parseInt(args[0], 10);
     const h = parseInt(args[1], 10);
-    if (!Number.isNaN(w) || !Number.isNaN(h))
-      await this.run(w, h, args[2]);
+    if (!Number.isNaN(w) || !Number.isNaN(h)) await this.run(w, h, args[2]);
 
     return true;
   }
@@ -540,13 +594,19 @@ export class ResizeWindowTool extends Tool {
 
 export class DockWindowTool extends Tool {
   public static override toolId = "DockWindow";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(dock: Dock, windowId?: string): Promise<boolean> {
-    const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
-    if (undefined !== window)
-      window.dock(dock);
+    const window =
+      undefined !== windowId
+        ? Surface.instance.findWindowById(windowId)
+        : Surface.instance.focusedWindow;
+    if (undefined !== window) window.dock(dock);
 
     return true;
   }
@@ -572,8 +632,7 @@ export class DockWindowTool extends Tool {
       }
     }
 
-    if (0 !== dock)
-      await this.run(dock, args[1]);
+    if (0 !== dock) await this.run(dock, args[1]);
 
     return true;
   }
@@ -581,36 +640,46 @@ export class DockWindowTool extends Tool {
 
 export class CloneViewportTool extends Tool {
   public static override toolId = "CloneViewport";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(viewportId?: number): Promise<boolean> {
     if (undefined === viewportId) {
       const selectedView = IModelApp.viewManager.selectedView;
-      if (undefined === selectedView)
-        return true;
+      if (undefined === selectedView) return true;
 
       viewportId = selectedView.viewportId;
     }
 
     const surface = DisplayTestApp.surface;
     const viewer = surface.findViewerByViewportId(viewportId);
-    if (undefined !== viewer)
-      surface.addViewer(viewer.clone());
+    if (undefined !== viewer) surface.addViewer(viewer.clone());
 
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const viewportId = parseInt(args[0], 10);
-    return undefined !== viewportId && !Number.isNaN(viewportId) && this.run(viewportId);
+    return (
+      undefined !== viewportId &&
+      !Number.isNaN(viewportId) &&
+      this.run(viewportId)
+    );
   }
 }
 
 export class OpenIModelTool extends Tool {
   public static override toolId = "OpenIModel";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(filename?: string): Promise<boolean> {
     await Surface.instance.openFile(filename);
@@ -636,8 +705,7 @@ export class ReopenIModelTool extends Tool {
 
   public override async run(): Promise<boolean> {
     const viewer = Surface.instance.firstViewer;
-    if (undefined !== viewer)
-      await viewer.openFile(viewer.viewport.iModel.key);
+    if (undefined !== viewer) await viewer.openFile(viewer.viewport.iModel.key);
 
     return true;
   }

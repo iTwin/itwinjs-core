@@ -15,7 +15,10 @@ describe("Gradient.Symb", () => {
       angle: Angle.createDegrees(45.5),
       tint: 0.6,
       shift: 1,
-      keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+      keys: [
+        { value: 0.65, color: 100 },
+        { value: 0.12, color: 100 },
+      ],
     });
 
     const symbCopy = symb.clone();
@@ -29,7 +32,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -38,7 +44,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -56,7 +65,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -65,7 +77,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -74,7 +89,10 @@ describe("Gradient.Symb", () => {
       tint: 0.02,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -83,7 +101,10 @@ describe("Gradient.Symb", () => {
       tint: 0.6,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -92,7 +113,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 2,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -101,7 +125,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 5.576,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -110,7 +137,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(20.6),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -119,7 +149,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(122),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -128,7 +161,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.333, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.333, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -137,7 +173,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.78, color: 610 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.78, color: 610 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -146,7 +185,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 425 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 425 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -155,7 +197,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 611 }, { value: 0.731472008309797, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 611 },
+        { value: 0.731472008309797, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -164,7 +209,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.6767, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.6767, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -173,7 +221,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.8787, color: 230 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.8787, color: 230 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -182,7 +233,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 231 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 231 },
+      ],
     });
     symbArr.push(symb);
     symb = Gradient.Symb.fromJSON({
@@ -191,7 +245,10 @@ describe("Gradient.Symb", () => {
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
+      keys: [
+        { value: 0.6804815398789292, color: 610 },
+        { value: 0.731472008309797, color: 229 },
+      ],
     });
     symbArr.push(symb);
 
@@ -257,7 +314,10 @@ describe("Gradient.Symb", () => {
     it("produces an image of the specified dimensions", () => {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Linear,
-        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        keys: [
+          { value: 0.65, color: 100 },
+          { value: 0.12, color: 100 },
+        ],
       });
 
       const img = symb.getImage(123, 456);
@@ -268,7 +328,10 @@ describe("Gradient.Symb", () => {
     it("constraints width of thematic image to 1", () => {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        keys: [
+          { value: 0.65, color: 100 },
+          { value: 0.12, color: 100 },
+        ],
       });
 
       const img = symb.getImage(123, 456);
@@ -279,7 +342,10 @@ describe("Gradient.Symb", () => {
     it("includes thematic margin color", () => {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        keys: [
+          { value: 0.65, color: 100 },
+          { value: 0.12, color: 100 },
+        ],
         thematicSettings: { marginColor: 0x00ff00 },
       });
 
@@ -294,7 +360,10 @@ describe("Gradient.Symb", () => {
     it("produces an image of the specified dimensions", () => {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Linear,
-        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        keys: [
+          { value: 0.65, color: 100 },
+          { value: 0.12, color: 100 },
+        ],
       });
 
       const img = symb.produceImage({ width: 123, height: 456 });
@@ -305,7 +374,10 @@ describe("Gradient.Symb", () => {
     it("does not constrain dimensions of thematic images", () => {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        keys: [
+          { value: 0.65, color: 100 },
+          { value: 0.12, color: 100 },
+        ],
       });
 
       const img = symb.produceImage({ width: 123, height: 456 });
@@ -316,16 +388,27 @@ describe("Gradient.Symb", () => {
     it("allows thematic margin color to be included or omitted", () => {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        keys: [
+          { value: 0.65, color: 100 },
+          { value: 0.12, color: 100 },
+        ],
         thematicSettings: { marginColor: 0x00ff00 },
       });
 
-      let img = symb.produceImage({ width: 1, height: 8192, includeThematicMargin: true });
+      let img = symb.produceImage({
+        width: 1,
+        height: 8192,
+        includeThematicMargin: true,
+      });
       expect(getPixel(img, 0, 8191)).to.equal(0xff00ff00);
       expect(getPixel(img, 0, 127)).not.to.equal(0xff00ff00);
       expect(getPixel(img, 0, 0)).to.equal(0xff00ff00);
 
-      img = symb.produceImage({ width: 1, height: 8192, includeThematicMargin: false });
+      img = symb.produceImage({
+        width: 1,
+        height: 8192,
+        includeThematicMargin: false,
+      });
       expect(getPixel(img, 0, 8191)).not.to.equal(0xff00ff00);
       expect(getPixel(img, 0, 127)).not.to.equal(0xff00ff00);
       expect(getPixel(img, 0, 0)).not.to.equal(0xff00ff00);

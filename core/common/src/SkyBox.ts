@@ -72,7 +72,10 @@ export interface SkyCubeImageProps {
  * @public
  * @extensions
  */
-export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?: SkyBoxImageType, texture?: never, textures?: never };
+export type SkyBoxImageProps =
+  | SkySphereImageProps
+  | SkyCubeImageProps
+  | { type?: SkyBoxImageType; texture?: never; textures?: never };
 
 /** JSON representation of a [[SkyBox]] that can be drawn as the background of a [ViewState3d]($frontend).
  * An object of this type can describe one of several types of sky box:
@@ -185,8 +188,7 @@ export class SkyGradient {
 
   /** Create from JSON representation. */
   public static fromJSON(props?: SkyBoxProps): SkyGradient {
-    if (!props)
-      return this.defaults;
+    if (!props) return this.defaults;
 
     return new this({
       twoColor: props.twoColor,
@@ -221,19 +223,22 @@ export class SkyGradient {
     if (this.skyExponent !== defaultExponent)
       props.skyExponent = this.skyExponent;
 
-    if (this.twoColor)
-      props.twoColor = this.twoColor;
+    if (this.twoColor) props.twoColor = this.twoColor;
 
     return props;
   }
 
   /** Returns true if this gradient is equivalent to the supplied gradient. */
   public equals(other: SkyGradient): boolean {
-    if (this === other)
-      return true;
+    if (this === other) return true;
 
-    return this.twoColor === other.twoColor && this.skyColor.equals(other.skyColor) && this.groundColor.equals(other.groundColor) &&
-      this.zenithColor.equals(other.zenithColor) && this.nadirColor.equals(other.nadirColor);
+    return (
+      this.twoColor === other.twoColor &&
+      this.skyColor.equals(other.skyColor) &&
+      this.groundColor.equals(other.groundColor) &&
+      this.zenithColor.equals(other.zenithColor) &&
+      this.nadirColor.equals(other.nadirColor)
+    );
   }
 }
 
@@ -270,7 +275,15 @@ export class SkyBox {
           break;
         case SkyBoxImageType.Cube: {
           const tx = props.image.textures;
-          if (tx && undefined !== tx.top && undefined !== tx.bottom && undefined !== tx.right && undefined !== tx.left && undefined !== tx.front && undefined !== tx.back)
+          if (
+            tx &&
+            undefined !== tx.top &&
+            undefined !== tx.bottom &&
+            undefined !== tx.right &&
+            undefined !== tx.left &&
+            undefined !== tx.front &&
+            undefined !== tx.back
+          )
             return new SkyCube(tx, gradient);
 
           break;
@@ -286,8 +299,7 @@ export class SkyBox {
    */
   public toJSON(display?: boolean): SkyBoxProps {
     const props = this.gradient.toJSON();
-    if (undefined !== display)
-      props.display = display;
+    if (undefined !== display) props.display = display;
 
     return props;
   }
@@ -362,6 +374,13 @@ export class SkyCube extends SkyBox {
   /** @internal */
   public override get textureIds(): Iterable<Id64String> {
     const imgs = this.images;
-    return [imgs.front, imgs.back, imgs.top, imgs.bottom, imgs.left, imgs.right].filter((x) => Id64.isValidId64(x));
+    return [
+      imgs.front,
+      imgs.back,
+      imgs.top,
+      imgs.bottom,
+      imgs.left,
+      imgs.right,
+    ].filter((x) => Id64.isValidId64(x));
   }
 }

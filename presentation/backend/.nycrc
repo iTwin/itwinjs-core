@@ -4,9 +4,5 @@
   "functions": 100,
   "branches": 100,
   "lines": 100,
-  "exclude": [
-    "src/presentation-backend.ts",
-    "src/test/**",
-    "lib/cjs/test/**"
-  ]
+  "exclude": ["src/presentation-backend.ts", "src/test/**", "lib/cjs/test/**"]
 }

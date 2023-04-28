@@ -36,7 +36,14 @@ describe("Phenomenon tests", () => {
 
   describe("Async fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
+      const schema = new Schema(
+        new SchemaContext(),
+        "ExampleSchema",
+        "es",
+        1,
+        0,
+        0
+      );
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
     it("Basic test", async () => {
@@ -54,7 +61,14 @@ describe("Phenomenon tests", () => {
   });
   describe("Sync fromJson", () => {
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
+      const schema = new Schema(
+        new SchemaContext(),
+        "ExampleSchema",
+        "es",
+        1,
+        0,
+        0
+      );
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
     it("Basic test", () => {
@@ -73,7 +87,14 @@ describe("Phenomenon tests", () => {
 
   describe("toJSON", () => {
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
+      const schema = new Schema(
+        new SchemaContext(),
+        "ExampleSchema",
+        "es",
+        1,
+        0,
+        0
+      );
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
     it("async - Basic test", async () => {
@@ -134,7 +155,14 @@ describe("Phenomenon tests", () => {
     };
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
+      const schema = new Schema(
+        new SchemaContext(),
+        "ExampleSchema",
+        "es",
+        1,
+        0,
+        0
+      );
       testPhenomenon = new Phenomenon(schema, "AREA");
     });
 

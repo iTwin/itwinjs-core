@@ -7,20 +7,46 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
+import {
+  IModelError,
+  ServerError,
+  ServerTimeoutError,
+} from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
-import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
+import {
+  RpcContentType,
+  RpcProtocolEvent,
+  WEB_RPC_CONSTANTS,
+} from "../core/RpcConstants";
+import {
+  MarshalingBinaryMarker,
+  RpcSerializedValue,
+} from "../core/RpcMarshaling";
+import {
+  RpcRequestFulfillment,
+  SerializedRpcRequest,
+} from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
-import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import {
+  HttpServerRequest,
+  HttpServerResponse,
+  WebAppRpcProtocol,
+} from "./WebAppRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
 
 /** @internal */
-export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
+export type HttpMethod_T =
+  | "get"
+  | "put"
+  | "post"
+  | "delete"
+  | "options"
+  | "head"
+  | "patch"
+  | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
 
 /** A web application RPC request.
  * @internal
@@ -29,7 +55,9 @@ export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
   private _request: RequestInit = {};
   private _pathSuffix: string = "";
-  private get _headers() { return this._request.headers as { [key: string]: string }; }
+  private get _headers() {
+    return this._request.headers as { [key: string]: string };
+  }
 
   /** The maximum size permitted for an encoded component in a URL.
    * Note that some backends limit the total cumulative request size. Our current node backends accept requests with a max size of 16 kb.
@@ -42,13 +70,17 @@ export class WebAppRpcRequest extends RpcRequest {
   public override method: HttpMethod_T;
 
   /** Convenience access to the protocol of this request. */
-  public override readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
+  public override readonly protocol: WebAppRpcProtocol = this.client
+    .configuration.protocol as any;
 
   /** Standardized access to metadata about the request (useful for purposes such as logging). */
   public metadata = { status: 0, message: "" };
 
   /** Parses a request. */
-  public static async parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
+  public static async parseRequest(
+    protocol: WebAppRpcProtocol,
+    req: HttpServerRequest
+  ): Promise<SerializedRpcRequest> {
     return this.backend.parseRequest(protocol, req);
   }
 
@@ -58,14 +90,20 @@ export class WebAppRpcRequest extends RpcRequest {
     request: SerializedRpcRequest,
     fulfillment: RpcRequestFulfillment,
     req: HttpServerRequest,
-    res: HttpServerResponse,
+    res: HttpServerResponse
   ): Promise<void> {
     return this.backend.sendResponse(protocol, request, fulfillment, req, res);
   }
 
   /** Determines the most efficient transport type for an RPC value. */
-  public static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType {
-    if (source instanceof Uint8Array || (Array.isArray(source) && source[0] instanceof Uint8Array)) {
+  public static computeTransportType(
+    value: RpcSerializedValue,
+    source: any
+  ): RpcContentType {
+    if (
+      source instanceof Uint8Array ||
+      (Array.isArray(source) && source[0] instanceof Uint8Array)
+    ) {
       return RpcContentType.Binary;
     } else if (value.data.length > 0) {
       return RpcContentType.Multipart;
@@ -77,7 +115,11 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Constructs a web application request. */
-  public constructor(client: RpcInterface, operation: string, parameters: any[]) {
+  public constructor(
+    client: RpcInterface,
+    operation: string,
+    parameters: any[]
+  ) {
     super(client, operation, parameters);
     this.path = this.protocol.supplyPathForOperation(this.operation, this);
     this.method = "head";
@@ -98,13 +140,19 @@ export class WebAppRpcRequest extends RpcRequest {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
-        reject(new ServerError(-1, typeof (reason) === "string" ? reason : "Server connection error."));
+        reject(
+          new ServerError(
+            -1,
+            typeof reason === "string" ? reason : "Server connection error."
+          )
+        );
       }
     });
   }
 
   protected override computeRetryAfter(attempts: number): number {
-    const retryAfter = this._response && this._response.headers.get("Retry-After");
+    const retryAfter =
+      this._response && this._response.headers.get("Retry-After");
     if (retryAfter) {
       this.resetTransientFaultCount();
 
@@ -135,8 +183,7 @@ export class WebAppRpcRequest extends RpcRequest {
   protected async load(): Promise<RpcSerializedValue> {
     return new Promise<RpcSerializedValue>(async (resolve, reject) => {
       try {
-        if (!this._loading)
-          return;
+        if (!this._loading) return;
 
         const response = this._response;
         if (!response) {
@@ -145,7 +192,9 @@ export class WebAppRpcRequest extends RpcRequest {
         }
 
         if (this.protocol.protocolVersionHeaderName) {
-          const version = response.headers.get(this.protocol.protocolVersionHeaderName);
+          const version = response.headers.get(
+            this.protocol.protocolVersionHeaderName
+          );
           if (version) {
             this.responseProtocolVersion = parseInt(version, 10);
           }
@@ -166,11 +215,17 @@ export class WebAppRpcRequest extends RpcRequest {
         this.setLastUpdatedTime();
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
       } catch (reason) {
-        if (!this._loading)
-          return;
+        if (!this._loading) return;
 
         this._loading = false;
-        reject(new ServerError(this.metadata.status, typeof (reason) === "string" ? reason : "Unknown server response error."));
+        reject(
+          new ServerError(
+            this.metadata.status,
+            typeof reason === "string"
+              ? reason
+              : "Unknown server response error."
+          )
+        );
       }
     });
   }
@@ -189,7 +244,10 @@ export class WebAppRpcRequest extends RpcRequest {
     const requestClass = this.supplyRequest();
     const fetchFunction = this.supplyFetch();
 
-    const path = new URL(this.path, typeof (location) !== "undefined" ? location.origin : undefined);
+    const path = new URL(
+      this.path,
+      typeof location !== "undefined" ? location.origin : undefined
+    );
     if (this._pathSuffix) {
       const params = new URLSearchParams();
       params.set("parameters", this._pathSuffix);
@@ -217,13 +275,19 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private async loadMultipart(response: Response, contentType: string) {
     const data = await response.arrayBuffer();
-    const value = new RpcMultipartParser(contentType, new Uint8Array(data)).parse();
+    const value = new RpcMultipartParser(
+      contentType,
+      new Uint8Array(data)
+    ).parse();
     return value;
   }
 
   private async setupTransport(): Promise<void> {
     const parameters = (await this.protocol.serialize(this)).parameters;
-    const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
+    const transportType = WebAppRpcRequest.computeTransportType(
+      parameters,
+      this.parameters
+    );
 
     if (transportType === RpcContentType.Binary) {
       this.setupBinaryTransport(parameters);
@@ -267,10 +331,19 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** @internal */
   public static backend = {
-    sendResponse: async (_protocol: WebAppRpcProtocol, _request: SerializedRpcRequest, _fulfillment: RpcRequestFulfillment, _req: HttpServerRequest, _res: HttpServerResponse): Promise<void> => {
+    sendResponse: async (
+      _protocol: WebAppRpcProtocol,
+      _request: SerializedRpcRequest,
+      _fulfillment: RpcRequestFulfillment,
+      _req: HttpServerRequest,
+      _res: HttpServerResponse
+    ): Promise<void> => {
       throw new IModelError(BentleyStatus.ERROR, "Not bound.");
     },
-    parseRequest: async (_protocol: WebAppRpcProtocol, _req: HttpServerRequest): Promise<SerializedRpcRequest> => {
+    parseRequest: async (
+      _protocol: WebAppRpcProtocol,
+      _req: HttpServerRequest
+    ): Promise<SerializedRpcRequest> => {
       throw new IModelError(BentleyStatus.ERROR, "Not bound.");
     },
   };

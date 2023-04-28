@@ -21,10 +21,11 @@ export class NodeTestRunner {
     require("../../utils/initSourceMaps");
 
     // Load tests
-    const frontendBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
+    const frontendBundle =
+      (config.cover && config.instrumentedTestBundle) || config.testBundle;
     require(frontendBundle);
 
     // Execute tests
-    mocha.run((failedCount) => process.exitCode = failedCount);
+    mocha.run((failedCount) => (process.exitCode = failedCount));
   }
 }

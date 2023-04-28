@@ -11,14 +11,12 @@ import { TestContext } from "./setup/TestContext";
 const expect = chai.expect;
 
 describe("IModel Views", () => {
-
   let iModel: IModelConnection;
 
   before(async function () {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
   });

@@ -30,14 +30,24 @@ export type RemoveFunction = () => void;
  * frontend will re-throw a [BackendError]$(frontend) with the `errorNumber` and `message` values. Otherwise the `result`
  * member holds the response.
  * @internal */
-export type IpcInvokeReturn = { result: any, error?: never } | { result?: never, error: { name: string, message: string, errorNumber: number, stack?: string } };
+export type IpcInvokeReturn =
+  | { result: any; error?: never }
+  | {
+      result?: never;
+      error: {
+        name: string;
+        message: string;
+        errorNumber: number;
+        stack?: string;
+      };
+    };
 
 /**
  * An inter-process socket connection between a single [IModelHost]($backend) on the backend (the node process), and an [IModelApp]($frontend) on
  * the frontend (the browser process.) Each side will implement this interface to form a two way connection. The frontend and backend
  * processes connected through an IpcSocket don't necessarily have to be on the same computer, but often are.
  * @public
-*/
+ */
 export interface IpcSocket {
   /**
    * Send a message over the socket.
@@ -92,6 +102,8 @@ export interface IpcSocketBackend extends IpcSocket {
    * @param handler A function that supplies the implementation for methods invoked over `channel` via [[IpcSocketFrontend.invoke]]
    * @note returns A function to call to remove the handler.
    */
-  handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
+  handle: (
+    channel: string,
+    handler: (...args: any[]) => Promise<any>
+  ) => RemoveFunction;
 }
-

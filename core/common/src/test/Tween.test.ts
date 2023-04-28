@@ -16,8 +16,8 @@ import { Easing, Tween, Tweens } from "../Tween";
 
 // cSpell:ignore tweens tweening yoyo progressess tween's
 
-const tweenCallback = (_obj: any) => { };
-const updateCallback = (_obj: any, _t: number) => { };
+const tweenCallback = (_obj: any) => {};
+const updateCallback = (_obj: any, _t: number) => {};
 const interpolationFunction = (_v: any, _k: number) => 1;
 
 describe("Tween", () => {
@@ -34,7 +34,6 @@ describe("Tween", () => {
   });
 
   it("removeAll()", () => {
-
     tweens.getAll();
     const t = tweens.create({});
 
@@ -82,7 +81,6 @@ describe("Tween", () => {
   });
 
   it("update() returns true when there are active tweens", () => {
-
     tweens.removeAll();
 
     const t = tweens.create({});
@@ -92,7 +90,6 @@ describe("Tween", () => {
   });
 
   it("update() removes tweens when they are finished", () => {
-
     tweens.removeAll();
 
     const t1 = tweens.create({}).to({}, 1000),
@@ -118,7 +115,6 @@ describe("Tween", () => {
   });
 
   it("update() does not remove tweens when they are finished with preserve flag", () => {
-
     tweens.removeAll();
 
     const t1 = tweens.create({}).to({}, 1000),
@@ -147,7 +143,6 @@ describe("Tween", () => {
   });
 
   it("Unremoved tweens which have been updated past their finish time may be reused", () => {
-
     tweens.removeAll();
 
     const target1 = { a: 0 };
@@ -169,7 +164,6 @@ describe("Tween", () => {
   });
 
   it("constructor", () => {
-
     const t = tweens.create({});
 
     assert.ok(t instanceof Tween, "Pass");
@@ -214,11 +208,9 @@ describe("Tween", () => {
 
     assert.ok(t.group(tweens) instanceof Tween);
     assert.equal(t.group(tweens), t);
-
   });
 
   it("Tween existing property", () => {
-
     const obj = { x: 1 },
       t = tweens.create(obj);
 
@@ -230,7 +222,6 @@ describe("Tween", () => {
   });
 
   it("Tween non-existing property", () => {
-
     const obj: any = { x: 1 },
       t = tweens.create(obj);
 
@@ -243,7 +234,6 @@ describe("Tween", () => {
   });
 
   it("Tween non-null property", () => {
-
     const obj = { x: 1 },
       t = tweens.create(obj);
 
@@ -256,8 +246,7 @@ describe("Tween", () => {
   });
 
   it("Tween function property", () => {
-
-    const myFunction = () => { };
+    const myFunction = () => {};
 
     const obj = { x: myFunction },
       t = tweens.create(obj);
@@ -270,11 +259,10 @@ describe("Tween", () => {
   });
 
   it("Tween boolean property", () => {
-
     const obj = { x: true },
       t = tweens.create(obj);
 
-    t.to({ x: () => { } });
+    t.to({ x: () => {} });
     t.start(0);
     t.update(1000);
 
@@ -283,7 +271,6 @@ describe("Tween", () => {
   });
 
   it("Tween null property", () => {
-
     const obj = { x: null },
       t = tweens.create(obj);
 
@@ -295,7 +282,6 @@ describe("Tween", () => {
   });
 
   it("Tween undefined property", () => {
-
     const obj: any = {},
       t = tweens.create(obj);
 
@@ -307,7 +293,6 @@ describe("Tween", () => {
   });
 
   it("Tween relative positive value, with sign", () => {
-
     const obj = { x: 0 },
       t = tweens.create(obj);
 
@@ -319,7 +304,6 @@ describe("Tween", () => {
   });
 
   it("Tween relative negative value", () => {
-
     const obj = { x: 0 },
       t = tweens.create(obj);
 
@@ -331,7 +315,6 @@ describe("Tween", () => {
   });
 
   it("String values without a + or - sign should not be interpreted as relative", () => {
-
     const obj = { x: 100 },
       t = tweens.create(obj);
 
@@ -343,7 +326,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.start()", () => {
-
     const obj = {},
       t = tweens.create(obj);
 
@@ -359,7 +341,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.stop()", () => {
-
     const obj = {},
       t = tweens.create(obj);
 
@@ -374,7 +355,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.delay()", () => {
-
     const obj = { x: 1 },
       t = tweens.create(obj);
 
@@ -388,7 +368,10 @@ describe("Tween", () => {
 
     t.update(1000);
 
-    assert.ok((obj.x !== 1) && (obj.x !== 2), "Tween has started but hasn't finished yet");
+    assert.ok(
+      obj.x !== 1 && obj.x !== 2,
+      "Tween has started but hasn't finished yet"
+    );
 
     t.update(1500);
 
@@ -397,7 +380,6 @@ describe("Tween", () => {
 
   // TODO: not really sure how to test this. Advice appreciated!
   it("Test Easing()", () => {
-
     const obj = { x: 0 },
       t = tweens.create(obj);
 
@@ -412,7 +394,6 @@ describe("Tween", () => {
   // TODO test interpolation()
 
   it("Test Tween.chain --with one tween", () => {
-
     const t2 = tweens.create({}),
       t = tweens.create({});
     let tStarted = false,
@@ -460,7 +441,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.chain --with several tweens in an array", () => {
-
     const t = tweens.create({}),
       chainedTweens = [],
       numChained = 3;
@@ -496,11 +476,14 @@ describe("Tween", () => {
     tweens.update(1000);
     tweens.update(1001);
 
-    assert.equal(numChainedStarted, numChained, "All chained tweens have been started");
+    assert.equal(
+      numChainedStarted,
+      numChained,
+      "All chained tweens have been started"
+    );
   });
 
   it("Test Tween.chain allows endless loops", () => {
-
     const obj = { x: 0 },
       t1 = tweens.create(obj).to({ x: 100 }, 1000),
       t2 = tweens.create(obj).to({ x: 0 }, 1000);
@@ -582,11 +565,9 @@ describe("Tween", () => {
 
     tweens.update(4500);
     assert.equal(obj2.x, 50);
-
   });
 
   it("Test Tween.onStart", () => {
-
     const obj = {},
       t = tweens.create(obj);
     let counter = 0;
@@ -610,7 +591,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.onStop", () => {
-
     const obj = {},
       t = tweens.create(obj);
     let counter = 0;
@@ -626,22 +606,33 @@ describe("Tween", () => {
     t.stop();
     tweens.update(0);
 
-    assert.deepEqual(counter, 0, "onStop callback not called when the tween hasn't started yet");
+    assert.deepEqual(
+      counter,
+      0,
+      "onStop callback not called when the tween hasn't started yet"
+    );
 
     t.start(0);
     tweens.update(0);
     t.stop();
 
-    assert.deepEqual(counter, 1, "onStop callback is called if the tween has been started already and stop is invoked");
+    assert.deepEqual(
+      counter,
+      1,
+      "onStop callback is called if the tween has been started already and stop is invoked"
+    );
 
     tweens.update(500);
     t.stop();
 
-    assert.deepEqual(counter, 1, "onStop callback is not called again once the tween is stopped");
+    assert.deepEqual(
+      counter,
+      1,
+      "onStop callback is not called again once the tween is stopped"
+    );
   });
 
   it("Test Tween.onUpdate", () => {
-
     const obj = {},
       t = tweens.create(obj);
     let counter = 0;
@@ -668,12 +659,14 @@ describe("Tween", () => {
     assert.deepEqual(counter, 4);
 
     tweens.update(1500);
-    assert.deepEqual(counter, 4, "onUpdate callback should not be called after the tween has finished");
-
+    assert.deepEqual(
+      counter,
+      4,
+      "onUpdate callback should not be called after the tween has finished"
+    );
   });
 
   it("Test Tween.onComplete", () => {
-
     const obj = {},
       t = tweens.create(obj);
     let counter = 0;
@@ -700,11 +693,14 @@ describe("Tween", () => {
     assert.deepEqual(counter, 1);
 
     tweens.update(1500);
-    assert.deepEqual(counter, 1, "onComplete callback must be called only once");
+    assert.deepEqual(
+      counter,
+      1,
+      "onComplete callback must be called only once"
+    );
   });
 
   it("Tween does not repeat by default", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
@@ -726,7 +722,6 @@ describe("Tween", () => {
   });
 
   it("Test single repeat happens only once", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
@@ -751,7 +746,6 @@ describe("Tween", () => {
   });
 
   it("Test Infinity repeat happens forever", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
@@ -779,7 +773,6 @@ describe("Tween", () => {
   });
 
   it("Test tweening relatively with repeat", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0, y: 0 },
@@ -809,7 +802,6 @@ describe("Tween", () => {
   });
 
   it("Test yoyo with repeat Infinity happens forever", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
@@ -837,7 +829,6 @@ describe("Tween", () => {
   });
 
   it("Test yoyo with repeat 1 happens once", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
@@ -865,7 +856,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.chain progressess into chained tweens", () => {
-
     const obj = { t: 1000 };
 
     // 1000 of nothing
@@ -881,11 +871,9 @@ describe("Tween", () => {
 
     tweens.update(2000);
     assert.equal(obj.t, 2000);
-
   });
 
   it("Test that Tween.end sets the final values.", () => {
-
     const object1 = { x: 0, y: -50, z: 1000 };
     const target1 = { x: 50, y: 123, z: "+234" };
 
@@ -910,21 +898,21 @@ describe("Tween", () => {
     assert.equal(object2.x, 50);
     assert.equal(object2.y, 123);
     assert.equal(object2.z, 1234);
-
   });
 
   it("Test that Tween.end calls the onComplete callback of the tween.", () => {
-    const tween1 = tweens.create({}).to({}, 1000).onComplete(() => {
-      assert.ok(true);
-    });
+    const tween1 = tweens
+      .create({})
+      .to({}, 1000)
+      .onComplete(() => {
+        assert.ok(true);
+      });
 
     tween1.start();
     tween1.end();
-
   });
 
   it("Test delay adds delay before each repeat", () => {
-
     // If repeatDelay isn't specified then delay is used since
     // that's the way it worked before repeatDelay was added.
 
@@ -955,11 +943,9 @@ describe("Tween", () => {
 
     tweens.update(400);
     assert.equal(obj.x, 100);
-
   });
 
   it("Test repeatDelay adds delay before each repeat", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
@@ -987,15 +973,18 @@ describe("Tween", () => {
 
     tweens.update(400);
     assert.equal(obj.x, 100);
-
   });
 
   it("Test repeatDelay and delay can be used together", () => {
-
     tweens.removeAll();
 
     const obj = { x: 0 },
-      t = tweens.create(obj).to({ x: 100 }, 100).delay(100).repeat(1).repeatDelay(200);
+      t = tweens
+        .create(obj)
+        .to({ x: 100 }, 100)
+        .delay(100)
+        .repeat(1)
+        .repeatDelay(200);
 
     t.start(0);
 
@@ -1019,11 +1008,9 @@ describe("Tween", () => {
 
     tweens.update(500);
     assert.equal(obj.x, 100);
-
   });
 
   it("js compatible with Object.defineProperty getter / setters", () => {
-
     const obj: any = { _x: 0 }; // eslint-disable-line @typescript-eslint/naming-convention
 
     Object.defineProperty(obj, "x", {
@@ -1051,7 +1038,6 @@ describe("Tween", () => {
 
     tweens.update(115);
     assert.equal(obj.x, 100);
-
   });
 
   it("isPlaying is false before the tween starts", () => {
@@ -1094,13 +1080,15 @@ describe("Tween", () => {
   it("Stopping a tween within an update callback will not cause an error.", () => {
     tweens.removeAll();
 
-    const tweenA = tweens.create({ x: 1, y: 2 })
+    const tweenA = tweens
+      .create({ x: 1, y: 2 })
       .to({ x: 3, y: 4 }, 1000)
       .onUpdate((_values) => {
         tweenB.stop();
       })
       .start(0);
-    const tweenB = tweens.create({ x: 5, y: 6 })
+    const tweenB = tweens
+      .create({ x: 5, y: 6 })
       .to({ x: 7, y: 8 })
       .onUpdate((_values) => {
         tweenA.stop();
@@ -1120,10 +1108,7 @@ describe("Tween", () => {
 
   it("Set the duration with .duration", () => {
     const obj = { x: 1 };
-    const t = tweens.create(obj)
-      .to({ x: 2 })
-      .duration(1000)
-      .start(0);
+    const t = tweens.create(obj).to({ x: 2 }).duration(1000).start(0);
 
     t.update(1000);
 
@@ -1131,11 +1116,9 @@ describe("Tween", () => {
   });
 
   it("group sets the tween's group.", () => {
-
     const group = new Tweens();
 
-    const groupTweenA = tweens.create({})
-      .group(group);
+    const groupTweenA = tweens.create({}).group(group);
 
     groupTweenA.start();
 
@@ -1143,7 +1126,6 @@ describe("Tween", () => {
   });
 
   it("Test Tween.pause() and Tween.resume()", () => {
-
     const obj = { x: 0.0 },
       t = tweens.create(obj);
 
@@ -1191,11 +1173,9 @@ describe("Tween", () => {
     tweens.update(5000);
 
     assert.equal(obj.x, 1.0);
-
   });
 
   it("Arrays in the object passed to to() are not modified by start().", () => {
-
     const start = { x: 10, y: 20 };
     const end = { x: 100, y: 200, values: ["a", "b"] };
     const valuesArray = end.values;

@@ -19,13 +19,17 @@ export class Schema {
    * Failure to do so will ordinarily result in an error when the schema is registered, since there may only
    * be one JavaScript class for a given BIS schema (usually the errant schema will collide with its superclass.)
    */
-  public static get schemaName(): string { throw new Error(`you must override static schemaName in ${this.name}`); }
+  public static get schemaName(): string {
+    throw new Error(`you must override static schemaName in ${this.name}`);
+  }
 
   /** if true, this Schema is a proxy for a missing Domain marked with the `BisCore.SchemaHasBehavior` customAttribute.
    * Classes generated for this Schema will disallow protected operations.
    * @internal
    */
-  public static get missingRequiredBehavior(): boolean { return false; }
+  public static get missingRequiredBehavior(): boolean {
+    return false;
+  }
 
   /** Get a semver-compatible string from a padded version string.
    * works on unpadded version strings as well
@@ -37,8 +41,7 @@ export class Schema {
   public static toSemverString(paddedVersion: string): string {
     const tuple = paddedVersion.split(".").map(Number);
     const noWriteVersion = tuple.length === 2;
-    if (noWriteVersion)
-      tuple.splice(1, 0, 0); // insert 0 before the second element
+    if (noWriteVersion) tuple.splice(1, 0, 0); // insert 0 before the second element
     return tuple.join(".");
   }
 
@@ -46,7 +49,11 @@ export class Schema {
    * error if it is ever called.
    * @internal
    */
-  protected constructor() { throw new Error(`cannot create an instance of a Schema ${this.constructor.name}`); }
+  protected constructor() {
+    throw new Error(
+      `cannot create an instance of a Schema ${this.constructor.name}`
+    );
+  }
 }
 
 /** Manages registered schemas
@@ -54,7 +61,7 @@ export class Schema {
  */
 export class Schemas {
   private static readonly _registeredSchemas = new Map<string, typeof Schema>();
-  private constructor() { } // this is a singleton
+  private constructor() {} // this is a singleton
 
   /** Register a schema prior to using it.
    * @throws [[IModelError]] if a schema of the same name is already registered.
@@ -62,7 +69,10 @@ export class Schemas {
   public static registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();
     if (this.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`);
+      throw new IModelError(
+        IModelStatus.DuplicateName,
+        `Schema "${schema.schemaName}" is already registered`
+      );
     this._registeredSchemas.set(key, schema);
   }
 
@@ -74,8 +84,7 @@ export class Schemas {
    */
   public static unregisterSchema(schemaName: string): boolean {
     const schema = this.getRegisteredSchema(schemaName);
-    if (undefined !== schema)
-      ClassRegistry.unregisterClassesFrom(schema);
+    if (undefined !== schema) ClassRegistry.unregisterClassesFrom(schema);
 
     return this._registeredSchemas.delete(schemaName.toLowerCase());
   }
@@ -84,5 +93,9 @@ export class Schemas {
    * @param schemaName The name of the schema
    * @returns the previously registered schema or undefined if not registered.
    */
-  public static getRegisteredSchema(schemaName: string): typeof Schema | undefined { return this._registeredSchemas.get(schemaName.toLowerCase()); }
+  public static getRegisteredSchema(
+    schemaName: string
+  ): typeof Schema | undefined {
+    return this._registeredSchemas.get(schemaName.toLowerCase());
+  }
 }

@@ -39,11 +39,16 @@ export class MeshData implements WebGLDisposable {
   public readonly viewIndependentOrigin?: Point3d;
   private readonly _textureAlwaysDisplayed: boolean;
 
-  private constructor(lut: VertexLUT, params: MeshParams, viOrigin: Point3d | undefined) {
+  private constructor(
+    lut: VertexLUT,
+    params: MeshParams,
+    viOrigin: Point3d | undefined
+  ) {
     this.lut = lut;
     this.viewIndependentOrigin = viOrigin;
 
-    this.hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
+    this.hasFeatures =
+      FeatureIndexType.Empty !== params.vertices.featureIndexType;
     if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
       this.uniformFeatureId = params.vertices.uniformFeatureID;
 
@@ -51,13 +56,19 @@ export class MeshData implements WebGLDisposable {
     this.normalMapUsesConstantLod = false;
     if (undefined !== params.surface.textureMapping) {
       this.texture = params.surface.textureMapping.texture as Texture;
-      this._textureAlwaysDisplayed = params.surface.textureMapping.alwaysDisplayed;
-      if (undefined !== params.surface.material && !params.surface.material.isAtlas) {
+      this._textureAlwaysDisplayed =
+        params.surface.textureMapping.alwaysDisplayed;
+      if (
+        undefined !== params.surface.material &&
+        !params.surface.material.isAtlas
+      ) {
         const matTM = params.surface.material.material.textureMapping;
         if (undefined !== matTM) {
-          this.textureUsesConstantLod = this.texture && matTM.params.useConstantLod;
+          this.textureUsesConstantLod =
+            this.texture && matTM.params.useConstantLod;
           if (undefined !== matTM.normalMapParams) {
-            this.normalMapUsesConstantLod = matTM.normalMapParams.useConstantLod;
+            this.normalMapUsesConstantLod =
+              matTM.normalMapParams.useConstantLod;
             if (undefined !== matTM.normalMapParams.normalMap) {
               this.normalMap = matTM.normalMapParams.normalMap as Texture;
             } else {
@@ -68,13 +79,18 @@ export class MeshData implements WebGLDisposable {
           }
           if (this.normalMapUsesConstantLod || this.textureUsesConstantLod) {
             this.constantLodVParams = new Float32Array(3);
-            this.constantLodVParams[0] = matTM.params.constantLodParams.offset.x; // x offset
-            this.constantLodVParams[1] = matTM.params.constantLodParams.offset.y; // y offset
-            this.constantLodVParams[3] = 0.0;                                     // placeholder for orto view distance
+            this.constantLodVParams[0] =
+              matTM.params.constantLodParams.offset.x; // x offset
+            this.constantLodVParams[1] =
+              matTM.params.constantLodParams.offset.y; // y offset
+            this.constantLodVParams[3] = 0.0; // placeholder for orto view distance
             this.constantLodFParams = new Float32Array(3);
-            this.constantLodFParams[0] = matTM.params.constantLodParams.minDistClamp; // Minimum texture size
-            this.constantLodFParams[1] = matTM.params.constantLodParams.maxDistClamp; // Maximum texture size
-            this.constantLodFParams[2] = matTM.params.constantLodParams.repetitions;  // # repetitions of pattern (to scale it)
+            this.constantLodFParams[0] =
+              matTM.params.constantLodParams.minDistClamp; // Minimum texture size
+            this.constantLodFParams[1] =
+              matTM.params.constantLodParams.maxDistClamp; // Maximum texture size
+            this.constantLodFParams[2] =
+              matTM.params.constantLodParams.repetitions; // # repetitions of pattern (to scale it)
           }
         }
       }
@@ -91,24 +107,37 @@ export class MeshData implements WebGLDisposable {
     this.hasBakedLighting = params.surface.hasBakedLighting;
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
-    this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);
+    this.edgeLineCode = LineCode.valueFromLinePixels(
+      undefined !== edges ? edges.linePixels : LinePixels.Solid
+    );
   }
 
-  public static create(params: MeshParams, viOrigin: Point3d | undefined): MeshData | undefined {
-    const lut = VertexLUT.createFromVertexTable(params.vertices, params.auxChannels);
+  public static create(
+    params: MeshParams,
+    viOrigin: Point3d | undefined
+  ): MeshData | undefined {
+    const lut = VertexLUT.createFromVertexTable(
+      params.vertices,
+      params.auxChannels
+    );
     return undefined !== lut ? new MeshData(lut, params, viOrigin) : undefined;
   }
 
-  public get isDisposed(): boolean { return undefined === this.texture && this.lut.isDisposed; }
+  public get isDisposed(): boolean {
+    return undefined === this.texture && this.lut.isDisposed;
+  }
 
   public dispose() {
     dispose(this.lut);
-    if (this._ownsTexture)
-      this.texture!.dispose();
+    if (this._ownsTexture) this.texture!.dispose();
   }
 
-  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
-  public get isTextureAlwaysDisplayed() { return this.isGlyph || this._textureAlwaysDisplayed; }
+  public get isGlyph() {
+    return undefined !== this.texture && this.texture.isGlyph;
+  }
+  public get isTextureAlwaysDisplayed() {
+    return this.isGlyph || this._textureAlwaysDisplayed;
+  }
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
@@ -117,7 +146,6 @@ export class MeshData implements WebGLDisposable {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addVertexTable(this.lut.bytesUsed);
-    if (this._ownsTexture)
-      stats.addTexture(this.texture!.bytesUsed);
+    if (this._ownsTexture) stats.addTexture(this.texture!.bytesUsed);
   }
 }

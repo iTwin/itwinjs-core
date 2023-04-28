@@ -9,9 +9,11 @@ import { SolarShadowSettings, SolarShadowSettingsProps } from "../SolarShadows";
 
 describe("SolarShadowSettings", () => {
   it("round-trips through JSON", () => {
-    const roundTrip = (input: SolarShadowSettingsProps | undefined, expected: SolarShadowSettingsProps | "input" | undefined) => {
-      if ("input" === expected)
-        expected = input;
+    const roundTrip = (
+      input: SolarShadowSettingsProps | undefined,
+      expected: SolarShadowSettingsProps | "input" | undefined
+    ) => {
+      if ("input" === expected) expected = input;
 
       const settings = SolarShadowSettings.fromJSON(input);
       const output = settings.toJSON();

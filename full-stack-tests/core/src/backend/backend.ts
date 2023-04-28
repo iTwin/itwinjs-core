@@ -12,14 +12,42 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver,
+  IModelDb,
+  IModelHost,
+  IModelHostOptions,
+  IpcHandler,
+  IpcHost,
+  LocalhostIpcHost,
+  PhysicalModel,
+  PhysicalPartition,
+  SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import {
+  Id64String,
+  Logger,
+  LogLevel,
+  ProcessDetector,
+} from "@itwin/core-bentley";
+import {
+  BentleyCloudRpcManager,
+  CodeProps,
+  ElementProps,
+  IModel,
+  RelatedElement,
+  RpcConfiguration,
+  SubCategoryAppearance,
+} from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
+import {
+  BasicManipulationCommand,
+  EditCommandAdmin,
+} from "@itwin/editor-backend";
+import {
+  fullstackIpcChannel,
+  FullStackTestIpc,
+} from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
@@ -29,8 +57,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -43,9 +70,14 @@ function loadEnv(envFile: string) {
 }
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
-  public get channelName() { return fullstackIpcChannel; }
+  public get channelName() {
+    return fullstackIpcChannel;
+  }
 
-  public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+  public static async createAndInsertPartition(
+    iModelDb: IModelDb,
+    newModelCode: CodeProps
+  ): Promise<Id64String> {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
@@ -56,17 +88,36 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return iModelDb.elements.insertElement(modeledElement.toJSON());
   }
 
-  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
+  public async createAndInsertPhysicalModel(
+    key: string,
+    newModelCode: CodeProps
+  ): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
+    const eid = await FullStackTestIpcHandler.createAndInsertPartition(
+      iModelDb,
+      newModelCode
+    );
     const modeledElementRef = new RelatedElement({ id: eid });
-    const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+    const newModel = iModelDb.models.createModel({
+      modeledElement: modeledElementRef,
+      classFullName: PhysicalModel.classFullName,
+      isPrivate: false,
+    });
     return iModelDb.models.insertModel(newModel.toJSON());
   }
 
-  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
+  public async createAndInsertSpatialCategory(
+    key: string,
+    scopeModelId: Id64String,
+    categoryName: string,
+    appearance: SubCategoryAppearance.Props
+  ): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
-    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
+    const category = SpatialCategory.create(
+      iModelDb,
+      scopeModelId,
+      categoryName
+    );
     const categoryId = category.insert();
     category.setDefaultAppearance(appearance);
     return categoryId;
@@ -78,9 +129,15 @@ async function init() {
   RpcConfiguration.developmentMode = true;
 
   const iModelHost: IModelHostOptions = {};
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    api: {
+      baseUrl: `https://${
+        process.env.IMJS_URL_PREFIX ?? ""
+      }api.bentley.com/imodels`,
+    },
+  });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+  iModelHost.cacheDir = path.join(__dirname, ".cache"); // Set local cache dir
 
   let shutdown: undefined | (() => Promise<void>);
 
@@ -88,7 +145,8 @@ async function init() {
     exposeBackendCallbacks();
     const authClient = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
+      redirectUri:
+        process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
     await authClient.signInSilent();
@@ -100,7 +158,10 @@ async function init() {
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
   } else {
-    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
+    const rpcConfig = BentleyCloudRpcManager.initializeImpl(
+      { info: { title: "full-stack-test", version: "v1.0" } },
+      rpcInterfaces
+    );
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
@@ -108,7 +169,10 @@ async function init() {
     const httpServer = await webEditServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });
+    await LocalhostIpcHost.startup({
+      iModelHost,
+      localhostIpcHost: { noServer: true },
+    });
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
@@ -124,9 +188,9 @@ async function init() {
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
-  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
+  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error); // Change to trace to debug
+  Logger.setLevel("core-backend.IModelDb", LogLevel.Error); // Change to trace to debug
+  Logger.setLevel("Performance", LogLevel.Error); // Change to Info to capture
   return shutdown;
 }
 
@@ -137,14 +201,21 @@ class BackendTestAssetResolver extends FileNameResolver {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
+    return path.join(
+      __dirname,
+      "../../../../core/backend/lib/cjs/test/assets/",
+      inFileName
+    );
   }
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {
     switch (fileKey) {
-      case "test-key": return this.tryResolveFileName("test.bim");
-      case "test2-key": return this.tryResolveFileName("test2.bim");
-      default: return undefined;
+      case "test-key":
+        return this.tryResolveFileName("test.bim");
+      case "test2-key":
+        return this.tryResolveFileName("test2.bim");
+      default:
+        return undefined;
     }
   }
 }

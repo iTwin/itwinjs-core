@@ -18,7 +18,11 @@ export interface RulesetVariablesManager {
   /** Gets a value of the specified type and ID */
   getValue(variableId: string, type: VariableValueTypes): VariableValue;
   /** Sets a value of the specified type */
-  setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+  setValue(
+    variableId: string,
+    type: VariableValueTypes,
+    value: VariableValue
+  ): void;
   /** Unsets variable with given id. */
   unset(variableId: string): void;
 
@@ -91,42 +95,80 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   private _getNativePlatform: () => NativePlatformDefinition;
   private _rulesetId: string;
 
-  constructor(getNativeAddon: () => NativePlatformDefinition, rulesetId: string) {
+  constructor(
+    getNativeAddon: () => NativePlatformDefinition,
+    rulesetId: string
+  ) {
     this._getNativePlatform = getNativeAddon;
     this._rulesetId = rulesetId;
   }
 
-  public setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void {
-    this._getNativePlatform().setRulesetVariableValue(this._rulesetId, variableId, type, value);
+  public setValueInternal(
+    variableId: string,
+    type: VariableValueTypes,
+    value: VariableValue
+  ): void {
+    this._getNativePlatform().setRulesetVariableValue(
+      this._rulesetId,
+      variableId,
+      type,
+      value
+    );
   }
 
-  public getValueInternal(variableId: string, type: VariableValueTypes): VariableValue {
-    return this._getNativePlatform().getRulesetVariableValue(this._rulesetId, variableId, type).result;
+  public getValueInternal(
+    variableId: string,
+    type: VariableValueTypes
+  ): VariableValue {
+    return this._getNativePlatform().getRulesetVariableValue(
+      this._rulesetId,
+      variableId,
+      type
+    ).result;
   }
 
-  public setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void {
+  public setValue(
+    variableId: string,
+    type: VariableValueTypes,
+    value: VariableValue
+  ): void {
     switch (type) {
-      case VariableValueTypes.Bool: return this.setBool(variableId, value as boolean);
-      case VariableValueTypes.Id64: return this.setId64(variableId, value as Id64String);
-      case VariableValueTypes.Id64Array: return this.setId64s(variableId, value as Id64String[]);
-      case VariableValueTypes.Int: return this.setInt(variableId, value as number);
-      case VariableValueTypes.IntArray: return this.setInts(variableId, value as number[]);
-      case VariableValueTypes.String: return this.setString(variableId, value as string);
+      case VariableValueTypes.Bool:
+        return this.setBool(variableId, value as boolean);
+      case VariableValueTypes.Id64:
+        return this.setId64(variableId, value as Id64String);
+      case VariableValueTypes.Id64Array:
+        return this.setId64s(variableId, value as Id64String[]);
+      case VariableValueTypes.Int:
+        return this.setInt(variableId, value as number);
+      case VariableValueTypes.IntArray:
+        return this.setInts(variableId, value as number[]);
+      case VariableValueTypes.String:
+        return this.setString(variableId, value as string);
     }
   }
 
   public unset(variableId: string): void {
-    this._getNativePlatform().unsetRulesetVariableValue(this._rulesetId, variableId);
+    this._getNativePlatform().unsetRulesetVariableValue(
+      this._rulesetId,
+      variableId
+    );
   }
 
   public getValue(variableId: string, type: VariableValueTypes): VariableValue {
     switch (type) {
-      case VariableValueTypes.Bool: return this.getBool(variableId);
-      case VariableValueTypes.Id64: return this.getId64(variableId);
-      case VariableValueTypes.Id64Array: return this.getId64s(variableId);
-      case VariableValueTypes.Int: return this.getInt(variableId);
-      case VariableValueTypes.IntArray: return this.getInts(variableId);
-      case VariableValueTypes.String: return this.getString(variableId);
+      case VariableValueTypes.Bool:
+        return this.getBool(variableId);
+      case VariableValueTypes.Id64:
+        return this.getId64(variableId);
+      case VariableValueTypes.Id64Array:
+        return this.getId64s(variableId);
+      case VariableValueTypes.Int:
+        return this.getInt(variableId);
+      case VariableValueTypes.IntArray:
+        return this.getInts(variableId);
+      case VariableValueTypes.String:
+        return this.getString(variableId);
     }
   }
 
@@ -135,7 +177,10 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Returns empty string if variable does not exist or does not convert to string.
    */
   public getString(variableId: string): string {
-    return (this.getValueInternal(variableId, VariableValueTypes.String)) as string;
+    return this.getValueInternal(
+      variableId,
+      VariableValueTypes.String
+    ) as string;
   }
 
   /**
@@ -150,7 +195,10 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Returns `false` if variable does not exist or does not convert to boolean.
    */
   public getBool(variableId: string): boolean {
-    return (this.getValueInternal(variableId, VariableValueTypes.Bool)) as boolean;
+    return this.getValueInternal(
+      variableId,
+      VariableValueTypes.Bool
+    ) as boolean;
   }
 
   /**
@@ -165,7 +213,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Returns `0` if variable does not exist or does not convert to integer.
    */
   public getInt(variableId: string): number {
-    return (this.getValueInternal(variableId, VariableValueTypes.Int)) as number;
+    return this.getValueInternal(variableId, VariableValueTypes.Int) as number;
   }
 
   /**
@@ -180,7 +228,10 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Returns empty array if variable does not exist or does not convert to integer array.
    */
   public getInts(variableId: string): number[] {
-    return (this.getValueInternal(variableId, VariableValueTypes.IntArray)) as number[];
+    return this.getValueInternal(
+      variableId,
+      VariableValueTypes.IntArray
+    ) as number[];
   }
 
   /**
@@ -195,7 +246,10 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Returns invalid Id64String if variable does not exist or does not convert to Id64String.
    */
   public getId64(variableId: string): Id64String {
-    return (this.getValueInternal(variableId, VariableValueTypes.Id64)) as Id64String;
+    return this.getValueInternal(
+      variableId,
+      VariableValueTypes.Id64
+    ) as Id64String;
   }
 
   /**
@@ -210,7 +264,10 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Returns empty array if variable does not exist or does not convert to Id64String array.
    */
   public getId64s(variableId: string): Id64String[] {
-    return (this.getValueInternal(variableId, VariableValueTypes.Id64Array)) as Id64String[];
+    return this.getValueInternal(
+      variableId,
+      VariableValueTypes.Id64Array
+    ) as Id64String[];
   }
 
   /**

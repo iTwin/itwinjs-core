@@ -9,8 +9,23 @@
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { adopt, create, G, Marker, Element as MarkupElement, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
+import {
+  FrontendLoggerCategory,
+  imageElementFromImageSource,
+  IModelApp,
+  ScreenViewport,
+} from "@itwin/core-frontend";
+import {
+  adopt,
+  create,
+  G,
+  Marker,
+  Element as MarkupElement,
+  Matrix,
+  Point,
+  Svg,
+  SVG,
+} from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
@@ -62,17 +77,33 @@ export class MarkupApp {
       /** The diameter of the circles for the handles. */
       size: 10,
       /** The attributes of the stretch handles */
-      stretch: { "fill-opacity": .85, "stroke": "black", "fill": "white" },
+      stretch: { "fill-opacity": 0.85, stroke: "black", fill: "white" },
       /** The attributes of the line that connects the top-center stretch handle to the rotate handle. */
-      rotateLine: { "stroke": "grey", "fill-opacity": .85 },
+      rotateLine: { stroke: "grey", "fill-opacity": 0.85 },
       /** The attributes of the rotate handle. */
-      rotate: { "cursor": `url(${IModelApp.publicPath}Markup/rotate.png) 12 12, auto`, "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
+      rotate: {
+        cursor: `url(${IModelApp.publicPath}Markup/rotate.png) 12 12, auto`,
+        "fill-opacity": 0.85,
+        stroke: "black",
+        fill: "lightBlue",
+      },
       /** The attributes of box around the element. */
-      moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
+      moveOutline: {
+        cursor: "move",
+        "stroke-dasharray": "6,6",
+        fill: "none",
+        "stroke-opacity": 0.85,
+        stroke: "white",
+      },
       /** The attributes of box that provides the move cursor. */
-      move: { "cursor": "move", "opacity": 0, "stroke-width": 10, "stroke": "white" },
+      move: { cursor: "move", opacity: 0, "stroke-width": 10, stroke: "white" },
       /** The attributes of handles on the vertices of lines. */
-      vertex: { "cursor": `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`, "fill-opacity": .85, "stroke": "black", "fill": "white" },
+      vertex: {
+        cursor: `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`,
+        "fill-opacity": 0.85,
+        stroke: "black",
+        fill: "white",
+      },
     },
     /** properties for providing feedback about selected elements. */
     hilite: {
@@ -87,9 +118,9 @@ export class MarkupApp {
       enable: true,
       /** the attributes of the drop shadow. See https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feDropShadow */
       attr: {
-        "stdDeviation": 2,
-        "dx": 1.2,
-        "dy": 1.4,
+        stdDeviation: 2,
+        dx: 1.2,
+        dy: 1.4,
         "flood-color": "#1B3838",
       },
     },
@@ -99,18 +130,18 @@ export class MarkupApp {
       text: {
         "font-family": "sans-serif",
         "font-size": "30px",
-        "stroke": "none",
-        "fill": "red",
+        stroke: "none",
+        fill: "red",
       },
       /** the CSS style properties of new elements. */
       element: {
-        "stroke": "red",
+        stroke: "red",
         "stroke-opacity": 0.8,
         "stroke-width": 3,
         "stroke-dasharray": 0,
         "stroke-linecap": "round",
         "stroke-linejoin": "round",
-        "fill": "blue",
+        fill: "blue",
         "fill-opacity": 0.2,
       },
       arrow: {
@@ -133,22 +164,27 @@ export class MarkupApp {
         /** font size of the text editor */
         fontSize: "14pt",
         /** A background box drawn around text so user can tell what's being selected */
-        textBox: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
+        textBox: {
+          fill: "lightGrey",
+          "fill-opacity": 0.1,
+          "stroke-opacity": 0.85,
+          stroke: "lightBlue",
+        },
       },
     },
     /** Used to draw the border outline around the view while it is being marked up so the user can tell Markup is active */
     borderOutline: {
-      "stroke": "gold",
+      stroke: "gold",
       "stroke-width": 6,
       "stroke-opacity": 0.4,
-      "fill": "none",
+      fill: "none",
     },
     /** Used to draw the border corner symbols for the view while it is being marked up so the user can tell Markup is active */
     borderCorners: {
-      "stroke": "black",
+      stroke: "black",
       "stroke-width": 2,
       "stroke-opacity": 0.2,
-      "fill": "gold",
+      fill: "gold",
       "fill-opacity": 0.2,
     },
     /** Determines what is returned by MarkupApp.stop */
@@ -166,16 +202,18 @@ export class MarkupApp {
   /** @internal */
   public static screenToVbMtx(): Matrix {
     const matrix = this.markup?.svgMarkup?.screenCTM().inverse();
-    return (undefined !== matrix ? matrix : new Matrix());
+    return undefined !== matrix ? matrix : new Matrix();
   }
   /** @internal */
   public static getVpToScreenMtx(): Matrix {
     const rect = this.markup!.markupDiv.getBoundingClientRect();
-    return (new Matrix()).translateO(rect.left, rect.top);
+    return new Matrix().translateO(rect.left, rect.top);
   }
 
   /** @internal */
-  public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
+  public static getVpToVbMtx(): Matrix {
+    return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx());
+  }
   /** @internal */
   public static convertVpToVb(pt: XAndY): Point3d {
     const pt0 = new Point(pt.x, pt.y);
@@ -184,22 +222,30 @@ export class MarkupApp {
   }
 
   /** determine whether there's a markup session currently active */
-  public static get isActive() { return undefined !== this.markup; }
+  public static get isActive() {
+    return undefined !== this.markup;
+  }
   public static markupSelectToolId = "Markup.Select";
 
-  protected static createMarkup(view: ScreenViewport, markupData?: MarkupSvgData) { return new Markup(view, markupData); }
+  protected static createMarkup(
+    view: ScreenViewport,
+    markupData?: MarkupSvgData
+  ) {
+    return new Markup(view, markupData);
+  }
 
-  protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData) {
+  protected static lockViewportSize(
+    view: ScreenViewport,
+    markupData?: MarkupSvgData
+  ) {
     const parentDiv = view.vpDiv;
     const rect = parentDiv.getBoundingClientRect();
     let width = rect.width;
     let height = rect.height;
     if (markupData) {
       const aspect = markupData.rect.height / markupData.rect.width;
-      if ((width * aspect) > height)
-        width = Math.floor(height / aspect);
-      else
-        height = Math.floor(width * aspect);
+      if (width * aspect > height) width = Math.floor(height / aspect);
+      else height = Math.floor(width * aspect);
     }
     const style = parentDiv.style;
     style.width = `${width}px`;
@@ -207,12 +253,18 @@ export class MarkupApp {
   }
 
   /** @internal */
-  public static getActionName(action: string) { return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`); }
+  public static getActionName(action: string) {
+    return IModelApp.localization.getLocalizedString(
+      `${this.namespace}:actions.${action}`
+    );
+  }
 
   /** Start a markup session */
-  public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
-    if (this.markup)
-      return; // a markup session is already active.
+  public static async start(
+    view: ScreenViewport,
+    markupData?: MarkupSvgData
+  ): Promise<void> {
+    if (this.markup) return; // a markup session is already active.
 
     await this.initialize();
 
@@ -239,8 +291,7 @@ export class MarkupApp {
    */
   public static async stop(): Promise<MarkupData> {
     const data = await this.readMarkup();
-    if (!this.markup)
-      return data;
+    if (!this.markup) return data;
 
     // restore original size for vp.
     ScreenViewport.setToParentSize(this.markup.vp.vpDiv);
@@ -267,9 +318,12 @@ export class MarkupApp {
    * calls return the same Promise.
    */
   public static async initialize(): Promise<void> {
-    if (undefined === this.namespace) {     // only need to do this once
+    if (undefined === this.namespace) {
+      // only need to do this once
       this.namespace = "MarkupTools";
-      const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
+      const namespacePromise = IModelApp.localization.registerNamespace(
+        this.namespace
+      );
       IModelApp.tools.register(SelectTool, this.namespace);
       IModelApp.tools.registerModule(redlineTool, this.namespace);
       IModelApp.tools.registerModule(textTool, this.namespace);
@@ -283,8 +337,7 @@ export class MarkupApp {
    */
   protected static readMarkupSvg() {
     const markup = this.markup;
-    if (!markup || !markup.svgContainer)
-      return undefined;
+    if (!markup || !markup.svgContainer) return undefined;
     markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
     markup.svgDynamics!.remove();
     void IModelApp.toolAdmin.startDefaultTool();
@@ -296,8 +349,7 @@ export class MarkupApp {
    */
   protected static readMarkupSvgForDrawImage() {
     const markup = this.markup;
-    if (!markup || !markup.svgContainer)
-      return undefined;
+    if (!markup || !markup.svgContainer) return undefined;
     // Firefox requires width and height on top-level svg or drawImage does nothing, passing width/height to drawImage doesn't work.
     const rect = markup.markupDiv.getBoundingClientRect();
     markup.svgContainer.width(rect.width);
@@ -312,9 +364,14 @@ export class MarkupApp {
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup
-      const svgForImage = (svg && result.imprintSvgOnImage ? this.readMarkupSvgForDrawImage() : undefined);
+      const svgForImage =
+        svg && result.imprintSvgOnImage
+          ? this.readMarkupSvgForDrawImage()
+          : undefined;
       if (svgForImage) {
-        const svgImage = await imageElementFromImageSource(new ImageSource(svgForImage, ImageSourceFormat.Svg));
+        const svgImage = await imageElementFromImageSource(
+          new ImageSource(svgForImage, ImageSourceFormat.Svg)
+        );
         canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
       }
 
@@ -324,14 +381,32 @@ export class MarkupApp {
         const newCanvas = document.createElement("canvas");
         newCanvas.width = result.maxWidth;
         newCanvas.height = canvas.height * (result.maxWidth / canvas.width);
-        newCanvas.getContext("2d")!.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, newCanvas.width, newCanvas.height);
+        newCanvas
+          .getContext("2d")!
+          .drawImage(
+            canvas,
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+            0,
+            0,
+            newCanvas.width,
+            newCanvas.height
+          );
         canvas = newCanvas; // return the image from adjusted canvas, not view canvas.
       }
 
       // return the markup data to be saved by the application.
-      image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
+      image = !result.imageFormat
+        ? undefined
+        : canvas.toDataURL(result.imageFormat);
     } catch (e) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", BentleyError.getErrorProps(e));
+      Logger.logError(
+        `${FrontendLoggerCategory.Package}.markup`,
+        "Error creating image from svg",
+        BentleyError.getErrorProps(e)
+      );
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }
@@ -339,35 +414,65 @@ export class MarkupApp {
   /** @internal */
   public static markupPrefix = "markup-";
   /** @internal */
-  public static get dropShadowId() { return `${this.markupPrefix}dropShadow`; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
+  public static get dropShadowId() {
+    return `${this.markupPrefix}dropShadow`;
+  } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
   /** @internal */
-  public static get cornerId() { return `${this.markupPrefix}photoCorner`; }
+  public static get cornerId() {
+    return `${this.markupPrefix}photoCorner`;
+  }
   /** @internal */
-  public static get containerClass() { return `${this.markupPrefix}container`; }
+  public static get containerClass() {
+    return `${this.markupPrefix}container`;
+  }
   /** @internal */
-  public static get dynamicsClass() { return `${this.markupPrefix}dynamics`; }
+  public static get dynamicsClass() {
+    return `${this.markupPrefix}dynamics`;
+  }
   /** @internal */
-  public static get decorationsClass() { return `${this.markupPrefix}decorations`; }
+  public static get decorationsClass() {
+    return `${this.markupPrefix}decorations`;
+  }
   /** @internal */
-  public static get markupSvgClass() { return `${this.markupPrefix}svg`; }
+  public static get markupSvgClass() {
+    return `${this.markupPrefix}svg`;
+  }
   /** @internal */
-  public static get boxedTextClass() { return `${this.markupPrefix}boxedText`; }
+  public static get boxedTextClass() {
+    return `${this.markupPrefix}boxedText`;
+  }
   /** @internal */
-  public static get textClass() { return `${this.markupPrefix}text`; }
+  public static get textClass() {
+    return `${this.markupPrefix}text`;
+  }
   /** @internal */
-  public static get stretchHandleClass() { return `${this.markupPrefix}stretchHandle`; }
+  public static get stretchHandleClass() {
+    return `${this.markupPrefix}stretchHandle`;
+  }
   /** @internal */
-  public static get rotateLineClass() { return `${this.markupPrefix}rotateLine`; }
+  public static get rotateLineClass() {
+    return `${this.markupPrefix}rotateLine`;
+  }
   /** @internal */
-  public static get rotateHandleClass() { return `${this.markupPrefix}rotateHandle`; }
+  public static get rotateHandleClass() {
+    return `${this.markupPrefix}rotateHandle`;
+  }
   /** @internal */
-  public static get vertexHandleClass() { return `${this.markupPrefix}vertexHandle`; }
+  public static get vertexHandleClass() {
+    return `${this.markupPrefix}vertexHandle`;
+  }
   /** @internal */
-  public static get moveHandleClass() { return `${this.markupPrefix}moveHandle`; }
+  public static get moveHandleClass() {
+    return `${this.markupPrefix}moveHandle`;
+  }
   /** @internal */
-  public static get textOutlineClass() { return `${this.markupPrefix}textOutline`; }
+  public static get textOutlineClass() {
+    return `${this.markupPrefix}textOutline`;
+  }
   /** @internal */
-  public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
+  public static get textEditorClass() {
+    return `${this.markupPrefix}textEditor`;
+  }
 }
 
 const removeSvgNamespace = (svg: Svg) => {
@@ -401,28 +506,64 @@ export class Markup {
   /** create the drop-shadow filter in the Defs section of the supplied svg element */
   private createDropShadow(svg: Svg) {
     const filter = SVG(`#${MarkupApp.dropShadowId}`); // see if we already have one?
-    if (filter)
-      filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
+    if (filter) filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
 
     // create a new filter, and add it to the Defs of the supplied svg
-    svg.defs()
-      .add(newSvgElement("filter").id(MarkupApp.dropShadowId)
-        .add(newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)));
+    svg
+      .defs()
+      .add(
+        newSvgElement("filter")
+          .id(MarkupApp.dropShadowId)
+          .add(
+            newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)
+          )
+      );
   }
-  private addNested(className: string): G { return this.svgContainer!.group().addClass(className); }
+  private addNested(className: string): G {
+    return this.svgContainer!.group().addClass(className);
+  }
   private addBorder() {
     const rect = this.svgContainer!.viewbox();
     const inset = MarkupApp.props.borderOutline["stroke-width"];
     const cornerSize = inset * 6;
-    const cornerPts = [0, 0, cornerSize, 0, cornerSize * .7, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .7, 0, cornerSize];
+    const cornerPts = [
+      0,
+      0,
+      cornerSize,
+      0,
+      cornerSize * 0.7,
+      cornerSize * 0.3,
+      cornerSize * 0.3,
+      cornerSize * 0.3,
+      cornerSize * 0.3,
+      cornerSize * 0.7,
+      0,
+      cornerSize,
+    ];
     const decorations = this.svgDecorations!;
-    const photoCorner = decorations.symbol().polygon(cornerPts).attr(MarkupApp.props.borderCorners).id(MarkupApp.cornerId);
+    const photoCorner = decorations
+      .symbol()
+      .polygon(cornerPts)
+      .attr(MarkupApp.props.borderCorners)
+      .id(MarkupApp.cornerId);
     const cornerGroup = decorations.group();
-    cornerGroup.rect(rect.width - inset, rect.height - inset).move(inset / 2, inset / 2).attr(MarkupApp.props.borderOutline);
+    cornerGroup
+      .rect(rect.width - inset, rect.height - inset)
+      .move(inset / 2, inset / 2)
+      .attr(MarkupApp.props.borderOutline);
     cornerGroup.use(photoCorner);
-    cornerGroup.use(photoCorner).rotate(90).translate(rect.width - cornerSize, 0);
-    cornerGroup.use(photoCorner).rotate(180).translate(rect.width - cornerSize, rect.height - cornerSize);
-    cornerGroup.use(photoCorner).rotate(270).translate(0, rect.height - cornerSize);
+    cornerGroup
+      .use(photoCorner)
+      .rotate(90)
+      .translate(rect.width - cornerSize, 0);
+    cornerGroup
+      .use(photoCorner)
+      .rotate(180)
+      .translate(rect.width - cornerSize, rect.height - cornerSize);
+    cornerGroup
+      .use(photoCorner)
+      .rotate(270)
+      .translate(0, rect.height - cornerSize);
   }
 
   /** Create a new Markup for the supplied ScreenViewport. Adds a new "overlay-markup" div into the "vpDiv"
@@ -436,15 +577,21 @@ export class Markup {
     // First, see if there is a markup passed in as an argument
     if (markupData && markupData.svg) {
       this.markupDiv.innerHTML = markupData.svg; // make it a child of the markupDiv
-      this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as Svg | undefined; // get it in svg.js format
+      this.svgContainer = SVG(`.${MarkupApp.containerClass}`) as
+        | Svg
+        | undefined; // get it in svg.js format
       this.svgMarkup = SVG(`.${MarkupApp.markupSvgClass}`) as G | undefined;
-      if (!this.svgContainer || !this.svgMarkup) // if either isn't present, its not a valid markup
+      if (!this.svgContainer || !this.svgMarkup)
+        // if either isn't present, its not a valid markup
         return;
       removeSvgNamespace(this.svgContainer); // the SVG call above adds this - remove it
-      this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the supplied markup.
+      this.svgMarkup.each(() => {}, true); // create an SVG.Element for each entry in the supplied markup.
     } else {
       // create the container that will be returned as the "svg" data for this markup
-      this.svgContainer = SVG().addTo(this.markupDiv).addClass(MarkupApp.containerClass).viewbox(0, 0, rect.width, rect.height);
+      this.svgContainer = SVG()
+        .addTo(this.markupDiv)
+        .addClass(MarkupApp.containerClass)
+        .viewbox(0, 0, rect.width, rect.height);
       removeSvgNamespace(this.svgContainer);
       this.svgMarkup = this.addNested(MarkupApp.markupSvgClass);
     }
@@ -462,29 +609,49 @@ export class Markup {
   }
 
   /** Called when the Markup is destroyed */
-  public destroy() { this.markupDiv.remove(); }
+  public destroy() {
+    this.markupDiv.remove();
+  }
   /** Turn on picking the markup elements in the markup view */
-  public enablePick() { this.markupDiv.style.pointerEvents = "auto"; }
+  public enablePick() {
+    this.markupDiv.style.pointerEvents = "auto";
+  }
   /** Turn off picking the markup elements in the markup view */
-  public disablePick() { this.markupDiv.style.pointerEvents = "none"; }
+  public disablePick() {
+    this.markupDiv.style.pointerEvents = "none";
+  }
   /** Change the default cursor for the markup view */
-  public setCursor(cursor: string) { this.markupDiv.style.cursor = cursor; }
+  public setCursor(cursor: string) {
+    this.markupDiv.style.cursor = cursor;
+  }
   /** Delete all the entries in the selection set, then empty it. */
-  public deleteSelected() { this.selected.deleteAll(this.undo); }
+  public deleteSelected() {
+    this.selected.deleteAll(this.undo);
+  }
   /** Bring all the entries in the selection set to the front. */
-  public bringToFront() { this.selected.reposition(MarkupApp.getActionName("toFront"), this.undo, (el) => el.front()); }
+  public bringToFront() {
+    this.selected.reposition(
+      MarkupApp.getActionName("toFront"),
+      this.undo,
+      (el) => el.front()
+    );
+  }
   /** Send all the entries in the selection set to the back. */
-  public sendToBack() { this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back()); }
+  public sendToBack() {
+    this.selected.reposition(
+      MarkupApp.getActionName("toBack"),
+      this.undo,
+      (el) => el.back()
+    );
+  }
   /** Group all the entries in the selection set, then select the group. */
   public groupSelected() {
-    if (undefined !== this.svgMarkup)
-      this.selected.groupAll(this.undo);
+    if (undefined !== this.svgMarkup) this.selected.groupAll(this.undo);
   }
 
   /** Ungroup all the group entries in the selection set. */
   public ungroupSelected() {
-    if (undefined !== this.svgMarkup)
-      this.selected.ungroupAll(this.undo);
+    if (undefined !== this.svgMarkup) this.selected.ungroupAll(this.undo);
   }
 
   /** Check if the supplied MarkupElement is a group of MarkupText and the MarkupText's outline Rect.
@@ -492,10 +659,12 @@ export class Markup {
    * @returns true if boxed text
    */
   public isBoxedText(el: MarkupElement): boolean {
-    return el.type === "g" &&
+    return (
+      el.type === "g" &&
       el.node.classList.length > 0 &&
       el.node.classList[0] === MarkupApp.boxedTextClass &&
-      el.children().length === 2;
+      el.children().length === 2
+    );
   }
 
   /** Get an existing or create a new reusable symbol representing an arrow head.
@@ -505,7 +674,11 @@ export class Markup {
    * @param width the arrow head width
    * @note Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
    */
-  public createArrowMarker(color: string, length: number, width: number): Marker {
+  public createArrowMarker(
+    color: string,
+    length: number,
+    width: number
+  ): Marker {
     length = Math.ceil(length); // Don't allow "." in selector string...
     width = Math.ceil(width);
     const arrowMarkerId = `ArrowMarker${length}x${width}-${color}`;

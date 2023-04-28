@@ -4,7 +4,7 @@ When writing a backend, you are effectively writing a server. A server has sever
 
 Many of these requirements affect the design of [RpcInterfaces](../RpcInterface.md).
 
-While the focus of this article is on backend and RpcInterface design, in many cases frontend/client design is the other side of the same coin. The [last section](#rpcinterfaces-and-frontend-design)  describes some implications for frontends of backend design best practices where applicable.
+While the focus of this article is on backend and RpcInterface design, in many cases frontend/client design is the other side of the same coin. The [last section](#rpcinterfaces-and-frontend-design) describes some implications for frontends of backend design best practices where applicable.
 
 ## Diagnostics
 
@@ -20,7 +20,7 @@ Break up a long-running synchronous operation into small increments, yielding ba
 
 Here is some pseudo-code to illustrate yielding.
 
-``` ts
+```ts
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async someServerFunction(many items): Promise<boolean> {

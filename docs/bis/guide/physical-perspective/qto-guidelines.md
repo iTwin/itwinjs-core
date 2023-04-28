@@ -29,5 +29,6 @@ The expectation that the definition of quantity-related properties include Kind 
 As an example, an application interested in discovering properties that capture a Volumetric quantity about an Element can do so by gathering any of its properties whose persistence unit is cubic metres.
 
 ---
+
 | Next: [Functional Models and Elements](../other-perspectives/functional-models-and-elements.md)
 |:---

@@ -4,11 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@itwin/core-common";
+import {
+  ColorByName,
+  ColorDef,
+  GraphicParams,
+  LinePixels,
+} from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
+  public constructor() {
+    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
+  }
 }
 
 describe("DisplayParams creation tests", () => {
@@ -48,8 +55,7 @@ describe("DisplayParams equality tests", () => {
 
   it("two DisplayParams created with different colors should be non-equal", () => {
     const gf0: GraphicParams = new GraphicParams();
-    gf0.lineColor = ColorDef.white
-    ;
+    gf0.lineColor = ColorDef.white;
     const gf1: GraphicParams = new GraphicParams();
     gf1.lineColor = ColorDef.black;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
@@ -72,13 +78,16 @@ describe("DisplayParams equality tests", () => {
     gf1.lineColor = cd1;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1, false);
-    expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be.true;
+    expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be
+      .true;
     const dpLinear0: DisplayParams = DisplayParams.createForMesh(gf0, false);
     const dpLinear1: DisplayParams = DisplayParams.createForMesh(gf1, false);
-    expect(dpLinear0.equals(dpLinear1, DisplayParams.ComparePurpose.Merge)).to.be.true;
+    expect(dpLinear0.equals(dpLinear1, DisplayParams.ComparePurpose.Merge)).to
+      .be.true;
     const dpText0: DisplayParams = DisplayParams.createForMesh(gf0, false);
     const dpText1: DisplayParams = DisplayParams.createForMesh(gf1, false);
-    expect(dpText0.equals(dpText1, DisplayParams.ComparePurpose.Merge)).to.be.true;
+    expect(dpText0.equals(dpText1, DisplayParams.ComparePurpose.Merge)).to.be
+      .true;
   });
 
   it("two DisplayParams created with different types should be non-equal", () => {
@@ -89,8 +98,18 @@ describe("DisplayParams equality tests", () => {
   });
 
   it("two DisplayParams created with different symbology should be non-equal", () => {
-    const gf0: GraphicParams = GraphicParams.fromSymbology(ColorDef.white, ColorDef.black, 8, LinePixels.Solid);
-    const gf1: GraphicParams = GraphicParams.fromSymbology(ColorDef.white, ColorDef.black, 3, LinePixels.HiddenLine);
+    const gf0: GraphicParams = GraphicParams.fromSymbology(
+      ColorDef.white,
+      ColorDef.black,
+      8,
+      LinePixels.Solid
+    );
+    const gf1: GraphicParams = GraphicParams.fromSymbology(
+      ColorDef.white,
+      ColorDef.black,
+      3,
+      LinePixels.HiddenLine
+    );
     const dp0: DisplayParams = DisplayParams.createForMesh(gf0, false);
     const dp1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dp0.equals(dp1)).to.be.false;

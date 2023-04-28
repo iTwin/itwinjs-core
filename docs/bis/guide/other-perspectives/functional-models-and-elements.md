@@ -4,7 +4,7 @@
 
 The functional domain allows defining objects that represent systems or processes. These objects define the requirements of the objects in a system. For example, a Functional Pump has attributes that define the required fluid flow for a process.
 
-The functional definition of a process is usually defined early in the design of a project. These objects show up in design diagrams and data sheets. The Functional objects eventually will be created in the Physical model. The physical objects will be related to the functional object with a *fulfills* relationship.
+The functional definition of a process is usually defined early in the design of a project. These objects show up in design diagrams and data sheets. The Functional objects eventually will be created in the Physical model. The physical objects will be related to the functional object with a _fulfills_ relationship.
 
 ![Model Hierarchy](../media/Func-Phys-Graphic.png)
 
@@ -54,10 +54,11 @@ In most cases today, the functional model models a partition related to the root
 
 In the Plant functional domain there is a complete set of classes that define the functional requirements for the processes in a plant. There are Equipment, Piping and Instrument functional component class. There are functional breakdown classes. These classes can vary per project type. Power plant projects have Units, Sub-Units, Building and Systems. A refinery project has Units, Areas, Services and Systems. The plant applications allow user to define these functional breakdown class to suit their needs. This hierarchy is defined by the groups relationship. The order of the tree is defined in presentation rules. Functional Components maybe grouped in more then one Functional Breakdown hierarchy. For example, a pump could exist in the S1 sub-unit and the NSSS plant System.
 
-Plant does have functional breakdown for pipelines and instrument loops that group functional components and are always the end of the function breakdown hierarchy. They are only configurable by adding properties. There are many non-configurable relations that relate functional components to one another to define the layout of the function model. **See class-diagram below. See [Class-diagram Conventions](../references/class-diagram-conventions.md) for details about the conventions used.
+Plant does have functional breakdown for pipelines and instrument loops that group functional components and are always the end of the function breakdown hierarchy. They are only configurable by adding properties. There are many non-configurable relations that relate functional components to one another to define the layout of the function model. \*\*See class-diagram below. See [Class-diagram Conventions](../references/class-diagram-conventions.md) for details about the conventions used.
 
 ![Model Hierarchy](../media/plantfuncmodel.png)
 
 ---
+
 | Next: [Analysis Models and Elements](./analysis-models-and-elements.md)
 |:---

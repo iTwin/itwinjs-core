@@ -34,16 +34,17 @@ export interface ColorInput {
 export function convertHexToRgb(hex: string): RgbColor | undefined {
   // Parse a hex color string formatted as "#FFFFFF"
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? new RgbColor(
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-  ) : undefined;
+  return result
+    ? new RgbColor(
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+      )
+    : undefined;
 }
 
 /** @alpha */
 export function createColorInput(props: ColorInputProps): ColorInput {
-
   const inputDiv = document.createElement("div");
 
   const colorInput = document.createElement("input");
@@ -67,16 +68,13 @@ export function createColorInput(props: ColorInputProps): ColorInput {
   }
   inputDiv.appendChild(colorInput);
 
-  if (undefined !== props.display)
-    inputDiv.style.display = props.display;
-  if (undefined !== props.id)
-    colorInput.id = props.id;
-  if (undefined !== props.tooltip)
-    colorInput.title = props.tooltip;
-  if (undefined !== props.disabled)
-    colorInput.disabled = props.disabled;
-  if (undefined !== props.parent)
-    props.parent.appendChild(inputDiv);
+  if (undefined !== props.display) inputDiv.style.display = props.display;
+  if (undefined !== props.id) colorInput.id = props.id;
+  if (undefined !== props.tooltip) colorInput.title = props.tooltip;
+  if (undefined !== props.disabled) colorInput.disabled = props.disabled;
+  if (undefined !== props.parent) props.parent.appendChild(inputDiv);
 
-  return undefined !== colorLabel! ? { div: inputDiv, input: colorInput, label: colorLabel! } : { div: inputDiv, input: colorInput };
+  return undefined !== colorLabel!
+    ? { div: inputDiv, input: colorInput, label: colorLabel! }
+    : { div: inputDiv, input: colorInput };
 }

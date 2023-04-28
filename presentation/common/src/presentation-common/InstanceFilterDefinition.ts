@@ -62,8 +62,11 @@ export interface InstanceFilterDefinition {
  * @beta
  */
 export type InstanceFilterRelatedInstanceDefinition =
-  InstanceFilterRelatedInstancePath
-  & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
+  InstanceFilterRelatedInstancePath &
+    (
+      | InstanceFilterRelatedInstanceTargetAlias
+      | InstanceFilterRelatedInstanceRelationshipAlias
+    );
 
 /**
  * Partial definition of common attributes for [[InstanceFilterRelatedInstanceDefinition]].

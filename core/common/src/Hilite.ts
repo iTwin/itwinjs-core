@@ -48,9 +48,16 @@ export namespace Hilite {
     /** The type of outline to be drawn around the boundaries of the hilited region. */
     public silhouette: Silhouette;
 
-    private static clamp(value: number) { return Math.min(1.0, Math.max(0.0, value)); }
+    private static clamp(value: number) {
+      return Math.min(1.0, Math.max(0.0, value));
+    }
 
-    public constructor(color = ColorDef.from(0x23, 0xbb, 0xfc), visibleRatio = 0.25, hiddenRatio = 0.0, silhouette = Silhouette.Thin) {
+    public constructor(
+      color = ColorDef.from(0x23, 0xbb, 0xfc),
+      visibleRatio = 0.25,
+      hiddenRatio = 0.0,
+      silhouette = Silhouette.Thin
+    ) {
       this.color = color;
       this.silhouette = silhouette;
       this.visibleRatio = Settings.clamp(visibleRatio);
@@ -60,14 +67,21 @@ export namespace Hilite {
 
   /** Compare two Settings objects for equivalence. */
   export function equalSettings(lhs: Settings, rhs: Settings): boolean {
-    return lhs.color.equals(rhs.color)
-      && lhs.visibleRatio === rhs.visibleRatio
-      && lhs.hiddenRatio === rhs.hiddenRatio
-      && lhs.silhouette === rhs.silhouette;
+    return (
+      lhs.color.equals(rhs.color) &&
+      lhs.visibleRatio === rhs.visibleRatio &&
+      lhs.hiddenRatio === rhs.hiddenRatio &&
+      lhs.silhouette === rhs.silhouette
+    );
   }
 
   /** Create a copy of a Settings object. */
   export function cloneSettings(settings: Settings): Settings {
-    return new Settings(settings.color, settings.visibleRatio, settings.hiddenRatio, settings.silhouette);
+    return new Settings(
+      settings.color,
+      settings.visibleRatio,
+      settings.hiddenRatio,
+      settings.silhouette
+    );
   }
 }

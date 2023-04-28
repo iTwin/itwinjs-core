@@ -56,8 +56,22 @@ export interface DevToolsProcessStats {
  * @internal
  */
 export class DevToolsStatsFormatter {
-  private static readonly _megaByteProps = ["totalmem", "freemem", "rss", "heapTotal", "heapUsed", "external"];
-  private static readonly _percentProps = ["user", "nice", "sys", "idle", "irq", "cpuUsage"];
+  private static readonly _megaByteProps = [
+    "totalmem",
+    "freemem",
+    "rss",
+    "heapTotal",
+    "heapUsed",
+    "external",
+  ];
+  private static readonly _percentProps = [
+    "user",
+    "nice",
+    "sys",
+    "idle",
+    "irq",
+    "cpuUsage",
+  ];
   private static readonly _mHzProps = ["speed"];
   private static readonly _secondsProps = ["uptime"];
 
@@ -89,7 +103,6 @@ export class DevToolsStatsFormatter {
  * @internal
  */
 export class DevTools {
-
   /** Receives a ping and returns true */
   public static ping(): boolean {
     Logger.logInfo(loggerCategory, "Received ping at backend");
@@ -112,8 +125,7 @@ export class DevTools {
 
     // spin the CPU for 500 milliseconds
     const now = Date.now();
-    while (Date.now() - now < 500)
-      ;
+    while (Date.now() - now < 500);
 
     const elapTime = process.hrtime(startTime);
     const elapUsage = process.cpuUsage(startUsage);
@@ -122,7 +134,9 @@ export class DevTools {
 
     const elapUserMS = elapUsage.user / 1000; // microseconds to milliseconds
     const elapSystMS = elapUsage.system / 1000;
-    const cpuPercent = Math.round((100 * (elapUserMS + elapSystMS) / elapTimeMS / NUMBER_OF_CPUS));
+    const cpuPercent = Math.round(
+      (100 * (elapUserMS + elapSystMS)) / elapTimeMS / NUMBER_OF_CPUS
+    );
 
     return cpuPercent;
   }
@@ -132,15 +146,17 @@ export class DevTools {
     const srcCpus = os.cpus();
     const cpus = new Array<os.CpuInfo>(srcCpus.length);
     let ii = 0;
-    for (const srcCpu of srcCpus)
-      cpus[ii++] = { ...srcCpu };
+    for (const srcCpu of srcCpus) cpus[ii++] = { ...srcCpu };
 
     // Evaluate cpu usage as percentages
     for (const cpu of Object.values(cpus)) {
-      const total = Object.values(cpu.times).reduce((_total: number, currValue) => _total += currValue, 0);
+      const total = Object.values(cpu.times).reduce(
+        (_total: number, currValue) => (_total += currValue),
+        0
+      );
       const cpuTimes = cpu.times as StringIndexedObject<number>;
       for (const type of Object.keys(cpuTimes)) {
-        const cpuPercent = Math.round(100 * cpuTimes[type] / total);
+        const cpuPercent = Math.round((100 * cpuTimes[type]) / total);
         cpuTimes[type] = cpuPercent;
       }
     }
@@ -150,7 +166,7 @@ export class DevTools {
   private static evaluateMemoryUsage() {
     // Create a clone
     const memUsage = { ...process.memoryUsage() } as NodeJS.MemoryUsage;
-    const memUsageObj = (memUsage as any) as StringIndexedObject<number>;
+    const memUsageObj = memUsage as any as StringIndexedObject<number>;
     // Evaluate memory usage as mega bytes
     for (const type of Object.keys(memUsageObj)) {
       memUsageObj[type] = this.bytesToMegaBytes(memUsageObj[type]);
@@ -194,9 +210,16 @@ export class DevTools {
   }
 
   /** Sets up a log level at the backend and returns the old log level */
-  public static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined {
+  public static setLogLevel(
+    inLoggerCategory: string,
+    newLevel: LogLevel
+  ): LogLevel | undefined {
     const oldLevel = Logger.getLevel(inLoggerCategory);
-    Logger.logInfo(loggerCategory, `Setting log level`, () => ({ loggerCategory: inLoggerCategory, oldLevel, newLevel }));
+    Logger.logInfo(loggerCategory, `Setting log level`, () => ({
+      loggerCategory: inLoggerCategory,
+      oldLevel,
+      newLevel,
+    }));
     Logger.setLevel(inLoggerCategory, newLevel);
     IModelHost.platform.clearLogLevelCache();
     return oldLevel;

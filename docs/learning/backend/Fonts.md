@@ -2,8 +2,8 @@
 
 Fonts define the appearance and layout of text in a model or on a drawing. Some fonts are in the public domain, but others are licensed works of third parties governed by a license agreement. Some fonts are delivered with an operating system, but others are purchased externally. Authors of iModels must choose a strategy for the picking the set of fonts they wish to use so that:
 
- 1. fonts are always available whenever the iModel is accessed
- 2. the license agreements of the fonts are respected
+1.  fonts are always available whenever the iModel is accessed
+2.  the license agreements of the fonts are respected
 
 The various font apis in iTwin.js are designed to accomplish these goals. Generally, it is expected that system administrators will choose the set of fonts for an iModel at initialization time, make sure they're available and licensed correctly, and then only add new fonts as necessary. In particular, users without administrator rights will not be able to import new fonts from local files on their computers. This avoids "polluting" an iModel with fonts that don't satisfy one or both requirements above.
 
@@ -29,13 +29,13 @@ SHX fonts are stored in files, one per font, with an extension ".shx". They may 
 
 ### TrueType Fonts
 
-Fonts defined in the `OpenType` format are delivered in files with the extensions: ".ttf", ".ttc", ".otf", or ".otc". They may be imported into Font Workspaces by supplying the name of the  file.
+Fonts defined in the `OpenType` format are delivered in files with the extensions: ".ttf", ".ttc", ".otf", or ".otc". They may be imported into Font Workspaces by supplying the name of the file.
 
 > Note: iTwin.js uses the term `TrueType` where a more accurate term would be `OpenType`. Ignore the distinction.
 
 #### TrueType Font Faces
 
-TrueType fonts may supply separate *faces* to display `Regular`, `Italics`, `Bold`, and `BoldItalics` flavors of the same font name. OpenType files with the extension ".ttf" or ".otf" hold a single font face. OpenType files with the extension ".ttc" or ".otc" hold a *collection* of faces. Sometimes .ttc/.otc collection files hold multiple faces for the same font name and sometimes they hold font faces from multiple fonts.
+TrueType fonts may supply separate _faces_ to display `Regular`, `Italics`, `Bold`, and `BoldItalics` flavors of the same font name. OpenType files with the extension ".ttf" or ".otf" hold a single font face. OpenType files with the extension ".ttc" or ".otc" hold a _collection_ of faces. Sometimes .ttc/.otc collection files hold multiple faces for the same font name and sometimes they hold font faces from multiple fonts.
 
 ## Font Workspaces
 
@@ -47,6 +47,6 @@ Fonts may be "embedded" within an iModel. This is analogous to embedding fonts i
 
 However, the license agreements for some fonts permits embedding only when the file is immutable (readonly.) Also, embedding fonts requires that they be copied into all branches and briefcases so that all copies will contain the fonts. As some fonts can be very large, this is inefficient. For these reasons, fonts should only be embedded in "snapshot" iModels.
 
-Versions of iTwin.js previous to 3.0 *only* supported embedded fonts. In V3.0 and forward, if a font exists in a Font Workspace it is used, *even if a font with the same name* is embedded in an iModel.
+Versions of iTwin.js previous to 3.0 _only_ supported embedded fonts. In V3.0 and forward, if a font exists in a Font Workspace it is used, _even if a font with the same name_ is embedded in an iModel.
 
 To embed a font in an iModel, use `DgnDb.embedFont`.

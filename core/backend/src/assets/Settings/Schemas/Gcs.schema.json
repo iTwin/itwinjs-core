@@ -13,10 +13,7 @@
       "items": {
         "type": "string"
       },
-      "default": [
-        "gcs/base",
-        "gcs/entire-earth"
-      ]
+      "default": ["gcs/base", "gcs/entire-earth"]
     },
     "gcs/disableWorkspaces": {
       "type": "boolean",

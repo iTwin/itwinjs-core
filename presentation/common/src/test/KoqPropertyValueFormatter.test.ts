@@ -5,7 +5,15 @@
 
 import { expect } from "chai";
 import {
-  KindOfQuantityProps, PhenomenonProps, Schema, SchemaContext, SchemaItemFormatProps, SchemaItemType, schemaItemTypeToString, SchemaItemUnitProps, SchemaProps,
+  KindOfQuantityProps,
+  PhenomenonProps,
+  Schema,
+  SchemaContext,
+  SchemaItemFormatProps,
+  SchemaItemType,
+  schemaItemTypeToString,
+  SchemaItemUnitProps,
+  SchemaProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter";
@@ -292,7 +300,12 @@ const koq: KindOfQuantityProps = {
   schema: "TestSchema",
   relativeError: 6,
   persistenceUnit: "TestSchema.MetricUnit",
-  presentationUnits: ["TestSchema.MetricFormat", "TestSchema.ImperialFormat", "TestSchema.UsSurveyFormat", "TestSchema.UsCustomFormat"],
+  presentationUnits: [
+    "TestSchema.MetricFormat",
+    "TestSchema.ImperialFormat",
+    "TestSchema.UsSurveyFormat",
+    "TestSchema.UsCustomFormat",
+  ],
 };
 
 const koqOnlyMetric: KindOfQuantityProps = {

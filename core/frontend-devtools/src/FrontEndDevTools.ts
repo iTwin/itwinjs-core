@@ -7,65 +7,179 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
+import {
+  EdgeDetectionEffect,
+  EmbossEffect,
+  GaussianBlurEffect,
+  SharpenEffect,
+  SharpnessEffect,
+  UnsharpenEffect,
+} from "./effects/Convolution";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { ExplosionEffect } from "./effects/Explosion";
 import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
-import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
+import {
+  LensDistortionConfig,
+  LensDistortionEffect,
+} from "./effects/LensDistortion";
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
 import {
-  MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool,
-  MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
+  MaskBackgroundMapByElementTool,
+  MaskBackgroundMapByExcludedElementTool,
+  MaskBackgroundMapByModelTool,
+  MaskBackgroundMapBySubCategoryTool,
+  MaskRealityModelByElementTool,
+  MaskRealityModelByExcludedElementTool,
+  MaskRealityModelByModelTool,
+  MaskRealityModelBySubCategoryTool,
+  SetHigherPriorityRealityModelMasking,
+  SetMapHigherPriorityMasking,
+  UnmaskMapTool,
+  UnmaskRealityModelTool,
 } from "./tools/PlanarMaskTools";
 import {
-  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
-  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
-  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
+  ChangeCameraTool,
+  ChangeEmphasisSettingsTool,
+  ChangeFlashSettingsTool,
+  ChangeHiliteModeTool,
+  ChangeHiliteSettingsTool,
+  DefaultTileSizeModifierTool,
+  FadeOutTool,
+  FreezeSceneTool,
+  SetAspectRatioSkewTool,
+  ShowTileVolumesTool,
+  Toggle3dManipulationsTool,
+  ToggleDrawingGraphicsTool,
+  ToggleSectionDrawingSpatialViewTool,
+  ToggleTileTreeReferencesTool,
+  ToggleViewAttachmentBoundariesTool,
+  ToggleViewAttachmentClipShapesTool,
+  ToggleViewAttachmentsTool,
+  ViewportAddRealityModel,
   ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
-  SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
+  ClipColorTool,
+  TestClipStyleTool,
+  ToggleSectionCutTool,
+} from "./tools/ClipTools";
+import {
+  ApplyRenderingStyleTool,
+  ChangeBackgroundColorTool,
+  ChangeViewFlagsTool,
+  OverrideSubCategoryTool,
+  SaveRenderingStyleTool,
+  SkyCubeTool,
+  SkySphereTool,
+  ToggleSkyboxTool,
+  ToggleWiremeshTool,
+  WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
-import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
-  ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
+  QueryScheduleScriptTool,
+  ReverseScheduleScriptTool,
+  SetScheduleScriptTool,
+} from "./tools/ScheduleScriptTools";
+import {
+  ClearEmphasizedElementsTool,
+  ClearIsolatedElementsTool,
+  EmphasizeSelectedElementsTool,
+  EmphasizeVisibleElementsTool,
+  IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
-import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
+import {
+  ToggleFrustumSnapshotTool,
+  ToggleSelectedViewFrustumTool,
+  ToggleShadowFrustumTool,
+} from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
   AttachArcGISFeatureMapLayerByUrlTool,
-  AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
-  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
-  MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
+  AttachArcGISMapLayerByUrlTool,
+  AttachMapLayerTool,
+  AttachMapOverlayTool,
+  AttachModelMapLayerTool,
+  AttachTileURLMapLayerByUrlTool,
+  AttachWmsMapLayerByUrlTool,
+  AttachWmtsMapLayerByUrlTool,
+  DetachMapLayersTool,
+  MapBaseColorTool,
+  MapBaseTransparencyTool,
+  MapBaseVisibilityTool,
+  MapLayerSubLayerVisibilityTool,
+  MapLayerTransparencyTool,
+  MapLayerVisibilityTool,
+  MapLayerZoomTool,
+  ReorderMapLayers,
+  SetMapBaseTool,
+  ToggleTerrainTool,
 } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import {
-  ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool,
-  SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool,
+  ClearModelAppearanceOverrides,
+  SetModelColorTool,
+  SetModelEmphasizedTool,
+  SetModelIgnoresMaterialsTool,
+  SetModelLineCodeTool,
+  SetModelLineWeightTool,
+  SetModelLocateTool,
+  SetModelTransparencyTool,
 } from "./tools/ModelAppearanceTools";
-import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
+import {
+  ChangePlanProjectionSettingsTool,
+  DumpPlanProjectionSettingsTool,
+  OverrideSubCategoryPriorityTool,
+} from "./tools/PlanProjectionTools";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import {
-  AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool,
-  SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay,
+  AttachCesiumAssetTool,
+  AttachRealityModelTool,
+  ClearRealityModelAppearanceOverrides,
+  DetachRealityModelTool,
+  SaveRealityModelTool,
+  SetRealityModelColorTool,
+  SetRealityModelEmphasizedTool,
+  SetRealityModelLocateTool,
+  SetRealityModelTransparencyTool,
+  ToggleOSMBuildingDisplay,
 } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
-import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
 import {
-  SetAASamplesTool, ToggleDrapeFrustumTool, ToggleNormalMaps, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
-  ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
+  CompileShadersTool,
+  LoseWebGLContextTool,
+  ToggleDPIForLODTool,
+} from "./tools/RenderSystemTools";
+import {
+  SetAASamplesTool,
+  ToggleDrapeFrustumTool,
+  ToggleNormalMaps,
+  TogglePrimitiveVisibilityTool,
+  ToggleReadPixelsTool,
+  ToggleRealityTileBounds,
+  ToggleRealityTileFreeze,
+  ToggleRealityTileLogging,
+  ToggleRealityTilePreload,
+  ToggleVolClassIntersect,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
-import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
-import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
+import {
+  ApplyViewByIdTool,
+  ApplyViewTool,
+  SaveViewTool,
+} from "./tools/SavedViews";
+import {
+  DumpSelectionSetTool,
+  SelectElementsByIdTool,
+} from "./tools/SelectionTools";
 import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
-import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
+import {
+  ElementIdFromSourceAspectIdTool,
+  SourceAspectIdFromElementIdTool,
+} from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
@@ -85,8 +199,7 @@ export class FrontendDevTools {
    * @beta
    */
   public static async initialize(): Promise<void> {
-    if (this._initialized)
-      return;
+    if (this._initialized) return;
 
     this._initialized = true;
 
@@ -94,7 +207,8 @@ export class FrontendDevTools {
     IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
     const namespace = "FrontendDevTools";
-    const namespacePromise = IModelApp.localization.registerNamespace(namespace);
+    const namespacePromise =
+      IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
@@ -241,8 +355,7 @@ export class FrontendDevTools {
       WoWIgnoreBackgroundTool,
     ];
 
-    for (const tool of tools)
-      tool.register(namespace);
+    for (const tool of tools) tool.register(namespace);
 
     return namespacePromise;
   }

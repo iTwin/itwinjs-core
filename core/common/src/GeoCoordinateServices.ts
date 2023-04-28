@@ -68,16 +68,26 @@ export enum GeoCoordStatus {
  */
 export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus {
   switch (s) {
-    case GeoCoordStatus.Success: return GeoServiceStatus.Success;
-    case GeoCoordStatus.NoGCSDefined: return GeoServiceStatus.NoGeoLocation;
-    case GeoCoordStatus.OutOfUsefulRange: return GeoServiceStatus.OutOfUsefulRange;
-    case GeoCoordStatus.OutOfMathematicalDomain: return GeoServiceStatus.OutOfMathematicalDomain;
-    case GeoCoordStatus.NoDatumConverter: return GeoServiceStatus.NoDatumConverter;
-    case GeoCoordStatus.VerticalDatumConvertError: return GeoServiceStatus.VerticalDatumConvertError;
-    case GeoCoordStatus.CSMapError: return GeoServiceStatus.CSMapError;
-    case GeoCoordStatus.Pending: return GeoServiceStatus.Pending;
+    case GeoCoordStatus.Success:
+      return GeoServiceStatus.Success;
+    case GeoCoordStatus.NoGCSDefined:
+      return GeoServiceStatus.NoGeoLocation;
+    case GeoCoordStatus.OutOfUsefulRange:
+      return GeoServiceStatus.OutOfUsefulRange;
+    case GeoCoordStatus.OutOfMathematicalDomain:
+      return GeoServiceStatus.OutOfMathematicalDomain;
+    case GeoCoordStatus.NoDatumConverter:
+      return GeoServiceStatus.NoDatumConverter;
+    case GeoCoordStatus.VerticalDatumConvertError:
+      return GeoServiceStatus.VerticalDatumConvertError;
+    case GeoCoordStatus.CSMapError:
+      return GeoServiceStatus.CSMapError;
+    case GeoCoordStatus.Pending:
+      return GeoServiceStatus.Pending;
     default:
-      throw new Error("GeoCoordStatus -> GeoServiceStatus - Missing enum conversion");
+      throw new Error(
+        "GeoCoordStatus -> GeoServiceStatus - Missing enum conversion"
+      );
   }
 }
 
@@ -103,7 +113,7 @@ export interface PointWithStatus {
 /** @beta */
 export interface IModelCoordinatesResponseProps {
   iModelCoords: PointWithStatus[];
-  fromCache: number;    // the number that were read from the cache rather than calculated.
+  fromCache: number; // the number that were read from the cache rather than calculated.
 }
 
 /** Information required to request conversion of an array of iModel coordinates to Geographic Coordinates (longitude and latitude)
@@ -119,7 +129,7 @@ export interface GeoCoordinatesRequestProps {
  */
 export interface GeoCoordinatesResponseProps {
   geoCoords: PointWithStatus[];
-  fromCache: number;    // the number that were read from the cache rather than calculated.
+  fromCache: number; // the number that were read from the cache rather than calculated.
 }
 
 /** Information required to interpret or complete a Geographic CRS in the specified format.
@@ -134,7 +144,7 @@ export interface GeographicCRSInterpretRequestProps {
    *  which should then contain both the horizontal CRS definition as well as the vertical CRS specification.
    *  WKT fragments starting with PROJCS or GEOGCS are also supported but the vertical CRS will be assigned a
    *  default value.
-  */
+   */
   geographicCRSDef: string;
 }
 
@@ -145,7 +155,7 @@ export interface GeographicCRSInterpretResponseProps {
   /** The result status of the interpret operation. A value of zero indicates successful interpretation.
    *  Any value other than zero is to be considered a hard error and no valid result will
    *  be returned in the geographicCRS property.
-  */
+   */
   status: number;
   /** The property that receives the interpreted geographic CRS if the process was successful. */
   geographicCRS?: GeographicCRSProps;

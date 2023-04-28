@@ -18,19 +18,21 @@ export class PointStringParams {
   public readonly indices: VertexIndices;
   public readonly weight: number;
 
-  public constructor(vertices: VertexTable, indices: VertexIndices, weight: number) {
+  public constructor(
+    vertices: VertexTable,
+    indices: VertexIndices,
+    weight: number
+  ) {
     this.vertices = vertices;
     this.indices = indices;
     this.weight = weight;
   }
 
   public static create(args: PolylineArgs): PointStringParams | undefined {
-    if (!args.flags.isDisjoint)
-      return undefined;
+    if (!args.flags.isDisjoint) return undefined;
 
     const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
+    if (undefined === vertices) return undefined;
 
     const polylines = args.polylines;
     let vertIndices = polylines[0].vertIndices;

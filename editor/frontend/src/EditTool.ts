@@ -31,7 +31,10 @@ export namespace EditTools {
    * @param msg the message about what's happening from the currently busy EditCommand.
    * @returns the delay (in milliseconds) before attempting again. If `undefined` use default (usually 1 second)
    */
-  export type BusyRetry = (attempt: number, msg: string) => Promise<number | undefined>;
+  export type BusyRetry = (
+    attempt: number,
+    msg: string
+  ) => Promise<number | undefined>;
 }
 
 /**
@@ -44,15 +47,23 @@ export class EditTools {
   public static busyRetry?: EditTools.BusyRetry;
   private static _initialized = false;
 
-  public static async startCommand<T>(startArg: EditTools.StartArgs, ...cmdArgs: any[]): Promise<T> {
+  public static async startCommand<T>(
+    startArg: EditTools.StartArgs,
+    ...cmdArgs: any[]
+  ): Promise<T> {
     let attempt = 0;
     while (true) {
       try {
-        return await (IpcApp.callIpcChannel(editorIpcStrings.channel, "startCommand", startArg.commandId, startArg.iModelKey, ...cmdArgs) as Promise<T>);
+        return await (IpcApp.callIpcChannel(
+          editorIpcStrings.channel,
+          "startCommand",
+          startArg.commandId,
+          startArg.iModelKey,
+          ...cmdArgs
+        ) as Promise<T>);
       } catch (e: any) {
-        if (e.name !== editorIpcStrings.commandBusy)
-          throw e; // unknown backend error
-        const delay = await this.busyRetry?.(attempt++, e.message) ?? 1000;
+        if (e.name !== editorIpcStrings.commandBusy) throw e; // unknown backend error
+        const delay = (await this.busyRetry?.(attempt++, e.message)) ?? 1000;
         await BeDuration.fromMilliseconds(delay).wait();
       }
     }
@@ -71,15 +82,16 @@ export class EditTools {
    * ```
    */
   public static async initialize(): Promise<void> {
-    if (this._initialized)
-      return;
+    if (this._initialized) return;
 
     this._initialized = true;
 
     // clean up if we're being shut down
     IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
-    const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
+    const namespacePromise = IModelApp.localization.registerNamespace(
+      this.namespace
+    );
 
     const tools = IModelApp.tools;
     tools.registerModule(UndoRedoTools, this.namespace);

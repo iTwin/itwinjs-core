@@ -54,7 +54,7 @@ SELECT
 FROM test.Foo
 ```
 
-# IIF ( *condition-expr*, *true-expr* , *false-expr* )
+# IIF ( _condition-expr_, _true-expr_ , _false-expr_ )
 
 ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> THEN <true-expr> ELSE <false-expr> END`
 
@@ -62,9 +62,9 @@ ECSQL supports IIF(), which is really shorthand for `CASE WHEN <condition-expr> 
 
 `condition-expr`: A condition expression that resolve into a boolean value. e.g. Length > 1.0.
 
-`true-expr`: Value returned when the `condition-expr` is evaluated to a *true* value.
+`true-expr`: Value returned when the `condition-expr` is evaluated to a _true_ value.
 
-`false-expr`: Value returned when the `condition-expr` is evaluated to a *false* value.
+`false-expr`: Value returned when the `condition-expr` is evaluated to a _false_ value.
 
 ### Example
 

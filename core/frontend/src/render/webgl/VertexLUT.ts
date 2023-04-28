@@ -8,11 +8,20 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { QParams2d, QParams3d } from "@itwin/core-common";
-import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
+import {
+  AuxChannel,
+  AuxChannelTable,
+  AuxDisplacementChannel,
+  AuxParamChannel,
+} from "../primitives/AuxChannelTable";
 import { VertexTable } from "../primitives/VertexTable";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
-import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
+import {
+  qorigin3dToArray,
+  qparams2dToArray,
+  qscale3dToArray,
+} from "./AttributeBuffers";
 import { TextureHandle } from "./Texture";
 
 type ChannelPropName = "normals" | "displacements" | "params";
@@ -36,32 +45,45 @@ export class AuxChannelLUT implements WebGLDisposable {
     this.initChannels<AuxParamChannel>(table, "params");
   }
 
-  private initChannels<T extends AuxChannel>(table: AuxChannelTable, name: ChannelPropName): void {
+  private initChannels<T extends AuxChannel>(
+    table: AuxChannelTable,
+    name: ChannelPropName
+  ): void {
     const channels = table[name];
-    if (undefined === channels)
-      return;
+    if (undefined === channels) return;
 
     const map = new Map<string, T>();
 
     // TS2322: Type 'Map<string, T>' is not assignable to type 'Map<string, AuxChannel> & Map<string, AuxDisplacementChannel> & Map<string, AuxParamChannel>'.
     // (Compiler cannot detect that the specific property name is matched to the correct subtype at each call site - but we know that).
     this[name] = map as any;
-    for (const channel of channels)
-      map.set(channel.name, channel as T);
+    for (const channel of channels) map.set(channel.name, channel as T);
   }
 
-  public get bytesUsed(): number { return this.texture.bytesUsed; }
-  public get hasScalarAnimation() { return undefined !== this.params; }
+  public get bytesUsed(): number {
+    return this.texture.bytesUsed;
+  }
+  public get hasScalarAnimation() {
+    return undefined !== this.params;
+  }
 
-  public get isDisposed(): boolean { return this.texture.isDisposed; }
+  public get isDisposed(): boolean {
+    return this.texture.isDisposed;
+  }
 
   public dispose() {
     dispose(this.texture);
   }
 
   public static create(table: AuxChannelTable): AuxChannelLUT | undefined {
-    const texture = TextureHandle.createForData(table.width, table.height, table.data);
-    return undefined !== texture ? new AuxChannelLUT(texture, table) : undefined;
+    const texture = TextureHandle.createForData(
+      table.width,
+      table.height,
+      table.data
+    );
+    return undefined !== texture
+      ? new AuxChannelLUT(texture, table)
+      : undefined;
   }
 }
 
@@ -74,32 +96,55 @@ export class VertexLUT implements WebGLDisposable {
   public readonly numRgbaPerVertex: number;
   public readonly colorInfo: ColorInfo;
   public readonly usesQuantizedPositions: boolean; // If true, positions are 16-bit integers quantized to qOrigin and qScale; otherwise they are unquantized 32-bit floats.
-  public readonly qOrigin: Float32Array;  // Origin of quantized range
-  public readonly qScale: Float32Array;   // Scale of quantized range
+  public readonly qOrigin: Float32Array; // Origin of quantized range
+  public readonly qScale: Float32Array; // Scale of quantized range
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
   public readonly auxChannels?: AuxChannelLUT;
 
-  public get hasAnimation() { return undefined !== this.auxChannels; }
-  public get hasScalarAnimation() { return undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation; }
+  public get hasAnimation() {
+    return undefined !== this.auxChannels;
+  }
+  public get hasScalarAnimation() {
+    return (
+      undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation
+    );
+  }
 
   public get bytesUsed(): number {
     let bytesUsed = this.texture.bytesUsed;
-    if (undefined !== this.auxChannels)
-      bytesUsed += this.auxChannels.bytesUsed;
+    if (undefined !== this.auxChannels) bytesUsed += this.auxChannels.bytesUsed;
 
     return bytesUsed;
   }
 
-  public static createFromVertexTable(vt: VertexTable, aux?: AuxChannelTable): VertexLUT | undefined {
+  public static createFromVertexTable(
+    vt: VertexTable,
+    aux?: AuxChannelTable
+  ): VertexLUT | undefined {
     const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
-    if (undefined === texture)
-      return undefined;
+    if (undefined === texture) return undefined;
 
     const auxLUT = undefined !== aux ? AuxChannelLUT.create(aux) : undefined;
-    return new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, !vt.usesUnquantizedPositions, vt.uvParams, auxLUT);
+    return new VertexLUT(
+      texture,
+      vt,
+      ColorInfo.createFromVertexTable(vt),
+      vt.qparams,
+      !vt.usesUnquantizedPositions,
+      vt.uvParams,
+      auxLUT
+    );
   }
 
-  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, positionsAreQuantized: boolean, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
+  private constructor(
+    texture: TextureHandle,
+    table: VertexTable,
+    colorInfo: ColorInfo,
+    qparams: QParams3d,
+    positionsAreQuantized: boolean,
+    uvParams?: QParams2d,
+    auxChannels?: AuxChannelLUT
+  ) {
     this.texture = texture;
     this.numVertices = table.numVertices;
     this.numRgbaPerVertex = table.numRgbaPerVertex;
@@ -109,11 +154,12 @@ export class VertexLUT implements WebGLDisposable {
     this.usesQuantizedPositions = positionsAreQuantized;
     this.auxChannels = auxChannels;
 
-    if (undefined !== uvParams)
-      this.uvQParams = qparams2dToArray(uvParams);
+    if (undefined !== uvParams) this.uvQParams = qparams2dToArray(uvParams);
   }
 
-  public get isDisposed(): boolean { return this.texture.isDisposed; }
+  public get isDisposed(): boolean {
+    return this.texture.isDisposed;
+  }
 
   public dispose() {
     dispose(this.texture);

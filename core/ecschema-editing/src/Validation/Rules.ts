@@ -6,17 +6,40 @@
  * @module Validation
  */
 
-import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
-  PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass, Unit,
-  UnitSystem } from "@itwin/ecschema-metadata";
+import {
+  AnyClass,
+  AnyECType,
+  AnyProperty,
+  Constant,
+  CustomAttribute,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  StructClass,
+  Unit,
+  UnitSystem,
+} from "@itwin/ecschema-metadata";
 import { BaseDiagnostic } from "./Diagnostic";
 
 /**
  * Interface used for all rule implementations used during schema validation.
  * @beta
  */
-export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
+export type IRule<T extends AnyECType, U = {}> = (
+  ecDefinition: T,
+  ...args: U[]
+) => AsyncIterable<BaseDiagnostic<T, any[]>>;
 
 /** @beta */
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
@@ -55,7 +78,9 @@ export interface IRuleSet {
   /** The rules that apply to [CustomAttributeContainerProps]($ecschema-metadata) objects. */
   customAttributeContainerRules?: Array<IRule<CustomAttributeContainerProps>>;
   /** The rules that apply to [CustomAttribute]($ecschema-metadata) objects. */
-  customAttributeInstanceRules?: Array<BaseRule<CustomAttributeContainerProps, CustomAttribute>>;
+  customAttributeInstanceRules?: Array<
+    BaseRule<CustomAttributeContainerProps, CustomAttribute>
+  >;
   /** The rules that apply to [Enumeration]($ecschema-metadata) objects. */
   enumerationRules?: Array<IRule<Enumeration>>;
   /** The rules that apply to [KindOfQuantity]($ecschema-metadata) objects. */

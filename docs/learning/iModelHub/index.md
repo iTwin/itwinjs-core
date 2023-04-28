@@ -4,9 +4,9 @@ iModelHub is the control center for iModels. It is responsible for coordinating 
 
 ![iModelHub](./iModelHub.png)
 
-Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [Briefcases](../Glossary.md#briefcase). In fact, iModelHub's primary purpose is *not* to hold or process copies of iModels (it does so only to facilitate Briefcase checkout). Rather, iModelHub's main role is to maintain the sequence of [ChangeSets](../Glossary.md#changeset) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like an accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
+Like [Git](https://git-scm.com/) repositories for source code, in the iModel ecosystem copies of iModels are distributed widely in [Briefcases](../Glossary.md#briefcase). In fact, iModelHub's primary purpose is _not_ to hold or process copies of iModels (it does so only to facilitate Briefcase checkout). Rather, iModelHub's main role is to maintain the sequence of [ChangeSets](../Glossary.md#changeset) that forms an iModel's [Timeline](#the-timeline-of-changes-to-an-imodel). Like an accounting system does for financial transactions, iModelHub holds a ledger of all changes to an iModel.
 
-iModelHub accepts ChangeSets from iTwin.js [backends](../backend/index.md) through a process called [*push*](../Glossary.md#push), and sends them to other validated users when requested through a process called [*pull*](../Glossary.md#pull). iTwin.js applications determine when and how to push and pull changes.
+iModelHub accepts ChangeSets from iTwin.js [backends](../backend/index.md) through a process called [_push_](../Glossary.md#push), and sends them to other validated users when requested through a process called [_pull_](../Glossary.md#pull). iTwin.js applications determine when and how to push and pull changes.
 
 > See [Working with iModelHub](./WorkingWith.md) for a list of related learning topics.
 
@@ -29,19 +29,19 @@ When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, a
 
 ## The Timeline of Changes to an iModel
 
-iModelHub holds an immutable ledger of all changes to an iModel. Similar to an accounting system for financial data, the ledger can provide a reliable record of what-happened-when and by whom. Since the ledger is reliable, immutable and append-only (i.e. it is not possible to *revise history*), it forms a timeline that can be referenced externally as an authoritative record of the state-of-the-iModel as of a given point in time. In this manner, iModelHub provides the means to *sign the timeline* rather than create external (and potentially forgeable) snapshots for archival or reference.
+iModelHub holds an immutable ledger of all changes to an iModel. Similar to an accounting system for financial data, the ledger can provide a reliable record of what-happened-when and by whom. Since the ledger is reliable, immutable and append-only (i.e. it is not possible to _revise history_), it forms a timeline that can be referenced externally as an authoritative record of the state-of-the-iModel as of a given point in time. In this manner, iModelHub provides the means to _sign the timeline_ rather than create external (and potentially forgeable) snapshots for archival or reference.
 
 ### Pushing and Pulling ChangeSets
 
-A local [Briefcase](../Glossary.md#briefcase) holds the state of an iModel as of a given point in time, plus changes made locally, if any. To receive changes made by others, users *synchronize* their Briefcase from iModelHub. Any ChangeSets [pushed](../Glossary.md#push) to iModelHub by other users are [pulled](../Glossary.md#pull) and [merged](../Glossary.md#merge) into the local Briefcase.
+A local [Briefcase](../Glossary.md#briefcase) holds the state of an iModel as of a given point in time, plus changes made locally, if any. To receive changes made by others, users _synchronize_ their Briefcase from iModelHub. Any ChangeSets [pushed](../Glossary.md#push) to iModelHub by other users are [pulled](../Glossary.md#pull) and [merged](../Glossary.md#merge) into the local Briefcase.
 
-To permanently save your changes, you push them in the form of a Changeset to iModelHub. You must always synchronize your Briefcase with iModelHub before you can upload changes. iModelHub enforces that ChangeSets it accepts must always be *based on* (i.e. synchronized with) the most recent Changeset. This is what establishes the linear timeline of changes.
+To permanently save your changes, you push them in the form of a Changeset to iModelHub. You must always synchronize your Briefcase with iModelHub before you can upload changes. iModelHub enforces that ChangeSets it accepts must always be _based on_ (i.e. synchronized with) the most recent Changeset. This is what establishes the linear timeline of changes.
 
 > See [Working with Briefcase and ChangeSets](./Briefcases.md).
 
 ### Named Versions
 
-Every Changeset on the timeline creates a *new version* of the iModel. However, some points on the timeline can represent important milestones or significant events to be saved (e.g. for a design review). iModelHub provides a way to mark a point on the timeline with a name. These time points are referred to as **Named Versions**. Since a specific action must be taken to create them, they are treated specially by iModelHub with caching to make them faster to access.
+Every Changeset on the timeline creates a _new version_ of the iModel. However, some points on the timeline can represent important milestones or significant events to be saved (e.g. for a design review). iModelHub provides a way to mark a point on the timeline with a name. These time points are referred to as **Named Versions**. Since a specific action must be taken to create them, they are treated specially by iModelHub with caching to make them faster to access.
 
 > See [Using Named Versions](./Versions.md).
 

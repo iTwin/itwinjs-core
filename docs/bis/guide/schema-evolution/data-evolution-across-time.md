@@ -8,7 +8,7 @@ For this appendix, a staircase will be used as an example to illustrate evolutio
 
 ## Start Simple
 
-It is best to start with as few assumptions and requirements as possible. The Stair class designer determines that Stair is a PhysicalElement, and gives it a definition such as “*A vertical passageway allowing occupants to walk (step) from one floor level to another floor level at a different elevation. It may include a landing as an intermediate floor slab.*” (which was copied from IAI). The Stair class needs no other complexity to be functional.
+It is best to start with as few assumptions and requirements as possible. The Stair class designer determines that Stair is a PhysicalElement, and gives it a definition such as “_A vertical passageway allowing occupants to walk (step) from one floor level to another floor level at a different elevation. It may include a landing as an intermediate floor slab._” (which was copied from IAI). The Stair class needs no other complexity to be functional.
 
 ### Simple Stair Inheritance Diagram
 
@@ -75,5 +75,6 @@ Other schema designers can create Aspects that can be attached to Stair or one o
 Relationships – like Aspects – can be defined for the Stair class (and its superclasses) without any knowledge by the Stair class designer. Users may take advantage of these Relationships to other Elements at any point in time.
 
 ---
+
 | Next: [Schema Versioning](./schema-versioning-and-generations.md)
 |:---

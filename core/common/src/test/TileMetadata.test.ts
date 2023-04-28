@@ -8,13 +8,27 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { BatchType } from "../FeatureTable";
 import {
-  ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, IModelTileTreeId, iModelTileTreeIdToString,
-  parseTileTreeIdAndContentId, PrimaryTileTreeId, TileMetadata, TileOptions, TreeFlags,
+  ClassifierTileTreeId,
+  computeTileChordTolerance,
+  ContentIdProvider,
+  defaultTileOptions,
+  IModelTileTreeId,
+  iModelTileTreeIdToString,
+  parseTileTreeIdAndContentId,
+  PrimaryTileTreeId,
+  TileMetadata,
+  TileOptions,
+  TreeFlags,
 } from "../tile/TileMetadata";
 
 describe("TileMetadata", () => {
   it("computes chord tolerance", () => {
-    const expectTolerance = (expectedTolerance: number, range: Range3d, is3d: boolean, sizeMultiplier?: number) => {
+    const expectTolerance = (
+      expectedTolerance: number,
+      range: Range3d,
+      is3d: boolean,
+      sizeMultiplier?: number
+    ) => {
       const metadata: TileMetadata = {
         contentRange: range,
         isLeaf: false,
@@ -27,7 +41,9 @@ describe("TileMetadata", () => {
       const epsilon = 0.00001;
       const actualTolerance = computeTileChordTolerance(metadata, is3d, 512);
       expect(Math.abs(expectedTolerance - actualTolerance)).most(epsilon);
-      expect(actualTolerance).least(computeTileChordTolerance(metadata, is3d, 2048));
+      expect(actualTolerance).least(
+        computeTileChordTolerance(metadata, is3d, 2048)
+      );
     };
 
     const toleranceFromDiagonal = (diagonal: number) => diagonal / 1024;
@@ -47,21 +63,76 @@ describe("TileMetadata", () => {
     // zero length in at least one axis
     const tolerance5 = toleranceFromDiagonal(5);
     const tolerance25 = toleranceFromDiagonal(25);
-    expectTolerance(tolerance25, Range3d.create(Point3d.create(100, -100, 0), Point3d.create(100, -100, 25)), true);
-    expectTolerance(0, Range3d.create(Point3d.create(100, -100, 0), Point3d.create(100, -100, 25)), false);
-    expectTolerance(tolerance5, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), true);
-    expectTolerance(toleranceFromDiagonal(3), Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), false);
-    expectTolerance(tolerance5 / 3, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), true, 3);
-    expectTolerance(toleranceFromDiagonal(3) / 3, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)), false, 3);
+    expectTolerance(
+      tolerance25,
+      Range3d.create(
+        Point3d.create(100, -100, 0),
+        Point3d.create(100, -100, 25)
+      ),
+      true
+    );
+    expectTolerance(
+      0,
+      Range3d.create(
+        Point3d.create(100, -100, 0),
+        Point3d.create(100, -100, 25)
+      ),
+      false
+    );
+    expectTolerance(
+      tolerance5,
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
+      true
+    );
+    expectTolerance(
+      toleranceFromDiagonal(3),
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
+      false
+    );
+    expectTolerance(
+      tolerance5 / 3,
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
+      true,
+      3
+    );
+    expectTolerance(
+      toleranceFromDiagonal(3) / 3,
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 3, 4)),
+      false,
+      3
+    );
 
-    expectTolerance(tolerance5, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)), false);
-    expectTolerance(tolerance5 / 2, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)), false, 2);
-    expectTolerance(toleranceFromDiagonal(Math.sqrt(4 + 9 + 16)), Range3d.create(Point3d.create(0, 0, 0), Point3d.create(2, 3, 4)), true);
-    expectTolerance(toleranceFromDiagonal(Math.sqrt(4 + 9 + 16)) / 2, Range3d.create(Point3d.create(0, 0, 0), Point3d.create(2, 3, 4)), true, 2);
+    expectTolerance(
+      tolerance5,
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)),
+      false
+    );
+    expectTolerance(
+      tolerance5 / 2,
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(3, 4, 5)),
+      false,
+      2
+    );
+    expectTolerance(
+      toleranceFromDiagonal(Math.sqrt(4 + 9 + 16)),
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(2, 3, 4)),
+      true
+    );
+    expectTolerance(
+      toleranceFromDiagonal(Math.sqrt(4 + 9 + 16)) / 2,
+      Range3d.create(Point3d.create(0, 0, 0), Point3d.create(2, 3, 4)),
+      true,
+      2
+    );
   });
 
   it("stringifies tree Ids", () => {
-    const primaryId = (edgesRequired = true, enforceDisplayPriority = false, sectionCut?: string, animationId?: string): IModelTileTreeId => {
+    const primaryId = (
+      edgesRequired = true,
+      enforceDisplayPriority = false,
+      sectionCut?: string,
+      animationId?: string
+    ): IModelTileTreeId => {
       return {
         type: BatchType.Primary,
         edges: edgesRequired ? { indexed: false, smooth: false } : false,
@@ -71,7 +142,11 @@ describe("TileMetadata", () => {
       };
     };
 
-    const classifierId = (expansion = 1, planar = true, animationId?: string): IModelTileTreeId => {
+    const classifierId = (
+      expansion = 1,
+      planar = true,
+      animationId?: string
+    ): IModelTileTreeId => {
       return {
         type: planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier,
         expansion,
@@ -206,12 +281,12 @@ describe("TileMetadata", () => {
         flags: kDefaults,
       },
       {
-        id: classifierId(0.250000),
+        id: classifierId(0.25),
         baseId: "CP:0.250000_",
         flags: kDefaults,
       },
       {
-        id: classifierId(2.500000, false),
+        id: classifierId(2.5, false),
         baseId: "C:2.500000_",
         flags: kDefaults,
       },
@@ -260,7 +335,9 @@ describe("TileMetadata", () => {
       const modelId = "0x1c";
       const actual = iModelTileTreeIdToString(modelId, test.id, options);
 
-      const expected = `${options.maximumMajorTileFormatVersion.toString(16)}_${test.flags.toString(16)}-${test.baseId}${modelId}`;
+      const expected = `${options.maximumMajorTileFormatVersion.toString(
+        16
+      )}_${test.flags.toString(16)}-${test.baseId}${modelId}`;
       expect(actual).to.equal(expected);
     }
   });
@@ -279,9 +356,15 @@ describe("TileMetadata", () => {
       allPolyfaceEdges?: boolean;
     }
 
-    function test(treeId: string, contentId: string, expected: Options | "content" | "tree"): void {
+    function test(
+      treeId: string,
+      contentId: string,
+      expected: Options | "content" | "tree"
+    ): void {
       if (typeof expected === "string") {
-        expect(() => TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
+        expect(() =>
+          TileOptions.fromTreeIdAndContentId(treeId, contentId)
+        ).to.throw(`Invalid ${expected} Id`);
       } else {
         const options: TileOptions = {
           maximumMajorTileFormatVersion: expected.version,
@@ -298,7 +381,9 @@ describe("TileMetadata", () => {
           generateAllPolyfaceEdges: true === expected.allPolyfaceEdges,
         };
 
-        expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
+        expect(
+          TileOptions.fromTreeIdAndContentId(treeId, contentId)
+        ).to.deep.equal(options);
       }
     }
 
@@ -319,14 +404,33 @@ describe("TileMetadata", () => {
     test("f_8", "-0-0", { version: 15, useLargerTiles: true });
 
     test("4_0", "-3-0", { version: 4, elision: true, instancing: true });
-    test("4_0", "-c-5", { version: 4, noPatterns: true, externalTextures: true });
-    test("a_1", "-F-2", { version: 10, projectExtents: true, noPatterns: true, externalTextures: true, instancing: true, elision: true });
+    test("4_0", "-c-5", {
+      version: 4,
+      noPatterns: true,
+      externalTextures: true,
+    });
+    test("a_1", "-F-2", {
+      version: 10,
+      projectExtents: true,
+      noPatterns: true,
+      externalTextures: true,
+      instancing: true,
+      elision: true,
+    });
   });
 
   it("parseTileTreeIdAndContentId round trips", () => {
-    function test(modelId: Id64String, treeId: IModelTileTreeId, contentId: ReturnType<typeof ContentIdProvider.prototype.specFromId>, tileOptions: TileOptions) {
+    function test(
+      modelId: Id64String,
+      treeId: IModelTileTreeId,
+      contentId: ReturnType<typeof ContentIdProvider.prototype.specFromId>,
+      tileOptions: TileOptions
+    ) {
       const treeIdStr = iModelTileTreeIdToString(modelId, treeId, tileOptions);
-      const contentIdStr = ContentIdProvider.create(true, tileOptions).idFromSpec(contentId);
+      const contentIdStr = ContentIdProvider.create(
+        true,
+        tileOptions
+      ).idFromSpec(contentId);
       const parsed = parseTileTreeIdAndContentId(treeIdStr, contentIdStr);
 
       expect(parsed.modelId).to.equal(modelId);
@@ -334,55 +438,325 @@ describe("TileMetadata", () => {
 
       // Sometimes ContentIdSpec and IModelTileTreeId will be slightly different due to "undefined" properties being included. However, this has no effect on further processing.
       // Strings are compared here because the parsed values will typically be used to generate them.
-      expect(iModelTileTreeIdToString(parsed.modelId, parsed.treeId, parsed.options)).to.equal(treeIdStr);
-      expect(ContentIdProvider.create(true, parsed.options).idFromSpec(parsed.contentId)).to.equal(contentIdStr);
+      expect(
+        iModelTileTreeIdToString(parsed.modelId, parsed.treeId, parsed.options)
+      ).to.equal(treeIdStr);
+      expect(
+        ContentIdProvider.create(true, parsed.options).idFromSpec(
+          parsed.contentId
+        )
+      ).to.equal(contentIdStr);
     }
 
-    const defaultNoIndexedEdges = { ...defaultTileOptions, enableIndexedEdges: false };
-    const defaultNoEdges = { ...defaultNoIndexedEdges, generateAllPolyfaceEdges: false };
-    const defaultNoSmoothEdges = { ...defaultTileOptions, generateAllPolyfaceEdges: false };
+    const defaultNoIndexedEdges = {
+      ...defaultTileOptions,
+      enableIndexedEdges: false,
+    };
+    const defaultNoEdges = {
+      ...defaultNoIndexedEdges,
+      generateAllPolyfaceEdges: false,
+    };
+    const defaultNoSmoothEdges = {
+      ...defaultTileOptions,
+      generateAllPolyfaceEdges: false,
+    };
 
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, defaultTileOptions);
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableImprovedElision: false });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, ignoreAreaPatterns: true });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableExternalTextures: false });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, useProjectExtents: false });
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      defaultTileOptions
+    );
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      { ...defaultTileOptions, enableInstancing: false }
+    );
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      { ...defaultTileOptions, enableImprovedElision: false }
+    );
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      { ...defaultTileOptions, ignoreAreaPatterns: true }
+    );
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      { ...defaultTileOptions, enableExternalTextures: false }
+    );
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      { ...defaultTileOptions, useProjectExtents: false }
+    );
     // disableMagnification and alwaysSubdivideIncompleteTiles intentionally left out - they're not included in tileTreeId and contentId strings
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false, enableImprovedElision: false, ignoreAreaPatterns: true, enableExternalTextures: false, useProjectExtents: false });
+    test(
+      "0x1c",
+      { type: BatchType.Primary, edges: false } as PrimaryTileTreeId,
+      { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 },
+      {
+        ...defaultTileOptions,
+        enableInstancing: false,
+        enableImprovedElision: false,
+        ignoreAreaPatterns: true,
+        enableExternalTextures: false,
+        useProjectExtents: false,
+      }
+    );
 
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: false } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: false }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: false }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: false },
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: false },
+        enforceDisplayPriority: true,
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: false },
+        animationId: "0x105",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1000000d",
+      {
+        type: BatchType.Primary,
+        edges: false,
+        animationId: "0x105",
+        animationTransformNodeId: 50,
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultTileOptions
+    );
 
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: false }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: false },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
 
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: false } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoSmoothEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: false }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoSmoothEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: false }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoSmoothEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: false }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoSmoothEdges);
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: false },
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoSmoothEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: false },
+        enforceDisplayPriority: true,
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoSmoothEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: false },
+        animationId: "0x105",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoSmoothEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: false },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoSmoothEdges
+    );
 
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: true } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: true }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: true }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
-    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: true },
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoIndexedEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: true },
+        enforceDisplayPriority: true,
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoIndexedEdges
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: true },
+        animationId: "0x105",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoIndexedEdges
+    );
+    test(
+      "0x1000000d",
+      {
+        type: BatchType.Primary,
+        edges: false,
+        animationId: "0x105",
+        animationTransformNodeId: 50,
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultTileOptions
+    );
 
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: false, smooth: true }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: false, smooth: true },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoIndexedEdges
+    );
 
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: true } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: true }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: true }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
-    test("0x1d", { type: BatchType.Primary, edges: { indexed: true, smooth: true }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: true },
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultTileOptions
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: true },
+        enforceDisplayPriority: true,
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultTileOptions
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: true },
+        animationId: "0x105",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultTileOptions
+    );
+    test(
+      "0x1d",
+      {
+        type: BatchType.Primary,
+        edges: { indexed: true, smooth: true },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+      } as PrimaryTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultTileOptions
+    );
 
-    test("0x1d", { type: BatchType.VolumeClassifier, expansion: 50 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
+    test(
+      "0x1d",
+      {
+        type: BatchType.VolumeClassifier,
+        expansion: 50,
+      } as ClassifierTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1000000d",
+      {
+        type: BatchType.VolumeClassifier,
+        expansion: 50,
+        animationId: "0x50000001",
+      } as ClassifierTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1000000d",
+      {
+        type: BatchType.VolumeClassifier,
+        expansion: 50,
+        animationId: "0x50000001",
+        animationTransformNodeId: 500,
+      } as ClassifierTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
 
-    test("0x1d", { type: BatchType.PlanarClassifier, expansion: 50 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-
+    test(
+      "0x1d",
+      {
+        type: BatchType.PlanarClassifier,
+        expansion: 50,
+      } as ClassifierTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1000000d",
+      {
+        type: BatchType.PlanarClassifier,
+        expansion: 50,
+        animationId: "0x50000001",
+      } as ClassifierTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
+    test(
+      "0x1000000d",
+      {
+        type: BatchType.PlanarClassifier,
+        expansion: 50,
+        animationId: "0x50000001",
+        animationTransformNodeId: 500,
+      } as ClassifierTileTreeId,
+      { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+      defaultNoEdges
+    );
   });
 
   it("parses TileTreeId and ContentId strings", () => {
@@ -402,17 +776,28 @@ describe("TileMetadata", () => {
       };
     }
 
-    function test(treeId: string, contentId: string, expected: Options | string) {
+    function test(
+      treeId: string,
+      contentId: string,
+      expected: Options | string
+    ) {
       if (typeof expected === "string") {
-        expect(() => parseTileTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
+        expect(() => parseTileTreeIdAndContentId(treeId, contentId)).to.throw(
+          `Invalid ${expected} Id`
+        );
       } else {
-        const edges = BatchType.Primary === expected.treeId.type && false !== expected.treeId.edges ? expected.treeId.edges : undefined;
+        const edges =
+          BatchType.Primary === expected.treeId.type &&
+          false !== expected.treeId.edges
+            ? expected.treeId.edges
+            : undefined;
         const options: TileOptions = {
           maximumMajorTileFormatVersion: expected.tileOptions.version,
           enableInstancing: true === expected.tileOptions.instancing,
           enableImprovedElision: true === expected.tileOptions.elision,
           ignoreAreaPatterns: true === expected.tileOptions.noPatterns,
-          enableExternalTextures: true === expected.tileOptions.externalTextures,
+          enableExternalTextures:
+            true === expected.tileOptions.externalTextures,
           useProjectExtents: true === expected.tileOptions.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
@@ -508,13 +893,45 @@ describe("TileMetadata", () => {
     });
 
     test("19_1-S010_1_0_-5_30_0_-1_5e-11____0x1d", "-b-14-32-4-1-1", "tree"); // removed 's' after sectionCut
-    test("19_1-C50.000000_A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed ':' after C (VolumeClassifier)
-    test("19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // replaced '_' with '-'
-    test("19_1-C:50.000000A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed '_'
-    test("19_1-C:50.000000_AB:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // added 'B'
-    test("19_1-C:50.000000_A:0x050000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid Id64
-    test("19_1-C:50.000000_A:0x50000001_1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed '#'
-    test("19_1-C:50.000000_A:0x50000001_#1fg4_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid hexadecimal number (1fg4)
-    test("19_1-C:50.000000_A:0x50000001_#ggg_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid hexadecimal number (ggg)
+    test(
+      "19_1-C50.000000_A:0x50000001_#1f4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // removed ':' after C (VolumeClassifier)
+    test(
+      "19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // replaced '_' with '-'
+    test(
+      "19_1-C:50.000000A:0x50000001_#1f4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // removed '_'
+    test(
+      "19_1-C:50.000000_AB:0x50000001_#1f4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // added 'B'
+    test(
+      "19_1-C:50.000000_A:0x050000001_#1f4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // invalid Id64
+    test(
+      "19_1-C:50.000000_A:0x50000001_1f4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // removed '#'
+    test(
+      "19_1-C:50.000000_A:0x50000001_#1fg4_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // invalid hexadecimal number (1fg4)
+    test(
+      "19_1-C:50.000000_A:0x50000001_#ggg_0x1000000d",
+      "-b-14-32-4-1-1",
+      "tree"
+    ); // invalid hexadecimal number (ggg)
   });
 });

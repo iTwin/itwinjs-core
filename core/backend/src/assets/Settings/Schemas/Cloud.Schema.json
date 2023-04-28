@@ -12,11 +12,7 @@
       "cumulative": true,
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "accessName",
-          "storageType"
-        ],
+        "required": ["name", "accessName", "storageType"],
         "properties": {
           "name": {
             "type": "string",
@@ -39,10 +35,7 @@
       "cumulative": true,
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "containerId"
-        ],
+        "required": ["name", "containerId"],
         "properties": {
           "name": {
             "type": "string",

@@ -19,7 +19,16 @@ import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
-import { EnableAtmosphere, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
+import {
+  EnableAtmosphere,
+  IsAnimated,
+  IsClassified,
+  IsInstanced,
+  IsShadowable,
+  IsThematic,
+  IsWiremesh,
+  TechniqueFlags,
+} from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
 /* eslint-disable no-restricted-syntax */
@@ -34,14 +43,32 @@ export class ShaderProgramParams {
     return this._target;
   }
 
-  public get renderPass() { return this._renderPass; }
+  public get renderPass() {
+    return this._renderPass;
+  }
 
-  public get projectionMatrix() { return this.target.uniforms.getProjectionMatrix32(this.isViewCoords); }
-  public bindProjectionMatrix(uniform: UniformHandle) { this.target.uniforms.bindProjectionMatrix(uniform, this.isViewCoords); }
+  public get projectionMatrix() {
+    return this.target.uniforms.getProjectionMatrix32(this.isViewCoords);
+  }
+  public bindProjectionMatrix(uniform: UniformHandle) {
+    this.target.uniforms.bindProjectionMatrix(uniform, this.isViewCoords);
+  }
 
-  public get isViewCoords() { return RenderPass.ViewOverlay === this.renderPass || RenderPass.Background === this.renderPass; }
-  public get isOverlayPass() { return RenderPass.WorldOverlay === this.renderPass || RenderPass.ViewOverlay === this.renderPass; }
-  public get context() { return System.instance.context; }
+  public get isViewCoords() {
+    return (
+      RenderPass.ViewOverlay === this.renderPass ||
+      RenderPass.Background === this.renderPass
+    );
+  }
+  public get isOverlayPass() {
+    return (
+      RenderPass.WorldOverlay === this.renderPass ||
+      RenderPass.ViewOverlay === this.renderPass
+    );
+  }
+  public get context() {
+    return System.instance.context;
+  }
 
   public init(target: Target, pass: RenderPass = RenderPass.OpaqueGeneral) {
     this._renderPass = pass;
@@ -64,14 +91,27 @@ export class DrawParams {
     return this._programParams;
   }
 
-  public get target() { return this.programParams.target; }
-  public get renderPass() { return this.programParams.renderPass; }
-  public get projectionMatrix() { return this.programParams.projectionMatrix; }
-  public get isViewCoords() {
-    return this.programParams.isViewCoords || this.target.currentBranch.forceViewCoords;
+  public get target() {
+    return this.programParams.target;
   }
-  public get isOverlayPass() { return this.programParams.isOverlayPass; }
-  public get context() { return this.programParams.context; }
+  public get renderPass() {
+    return this.programParams.renderPass;
+  }
+  public get projectionMatrix() {
+    return this.programParams.projectionMatrix;
+  }
+  public get isViewCoords() {
+    return (
+      this.programParams.isViewCoords ||
+      this.target.currentBranch.forceViewCoords
+    );
+  }
+  public get isOverlayPass() {
+    return this.programParams.isOverlayPass;
+  }
+  public get context() {
+    return this.programParams.context;
+  }
 
   public init(programParams: ShaderProgramParams, geometry: CachedGeometry) {
     this._programParams = programParams;
@@ -107,7 +147,7 @@ export enum DrawOpCode {
 export class PopBatchCommand {
   public readonly opcode = "popBatch";
 
-  private constructor() { }
+  private constructor() {}
 
   public static instance = new PopBatchCommand();
 
@@ -120,7 +160,7 @@ export class PopBatchCommand {
 export class PushBatchCommand {
   public readonly opcode = "pushBatch";
 
-  public constructor(public readonly batch: Batch) { }
+  public constructor(public readonly batch: Batch) {}
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.target.pushBatch(this.batch);
@@ -131,7 +171,7 @@ export class PushBatchCommand {
 export class PushStateCommand {
   public readonly opcode = "pushState";
 
-  public constructor(public readonly state: BranchState) { }
+  public constructor(public readonly state: BranchState) {}
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.target.pushState(this.state);
@@ -142,7 +182,7 @@ export class PushStateCommand {
 export class PushBranchCommand {
   public readonly opcode = "pushBranch";
 
-  public constructor(public readonly branch: Branch) { }
+  public constructor(public readonly branch: Branch) {}
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.pushBranch(this.branch);
@@ -153,7 +193,7 @@ export class PushBranchCommand {
 export class PopBranchCommand {
   public readonly opcode = "popBranch";
 
-  private constructor() { }
+  private constructor() {}
 
   public static instance = new PopBranchCommand();
 
@@ -166,7 +206,7 @@ export class PopBranchCommand {
 export class PushClipCommand {
   public readonly opcode = "pushClip";
 
-  public constructor(public readonly clip: ClipVolume) { }
+  public constructor(public readonly clip: ClipVolume) {}
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.target.uniforms.branch.clipStack.push(this.clip);
@@ -177,7 +217,7 @@ export class PushClipCommand {
 export class PopClipCommand {
   public readonly opcode = "popClip";
 
-  private constructor() { }
+  private constructor() {}
 
   public static instance = new PopClipCommand();
 
@@ -190,47 +230,94 @@ export class PopClipCommand {
 export class PrimitiveCommand {
   public readonly opcode = "drawPrimitive";
 
-  public constructor(public readonly primitive: Primitive) { }
+  public constructor(public readonly primitive: Primitive) {}
 
   private static readonly _scratchTechniqueFlags = new TechniqueFlags();
 
   public execute(exec: ShaderProgramExecutor): void {
-    if (exec.target.isGeometryOutsideActiveVolume(this.primitive.cachedGeometry))
+    if (
+      exec.target.isGeometryOutsideActiveVolume(this.primitive.cachedGeometry)
+    )
       return;
 
     const techniqueId = this.primitive.techniqueId;
-    if (TechniqueId.Invalid === techniqueId)
-      return;
+    if (TechniqueId.Invalid === techniqueId) return;
 
     const target = exec.target;
-    const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
-    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
+    const thematic =
+      this.primitive.cachedGeometry.supportsThematicDisplay &&
+      target.wantThematicDisplay;
+    const shadowable =
+      (techniqueId === TechniqueId.Surface ||
+        techniqueId === TechniqueId.RealityMesh) &&
+      target.solarShadowMap.isReady &&
+      target.currentViewFlags.shadows &&
+      !thematic;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
     let isThematic = thematic ? IsThematic.Yes : IsThematic.No;
-    const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
-    const isInstanced = this.primitive.isInstanced ? IsInstanced.Yes : IsInstanced.No;
-    const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
+    const isClassified =
+      undefined !== target.currentPlanarClassifierOrDrape ||
+      undefined !== target.activeVolumeClassifierTexture
+        ? IsClassified.Yes
+        : IsClassified.No;
+    const isInstanced = this.primitive.isInstanced
+      ? IsInstanced.Yes
+      : IsInstanced.No;
+    const isAnimated = this.primitive.hasAnimation
+      ? IsAnimated.Yes
+      : IsAnimated.No;
 
     // Point clouds do not support hillshade or slope mode for thematic display.
-    if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
+    if (
+      isThematic &&
+      undefined !== this.primitive.cachedGeometry.asPointCloud &&
+      (target.uniforms.thematic.wantSlopeMode ||
+        target.uniforms.thematic.wantHillShadeMode)
+    )
       isThematic = IsThematic.No;
 
-    const wiremesh = target.currentViewFlags.wiremesh && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const wiremesh =
+      target.currentViewFlags.wiremesh &&
+      (techniqueId === TechniqueId.Surface ||
+        techniqueId === TechniqueId.RealityMesh);
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
-    const enableAtmosphere = target.wantAtmosphere ? EnableAtmosphere.Yes : EnableAtmosphere.No;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType, enableAtmosphere);
+    const posType = this.primitive.cachedGeometry.usesQuantizedPositions
+      ? "quantized"
+      : "unquantized";
+    const enableAtmosphere = target.wantAtmosphere
+      ? EnableAtmosphere.Yes
+      : EnableAtmosphere.No;
+    flags.init(
+      target,
+      exec.renderPass,
+      isInstanced,
+      isAnimated,
+      isClassified,
+      isShadowable,
+      isThematic,
+      isWiremesh,
+      posType,
+      enableAtmosphere
+    );
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
 
     if (exec.setProgram(program))
-      exec.target.compositor.drawPrimitive(this.primitive, exec, program.outputsToPick);
+      exec.target.compositor.drawPrimitive(
+        this.primitive,
+        exec,
+        program.outputsToPick
+      );
   }
 
-  public get hasFeatures(): boolean { return this.primitive.hasFeatures; }
-  public get renderOrder(): RenderOrder { return this.primitive.renderOrder; }
+  public get hasFeatures(): boolean {
+    return this.primitive.hasFeatures;
+  }
+  public get renderOrder(): RenderOrder {
+    return this.primitive.renderOrder;
+  }
 
   public getPass(target: Target): Pass {
     return this.primitive.getPass(target);
@@ -238,7 +325,11 @@ export class PrimitiveCommand {
 }
 
 /** @internal */
-export type PushCommand = PushBranchCommand | PushBatchCommand | PushStateCommand | PushClipCommand;
+export type PushCommand =
+  | PushBranchCommand
+  | PushBatchCommand
+  | PushStateCommand
+  | PushClipCommand;
 /** @internal */
 export type PopCommand = PopBranchCommand | PopBatchCommand | PopClipCommand;
 /** @internal */
@@ -254,24 +345,32 @@ export type DrawCommands = DrawCommand[];
  * The primitive should be right in the middle of a set.  We need to find the set which matches the flashID.
  * @internal
  */
-export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
-  if (!Id64.isValid(flashedId) || 0 === numCmdsPerClassifier)
-    return undefined;
+export function extractFlashedVolumeClassifierCommands(
+  flashedId: Id64String,
+  cmds: DrawCommands,
+  numCmdsPerClassifier: number
+): DrawCommands | undefined {
+  if (!Id64.isValid(flashedId) || 0 === numCmdsPerClassifier) return undefined;
 
   const firstPrim = (numCmdsPerClassifier - 1) / 2;
   for (let i = firstPrim; i < cmds.length; i += numCmdsPerClassifier) {
-    assert("drawPrimitive" === cmds[i].opcode, "Command list not configured as expected.");
+    assert(
+      "drawPrimitive" === cmds[i].opcode,
+      "Command list not configured as expected."
+    );
     const pc: PrimitiveCommand = cmds[i] as PrimitiveCommand;
     const surface = pc.primitive.cachedGeometry.asSurface;
     if (undefined !== surface && undefined !== surface.mesh.uniformFeatureId) {
       let j = i - 1;
-      while (j >= 0 && "pushBatch" !== cmds[j].opcode) // Find batch for this primitive
+      while (j >= 0 && "pushBatch" !== cmds[j].opcode)
+        // Find batch for this primitive
         j--;
-      if (j < 0)
-        continue;
+      if (j < 0) continue;
 
       const pushBatch = cmds[j] as PushBatchCommand;
-      const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
+      const elemId = pushBatch.batch.featureTable.findElementId(
+        surface.mesh.uniformFeatureId
+      );
       if (undefined !== elemId && elemId === flashedId) {
         return cmds.slice(i - firstPrim, i + firstPrim + 1);
       }
@@ -284,7 +383,10 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
 const scratchFeature = PackedFeature.create();
 
 /** @internal */
-export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: DrawCommands): DrawCommands {
+export function extractHilitedVolumeClassifierCommands(
+  hilites: Hilites,
+  cmds: DrawCommands
+): DrawCommands {
   // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
   //       by just not putting the ones which are not hilited into the ClassificationHilite command list.
   const result: DrawCommand[] = [];
@@ -293,14 +395,20 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
   for (const cmd of cmds) {
     switch (cmd.opcode) {
       case "popBranch":
-        if (result.length > 0 && "pushBranch" === result[result.length - 1].opcode) {
+        if (
+          result.length > 0 &&
+          "pushBranch" === result[result.length - 1].opcode
+        ) {
           result.pop(); // remove empty push/pop pairs
           continue;
         }
         break;
       case "popBatch":
         batch = undefined;
-        if (result.length > 0 && "pushBatch" === result[result.length - 1].opcode) {
+        if (
+          result.length > 0 &&
+          "pushBatch" === result[result.length - 1].opcode
+        ) {
           result.pop(); // remove empty push/pop pairs
           continue;
         }
@@ -312,11 +420,24 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
         if (undefined !== batch) {
           // Skip any primitives that are not hilited.
           const surface = cmd.primitive.cachedGeometry.asSurface;
-          if (undefined === surface || undefined === surface.mesh.uniformFeatureId)
+          if (
+            undefined === surface ||
+            undefined === surface.mesh.uniformFeatureId
+          )
             continue;
 
-          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId, scratchFeature);
-          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))))
+          const feature = batch.featureTable.getPackedFeature(
+            surface.mesh.uniformFeatureId,
+            scratchFeature
+          );
+          if (
+            undefined === feature ||
+            !isFeatureHilited(
+              feature,
+              hilites,
+              hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))
+            )
+          )
             continue;
 
           break;

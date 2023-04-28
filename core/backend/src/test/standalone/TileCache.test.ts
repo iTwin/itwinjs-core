@@ -7,7 +7,14 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+  BatchType,
+  ContentIdProvider,
+  defaultTileOptions,
+  IModelTileRpcInterface,
+  iModelTileTreeIdToString,
+  RpcActivity,
+  RpcManager,
+  RpcRegistry,
 } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
@@ -17,7 +24,8 @@ import { RpcTrace } from "../../rpc/tracing";
 import { TestUtils } from "../TestUtils";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-const fakeRpc: RpcActivity = { // eslint-disable-line deprecation/deprecation
+const fakeRpc: RpcActivity = {
+  // eslint-disable-line deprecation/deprecation
   accessToken: "dummy",
   activityId: "activity123",
   applicationId: "rpc test app",
@@ -32,8 +40,13 @@ interface TileContentRequestProps {
 }
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
-export async function getTileProps(iModel: IModelDb): Promise<TileContentRequestProps | undefined> {
-  const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
+export async function getTileProps(
+  iModel: IModelDb
+): Promise<TileContentRequestProps | undefined> {
+  const queryParams = {
+    from: GeometricModel3d.classFullName,
+    limit: IModelDb.maxLimit,
+  };
   for (const modelId of iModel.queryEntityIds(queryParams)) {
     let model;
     try {
@@ -42,14 +55,20 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
       continue;
     }
 
-    if (model.isNotSpatiallyLocated || model.isTemplate)
-      continue;
+    if (model.isNotSpatiallyLocated || model.isTemplate) continue;
 
     iModelTileTreeIdToString;
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false as const }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(
+      modelId,
+      { type: BatchType.Primary, edges: false as const },
+      defaultTileOptions
+    );
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
-    if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
+    if (
+      treeProps.rootTile.maximumSize === 0 &&
+      treeProps.rootTile.isLeaf === true
+    )
       continue;
 
     let guid = model.geometryGuid || iModel.changeset.id || "first";
@@ -74,14 +93,24 @@ describe("TileCache open v1", () => {
 
   const verifyTileCache = async (dbPath: string) => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
-    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+    tileRpcInterface =
+      RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(
+        IModelTileRpcInterface
+      );
 
     const iModel = SnapshotDb.openFile(dbPath);
     expect(iModel);
     // Generate tile
     const tileProps = await getTileProps(iModel);
     expect(tileProps);
-    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid)); // eslint-disable-line deprecation/deprecation
+    await RpcTrace.run(fakeRpc, async () =>
+      tileRpcInterface.generateTileContent(
+        iModel.getRpcProps(),
+        tileProps!.treeId,
+        tileProps!.contentId,
+        tileProps!.guid
+      )
+    ); // eslint-disable-line deprecation/deprecation
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     expect(IModelJsFs.existsSync(tilesCache)).true;
@@ -94,10 +123,12 @@ describe("TileCache open v1", () => {
     await TestUtils.startBackend();
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
-    const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    const snapshot = IModelTestUtils.createSnapshotFromSeed(
+      dbPath,
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
+    );
     snapshot.close();
     await verifyTileCache(dbPath);
-
   });
   it("should create .tiles file next to .bim with set cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
@@ -108,7 +139,10 @@ describe("TileCache open v1", () => {
     await TestUtils.startBackend(config);
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
-    const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    const snapshot = IModelTestUtils.createSnapshotFromSeed(
+      dbPath,
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
+    );
     snapshot.close();
 
     await verifyTileCache(dbPath);
@@ -118,7 +152,10 @@ describe("TileCache open v1", () => {
 describe("TileCache, open v2", async () => {
   it("should place .Tiles in tempFileBase for V2 checkpoints", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
-    const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    const snapshot = IModelTestUtils.createSnapshotFromSeed(
+      dbPath,
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim")
+    );
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
@@ -129,7 +166,10 @@ describe("TileCache, open v2", async () => {
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
     const key = `${iModelId}\$${changeset.id}`;
-    const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+    const tileRpcInterface =
+      RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(
+        IModelTileRpcInterface
+      );
     const tempFileBase = path.join(IModelHost.cacheDir, key);
     const checkpoint = SnapshotDb.openFile(dbPath, { key, tempFileBase });
     expect(checkpoint.nativeDb.getTempFileBaseName()).equals(tempFileBase);
@@ -140,9 +180,15 @@ describe("TileCache, open v2", async () => {
     sinon.stub(Logger, "logError").callsFake(() => Logger.stringifyMetaData());
     const errorStringify = sinon.spy(Logger, "stringifyMetaData");
 
-    await RpcTrace.run(fakeRpc, async () => { // eslint-disable-line deprecation/deprecation
+    await RpcTrace.run(fakeRpc, async () => {
+      // eslint-disable-line deprecation/deprecation
       Logger.logError("fake", "fake message");
-      return tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+      return tileRpcInterface.generateTileContent(
+        checkpoint.getRpcProps(),
+        tileProps!.treeId,
+        tileProps!.contentId,
+        tileProps!.guid
+      );
     });
 
     const logMsg = errorStringify.getCall(0).returnValue;
@@ -153,4 +199,3 @@ describe("TileCache, open v2", async () => {
     checkpoint.close();
   });
 });
-

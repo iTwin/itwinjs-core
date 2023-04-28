@@ -7,18 +7,31 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { ECSqlReader, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo,
+  Field,
+  NestedContentField,
+  PropertiesField,
+  PropertyInfo,
+} from "@itwin/presentation-common";
+import {
+  createTestECClassInfo,
+  createTestNestedContentField,
+  createTestPropertiesContentField,
+  createTestPropertyInfo,
+  createTestRelatedClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import {
-  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
+  createFieldOrderInfos,
+  FavoritePropertiesManager,
+  FavoritePropertiesOrderInfo,
+  FavoritePropertiesScope,
+  getFieldInfos,
+  IFavoritePropertiesStorage,
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 
 describe("FavoritePropertiesManager", () => {
-
   let manager: FavoritePropertiesManager;
   let propertyField1: PropertiesField;
   let propertyField2: PropertiesField;
@@ -34,14 +47,28 @@ describe("FavoritePropertiesManager", () => {
     iTwinId = "itwin-id";
     imodelId = "imodel-id";
     propertyField1 = createTestPropertiesContentField({
-      properties: [{ property: createTestPropertyInfo({ classInfo: createTestECClassInfo({ name: "Schema:ClassName1" }) }) }],
+      properties: [
+        {
+          property: createTestPropertyInfo({
+            classInfo: createTestECClassInfo({ name: "Schema:ClassName1" }),
+          }),
+        },
+      ],
     });
     propertyField2 = createTestPropertiesContentField({
-      properties: [{ property: createTestPropertyInfo({ classInfo: createTestECClassInfo({ name: "Schema:ClassName2" }) }) }],
+      properties: [
+        {
+          property: createTestPropertyInfo({
+            classInfo: createTestECClassInfo({ name: "Schema:ClassName2" }),
+          }),
+        },
+      ],
     });
     primitiveField = createTestSimpleContentField();
     nestedContentField = createTestNestedContentField({
-      contentClassInfo: createTestECClassInfo({ name: "Schema:NestedContentClassName" }),
+      contentClassInfo: createTestECClassInfo({
+        name: "Schema:NestedContentClassName",
+      }),
       nestedFields: [propertyField1, propertyField2, primitiveField],
     });
   });
@@ -58,25 +85,47 @@ describe("FavoritePropertiesManager", () => {
     imodelMock.reset();
   });
 
-  function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string, baseClassFullName: string }>) {
+  function setupMocksForQueryingBaseClasses(
+    classBaseClass: Array<{ classFullName: string; baseClassFullName: string }>
+  ) {
     let currIndex = -1;
     const ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
-    ecSqlReaderMock.setup(async (x) => x.step()).returns(async () => ++currIndex < classBaseClass.length);
-    ecSqlReaderMock.setup((x) => x.current).returns(() => {
-      const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
-      queryRowProxyMock.setup((x) => x.toRow()).returns(() => classBaseClass[currIndex]);
-      return queryRowProxyMock.object;
-    });
-    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => ecSqlReaderMock.object);
+    ecSqlReaderMock
+      .setup(async (x) => x.step())
+      .returns(async () => ++currIndex < classBaseClass.length);
+    ecSqlReaderMock
+      .setup((x) => x.current)
+      .returns(() => {
+        const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
+        queryRowProxyMock
+          .setup((x) => x.toRow())
+          .returns(() => classBaseClass[currIndex]);
+        return queryRowProxyMock.object;
+      });
+    imodelMock
+      .setup((x) =>
+        x.createQueryReader(moq.It.isAnyString(), undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })
+      )
+      .returns(() => ecSqlReaderMock.object);
   }
 
   describe("initializeConnection", () => {
-
     it("loads iTwin and iModel scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
-      storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(iTwinId, imodelId), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(iTwinId, undefined), moq.Times.once());
+      storageMock.verify(
+        async (x) => x.loadProperties(undefined, undefined),
+        moq.Times.once()
+      );
+      storageMock.verify(
+        async (x) => x.loadProperties(iTwinId, imodelId),
+        moq.Times.once()
+      );
+      storageMock.verify(
+        async (x) => x.loadProperties(iTwinId, undefined),
+        moq.Times.once()
+      );
     });
 
     it("loads iModel scope when iTwin scope is already loaded", async () => {
@@ -88,34 +137,72 @@ describe("FavoritePropertiesManager", () => {
       imodelMock.setup((x) => x.iTwinId).returns(() => iTwinId);
       await manager.initializeConnection(imodelMock.object);
 
-      storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(iTwinId, imodelId2), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(iTwinId, undefined), moq.Times.once());
+      storageMock.verify(
+        async (x) => x.loadProperties(undefined, undefined),
+        moq.Times.once()
+      );
+      storageMock.verify(
+        async (x) => x.loadProperties(iTwinId, imodelId2),
+        moq.Times.once()
+      );
+      storageMock.verify(
+        async (x) => x.loadProperties(iTwinId, undefined),
+        moq.Times.once()
+      );
     });
 
     it("does not load iModel scope when iModel scope is already loaded", async () => {
       await manager.initializeConnection(imodelMock.object);
       await manager.initializeConnection(imodelMock.object);
 
-      storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(iTwinId, imodelId), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(iTwinId, undefined), moq.Times.once());
+      storageMock.verify(
+        async (x) => x.loadProperties(undefined, undefined),
+        moq.Times.once()
+      );
+      storageMock.verify(
+        async (x) => x.loadProperties(iTwinId, imodelId),
+        moq.Times.once()
+      );
+      storageMock.verify(
+        async (x) => x.loadProperties(iTwinId, undefined),
+        moq.Times.once()
+      );
     });
 
     it("removes non-favorited property order information", async () => {
-      const globalField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global" }) }] });
-      const iTwinField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "iTwin" }) }] });
+      const globalField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "global" }) }],
+      });
+      const iTwinField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "iTwin" }) }],
+      });
 
-      const globalFieldInfos = new Set<PropertyFullName>(getFieldsInfos([globalField]));
-      storageMock.setup(async (x) => x.loadProperties()).returns(async () => globalFieldInfos);
+      const globalFieldInfos = new Set<PropertyFullName>(
+        getFieldsInfos([globalField])
+      );
+      storageMock
+        .setup(async (x) => x.loadProperties())
+        .returns(async () => globalFieldInfos);
 
-      const iTwinFieldInfos = new Set<PropertyFullName>(getFieldsInfos([iTwinField]));
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => iTwinFieldInfos);
+      const iTwinFieldInfos = new Set<PropertyFullName>(
+        getFieldsInfos([iTwinField])
+      );
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny()))
+        .returns(async () => iTwinFieldInfos);
 
-      const nonFavoritedField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
+      const nonFavoritedField = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "non-favorite" }) },
+        ],
+      });
       const allFields = [globalField, iTwinField, nonFavoritedField];
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
 
@@ -126,293 +213,699 @@ describe("FavoritePropertiesManager", () => {
 
     it("adds favorited property order information for those who don't have it", async () => {
       const withOrderInfo = createTestPropertiesContentField({
-        properties: [{ property: createTestPropertyInfo({ name: "global", classInfo: createTestECClassInfo({ name: "Schema:ClassName" }) }) }],
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "global",
+              classInfo: createTestECClassInfo({ name: "Schema:ClassName" }),
+            }),
+          },
+        ],
       });
-      const allFields = [withOrderInfo, propertyField1, nestedContentField, primitiveField];
+      const allFields = [
+        withOrderInfo,
+        propertyField1,
+        nestedContentField,
+        primitiveField,
+      ];
 
       const fieldInfos = new Set<PropertyFullName>(getFieldsInfos(allFields));
-      storageMock.setup(async (x) => x.loadProperties()).returns(async () => fieldInfos);
+      storageMock
+        .setup(async (x) => x.loadProperties())
+        .returns(async () => fieldInfos);
 
       const fields = [withOrderInfo];
       const orderInfos = getFieldsOrderInfos(fields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
 
       expect(fieldInfos.size).to.eq(4);
       expect(orderInfos.length).to.eq(4);
     });
-
   });
 
   describe("has", () => {
-
     it("throws if not initialized", () => {
-      expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      expect(() =>
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.throw(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`
+      );
     });
 
     it("returns false for not favorite property field", async () => {
       await manager.initializeConnection(imodelMock.object);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
     });
 
     it("returns true for favorite property field", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.true;
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.true;
     });
 
     it("returns false for not favorite primitive fields", async () => {
       await manager.initializeConnection(imodelMock.object);
       const field = createTestSimpleContentField();
-      expect(manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      expect(
+        manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)
+      ).to.be.false;
     });
 
     it("returns true for favorite primitive fields", async () => {
       await manager.initializeConnection(imodelMock.object);
       const field = createTestSimpleContentField();
-      await manager.add(field, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)).to.be.true;
+      await manager.add(
+        field,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)
+      ).to.be.true;
     });
 
     it("returns false for not favorite nested content fields", async () => {
       await manager.initializeConnection(imodelMock.object);
       const field = createTestNestedContentField({ nestedFields: [] });
-      expect(manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      expect(
+        manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)
+      ).to.be.false;
     });
 
     it("returns true for favorite nested content fields", async () => {
       await manager.initializeConnection(imodelMock.object);
       const field = createTestNestedContentField({ nestedFields: [] });
-      await manager.add(field, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)).to.be.true;
+      await manager.add(
+        field,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)
+      ).to.be.true;
     });
 
     it("returns false for not favorite property fields", async () => {
       await manager.initializeConnection(imodelMock.object);
-      const field = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] });
-      expect(manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      expect(
+        manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)
+      ).to.be.false;
     });
 
     it("returns true for favorite nested fields", async () => {
       await manager.initializeConnection(imodelMock.object);
-      const field = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] });
-      await manager.add(field, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)).to.be.true;
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      await manager.add(
+        field,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(field, imodelMock.object, FavoritePropertiesScope.Global)
+      ).to.be.true;
     });
 
     it("returns false for not favorite nested fields", async () => {
       await manager.initializeConnection(imodelMock.object);
-      const nestedField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] });
+      const nestedField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
       const parentField = createTestNestedContentField({
         nestedFields: [nestedField],
       });
       parentField.rebuildParentship();
-      expect(manager.has(nestedField, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      expect(
+        manager.has(
+          nestedField,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
     });
 
     it("returns true for favorite nested fields", async () => {
       await manager.initializeConnection(imodelMock.object);
-      const nestedField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] });
+      const nestedField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
       const parentField = createTestNestedContentField({
         nestedFields: [nestedField],
       });
       parentField.rebuildParentship();
-      await manager.add(nestedField, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(nestedField, imodelMock.object, FavoritePropertiesScope.Global)).to.be.true;
+      await manager.add(
+        nestedField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(
+          nestedField,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.true;
     });
 
     it("checks iModel scope for favorite properties", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.true;
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.true;
     });
 
     it("checks iTwin scope for favorite properties", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.true;
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.true;
     });
-
   });
 
   describe("add", () => {
-
     it("throws if not initialized", async () => {
-      await expect(manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(
+        manager.add(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.rejectedWith(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`
+      );
     });
 
     it("raises onFavoritesChanged event", async () => {
       await manager.initializeConnection(imodelMock.object);
 
       const s = sinon.spy(manager.onFavoritesChanged, "raiseEvent");
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
       expect(s).to.be.calledOnce;
     });
 
     it("adds to iTwin scope", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.true;
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.true;
     });
 
     it("adds to iModel scope", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.true;
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.true;
     });
 
     it("does not raise onFavoritesChanged event if property is alredy favorite", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
 
       const s = sinon.spy(manager.onFavoritesChanged, "raiseEvent");
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
       expect(s).to.be.not.called;
     });
 
     it("adds new favorited properties to the end of the list", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      await manager.add(propertyField2, imodelMock.object, FavoritePropertiesScope.Global);
-      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      await manager.add(
+        propertyField2,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      await manager.add(
+        primitiveField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
     });
-
   });
 
   describe("remove", () => {
-
     it("throws if not initialized", async () => {
-      await expect(manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(
+        manager.remove(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.rejectedWith(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`
+      );
     });
 
     it("removes single property field", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
 
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      await manager.remove(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
     });
 
     it("removes single nested property field", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
 
-      await manager.remove(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      await manager.remove(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(
+          nestedContentField,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
     });
 
     it("removes single primitive field", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        primitiveField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
 
-      await manager.remove(primitiveField, imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(primitiveField, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      await manager.remove(
+        primitiveField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      expect(
+        manager.has(
+          primitiveField,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
     });
 
     it("raises onFavoritesChanged event", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
 
       const s = sinon.spy(manager.onFavoritesChanged, "raiseEvent");
-      await manager.remove(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.remove(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
       expect(s).to.be.calledOnce;
     });
 
     it("removes from iTwin scope", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
 
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
+      await manager.remove(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.false;
     });
 
     it("removes from iModel scope", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
 
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.false;
+      await manager.remove(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.false;
     });
 
     it("removes from all scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
 
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.false;
+      await manager.remove(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.false;
     });
 
     it("removes only from global and iTwin scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
 
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.true;
+      await manager.remove(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.true;
     });
 
     it("does not raise onFavoritesChanged event if property is not favorite", async () => {
       await manager.initializeConnection(imodelMock.object);
 
       const s = sinon.spy(manager.onFavoritesChanged, "raiseEvent");
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.remove(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
       expect(s).to.be.not.called;
     });
-
   });
 
   describe("clear", () => {
-
     it("throws if not initialized", async () => {
-      await expect(manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(
+        manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)
+      ).to.be.rejectedWith(
+        `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`
+      );
     });
 
     it("clears global", async () => {
       await manager.initializeConnection(imodelMock.object);
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global);
-      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.Global);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
+      await manager.add(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      await manager.add(
+        primitiveField,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.Global
+      );
 
       await manager.clear(imodelMock.object, FavoritePropertiesScope.Global);
-      expect(manager.has(nestedContentField, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
-      expect(manager.has(primitiveField, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
+      expect(
+        manager.has(
+          nestedContentField,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          primitiveField,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.Global
+        )
+      ).to.be.false;
     });
 
     it("clears iTwin", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.ITwin);
-      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.ITwin);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
+      await manager.add(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      await manager.add(
+        primitiveField,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.ITwin
+      );
 
       await manager.clear(imodelMock.object, FavoritePropertiesScope.ITwin);
-      expect(manager.has(nestedContentField, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
-      expect(manager.has(primitiveField, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
+      expect(
+        manager.has(
+          nestedContentField,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          primitiveField,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.ITwin
+        )
+      ).to.be.false;
     });
 
     it("clears iModel", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.IModel);
-      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.IModel);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
+      await manager.add(
+        nestedContentField,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
+      await manager.add(
+        primitiveField,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
+      await manager.add(
+        propertyField1,
+        imodelMock.object,
+        FavoritePropertiesScope.IModel
+      );
 
       await manager.clear(imodelMock.object, FavoritePropertiesScope.IModel);
-      expect(manager.has(nestedContentField, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.false;
-      expect(manager.has(primitiveField, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.false;
+      expect(
+        manager.has(
+          nestedContentField,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          primitiveField,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.false;
+      expect(
+        manager.has(
+          propertyField1,
+          imodelMock.object,
+          FavoritePropertiesScope.IModel
+        )
+      ).to.be.false;
     });
 
     it("does not raise onFavoritesChanged event if there are no favorite properties", async () => {
@@ -424,22 +917,48 @@ describe("FavoritePropertiesManager", () => {
     });
 
     it("removes property order information", async () => {
-      const globalA = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global-a" }) }] });
-      const globalB = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global-b" }) }] });
-      const iTwinA = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "iTwin-a" }) }] });
+      const globalA = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "global-a" }) },
+        ],
+      });
+      const globalB = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "global-b" }) },
+        ],
+      });
+      const iTwinA = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "iTwin-a" }) }],
+      });
 
       const globalFields = [globalA, globalB];
-      const globalFieldInfos = new Set<PropertyFullName>(getFieldsInfos(globalFields));
-      storageMock.setup(async (x) => x.loadProperties()).returns(async () => globalFieldInfos);
+      const globalFieldInfos = new Set<PropertyFullName>(
+        getFieldsInfos(globalFields)
+      );
+      storageMock
+        .setup(async (x) => x.loadProperties())
+        .returns(async () => globalFieldInfos);
 
       const iTwinFields = [iTwinA];
-      const iTwinFieldInfos = new Set<PropertyFullName>(getFieldsInfos(iTwinFields));
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => iTwinFieldInfos);
+      const iTwinFieldInfos = new Set<PropertyFullName>(
+        getFieldsInfos(iTwinFields)
+      );
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny()))
+        .returns(async () => iTwinFieldInfos);
 
-      const nonFavoritedField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
+      const nonFavoritedField = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "non-favorite" }) },
+        ],
+      });
       const allFields = [globalA, globalB, iTwinA, nonFavoritedField];
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
       await manager.clear(imodelMock.object, FavoritePropertiesScope.Global);
@@ -448,22 +967,30 @@ describe("FavoritePropertiesManager", () => {
       expect(iTwinFieldInfos.size).to.eq(1);
       expect(orderInfos.length).to.eq(1);
     });
-
   });
 
   describe("sortFields", () => {
-
     it("sorts favorite properties", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+      });
       const b = createTestNestedContentField({ nestedFields: [] });
       const c = createTestSimpleContentField();
-      const d = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "d" }) }] });
+      const d = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "d" }) }],
+      });
       const favoriteFields = [a, b, c, d];
 
       const fieldInfos = getFieldsInfos(favoriteFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(favoriteFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
       const fields = [b, d, a, c];
@@ -476,17 +1003,43 @@ describe("FavoritePropertiesManager", () => {
     });
 
     it("sorts partially non-favorite and favorite properties", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }], priority: 1, name: "A" });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b" }) }], priority: 2, name: "B" });
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c" }) }], priority: 10, name: "C" });
-      const d = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "d" }) }], priority: 10, name: "D" });
-      const e = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "e" }) }], priority: 9, name: "E" });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+        priority: 1,
+        name: "A",
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b" }) }],
+        priority: 2,
+        name: "B",
+      });
+      const c = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "c" }) }],
+        priority: 10,
+        name: "C",
+      });
+      const d = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "d" }) }],
+        priority: 10,
+        name: "D",
+      });
+      const e = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "e" }) }],
+        priority: 9,
+        name: "E",
+      });
 
       const favoriteFields = [a, b];
       const fieldInfos = getFieldsInfos(favoriteFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(favoriteFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
       const fields = [b, d, e, c, a];
@@ -509,20 +1062,50 @@ describe("FavoritePropertiesManager", () => {
        */
       const f1 = createTestPropertiesContentField({
         properties: [
-          { property: createTestPropertyInfo({ name: "f1-1", classInfo: createTestECClassInfo({ name: "S:A" }) }) },
-          { property: createTestPropertyInfo({ name: "f1-2", classInfo: createTestECClassInfo({ name: "S:B" }) }) },
+          {
+            property: createTestPropertyInfo({
+              name: "f1-1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+          {
+            property: createTestPropertyInfo({
+              name: "f1-2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
         ],
       });
       const f2 = createTestPropertiesContentField({
         properties: [
-          { property: createTestPropertyInfo({ name: "f2-1", classInfo: createTestECClassInfo({ name: "S:A" }) }) },
-          { property: createTestPropertyInfo({ name: "f2-2", classInfo: createTestECClassInfo({ name: "S:B" }) }) },
+          {
+            property: createTestPropertyInfo({
+              name: "f2-1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+          {
+            property: createTestPropertyInfo({
+              name: "f2-2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
         ],
       });
       const f3 = createTestPropertiesContentField({
         properties: [
-          { property: createTestPropertyInfo({ name: "f3-1", classInfo: createTestECClassInfo({ name: "S:A" }) }) },
-          { property: createTestPropertyInfo({ name: "f3-2", classInfo: createTestECClassInfo({ name: "S:B" }) }) },
+          {
+            property: createTestPropertyInfo({
+              name: "f3-1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+          {
+            property: createTestPropertyInfo({
+              name: "f3-2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
         ],
       });
       const fields = [f1, f2, f3];
@@ -536,20 +1119,32 @@ describe("FavoritePropertiesManager", () => {
       ];
 
       const fieldInfos = getFieldsInfos(fields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       let priority = properties.length;
-      const orderInfos = properties.map((property: PropertyInfo): FavoritePropertiesOrderInfo => ({
-        parentClassName: property.classInfo.name,
-        name: `${property.classInfo.name}:${property.name}`,
-        orderedTimestamp: new Date(),
-        priority: priority--,
-      }));
-      orderInfos[3].orderedTimestamp.setDate(orderInfos[3].orderedTimestamp.getDate() + 1); // make b1 more recent than a1
-      orderInfos[2].orderedTimestamp.setDate(orderInfos[2].orderedTimestamp.getDate() + 1); // make a2 more recent than b2
+      const orderInfos = properties.map(
+        (property: PropertyInfo): FavoritePropertiesOrderInfo => ({
+          parentClassName: property.classInfo.name,
+          name: `${property.classInfo.name}:${property.name}`,
+          orderedTimestamp: new Date(),
+          priority: priority--,
+        })
+      );
+      orderInfos[3].orderedTimestamp.setDate(
+        orderInfos[3].orderedTimestamp.getDate() + 1
+      ); // make b1 more recent than a1
+      orderInfos[2].orderedTimestamp.setDate(
+        orderInfos[2].orderedTimestamp.getDate() + 1
+      ); // make a2 more recent than b2
       orderInfos[0].orderedTimestamp = orderInfos[5].orderedTimestamp; // make a3 and b3 equal
 
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
       manager.sortFields(imodelMock.object, fields);
@@ -558,96 +1153,196 @@ describe("FavoritePropertiesManager", () => {
       expect(fields[1]).to.eq(f2);
       expect(fields[2]).to.eq(f1);
     });
-
   });
 
   describe("changeFieldPriority", () => {
-
     it("throws if both fields are the same object", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+      });
       const allFields = [a];
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
-      await expect(manager.changeFieldPriority(imodelMock.object, a, a, allFields)).to.be.rejectedWith("`field` can not be the same as `afterField`.");
+      await expect(
+        manager.changeFieldPriority(imodelMock.object, a, a, allFields)
+      ).to.be.rejectedWith("`field` can not be the same as `afterField`.");
     });
 
     it("throws if given non-visible field", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b" }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b" }) }],
+      });
       const allFields = [a, b];
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
 
-      const fakeField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "does-not-exist" }) }] });
-      await expect(manager.changeFieldPriority(imodelMock.object, fakeField, b, allFields)).to.be.rejectedWith("Field is not contained in visible fields.");
+      const fakeField = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "does-not-exist" }) },
+        ],
+      });
+      await expect(
+        manager.changeFieldPriority(imodelMock.object, fakeField, b, allFields)
+      ).to.be.rejectedWith("Field is not contained in visible fields.");
     });
 
     it("throws if given non-favorite field", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b" }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b" }) }],
+      });
       const allFields = [a, b];
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
-      const nonFavoriteField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
+      const nonFavoriteField = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "non-favorite" }) },
+        ],
+      });
       const visibleFields = [...allFields, nonFavoriteField];
       await manager.initializeConnection(imodelMock.object);
-      await expect(manager.changeFieldPriority(imodelMock.object, nonFavoriteField, b, visibleFields)).to.be.rejectedWith("Field has no property order information.");
+      await expect(
+        manager.changeFieldPriority(
+          imodelMock.object,
+          nonFavoriteField,
+          b,
+          visibleFields
+        )
+      ).to.be.rejectedWith("Field has no property order information.");
     });
 
     it("throws if given non-visible afterField", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b" }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b" }) }],
+      });
       const allFields = [a, b];
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
 
-      const fakeField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "does-not-exist" }) }] });
-      await expect(manager.changeFieldPriority(imodelMock.object, a, fakeField, allFields)).to.be.rejectedWith("Field is not contained in visible fields.");
+      const fakeField = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "does-not-exist" }) },
+        ],
+      });
+      await expect(
+        manager.changeFieldPriority(imodelMock.object, a, fakeField, allFields)
+      ).to.be.rejectedWith("Field is not contained in visible fields.");
     });
 
     it("throws if given non-favorite afterField", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a" }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b" }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "a" }) }],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo({ name: "b" }) }],
+      });
       const allFields = [a, b];
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
 
       const orderInfos = getFieldsOrderInfos(allFields);
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
-      const nonFavoriteField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
+      const nonFavoriteField = createTestPropertiesContentField({
+        properties: [
+          { property: createTestPropertyInfo({ name: "non-favorite" }) },
+        ],
+      });
       const visibleFields = [...allFields, nonFavoriteField];
       await manager.initializeConnection(imodelMock.object);
-      await expect(manager.changeFieldPriority(imodelMock.object, a, nonFavoriteField, visibleFields)).to.be.rejectedWith("Field has no property order information.");
+      await expect(
+        manager.changeFieldPriority(
+          imodelMock.object,
+          a,
+          nonFavoriteField,
+          visibleFields
+        )
+      ).to.be.rejectedWith("Field has no property order information.");
     });
 
     it("does not query for base classes if it already has it cached", async () => {
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
       const allFields = [a, b];
 
       const classBaseClass = [
@@ -658,10 +1353,16 @@ describe("FavoritePropertiesManager", () => {
       setupMocksForQueryingBaseClasses(classBaseClass);
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(allFields);
       const oldOrderInfo = [...orderInfos];
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
       await manager.changeFieldPriority(imodelMock.object, a, b, allFields);
@@ -671,7 +1372,13 @@ describe("FavoritePropertiesManager", () => {
       await manager.changeFieldPriority(imodelMock.object, b, a, allFields);
       expect(orderInfos[0]).to.eq(oldOrderInfo[0]); // a
       expect(orderInfos[1]).to.eq(oldOrderInfo[1]); // b
-      imodelMock.verify((x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }), moq.Times.once());
+      imodelMock.verify(
+        (x) =>
+          x.createQueryReader(moq.It.isAnyString(), undefined, {
+            rowFormat: QueryRowFormat.UseJsPropertyNames,
+          }),
+        moq.Times.once()
+      );
     });
 
     it("does not change the order of irrelevant properties", async () => {
@@ -686,11 +1393,56 @@ describe("FavoritePropertiesManager", () => {
        *  b2    a1
        *  c     b2
        */
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
+      const a1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b1",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a2",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const c = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "c",
+              classInfo: createTestECClassInfo({ name: "S:C" }),
+            }),
+          },
+        ],
+      });
       const allFields = [a1, b1, a2, b2, c];
       const visibleFields = [a1, a2, c]; // imitating a selection of a class C instance
 
@@ -705,13 +1457,24 @@ describe("FavoritePropertiesManager", () => {
       setupMocksForQueryingBaseClasses(classBaseClass);
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(allFields);
       const oldOrderInfo = [...orderInfos];
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
-      await manager.changeFieldPriority(imodelMock.object, a1, c, visibleFields);
+      await manager.changeFieldPriority(
+        imodelMock.object,
+        a1,
+        c,
+        visibleFields
+      );
 
       expect(orderInfos[0]).to.eq(oldOrderInfo[1]); // b1
       expect(orderInfos[1]).to.eq(oldOrderInfo[2]); // a2
@@ -732,11 +1495,56 @@ describe("FavoritePropertiesManager", () => {
        *  b1    a2
        *  a1    b1
        */
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
+      const c = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "c",
+              classInfo: createTestECClassInfo({ name: "S:C" }),
+            }),
+          },
+        ],
+      });
+      const b2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a2",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b1",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const a1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
       const allFields = [c, b2, a2, b1, a1];
       const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
@@ -751,13 +1559,24 @@ describe("FavoritePropertiesManager", () => {
       setupMocksForQueryingBaseClasses(classBaseClass);
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(allFields);
       const oldOrderInfo = [...orderInfos];
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
-      await manager.changeFieldPriority(imodelMock.object, a1, c, visibleFields);
+      await manager.changeFieldPriority(
+        imodelMock.object,
+        a1,
+        c,
+        visibleFields
+      );
 
       expect(orderInfos[0]).to.eq(oldOrderInfo[0]); // c
       expect(orderInfos[1]).to.eq(oldOrderInfo[1]); // b2
@@ -778,11 +1597,56 @@ describe("FavoritePropertiesManager", () => {
        *  b1    a2
        *  a1    b1
        */
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
+      const c = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "c",
+              classInfo: createTestECClassInfo({ name: "S:C" }),
+            }),
+          },
+        ],
+      });
+      const b2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a2",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b1",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const a1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
       const allFields = [c, b2, a2, b1, a1];
       const visibleFields = [c, a2, a1]; // imitating a selection of a class C instance
 
@@ -797,13 +1661,24 @@ describe("FavoritePropertiesManager", () => {
       setupMocksForQueryingBaseClasses(classBaseClass);
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(allFields);
       const oldOrderInfo = [...orderInfos];
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
-      await manager.changeFieldPriority(imodelMock.object, a1, undefined, visibleFields);
+      await manager.changeFieldPriority(
+        imodelMock.object,
+        a1,
+        undefined,
+        visibleFields
+      );
 
       expect(orderInfos[0]).to.eq(oldOrderInfo[1]); // b2
       expect(orderInfos[1]).to.eq(oldOrderInfo[4]); // a1
@@ -827,11 +1702,47 @@ describe("FavoritePropertiesManager", () => {
        * prim is a primitive field, only visible having selected class B instances
        */
 
-      const a = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b1", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
+      const a = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b1",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
       const prim = createTestSimpleContentField();
-      const b2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b2", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const c = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "c", classInfo: createTestECClassInfo({ name: "S:C" }) }) }] });
+      const b2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b2",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const c = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "c",
+              classInfo: createTestECClassInfo({ name: "S:C" }),
+            }),
+          },
+        ],
+      });
       const allFields = [a, b1, prim, b2, c];
       const visibleFields = [a, c]; // imitating a selection of a class C instance
 
@@ -846,10 +1757,16 @@ describe("FavoritePropertiesManager", () => {
       setupMocksForQueryingBaseClasses(classBaseClass);
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(allFields);
       const oldOrderInfo = [...orderInfos];
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
       await manager.changeFieldPriority(imodelMock.object, a, c, visibleFields);
@@ -872,25 +1789,58 @@ describe("FavoritePropertiesManager", () => {
        *  C.A.a2   b
        */
 
-      const a1 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a1", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const a2 = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "a2", classInfo: createTestECClassInfo({ name: "S:A" }) }) }] });
-      const b = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "b", classInfo: createTestECClassInfo({ name: "S:B" }) }) }] });
-      const caa2 = createTestPropertiesContentField({ properties: a2.properties });
+      const a1 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a1",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const a2 = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "a2",
+              classInfo: createTestECClassInfo({ name: "S:A" }),
+            }),
+          },
+        ],
+      });
+      const b = createTestPropertiesContentField({
+        properties: [
+          {
+            property: createTestPropertyInfo({
+              name: "b",
+              classInfo: createTestECClassInfo({ name: "S:B" }),
+            }),
+          },
+        ],
+      });
+      const caa2 = createTestPropertiesContentField({
+        properties: a2.properties,
+      });
 
       const nestedMiddle = createTestNestedContentField({
-        pathToPrimaryClass: [createTestRelatedClassInfo({
-          sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
-          targetClassInfo: createTestECClassInfo({ name: "S:A" }),
-        })],
+        pathToPrimaryClass: [
+          createTestRelatedClassInfo({
+            sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
+            targetClassInfo: createTestECClassInfo({ name: "S:A" }),
+          }),
+        ],
         nestedFields: [caa2],
       });
 
       const nestedTop = createTestNestedContentField({
-        pathToPrimaryClass: [createTestRelatedClassInfo({
-          sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
-          targetClassInfo: createTestECClassInfo({ name: "S:C" }),
-          isForwardRelationship: true,
-        })],
+        pathToPrimaryClass: [
+          createTestRelatedClassInfo({
+            sourceClassInfo: createTestECClassInfo({ name: "S:A" }),
+            targetClassInfo: createTestECClassInfo({ name: "S:C" }),
+            isForwardRelationship: true,
+          }),
+        ],
         nestedFields: [nestedMiddle],
       });
       nestedTop.rebuildParentship();
@@ -909,28 +1859,49 @@ describe("FavoritePropertiesManager", () => {
       setupMocksForQueryingBaseClasses(classBaseClass);
 
       const fieldInfos = getFieldsInfos(allFields);
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
+      storageMock
+        .setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => new Set<PropertyFullName>(fieldInfos));
       const orderInfos = getFieldsOrderInfos(allFields);
       const oldOrderInfo = [...orderInfos];
-      storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
+      storageMock
+        .setup(async (x) =>
+          x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())
+        )
+        .returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
-      await manager.changeFieldPriority(imodelMock.object, a1, caa2, visibleFields);
+      await manager.changeFieldPriority(
+        imodelMock.object,
+        a1,
+        caa2,
+        visibleFields
+      );
 
       expect(orderInfos[0]).to.eq(oldOrderInfo[2]); // caa2
       expect(orderInfos[1]).to.eq(oldOrderInfo[0]); // a1
       expect(orderInfos[2]).to.eq(oldOrderInfo[1]); // b
     });
-
   });
-
 });
 
-const getFieldsInfos = (fields: Field[]): PropertyFullName[] => fields.reduce((total: PropertyFullName[], field) => ([...total, ...getFieldInfos(field)]), []);
+const getFieldsInfos = (fields: Field[]): PropertyFullName[] =>
+  fields.reduce(
+    (total: PropertyFullName[], field) => [...total, ...getFieldInfos(field)],
+    []
+  );
 
-const getFieldsOrderInfos = (fields: Field[]): FavoritePropertiesOrderInfo[] => {
-  const orderInfos = fields.reduce((total: FavoritePropertiesOrderInfo[], field) => ([...total, ...createFieldOrderInfos(field)]), []);
+const getFieldsOrderInfos = (
+  fields: Field[]
+): FavoritePropertiesOrderInfo[] => {
+  const orderInfos = fields.reduce(
+    (total: FavoritePropertiesOrderInfo[], field) => [
+      ...total,
+      ...createFieldOrderInfos(field),
+    ],
+    []
+  );
   let priority = orderInfos.length;
-  orderInfos.forEach((orderInfo) => orderInfo.priority = priority--);
+  orderInfos.forEach((orderInfo) => (orderInfo.priority = priority--));
   return orderInfos;
 };

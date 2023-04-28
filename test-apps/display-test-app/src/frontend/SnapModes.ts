@@ -33,7 +33,8 @@ export function addSnapModes(container: HTMLElement): HTMLElement {
     id: "snapModes",
     parent: container,
     value: SnapMode.NearestKeypoint,
-    handler: (select: HTMLSelectElement) => changeSnapModes(Number.parseInt(select.value, 10)),
+    handler: (select: HTMLSelectElement) =>
+      changeSnapModes(Number.parseInt(select.value, 10)),
     entries: [
       { name: "Keypoint", value: SnapMode.NearestKeypoint },
       { name: "Nearest", value: SnapMode.Nearest },

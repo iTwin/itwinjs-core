@@ -33,7 +33,12 @@ export interface MessagePresenter {
    * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
    * @param messageType       The type of message. Defaults to Toast.
    */
-  displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
+  displayMessage(
+    severity: MessageSeverity,
+    briefMessage: HTMLElement | string,
+    detailedMessage?: HTMLElement | string,
+    messageType?: DisplayMessageType
+  ): void;
 
   /**
    * Displays an input field message.
@@ -42,7 +47,12 @@ export interface MessagePresenter {
    * @param briefMessage      A short message that conveys the simplest explanation of the issue.
    * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
    */
-  displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void;
+  displayInputFieldMessage(
+    inputField: HTMLElement,
+    severity: MessageSeverity,
+    briefMessage: HTMLElement | string,
+    detailedMessage?: HTMLElement | string
+  ): void;
 
   /**
    * Close message created with `displayInputFieldMessage`.

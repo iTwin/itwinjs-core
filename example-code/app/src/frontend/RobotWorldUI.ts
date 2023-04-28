@@ -3,29 +3,41 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import {
+  DrawingViewState,
+  IModelApp,
+  IModelConnection,
+  ScreenViewport,
+  SpatialViewState,
+  ViewState,
+} from "@itwin/core-frontend";
 
 export class RobotWorldApp {
-
   private static _iModel: IModelConnection;
 
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getSpatialViewList
   /** Get a list of Spatial views from an iModel. */
   public static async getSpatialViews(): Promise<IModelConnection.ViewSpec[]> {
-    return this._iModel.views.getViewList({ from: SpatialViewState.classFullName });
+    return this._iModel.views.getViewList({
+      from: SpatialViewState.classFullName,
+    });
   }
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getDrawingViewList
   /** Get a list of all Drawing views from an iModel. */
   public static async getDrawingViews(): Promise<IModelConnection.ViewSpec[]> {
-    return this._iModel.views.getViewList({ from: DrawingViewState.classFullName });
+    return this._iModel.views.getViewList({
+      from: DrawingViewState.classFullName,
+    });
   }
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.load
   /** Stub for a real UI that would present the user with the list and choose one entry */
-  public static async pickView(views: IModelConnection.ViewSpec[]): Promise<string> {
+  public static async pickView(
+    views: IModelConnection.ViewSpec[]
+  ): Promise<string> {
     // ...real ui code here showing view[].name list, returning chosenView...
     const chosenView = 0;
 
@@ -51,8 +63,7 @@ export class RobotWorldApp {
   public static async showOneView(): Promise<void> {
     const viewstate = await this.loadOneView();
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      vp.changeView(viewstate);
+    if (undefined !== vp) vp.changeView(viewstate);
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -75,5 +86,4 @@ export class RobotWorldApp {
     IModelApp.viewManager.addViewport(viewPort);
   }
   // __PUBLISH_EXTRACT_END__
-
 }

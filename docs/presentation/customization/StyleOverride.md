@@ -10,12 +10,12 @@ Style override rules allow customizing display style of specific types of ECInst
 
 | Name                                              | Required? | Type                                                                 | Default     |
 | ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ----------- |
-| *Filtering*                                       |
+| _Filtering_                                       |
 | [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`        |
 | [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`      |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false`     |
 | [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
-| *Overrides*                                       |
+| _Overrides_                                       |
 | [`foreColor`](#attribute-forecolor)               | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`        |
 | [`backColor`](#attribute-backcolor)               | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`        |
 | [`fontStyle`](#attribute-fontstyle)               | No        | [ECExpression](./ECExpressions.md#override-value)                    | `"Regular"` |

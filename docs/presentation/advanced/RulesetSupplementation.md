@@ -13,7 +13,7 @@ application-provided rules and domain-provided customization rules.
 
 1. Find the primary ruleset
 2. Find all supplemental rulesets with the same `id`. There can be multiple
-supplemental rulesets with the same `id`, but then they should be unique by
-`supplementationPurpose`. If that property also matches, the first supplemental
-ruleset with matching `id` is used.
+   supplemental rulesets with the same `id`, but then they should be unique by
+   `supplementationPurpose`. If that property also matches, the first supplemental
+   ruleset with matching `id` is used.
 3. Clone primary ruleset and merge in all rules from supplemental rulesets.

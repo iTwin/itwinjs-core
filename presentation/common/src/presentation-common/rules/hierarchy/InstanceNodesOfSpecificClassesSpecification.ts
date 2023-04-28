@@ -7,7 +7,10 @@
  */
 
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import {
+  ChildNodeSpecificationBase,
+  DefaultGroupingPropertiesContainer,
+} from "./ChildNodeSpecification";
 
 /**
  * Returns nodes for instances of specific ECClasses.
@@ -15,7 +18,9 @@ import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "
  * @see [Instance nodes of specific classes specification reference documentation page]($docs/presentation/hierarchies/InstanceNodesOfSpecificClasses.md)
  * @public
  */
-export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export interface InstanceNodesOfSpecificClassesSpecification
+  extends ChildNodeSpecificationBase,
+    DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
   specType: "InstanceNodesOfSpecificClasses";
 
@@ -29,7 +34,9 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
    * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that
    * prevents specified ECClasses and subclasses from being selected by [[classes]] attribute.
    */
-  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+  excludedClasses?:
+    | MultiSchemaClassesSpecification
+    | MultiSchemaClassesSpecification[];
 
   /**
    * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]

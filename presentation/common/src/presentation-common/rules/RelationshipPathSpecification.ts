@@ -37,7 +37,8 @@ export interface RelationshipStepSpecification {
  * @see [Repeatable relationship path specification reference documentation page]($docs/presentation/RepeatableRelationshipPathSpecification.md)
  * @public
  */
-export interface RepeatableRelationshipStepSpecification extends RelationshipStepSpecification {
+export interface RepeatableRelationshipStepSpecification
+  extends RelationshipStepSpecification {
   /**
    * When a number is specified, the relationship is traversed recursively the specified number of times.
    *
@@ -54,7 +55,9 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
  * @see [Relationship path specification reference documentation page]($docs/presentation/RelationshipPathSpecification.md)
  * @public
  */
-export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
+export type RelationshipPathSpecification =
+  | RelationshipStepSpecification
+  | RelationshipStepSpecification[];
 
 /**
  * This specification declares a step in a relationship path between a source and target ECInstances. A step
@@ -64,4 +67,6 @@ export type RelationshipPathSpecification = RelationshipStepSpecification | Rela
  * @see [Repeatable relationship path specification reference documentation page]($docs/presentation/RepeatableRelationshipPathSpecification.md)
  * @public
  */
-export type RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[];
+export type RepeatableRelationshipPathSpecification =
+  | RepeatableRelationshipStepSpecification
+  | RepeatableRelationshipStepSpecification[];

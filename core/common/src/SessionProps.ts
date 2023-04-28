@@ -22,4 +22,3 @@ export interface SessionProps {
   /** Used for logging to identify a session  */
   readonly sessionId: GuidString;
 }
-

@@ -3,16 +3,19 @@
 This log was last generated on Wed, 12 Apr 2023 13:12:42 GMT and should not be manually modified.
 
 ## 3.7.2
+
 Wed, 12 Apr 2023 13:12:42 GMT
 
 _Version update only_
 
 ## 3.7.1
+
 Mon, 03 Apr 2023 15:15:37 GMT
 
 _Version update only_
 
 ## 3.7.0
+
 Wed, 29 Mar 2023 15:02:27 GMT
 
 ### Updates
@@ -21,21 +24,25 @@ Wed, 29 Mar 2023 15:02:27 GMT
 - add merge tolerance to regionBooleanXY
 
 ## 3.6.3
+
 Mon, 27 Mar 2023 16:26:47 GMT
 
 _Version update only_
 
 ## 3.6.2
+
 Fri, 17 Mar 2023 17:52:32 GMT
 
 _Version update only_
 
 ## 3.6.1
+
 Fri, 24 Feb 2023 22:00:48 GMT
 
 _Version update only_
 
 ## 3.6.0
+
 Wed, 08 Feb 2023 14:58:40 GMT
 
 ### Updates
@@ -45,26 +52,31 @@ Wed, 08 Feb 2023 14:58:40 GMT
 - Expose PathFragments to callers. Removal of some duplicated code.
 
 ## 3.5.6
+
 Fri, 24 Feb 2023 16:02:47 GMT
 
 _Version update only_
 
 ## 3.5.5
+
 Thu, 26 Jan 2023 22:53:27 GMT
 
 _Version update only_
 
 ## 3.5.4
+
 Wed, 18 Jan 2023 15:27:15 GMT
 
 _Version update only_
 
 ## 3.5.3
+
 Fri, 13 Jan 2023 17:23:07 GMT
 
 _Version update only_
 
 ## 3.5.2
+
 Wed, 11 Jan 2023 16:46:30 GMT
 
 ### Updates
@@ -72,11 +84,13 @@ Wed, 11 Jan 2023 16:46:30 GMT
 - PolyfaceQuery method to test for convexity
 
 ## 3.5.1
+
 Thu, 15 Dec 2022 16:38:28 GMT
 
 _Version update only_
 
 ## 3.5.0
+
 Wed, 07 Dec 2022 19:12:37 GMT
 
 ### Updates
@@ -90,41 +104,49 @@ Wed, 07 Dec 2022 19:12:37 GMT
 - Point3dVector3D: clean up src and add more test coverage
 
 ## 3.4.7
+
 Wed, 30 Nov 2022 14:28:19 GMT
 
 _Version update only_
 
 ## 3.4.6
+
 Tue, 22 Nov 2022 14:24:19 GMT
 
 _Version update only_
 
 ## 3.4.5
+
 Thu, 17 Nov 2022 21:32:50 GMT
 
 _Version update only_
 
 ## 3.4.4
+
 Thu, 10 Nov 2022 19:32:17 GMT
 
 _Version update only_
 
 ## 3.4.3
+
 Fri, 28 Oct 2022 13:34:58 GMT
 
 _Version update only_
 
 ## 3.4.2
+
 Mon, 24 Oct 2022 13:23:45 GMT
 
 _Version update only_
 
 ## 3.4.1
+
 Mon, 17 Oct 2022 20:06:51 GMT
 
 _Version update only_
 
 ## 3.4.0
+
 Thu, 13 Oct 2022 20:24:47 GMT
 
 ### Updates
@@ -139,31 +161,37 @@ Thu, 13 Oct 2022 20:24:47 GMT
 - Updated Node types declaration to support latest v16
 
 ## 3.3.5
+
 Tue, 27 Sep 2022 11:50:59 GMT
 
 _Version update only_
 
 ## 3.3.4
+
 Thu, 08 Sep 2022 19:00:04 GMT
 
 _Version update only_
 
 ## 3.3.3
+
 Tue, 06 Sep 2022 20:54:19 GMT
 
 _Version update only_
 
 ## 3.3.2
+
 Thu, 01 Sep 2022 14:37:22 GMT
 
 _Version update only_
 
 ## 3.3.1
+
 Fri, 26 Aug 2022 15:40:02 GMT
 
 _Version update only_
 
 ## 3.3.0
+
 Thu, 18 Aug 2022 19:08:02 GMT
 
 ### Updates
@@ -178,21 +206,25 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - Add static function AYAndZ.almostEqual. Transform.isAlmostEqual now only requires a Readonly<Transform>.
 
 ## 3.2.9
+
 Fri, 26 Aug 2022 14:21:40 GMT
 
 _Version update only_
 
 ## 3.2.8
+
 Tue, 09 Aug 2022 15:52:41 GMT
 
 _Version update only_
 
 ## 3.2.7
+
 Mon, 01 Aug 2022 13:36:56 GMT
 
 _Version update only_
 
 ## 3.2.6
+
 Fri, 15 Jul 2022 19:04:43 GMT
 
 ### Updates
@@ -200,31 +232,37 @@ Fri, 15 Jul 2022 19:04:43 GMT
 - sort non-horizontal loops in polyface clipper
 
 ## 3.2.5
+
 Wed, 13 Jul 2022 15:45:52 GMT
 
 _Version update only_
 
 ## 3.2.4
+
 Tue, 21 Jun 2022 18:06:33 GMT
 
 _Version update only_
 
 ## 3.2.3
+
 Fri, 17 Jun 2022 15:18:39 GMT
 
 _Version update only_
 
 ## 3.2.2
+
 Fri, 10 Jun 2022 16:11:36 GMT
 
 _Version update only_
 
 ## 3.2.1
+
 Tue, 07 Jun 2022 15:02:56 GMT
 
 _Version update only_
 
 ## 3.2.0
+
 Fri, 20 May 2022 13:10:54 GMT
 
 ### Updates
@@ -232,21 +270,25 @@ Fri, 20 May 2022 13:10:54 GMT
 - implement PolyfaceBuilder.addSweptIndexedPolyface
 
 ## 3.1.3
+
 Fri, 15 Apr 2022 13:49:25 GMT
 
 _Version update only_
 
 ## 3.1.2
+
 Wed, 06 Apr 2022 22:27:56 GMT
 
 _Version update only_
 
 ## 3.1.1
+
 Thu, 31 Mar 2022 15:55:48 GMT
 
 _Version update only_
 
 ## 3.1.0
+
 Tue, 29 Mar 2022 20:53:47 GMT
 
 ### Updates
@@ -259,21 +301,25 @@ Tue, 29 Mar 2022 20:53:47 GMT
 - Offset XY curve improvements
 
 ## 3.0.3
+
 Fri, 25 Mar 2022 15:10:02 GMT
 
 _Version update only_
 
 ## 3.0.2
+
 Thu, 10 Mar 2022 21:18:13 GMT
 
 _Version update only_
 
 ## 3.0.1
+
 Thu, 24 Feb 2022 15:26:55 GMT
 
 _Version update only_
 
 ## 3.0.0
+
 Mon, 24 Jan 2022 14:00:52 GMT
 
 ### Updates
@@ -296,9 +342,9 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Correct implementation of "mask" ClipPrimitive
 - Implement appendPolygonClip in deep boolean trees.
 - When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces.
-- Various code coverage.   Fix infinitie loop in "out of graph" case in InsertAndRetriangulateContext
+- Various code coverage. Fix infinitie loop in "out of graph" case in InsertAndRetriangulateContext
 - Fix poor accuracy of closestPoint for BSplineCurve3dH and Integrated Spirals
-- Tests of area analysis for road section project.  Shared-edge annotation from constructAllXYRegions
+- Tests of area analysis for road section project. Shared-edge annotation from constructAllXYRegions
 - Fix plane constructions on xy clipper from polyline offset
 - Apply tolerance when determining if ClipShape polygon is closed.
 - rename to @itwin/core-geometry
@@ -309,56 +355,67 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Support for TypeDoc v0.22.7. Fix various broken docs links.
 
 ## 2.19.28
+
 Wed, 12 Jan 2022 14:52:38 GMT
 
 _Version update only_
 
 ## 2.19.27
+
 Wed, 05 Jan 2022 20:07:20 GMT
 
 _Version update only_
 
 ## 2.19.26
+
 Wed, 08 Dec 2021 20:54:52 GMT
 
 _Version update only_
 
 ## 2.19.25
+
 Fri, 03 Dec 2021 20:05:49 GMT
 
 _Version update only_
 
 ## 2.19.24
+
 Mon, 29 Nov 2021 18:44:31 GMT
 
 _Version update only_
 
 ## 2.19.23
+
 Mon, 22 Nov 2021 20:41:39 GMT
 
 _Version update only_
 
 ## 2.19.22
+
 Wed, 17 Nov 2021 01:23:26 GMT
 
 _Version update only_
 
 ## 2.19.21
+
 Wed, 10 Nov 2021 10:58:24 GMT
 
 _Version update only_
 
 ## 2.19.20
+
 Fri, 29 Oct 2021 16:14:22 GMT
 
 _Version update only_
 
 ## 2.19.19
+
 Mon, 25 Oct 2021 16:16:25 GMT
 
 _Version update only_
 
 ## 2.19.18
+
 Thu, 21 Oct 2021 20:59:44 GMT
 
 ### Updates
@@ -366,16 +423,19 @@ Thu, 21 Oct 2021 20:59:44 GMT
 - When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces.
 
 ## 2.19.17
+
 Thu, 14 Oct 2021 21:19:43 GMT
 
 _Version update only_
 
 ## 2.19.16
+
 Mon, 11 Oct 2021 17:37:46 GMT
 
 _Version update only_
 
 ## 2.19.15
+
 Fri, 08 Oct 2021 16:44:23 GMT
 
 ### Updates
@@ -383,76 +443,91 @@ Fri, 08 Oct 2021 16:44:23 GMT
 - Add clonePartialCurve for spirals. Proper length computation for partial spirals.
 
 ## 2.19.14
+
 Fri, 01 Oct 2021 13:07:03 GMT
 
 _Version update only_
 
 ## 2.19.13
+
 Tue, 21 Sep 2021 21:06:40 GMT
 
 _Version update only_
 
 ## 2.19.12
+
 Wed, 15 Sep 2021 18:06:46 GMT
 
 _Version update only_
 
 ## 2.19.11
+
 Thu, 09 Sep 2021 21:04:57 GMT
 
 _Version update only_
 
 ## 2.19.10
+
 Wed, 08 Sep 2021 14:36:01 GMT
 
 _Version update only_
 
 ## 2.19.9
+
 Wed, 25 Aug 2021 15:36:01 GMT
 
 _Version update only_
 
 ## 2.19.8
+
 Mon, 23 Aug 2021 13:23:13 GMT
 
 _Version update only_
 
 ## 2.19.7
+
 Fri, 20 Aug 2021 17:47:22 GMT
 
 _Version update only_
 
 ## 2.19.6
+
 Tue, 17 Aug 2021 20:34:28 GMT
 
 _Version update only_
 
 ## 2.19.5
+
 Fri, 13 Aug 2021 21:48:08 GMT
 
 _Version update only_
 
 ## 2.19.4
+
 Thu, 12 Aug 2021 13:09:26 GMT
 
 _Version update only_
 
 ## 2.19.3
+
 Wed, 04 Aug 2021 20:29:34 GMT
 
 _Version update only_
 
 ## 2.19.2
+
 Tue, 03 Aug 2021 18:26:23 GMT
 
 _Version update only_
 
 ## 2.19.1
+
 Thu, 29 Jul 2021 20:01:11 GMT
 
 _Version update only_
 
 ## 2.19.0
+
 Mon, 26 Jul 2021 12:21:25 GMT
 
 ### Updates
@@ -461,32 +536,37 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - accessor for InterpolationCurve3dOptions
 - remove internal barrel-import usage
 - Eliminate artificial interior edge splits when clipping with a UnionOfConvexClipPlaneSets
-- New curve type InterpolationCurve3d.   Supported in IMJS, FB.  Construction methods to be added.
+- New curve type InterpolationCurve3d. Supported in IMJS, FB. Construction methods to be added.
 - Handle imjs and flatbuffer inputs with numPerFace blocking
 - Added compare of numbers in Geographic CRS classes with tolerances.
 - Adjusted WGS84 polar radius to be more precise than millimeter
 
 ## 2.18.4
+
 Tue, 10 Aug 2021 19:35:13 GMT
 
 _Version update only_
 
 ## 2.18.3
+
 Wed, 28 Jul 2021 17:16:30 GMT
 
 _Version update only_
 
 ## 2.18.2
+
 Mon, 26 Jul 2021 16:18:31 GMT
 
 _Version update only_
 
 ## 2.18.1
+
 Fri, 16 Jul 2021 17:45:09 GMT
 
 _Version update only_
 
 ## 2.18.0
+
 Fri, 09 Jul 2021 18:11:24 GMT
 
 ### Updates
@@ -497,21 +577,25 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - PolyfaceData.tryTransformInPlace now also transforms PolyfaceAuxData.
 
 ## 2.17.3
+
 Mon, 26 Jul 2021 16:08:36 GMT
 
 _Version update only_
 
 ## 2.17.2
+
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
 
 ## 2.17.1
+
 Fri, 02 Jul 2021 15:38:30 GMT
 
 _Version update only_
 
 ## 2.17.0
+
 Mon, 28 Jun 2021 16:20:11 GMT
 
 ### Updates
@@ -519,56 +603,67 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - TaggedGeometryData to support subdivision surfaces and future variant meshes
 
 ## 2.16.10
+
 Thu, 22 Jul 2021 20:23:45 GMT
 
 _Version update only_
 
 ## 2.16.9
+
 Tue, 06 Jul 2021 22:08:34 GMT
 
 _Version update only_
 
 ## 2.16.8
+
 Fri, 02 Jul 2021 17:40:46 GMT
 
 _Version update only_
 
 ## 2.16.7
+
 Mon, 28 Jun 2021 18:13:04 GMT
 
 _Version update only_
 
 ## 2.16.6
+
 Mon, 28 Jun 2021 13:12:55 GMT
 
 _Version update only_
 
 ## 2.16.5
+
 Fri, 25 Jun 2021 16:03:01 GMT
 
 _Version update only_
 
 ## 2.16.4
+
 Wed, 23 Jun 2021 17:09:07 GMT
 
 _Version update only_
 
 ## 2.16.3
+
 Wed, 16 Jun 2021 20:29:32 GMT
 
 _Version update only_
 
 ## 2.16.2
+
 Thu, 03 Jun 2021 18:08:11 GMT
 
 _Version update only_
 
 ## 2.16.1
+
 Thu, 27 May 2021 20:04:22 GMT
 
 _Version update only_
 
 ## 2.16.0
+
 Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
@@ -578,36 +673,43 @@ Mon, 24 May 2021 15:58:39 GMT
 - Remove vector grid implementation (replaced by shader based grid).
 
 ## 2.15.6
+
 Wed, 26 May 2021 15:55:18 GMT
 
 _Version update only_
 
 ## 2.15.5
+
 Thu, 20 May 2021 15:06:26 GMT
 
 _Version update only_
 
 ## 2.15.4
+
 Tue, 18 May 2021 21:59:07 GMT
 
 _Version update only_
 
 ## 2.15.3
+
 Mon, 17 May 2021 13:31:37 GMT
 
 _Version update only_
 
 ## 2.15.2
+
 Wed, 12 May 2021 18:08:13 GMT
 
 _Version update only_
 
 ## 2.15.1
+
 Wed, 05 May 2021 13:18:31 GMT
 
 _Version update only_
 
 ## 2.15.0
+
 Fri, 30 Apr 2021 12:36:58 GMT
 
 ### Updates
@@ -616,26 +718,31 @@ Fri, 30 Apr 2021 12:36:58 GMT
 - grid line filtering corrections
 
 ## 2.14.4
+
 Thu, 22 Apr 2021 21:07:33 GMT
 
 _Version update only_
 
 ## 2.14.3
+
 Thu, 15 Apr 2021 15:13:16 GMT
 
 _Version update only_
 
 ## 2.14.2
+
 Thu, 08 Apr 2021 14:30:09 GMT
 
 _Version update only_
 
 ## 2.14.1
+
 Mon, 05 Apr 2021 16:28:00 GMT
 
 _Version update only_
 
 ## 2.14.0
+
 Fri, 02 Apr 2021 13:18:42 GMT
 
 ### Updates
@@ -644,6 +751,7 @@ Fri, 02 Apr 2021 13:18:42 GMT
 - Quick grid performance fix from Earlin.
 
 ## 2.13.0
+
 Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
@@ -654,21 +762,25 @@ Tue, 09 Mar 2021 20:28:13 GMT
 - begin rename project from iModel.js to iTwin.js
 
 ## 2.12.3
+
 Mon, 08 Mar 2021 15:32:00 GMT
 
 _Version update only_
 
 ## 2.12.2
+
 Wed, 03 Mar 2021 18:48:52 GMT
 
 _Version update only_
 
 ## 2.12.1
+
 Tue, 23 Feb 2021 20:54:45 GMT
 
 _Version update only_
 
 ## 2.12.0
+
 Thu, 18 Feb 2021 22:10:12 GMT
 
 ### Updates
@@ -678,16 +790,19 @@ Thu, 18 Feb 2021 22:10:12 GMT
 - IndexedPolyface paramIndex to flatbuffer correction.
 
 ## 2.11.2
+
 Thu, 18 Feb 2021 02:50:59 GMT
 
 _Version update only_
 
 ## 2.11.1
+
 Thu, 04 Feb 2021 17:22:41 GMT
 
 _Version update only_
 
 ## 2.11.0
+
 Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
@@ -698,16 +813,19 @@ Thu, 28 Jan 2021 13:39:27 GMT
 - Add type-safe JSON representations of clipping types.
 
 ## 2.10.3
+
 Fri, 08 Jan 2021 18:34:03 GMT
 
 _Version update only_
 
 ## 2.10.2
+
 Fri, 08 Jan 2021 14:52:02 GMT
 
 _Version update only_
 
 ## 2.10.1
+
 Tue, 22 Dec 2020 00:53:38 GMT
 
 ### Updates
@@ -715,6 +833,7 @@ Tue, 22 Dec 2020 00:53:38 GMT
 - Async version of asyncSweepLinestringToFacetsXYReturnChains
 
 ## 2.10.0
+
 Fri, 18 Dec 2020 18:24:01 GMT
 
 ### Updates
@@ -723,54 +842,64 @@ Fri, 18 Dec 2020 18:24:01 GMT
 - Flatbuffer i/o for TransitionSpiral and PolyfaceAuxData
 - improve performance of announceSweepLinestringToConvexPolyfaceXY
 - When faceting a sphere primitive, apply stroke options (instead of ignoring them and using fixed count)
-- removed Matrix3d from Matrix3dProps. ***breaking change***
+- removed Matrix3d from Matrix3dProps. **_breaking change_**
 
 ## 2.9.9
+
 Sun, 13 Dec 2020 19:00:03 GMT
 
 _Version update only_
 
 ## 2.9.8
+
 Fri, 11 Dec 2020 02:57:36 GMT
 
 _Version update only_
 
 ## 2.9.7
+
 Wed, 09 Dec 2020 20:58:23 GMT
 
 _Version update only_
 
 ## 2.9.6
+
 Mon, 07 Dec 2020 18:40:48 GMT
 
 _Version update only_
 
 ## 2.9.5
+
 Sat, 05 Dec 2020 01:55:56 GMT
 
 _Version update only_
 
 ## 2.9.4
+
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
 
 ## 2.9.3
+
 Mon, 23 Nov 2020 20:57:56 GMT
 
 _Version update only_
 
 ## 2.9.2
+
 Mon, 23 Nov 2020 15:33:50 GMT
 
 _Version update only_
 
 ## 2.9.1
+
 Thu, 19 Nov 2020 17:03:42 GMT
 
 _Version update only_
 
 ## 2.9.0
+
 Wed, 18 Nov 2020 16:01:50 GMT
 
 ### Updates
@@ -782,11 +911,13 @@ Wed, 18 Nov 2020 16:01:50 GMT
 - Read and Write PointString in flatbuffer
 
 ## 2.8.1
+
 Tue, 03 Nov 2020 00:33:56 GMT
 
 _Version update only_
 
 ## 2.8.0
+
 Fri, 23 Oct 2020 17:04:02 GMT
 
 ### Updates
@@ -795,36 +926,43 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Fix bugs in integrated spirals with nonzero start radius
 
 ## 2.7.6
+
 Wed, 11 Nov 2020 16:28:23 GMT
 
 _Version update only_
 
 ## 2.7.5
+
 Fri, 23 Oct 2020 16:23:50 GMT
 
 _Version update only_
 
 ## 2.7.4
+
 Mon, 19 Oct 2020 17:57:01 GMT
 
 _Version update only_
 
 ## 2.7.3
+
 Wed, 14 Oct 2020 17:00:59 GMT
 
 _Version update only_
 
 ## 2.7.2
+
 Tue, 13 Oct 2020 18:20:38 GMT
 
 _Version update only_
 
 ## 2.7.1
+
 Thu, 08 Oct 2020 13:04:35 GMT
 
 _Version update only_
 
 ## 2.7.0
+
 Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
@@ -832,31 +970,37 @@ Fri, 02 Oct 2020 18:03:32 GMT
 - In imjs "cone", accept a single "radius" representing both "startRadius" and "endRadius".
 
 ## 2.6.5
+
 Sat, 26 Sep 2020 16:06:34 GMT
 
 _Version update only_
 
 ## 2.6.4
+
 Tue, 22 Sep 2020 17:40:07 GMT
 
 _Version update only_
 
 ## 2.6.3
+
 Mon, 21 Sep 2020 14:47:09 GMT
 
 _Version update only_
 
 ## 2.6.2
+
 Mon, 21 Sep 2020 13:07:44 GMT
 
 _Version update only_
 
 ## 2.6.1
+
 Fri, 18 Sep 2020 13:15:08 GMT
 
 _Version update only_
 
 ## 2.6.0
+
 Thu, 17 Sep 2020 13:16:12 GMT
 
 ### Updates
@@ -868,31 +1012,37 @@ Thu, 17 Sep 2020 13:16:12 GMT
 - Refactor test code to pass lint validations
 
 ## 2.5.5
+
 Wed, 02 Sep 2020 17:42:23 GMT
 
 _Version update only_
 
 ## 2.5.4
+
 Fri, 28 Aug 2020 15:34:15 GMT
 
 _Version update only_
 
 ## 2.5.3
+
 Wed, 26 Aug 2020 11:46:00 GMT
 
 _Version update only_
 
 ## 2.5.2
+
 Tue, 25 Aug 2020 22:09:08 GMT
 
 _Version update only_
 
 ## 2.5.1
+
 Mon, 24 Aug 2020 18:13:04 GMT
 
 _Version update only_
 
 ## 2.5.0
+
 Thu, 20 Aug 2020 20:57:09 GMT
 
 ### Updates
@@ -903,16 +1053,19 @@ Thu, 20 Aug 2020 20:57:09 GMT
 - Switch to ESLint
 
 ## 2.4.2
+
 Fri, 14 Aug 2020 16:34:09 GMT
 
 _Version update only_
 
 ## 2.4.1
+
 Fri, 07 Aug 2020 19:57:43 GMT
 
 _Version update only_
 
 ## 2.4.0
+
 Tue, 28 Jul 2020 16:26:24 GMT
 
 ### Updates
@@ -922,21 +1075,25 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - Implement Clothoid, Bloss, Biquadratic, Sine and Cosine spirals within TransitionSpiral3d
 
 ## 2.3.3
+
 Thu, 23 Jul 2020 12:57:15 GMT
 
 _Version update only_
 
 ## 2.3.2
+
 Tue, 14 Jul 2020 23:50:36 GMT
 
 _Version update only_
 
 ## 2.3.1
+
 Mon, 13 Jul 2020 18:50:13 GMT
 
 _Version update only_
 
 ## 2.3.0
+
 Fri, 10 Jul 2020 17:23:14 GMT
 
 ### Updates
@@ -944,11 +1101,13 @@ Fri, 10 Jul 2020 17:23:14 GMT
 - Geometry API additions: curveCurveCloseApproach, multipolygon booleans, polygon spine
 
 ## 2.2.1
+
 Tue, 07 Jul 2020 14:44:52 GMT
 
 _Version update only_
 
 ## 2.2.0
+
 Fri, 19 Jun 2020 14:10:03 GMT
 
 ### Updates
@@ -957,6 +1116,7 @@ Fri, 19 Jun 2020 14:10:03 GMT
 - Bug in region booleans: Loops within parity region were not being simplified by ConsidateAdjacentPrimitives.
 
 ## 2.1.0
+
 Thu, 28 May 2020 22:48:59 GMT
 
 ### Updates
@@ -966,10 +1126,11 @@ Thu, 28 May 2020 22:48:59 GMT
 - (alpha) boolean operations among regions with curved boundaries.
 - Correct IModelJson.Reader error which lost normals.
 - In region booleans, create bridge edges to link islands to surroundings.
-- New methods for chaining curves.   First use of KaTeX in docs
+- New methods for chaining curves. First use of KaTeX in docs
 - Fix PolyfaceData.compress to handle normals and params
 
 ## 2.0.0
+
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
@@ -982,10 +1143,10 @@ Wed, 06 May 2020 13:17:49 GMT
 - Fix z bug in Arc3d cloneAtZ()
 - CurveFactory and RegionOps support for pipe construction and finding loops in unstructured curve sets
 - BUG 273249
-- PolyfaceClip for plane, convex, union clippers.  Prevent small fragment construction in curve clip.
+- PolyfaceClip for plane, convex, union clippers. Prevent small fragment construction in curve clip.
 - docs for PolyfaceClip.clipPolyfaceInsideOutside
 - modernize cubic root finder
-- geometry coverage.   Logic bugs in ChainCollectorContext.needBreakBetweenPrimitives
+- geometry coverage. Logic bugs in ChainCollectorContext.needBreakBetweenPrimitives
 - ChainCollector support for DesignReview; Bspline through points for futureOnBridge
 - In earcut triangulation, test for bowtie point.
 - v2.0 API cleanup -- Ellipsoid use LongitudeLatitudeNumber instead of Point2d for angle return
@@ -995,16 +1156,19 @@ Wed, 06 May 2020 13:17:49 GMT
 - Remove support for the iModel.js module system by no longer delivering modules.
 
 ## 1.14.1
+
 Wed, 22 Apr 2020 19:04:00 GMT
 
 _Version update only_
 
 ## 1.14.0
+
 Tue, 31 Mar 2020 15:44:19 GMT
 
 _Version update only_
 
 ## 1.13.0
+
 Wed, 04 Mar 2020 16:16:31 GMT
 
 ### Updates
@@ -1012,6 +1176,7 @@ Wed, 04 Mar 2020 16:16:31 GMT
 - Polyface clip to union of convex sets
 
 ## 1.12.0
+
 Wed, 12 Feb 2020 17:45:50 GMT
 
 ### Updates
@@ -1027,6 +1192,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - iModel write API development
 
 ## 1.11.0
+
 Wed, 22 Jan 2020 19:24:12 GMT
 
 ### Updates
@@ -1037,6 +1203,7 @@ Wed, 22 Jan 2020 19:24:12 GMT
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
+
 Tue, 07 Jan 2020 19:44:01 GMT
 
 ### Updates
@@ -1049,23 +1216,25 @@ Tue, 07 Jan 2020 19:44:01 GMT
 - Added Matrix4d.isExactEqual()
 
 ## 1.9.0
+
 Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- EllipsoidPatch support:  patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc
+- EllipsoidPatch support: patch.projectPointToSurface, ellipsoid.constantLatitudeArc, ellipsoid.constantLongitudeArc
 - Great Circle extraction on Ellipsoid
-- Correct bug in z part of Vector3d spherical construction.  New method to split mesh by eyevector
+- Correct bug in z part of Vector3d spherical construction. New method to split mesh by eyevector
 - linearSystem3d z term
 - Code cleanup from codeQL hits
 - Ellipsoid and EllipsoidPatch classes with range and intersectRay support
 
 ## 1.8.0
+
 Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -1074,6 +1243,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 - Added earthRadiusWGS84 constants
 
 ## 1.7.0
+
 Fri, 01 Nov 2019 13:28:37 GMT
 
 ### Updates
@@ -1083,6 +1253,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Lightweight iterator over Point3ds contained in an IndexedXYZCollection; Transform.multiplyRange() returns a null range if input is a null range.
 
 ## 1.6.0
+
 Wed, 09 Oct 2019 20:28:42 GMT
 
 ### Updates
@@ -1091,6 +1262,7 @@ Wed, 09 Oct 2019 20:28:42 GMT
 - General matrix4d inverse
 
 ## 1.5.0
+
 Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
@@ -1103,6 +1275,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
+
 Tue, 10 Sep 2019 12:09:49 GMT
 
 ### Updates
@@ -1115,12 +1288,13 @@ Tue, 10 Sep 2019 12:09:49 GMT
 - Added AnyGeometryQuery and AnySolidPrimitive union types; added type discriminator fields to GeometryQuery, SolidPrimitive, CurvePrimitive, and CurveCollection; tightened `any` return types for IModelJson.Reader methods.
 
 ## 1.3.0
+
 Tue, 13 Aug 2019 20:25:53 GMT
 
 ### Updates
 
 - WireMoment computation; polyline filters for short edge, small triangle, perpendicular projection
-- Triangulate cut faces in polyface clip.  Variant point data parse.  Bilinear Patch ray intersection"
+- Triangulate cut faces in polyface clip. Variant point data parse. Bilinear Patch ray intersection"
 - Construct offset from path with curves.
 - Mesh principal axis computation.
 - Document unit length rows/cols requirement of Matrix3d.toQuaternion
@@ -1128,6 +1302,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Improved grid display performance.
 
 ## 1.2.0
+
 Wed, 24 Jul 2019 11:47:26 GMT
 
 ### Updates
@@ -1140,6 +1315,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 - Polyline simplification by Puecker-Douglas (chord distance)
 
 ## 1.1.0
+
 Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
@@ -1149,7 +1325,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Add "extend" support to various CurvePrimitive.closestPoint methods.
 - Add PolyfaceQuery methods to drape linestring to facets
 - Priority queue sweep logic in HalfEdgeGraph
-- PolarData class for x-y-r-theta constraint solve.   CurvePathWithDistanceIndex expose path with getter.
+- PolarData class for x-y-r-theta constraint solve. CurvePathWithDistanceIndex expose path with getter.
 - Region centroid and polygon boolean methods
 - TransitionSpiral bug fixes in transform, use of active interval
 - Prevent triangle flip hang
@@ -1158,6 +1334,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Update to TypeScript 3.5
 
 ## 1.0.0
+
 Mon, 03 Jun 2019 18:09:39 GMT
 
 ### Updates
@@ -1169,6 +1346,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Detect high-multiplicity knots when saturating a bspline. Skip those intervals in stroking.
 
 ## 0.191.0
+
 Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
@@ -1178,9 +1356,9 @@ Mon, 13 May 2019 15:52:05 GMT
 - View clip fixes and start of tools.
 - Range1dArray coverage
 - Coverage; enable public/internal verification.
-- Add doc to many methods.  Modernize ray intersect clip plane logic and methods.
-- closestApproachRay3dRay3d.  centroid bugs
-- ClipPlane enhancements;  method to compute clip faces for convex set intersection with range
+- Add doc to many methods. Modernize ray intersect clip plane logic and methods.
+- closestApproachRay3dRay3d. centroid bugs
+- ClipPlane enhancements; method to compute clip faces for convex set intersection with range
 - ClipPrimitive modernization
 - Debug json clip plane usage
 - add docs for methods in Arc3d, CurvePrimitive, Newton
@@ -1196,11 +1374,12 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
+
 Thu, 14 Mar 2019 14:26:49 GMT
 
 ### Updates
@@ -1208,6 +1387,7 @@ Thu, 14 Mar 2019 14:26:49 GMT
 - Rename/Refactor triangulation
 
 ## 0.189.0
+
 Wed, 06 Mar 2019 15:41:22 GMT
 
 ### Updates
@@ -1220,7 +1400,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - clone methods are no longer generic
 - Remove unneeded typedoc plugin dependency
 - PolyfaceBuilder solid primitive improvements
-- PolyfaceBuilder improvements.  Construct normals for sweeps.  Mesh pairing closure test.
+- PolyfaceBuilder improvements. Construct normals for sweeps. Mesh pairing closure test.
 - PolyfaceBuilder creates params and normals for all Solid types
 - Mesh Normal bugs, some @internal markup
 - Consistent naming of "get" methods in Growable arrays.
@@ -1235,44 +1415,52 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
+
 Wed, 16 Jan 2019 16:36:09 GMT
 
 _Version update only_
 
 ## 0.187.0
+
 Tue, 15 Jan 2019 15:18:59 GMT
 
 _Version update only_
 
 ## 0.186.0
+
 Mon, 14 Jan 2019 23:09:10 GMT
 
 _Version update only_
 
 ## 0.185.0
+
 Fri, 11 Jan 2019 18:29:00 GMT
 
 _Version update only_
 
 ## 0.184.0
+
 Thu, 10 Jan 2019 22:46:17 GMT
 
 ### Updates
 
-- Code coverage.  sphere and torus derivative errors. solids reject singular transforms.
+- Code coverage. sphere and torus derivative errors. solids reject singular transforms.
 - Add to quaternion tests
 
 ## 0.183.0
+
 Mon, 07 Jan 2019 21:49:21 GMT
 
 _Version update only_
 
 ## 0.182.0
+
 Mon, 07 Jan 2019 13:31:34 GMT
 
 _Version update only_
 
 ## 0.181.0
+
 Fri, 04 Jan 2019 13:02:40 GMT
 
 ### Updates
@@ -1280,6 +1468,7 @@ Fri, 04 Jan 2019 13:02:40 GMT
 - Suppress geometry test console output (except performance)
 
 ## 0.180.0
+
 Wed, 02 Jan 2019 15:18:23 GMT
 
 ### Updates
@@ -1289,36 +1478,43 @@ Wed, 02 Jan 2019 15:18:23 GMT
 - Add quaternion tests - fix transpose
 
 ## 0.179.0
+
 Wed, 19 Dec 2018 18:26:14 GMT
 
 _Version update only_
 
 ## 0.178.0
+
 Thu, 13 Dec 2018 22:06:10 GMT
 
 _Version update only_
 
 ## 0.177.0
+
 Wed, 12 Dec 2018 17:21:31 GMT
 
 _Version update only_
 
 ## 0.176.0
+
 Mon, 10 Dec 2018 21:19:45 GMT
 
 _Version update only_
 
 ## 0.175.0
+
 Mon, 10 Dec 2018 17:08:55 GMT
 
 _Version update only_
 
 ## 0.174.0
+
 Mon, 10 Dec 2018 13:24:09 GMT
 
 _Version update only_
 
 ## 0.173.0
+
 Thu, 06 Dec 2018 22:03:29 GMT
 
 ### Updates
@@ -1326,49 +1522,58 @@ Thu, 06 Dec 2018 22:03:29 GMT
 - Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
 
 ## 0.172.0
+
 Tue, 04 Dec 2018 17:24:39 GMT
 
 _Version update only_
 
 ## 0.171.0
+
 Mon, 03 Dec 2018 18:52:58 GMT
 
 _Version update only_
 
 ## 0.170.0
+
 Mon, 26 Nov 2018 19:38:42 GMT
 
 _Version update only_
 
 ## 0.169.0
+
 Tue, 20 Nov 2018 16:17:15 GMT
 
 _Version update only_
 
 ## 0.168.0
+
 Sat, 17 Nov 2018 14:20:11 GMT
 
 _Version update only_
 
 ## 0.167.0
+
 Fri, 16 Nov 2018 21:45:44 GMT
 
 _Version update only_
 
 ## 0.166.0
+
 Mon, 12 Nov 2018 16:42:10 GMT
 
 _Version update only_
 
 ## 0.165.0
+
 Mon, 12 Nov 2018 15:47:00 GMT
 
 ### Updates
 
-- bspline docs.  Add bezier curve left and right subdivision methods"
+- bspline docs. Add bezier curve left and right subdivision methods"
 - Correct return value (undefined is right!) for LineString3d.pointAt (index)
 
 ## 0.164.0
+
 Thu, 08 Nov 2018 17:59:20 GMT
 
 ### Updates
@@ -1382,53 +1587,60 @@ Thu, 08 Nov 2018 17:59:20 GMT
 - Updated to TypeScript 3.1
 
 ## 0.163.0
+
 Wed, 31 Oct 2018 20:55:37 GMT
 
 ### Updates
 
 - CurveChainWithDistanceIndex WIP
-- fromJSON tests.  Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
+- fromJSON tests. Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
 - Add tests for fromJSON methods (small classes)
-- Expand test coverage.  Use small absolute tolerance in Geometry.isAlmostEqualNumber.  "w" component of BezierCurve3d.getPolePoint4d.
+- Expand test coverage. Use small absolute tolerance in Geometry.isAlmostEqualNumber. "w" component of BezierCurve3d.getPolePoint4d.
 
 ## 0.162.0
+
 Wed, 24 Oct 2018 19:20:06 GMT
 
 ### Updates
 
 - Merge
-- fromJSON tests.  Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
+- fromJSON tests. Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
 - Rename PNG files as png
 
 ## 0.161.0
+
 Fri, 19 Oct 2018 13:04:14 GMT
 
 _Version update only_
 
 ## 0.160.0
+
 Wed, 17 Oct 2018 18:18:38 GMT
 
 _Version update only_
 
 ## 0.159.0
+
 Tue, 16 Oct 2018 14:09:09 GMT
 
 _Version update only_
 
 ## 0.158.0
+
 Mon, 15 Oct 2018 19:36:09 GMT
 
 _Version update only_
 
 ## 0.157.0
+
 Sun, 14 Oct 2018 17:20:06 GMT
 
 _Version update only_
 
 ## 0.156.0
+
 Fri, 12 Oct 2018 23:00:10 GMT
 
 ### Updates
 
 - Initial release
-

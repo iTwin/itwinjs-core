@@ -2,9 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, GuidString, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { BriefcaseDownloader, IModelError, LocalBriefcaseProps, SyncMode } from "@itwin/core-common";
-import { BriefcaseConnection, DownloadBriefcaseOptions, IModelConnection, NativeApp, SnapshotConnection } from "@itwin/core-frontend";
+import {
+  BentleyError,
+  GuidString,
+  IModelStatus,
+  ProcessDetector,
+} from "@itwin/core-bentley";
+import {
+  BriefcaseDownloader,
+  IModelError,
+  LocalBriefcaseProps,
+  SyncMode,
+} from "@itwin/core-common";
+import {
+  BriefcaseConnection,
+  DownloadBriefcaseOptions,
+  IModelConnection,
+  NativeApp,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
 import { getConfigurationBoolean } from "./DisplayTestApp";
 
 export interface OpenFileIModelProps {
@@ -23,14 +39,22 @@ export interface OpenHubIModelProps {
 
 export type OpenIModelProps = OpenFileIModelProps | OpenHubIModelProps;
 
-async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promise<LocalBriefcaseProps> {
+async function downloadIModel(
+  iModelId: GuidString,
+  iTwinId: GuidString
+): Promise<LocalBriefcaseProps> {
   if (!ProcessDetector.isNativeAppFrontend) {
     throw new Error("Download requires native app (Electron, iOS, or Android)");
   }
   const opts: DownloadBriefcaseOptions = { syncMode: SyncMode.PullOnly };
   let downloader: BriefcaseDownloader | undefined;
   try {
-    downloader = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, opts, undefined);
+    downloader = await NativeApp.requestDownloadBriefcase(
+      iTwinId,
+      iModelId,
+      opts,
+      undefined
+    );
 
     // Wait for the download to complete.
     await downloader.downloadPromise;
@@ -48,7 +72,10 @@ async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promis
         // briefcase and try again.
         // When syncMode is SyncMode.PullOnly (which is what we use), briefcaseId is ALWAYS 0, so try
         // to delete the existing file using that briefcaseId.
-        const filename = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
+        const filename = await NativeApp.getBriefcaseFileName({
+          iModelId,
+          briefcaseId: 0,
+        });
         await NativeApp.deleteBriefcase(filename);
         return downloadIModel(iModelId, iTwinId);
       }
@@ -57,7 +84,9 @@ async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promis
   }
 }
 
-export async function openIModel(props: OpenIModelProps): Promise<IModelConnection> {
+export async function openIModel(
+  props: OpenIModelProps
+): Promise<IModelConnection> {
   const { fileName, writable } = props;
   if (fileName !== undefined) {
     return openIModelFile(fileName, writable);
@@ -69,21 +98,38 @@ export async function openIModel(props: OpenIModelProps): Promise<IModelConnecti
   }
 }
 
-async function openIModelFile(fileName: string, writable: boolean): Promise<IModelConnection> {
+async function openIModelFile(
+  fileName: string,
+  writable: boolean
+): Promise<IModelConnection> {
   try {
-    return await BriefcaseConnection.openFile({ fileName, readonly: !writable, key: fileName });
+    return await BriefcaseConnection.openFile({
+      fileName,
+      readonly: !writable,
+      key: fileName,
+    });
   } catch (err) {
-    if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
+    if (
+      writable &&
+      err instanceof IModelError &&
+      err.errorNumber === IModelStatus.ReadOnly
+    )
       return SnapshotConnection.openFile(fileName);
-    else
-      throw err;
+    else throw err;
   }
 }
 
-async function openHubIModel(iModelId: GuidString, iTwinId: GuidString, writable: boolean): Promise<IModelConnection> {
+async function openHubIModel(
+  iModelId: GuidString,
+  iTwinId: GuidString,
+  writable: boolean
+): Promise<IModelConnection> {
   const localBriefcases = await NativeApp.getCachedBriefcases(iModelId);
   if (localBriefcases.length > 0) {
-    const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
+    const fileName = await NativeApp.getBriefcaseFileName({
+      iModelId,
+      briefcaseId: 0,
+    });
     if (getConfigurationBoolean("ignoreCache")) {
       await NativeApp.deleteBriefcase(fileName);
     } else {

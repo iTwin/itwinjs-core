@@ -4,7 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import {
+  ElementSetTool,
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+} from "@itwin/core-frontend";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
 import { basicManipulationIpc } from "./EditToolIpc";
@@ -14,25 +19,45 @@ export class DeleteElementsTool extends ElementSetTool {
   public static override toolId = "DeleteElements";
   public static override iconSpec = "icon-delete";
 
-  protected override get allowSelectionSet(): boolean { return true; }
-  protected override get allowGroups(): boolean { return true; }
-  protected override get allowDragSelect(): boolean { return true; }
-  protected override get controlKeyContinuesSelection(): boolean { return true; }
-  protected override get requireAcceptForSelectionSetOperation(): boolean { return false; }
+  protected override get allowSelectionSet(): boolean {
+    return true;
+  }
+  protected override get allowGroups(): boolean {
+    return true;
+  }
+  protected override get allowDragSelect(): boolean {
+    return true;
+  }
+  protected override get controlKeyContinuesSelection(): boolean {
+    return true;
+  }
+  protected override get requireAcceptForSelectionSetOperation(): boolean {
+    return false;
+  }
 
   public override async processAgendaImmediate(): Promise<void> {
     try {
-      await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: this.iModel.key });
-      if (IModelStatus.Success === await basicManipulationIpc.deleteElements(this.agenda.compressIds()))
+      await EditTools.startCommand<string>({
+        commandId: editorBuiltInCmdIds.cmdBasicManipulation,
+        iModelKey: this.iModel.key,
+      });
+      if (
+        IModelStatus.Success ===
+        (await basicManipulationIpc.deleteElements(this.agenda.compressIds()))
+      )
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(
+          OutputMessagePriority.Error,
+          BentleyError.getErrorMessage(err) || "An unknown error occurred."
+        )
+      );
     }
   }
 
   public async onRestartTool() {
     const tool = new DeleteElementsTool();
-    if (!await tool.run())
-      return this.exitTool();
+    if (!(await tool.run())) return this.exitTool();
   }
 }

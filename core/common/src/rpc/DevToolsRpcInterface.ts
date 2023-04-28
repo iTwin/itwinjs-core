@@ -25,9 +25,12 @@ export enum DevToolsStatsOptions {
  * Note that this should NOT be used in production environments.
  * @internal
  */
-export abstract class DevToolsRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class DevToolsRpcInterface extends RpcInterface {
+  // eslint-disable-line deprecation/deprecation
   /** Returns the IModelReadRpcInterface instance for the frontend. */
-  public static getClient(): DevToolsRpcInterface { return RpcManager.getClientForInterface(DevToolsRpcInterface); }
+  public static getClient(): DevToolsRpcInterface {
+    return RpcManager.getClientForInterface(DevToolsRpcInterface);
+  }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "DevToolsRpcInterface";
@@ -42,18 +45,31 @@ export abstract class DevToolsRpcInterface extends RpcInterface { // eslint-disa
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ==========================================================================================*/
   // Sends a ping and returns true if the backend received the ping
-  public async ping(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async ping(_iModelToken: IModelRpcProps): Promise<boolean> {
+    return this.forward(arguments);
+  }
 
   // Returns JSON object with backend performance and memory statistics
-  public async stats(_iModelToken: IModelRpcProps, _options: DevToolsStatsOptions): Promise<any> { return this.forward(arguments); }
+  public async stats(
+    _iModelToken: IModelRpcProps,
+    _options: DevToolsStatsOptions
+  ): Promise<any> {
+    return this.forward(arguments);
+  }
 
   // Returns JSON object with backend versions (application and iModelJs)
   public async versions(_iModelToken: IModelRpcProps): Promise<any> {
-    const versions = await this.forward(arguments) || {};
+    const versions = (await this.forward(arguments)) || {};
     versions.availableRpcs = await RpcManager.describeAvailableEndpoints();
     return versions;
   }
 
   // Sets a new log level for the specified category and returns the old log level
-  public async setLogLevel(_iModelToken: IModelRpcProps, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined> { return this.forward(arguments); }
+  public async setLogLevel(
+    _iModelToken: IModelRpcProps,
+    _loggerCategory: string,
+    _logLevel: LogLevel
+  ): Promise<LogLevel | undefined> {
+    return this.forward(arguments);
+  }
 }

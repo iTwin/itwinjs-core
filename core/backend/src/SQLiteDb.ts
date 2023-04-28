@@ -39,9 +39,17 @@ export class SQLiteDb implements IDisposable {
    */
   public createDb(dbName: string): void;
   /** @beta */
-  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+  public createDb(
+    dbName: string,
+    container?: CloudSqlite.CloudContainer,
+    params?: SQLiteDb.CreateParams
+  ): void;
   /** @internal */
-  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
+  public createDb(
+    dbName: string,
+    container?: CloudSqlite.CloudContainer,
+    params?: SQLiteDb.CreateParams
+  ): void {
     this.nativeDb.createDb(dbName, container, params);
   }
 
@@ -53,10 +61,18 @@ export class SQLiteDb implements IDisposable {
    * @param container optional CloudContainer holding database
    * @beta
    */
-  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+  public openDb(
+    dbName: string,
+    openMode: OpenMode | SQLiteDb.OpenParams,
+    container?: CloudSqlite.CloudContainer
+  ): void;
 
   /** @internal */
-  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void {
+  public openDb(
+    dbName: string,
+    openMode: OpenMode | SQLiteDb.OpenParams,
+    container?: CloudSqlite.CloudContainer
+  ): void {
     this.nativeDb.openDb(dbName, openMode, container);
   }
 
@@ -64,17 +80,20 @@ export class SQLiteDb implements IDisposable {
    * @param saveChanges if true, call `saveChanges` before closing db. Otherwise unsaved changes are abandoned.
    */
   public closeDb(saveChanges?: boolean): void {
-    if (saveChanges && this.isOpen)
-      this.saveChanges();
+    if (saveChanges && this.isOpen) this.saveChanges();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
   }
 
   /** Returns true if this SQLiteDb is open */
-  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean {
+    return this.nativeDb.isOpen();
+  }
 
   /** Returns true if this SQLiteDb is open readonly */
-  public get isReadonly(): boolean { return this.nativeDb.isReadonly(); }
+  public get isReadonly(): boolean {
+    return this.nativeDb.isReadonly();
+  }
 
   /**
    * Open a database, perform an operation, then close the database.
@@ -89,11 +108,15 @@ export class SQLiteDb implements IDisposable {
    * @return value from operation
    */
   public withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T {
-    if (this.isOpen)
-      throw new Error("database is already open");
+    if (this.isOpen) throw new Error("database is already open");
 
-    const save = () => this.closeDb(true), abandon = () => this.closeDb(false);
-    this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
+    const save = () => this.closeDb(true),
+      abandon = () => this.closeDb(false);
+    this.openDb(
+      args.dbName,
+      args.openMode ?? OpenMode.Readonly,
+      args.container
+    );
     try {
       const result = operation();
       result instanceof Promise ? result.then(save, abandon) : save();
@@ -117,8 +140,17 @@ export class SQLiteDb implements IDisposable {
    * @return value from operation
    * @internal
    */
-  public async withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => T) {
-    return CloudSqlite.withWriteLock(args.user, args.container, () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation), args.busyHandler);
+  public async withLockedContainer<T>(
+    args: CloudSqlite.LockAndOpenArgs,
+    operation: () => T
+  ) {
+    return CloudSqlite.withWriteLock(
+      args.user,
+      args.container,
+      () =>
+        this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation),
+      args.busyHandler
+    );
   }
 
   /** vacuum this database
@@ -148,8 +180,13 @@ export class SQLiteDb implements IDisposable {
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by `callback`.
    */
-  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+  public withPreparedSqliteStatement<T>(
+    sql: string,
+    callback: (stmt: SqliteStatement) => T
+  ): T {
+    const stmt =
+      this._sqliteStatementCache.findAndRemove(sql) ??
+      this.prepareSqliteStatement(sql);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -169,7 +206,10 @@ export class SQLiteDb implements IDisposable {
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by `callback`.
    */
-  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+  public withSqliteStatement<T>(
+    sql: string,
+    callback: (stmt: SqliteStatement) => T
+  ): T {
     const stmt = this.prepareSqliteStatement(sql);
     const release = () => stmt.dispose();
     try {
@@ -188,8 +228,7 @@ export class SQLiteDb implements IDisposable {
    * and all changes to the database from this method are reversed, leaving the transaction exactly as it was before this method.
    */
   public withSavePoint(savePointName: string, operation: () => void) {
-    if (this.isReadonly)
-      throw new Error("database is readonly");
+    if (this.isReadonly) throw new Error("database is readonly");
 
     this.executeSQL(`SAVEPOINT ${savePointName}`);
     try {
@@ -202,11 +241,14 @@ export class SQLiteDb implements IDisposable {
   }
 
   /** Prepare an SQL statement.
-     * @param sql The SQLite SQL statement to prepare
-     * @param logErrors Determine if errors are logged or not
-     * @internal
-     */
-  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
+   * @param sql The SQLite SQL statement to prepare
+   * @param logErrors Determine if errors are logged or not
+   * @internal
+   */
+  public prepareSqliteStatement(
+    sql: string,
+    logErrors = true
+  ): SqliteStatement {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this.nativeDb, logErrors);
     return stmt;
@@ -230,8 +272,8 @@ export namespace SQLiteDb {
    */
   export interface BlobIO {
     /** Close this BlobIO if it is opened.
-       * @note this BlobIO *may* be reused after this call by calling `open` again.
-      */
+     * @note this BlobIO *may* be reused after this call by calling `open` again.
+     */
     close(): void;
     /** get the total number of bytes in the blob */
     getNumBytes(): number;
@@ -250,10 +292,11 @@ export namespace SQLiteDb {
         row: number;
         /** If true, open this BlobIO for write access */
         writeable?: boolean;
-      }): void;
+      }
+    ): void;
     /** Read from a blob
-       * @returns the contents of the requested byte range
-       */
+     * @returns the contents of the requested byte range
+     */
     read(args: {
       /** The number of bytes to read */
       numBytes: number;
@@ -263,8 +306,8 @@ export namespace SQLiteDb {
       blob?: ArrayBuffer;
     }): Uint8Array;
     /** Reposition this BlobIO to a new rowId
-       * @note this BlobIO must be valid when this methods is called.
-       */
+     * @note this BlobIO must be valid when this methods is called.
+     */
     changeRow(row: number): void;
     /** Write to a blob */
     write(args: {
@@ -288,7 +331,7 @@ export namespace SQLiteDb {
     /** An immediate transaction is started when the file is first opened. */
     Immediate = 2,
     /** An exclusive transaction is started when the file is first opened. */
-    Exclusive = 3
+    Exclusive = 3,
   }
 
   /** parameters common to opening or creating a new SQLiteDb */
@@ -300,8 +343,8 @@ export namespace SQLiteDb {
     /** Do not attempt to verify that the file is a valid sQLite file before opening. */
     skipFileCheck?: boolean;
     /** the default transaction mode
-   * @see [[SQLiteDb.DefaultTxnMode]]
-  */
+     * @see [[SQLiteDb.DefaultTxnMode]]
+     */
     defaultTxn?: 0 | 1 | 2 | 3;
     /** see query parameters from 'URI Filenames' in  https://www.sqlite.org/c3ref/open.html */
     queryParam?: string;

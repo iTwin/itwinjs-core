@@ -41,20 +41,33 @@ async function isDirectory(directoryName: string) {
 }
 
 async function tryCopyDirectoryContents(source: string, target: string) {
-  if (!fs.existsSync(source))
-    return;
+  if (!fs.existsSync(source)) return;
 
-  const copyOptions = { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: false };
+  const copyOptions = {
+    dereference: true,
+    preserveTimestamps: true,
+    overwrite: false,
+    errorOnExist: false,
+  };
   try {
-    if (await isDirectory(source) && fs.existsSync(target) && await isDirectory(target)) {
+    if (
+      (await isDirectory(source)) &&
+      fs.existsSync(target) &&
+      (await isDirectory(target))
+    ) {
       for (const name of await fs.readdir(source)) {
-        await tryCopyDirectoryContents(path.join(source, name), path.join(target, name));
+        await tryCopyDirectoryContents(
+          path.join(source, name),
+          path.join(target, name)
+        );
       }
     } else {
       await fs.copy(source, target, copyOptions);
     }
   } catch (err: any) {
-    console.log(`Error trying to copy '${source}' to '${target}': ${err.toString()}`);
+    console.log(
+      `Error trying to copy '${source}' to '${target}': ${err.toString()}`
+    );
   }
 }
 
@@ -66,7 +79,8 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
   constructor(directoryNames: string[], useDirectoryName?: boolean) {
     super("CopyBentleyStaticResourcesPlugin");
     this._directoryNames = directoryNames;
-    this._useDirectoryName = undefined === useDirectoryName ? false : useDirectoryName;
+    this._useDirectoryName =
+      undefined === useDirectoryName ? false : useDirectoryName;
   }
 
   public async runAsync(compiler: Compiler) {
@@ -80,14 +94,15 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
         return;
       }
       for (const thisSubDir of subDirectoryNames) {
-        if (!(await isDirectory(path.resolve(basePath, thisSubDir))))
-          continue;
+        if (!(await isDirectory(path.resolve(basePath, thisSubDir)))) continue;
 
         const fullDirName = path.resolve(basePath, thisSubDir);
         for (const staticAssetsDirectoryName of this._directoryNames) {
           await tryCopyDirectoryContents(
             path.join(fullDirName, "lib", staticAssetsDirectoryName),
-            this._useDirectoryName ? compiler.outputPath : path.join(compiler.outputPath, staticAssetsDirectoryName),
+            this._useDirectoryName
+              ? compiler.outputPath
+              : path.join(compiler.outputPath, staticAssetsDirectoryName)
           );
         }
       }

@@ -19,7 +19,8 @@ export class GeoJson {
 }
 
 /** Constants associated with GeoJson. */
-export namespace GeoJson { // eslint-disable-line no-redeclare
+export namespace GeoJson {
+  // eslint-disable-line no-redeclare
   export type Geometry = any;
   export type Polygon = any;
   export type LineString = any;

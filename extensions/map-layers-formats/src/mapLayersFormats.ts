@@ -19,7 +19,10 @@ export class MapLayersFormats {
    * This function has no effect if called **before** [IModelApp.startup]($frontend) or **after** [IModelApp.shutdown]($frontend).
    */
   public static initialize() {
-    assert(IModelApp.initialized, "MapLayersFormats.initialize must be called after IModelApp.startup and before IModelApp.shutdown");
+    assert(
+      IModelApp.initialized,
+      "MapLayersFormats.initialize must be called after IModelApp.startup and before IModelApp.shutdown"
+    );
     if (IModelApp.initialized)
       IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
   }

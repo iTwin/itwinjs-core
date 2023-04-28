@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/ecschema-locaters__ package contains classes for locating and loading EC schema files from the file system.
+The **@itwin/ecschema-locaters** package contains classes for locating and loading EC schema files from the file system.
 
 ## Documentation
 

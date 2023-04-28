@@ -6,10 +6,29 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  CompressedId64Set,
+  Id64,
+  Id64Array,
+  Id64String,
+  OrderedId64Iterable,
+} from "@itwin/core-bentley";
+import {
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ColorDef,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettings,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  EntityReferenceSet,
+  PlanProjectionSettingsProps,
+  RenderSchedule,
+  SkyBoxImageProps,
+  ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -22,7 +41,9 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  */
 export abstract class DisplayStyle extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "DisplayStyle"; }
+  public static override get className(): string {
+    return "DisplayStyle";
+  }
   public abstract get settings(): DisplayStyleSettings;
 
   /** @internal */
@@ -35,13 +56,25 @@ export abstract class DisplayStyle extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the DisplayStyle and provides the scope for its name.
    * @param codeValue The DisplayStyle name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.displayStyle);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.displayStyle
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       referenceIds.addElement(id);
@@ -54,13 +87,16 @@ export abstract class DisplayStyle extends DefinitionElement {
       referenceIds.addElement(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
-      if (script)
-        script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
+      if (script) script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
     }
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
+  protected static override onCloned(
+    context: IModelElementCloneContext,
+    sourceElementProps: DisplayStyleProps,
+    targetElementProps: DisplayStyleProps
+  ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
@@ -68,44 +104,49 @@ export abstract class DisplayStyle extends DefinitionElement {
 
     const settings = targetElementProps.jsonProperties.styles;
     if (settings.subCategoryOvr) {
-      for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
+      for (let i = 0; i < settings.subCategoryOvr.length /* */; ) {
         const ovr = settings.subCategoryOvr[i];
-        ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
+        ovr.subCategory = context.findTargetElementId(
+          Id64.fromJSON(ovr.subCategory)
+        );
         if (Id64.invalid === ovr.subCategory)
           settings.subCategoryOvr.splice(i, 1);
-        else
-          i++;
+        else i++;
       }
     }
 
     if (settings.excludedElements) {
-      const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
-      for (let i = 0; i < excluded.length; /* */) {
+      const excluded: Id64Array =
+        "string" === typeof settings.excludedElements
+          ? CompressedId64Set.decompressArray(settings.excludedElements)
+          : settings.excludedElements;
+      for (let i = 0; i < excluded.length /* */; ) {
         const remapped = context.findTargetElementId(excluded[i]);
-        if (Id64.invalid === remapped)
-          excluded.splice(i, 1);
-        else
-          excluded[i++] = remapped;
+        if (Id64.invalid === remapped) excluded.splice(i, 1);
+        else excluded[i++] = remapped;
       }
 
-      if (0 === excluded.length)
-        delete settings.excludedElements;
+      if (0 === excluded.length) delete settings.excludedElements;
       else
-        settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
+        settings.excludedElements = CompressedId64Set.compressIds(
+          OrderedId64Iterable.sortArray(excluded)
+        );
     }
 
     if (settings.renderTimeline) {
-      const renderTimeline = context.findTargetElementId(settings.renderTimeline);
+      const renderTimeline = context.findTargetElementId(
+        settings.renderTimeline
+      );
       if (Id64.isValid(renderTimeline))
         settings.renderTimeline = renderTimeline;
-      else
-        delete settings.renderTimeline;
+      else delete settings.renderTimeline;
     } else if (settings.scheduleScript) {
-      const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
-      if (scheduleScript.length > 0)
-        settings.scheduleScript = scheduleScript;
-      else
-        delete settings.scheduleScript;
+      const scheduleScript = RenderTimeline.remapScript(
+        context,
+        settings.scheduleScript
+      );
+      if (scheduleScript.length > 0) settings.scheduleScript = scheduleScript;
+      else delete settings.scheduleScript;
     }
   }
 
@@ -113,17 +154,23 @@ export abstract class DisplayStyle extends DefinitionElement {
     let script;
     let sourceId;
     if (this.settings.renderTimeline) {
-      const timeline = this.iModel.elements.tryGetElement<RenderTimeline>(this.settings.renderTimeline);
+      const timeline = this.iModel.elements.tryGetElement<RenderTimeline>(
+        this.settings.renderTimeline
+      );
       if (timeline) {
         script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
         sourceId = timeline.id;
       }
     } else if (this.settings.scheduleScriptProps) {
-      script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
+      script = RenderSchedule.Script.fromJSON(
+        this.settings.scheduleScriptProps
+      );
       sourceId = this.id;
     }
 
-    return undefined !== sourceId && undefined !== script ? new RenderSchedule.ScriptReference(sourceId, script) : undefined;
+    return undefined !== sourceId && undefined !== script
+      ? new RenderSchedule.ScriptReference(sourceId, script)
+      : undefined;
   }
 }
 
@@ -132,10 +179,14 @@ export abstract class DisplayStyle extends DefinitionElement {
  */
 export class DisplayStyle2d extends DisplayStyle {
   /** @internal */
-  public static override get className(): string { return "DisplayStyle2d"; }
+  public static override get className(): string {
+    return "DisplayStyle2d";
+  }
   private readonly _settings: DisplayStyleSettings;
 
-  public get settings(): DisplayStyleSettings { return this._settings; }
+  public get settings(): DisplayStyleSettings {
+    return this._settings;
+  }
 
   /** @internal */
   public constructor(props: DisplayStyleProps, iModel: IModelDb) {
@@ -149,7 +200,11 @@ export class DisplayStyle2d extends DisplayStyle {
    * @returns The newly constructed DisplayStyle2d element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DisplayStyle2d {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string
+  ): DisplayStyle2d {
     const displayStyleProps: DisplayStyleProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -172,7 +227,11 @@ export class DisplayStyle2d extends DisplayStyle {
    * @returns The Id of the newly inserted DisplayStyle2d element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string
+  ): Id64String {
     const displayStyle = this.create(iModelDb, definitionModelId, name);
     return iModelDb.elements.insertElement(displayStyle.toJSON());
   }
@@ -186,7 +245,11 @@ export class DisplayStyle2d extends DisplayStyle {
  * @see [[DisplayStyle3d.create]].
  * @public
  */
-export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
+export interface DisplayStyleCreationOptions
+  extends Omit<
+    DisplayStyle3dSettingsProps,
+    "backgroundColor" | "scheduleScript"
+  > {
   /** If supplied, the [ViewFlags]($common) applied by the display style.
    * If undefined, [DisplayStyle3dSettingsProps.viewflags]($common) will be used if present (note the difference in case); otherwise, default-constructed [ViewFlags]($common) will be used.
    */
@@ -200,10 +263,14 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  */
 export class DisplayStyle3d extends DisplayStyle {
   /** @internal */
-  public static override get className(): string { return "DisplayStyle3d"; }
+  public static override get className(): string {
+    return "DisplayStyle3d";
+  }
   private readonly _settings: DisplayStyle3dSettings;
 
-  public get settings(): DisplayStyle3dSettings { return this._settings; }
+  public get settings(): DisplayStyle3dSettings {
+    return this._settings;
+  }
 
   /** @internal */
   public constructor(props: DisplayStyle3dProps, iModel: IModelDb) {
@@ -212,7 +279,9 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
       referenceIds.addElement(textureId);
@@ -223,33 +292,61 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+  protected static override onCloned(
+    context: IModelElementCloneContext,
+    sourceElementProps: DisplayStyle3dProps,
+    targetElementProps: DisplayStyle3dProps
+  ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
-      const convertTexture = (id: string) => Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
+      const convertTexture = (id: string) =>
+        Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
 
-      const skyBoxImageProps: SkyBoxImageProps | undefined = targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
-      if (skyBoxImageProps?.texture && Id64.isValidId64(skyBoxImageProps.texture))
+      const skyBoxImageProps: SkyBoxImageProps | undefined =
+        targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
+      if (
+        skyBoxImageProps?.texture &&
+        Id64.isValidId64(skyBoxImageProps.texture)
+      )
         skyBoxImageProps.texture = convertTexture(skyBoxImageProps.texture);
 
       if (skyBoxImageProps?.textures) {
-        skyBoxImageProps.textures.front = convertTexture(skyBoxImageProps.textures.front);
-        skyBoxImageProps.textures.back = convertTexture(skyBoxImageProps.textures.back);
-        skyBoxImageProps.textures.left = convertTexture(skyBoxImageProps.textures.left);
-        skyBoxImageProps.textures.right = convertTexture(skyBoxImageProps.textures.right);
-        skyBoxImageProps.textures.top = convertTexture(skyBoxImageProps.textures.top);
-        skyBoxImageProps.textures.bottom = convertTexture(skyBoxImageProps.textures.bottom);
+        skyBoxImageProps.textures.front = convertTexture(
+          skyBoxImageProps.textures.front
+        );
+        skyBoxImageProps.textures.back = convertTexture(
+          skyBoxImageProps.textures.back
+        );
+        skyBoxImageProps.textures.left = convertTexture(
+          skyBoxImageProps.textures.left
+        );
+        skyBoxImageProps.textures.right = convertTexture(
+          skyBoxImageProps.textures.right
+        );
+        skyBoxImageProps.textures.top = convertTexture(
+          skyBoxImageProps.textures.top
+        );
+        skyBoxImageProps.textures.bottom = convertTexture(
+          skyBoxImageProps.textures.bottom
+        );
       }
 
       if (targetElementProps?.jsonProperties?.styles?.planProjections) {
-        const remappedPlanProjections: { [modelId: string]: PlanProjectionSettingsProps } = {};
-        for (const entry of Object.entries(targetElementProps.jsonProperties.styles.planProjections)) {
-          const remappedModelId: Id64String = context.findTargetElementId(entry[0]);
+        const remappedPlanProjections: {
+          [modelId: string]: PlanProjectionSettingsProps;
+        } = {};
+        for (const entry of Object.entries(
+          targetElementProps.jsonProperties.styles.planProjections
+        )) {
+          const remappedModelId: Id64String = context.findTargetElementId(
+            entry[0]
+          );
           if (Id64.isValidId64(remappedModelId)) {
             remappedPlanProjections[remappedModelId] = entry[1];
           }
         }
-        targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
+        targetElementProps.jsonProperties.styles.planProjections =
+          remappedPlanProjections;
       }
     }
   }
@@ -261,13 +358,20 @@ export class DisplayStyle3d extends DisplayStyle {
    * @returns The newly constructed DisplayStyle3d element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    options?: DisplayStyleCreationOptions
+  ): DisplayStyle3d {
     options = options ?? {};
     let viewflags = options.viewFlags?.toJSON();
-    if (!viewflags)
-      viewflags = options.viewflags ?? new ViewFlags().toJSON();
+    if (!viewflags) viewflags = options.viewflags ?? new ViewFlags().toJSON();
 
-    const backgroundColor = options.backgroundColor instanceof ColorDef ? options.backgroundColor.toJSON() : options.backgroundColor;
+    const backgroundColor =
+      options.backgroundColor instanceof ColorDef
+        ? options.backgroundColor.toJSON()
+        : options.backgroundColor;
 
     const settings: DisplayStyle3dSettingsProps = {
       ...options,
@@ -281,7 +385,6 @@ export class DisplayStyle3d extends DisplayStyle {
       model: definitionModelId,
       jsonProperties: { styles: settings },
       isPrivate: false,
-
     };
 
     return new DisplayStyle3d(displayStyleProps, iModelDb);
@@ -294,8 +397,18 @@ export class DisplayStyle3d extends DisplayStyle {
    * @returns The Id of the newly inserted DisplayStyle3d element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
-    const displayStyle = this.create(iModelDb, definitionModelId, name, options);
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    options?: DisplayStyleCreationOptions
+  ): Id64String {
+    const displayStyle = this.create(
+      iModelDb,
+      definitionModelId,
+      name,
+      options
+    );
     return iModelDb.elements.insertElement(displayStyle.toJSON());
   }
 }

@@ -3,9 +3,7 @@
   "$id": "http://dev.bentley.com/certa.json",
   "type": "object",
   "description": "certa.json",
-  "required": [
-    "testBundle"
-  ],
+  "required": ["testBundle"],
   "properties": {
     "debug": {
       "type": "boolean",
@@ -20,23 +18,17 @@
     "testBundle": {
       "type": "string",
       "description": "The path to a javascript file containing all mocha tests to be run.",
-      "examples": [
-        "./lib/dist/bundled-tests.js"
-      ]
+      "examples": ["./lib/dist/bundled-tests.js"]
     },
     "instrumentedTestBundle": {
       "type": "string",
       "description": "An instanbul-instrumented version of the `testBundle`. This will be used instead of `testBundle` when running with `cover` enabled.",
-      "examples": [
-        "./lib/dist/bundled-tests.instrumented.js"
-      ]
+      "examples": ["./lib/dist/bundled-tests.instrumented.js"]
     },
     "backendInitModule": {
       "type": "string",
       "description": "The path to a JavaScript module containing backend initialization logic.\nThis module will be required in Certa's \"main\" process ***before*** initializing a test runner.\nIf the file's `module.exports` is a Promise, that Promise will also be awaited before running tests.",
-      "examples": [
-        "./lib/backend/backend.js"
-      ]
+      "examples": ["./lib/backend/backend.js"]
     },
     "ports": {
       "type": "object",

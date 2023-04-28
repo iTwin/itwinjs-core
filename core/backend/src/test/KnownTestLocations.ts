@@ -7,7 +7,6 @@ import { tmpdir } from "os";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 export class KnownTestLocations {
-
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
     return join(__dirname, "assets");

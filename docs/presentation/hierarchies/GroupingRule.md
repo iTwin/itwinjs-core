@@ -19,19 +19,19 @@ applied in this priority:
 4. Display label grouping specified using `groupByLabel` attribute at specification level.
 5. [Same label grouping](#same-label-instance-grouping) specified using same label instance grouping specification through a grouping rule.
 
-The rule itself works in a similar way as hierarchy rules - *rule* identifies *what* to group and it has *specifications* which tell *how* the grouping should be done.
+The rule itself works in a similar way as hierarchy rules - _rule_ identifies _what_ to group and it has _specifications_ which tell _how_ the grouping should be done.
 
 ## Attributes
 
 | Name                                              | Required? | Type                                                                     | Default |
 | ------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------- |
-| *Filtering*                                       |
+| _Filtering_                                       |
 | [`class`](#attribute-class)                       | Yes       | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |         |
 | [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`    |
 | [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                        | `""`    |
 | [`priority`](#attribute-priority)                 | No        | `number`                                                                 | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                                | `false` |
-| *Grouping*                                        |
+| _Grouping_                                        |
 | [`groups`](#attribute-groups)                     | Yes       | `GroupingSpecification[]`                                                |         |
 
 ### Attribute: `class`

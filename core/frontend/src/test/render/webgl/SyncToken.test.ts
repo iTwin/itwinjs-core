@@ -3,12 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { desync, isSynchronized, sync, SyncObserver } from "../../../render/webgl/Sync";
+import {
+  desync,
+  isSynchronized,
+  sync,
+  SyncObserver,
+} from "../../../render/webgl/Sync";
 
 describe("SyncObserver", () => {
   it("should synchronize with Sync", () => {
     const target = { syncKey: 0 };
-    const observer: SyncObserver = { };
+    const observer: SyncObserver = {};
 
     expect(isSynchronized(target, observer)).to.be.false;
     expect(sync(target, observer)).to.be.false;

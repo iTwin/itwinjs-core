@@ -6,9 +6,30 @@
  * @module Editing
  */
 
-import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
-import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
+import {
+  CompressedId64Set,
+  Id64String,
+  IModelStatus,
+} from "@itwin/core-bentley";
+import {
+  AngleProps,
+  Matrix3dProps,
+  Range1dProps,
+  Range3dProps,
+  TransformProps,
+  XYZProps,
+} from "@itwin/core-geometry";
+import {
+  ColorDefProps,
+  EcefLocationProps,
+  ElementGeometryBuilderParams,
+  ElementGeometryBuilderParamsForPart,
+  ElementGeometryDataEntry,
+  ElementGeometryInfo,
+  ElementGeometryOpcode,
+  GeometricElementProps,
+  GeometryPartProps,
+} from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
@@ -30,14 +51,21 @@ export interface FlatBufferGeometryFilter {
    * surfaces - true to accept loops, planar regions, open polyfaces, and sheet bodies
    * solids - true to accept capped solids, closed polyfaces, and solid bodies
    */
-  geometry?: { curves: boolean, surfaces: boolean, solids: boolean };
+  geometry?: { curves: boolean; surfaces: boolean; solids: boolean };
 }
 
 /** @alpha */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
-  transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
-  rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
+  transformPlacement(
+    ids: CompressedId64Set,
+    transform: TransformProps
+  ): Promise<IModelStatus>;
+  rotatePlacement(
+    ids: CompressedId64Set,
+    matrix: Matrix3dProps,
+    aboutCenter: boolean
+  ): Promise<IModelStatus>;
 
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
@@ -45,7 +73,10 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
+  insertGeometricElement(
+    props: GeometricElementProps,
+    data?: ElementGeometryBuilderParams
+  ): Promise<Id64String>;
 
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
@@ -53,7 +84,10 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
+  insertGeometryPart(
+    props: GeometryPartProps,
+    data?: ElementGeometryBuilderParamsForPart
+  ): Promise<Id64String>;
 
   /** Update an existing geometric element.
    * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)
@@ -61,7 +95,10 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to update the element
    */
-  updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
+  updateGeometricElement(
+    propsOrId: GeometricElementProps | Id64String,
+    data?: ElementGeometryBuilderParams
+  ): Promise<void>;
 
   /** Request geometry from an existing element. Because a GeometryStream can be large and may contain information
    * that is not always useful to frontend code, filter options are provided to restrict what GeometryStreams are returned.
@@ -71,7 +108,10 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to query the element
    */
-  requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
+  requestElementGeometry(
+    id: Id64String,
+    filter?: FlatBufferGeometryFilter
+  ): Promise<ElementGeometryInfo | undefined>;
 
   /** Update the project extents for the iModel.
    * @param extents New project extents.
@@ -581,15 +621,34 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   /** Clear geometry cache for all elements */
   clearElementGeometryCache(): Promise<void>;
   /** Create new geometry cache entries for the supplied geometric element, or check existing an cache against supplied filter. */
-  createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
+  createElementGeometryCache(
+    id: Id64String,
+    filter?: ElementGeometryCacheFilter
+  ): Promise<boolean>;
   /** Report the type of brep entity that would be created for each entry referenced by the supplied geometric element. */
-  summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined>;
+  summarizeElementGeometryCache(
+    id: Id64String
+  ): Promise<BRepEntityType[] | undefined>;
   /** Get the geometric representation of a sub-entity in flatbuffer format or graphic data. */
-  getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+  getSubEntityGeometry(
+    id: Id64String,
+    subEntity: SubEntityProps,
+    opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">
+  ): Promise<SubEntityGeometryProps | undefined>;
   /** Get face uv parameter range, or edge u parameter range */
-  getSubEntityParameterRange(id: Id64String, subEntity: SubEntityProps): Promise<FaceParameterRangeProps | EdgeParameterRangeProps | undefined>;
+  getSubEntityParameterRange(
+    id: Id64String,
+    subEntity: SubEntityProps
+  ): Promise<FaceParameterRangeProps | EdgeParameterRangeProps | undefined>;
   /** Evaluate location on face, edge, or vertex. uParam and vParam required for face, uParam required for edge. */
-  evaluateSubEntity(id: Id64String, subEntity: SubEntityProps, uParam?: number, vParam?: number): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined>;
+  evaluateSubEntity(
+    id: Id64String,
+    subEntity: SubEntityProps,
+    uParam?: number,
+    vParam?: number
+  ): Promise<
+    EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined
+  >;
   /** Return whether the supplied face has a planar surface */
   isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
   /** Return whether the angle between the normals of the supplied edge's faces never exceeds the internal smooth angle tolerance along the length of the edge */
@@ -613,53 +672,154 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   /** Return whether the supplied geometric primitive index is a body with any edge that is non-linear or any face that is non-planar */
   hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean>;
   /** Get sub-entities of the requested type for the supplied element */
-  getBodySubEntities(id: Id64String, type: SubEntityType, firstOnly?: true): Promise<SubEntityProps[] | undefined>;
+  getBodySubEntities(
+    id: Id64String,
+    type: SubEntityType,
+    firstOnly?: true
+  ): Promise<SubEntityProps[] | undefined>;
   /** Get related sub-entities for the supplied sub-entity. For example, get the array of faces containing a supplied edge. */
-  getConnectedSubEntities(id: Id64String, subEntity: SubEntityProps, type: SubEntityType, opts?: ConnectedSubEntityProps): Promise<SubEntityProps[] | undefined>;
+  getConnectedSubEntities(
+    id: Id64String,
+    subEntity: SubEntityProps,
+    type: SubEntityType,
+    opts?: ConnectedSubEntityProps
+  ): Promise<SubEntityProps[] | undefined>;
   /** Identify face, edge, and vertex sub-entities from the supplied element by their proximity to a ray. */
-  locateSubEntities(id: Id64String, spacePoint: XYZProps, direction: XYZProps, opts: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
+  locateSubEntities(
+    id: Id64String,
+    spacePoint: XYZProps,
+    direction: XYZProps,
+    opts: LocateSubEntityProps
+  ): Promise<SubEntityLocationProps[] | undefined>;
   /** Find the ray intersection with a face */
-  locateFace(id: Id64String, subEntity: SubEntityProps, point: XYZProps, direction: XYZProps): Promise<SubEntityLocationProps[] | undefined>;
+  locateFace(
+    id: Id64String,
+    subEntity: SubEntityProps,
+    point: XYZProps,
+    direction: XYZProps
+  ): Promise<SubEntityLocationProps[] | undefined>;
   /** Find the closest sub-entity from the supplied element to a given point. */
-  getClosestSubEntity(id: Id64String, testPoint: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  getClosestSubEntity(
+    id: Id64String,
+    testPoint: XYZProps
+  ): Promise<SubEntityLocationProps | undefined>;
   /** Find the closest face from the supplied element to a given point. */
-  getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  getClosestFace(
+    id: Id64String,
+    testPoint: XYZProps,
+    preferredDirection?: XYZProps
+  ): Promise<SubEntityLocationProps | undefined>;
   /** Find the closest point on a face or edge to a given point */
-  getClosestPoint(id: Id64String, subEntity: SubEntityProps, point: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  getClosestPoint(
+    id: Id64String,
+    subEntity: SubEntityProps,
+    point: XYZProps
+  ): Promise<SubEntityLocationProps | undefined>;
   /** Test if a point is inside or on the boundary of any body from the supplied element */
-  isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
+  isPointInside(
+    id: Id64String,
+    point: XYZProps
+  ): Promise<PointInsideResultProps[] | undefined>;
   /** Perform the specified boolean operation between the target element and one or more tool elements. */
-  booleanOperation(id: Id64String, params: BooleanOperationProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  booleanOperation(
+    id: Id64String,
+    params: BooleanOperationProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Sew the sheet bodies from the target element and one or more tool elements together by joining those that share edges in common. */
-  sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  sewSheets(
+    id: Id64String,
+    params: SewSheetProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify sheet bodies from the supplied element by thickening to create solids bodies. */
-  thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  thickenSheets(
+    id: Id64String,
+    params: ThickenSheetProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid bodies from the supplied element by subtracting a cutting sheet tool body swept according to the specified cut direction and depth. */
-  cutSolid(id: Id64String, params: CutProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  cutSolid(
+    id: Id64String,
+    params: CutProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies from the supplied element by creating a pad or pocket according to the specified emboss options. */
-  embossBody(id: Id64String, params: EmbossProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  embossBody(
+    id: Id64String,
+    params: EmbossProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies from the supplied element by imprinting new edges according to the specified imprint options. */
-  imprintBody(id: Id64String, params: ImprintProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  imprintBody(
+    id: Id64String,
+    params: ImprintProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Create a new sheet or solid body by sweeping a cross section profile along a path. */
-  sweepAlongPath(id: Id64String, params: SweepPathProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  sweepAlongPath(
+    id: Id64String,
+    params: SweepPathProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Create a new sheet or solid body by lofting through a set of profiles. */
-  loftProfiles(id: Id64String, params: LoftProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  loftProfiles(
+    id: Id64String,
+    params: LoftProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by offsetting selected faces. */
-  offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  offsetFaces(
+    id: Id64String,
+    params: OffsetFacesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by offsetting selected edges. */
-  offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  offsetEdges(
+    id: Id64String,
+    params: OffsetEdgesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid bodies by hollowing selected faces. */
-  hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  hollowFaces(
+    id: Id64String,
+    params: HollowFacesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by sweeping selected faces along a path vector. */
-  sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  sweepFaces(
+    id: Id64String,
+    params: SweepFacesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by spinning selected faces along an arc specified by axis of revolution and sweep angle. */
-  spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  spinFaces(
+    id: Id64String,
+    params: SpinFacesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify the target solid or sheet body by removing selected faces oe edges. */
-  deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  deleteSubEntities(
+    id: Id64String,
+    params: DeleteSubEntityProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify the target solid or sheet body by transforming selected faces, edges, or vertices. */
-  transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  transformSubEntities(
+    id: Id64String,
+    params: TransformSubEntityProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify the specified edges by changing them into faces having the requested blending surface geometry. */
-  blendEdges(id: Id64String, params: BlendEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  blendEdges(
+    id: Id64String,
+    params: BlendEdgesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
   /** Modify the specified edges by changing them into faces having the requested chamfer surface geometry. */
-  chamferEdges(id: Id64String, params: ChamferEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  chamferEdges(
+    id: Id64String,
+    params: ChamferEdgesProps,
+    opts: ElementGeometryResultOptions
+  ): Promise<ElementGeometryResultProps | undefined>;
 }

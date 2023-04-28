@@ -7,7 +7,10 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import {
+  ChildNodeSpecificationBase,
+  DefaultGroupingPropertiesContainer,
+} from "./ChildNodeSpecification";
 
 /**
  * Returns nodes for instances returned by a provided ECSQL query.
@@ -15,7 +18,9 @@ import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "
  * @see [Custom query instance nodes specification reference documentation page]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md)
  * @public
  */
-export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export interface CustomQueryInstanceNodesSpecification
+  extends ChildNodeSpecificationBase,
+    DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
   specType: "CustomQueryInstanceNodes";
 
@@ -32,7 +37,9 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
  * @see [Custom query specifications reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#attribute-queries)
  * @public
  */
-export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
+export declare type QuerySpecification =
+  | StringQuerySpecification
+  | ECPropertyValueQuerySpecification;
 
 /**
  * Used for serializing array of [[QuerySpecification]] to JSON.
@@ -83,7 +90,8 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
  * @see [ECProperty value query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#ecproperty-value-query-specification)
  * @public
  */
-export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
+export interface ECPropertyValueQuerySpecification
+  extends QuerySpecificationBase {
   /** Used for serializing to JSON. */
   specType: "ECPropertyValue";
 

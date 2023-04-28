@@ -3,8 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import {
+  BeDuration,
+  Id64,
+  Id64Arg,
+  Id64Set,
+  Id64String,
+} from "@itwin/core-bentley";
+import {
+  IModelConnection,
+  SnapshotConnection,
+  SubCategoriesCache,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("SubCategoriesCache", () => {
@@ -28,8 +38,7 @@ describe("SubCategoriesCache", () => {
   });
 
   after(async () => {
-    if (undefined !== imodel)
-      await imodel.close();
+    if (undefined !== imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -76,8 +85,7 @@ describe("SubCategoriesCache", () => {
 
   function expectEqualIdSets(idSet: Id64Set, ids: Id64Arg): void {
     expect(idSet.size).to.equal(Id64.sizeOf(ids));
-    for (const id of Id64.iterable(ids))
-      expect(idSet.has(id)).to.be.true;
+    for (const id of Id64.iterable(ids)) expect(idSet.has(id)).to.be.true;
   }
 
   class Queue extends SubCategoriesCache.Queue {
@@ -89,11 +97,19 @@ describe("SubCategoriesCache", () => {
       this.cache = new SubCategoriesCache(iModel);
     }
 
-    public q(catIds: Id64Arg, func: SubCategoriesCache.QueueFunc = () => undefined): void {
+    public q(
+      catIds: Id64Arg,
+      func: SubCategoriesCache.QueueFunc = () => undefined
+    ): void {
       this.push(this.cache, catIds, func);
     }
 
-    public expectMembers(current: boolean, next: boolean, request: boolean, disposed = false): void {
+    public expectMembers(
+      current: boolean,
+      next: boolean,
+      request: boolean,
+      disposed = false
+    ): void {
       expect(this.current !== undefined).to.equal(current);
       expect(this.next !== undefined).to.equal(next);
       expect(this.request !== undefined).to.equal(request);
@@ -111,14 +127,21 @@ describe("SubCategoriesCache", () => {
       expectEqualIdSets(subcats!, subcatIds);
     }
 
-    public get current() { return this._current; }
-    public get next() { return this._next; }
-    public get request() { return this._request; }
-    public get disposed() { return this._disposed; }
+    public get current() {
+      return this._current;
+    }
+    public get next() {
+      return this._next;
+    }
+    public get request() {
+      return this._request;
+    }
+    public get disposed() {
+      return this._disposed;
+    }
 
     public async waitUntilEmpty(): Promise<void> {
-      while (!this.isEmpty)
-        await BeDuration.wait(1);
+      while (!this.isEmpty) await BeDuration.wait(1);
     }
 
     public expectEmpty(disposed = false): void {
@@ -283,14 +306,14 @@ describe("SubCategoriesCache", () => {
 
     // Request a category that is not yet loaded.
     let processed = false;
-    q.q("0x17", () => processed = true);
+    q.q("0x17", () => (processed = true));
 
     expect(q.request).not.to.be.undefined;
     const promise = q.request!.promise;
     let promiseFulfilled = false;
 
     // I'm going to handle it further down the function, geez...
-    promise.then(() => promiseFulfilled = true); // eslint-disable-line @typescript-eslint/no-floating-promises
+    promise.then(() => (promiseFulfilled = true)); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     q.expectMembers(true, false, true);
     q.dispose();
@@ -314,7 +337,7 @@ describe("SubCategoriesCache", () => {
     // Dispose, then request same category. Should be ignored.
     let processed = false;
     q.dispose();
-    q.q("0x17", () => processed = true);
+    q.q("0x17", () => (processed = true));
     q.expectEmpty(true);
     expect(processed).to.be.false;
   });
@@ -324,7 +347,7 @@ describe("SubCategoriesCache", () => {
     q.q("0x17", () => q.dispose());
 
     let processedPending = false;
-    q.q("0x2d", () => processedPending = true);
+    q.q("0x2d", () => (processedPending = true));
 
     await q.waitUntilEmpty();
     expect(processedPending).to.be.false;
@@ -340,7 +363,7 @@ describe("SubCategoriesCache", () => {
 
     // Request same category, which would normally be processed synchronously as soon as first request completes.
     let processedPending = false;
-    q.q("0x17", () => processedPending = true);
+    q.q("0x17", () => (processedPending = true));
 
     await q.waitUntilEmpty();
 

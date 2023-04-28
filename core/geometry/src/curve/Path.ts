@@ -28,13 +28,20 @@ export class Path extends CurveChain {
   public readonly curveCollectionType = "path";
 
   /** Test if `other` is an instance of `Path` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Path; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof Path;
+  }
   /** invoke `processor.announcePath(this, indexInParent)` */
-  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
+  public announceToCurveProcessor(
+    processor: RecursiveCurveProcessor,
+    indexInParent: number = -1
+  ): void {
     return processor.announcePath(this, indexInParent);
   }
   /** Construct an empty path. */
-  public constructor() { super(); }
+  public constructor() {
+    super();
+  }
   /**
    * Create a path from a variable length list of curve primitives
    * * CurvePrimitive params are captured !!!
@@ -43,9 +50,12 @@ export class Path extends CurveChain {
   public static create(...curves: Array<CurvePrimitive | Point3d[]>): Path {
     const result = new Path();
     for (const curve of curves) {
-      if (curve instanceof CurvePrimitive)
-        result.children.push(curve);
-      else if (Array.isArray(curve) && curve.length > 0 && curve[0] instanceof Point3d) {
+      if (curve instanceof CurvePrimitive) result.children.push(curve);
+      else if (
+        Array.isArray(curve) &&
+        curve.length > 0 &&
+        curve[0] instanceof Point3d
+      ) {
         result.children.push(LineString3d.create(curve));
       }
     }
@@ -65,14 +75,17 @@ export class Path extends CurveChain {
   /** Return a deep copy, with leaf-level curve primitives stroked. */
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
-    for (const curve of this.children)
-      curve.emitStrokes(strokes, options);
+    for (const curve of this.children) curve.emitStrokes(strokes, options);
     return Path.create(strokes);
   }
   /** Return the boundary type (1) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 1; }
+  public dgnBoundaryType(): number {
+    return 1;
+  }
   /** Clone as a new `Path` with no primitives */
-  public cloneEmptyPeer(): Path { return new Path(); }
+  public cloneEmptyPeer(): Path {
+    return new Path();
+  }
   /** Second step of double dispatch:  call `handler.handlePath(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handlePath(this);

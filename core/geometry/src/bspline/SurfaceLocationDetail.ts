@@ -38,10 +38,13 @@ export class UVSurfaceLocationDetail {
    * @param uv coordinates to copy (not capture) into the `detail.uv`
    * @param point coordinates to copy (not capture) into the `detail.point`
    */
-  public static createSurfaceUVPoint(surface: UVSurface | undefined, uv: Point2d, point: Point3d): UVSurfaceLocationDetail {
+  public static createSurfaceUVPoint(
+    surface: UVSurface | undefined,
+    uv: Point2d,
+    point: Point3d
+  ): UVSurfaceLocationDetail {
     const detail = new UVSurfaceLocationDetail(surface);
-    if (uv)
-      detail.uv.setFrom(uv);
+    if (uv) detail.uv.setFrom(uv);
     detail.point.setFromPoint3d(point);
     return detail;
   }
@@ -51,14 +54,18 @@ export class UVSurfaceLocationDetail {
    * @param uv coordinates to copy (not capture) into the `detail.uv`
    * @param point coordinates to copy (not capture) into the `detail.point`
    */
-  public static createSurfaceUVNumbersPoint(surface: UVSurface | undefined, u: number, v: number, point: Point3d): UVSurfaceLocationDetail {
+  public static createSurfaceUVNumbersPoint(
+    surface: UVSurface | undefined,
+    u: number,
+    v: number,
+    point: Point3d
+  ): UVSurfaceLocationDetail {
     const detail = new UVSurfaceLocationDetail(surface);
     detail.uv.x = u;
     detail.uv.y = v;
     detail.point.setFromPoint3d(point);
     return detail;
   }
-
 }
 /**
  * Carrier for both curve and surface data, e.g. from intersection calculations.
@@ -70,7 +77,10 @@ export class CurveAndSurfaceLocationDetail {
   /** detailed location on the surface */
   public surfaceDetail: UVSurfaceLocationDetail;
   /** CAPTURE both details . . */
-  public constructor(curveDetail: CurveLocationDetail, surfaceDetail: UVSurfaceLocationDetail) {
+  public constructor(
+    curveDetail: CurveLocationDetail,
+    surfaceDetail: UVSurfaceLocationDetail
+  ) {
     this.curveDetail = curveDetail;
     this.surfaceDetail = surfaceDetail;
   }

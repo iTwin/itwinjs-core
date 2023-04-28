@@ -28,7 +28,6 @@
  * @beta
  */
 export class DelayedPromise<T> implements Promise<T> {
-
   /**
    * Constructs a DelayedPromise object.
    * @param startCallback The asynchronous callback to execute when this DelayedPromise should be "started".
@@ -55,7 +54,16 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is rejected.
    * @return A Promise for the completion of which ever callback is executed.
    */
-  public async then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
+  public async then<TResult1 = T, TResult2 = never>(
+    onfulfilled?:
+      | ((value: T) => TResult1 | PromiseLike<TResult1>)
+      | undefined
+      | null,
+    onrejected?:
+      | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+      | undefined
+      | null
+  ): Promise<TResult1 | TResult2> {
     return this.start().then(onfulfilled, onrejected);
   }
 
@@ -64,7 +72,12 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is rejected.
    * @return A Promise for the completion of the callback.
    */
-  public async catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
+  public async catch<TResult = never>(
+    onrejected?:
+      | ((reason: any) => TResult | PromiseLike<TResult>)
+      | undefined
+      | null
+  ): Promise<T | TResult> {
     return this.start().catch(onrejected);
   }
 
@@ -73,7 +86,9 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is finalized.
    * @return A Promise for the completion of the callback.
    */
-  public async finally(onFinally?: (() => void) | undefined | null): Promise<T> {
+  public async finally(
+    onFinally?: (() => void) | undefined | null
+  ): Promise<T> {
     return this.start().finally(onFinally);
   }
 }
@@ -94,7 +109,6 @@ export interface NoDelayedPromiseMethods {
  * @beta
  */
 export interface DelayedPromiseWithPropsConstructor {
-
   /**
    * Constructs a DelayedPromiseWithProps object, which is at once both:
    *  - A DelayedPromise object representing the eventual completion (or failure)
@@ -105,7 +119,10 @@ export interface DelayedPromiseWithPropsConstructor {
    *              as if they were readonly properties of the DelayedPromiseWithProps object being constructed.
    * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
-  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
+  new <TProps extends NoDelayedPromiseMethods, TPayload>(
+    props: TProps,
+    startCallback: () => Promise<TPayload>
+  ): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
 }
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
@@ -114,23 +131,30 @@ export interface DelayedPromiseWithPropsConstructor {
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
+export const DelayedPromiseWithProps = class<
+  TProps extends NoDelayedPromiseMethods,
+  TPayload
+> extends DelayedPromise<TPayload> {
   constructor(props: TProps, cb: () => Promise<TPayload>) {
     super(cb);
 
     const handler = {
       get: (target: TProps, name: string) => {
-        return (name in this) ? this[name as keyof this] : target[name as keyof TProps];
+        return name in this
+          ? this[name as keyof this]
+          : target[name as keyof TProps];
       },
     };
 
-    return new Proxy(props, handler) as Readonly<TProps> & DelayedPromise<TPayload>;
+    return new Proxy(props, handler) as Readonly<TProps> &
+      DelayedPromise<TPayload>;
   }
-}) as DelayedPromiseWithPropsConstructor;
+} as DelayedPromiseWithPropsConstructor;
 
 /* eslint-disable @typescript-eslint/no-redeclare */
 
 /** Define the type of a DelayedPromiseWithProps instance
  * @beta
  */
-export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
+export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> &
+  DelayedPromise<TPayload>;

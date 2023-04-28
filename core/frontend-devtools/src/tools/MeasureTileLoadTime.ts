@@ -8,7 +8,13 @@
  */
 
 import { StopWatch } from "@itwin/core-bentley";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  Tool,
+  Viewport,
+} from "@itwin/core-frontend";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;
@@ -29,12 +35,22 @@ class TileLoadTimer {
       removeOnClose();
     };
 
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer started."));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(
+        OutputMessagePriority.Info,
+        "Tile loading timer started."
+      )
+    );
     this._stopwatch.start();
   }
 
   private cancel(): void {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer canceled."));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(
+        OutputMessagePriority.Info,
+        "Tile loading timer canceled."
+      )
+    );
     this.stop();
   }
 
@@ -51,7 +67,12 @@ class TileLoadTimer {
       return;
 
     this._stopwatch.stop();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Tiles loaded in ${this._stopwatch.elapsedSeconds.toFixed(4)} seconds.`));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(
+        OutputMessagePriority.Info,
+        `Tiles loaded in ${this._stopwatch.elapsedSeconds.toFixed(4)} seconds.`
+      )
+    );
 
     this.stop();
   }
@@ -69,8 +90,7 @@ export class MeasureTileLoadTimeTool extends Tool {
    */
   public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      new TileLoadTimer(vp);
+    if (undefined !== vp) new TileLoadTimer(vp);
 
     return true;
   }

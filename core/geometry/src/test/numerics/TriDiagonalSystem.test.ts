@@ -11,20 +11,30 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 class TestFixture {
   public ck: Checker;
-  public constructor() { this.ck = new Checker(); }
+  public constructor() {
+    this.ck = new Checker();
+  }
 
   // Tester Methods -------------------------------------------------------------------
   public checkX(systemA: TriDiagonalSystem, systemB: TriDiagonalSystem) {
     const n = systemA.order();
     for (let i = 0; i < n; i++) {
       // TODO: Implement correct method of comparing two Float64Array's
-      this.ck.testCoordinate(systemA.getX(i), systemB.getX(i), "Solution vectors of A and B");
+      this.ck.testCoordinate(
+        systemA.getX(i),
+        systemB.getX(i),
+        "Solution vectors of A and B"
+      );
     }
   }
   public checkB(systemA: TriDiagonalSystem, systemB: TriDiagonalSystem) {
     const n = systemA.order();
     for (let i = 0; i < n; i++) {
-      this.ck.testCoordinate(systemA.getB(i), systemB.getB(i), "Right side vectors of A and B");
+      this.ck.testCoordinate(
+        systemA.getB(i),
+        systemB.getB(i),
+        "Right side vectors of A and B"
+      );
     }
   }
   // Setup Methods --------------------------------------------------------------------
@@ -42,7 +52,6 @@ class TestFixture {
     if (Checker.noisy.tridiagonalSolver) {
       GeometryCoreTestIO.consoleLog("(1) A X AX");
       GeometryCoreTestIO.consoleLog(A);
-
     }
     const B: TriDiagonalSystem = A.copy();
     this.ck.testTrue(A.factorAndBackSubstitute(), "FactorAndBackSubstitute");
@@ -70,9 +79,18 @@ class TestFixture {
     const pointBX = [];
     for (const b of pointB) pointBX.push(b.clone());
     // console.log ("B*pointX0", pointB);
-    this.ck.testFalse(A.factorAndBackSubstitutePointArrays([], []), "FactorAndBackSubstitute fails with empty inputs");
-    this.ck.testTrue(B.factorAndBackSubstitutePointArrays(pointB, pointX), "FactorAndBackSubstitutePointArrays");
-    this.ck.testTrue(B.factorAndBackSubstitutePointArrays(pointBX, pointBX), "factorAndBackSubstitutePointArrays with aliased B, X");
+    this.ck.testFalse(
+      A.factorAndBackSubstitutePointArrays([], []),
+      "FactorAndBackSubstitute fails with empty inputs"
+    );
+    this.ck.testTrue(
+      B.factorAndBackSubstitutePointArrays(pointB, pointX),
+      "FactorAndBackSubstitutePointArrays"
+    );
+    this.ck.testTrue(
+      B.factorAndBackSubstitutePointArrays(pointBX, pointBX),
+      "factorAndBackSubstitutePointArrays with aliased B, X"
+    );
     // console.log (B);
     // console.log ("solved points", pointX);
     this.ck.testPoint3dArray(pointX0, pointX, "tridiagonal point solution");
@@ -129,7 +147,7 @@ class TestFixture {
     A.setRow(2, 0.3, -3.1, 0.98);
     A.setRow(3, 0.43, -3.04, 0);
     for (let i = 0; i < 4; i++) {
-      A.setX(i, (1 + i * i));
+      A.setX(i, 1 + i * i);
     }
     A.multiplyAX();
     const B: TriDiagonalSystem = A.copy();
@@ -157,10 +175,10 @@ class TestFixture {
 
     const noisy = 0;
     A.setRow(0, 0, 4, 0.4);
-    for (let i = 1; i < (n - 1); i++) {
+    for (let i = 1; i < n - 1; i++) {
       const u = i / n;
       const v = u * 0.5;
-      A.addToRow(i, (1 - v * v), (3.0 + u), (1 + v * v));
+      A.addToRow(i, 1 - v * v, 3.0 + u, 1 + v * v);
     }
     A.setRow(n - 1, 1.235, 3.99, 0);
     for (let i = 0; i < n; i++) {
@@ -195,8 +213,8 @@ class TestFixture {
     const n = 4;
     const A = new TriDiagonalSystem(4);
     // set each b entry by combination of set and addTo ...
-    const f0 = (value: number) => (value + 0.5);
-    const f1 = (value: number) => ((value + 1) * (value + 1));
+    const f0 = (value: number) => value + 0.5;
+    const f1 = (value: number) => (value + 1) * (value + 1);
     for (let i = 0; i < n; i++) {
       A.setB(i, f0(i));
       A.addToB(i, f1(i));
@@ -205,16 +223,44 @@ class TestFixture {
       this.ck.testCoordinate(f0(i) + f1(i), A.getB(i));
     }
     this.ck.testTrue(A.defactor(), "Defactor noop for raw matrix");
-    this.ck.testFalse(A.factor(), "Expect factor failure on unpopulated matrix");
-    this.ck.testFalse(A.multiplyAX(), "multiplyAX called for incomplete matrix.");
+    this.ck.testFalse(
+      A.factor(),
+      "Expect factor failure on unpopulated matrix"
+    );
+    this.ck.testFalse(
+      A.multiplyAX(),
+      "multiplyAX called for incomplete matrix."
+    );
     const pointX: Point3d[] = [];
-    let pointB: Point3d[] = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
-    this.ck.testFalse(A.multiplyAXPoints(pointX, pointB), "multiplyAXPoints after factor failure.");
+    let pointB: Point3d[] = [
+      Point3d.create(),
+      Point3d.create(),
+      Point3d.create(),
+      Point3d.create(),
+    ];
+    this.ck.testFalse(
+      A.multiplyAXPoints(pointX, pointB),
+      "multiplyAXPoints after factor failure."
+    );
     this.ck.testFalse(A.defactor(), "Defactor fails after factor fail");
-    this.ck.testFalse(A.factorAndBackSubstitute(), "FactorAndBackSubstitute fails after factor fail");
-    pointB = [Point3d.create(), Point3d.create(), Point3d.create(), Point3d.create()];
-    this.ck.testFalse(A.factorAndBackSubstitutePointArrays(pointB, pointX), "FactorAndBackSubstitutePointArrays after factor fail");
-    this.ck.testFalse(A.factorAndBackSubstitutePointArrays([], pointX), "FactorAndBackSubstitutePointArrays with incomplete input array");
+    this.ck.testFalse(
+      A.factorAndBackSubstitute(),
+      "FactorAndBackSubstitute fails after factor fail"
+    );
+    pointB = [
+      Point3d.create(),
+      Point3d.create(),
+      Point3d.create(),
+      Point3d.create(),
+    ];
+    this.ck.testFalse(
+      A.factorAndBackSubstitutePointArrays(pointB, pointX),
+      "FactorAndBackSubstitutePointArrays after factor fail"
+    );
+    this.ck.testFalse(
+      A.factorAndBackSubstitutePointArrays([], pointX),
+      "FactorAndBackSubstitutePointArrays with incomplete input array"
+    );
   }
 }
 
@@ -245,5 +291,4 @@ describe("TriDiagonalSystem", () => {
     tf.testRareConditions();
     expect(tf.ck.getNumErrors()).equals(0);
   });
-
 });

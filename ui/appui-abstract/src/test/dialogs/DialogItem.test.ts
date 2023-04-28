@@ -3,10 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem, EditorPosition, PropertyDescriptionHelper } from "../../appui-abstract";
+import {
+  DialogItem,
+  DialogItemValue,
+  DialogProperty,
+  DialogPropertySyncItem,
+  EditorPosition,
+  PropertyDescriptionHelper,
+} from "../../appui-abstract";
 
 describe("DialogProperty", () => {
-  const colorProperty = new DialogProperty<string>(PropertyDescriptionHelper.buildTextEditorDescription("color", "Color"), "blue", undefined);
+  const colorProperty = new DialogProperty<string>(
+    PropertyDescriptionHelper.buildTextEditorDescription("color", "Color"),
+    "blue",
+    undefined
+  );
   const diValue: DialogItemValue = { value: "yellow", displayValue: "Yellow" };
 
   describe("Color Property functions", () => {
@@ -45,24 +56,48 @@ describe("DialogProperty", () => {
       expect(item.value.value).to.eq("yellow");
       expect(item.value.displayValue).to.eq("Yellow");
     });
-
   });
   describe("Non-string types", () => {
     it("Number property test", () => {
-      const numberProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildTextEditorDescription("number", "Number"), 1, undefined);
+      const numberProperty = new DialogProperty<number>(
+        PropertyDescriptionHelper.buildTextEditorDescription(
+          "number",
+          "Number"
+        ),
+        1,
+        undefined
+      );
       expect(numberProperty.dialogItemValue.value).to.eq(1);
     });
     it("Boolean property test", () => {
-      const booleanProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildTextEditorDescription("boolean", "Boolean"), true, undefined);
+      const booleanProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildTextEditorDescription(
+          "boolean",
+          "Boolean"
+        ),
+        true,
+        undefined
+      );
       expect(booleanProperty.dialogItemValue.value).to.eq(true);
     });
     it("Undefined property test", () => {
-      const undefinedProperty = new DialogProperty<undefined>(PropertyDescriptionHelper.buildTextEditorDescription("undefined", "Undefined"), undefined, undefined);
+      const undefinedProperty = new DialogProperty<undefined>(
+        PropertyDescriptionHelper.buildTextEditorDescription(
+          "undefined",
+          "Undefined"
+        ),
+        undefined,
+        undefined
+      );
       expect(undefinedProperty.dialogItemValue.value).to.be.undefined;
     });
     it("Date property test", () => {
       const date = new Date();
-      const dateProperty = new DialogProperty<Date>(PropertyDescriptionHelper.buildTextEditorDescription("date", "Date"), date, undefined);
+      const dateProperty = new DialogProperty<Date>(
+        PropertyDescriptionHelper.buildTextEditorDescription("date", "Date"),
+        date,
+        undefined
+      );
       expect(dateProperty.dialogItemValue.value).to.eq(date);
     });
   });

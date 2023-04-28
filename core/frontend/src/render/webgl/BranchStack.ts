@@ -47,8 +47,12 @@ export class BranchStack {
     return this._stack[0];
   }
 
-  public get length() { return this._stack.length; }
-  public get empty() { return 0 === this.length; }
+  public get length() {
+    return this._stack.length;
+  }
+  public get empty() {
+    return 0 === this.length;
+  }
 
   public pushBranch(branch: Branch): void {
     assert(this.length > 0);
@@ -66,7 +70,11 @@ export class BranchStack {
     }
   }
 
-  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+  public changeRenderPlan(
+    vf: ViewFlags,
+    is3d: boolean,
+    hline: HiddenLine.Settings | undefined
+  ): void {
     assert(1 === this.length);
     this.top.changeRenderPlan(vf, is3d, hline);
   }

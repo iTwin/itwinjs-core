@@ -29,8 +29,11 @@ export interface CustomAttributeContainerProps {
 }
 
 /** @internal */
-export function serializeCustomAttributes(customAttributes: CustomAttributeSet | undefined): any[] | undefined {
-  if (undefined !== customAttributes) { // custom attributes is optional
+export function serializeCustomAttributes(
+  customAttributes: CustomAttributeSet | undefined
+): any[] | undefined {
+  if (undefined !== customAttributes) {
+    // custom attributes is optional
     const attributes: any[] = [];
     for (const [, customAttribute] of customAttributes) {
       const attribute: { [value: string]: any } = {};
@@ -40,7 +43,7 @@ export function serializeCustomAttributes(customAttributes: CustomAttributeSet |
       });
       attributes.push(attribute);
     }
-    return (attributes.length > 0) ? attributes : undefined;
+    return attributes.length > 0 ? attributes : undefined;
   }
   return undefined;
 }

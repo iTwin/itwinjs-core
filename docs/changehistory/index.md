@@ -102,10 +102,18 @@ Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_jou
 Ability to filter individual hierarchy levels was added for tree components that use [PresentationTreeDataProvider]($presentation-components). To enable this, [PresentationTreeRenderer]($presentation-components) should be passed to [ControlledTree]($components-react) through [ControlledTreeProps.treeRenderer]($components-react):
 
 ```ts
-return <ControlledTree
-  // other props
-  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={imodel} modelSource={modelSource} />}
-/>;
+return (
+  <ControlledTree
+    // other props
+    treeRenderer={(treeProps) => (
+      <PresentationTreeRenderer
+        {...treeProps}
+        imodel={imodel}
+        modelSource={modelSource}
+      />
+    )}
+  />
+);
 ```
 
 [PresentationTreeRenderer]($presentation-components) renders nodes with action buttons for applying and clearing filters. Some hierarchy levels might not be filterable depending on the presentation rules used to build them. In that case, action buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes, `There are no child nodes matching current filter` message is rendered in that hierarchy level.

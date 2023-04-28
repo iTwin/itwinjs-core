@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  XAndY,
-} from "@itwin/core-geometry";
+import { XAndY } from "@itwin/core-geometry";
 import {
   AbstractToolbarProps,
   ActionButton,
@@ -15,13 +13,8 @@ import {
   RelativePosition,
   UiAdmin,
 } from "@itwin/appui-abstract";
-import {
-  IModelApp,
-} from "@itwin/core-frontend";
-import {
-  Window,
-  WindowProps,
-} from "./Window";
+import { IModelApp } from "@itwin/core-frontend";
+import { Window, WindowProps } from "./Window";
 import { Surface } from "./Surface";
 
 interface ToolbarWindowProps extends WindowProps {
@@ -30,34 +23,38 @@ interface ToolbarWindowProps extends WindowProps {
 }
 
 class ToolbarWindow extends Window {
-  public override get isCloseable() { return false; }
-  public get windowId() { return "toolbar"; }
+  public override get isCloseable() {
+    return false;
+  }
+  public get windowId() {
+    return "toolbar";
+  }
 
   public constructor(surface: Surface, props: ToolbarWindowProps) {
     super(surface, props);
     surface.element.appendChild(this.container);
     this.setHeaderVisible(false);
 
-    const content = IModelApp.makeHTMLElement("div", { className: "popup-toolbar" });
+    const content = IModelApp.makeHTMLElement("div", {
+      className: "popup-toolbar",
+    });
     const items = [...props.items];
     items.sort((a, b) => a.itemPriority - b.itemPriority);
 
     for (const item of items) {
       const button = item as ActionButton;
-      if (undefined === button.execute || true === item.isHidden)
-        continue; // GroupButton, CustomButtonDefinition...
+      if (undefined === button.execute || true === item.isHidden) continue; // GroupButton, CustomButtonDefinition...
 
       const span = IModelApp.makeHTMLElement("span", { className: "icon" });
       span.style.fontSize = "35px";
-      if (typeof item.icon === "string")
-        span.classList.add(item.icon);
+      if (typeof item.icon === "string") span.classList.add(item.icon);
 
-      const div = IModelApp.makeHTMLElement("div", { className: "popup-toolbar-button" });
-      if (typeof item.label === "string")
-        div.title = item.label;
+      const div = IModelApp.makeHTMLElement("div", {
+        className: "popup-toolbar-button",
+      });
+      if (typeof item.label === "string") div.title = item.label;
 
-      if (true === item.isDisabled)
-        div.style.opacity = "50%";
+      if (true === item.isDisabled) div.style.opacity = "50%";
 
       div.addEventListener("click", (_) => {
         button.execute();
@@ -81,10 +78,17 @@ export class UiManager extends UiAdmin {
     return super.cursorPosition;
   }
 
-  public override showToolbar(tbProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relPos?: RelativePosition, _elem?: HTMLElement): boolean {
+  public override showToolbar(
+    tbProps: AbstractToolbarProps,
+    location: XAndY,
+    offset: XAndY,
+    onItemExecuted: OnItemExecutedFunc,
+    _onCancel: OnCancelFunc,
+    _relPos?: RelativePosition,
+    _elem?: HTMLElement
+  ): boolean {
     const surface = Surface.instance;
-    if (undefined !== surface.findWindowById("toolbar"))
-      return false;
+    if (undefined !== surface.findWindowById("toolbar")) return false;
 
     const props = {
       onItemExecuted,
@@ -104,8 +108,7 @@ export class UiManager extends UiAdmin {
 
   public override hideToolbar(): boolean {
     const window = Surface.instance.findWindowById("toolbar");
-    if (undefined === window)
-      return false;
+    if (undefined === window) return false;
 
     Surface.instance.forceClose(window);
     return true;

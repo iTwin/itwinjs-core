@@ -65,14 +65,11 @@ class XMLHttpRequestProxy {
     }
     if (this._fetchResponse) {
       const contentType = this._fetchResponse.headers.get("Content-Type")!;
-      if (contentType.search("json") >= 0)
-        return "json";
+      if (contentType.search("json") >= 0) return "json";
 
-      if (contentType.search("text") >= 0)
-        return "text";
+      if (contentType.search("text") >= 0) return "text";
 
-      if (contentType.search("octet-stream") >= 0)
-        return "blob";
+      if (contentType.search("octet-stream") >= 0) return "blob";
 
       return "arraybuffer";
     }
@@ -189,14 +186,23 @@ class XMLHttpRequestProxy {
       this._xhrOnTimeout = value;
     }
   }
-  public open(method: string, url: string, async: boolean = false, username?: string | null, password?: string | null): void {
+  public open(
+    method: string,
+    url: string,
+    async: boolean = false,
+    username?: string | null,
+    password?: string | null
+  ): void {
     if (this._nativeXhr) {
       this._nativeXhr.open(method, url, async, username, password);
     } else {
       this._xhrMethod = method;
       this._xhrUrl = url;
       if (username) {
-        this.setRequestHeader("Authorization", `Basic ${btoa(`${username}:${password}`)}`); // eslint-disable-line deprecation/deprecation
+        this.setRequestHeader(
+          "Authorization",
+          `Basic ${btoa(`${username}:${password}`)}`
+        ); // eslint-disable-line deprecation/deprecation
       }
     }
   }
@@ -295,15 +301,18 @@ class XMLHttpRequestProxy {
 }
 
 class FetchProxy {
-  public static async fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-    const req: Request = input instanceof Request ? input : new Request(input, init);
+  public static async fetch(
+    input: RequestInfo,
+    init?: RequestInit
+  ): Promise<Response> {
+    const req: Request =
+      input instanceof Request ? input : new Request(input, init);
     const beforeHandlers = HttpHandler.handlers.filter((value) => {
       return value.canHandle(req.url) && value.before;
     });
     if (beforeHandlers.length > 0) {
       const resp = beforeHandlers[0].before!(req);
-      if (resp instanceof Response)
-        return resp;
+      if (resp instanceof Response) return resp;
     }
     const win = window as any;
     const response = await win[NATIVE_FETCH](req);
@@ -318,24 +327,27 @@ class FetchProxy {
   }
 }
 export interface IHttpHandler {
-  onRequest(callback: (input: Request) => Response | undefined | null): IHttpHandler;
+  onRequest(
+    callback: (input: Request) => Response | undefined | null
+  ): IHttpHandler;
   onResponse(callback: (input: Response) => Response): IHttpHandler;
 }
 class HttpHandler implements IHttpHandler {
   public static handlers: HttpHandler[] = [];
-  constructor(private _urlRegEx: RegExp | string) { }
+  constructor(private _urlRegEx: RegExp | string) {}
   public before?: (input: Request) => Response | undefined | null;
   public after?: (input: Response) => Response;
   public canHandle(url: string): boolean {
-    if (!this.after && !this.before)
-      return false;
+    if (!this.after && !this.before) return false;
 
     if (this._urlRegEx instanceof RegExp) {
       return url.match(this._urlRegEx) !== null;
     }
     return url.startsWith(this._urlRegEx);
   }
-  public onRequest(callback: (input: Request) => Response | undefined | null): IHttpHandler {
+  public onRequest(
+    callback: (input: Request) => Response | undefined | null
+  ): IHttpHandler {
     this.before = callback;
     return this;
   }
@@ -348,7 +360,6 @@ class HttpHandler implements IHttpHandler {
     this.handlers.push(handler);
     return handler;
   }
-
 }
 export class HttpRequestHook {
   public static install() {
@@ -380,12 +391,16 @@ export class HttpRequestHook {
     }
   }
 }
-export async function usingOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
+export async function usingOfflineScope<TResult>(
+  func: () => Promise<TResult>
+): Promise<TResult> {
   return usingBackendOfflineScope(async () => {
     return usingFrontendOfflineScope(func);
   });
 }
-export async function usingBackendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
+export async function usingBackendOfflineScope<TResult>(
+  func: () => Promise<TResult>
+): Promise<TResult> {
   await TestRpcInterface.getClient().beginOfflineScope();
   const endScope = async () => {
     await TestRpcInterface.getClient().endOfflineScope();
@@ -394,15 +409,16 @@ export async function usingBackendOfflineScope<TResult>(func: () => Promise<TRes
   result.then(endScope, endScope);
   return result;
 }
-export async function usingFrontendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
+export async function usingFrontendOfflineScope<TResult>(
+  func: () => Promise<TResult>
+): Promise<TResult> {
   HttpRequestHook.install();
   HttpRequestHook.accept("http://localhost")
     .onRequest(() => undefined)
     .onResponse((resp) => resp);
-  HttpRequestHook.accept(/^.*$/)
-    .onRequest((_req) => {
-      return new Response(null, { status: 503 });
-    });
+  HttpRequestHook.accept(/^.*$/).onRequest((_req) => {
+    return new Response(null, { status: 503 });
+  });
   const endScope = () => {
     HttpRequestHook.uninstall();
   };

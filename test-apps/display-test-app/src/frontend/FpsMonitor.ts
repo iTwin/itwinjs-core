@@ -4,7 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  IModelApp, NotifyMessageDetails, OutputMessagePriority, PerformanceMetrics, ScreenViewport, Target, Tool, Viewport,
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  PerformanceMetrics,
+  ScreenViewport,
+  Target,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
 
 export interface FpsMonitorProps {
@@ -26,24 +33,28 @@ export class FpsMonitor {
     this._label = props.label;
     this._output = props.output;
 
-    IModelApp.viewManager.onViewOpen.addListener((vp: ScreenViewport) => this.onViewOpen(vp));
-    this._checkbox.addEventListener("click", () => this.enabled = this._checkbox.checked);
+    IModelApp.viewManager.onViewOpen.addListener((vp: ScreenViewport) =>
+      this.onViewOpen(vp)
+    );
+    this._checkbox.addEventListener(
+      "click",
+      () => (this.enabled = this._checkbox.checked)
+    );
   }
 
   private onViewOpen(vp: ScreenViewport): void {
-    if (this._enabled)
-      vp.continuousRendering = true;
+    if (this._enabled) vp.continuousRendering = true;
   }
 
-  public get enabled() { return this._enabled; }
+  public get enabled() {
+    return this._enabled;
+  }
   public set enabled(enabled: boolean) {
-    if (enabled === this.enabled)
-      return;
+    if (enabled === this.enabled) return;
 
     this._enabled = enabled;
     this._frameCount = 0;
-    for (const vp of IModelApp.viewManager)
-      vp.continuousRendering = enabled;
+    for (const vp of IModelApp.viewManager) vp.continuousRendering = enabled;
 
     this._label.innerText = `FPS${this.enabled ? ":" : ""}`;
     this._output.innerText = "";
@@ -54,8 +65,7 @@ export class FpsMonitor {
   }
 
   private update(): void {
-    if (!this.enabled)
-      return;
+    if (!this.enabled) return;
 
     ++this._frameCount;
     const curTime = performance.now();
@@ -73,8 +83,12 @@ export class FpsMonitor {
 
 export class RecordFpsTool extends Tool {
   public static override toolId = "RecordFps";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   private _hadContinuousRendering = false;
   private _numFramesToRecord = 0;
@@ -84,8 +98,7 @@ export class RecordFpsTool extends Tool {
 
   public override async run(numFramesToRecord = 150): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || 0 >= numFramesToRecord)
-      return true;
+    if (undefined === vp || 0 >= numFramesToRecord) return true;
 
     this._numFramesToRecord = numFramesToRecord;
     this._hadContinuousRendering = vp.continuousRendering;
@@ -94,9 +107,13 @@ export class RecordFpsTool extends Tool {
     this._metrics = new PerformanceMetrics(false, true);
     (vp.target as Target).performanceMetrics = this._metrics;
 
-    this._dispose = vp.onRender.addListener((viewport) => this.update(viewport));
+    this._dispose = vp.onRender.addListener((viewport) =>
+      this.update(viewport)
+    );
 
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Recording..."));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(OutputMessagePriority.Info, "Recording...")
+    );
     return true;
   }
 
@@ -104,19 +121,16 @@ export class RecordFpsTool extends Tool {
     let numFramesToRecord;
     if (1 === args.length) {
       numFramesToRecord = parseInt(args[0], 10);
-      if (Number.isNaN(numFramesToRecord))
-        return true;
+      if (Number.isNaN(numFramesToRecord)) return true;
     }
 
     return this.run(numFramesToRecord);
   }
 
   private update(vp: Viewport): void {
-    if (++this._numFramesRecorded < this._numFramesToRecord)
-      return;
+    if (++this._numFramesRecorded < this._numFramesToRecord) return;
 
-    if (undefined !== this._dispose)
-      this._dispose();
+    if (undefined !== this._dispose) this._dispose();
 
     (vp.target as Target).performanceMetrics = undefined;
     vp.continuousRendering = this._hadContinuousRendering;
@@ -124,7 +138,10 @@ export class RecordFpsTool extends Tool {
     const metrics = this._metrics!;
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
 
-    const msg = new NotifyMessageDetails(OutputMessagePriority.Info, `FPS ${fps}`);
+    const msg = new NotifyMessageDetails(
+      OutputMessagePriority.Info,
+      `FPS ${fps}`
+    );
     IModelApp.notifications.outputMessage(msg);
   }
 }

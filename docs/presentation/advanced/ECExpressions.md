@@ -106,14 +106,14 @@ value_list.AnyMatches(x => this.IsOfClass(x.PropertyValue))
 
 ##### Logical operators
 
-| Description           | Operator          |
-| --------------------- | ----------------- |
-| Conjunction           | `And`*, `AndAlso` |
-| Disjunction           | `Or`*, `OrElse`   |
-| Exclusive disjunction | `Xor`             |
-| Negation              | `Not`             |
+| Description           | Operator           |
+| --------------------- | ------------------ |
+| Conjunction           | `And`\*, `AndAlso` |
+| Disjunction           | `Or`\*, `OrElse`   |
+| Exclusive disjunction | `Xor`              |
+| Negation              | `Not`              |
 
-> **Note:** *Checks right side of expression even if result value can be deducted from the left side.
+> **Note:** \*Checks right side of expression even if result value can be deducted from the left side.
 
 ```
 False And True OrElse True
@@ -209,7 +209,7 @@ System.String.Length ("Dog" & " and " & "Cat") ==> 11
 
 Method `IsNull (value)` evaluates if given value is `Null`.
 
-Method `IfNull (value, value-if-null)` evaluates to `value` if it is not null, otherwise evaluates to  `value-if-null`.
+Method `IfNull (value, value-if-null)` evaluates to `value` if it is not null, otherwise evaluates to `value-if-null`.
 
 In case `this.MiddleName` is null:
 
@@ -299,7 +299,7 @@ ECInstance key expression context provides access to class and instance IDs. The
 
 ### Ruleset variables (user settings)
 
-> **Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
+> **Note:** _User Settings_ is a deprecated name of _Ruleset Variables_ concept.
 
 Ruleset variable access symbols allow accessing variable values through ECExpressions.
 

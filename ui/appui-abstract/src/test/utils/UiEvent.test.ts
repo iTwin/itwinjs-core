@@ -7,13 +7,12 @@ import * as sinon from "sinon";
 import { UiEvent } from "../../appui-abstract";
 
 describe("UIEvent", () => {
-
   interface TestEventArgs {
     testId: string;
     testNum: number;
   }
 
-  class TestEvent extends UiEvent<TestEventArgs> { }
+  class TestEvent extends UiEvent<TestEventArgs> {}
 
   it("should call handler", () => {
     const testEvent: TestEvent = new TestEvent();
@@ -31,5 +30,4 @@ describe("UIEvent", () => {
 
     expect(spyMethod.calledOnce).to.be.true;
   });
-
 });

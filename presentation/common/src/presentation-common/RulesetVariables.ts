@@ -36,13 +36,26 @@ export enum VariableValueTypes {
  * Union of all supported variable value types
  * @public
  */
-export type VariableValue = boolean | string | number | number[] | Id64String | Id64String[];
+export type VariableValue =
+  | boolean
+  | string
+  | number
+  | number[]
+  | Id64String
+  | Id64String[];
 
 /**
  * JSON representation of [[VariableValue]]
  * @public
  */
-export type VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set;
+export type VariableValueJSON =
+  | boolean
+  | string
+  | number
+  | number[]
+  | Id64String
+  | Id64String[]
+  | CompressedId64Set;
 
 /**
  * Base data structure for representing ruleset variables.
@@ -105,7 +118,13 @@ export interface Id64sRulesetVariable extends RulesetVariableBase {
  * Data structure for representing ruleset variables.
  * @public
  */
-export type RulesetVariable = BooleanRulesetVariable | StringRulesetVariable | IntRulesetVariable | IntsRulesetVariable | Id64RulesetVariable | Id64sRulesetVariable;
+export type RulesetVariable =
+  | BooleanRulesetVariable
+  | StringRulesetVariable
+  | IntRulesetVariable
+  | IntsRulesetVariable
+  | Id64RulesetVariable
+  | Id64sRulesetVariable;
 
 /**
  * JSON representation of [[RulesetVariableBase]].
@@ -174,7 +193,13 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
  * @public
  */
 // eslint-disable-next-line deprecation/deprecation
-export type RulesetVariableJSON = BooleanRulesetVariableJSON | StringRulesetVariableJSON | IntRulesetVariableJSON | IntsRulesetVariableJSON | Id64RulesetVariableJSON | Id64sRulesetVariableJSON;
+export type RulesetVariableJSON =
+  | BooleanRulesetVariableJSON
+  | StringRulesetVariableJSON
+  | IntRulesetVariableJSON
+  | IntsRulesetVariableJSON
+  | Id64RulesetVariableJSON
+  | Id64sRulesetVariableJSON;
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -185,7 +210,10 @@ export namespace RulesetVariable {
    */
   export function toJSON(variable: RulesetVariable): RulesetVariableJSON {
     if (variable.type === VariableValueTypes.Id64Array)
-      return { ...variable, value: CompressedId64Set.compressArray(variable.value) };
+      return {
+        ...variable,
+        value: CompressedId64Set.compressArray(variable.value),
+      };
     return variable;
   }
 
@@ -193,7 +221,10 @@ export namespace RulesetVariable {
   export function fromJSON(json: RulesetVariableJSON): RulesetVariable {
     if (json.type === VariableValueTypes.Id64Array) {
       if (typeof json.value === "string")
-        return { ...json, value: CompressedId64Set.decompressArray(json.value) };
+        return {
+          ...json,
+          value: CompressedId64Set.decompressArray(json.value),
+        };
       return json as any; // for some reason TS doesn't understand that `json.value` is always an array here
     }
     return json;

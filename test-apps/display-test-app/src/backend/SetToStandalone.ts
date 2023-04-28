@@ -96,10 +96,8 @@ async function run() {
   await IModelHost.startup();
 
   const rootPath = process.argv[2];
-  if (fs.statSync(rootPath).isDirectory())
-    await processDirectory(rootPath);
-  else
-    setToStandalone(rootPath);
+  if (fs.statSync(rootPath).isDirectory()) await processDirectory(rootPath);
+  else setToStandalone(rootPath);
 
   await IModelHost.shutdown();
 

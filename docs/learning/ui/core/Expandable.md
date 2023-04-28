@@ -14,10 +14,14 @@ import * as React from "react";
 import { ExpandableBlock, ExpandableBlockProps } from "@itwin/itwinui-react";
 
 /** Sample component using ExpandableBlock with an expanded state  */
-export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (props: ExpandableBlockProps) => {
+export const SampleExpandableBlock: React.FC<ExpandableBlockProps> = (
+  props: ExpandableBlockProps
+) => {
   const [expanded, setExpanded] = React.useState(true);
 
-  const _handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
+  const _handleClick = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ): void => {
     setExpanded(!expanded);
 
     props.onClick && props.onClick(event);
@@ -35,7 +39,7 @@ This example shows an ExpandableList component with a single ExpandableBlock tha
 
 ```tsx
 <ExpandableList>
-  <SampleExpandableBlock title="Test" isExpanded={true} onClick={() => { }}>
+  <SampleExpandableBlock title="Test" isExpanded={true} onClick={() => {}}>
     Hello World!
   </SampleExpandableBlock>
 </ExpandableList>
@@ -51,10 +55,10 @@ and that prop is used in this example.
 
 ```tsx
 <ExpandableList singleExpandOnly={true} defaultActiveBlock={0}>
-  <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+  <ExpandableBlock title="Test1" isExpanded={false} onClick={() => {}}>
     Hello World 1
   </ExpandableBlock>
-  <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+  <ExpandableBlock title="Test2" isExpanded={false} onClick={() => {}}>
     Hello World 2
   </ExpandableBlock>
 </ExpandableList>

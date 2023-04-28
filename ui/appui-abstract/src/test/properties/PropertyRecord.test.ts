@@ -3,11 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../appui-abstract";
-import { ArrayValue, PrimitiveValue, StructValue } from "../../appui-abstract/properties/Value";
+import {
+  PropertyDescription,
+  PropertyRecord,
+  PropertyValue,
+  PropertyValueFormat,
+  StandardTypeNames,
+} from "../../appui-abstract";
+import {
+  ArrayValue,
+  PrimitiveValue,
+  StructValue,
+} from "../../appui-abstract/properties/Value";
 
-const value1: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
-const value2: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 10 };
+const value1: PropertyValue = {
+  valueFormat: PropertyValueFormat.Primitive,
+  value: 3,
+};
+const value2: PropertyValue = {
+  valueFormat: PropertyValueFormat.Primitive,
+  value: 10,
+};
 
 const getPropertyDescription = (): PropertyDescription => {
   return {
@@ -26,9 +42,7 @@ const getUpdatedPropertyDescription = (): PropertyDescription => {
 };
 
 describe("PropertyRecord", () => {
-
   describe("copyWithNewValue", () => {
-
     it("should have new value", () => {
       const sut = new PropertyRecord(value1, getPropertyDescription());
       const newRecord = sut.copyWithNewValue(value2);
@@ -41,7 +55,9 @@ describe("PropertyRecord", () => {
       const newDescription = getUpdatedPropertyDescription();
       const newRecord = sut.copyWithNewValue(value2, newDescription);
       expect(newRecord.value).to.eq(value2);
-      expect(newRecord.property.displayLabel).to.eq(newDescription.displayLabel);
+      expect(newRecord.property.displayLabel).to.eq(
+        newDescription.displayLabel
+      );
     });
 
     it("should copy all attributes from source", () => {
@@ -54,16 +70,14 @@ describe("PropertyRecord", () => {
       src.isReadonly = true;
       src.links = {
         matcher: () => [],
-        onClick: () => { },
+        onClick: () => {},
       };
       const newRecord = src.copyWithNewValue(value2);
       expect(newRecord).to.deep.eq({ ...src, value: value2 });
     });
-
   });
 
   describe("fromString", () => {
-
     it("should create a valid PropertyRecord with provided description", () => {
       const description = getPropertyDescription();
       const record = PropertyRecord.fromString("test", description);
@@ -71,7 +85,10 @@ describe("PropertyRecord", () => {
     });
 
     it("should create a valid PropertyRecord with provided description name", () => {
-      const record = PropertyRecord.fromString("test value", "test description");
+      const record = PropertyRecord.fromString(
+        "test value",
+        "test description"
+      );
       expect(record).to.matchSnapshot();
     });
 
@@ -79,7 +96,6 @@ describe("PropertyRecord", () => {
       const record = PropertyRecord.fromString("test");
       expect(record).to.matchSnapshot();
     });
-
   });
 
   describe("getChildrenRecords", () => {

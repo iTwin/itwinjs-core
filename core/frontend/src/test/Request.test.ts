@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import sinon from "sinon";
-import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request";
+import {
+  HttpResponseError,
+  request,
+  RequestBasicCredentials,
+} from "../request/Request";
 import { assert, expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 
@@ -67,7 +71,9 @@ describe("request()", async () => {
     const fetchStub = sandbox.stub(window, "fetch");
     fetchStub.rejects(error);
 
-    const promise = request("https://www.itwinjs.org/", "text", { timeout: 10 });
+    const promise = request("https://www.itwinjs.org/", "text", {
+      timeout: 10,
+    });
     await expect(promise).to.be.eventually.rejected;
 
     assert(fetchStub.calledOnce);

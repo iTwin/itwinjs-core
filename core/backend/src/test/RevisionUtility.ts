@@ -49,34 +49,72 @@ export class RevisionUtility {
     writeEndMark: 0,
   };
 
-  public static recompressRevision(sourceFile: string, targetFile: string, lzmaProps?: LzmaParams): BentleyStatus {
+  public static recompressRevision(
+    sourceFile: string,
+    targetFile: string,
+    lzmaProps?: LzmaParams
+  ): BentleyStatus {
     if (!IModelJsFs.existsSync(sourceFile))
       throw new Error("SourceFile does not exists");
-    return IModelHost.platform.RevisionUtility.recompressRevision(sourceFile, targetFile, lzmaProps ? JSON.stringify(lzmaProps) : undefined);
+    return IModelHost.platform.RevisionUtility.recompressRevision(
+      sourceFile,
+      targetFile,
+      lzmaProps ? JSON.stringify(lzmaProps) : undefined
+    );
   }
-  public static disassembleRevision(sourceFile: string, targetDir: string): BentleyStatus {
+  public static disassembleRevision(
+    sourceFile: string,
+    targetDir: string
+  ): BentleyStatus {
     if (!IModelJsFs.existsSync(sourceFile))
       throw new Error("SourceFile does not exists");
-    return IModelHost.platform.RevisionUtility.disassembleRevision(sourceFile, targetDir);
+    return IModelHost.platform.RevisionUtility.disassembleRevision(
+      sourceFile,
+      targetDir
+    );
   }
-  public static assembleRevision(targetFile: string, rawChangesetFile: string, prefixFile?: string, lzmaProps?: LzmaParams): BentleyStatus {
+  public static assembleRevision(
+    targetFile: string,
+    rawChangesetFile: string,
+    prefixFile?: string,
+    lzmaProps?: LzmaParams
+  ): BentleyStatus {
     if (!IModelJsFs.existsSync(rawChangesetFile))
       throw new Error("RawChangesetFile does not exists");
     if (prefixFile && !IModelJsFs.existsSync(prefixFile))
       throw new Error("prefixFile does not exists");
-    return IModelHost.platform.RevisionUtility.assembleRevision(targetFile, rawChangesetFile, prefixFile, lzmaProps ? JSON.stringify(lzmaProps) : undefined);
+    return IModelHost.platform.RevisionUtility.assembleRevision(
+      targetFile,
+      rawChangesetFile,
+      prefixFile,
+      lzmaProps ? JSON.stringify(lzmaProps) : undefined
+    );
   }
   public static normalizeLzmaParams(lzmaProps?: LzmaParams): LzmaParams {
-    return JSON.parse(IModelHost.platform.RevisionUtility.normalizeLzmaParams(lzmaProps ? JSON.stringify(lzmaProps) : undefined)) as LzmaParams;
+    return JSON.parse(
+      IModelHost.platform.RevisionUtility.normalizeLzmaParams(
+        lzmaProps ? JSON.stringify(lzmaProps) : undefined
+      )
+    ) as LzmaParams;
   }
-  public static computeStatistics(sourceFile: string, addPrefix: boolean = true): any {
+  public static computeStatistics(
+    sourceFile: string,
+    addPrefix: boolean = true
+  ): any {
     if (!IModelJsFs.existsSync(sourceFile))
       throw new Error("SourceFile does not exists");
-    return JSON.parse(IModelHost.platform.RevisionUtility.computeStatistics(sourceFile, addPrefix));
+    return JSON.parse(
+      IModelHost.platform.RevisionUtility.computeStatistics(
+        sourceFile,
+        addPrefix
+      )
+    );
   }
   public static getUncompressSize(sourceFile: string): ChangesetSizeInfo {
     if (!IModelJsFs.existsSync(sourceFile))
       throw new Error("SourceFile does not exists");
-    return JSON.parse(IModelHost.platform.RevisionUtility.getUncompressSize(sourceFile)) as ChangesetSizeInfo;
+    return JSON.parse(
+      IModelHost.platform.RevisionUtility.getUncompressSize(sourceFile)
+    ) as ChangesetSizeInfo;
   }
 }

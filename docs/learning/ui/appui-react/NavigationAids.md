@@ -3,10 +3,10 @@
 A **Navigation Aid** is a user interface control that moves the user's perspective around within a specific Content View.
 There are two navigation aids provided in the `@itwin/appui-react` package:
 
-|Navigation Aid|Description
-|-----|-----
-| CubeNavigationAid    | displays an interactive rotation cube for Spatial views that synchronizes with the rotation of the iModel Viewport
-| DrawingNavigationAid | displays an interactive mini-map for Drawing views that synchronizes with the iModel Viewport
+| Navigation Aid       | Description                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| CubeNavigationAid    | displays an interactive rotation cube for Spatial views that synchronizes with the rotation of the iModel Viewport |
+| DrawingNavigationAid | displays an interactive mini-map for Drawing views that synchronizes with the iModel Viewport                      |
 
 ## Active Navigation Aid
 
@@ -35,15 +35,24 @@ The `getSize` method optionally overrides the default size of "64px".
 Each NavigationAidControl subclass should be registered by calling the `ConfigurableUiManager.registerControl` method.
 
 ```ts
-    ConfigurableUiManager.registerControl(SampleNavigationAidControl.navigationAidId, SampleNavigationAidControl);
+ConfigurableUiManager.registerControl(
+  SampleNavigationAidControl.navigationAidId,
+  SampleNavigationAidControl
+);
 ```
 
 The `ConfigurableUiManager.initialize` function calls `ConfigurableUiManager.registerControl` for the
 two navigation aids provided in the `@itwin/appui-react` package:
 
 ```ts
-    ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
-    ConfigurableUiManager.registerControl(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
+ConfigurableUiManager.registerControl(
+  DrawingNavigationAidControl.navigationAidId,
+  DrawingNavigationAidControl
+);
+ConfigurableUiManager.registerControl(
+  CubeNavigationAidControl.navigationAidId,
+  CubeNavigationAidControl
+);
 ```
 
 ### Sample Navigation Aid
@@ -74,11 +83,18 @@ export class SampleNavigationAidControl extends NavigationAidControl {
     super(info, options);
 
     // Provide iModelConnection and Viewport to Navigation Aid
-    this.reactNode = <SampleNavigationAid iModelConnection={options.imodel} viewport={options.viewport} />;
+    this.reactNode = (
+      <SampleNavigationAid
+        iModelConnection={options.imodel}
+        viewport={options.viewport}
+      />
+    );
   }
 
   // Override default size (64px)
-  public override getSize(): string | undefined { return "96px"; }
+  public override getSize(): string | undefined {
+    return "96px";
+  }
 }
 ```
 
@@ -102,7 +118,6 @@ export function SampleNavigationAid(props: SampleNavigationAidProps) {
     </div>
   );
 }
-
 ```
 
 ## API Reference

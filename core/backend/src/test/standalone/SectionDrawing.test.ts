@@ -5,7 +5,11 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
+import {
+  RelatedElement,
+  SectionDrawingProps,
+  SectionType,
+} from "@itwin/core-common";
 import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
@@ -13,11 +17,20 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SectionDrawing", () => {
   it("should round-trip through JSON", () => {
-    const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
-    const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
+    const iModelPath = IModelTestUtils.prepareOutputFile(
+      "SectionDrawing",
+      "SectionDrawing.bim"
+    );
+    const imodel = SnapshotDb.createEmpty(iModelPath, {
+      rootSubject: { name: "SectionDrawingTest" },
+    });
 
     // Insert a SectionDrawing
-    const documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
+    const documentListModelId = DocumentListModel.insert(
+      imodel,
+      SnapshotDb.rootSubjectId,
+      "DocumentList"
+    );
 
     const drawingId = imodel.elements.insertElement({
       classFullName: SectionDrawing.classFullName,
@@ -57,8 +70,16 @@ describe("SectionDrawing", () => {
       expect(json.spatialView).not.to.be.undefined;
       expect(json.spatialView?.id).to.equal("0x123");
       expect(json.sectionType).to.equal(SectionType.Elevation);
-      expect(Transform.fromJSON(json.jsonProperties?.drawingToSpatialTransform).isAlmostEqual(drawingToSpatial)).to.be.true;
-      expect(Transform.fromJSON(json.jsonProperties?.sheetToSpatialTransform).isAlmostEqual(sheetToSpatial)).to.be.true;
+      expect(
+        Transform.fromJSON(
+          json.jsonProperties?.drawingToSpatialTransform
+        ).isAlmostEqual(drawingToSpatial)
+      ).to.be.true;
+      expect(
+        Transform.fromJSON(
+          json.jsonProperties?.sheetToSpatialTransform
+        ).isAlmostEqual(sheetToSpatial)
+      ).to.be.true;
     };
 
     const props = drawing.toJSON();

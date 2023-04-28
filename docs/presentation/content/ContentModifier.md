@@ -8,12 +8,12 @@ Content modifiers are used to modify how instances of specified ECClasses are di
 
 | Name                                                      | Required? | Type                                                                            | Default   |
 | --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | --------- |
-| *Picking attributes*                                      |
+| _Picking attributes_                                      |
 | [`class`](#attribute-class)                               | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md)        | Any class |
 | [`requiredSchemas`](#attribute-requiredschemas)           | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)            | `[]`      |
 | [`priority`](#attribute-priority)                         | No        | `number`                                                                        | `1000`    |
 | [`applyOnNestedContent`](#attribute-applyonnestedcontent) | No        | `boolean`                                                                       | `false`   |
-| *Content Modifiers*                                       |
+| _Content Modifiers_                                       |
 | [`relatedProperties`](#attribute-relatedproperties)       | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`      |
 | [`calculatedProperties`](#attribute-calculatedproperties) | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`      |
 | [`propertyCategories`](#attribute-propertycategories)     | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)         | `[]`      |
@@ -80,8 +80,8 @@ Specifies whether [calculatedProperties](./CalculatedPropertiesSpecification.md)
 [[include:Presentation.ContentModifier.ApplyOnNestedContent.Ruleset]]
 ```
 
-| `applyOnNestedContent: false`                                                                                      | `applyOnNestedContent: true`                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `applyOnNestedContent: false`                                                                                       | `applyOnNestedContent: true`                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | ![Example of not using modifiers on nested content](./media/modifier-with-applyonnestedcontent-attribute-false.png) | ![Example of using modifiers on nested content](./media/modifier-with-applyonnestedcontent-attribute-true.png) |
 
 ### Attribute: `relatedProperties`

@@ -9,13 +9,21 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMemory } from "../RenderMemory";
-import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "./CachedGeometry";
+import {
+  EDLCalcBasicGeometry,
+  EDLCalcFullGeometry,
+  EDLFilterGeometry,
+  EDLMixGeometry,
+} from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { RenderBufferMultiSample } from "./RenderBuffer";
 import { RenderState } from "./RenderState";
-import { collectGeometryStatistics, collectTextureStatistics } from "./SceneCompositor";
+import {
+  collectGeometryStatistics,
+  collectTextureStatistics,
+} from "./SceneCompositor";
 import { getDrawParams } from "./ScratchDrawParams";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -36,23 +44,61 @@ class Bundle implements WebGLDisposable {
     public edlFiltFbo4?: FrameBuffer,
 
     public edlCalcBasicGeom?: EDLCalcBasicGeometry,
-    public edlCalcFullGeom?: [EDLCalcFullGeometry | undefined, EDLCalcFullGeometry | undefined, EDLCalcFullGeometry | undefined],
-    public edlFiltGeom?: [EDLFilterGeometry | undefined, EDLFilterGeometry | undefined],
-    public edlMixGeom?: EDLMixGeometry) {
-  }
+    public edlCalcFullGeom?: [
+      EDLCalcFullGeometry | undefined,
+      EDLCalcFullGeometry | undefined,
+      EDLCalcFullGeometry | undefined
+    ],
+    public edlFiltGeom?: [
+      EDLFilterGeometry | undefined,
+      EDLFilterGeometry | undefined
+    ],
+    public edlMixGeom?: EDLMixGeometry
+  ) {}
 
   public static create(width: number, height: number): Bundle | undefined {
-    const edlCalcTex1 = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    const edlCalcTex2 = TextureHandle.createForAttachment(width >> 1, height >> 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    const edlCalcTex4 = TextureHandle.createForAttachment(width >> 2, height >> 2, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    const edlFiltTex2 = TextureHandle.createForAttachment(width >> 1, height >> 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    const edlFiltTex4 = TextureHandle.createForAttachment(width >> 2, height >> 2, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === edlCalcTex1 || undefined === edlCalcTex2 || undefined === edlCalcTex4 || undefined === edlFiltTex2 || undefined === edlFiltTex4) {
-      dispose (edlCalcTex1);
-      dispose (edlCalcTex2);
-      dispose (edlCalcTex4);
-      dispose (edlFiltTex2);
-      dispose (edlFiltTex4);
+    const edlCalcTex1 = TextureHandle.createForAttachment(
+      width,
+      height,
+      GL.Texture.Format.Rgba,
+      GL.Texture.DataType.UnsignedByte
+    );
+    const edlCalcTex2 = TextureHandle.createForAttachment(
+      width >> 1,
+      height >> 1,
+      GL.Texture.Format.Rgba,
+      GL.Texture.DataType.UnsignedByte
+    );
+    const edlCalcTex4 = TextureHandle.createForAttachment(
+      width >> 2,
+      height >> 2,
+      GL.Texture.Format.Rgba,
+      GL.Texture.DataType.UnsignedByte
+    );
+    const edlFiltTex2 = TextureHandle.createForAttachment(
+      width >> 1,
+      height >> 1,
+      GL.Texture.Format.Rgba,
+      GL.Texture.DataType.UnsignedByte
+    );
+    const edlFiltTex4 = TextureHandle.createForAttachment(
+      width >> 2,
+      height >> 2,
+      GL.Texture.Format.Rgba,
+      GL.Texture.DataType.UnsignedByte
+    );
+    if (
+      undefined === edlCalcTex1 ||
+      undefined === edlCalcTex2 ||
+      undefined === edlCalcTex4 ||
+      undefined === edlFiltTex2 ||
+      undefined === edlFiltTex4
+    ) {
+      dispose(edlCalcTex1);
+      dispose(edlCalcTex2);
+      dispose(edlCalcTex4);
+      dispose(edlFiltTex2);
+      dispose(edlFiltTex4);
       return undefined;
     }
     const edlCalcFbo1 = FrameBuffer.create([edlCalcTex1]);
@@ -60,37 +106,56 @@ class Bundle implements WebGLDisposable {
     const edlCalcFbo4 = FrameBuffer.create([edlCalcTex4]);
     const edlFiltFbo2 = FrameBuffer.create([edlFiltTex2]);
     const edlFiltFbo4 = FrameBuffer.create([edlFiltTex4]);
-    if (undefined === edlCalcFbo1 || undefined === edlCalcFbo2 || undefined === edlCalcFbo4 || undefined === edlFiltFbo2 || undefined === edlFiltFbo4) {
-      dispose (edlCalcFbo1);
-      dispose (edlCalcFbo2);
-      dispose (edlCalcFbo4);
-      dispose (edlFiltFbo2);
-      dispose (edlFiltFbo4);
+    if (
+      undefined === edlCalcFbo1 ||
+      undefined === edlCalcFbo2 ||
+      undefined === edlCalcFbo4 ||
+      undefined === edlFiltFbo2 ||
+      undefined === edlFiltFbo4
+    ) {
+      dispose(edlCalcFbo1);
+      dispose(edlCalcFbo2);
+      dispose(edlCalcFbo4);
+      dispose(edlFiltFbo2);
+      dispose(edlFiltFbo4);
       return undefined;
     }
-    return new Bundle(edlCalcTex1, edlCalcTex2, edlCalcTex4, edlFiltTex2, edlFiltTex4, edlCalcFbo1, edlCalcFbo2, edlCalcFbo4, edlFiltFbo2, edlFiltFbo4);
+    return new Bundle(
+      edlCalcTex1,
+      edlCalcTex2,
+      edlCalcTex4,
+      edlFiltTex2,
+      edlFiltTex4,
+      edlCalcFbo1,
+      edlCalcFbo2,
+      edlCalcFbo4,
+      edlFiltFbo2,
+      edlFiltFbo4
+    );
   }
 
   public get isDisposed(): boolean {
-    return undefined === this.edlCalcTex1
-      && undefined === this.edlCalcTex2
-      && undefined === this.edlCalcTex4
-      && undefined === this.edlFiltTex2
-      && undefined === this.edlFiltTex4
-      && undefined === this.edlCalcFbo1
-      && undefined === this.edlCalcFbo2
-      && undefined === this.edlCalcFbo4
-      && undefined === this.edlFiltFbo2
-      && undefined === this.edlFiltFbo4
-      && undefined === this.edlCalcBasicGeom
-      && undefined === this.edlCalcFullGeom?.[0]
-      && undefined === this.edlCalcFullGeom?.[1]
-      && undefined === this.edlCalcFullGeom?.[2]
-      && undefined === this.edlCalcFullGeom
-      && undefined === this.edlFiltGeom?.[0]
-      && undefined === this.edlFiltGeom?.[1]
-      && undefined === this.edlFiltGeom
-      && undefined === this.edlMixGeom;
+    return (
+      undefined === this.edlCalcTex1 &&
+      undefined === this.edlCalcTex2 &&
+      undefined === this.edlCalcTex4 &&
+      undefined === this.edlFiltTex2 &&
+      undefined === this.edlFiltTex4 &&
+      undefined === this.edlCalcFbo1 &&
+      undefined === this.edlCalcFbo2 &&
+      undefined === this.edlCalcFbo4 &&
+      undefined === this.edlFiltFbo2 &&
+      undefined === this.edlFiltFbo4 &&
+      undefined === this.edlCalcBasicGeom &&
+      undefined === this.edlCalcFullGeom?.[0] &&
+      undefined === this.edlCalcFullGeom?.[1] &&
+      undefined === this.edlCalcFullGeom?.[2] &&
+      undefined === this.edlCalcFullGeom &&
+      undefined === this.edlFiltGeom?.[0] &&
+      undefined === this.edlFiltGeom?.[1] &&
+      undefined === this.edlFiltGeom &&
+      undefined === this.edlMixGeom
+    );
   }
 
   public dispose(): void {
@@ -121,14 +186,18 @@ class Bundle implements WebGLDisposable {
 }
 
 /** @internal */
-export enum EDLMode { Off, On, Full }
+export enum EDLMode {
+  Off,
+  On,
+  Full,
+}
 
 /** @internal */
 export interface EDLDrawParams {
-  inputTex: TextureHandle;  // input to calc EDL from
-  curFbo: FrameBuffer;      // output fbo to get color texture from for EDL to put result in
+  inputTex: TextureHandle; // input to calc EDL from
+  curFbo: FrameBuffer; // output fbo to get color texture from for EDL to put result in
   edlMode: EDLMode;
-  edlFilter: boolean;       // applies to Full mode only
+  edlFilter: boolean; // applies to Full mode only
   useMsBuffers: boolean;
 }
 
@@ -136,9 +205,12 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
   private _width: number;
   private _height: number;
-  private _depth?: DepthBuffer;  // depth buffer to read from, has to be non-MS and be up to date in draw if MS is used
+  private _depth?: DepthBuffer; // depth buffer to read from, has to be non-MS and be up to date in draw if MS is used
   private _edlFinalFbo?: FrameBuffer;
-  private _edlFinalBufs?: { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined };
+  private _edlFinalBufs?: {
+    tex: TextureHandle;
+    msBuf: RenderBufferMultiSample | undefined;
+  };
   private readonly _target: Target;
 
   private getBundle(): Bundle | undefined {
@@ -182,11 +254,13 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
     }
   }
 
-  public get isDisposed(): boolean { return undefined === this._bundle && undefined === this._edlFinalFbo; }
+  public get isDisposed(): boolean {
+    return undefined === this._bundle && undefined === this._edlFinalFbo;
+  }
 
   public dispose() {
     this._bundle = dispose(this._bundle);
-    this._edlFinalFbo = dispose (this._edlFinalFbo);
+    this._edlFinalFbo = dispose(this._edlFinalFbo);
   }
 
   public reset() {
@@ -197,24 +271,39 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
    * returns true if succeeds
    */
   public draw(edlParams: EDLDrawParams): boolean {
-    if (undefined === edlParams.inputTex || undefined === this._depth || undefined === edlParams.curFbo)
+    if (
+      undefined === edlParams.inputTex ||
+      undefined === this._depth ||
+      undefined === edlParams.curFbo
+    )
       return false;
 
     const bundle = this.getBundle();
-    if (undefined === bundle)
-      return false;
+    if (undefined === bundle) return false;
 
     // NB: have to test and create MS buffer as well if useMsBuffers, not outputting to depth
-    const finalBufs = edlParams.curFbo.getColorTargets(edlParams.useMsBuffers, 0);
-    if (undefined === this._edlFinalFbo || this._edlFinalBufs?.tex !== finalBufs.tex ||
-       (edlParams.useMsBuffers && this._edlFinalBufs?.msBuf !== finalBufs.msBuf)) {
-      this._edlFinalFbo = dispose (this._edlFinalFbo);
+    const finalBufs = edlParams.curFbo.getColorTargets(
+      edlParams.useMsBuffers,
+      0
+    );
+    if (
+      undefined === this._edlFinalFbo ||
+      this._edlFinalBufs?.tex !== finalBufs.tex ||
+      (edlParams.useMsBuffers && this._edlFinalBufs?.msBuf !== finalBufs.msBuf)
+    ) {
+      this._edlFinalFbo = dispose(this._edlFinalFbo);
       this._edlFinalBufs = finalBufs;
       const filters = [GL.MultiSampling.Filter.Linear];
-      this._edlFinalFbo = FrameBuffer.create([this._edlFinalBufs.tex], undefined,
-        edlParams.useMsBuffers && this._edlFinalBufs.msBuf ? [this._edlFinalBufs.msBuf] : undefined, filters, undefined);
-      if (undefined === this._edlFinalFbo)
-        return false;
+      this._edlFinalFbo = FrameBuffer.create(
+        [this._edlFinalBufs.tex],
+        undefined,
+        edlParams.useMsBuffers && this._edlFinalBufs.msBuf
+          ? [this._edlFinalBufs.msBuf]
+          : undefined,
+        filters,
+        undefined
+      );
+      if (undefined === this._edlFinalFbo) return false;
     }
 
     const fbStack = System.instance.frameBufferStack;
@@ -228,31 +317,78 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         if (bundle.edlCalcBasicGeom === undefined) {
           const ct1 = edlParams.inputTex;
           const ctd = this._depth!.getHandle()!;
-          bundle.edlCalcBasicGeom = EDLCalcBasicGeometry.createGeometry(ct1.getHandle()!, ctd, ct1.width, ct1.height);
+          bundle.edlCalcBasicGeom = EDLCalcBasicGeometry.createGeometry(
+            ct1.getHandle()!,
+            ctd,
+            ct1.width,
+            ct1.height
+          );
         }
         const params = getDrawParams(this._target, bundle.edlCalcBasicGeom!);
         this._target.techniques.draw(params);
       });
-    } else { // EDLMode.Full
+    } else {
+      // EDLMode.Full
       // draw with full method based on original paper using full, 1/2, and 1/4 sizes
-      const edlCalc2FB: FrameBuffer[] = [bundle.edlCalcFbo1!, bundle.edlCalcFbo2!, bundle.edlCalcFbo4!];
+      const edlCalc2FB: FrameBuffer[] = [
+        bundle.edlCalcFbo1!,
+        bundle.edlCalcFbo2!,
+        bundle.edlCalcFbo4!,
+      ];
       if (bundle.edlCalcFullGeom === undefined) {
         const ct1 = edlParams.inputTex;
         const ct2 = bundle.edlCalcTex2;
         const ct4 = bundle.edlCalcTex4;
         const ctd = this._depth.getHandle()!;
-        bundle.edlCalcFullGeom = [EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
-          EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 2, ct2!.width, ct2!.height),
-          EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4!.width, ct4!.height)];
+        bundle.edlCalcFullGeom = [
+          EDLCalcFullGeometry.createGeometry(
+            ct1.getHandle()!,
+            ctd,
+            1,
+            ct1.width,
+            ct1.height
+          ),
+          EDLCalcFullGeometry.createGeometry(
+            ct1.getHandle()!,
+            ctd,
+            2,
+            ct2!.width,
+            ct2!.height
+          ),
+          EDLCalcFullGeometry.createGeometry(
+            ct1.getHandle()!,
+            ctd,
+            4,
+            ct4!.width,
+            ct4!.height
+          ),
+        ];
       }
 
-      const edlFiltFbos: FrameBuffer[] = [bundle.edlFiltFbo2!, bundle.edlFiltFbo4!];
+      const edlFiltFbos: FrameBuffer[] = [
+        bundle.edlFiltFbo2!,
+        bundle.edlFiltFbo4!,
+      ];
       if (bundle.edlFiltGeom === undefined) {
         const ft2 = bundle.edlCalcTex2;
         const ft4 = bundle.edlCalcTex4;
         const ftd = this._depth.getHandle()!;
-        bundle.edlFiltGeom = [EDLFilterGeometry.createGeometry(ft2!.getHandle()!, ftd, 2, ft2!.width, ft2!.height),
-          EDLFilterGeometry.createGeometry(ft4!.getHandle()!, ftd, 4, ft4!.width, ft4!.height)];
+        bundle.edlFiltGeom = [
+          EDLFilterGeometry.createGeometry(
+            ft2!.getHandle()!,
+            ftd,
+            2,
+            ft2!.width,
+            ft2!.height
+          ),
+          EDLFilterGeometry.createGeometry(
+            ft4!.getHandle()!,
+            ftd,
+            4,
+            ft4!.width,
+            ft4!.height
+          ),
+        ];
       }
 
       const gl = System.instance.context;
@@ -261,13 +397,19 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         fbStack.execute(edlCalc2FB[i], true, false, () => {
           const colTex = edlCalc2FB[i].getColor(0);
           gl.viewport(0, 0, colTex.width, colTex.height); // have to set viewport to current texture size
-          const params = getDrawParams(this._target, bundle.edlCalcFullGeom![i]!);
+          const params = getDrawParams(
+            this._target,
+            bundle.edlCalcFullGeom![i]!
+          );
           this._target.techniques.draw(params);
         });
 
         if (edlParams.edlFilter && i > 0) {
-          fbStack.execute(edlFiltFbos[i-1], true, false, () => {
-            const params = getDrawParams(this._target, bundle.edlFiltGeom![i-1]!);
+          fbStack.execute(edlFiltFbos[i - 1], true, false, () => {
+            const params = getDrawParams(
+              this._target,
+              bundle.edlFiltGeom![i - 1]!
+            );
             this._target.techniques.draw(params);
           });
         }
@@ -276,15 +418,31 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
 
       // Now combine the 3 results and output
       const tex1 = bundle.edlCalcTex1!.getHandle();
-      const tex2 = edlParams.edlFilter ? bundle.edlFiltTex2!.getHandle() : bundle.edlCalcTex2!.getHandle();
-      const tex4 = edlParams.edlFilter ? bundle.edlFiltTex4!.getHandle() : bundle.edlCalcTex4!.getHandle();
+      const tex2 = edlParams.edlFilter
+        ? bundle.edlFiltTex2!.getHandle()
+        : bundle.edlCalcTex2!.getHandle();
+      const tex4 = edlParams.edlFilter
+        ? bundle.edlFiltTex4!.getHandle()
+        : bundle.edlCalcTex4!.getHandle();
       fbStack.execute(this._edlFinalFbo, true, useMsBuffers, () => {
         if (bundle.edlMixGeom === undefined) {
-          bundle.edlMixGeom = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!);
+          bundle.edlMixGeom = EDLMixGeometry.createGeometry(
+            tex1!,
+            tex2!,
+            tex4!
+          );
         } else {
-          if (bundle.edlMixGeom.colorTexture1 !== tex1 || bundle.edlMixGeom.colorTexture2 !== tex2 || bundle.edlMixGeom.colorTexture4 !== tex4) {
+          if (
+            bundle.edlMixGeom.colorTexture1 !== tex1 ||
+            bundle.edlMixGeom.colorTexture2 !== tex2 ||
+            bundle.edlMixGeom.colorTexture4 !== tex4
+          ) {
             dispose(bundle.edlMixGeom);
-            bundle.edlMixGeom = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!);
+            bundle.edlMixGeom = EDLMixGeometry.createGeometry(
+              tex1!,
+              tex2!,
+              tex4!
+            );
           }
         }
         const params = getDrawParams(this._target, bundle.edlMixGeom!);

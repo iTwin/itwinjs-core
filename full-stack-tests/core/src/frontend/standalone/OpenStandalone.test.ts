@@ -9,7 +9,8 @@ import { IModel, IModelError } from "@itwin/core-common";
 import { BriefcaseConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
+if (ProcessDetector.isElectronAppFrontend) {
+  // BriefcaseConnection tests only run on electron
   describe("BriefcaseConnection.openStandalone", () => {
     before(async () => {
       await TestUtility.startFrontend();
@@ -20,7 +21,10 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
     });
 
     it("openStandalone properties", async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
+      const filePath = path.join(
+        process.env.IMODELJS_CORE_DIRNAME!,
+        "core/backend/lib/cjs/test/assets/test.bim"
+      );
       const connection = await BriefcaseConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);
@@ -37,11 +41,21 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
       assert.isFalse(connection.isSnapshot);
       assert.isFalse(connection.isBlank);
 
-      assert.equal(connection.iTwinId, Guid.empty, "standalone imodels have empty iTwinId");
-      await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(IModelError); // standalone imodels can't push changes
-      await expect(connection.pullChanges()).to.eventually.be.rejectedWith(IModelError);// standalone imodels can't pull changes
+      assert.equal(
+        connection.iTwinId,
+        Guid.empty,
+        "standalone imodels have empty iTwinId"
+      );
+      await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(
+        IModelError
+      ); // standalone imodels can't push changes
+      await expect(connection.pullChanges()).to.eventually.be.rejectedWith(
+        IModelError
+      ); // standalone imodels can't pull changes
 
-      const elementProps = await connection.elements.getProps(IModel.rootSubjectId);
+      const elementProps = await connection.elements.getProps(
+        IModel.rootSubjectId
+      );
       assert.equal(1, elementProps.length);
       assert.equal(elementProps[0].id, IModel.rootSubjectId);
       await connection.close();
@@ -49,7 +63,10 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
       assert.isFalse(connection.isOpen);
       assert.isTrue(connection.isClosed);
 
-      const readOnlyConnection = await BriefcaseConnection.openStandalone(filePath, OpenMode.Readonly);
+      const readOnlyConnection = await BriefcaseConnection.openStandalone(
+        filePath,
+        OpenMode.Readonly
+      );
       assert.equal(readOnlyConnection.openMode, OpenMode.Readonly);
       await readOnlyConnection.close();
     });

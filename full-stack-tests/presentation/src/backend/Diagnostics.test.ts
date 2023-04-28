@@ -7,26 +7,39 @@ import * as sinon from "sinon";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { using } from "@itwin/core-bentley";
 import { Presentation, PresentationManager } from "@itwin/presentation-backend";
-import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import {
+  ChildNodeSpecificationTypes,
+  Diagnostics,
+  DiagnosticsLogEntry,
+  PresentationError,
+  Ruleset,
+  RuleTypes,
+} from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Diagnostics", async () => {
-
   const ruleset: Ruleset = {
     id: "ruleset",
-    rules: [{
-      ruleType: RuleTypes.RootNodes,
-      specifications: [{
-        specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-        classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-      }],
-    }],
+    rules: [
+      {
+        ruleType: RuleTypes.RootNodes,
+        specifications: [
+          {
+            specType:
+              ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+          },
+        ],
+      },
+    ],
   };
 
   let imodel: IModelDb;
   before(async () => {
     await initialize();
-    imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = SnapshotDb.openFile(
+      "assets/datasets/Properties_60InstancesWithUrl2.ibim"
+    );
     expect(imodel).is.not.null;
   });
 
@@ -47,7 +60,9 @@ describe("Diagnostics", async () => {
         },
       });
     });
-    expect(requestDiagnosticsSpy).to.be.calledOnceWith(sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0));
+    expect(requestDiagnosticsSpy).to.be.calledOnceWith(
+      sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0)
+    );
   });
 
   it("doesn't include diagnostics if request takes less time than minimum duration", async () => {
@@ -67,32 +82,46 @@ describe("Diagnostics", async () => {
 
   it("includes diagnostics if request fails", async () => {
     const requestDiagnosticsSpy = sinon.spy();
-    await expect(using(new PresentationManager(), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        instanceFilter: {} as any,
-        diagnostics: {
-          dev: "error",
-          handler: requestDiagnosticsSpy,
-        },
-      });
-    })).to.eventually.be.rejectedWith(PresentationError);
-    expect(requestDiagnosticsSpy).to.be.calledOnceWith(sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0));
+    await expect(
+      using(new PresentationManager(), async (manager) => {
+        await manager.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {} as any,
+          diagnostics: {
+            dev: "error",
+            handler: requestDiagnosticsSpy,
+          },
+        });
+      })
+    ).to.eventually.be.rejectedWith(PresentationError);
+    expect(requestDiagnosticsSpy).to.be.calledOnceWith(
+      sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0)
+    );
   });
 
   it("doesn't report request diagnostics if not requested when manager diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } }), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
+    await using(
+      new PresentationManager({
         diagnostics: {
-          handler: requestDiagnosticsSpy,
+          dev: true,
+          editor: true,
+          perf: true,
+          handler: managerDiagnosticsSpy,
         },
-      });
-    });
+      }),
+      async (manager) => {
+        await manager.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+          diagnostics: {
+            handler: requestDiagnosticsSpy,
+          },
+        });
+      }
+    );
     expect(requestDiagnosticsSpy).to.not.be.called;
     expect(managerDiagnosticsSpy).to.be.calledOnce;
   });
@@ -100,18 +129,23 @@ describe("Diagnostics", async () => {
   it("doesn't report manager diagnostics if not requested when request diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { handler: managerDiagnosticsSpy } }), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
-        diagnostics: {
-          dev: true,
-          editor: true,
-          perf: true,
-          handler: requestDiagnosticsSpy,
-        },
-      });
-    });
+    await using(
+      new PresentationManager({
+        diagnostics: { handler: managerDiagnosticsSpy },
+      }),
+      async (manager) => {
+        await manager.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+          diagnostics: {
+            dev: true,
+            editor: true,
+            perf: true,
+            handler: requestDiagnosticsSpy,
+          },
+        });
+      }
+    );
     expect(requestDiagnosticsSpy).to.be.calledOnce;
     expect(managerDiagnosticsSpy).to.not.be.called;
   });
@@ -121,49 +155,71 @@ describe("Diagnostics", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsContext = {};
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy, requestContextSupplier: () => managerDiagnosticsContext } }), async (manager) => {
-      await manager.getNodes({
-        imodel,
-        rulesetOrId: ruleset,
+    await using(
+      new PresentationManager({
         diagnostics: {
-          editor: "trace",
-          handler: requestDiagnosticsSpy,
-          requestContextSupplier: () => requestDiagnosticsContext,
+          perf: true,
+          dev: "trace",
+          handler: managerDiagnosticsSpy,
+          requestContextSupplier: () => managerDiagnosticsContext,
         },
-      });
-    });
-    expect(managerDiagnosticsSpy).be.calledOnceWithExactly(sinon.match((d: Diagnostics) => {
-      function isPerfOrDevLog(entry: DiagnosticsLogEntry): boolean {
-        if (DiagnosticsLogEntry.isMessage(entry)) {
-          return entry.severity.dev !== undefined;
-        }
-        return (entry.duration !== undefined && entry.scopeCreateTimestamp !== undefined || entry.logs !== undefined)
-          && (!entry.logs || entry.logs.every(isPerfOrDevLog));
+      }),
+      async (manager) => {
+        await manager.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+          diagnostics: {
+            editor: "trace",
+            handler: requestDiagnosticsSpy,
+            requestContextSupplier: () => requestDiagnosticsContext,
+          },
+        });
       }
-      return d.logs && d.logs.length > 0 && d.logs.every(isPerfOrDevLog);
-    }), managerDiagnosticsContext);
-    expect(requestDiagnosticsSpy).to.calledOnceWithExactly(sinon.match((d: Diagnostics) => {
-      function isEditorLog(entry: DiagnosticsLogEntry): boolean {
-        if (DiagnosticsLogEntry.isMessage(entry)) {
-          return entry.severity.editor !== undefined;
+    );
+    expect(managerDiagnosticsSpy).be.calledOnceWithExactly(
+      sinon.match((d: Diagnostics) => {
+        function isPerfOrDevLog(entry: DiagnosticsLogEntry): boolean {
+          if (DiagnosticsLogEntry.isMessage(entry)) {
+            return entry.severity.dev !== undefined;
+          }
+          return (
+            ((entry.duration !== undefined &&
+              entry.scopeCreateTimestamp !== undefined) ||
+              entry.logs !== undefined) &&
+            (!entry.logs || entry.logs.every(isPerfOrDevLog))
+          );
         }
-        return entry.duration === undefined && entry.scopeCreateTimestamp === undefined
-          && (!entry.logs || entry.logs.every(isEditorLog));
-      }
-      return d.logs && d.logs.length > 0 && d.logs.every(isEditorLog);
-    }), requestDiagnosticsContext);
+        return d.logs && d.logs.length > 0 && d.logs.every(isPerfOrDevLog);
+      }),
+      managerDiagnosticsContext
+    );
+    expect(requestDiagnosticsSpy).to.calledOnceWithExactly(
+      sinon.match((d: Diagnostics) => {
+        function isEditorLog(entry: DiagnosticsLogEntry): boolean {
+          if (DiagnosticsLogEntry.isMessage(entry)) {
+            return entry.severity.editor !== undefined;
+          }
+          return (
+            entry.duration === undefined &&
+            entry.scopeCreateTimestamp === undefined &&
+            (!entry.logs || entry.logs.every(isEditorLog))
+          );
+        }
+        return d.logs && d.logs.length > 0 && d.logs.every(isEditorLog);
+      }),
+      requestDiagnosticsContext
+    );
   });
-
 });
 
 describe("Learning Snippets", () => {
-
   describe("Diagnostics", async () => {
-
     let imodel: IModelDb;
     before(async () => {
       await initialize();
-      imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = SnapshotDb.openFile(
+        "assets/datasets/Properties_60InstancesWithUrl2.ibim"
+      );
       expect(imodel).is.not.null;
     });
 
@@ -185,9 +241,10 @@ describe("Learning Snippets", () => {
           // supply a callback that'll receive the diagnostics
           handler: (diagnostics: Diagnostics) => {
             // log duration of each diagnostics scope
-            diagnostics.logs && diagnostics.logs.forEach((entry) => {
-              log(`${entry.scope}: ${entry.duration}`);
-            });
+            diagnostics.logs &&
+              diagnostics.logs.forEach((entry) => {
+                log(`${entry.scope}: ${entry.duration}`);
+              });
           },
         },
       });
@@ -200,7 +257,9 @@ describe("Learning Snippets", () => {
       Presentation.terminate();
 
       let requestIndex = 0;
-      const getCurrentActivityId = sinon.fake(() => (++requestIndex).toString());
+      const getCurrentActivityId = sinon.fake(() =>
+        (++requestIndex).toString()
+      );
 
       const log = sinon.stub();
       const id1 = "0x1";
@@ -216,16 +275,23 @@ describe("Learning Snippets", () => {
           // supply a callback that'll receive the diagnostics and request context supplied by `requestContextSupplier`
           handler: (diagnostics: Diagnostics, currentActivityId?: string) => {
             // log duration of each diagnostics scope
-            diagnostics.logs && diagnostics.logs.forEach((entry) => {
-              log(`[${currentActivityId}] ${entry.scope}: ${entry.duration}`);
-            });
+            diagnostics.logs &&
+              diagnostics.logs.forEach((entry) => {
+                log(`[${currentActivityId}] ${entry.scope}: ${entry.duration}`);
+              });
           },
         },
       });
 
       // diagnostics of the following requests are captured by the handler supplied to `Presentation.initialize` call
-      await Presentation.getManager().getElementProperties({ imodel, elementId: id1 });
-      await Presentation.getManager().getElementProperties({ imodel, elementId: id2 });
+      await Presentation.getManager().getElementProperties({
+        imodel,
+        elementId: id1,
+      });
+      await Presentation.getManager().getElementProperties({
+        imodel,
+        elementId: id2,
+      });
       // __PUBLISH_EXTRACT_END__
 
       expect(getCurrentActivityId).to.be.calledTwice;
@@ -233,7 +299,5 @@ describe("Learning Snippets", () => {
       expect(log.firstCall.args[0]).to.match(/\[1\] GetContent: \d+/);
       expect(log.secondCall.args[0]).to.match(/\[2\] GetContent: \d+/);
     });
-
   });
-
 });

@@ -5,11 +5,11 @@ There may be multiple Content Views displayed at the same time.
 When more than one Content View is displayed, they are usually separated by splitters, allowing the user to resize the views.
 There are three constructs used to manage and lay out Content Views:
 
-|Construct|Description
-|-----|-----
-|**Content Control** | A class that specifies the React component to display for a Content View
-|**Content Group** | A collection of Content Controls
-|**Content Layout** | A layout configuration of Content Views
+| Construct           | Description                                                              |
+| ------------------- | ------------------------------------------------------------------------ |
+| **Content Control** | A class that specifies the React component to display for a Content View |
+| **Content Group**   | A collection of Content Controls                                         |
+| **Content Layout**  | A layout configuration of Content Views                                  |
 
 Content Groups and Layouts may be defined locally in a Frontstage or they may be defined centrally and registered by id with the ConfigurableUiManager.
 
@@ -35,7 +35,7 @@ import SimpleViewportComponent from "../components/Viewport";
 
 /**
  * iModel Viewport content
- */
+ */
 export class ViewportContent extends ViewportContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -43,10 +43,13 @@ export class ViewportContent extends ViewportContentControl {
     if (options.iModelConnection && options.viewId) {
       this.reactNode = (
         <SimpleViewportComponent
-          viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
+          viewportRef={(v: ScreenViewport) => {
+            this.viewport = v;
+          }}
           imodel={options.iModelConnection}
           viewDefinitionId={options.viewId}
-          rulesetId={options.rulesetId} />
+          rulesetId={options.rulesetId}
+        />
       );
     }
   }
@@ -67,10 +70,7 @@ The following shows a sample content control that subclasses [ContentControl]($a
 ```ts
 import * as React from "react";
 
-import {
-  ConfigurableCreateInfo,
-  ContentControl,
-} from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ContentControl } from "@itwin/appui-react";
 
 import SimpleTableComponent from "../components/Table";
 
@@ -82,7 +82,12 @@ export class TableContent extends ContentControl {
     super(info, options);
 
     if (options.iModelConnection) {
-      this.reactNode = <SimpleTableComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = (
+        <SimpleTableComponent
+          imodel={options.iModelConnection}
+          rulesetId={options.rulesetId}
+        />
+      );
     }
   }
 }
@@ -120,17 +125,16 @@ contentGroup = new ContentGroup({
     {
       classId: IModelViewportControl,
       applicationData: {
-      viewState: UiFramework.getDefaultViewState,
-      iModelConnection: UiFramework.getIModelConnection,
+        viewState: UiFramework.getDefaultViewState,
+        iModelConnection: UiFramework.getIModelConnection,
         rulesetId: this._rulesetId,
-        featureOptions:
-          {
-            defaultViewOverlay: {
-              enableScheduleAnimationViewOverlay: true,
-              enableAnalysisTimelineViewOverlay: false,
-              enableSolarTimelineViewOverlay: false,
-            },
+        featureOptions: {
+          defaultViewOverlay: {
+            enableScheduleAnimationViewOverlay: true,
+            enableAnalysisTimelineViewOverlay: false,
+            enableSolarTimelineViewOverlay: false,
           },
+        },
       },
     },
     {
@@ -139,7 +143,7 @@ contentGroup = new ContentGroup({
         iModelConnection: UiFramework.getIModelConnection,
         rulesetId: this._rulesetId,
       },
-    }
+    },
   ],
 });
 ```
@@ -150,7 +154,7 @@ A frontstage may either specify a 'static' ContentGroup or it may specify a [Con
 
 ## Content Layouts
 
-Standard Content Layouts are provided via the class [StandardContentLayouts]($appui-abstract). Users may also provide custom layouts using the  [ContentLayoutProps]($appui-abstract) interface. The layout is referenced by a ContentGroup within a Frontstage.
+Standard Content Layouts are provided via the class [StandardContentLayouts]($appui-abstract). Users may also provide custom layouts using the [ContentLayoutProps]($appui-abstract) interface. The layout is referenced by a ContentGroup within a Frontstage.
 
 ### A single view
 
@@ -172,7 +176,7 @@ The following shows a sample layout with two pieces of content that are side by 
 ```ts
 const twoHalvesVertical: ContentLayoutProps = {
   id: "TwoHalvesVertical",
-  verticalSplit: { percentage: 0.50, left: 0, right: 1 },
+  verticalSplit: { percentage: 0.5, left: 0, right: 1 },
 };
 ```
 
@@ -183,7 +187,7 @@ The following shows a sample layout with two pieces of content, one above the ot
 ```ts
 const twoHalvesHorizontal: ContentLayoutProps = {
   id: "TwoHalvesHorizontal",
-  horizontalSplit: { percentage: 0.50, top: 0, bottom: 1 },
+  horizontalSplit: { percentage: 0.5, top: 0, bottom: 1 },
 };
 ```
 
@@ -195,9 +199,9 @@ The following shows a sample layout with three pieces of content. The `left` sid
 const threeRightStacked: ContentLayoutProps = {
   id: "ThreeRightStacked",
   verticalSplit: {
-    percentage: 0.50,
+    percentage: 0.5,
     left: 0,
-    right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
+    right: { horizontalSplit: { percentage: 0.5, top: 1, bottom: 2 } },
   },
 };
 ```
@@ -210,9 +214,9 @@ The following shows a sample layout with four pieces of content. There is a `top
 const fourQuadrants: ContentLayoutProps = {
   id: "FourQuadrants",
   horizontalSplit: {
-    percentage: 0.50,
-    top: { verticalSplit: { percentage: 0.50, left: 0, right: 1 } },
-    bottom: { verticalSplit: { percentage: 0.50, left: 2, right: 3 } },
+    percentage: 0.5,
+    top: { verticalSplit: { percentage: 0.5, left: 0, right: 1 } },
+    bottom: { verticalSplit: { percentage: 0.5, left: 2, right: 3 } },
   },
 };
 ```
@@ -226,11 +230,18 @@ In addition to the "fixed" content views that are defined for a Frontstage, via 
 The code snippet below is from the `ui-test-app` file [ImmediateTools.tsx](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/ImmediateTools.tsx) and shows the API call to open a floating content dialog. The ContentDialogManager manages the z-index of the "active" content dialog and ensures the active dialog appears above other floating content dialogs.
 
 ```tsx
-    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={OpenViewDialogTool.dialogId}
-      title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
+ContentDialogManager.openDialog(
+  <IModelViewDialog
+    x={x}
+    y={y}
+    id={OpenViewDialogTool.dialogId}
+    title={`IModel View (${OpenViewDialogTool._counter})`}
+  />,
+  OpenViewDialogTool.dialogId
+);
 ```
 
- The example `IModelViewDialog` component uses the component [PopupTestView](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/PopupTestView.tsx), child component [FloatingViewportContent]($appui-react), the active IModel and the default viewstate to display an IModel view. This example `PopupTestView` also registers a custom right-click menu to show when right-clicking on the view canvas. The z-index of these dialogs are below the z-index of all other UI elements.
+The example `IModelViewDialog` component uses the component [PopupTestView](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/PopupTestView.tsx), child component [FloatingViewportContent]($appui-react), the active IModel and the default viewstate to display an IModel view. This example `PopupTestView` also registers a custom right-click menu to show when right-clicking on the view canvas. The z-index of these dialogs are below the z-index of all other UI elements.
 
 ## API Reference
 

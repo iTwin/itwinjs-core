@@ -37,11 +37,9 @@ export interface SliderProps {
 export function createSlider(props: SliderProps): Slider {
   const div = document.createElement("div");
   div.style.display = "block";
-  if (props.verticalAlign)
-    div.style.verticalAlign = props.verticalAlign;
+  if (props.verticalAlign) div.style.verticalAlign = props.verticalAlign;
 
-  if (props.textAlign)
-    div.style.textAlign = props.textAlign;
+  if (props.textAlign) div.style.textAlign = props.textAlign;
 
   const label = document.createElement("label");
   label.htmlFor = props.id;
@@ -69,8 +67,7 @@ export function createSlider(props: SliderProps): Slider {
     div.appendChild(readout);
   }
 
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
+  if (undefined !== props.parent) props.parent.appendChild(div);
 
   return { label, slider, div, readout };
 }

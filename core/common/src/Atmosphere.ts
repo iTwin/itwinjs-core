@@ -28,7 +28,6 @@ import { JsonUtils } from "@itwin/core-bentley";
  * Both of which are inspired by this Nvidia article on atmospheric scattering: https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering.
  */
 export namespace Atmosphere {
-
   /** @internal JSON representation of a [[Wavelengths]] object */
   export interface WavelengthsProps {
     r: number;
@@ -66,12 +65,9 @@ export namespace Atmosphere {
       let g = 0;
       let b = 0;
       if (undefined !== json) {
-        if (typeof json.r === "number")
-          r = json.r;
-        if (typeof json.g === "number")
-          g = json.g;
-        if (typeof json.b === "number")
-          b = json.b;
+        if (typeof json.r === "number") r = json.r;
+        if (typeof json.g === "number") g = json.g;
+        if (typeof json.b === "number") b = json.b;
       }
       return new Wavelengths({ r, g, b });
     }
@@ -106,14 +102,20 @@ export namespace Atmosphere {
     private static _defaultDensityFalloff: number = 10.0;
     private static _defaultMinDensityHeightBelowEarth: 0.0;
     private static _defaultScatteringStrength: number = 100;
-    private static _defaultWavelengths: Wavelengths = new Wavelengths({ r: 700.0, g: 530.0, b: 440.0 });
+    private static _defaultWavelengths: Wavelengths = new Wavelengths({
+      r: 700.0,
+      g: 530.0,
+      b: 440.0,
+    });
 
     private static _defaultNumViewRaySamples: number = 10;
     private static _highQualityNumViewRaySamples: number = 20;
     private static _defaultNumSunRaySamples: number = 5;
 
     public static readonly defaults = new Settings({});
-    public static readonly highQuality = new Settings({ numViewRaySamples: this._highQualityNumViewRaySamples });
+    public static readonly highQuality = new Settings({
+      numViewRaySamples: this._highQualityNumViewRaySamples,
+    });
 
     /** @internal If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     public readonly atmosphereHeightAboveEarth: number;
@@ -135,37 +137,55 @@ export namespace Atmosphere {
     public equals(other: Settings): boolean {
       if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth)
         return false;
-      if (this.exposure !== other.exposure)
+      if (this.exposure !== other.exposure) return false;
+      if (this.densityFalloff !== other.densityFalloff) return false;
+      if (
+        this.depthBelowEarthForMaxDensity !== other.depthBelowEarthForMaxDensity
+      )
         return false;
-      if (this.densityFalloff !== other.densityFalloff)
-        return false;
-      if (this.depthBelowEarthForMaxDensity !== other.depthBelowEarthForMaxDensity)
-        return false;
-      if (this.numViewRaySamples !== other.numViewRaySamples)
-        return false;
-      if (this.numSunRaySamples !== other.numSunRaySamples)
-        return false;
-      if (this.scatteringStrength !== other.scatteringStrength)
-        return false;
-      if (!this.wavelengths.equals(other.wavelengths))
-        return false;
+      if (this.numViewRaySamples !== other.numViewRaySamples) return false;
+      if (this.numSunRaySamples !== other.numSunRaySamples) return false;
+      if (this.scatteringStrength !== other.scatteringStrength) return false;
+      if (!this.wavelengths.equals(other.wavelengths)) return false;
       return true;
     }
 
     private constructor(json: Props) {
-      this.atmosphereHeightAboveEarth = JsonUtils.asDouble(json.atmosphereHeightAboveEarth, Settings._defaultAtmosphereHeightAboveEarth);
-      this.exposure = JsonUtils.asDouble(json.exposure, Settings._defaultExposure);
-      this.densityFalloff = JsonUtils.asDouble(json.densityFalloff, Settings._defaultDensityFalloff);
-      this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(json.depthBelowEarthForMaxDensity, Settings._defaultMinDensityHeightBelowEarth);
-      this.numViewRaySamples = JsonUtils.asDouble(json.numViewRaySamples, Settings._defaultNumViewRaySamples);
-      this.numSunRaySamples = JsonUtils.asDouble(json.numSunRaySamples, Settings._defaultNumSunRaySamples);
-      this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
-      this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);
+      this.atmosphereHeightAboveEarth = JsonUtils.asDouble(
+        json.atmosphereHeightAboveEarth,
+        Settings._defaultAtmosphereHeightAboveEarth
+      );
+      this.exposure = JsonUtils.asDouble(
+        json.exposure,
+        Settings._defaultExposure
+      );
+      this.densityFalloff = JsonUtils.asDouble(
+        json.densityFalloff,
+        Settings._defaultDensityFalloff
+      );
+      this.depthBelowEarthForMaxDensity = JsonUtils.asDouble(
+        json.depthBelowEarthForMaxDensity,
+        Settings._defaultMinDensityHeightBelowEarth
+      );
+      this.numViewRaySamples = JsonUtils.asDouble(
+        json.numViewRaySamples,
+        Settings._defaultNumViewRaySamples
+      );
+      this.numSunRaySamples = JsonUtils.asDouble(
+        json.numSunRaySamples,
+        Settings._defaultNumSunRaySamples
+      );
+      this.scatteringStrength = JsonUtils.asDouble(
+        json.scatteringStrength,
+        Settings._defaultScatteringStrength
+      );
+      this.wavelengths = Wavelengths.fromJSON(
+        JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths
+      );
     }
 
     public static fromJSON(json?: Props) {
-      if (undefined === json)
-        return this.defaults;
+      if (undefined === json) return this.defaults;
       return new Settings(json);
     }
 
@@ -181,8 +201,7 @@ export namespace Atmosphere {
         wavelengths: this.wavelengths.toJSON(),
       };
 
-      if (undefined !== display)
-        json.display = display;
+      if (undefined !== display) json.display = display;
 
       return json;
     }

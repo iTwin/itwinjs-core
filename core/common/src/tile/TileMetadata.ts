@@ -7,12 +7,24 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64, Id64String,
+  assert,
+  ByteStream,
+  compareBooleans,
+  compareBooleansOrUndefined,
+  compareNumbers,
+  compareStringsOrUndefined,
+  Id64,
+  Id64String,
 } from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
-import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
+import {
+  CurrentImdlVersion,
+  FeatureTableHeader,
+  ImdlFlags,
+  ImdlHeader,
+} from "./IModelTileIO";
 import { TileReadError, TileReadStatus } from "./TileIO";
 
 // cspell:ignore imdl mult bitfield
@@ -74,7 +86,10 @@ export namespace TileOptions {
    * @note `treeId` and `contentId` are assumed to be valid Ids. They are not fully parsed and validated - only the information required by this function is extracted.
    * @note `treeId` and `contentId` are assumed to have been produced for version 4 or later of the iMdl tile format.
    */
-  export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions {
+  export function fromTreeIdAndContentId(
+    treeId: string,
+    contentId: string
+  ): TileOptions {
     const tree = treeFlagsAndFormatVersionFromId(treeId);
     const contentFlags = contentFlagsFromId(contentId);
     const edgeOptions = edgeOptionsFromTreeId(treeId);
@@ -82,11 +97,15 @@ export namespace TileOptions {
     return {
       maximumMajorTileFormatVersion: tree.version,
       enableInstancing: 0 !== (contentFlags & ContentFlags.AllowInstancing),
-      enableImprovedElision: 0 !== (contentFlags & ContentFlags.ImprovedElision),
-      ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
-      enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
+      enableImprovedElision:
+        0 !== (contentFlags & ContentFlags.ImprovedElision),
+      ignoreAreaPatterns:
+        0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
+      enableExternalTextures:
+        0 !== (contentFlags & ContentFlags.ExternalTextures),
       useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
-      optimizeBRepProcessing: 0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
+      optimizeBRepProcessing:
+        0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
       useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
@@ -96,7 +115,10 @@ export namespace TileOptions {
   }
 }
 
-type ParsedPrimary = Omit<PrimaryTileTreeId, "type" | "animationId" | "enforceDisplayPriority">;
+type ParsedPrimary = Omit<
+  PrimaryTileTreeId,
+  "type" | "animationId" | "enforceDisplayPriority"
+>;
 interface ParsedClassifier {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
@@ -144,12 +166,21 @@ class Parser {
 
     let parsedContentId: ContentIdSpec;
     try {
-      parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
+      parsedContentId = ContentIdProvider.create(true, options).specFromId(
+        contentId
+      );
     } catch (e) {
       this.reject("Invalid content Id");
     }
 
-    if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
+    if (
+      Object.keys(parsedContentId).some(
+        (key) =>
+          parsedContentId.hasOwnProperty(key) &&
+          typeof parsedContentId[key as keyof ContentIdSpec] === "number" &&
+          !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])
+      )
+    )
       throw new Error("Invalid content Id");
 
     let treeId: IModelTileTreeId;
@@ -157,8 +188,14 @@ class Parser {
       treeId = { ...classifier, animationId };
     } else {
       assert(undefined !== primary);
-      const enforceDisplayPriority = (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined;
-      treeId = { ...primary, animationId, type: BatchType.Primary, enforceDisplayPriority };
+      const enforceDisplayPriority =
+        (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined;
+      treeId = {
+        ...primary,
+        animationId,
+        type: BatchType.Primary,
+        enforceDisplayPriority,
+      };
     }
 
     return {
@@ -188,9 +225,11 @@ class Parser {
     throw new Error(message);
   }
 
-  private require(condition: boolean, message = "Invalid tree Id"): asserts condition {
-    if (!condition)
-      this.reject(message);
+  private require(
+    condition: boolean,
+    message = "Invalid tree Id"
+  ): asserts condition {
+    if (!condition) this.reject(message);
   }
 
   private parseClassifier(): ParsedClassifier | undefined {
@@ -205,7 +244,10 @@ class Parser {
 
     // C: or CP: is always folowed by expansion then an underscore.
     let expansionStr = "";
-    while (this.curPos < this.input.length && (this.cur() >= "0" && this.cur() <= "9" || this.cur() === ".")) {
+    while (
+      this.curPos < this.input.length &&
+      ((this.cur() >= "0" && this.cur() <= "9") || this.cur() === ".")
+    ) {
       expansionStr += this.cur();
       this.advance();
     }
@@ -219,8 +261,7 @@ class Parser {
   }
 
   private parseAnimation(): Id64String | undefined {
-    if (this.cur() !== "A")
-      return undefined;
+    if (this.cur() !== "A") return undefined;
 
     this.eat("A");
     this.eat(":");
@@ -242,8 +283,7 @@ class Parser {
   }
 
   private parseEdges(): EdgeOptions | false {
-    if ("E" !== this.cur())
-      return { indexed: false, smooth: false };
+    if ("E" !== this.cur()) return { indexed: false, smooth: false };
 
     this.eat("E");
     this.eat(":");
@@ -253,17 +293,21 @@ class Parser {
     this.eat("_");
 
     switch (typeStr) {
-      case "0": return false;
-      case "2": return { indexed: true, smooth: false };
-      case "3": return { indexed: false, smooth: true };
-      case "4": return { indexed: true, smooth: true };
-      default: this.reject();
+      case "0":
+        return false;
+      case "2":
+        return { indexed: true, smooth: false };
+      case "3":
+        return { indexed: false, smooth: true };
+      case "4":
+        return { indexed: true, smooth: true };
+      default:
+        this.reject();
     }
   }
 
   private parseSectionCut(): string | undefined {
-    if ("S" !== this.cur())
-      return undefined;
+    if ("S" !== this.cur()) return undefined;
 
     this.eat("S");
     const termPos = this.input.indexOf("s", this.curPos);
@@ -276,7 +320,10 @@ class Parser {
 }
 
 /** @internal */
-export function parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId {
+export function parseTileTreeIdAndContentId(
+  treeId: string,
+  contentId: string
+): ParsedTileTreeIdAndContentId {
   const parser = new Parser(treeId);
   return parser.parse(contentId);
 }
@@ -298,23 +345,23 @@ export const defaultTileOptions: TileOptions = Object.freeze({
 });
 
 function contentFlagsFromId(id: string): ContentFlags {
-  if (0 === id.length || "-" !== id[0])
-    throw new Error("Invalid content Id");
+  if (0 === id.length || "-" !== id[0]) throw new Error("Invalid content Id");
 
   // V4: -flags-d-i-j-k-m - version in tree Id
   const end = id.indexOf("-", 1);
   if (-1 !== end) {
     const flags = Number.parseInt(id.substring(1, end), 16);
-    if (!Number.isNaN(flags))
-      return flags;
+    if (!Number.isNaN(flags)) return flags;
   }
 
   throw new Error("Invalid content Id");
 }
 
-function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, version: number } {
-  if (0 === id.length)
-    throw new Error("Invalid tree Id");
+function treeFlagsAndFormatVersionFromId(id: string): {
+  flags: TreeFlags;
+  version: number;
+} {
+  if (0 === id.length) throw new Error("Invalid tree Id");
 
   let parts = id.split("-");
   if (parts.length > 0) {
@@ -332,27 +379,36 @@ function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, versio
 
 function edgeOptionsFromTreeId(id: string): EdgeOptions {
   const pos = id.indexOf("E:");
-  if (pos <= 0)
-    return { indexed: false, smooth: false };
+  if (pos <= 0) return { indexed: false, smooth: false };
 
   switch (id[pos + 2]) {
-    case "0": return { indexed: defaultTileOptions.enableIndexedEdges, smooth: defaultTileOptions.generateAllPolyfaceEdges };
-    case "2": return { indexed: true, smooth: false };
-    case "3": return { indexed: false, smooth: true };
-    case "4": return { indexed: true, smooth: true };
+    case "0":
+      return {
+        indexed: defaultTileOptions.enableIndexedEdges,
+        smooth: defaultTileOptions.generateAllPolyfaceEdges,
+      };
+    case "2":
+      return { indexed: true, smooth: false };
+    case "3":
+      return { indexed: false, smooth: true };
+    case "4":
+      return { indexed: true, smooth: true };
   }
 
   throw new Error("Invalid tree Id");
 }
 
 /** @internal */
-export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number {
+export function getMaximumMajorTileFormatVersion(
+  maxMajorVersion: number,
+  formatVersion?: number
+): number {
   // The `formatVersion` input is from the backend, telling us precisely the maximum major+minor version it can produce.
   // Ensure we do not request tiles of a newer major version than backend can supply or it can read; and also limit major version
   // to that optionally configured by the app.
   let majorVersion = maxMajorVersion;
   if (undefined !== formatVersion)
-    majorVersion = Math.min((formatVersion >>> 0x10), majorVersion);
+    majorVersion = Math.min(formatVersion >>> 0x10, majorVersion);
 
   // Version number less than 1 is invalid - ignore
   majorVersion = Math.max(majorVersion, 1);
@@ -387,9 +443,11 @@ export interface EdgeOptions {
   smooth: boolean;
 }
 
-function compareEdgeOptions(a: EdgeOptions | false, b: EdgeOptions | false): number {
-  if (typeof a !== typeof b)
-    return a ? 1 : -1;
+function compareEdgeOptions(
+  a: EdgeOptions | false,
+  b: EdgeOptions | false
+): number {
+  if (typeof a !== typeof b) return a ? 1 : -1;
 
   if (typeof a === "boolean") {
     assert(typeof b === "boolean");
@@ -398,8 +456,7 @@ function compareEdgeOptions(a: EdgeOptions | false, b: EdgeOptions | false): num
 
   assert(typeof b === "object");
   let cmp = compareBooleans(a.indexed, b.indexed);
-  if (0 === cmp)
-    cmp = compareBooleans(a.smooth, b.smooth);
+  if (0 === cmp) cmp = compareBooleans(a.smooth, b.smooth);
 
   return cmp;
 }
@@ -446,29 +503,32 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 /** Convert a tile tree Id to its string representation.
  * @internal
  */
-export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string {
+export function iModelTileTreeIdToString(
+  modelId: Id64String,
+  treeId: IModelTileTreeId,
+  options: TileOptions
+): string {
   let idStr = "";
-  let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
-  if (options.optimizeBRepProcessing)
-    flags |= TreeFlags.OptimizeBRepProcessing;
+  let flags = options.useProjectExtents
+    ? TreeFlags.UseProjectExtents
+    : TreeFlags.None;
+  if (options.optimizeBRepProcessing) flags |= TreeFlags.OptimizeBRepProcessing;
 
-  if (options.useLargerTiles)
-    flags |= TreeFlags.UseLargerTiles;
+  if (options.useLargerTiles) flags |= TreeFlags.UseLargerTiles;
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
       idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
-    else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
+    else if (treeId.enforceDisplayPriority)
+      // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
     let edges;
     if (!treeId.edges) {
       edges = "E:0_";
     } else {
-      if (!treeId.edges.smooth)
-        edges = treeId.edges.indexed ? "E:2_" : "";
-      else
-        edges = treeId.edges.indexed ? "E:4_" : "E:3_";
+      if (!treeId.edges.smooth) edges = treeId.edges.indexed ? "E:2_" : "";
+      else edges = treeId.edges.indexed ? "E:4_" : "E:3_";
     }
 
     const sectionCut = treeId.sectionCut ? `S${treeId.sectionCut}s` : "";
@@ -484,7 +544,9 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
       idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
   }
 
-  const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
+  const version = getMaximumMajorTileFormatVersion(
+    options.maximumMajorTileFormatVersion
+  );
   if (version >= 4) {
     const prefix = `${version.toString(16)}_${flags.toString(16)}-`;
     idStr = prefix + idStr;
@@ -496,20 +558,25 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 /** Ordinal comparison of two tile tree Ids, e.g., for use in sorted containers.
  * @internal
  */
-export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number {
+export function compareIModelTileTreeIds(
+  lhs: IModelTileTreeId,
+  rhs: IModelTileTreeId
+): number {
   let cmp = compareNumbers(lhs.type, rhs.type);
   if (0 === cmp)
     cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
 
-  if (0 !== cmp)
-    return cmp;
+  if (0 !== cmp) return cmp;
 
   // NB: The redundant checks on BatchType below are to satisfy compiler.
   assert(lhs.type === rhs.type);
   if (BatchType.Primary === lhs.type && BatchType.Primary === rhs.type) {
     cmp = compareEdgeOptions(lhs.edges, rhs.edges);
     if (0 === cmp) {
-      cmp = compareBooleansOrUndefined(lhs.enforceDisplayPriority, rhs.enforceDisplayPriority);
+      cmp = compareBooleansOrUndefined(
+        lhs.enforceDisplayPriority,
+        rhs.enforceDisplayPriority
+      );
       if (0 === cmp)
         cmp = compareStringsOrUndefined(lhs.sectionCut, rhs.sectionCut);
     }
@@ -568,7 +635,10 @@ export abstract class ContentIdProvider {
     return this.computeId(0, 0, 0, 0, 1);
   }
 
-  public idFromParentAndMultiplier(parentId: string, multiplier: number): string {
+  public idFromParentAndMultiplier(
+    parentId: string,
+    multiplier: number
+  ): string {
     const lastSepPos = parentId.lastIndexOf(this._separator);
     assert(-1 !== lastSepPos);
     return parentId.substring(0, lastSepPos + 1) + multiplier.toString(16);
@@ -591,20 +661,49 @@ export abstract class ContentIdProvider {
     return this.computeId(spec.depth, spec.i, spec.j, spec.k, spec.multiplier);
   }
 
-  protected join(depth: number, i: number, j: number, k: number, mult: number): string {
+  protected join(
+    depth: number,
+    i: number,
+    j: number,
+    k: number,
+    mult: number
+  ): string {
     const sep = this._separator;
-    return depth.toString(16) + sep + i.toString(16) + sep + j.toString(16) + sep + k.toString(16) + sep + mult.toString(16);
+    return (
+      depth.toString(16) +
+      sep +
+      i.toString(16) +
+      sep +
+      j.toString(16) +
+      sep +
+      k.toString(16) +
+      sep +
+      mult.toString(16)
+    );
   }
 
   protected abstract get _separator(): string;
-  protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
+  protected abstract computeId(
+    depth: number,
+    i: number,
+    j: number,
+    k: number,
+    mult: number
+  ): string;
 
   /** formatVersion is the maximum major version supported by the back-end supplying the tile tree.
    * Must ensure front-end does not request tiles of a format the back-end cannot supply, and back-end does
    * not supply tiles of a format the front-end doesn't recognize.
    */
-  public static create(allowInstancing: boolean, options: TileOptions, formatVersion?: number): ContentIdProvider {
-    const majorVersion = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion, formatVersion);
+  public static create(
+    allowInstancing: boolean,
+    options: TileOptions,
+    formatVersion?: number
+  ): ContentIdProvider {
+    const majorVersion = getMaximumMajorTileFormatVersion(
+      options.maximumMajorTileFormatVersion,
+      formatVersion
+    );
     assert(majorVersion > 0);
     assert(Math.floor(majorVersion) === majorVersion);
     switch (majorVersion) {
@@ -629,8 +728,16 @@ class ContentIdV1Provider extends ContentIdProvider {
     super(majorVersion, ContentFlags.None);
   }
 
-  protected get _separator() { return "/"; }
-  protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
+  protected get _separator() {
+    return "/";
+  }
+  protected computeId(
+    depth: number,
+    i: number,
+    j: number,
+    k: number,
+    mult: number
+  ): string {
     return this.join(depth, i, j, k, mult);
   }
 }
@@ -642,14 +749,34 @@ class ContentIdV1Provider extends ContentIdProvider {
 class ContentIdV2Provider extends ContentIdProvider {
   private readonly _prefix: string;
 
-  public constructor(majorVersion: number, allowInstancing: boolean, options: TileOptions) {
-    const flags = (allowInstancing && options.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+  public constructor(
+    majorVersion: number,
+    allowInstancing: boolean,
+    options: TileOptions
+  ) {
+    const flags =
+      allowInstancing && options.enableInstancing
+        ? ContentFlags.AllowInstancing
+        : ContentFlags.None;
     super(majorVersion, flags);
-    this._prefix = this._separator + majorVersion.toString(16) + this._separator + flags.toString(16) + this._separator;
+    this._prefix =
+      this._separator +
+      majorVersion.toString(16) +
+      this._separator +
+      flags.toString(16) +
+      this._separator;
   }
 
-  protected get _separator() { return "_"; }
-  protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
+  protected get _separator() {
+    return "_";
+  }
+  protected computeId(
+    depth: number,
+    i: number,
+    j: number,
+    k: number,
+    mult: number
+  ): string {
     return this._prefix + this.join(depth, i, j, k, mult);
   }
 }
@@ -661,8 +788,15 @@ class ContentIdV2Provider extends ContentIdProvider {
 class ContentIdV4Provider extends ContentIdProvider {
   private readonly _prefix: string;
 
-  public constructor(allowInstancing: boolean, options: TileOptions, majorVersion: number) {
-    let flags = (allowInstancing && options.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
+  public constructor(
+    allowInstancing: boolean,
+    options: TileOptions,
+    majorVersion: number
+  ) {
+    let flags =
+      allowInstancing && options.enableInstancing
+        ? ContentFlags.AllowInstancing
+        : ContentFlags.None;
     if (options.enableImprovedElision)
       flags = flags | ContentFlags.ImprovedElision;
 
@@ -676,8 +810,16 @@ class ContentIdV4Provider extends ContentIdProvider {
     this._prefix = this._separator + flags.toString(16) + this._separator;
   }
 
-  protected get _separator() { return "-"; }
-  protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
+  protected get _separator() {
+    return "-";
+  }
+  protected computeId(
+    depth: number,
+    i: number,
+    j: number,
+    k: number,
+    mult: number
+  ): string {
     return this._prefix + this.join(depth, i, j, k, mult);
   }
 }
@@ -688,31 +830,30 @@ export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void {
   const pt = takeUpper ? range.high : range.low;
   if (diag.x > diag.y && diag.x > diag.z)
     pt.x = (range.low.x + range.high.x) / 2.0;
-  else if (diag.y > diag.z)
-    pt.y = (range.low.y + range.high.y) / 2.0;
-  else
-    pt.z = (range.low.z + range.high.z) / 2.0;
+  else if (diag.y > diag.z) pt.y = (range.low.y + range.high.y) / 2.0;
+  else pt.z = (range.low.z + range.high.z) / 2.0;
 }
 
 /** @internal */
 export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void {
   const diag = range.diagonal();
   const pt = takeUpper ? range.high : range.low;
-  if (diag.x > diag.y)
-    pt.x = (range.low.x + range.high.x) / 2.0;
-  else
-    pt.y = (range.low.y + range.high.y) / 2.0;
+  if (diag.x > diag.y) pt.x = (range.low.x + range.high.x) / 2.0;
+  else pt.y = (range.low.y + range.high.y) / 2.0;
 }
 
 /** Given a description of a tile, compute the ranges which would result from sub-dividing its range into 4 or 8 sub-volumes.
  * @internal
  */
-export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadata): Array<{ range: Range3d, isEmpty: boolean }> {
+export function computeChildTileRanges(
+  tile: TileMetadata,
+  root: TileTreeMetadata
+): Array<{ range: Range3d; isEmpty: boolean }> {
   const emptyMask = tile.emptySubRangeMask;
   const is2d = root.is2d;
   const bisectRange = is2d ? bisectTileRange2d : bisectTileRange3d;
 
-  const ranges: Array<{ range: Range3d, isEmpty: boolean }> = [];
+  const ranges: Array<{ range: Range3d; isEmpty: boolean }> = [];
   for (let i = 0; i < 2; i++) {
     for (let j = 0; j < 2; j++) {
       for (let k = 0; k < (is2d ? 1 : 2); k++) {
@@ -722,8 +863,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
         const range = tile.range.clone();
         bisectRange(range, 0 === i);
         bisectRange(range, 0 === j);
-        if (!is2d)
-          bisectRange(range, 0 === k);
+        if (!is2d) bisectRange(range, 0 === k);
 
         ranges.push({ range, isEmpty });
       }
@@ -736,18 +876,24 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 /** Given a description of the parent tile, obtain the properties of its child tiles, and the number of empty children.
  * @internal
  */
-export function computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata): { children: TileProps[], numEmpty: number } {
+export function computeChildTileProps(
+  parent: TileMetadata,
+  idProvider: ContentIdProvider,
+  root: TileTreeMetadata
+): { children: TileProps[]; numEmpty: number } {
   let numEmpty = 0;
   const children: TileProps[] = [];
 
   // Leaf nodes have no children
-  if (parent.isLeaf)
-    return { children, numEmpty };
+  if (parent.isLeaf) return { children, numEmpty };
 
   // One child, same volume as parent, but higher-resolution.
   if (undefined !== parent.sizeMultiplier) {
     const sizeMultiplier = parent.sizeMultiplier * 2;
-    const contentId = idProvider.idFromParentAndMultiplier(parent.contentId, sizeMultiplier);
+    const contentId = idProvider.idFromParentAndMultiplier(
+      parent.contentId,
+      sizeMultiplier
+    );
     children.push({
       contentId,
       range: parent.range,
@@ -772,7 +918,10 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
   // Spatial tree range == project extents; content range == model range.
   // Trivially reject children whose ranges are entirely outside model range.
   let treeContentRange = root.contentRange;
-  if (undefined !== treeContentRange && treeContentRange.containsRange(parent.range)) {
+  if (
+    undefined !== treeContentRange &&
+    treeContentRange.containsRange(parent.range)
+  ) {
     // Parent is wholly within model range - don't bother testing child ranges against it.
     treeContentRange = undefined;
   }
@@ -792,10 +941,12 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
         const range = parent.range.clone();
         bisectRange(range, 0 === i);
         bisectRange(range, 0 === j);
-        if (!is2d)
-          bisectRange(range, 0 === k);
+        if (!is2d) bisectRange(range, 0 === k);
 
-        if (undefined !== treeContentRange && !range.intersectsRange(treeContentRange)) {
+        if (
+          undefined !== treeContentRange &&
+          !range.intersectsRange(treeContentRange)
+        ) {
           // volume is within project extents but entirely outside model range
           ++numEmpty;
           continue;
@@ -806,7 +957,11 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
         childSpec.k = parentSpec.k * 2 + k;
 
         const childId = idProvider.idFromSpec(childSpec);
-        children.push({ contentId: childId, range, maximumSize: root.tileScreenSize });
+        children.push({
+          contentId: childId,
+          range,
+          maximumSize: root.tileScreenSize,
+        });
       }
     }
   }
@@ -824,8 +979,20 @@ export interface TileContentDescription extends TileContentMetadata {
  * @internal
  * @deprecated in 4.0. Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
  */
-export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription {
-  return decodeTileContentDescription({ stream, sizeMultiplier, is2d, options, isVolumeClassifier });
+export function readTileContentDescription(
+  stream: ByteStream,
+  sizeMultiplier: number | undefined,
+  is2d: boolean,
+  options: TileOptions,
+  isVolumeClassifier: boolean
+): TileContentDescription {
+  return decodeTileContentDescription({
+    stream,
+    sizeMultiplier,
+    is2d,
+    options,
+    isVolumeClassifier,
+  });
 }
 
 /** @internal */
@@ -839,15 +1006,16 @@ export interface DecodeTileContentDescriptionArgs {
 }
 
 /** @internal */
-export function decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription {
+export function decodeTileContentDescription(
+  args: DecodeTileContentDescriptionArgs
+): TileContentDescription {
   const { stream, options } = args;
   const isVolumeClassifier = args.isVolumeClassifier ?? false;
 
   stream.reset();
 
   const header = new ImdlHeader(stream);
-  if (!header.isValid)
-    throw new TileReadError(TileReadStatus.InvalidHeader);
+  if (!header.isValid) throw new TileReadError(TileReadStatus.InvalidHeader);
   else if (!header.isReadableVersion)
     throw new TileReadError(TileReadStatus.NewerMajorVersion);
 
@@ -864,28 +1032,45 @@ export function decodeTileContentDescription(args: DecodeTileContentDescriptionA
   if (undefined === isLeaf) {
     // Determine subdivision based on header data.
     const completeTile = 0 === (header.flags & ImdlFlags.Incomplete);
-    const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-    isLeaf = (emptyTile || isVolumeClassifier); // Current classifier algorithm supports only a single tile.
+    const emptyTile =
+      completeTile &&
+      0 === header.numElementsIncluded &&
+      0 === header.numElementsExcluded;
+    isLeaf = emptyTile || isVolumeClassifier; // Current classifier algorithm supports only a single tile.
     if (!isLeaf) {
       // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
       // can be adversely affected by quantization issues when zooming in closely.
       const maxLeafTolerance = 1.0;
 
       // Must sub-divide if tile explicitly specifies...
-      let canSkipSubdivision = 0 === (header.flags & ImdlFlags.DisallowMagnification);
+      let canSkipSubdivision =
+        0 === (header.flags & ImdlFlags.DisallowMagnification);
       // ...or in 2d, or if app explicitly disabled magnification, or tolerance large enough to risk quantization error...
-      canSkipSubdivision = canSkipSubdivision && !args.is2d && !options.disableMagnification && header.tolerance <= maxLeafTolerance;
+      canSkipSubdivision =
+        canSkipSubdivision &&
+        !args.is2d &&
+        !options.disableMagnification &&
+        header.tolerance <= maxLeafTolerance;
       // ...or app specifies incomplete tiles must always be sub-divided.
-      canSkipSubdivision = canSkipSubdivision && (completeTile || !options.alwaysSubdivideIncompleteTiles);
+      canSkipSubdivision =
+        canSkipSubdivision &&
+        (completeTile || !options.alwaysSubdivideIncompleteTiles);
       if (canSkipSubdivision) {
         const minElementsPerTile = 100;
-        if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
-          const containsCurves = 0 !== (header.flags & ImdlFlags.ContainsCurves);
-          if (!containsCurves)
-            isLeaf = true;
-          else if (undefined === sizeMultiplier)
-            sizeMultiplier = 1.0;
-        } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
+        if (
+          completeTile &&
+          0 === header.numElementsExcluded &&
+          header.numElementsIncluded <= minElementsPerTile
+        ) {
+          const containsCurves =
+            0 !== (header.flags & ImdlFlags.ContainsCurves);
+          if (!containsCurves) isLeaf = true;
+          else if (undefined === sizeMultiplier) sizeMultiplier = 1.0;
+        } else if (
+          undefined === sizeMultiplier &&
+          header.numElementsIncluded + header.numElementsExcluded <=
+            minElementsPerTile
+        ) {
           sizeMultiplier = 1.0;
         }
       }
@@ -906,15 +1091,21 @@ const scratchRangeDiagonal = new Vector3d();
 /** Compute the chord tolerance for the specified tile of the given range with the specified size multiplier.
  * @internal
  */
-export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number {
-  if (tile.range.isNull)
-    return 0;
+export function computeTileChordTolerance(
+  tile: TileMetadata,
+  is3d: boolean,
+  tileScreenSize: number
+): number {
+  if (tile.range.isNull) return 0;
 
   const diagonal = tile.range.diagonal(scratchRangeDiagonal);
   const diagDist = is3d ? diagonal.magnitude() : diagonal.magnitudeXY();
 
   const mult = Math.max(tile.sizeMultiplier ?? 1, 1);
-  return diagDist / (tileScreenSize * Constants.minToleranceRatioMultiplier * Math.max(1, mult));
+  return (
+    diagDist /
+    (tileScreenSize * Constants.minToleranceRatioMultiplier * Math.max(1, mult))
+  );
 }
 
 /** Deserializes tile metadata.

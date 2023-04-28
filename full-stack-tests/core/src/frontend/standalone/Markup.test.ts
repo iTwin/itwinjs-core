@@ -3,11 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
-import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
+import {
+  IModelApp,
+  IModelConnection,
+  SnapshotConnection,
+  StandardViewId,
+  StandardViewTool,
+  WindowAreaTool,
+} from "@itwin/core-frontend";
+import {
+  EditTextTool,
+  LineTool,
+  MarkupApp,
+  SelectTool,
+} from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { TestUtility } from "../TestUtility";
-import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
+import {
+  createOnScreenTestViewport,
+  ScreenTestViewport,
+} from "../TestViewport";
 
 describe("Markup tests", async () => {
   let imodel: IModelConnection;
@@ -27,7 +42,8 @@ describe("Markup tests", async () => {
     await TestUtility.shutdownFrontend();
   });
 
-  const makeRect = (g: G) => g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);
+  const makeRect = (g: G) =>
+    g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);
 
   it("should initialize Markup", async () => {
     const tools = IModelApp.tools;
@@ -36,23 +52,41 @@ describe("Markup tests", async () => {
 
     assert.isDefined(tools.find(SelectTool.toolId), "select tool registered");
     assert.isDefined(tools.find(LineTool.toolId), "line tool registered");
-    assert.isDefined(tools.find(EditTextTool.toolId), "edit text tool registered");
+    assert.isDefined(
+      tools.find(EditTextTool.toolId),
+      "edit text tool registered"
+    );
     assert.isDefined(markup, "markup created");
     assert.equal(toolAdmin.markupView, vp, "set markup view");
     assert.equal(markup.vp, vp, "markup vp");
-    assert.equal(markup.markupDiv.parentElement, vp.vpDiv, "markup div child of vpDiv");
+    assert.equal(
+      markup.markupDiv.parentElement,
+      vp.vpDiv,
+      "markup div child of vpDiv"
+    );
     assert.isDefined(markup.svgContainer, "svgContainer defined");
     assert.isDefined(markup.svgMarkup, "svgMarkup defined");
     assert.isDefined(markup.svgDecorations, "svgDecorations defined");
     assert.isDefined(markup.svgDynamics, "svgDynamics defined");
     assert.isTrue(markup.selected.isEmpty, "markup selected should be empty");
-    assert.equal(toolAdmin.defaultToolId, SelectTool.toolId, "Select tool is default tool");
-    assert.equal(toolAdmin.activeTool!.toolId, SelectTool.toolId, "Select tool is active");
+    assert.equal(
+      toolAdmin.defaultToolId,
+      SelectTool.toolId,
+      "Select tool is default tool"
+    );
+    assert.equal(
+      toolAdmin.activeTool!.toolId,
+      SelectTool.toolId,
+      "Select tool is active"
+    );
   });
 
   it("viewing tools should fail when Markup active", async () => {
     const tools = IModelApp.tools;
-    assert.isFalse(await tools.run(StandardViewTool.toolId, vp, StandardViewId.Back), "standard view");
+    assert.isFalse(
+      await tools.run(StandardViewTool.toolId, vp, StandardViewId.Back),
+      "standard view"
+    );
     assert.isFalse(await tools.run(WindowAreaTool.toolId, vp), "standard view");
   });
 
@@ -106,9 +140,17 @@ describe("Markup tests", async () => {
     rect.replace(clone);
 
     undo.performOperation("three", () => undo.onModified(clone, rect));
-    assert.equal((children[0] as LinkedHTMLElement).instance.css("stroke"), "white", "element is now white");
+    assert.equal(
+      (children[0] as LinkedHTMLElement).instance.css("stroke"),
+      "white",
+      "element is now white"
+    );
     undo.doUndo();
-    assert.equal((children[0] as LinkedHTMLElement).instance.css("stroke"), "red", "element is now red");
+    assert.equal(
+      (children[0] as LinkedHTMLElement).instance.css("stroke"),
+      "red",
+      "element is now red"
+    );
 
     const group = svgMarkup.group();
     undo.performOperation("four", () => {
@@ -123,10 +165,18 @@ describe("Markup tests", async () => {
     assert.equal(rect.parent(), group, "rect in group");
     undo.doUndo();
     assert.equal(children.length, 1, "grouped undone");
-    assert.equal((children[0] as LinkedHTMLElement).instance, rect, "undo group");
+    assert.equal(
+      (children[0] as LinkedHTMLElement).instance,
+      rect,
+      "undo group"
+    );
     assert.equal(rect.parent(), svgMarkup, "rect in root");
     undo.doRedo();
-    assert.equal((children[0] as LinkedHTMLElement).instance, group, "group redone");
+    assert.equal(
+      (children[0] as LinkedHTMLElement).instance,
+      group,
+      "group redone"
+    );
     assert.equal(rect.parent(), group, "redo rect in group");
   });
 });

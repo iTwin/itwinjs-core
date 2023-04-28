@@ -2,8 +2,8 @@
 
 As described in the [Tree selection handling section](./index.md#tree), selection in a Tree component and Unified Selection are synchronized in a two-way manner:
 
-- When a tree node is selected, *ECInstances* it represents are added to unified selection.
-- When an *ECInstance* is added to unified selection, the nodes that represent that *ECInstance* are selected in the tree component.
+- When a tree node is selected, _ECInstances_ it represents are added to unified selection.
+- When an _ECInstance_ is added to unified selection, the nodes that represent that _ECInstance_ are selected in the tree component.
 
 ## Reference
 

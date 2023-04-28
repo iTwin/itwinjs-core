@@ -6,7 +6,14 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, FormDataCommon, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import {
+  BentleyStatus,
+  FormDataCommon,
+  HttpServerRequest,
+  IModelError,
+  RpcMultipart,
+  RpcSerializedValue,
+} from "@itwin/core-common";
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";
 
@@ -30,7 +37,7 @@ export async function parseMultipartRequest(req: HttpServerRequest) {
     });
 
     const value = RpcSerializedValue.create();
-    const data: { [index: string]: { size: number, chunks: Buffer[] } } = {};
+    const data: { [index: string]: { size: number; chunks: Buffer[] } } = {};
 
     form.on("part", (part: multiparty.Part) => {
       part.on("data", (chunk: string | Buffer) => {
@@ -51,7 +58,7 @@ export async function parseMultipartRequest(req: HttpServerRequest) {
 
     form.on("close", () => {
       let i = 0;
-      for (; ;) {
+      for (;;) {
         const part = data[`data-${i}`];
         if (!part) {
           break;
@@ -69,7 +76,14 @@ export async function parseMultipartRequest(req: HttpServerRequest) {
 }
 
 /** @internal */
-export function appendToMultipartForm(i: number, form: FormDataCommon, value: RpcSerializedValue) {
+export function appendToMultipartForm(
+  i: number,
+  form: FormDataCommon,
+  value: RpcSerializedValue
+) {
   const buf = value.data[i];
-  form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
+  form.append(
+    `data-${i}`,
+    Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength)
+  );
 }

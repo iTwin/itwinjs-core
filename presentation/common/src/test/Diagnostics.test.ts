@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  combineDiagnosticsSeverities, compareDiagnosticsSeverities, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsScopeLogs,
+  combineDiagnosticsSeverities,
+  compareDiagnosticsSeverities,
+  DiagnosticsLogEntry,
+  DiagnosticsLogMessage,
+  DiagnosticsScopeLogs,
 } from "../presentation-common/Diagnostics";
 
 describe("DiagnosticsLogEntry", () => {
-
   const createMessage = (): DiagnosticsLogMessage => ({
     severity: {
       dev: "info",
@@ -26,23 +29,18 @@ describe("DiagnosticsLogEntry", () => {
   });
 
   describe("isMessage", () => {
-
     it("returns correct results", () => {
       expect(DiagnosticsLogEntry.isMessage(createMessage())).to.be.true;
       expect(DiagnosticsLogEntry.isMessage(createScope())).to.be.false;
     });
-
   });
 
   describe("isScope", () => {
-
     it("returns correct results", () => {
       expect(DiagnosticsLogEntry.isScope(createMessage())).to.be.false;
       expect(DiagnosticsLogEntry.isScope(createScope())).to.be.true;
     });
-
   });
-
 });
 
 describe("combineDiagnosticsSeverities", () => {
@@ -53,7 +51,7 @@ describe("combineDiagnosticsSeverities", () => {
     expect(combineDiagnosticsSeverities(false, undefined)).to.be.undefined;
   });
 
-  it("returns \"error\" when any of the inputs is \"error\"", () => {
+  it('returns "error" when any of the inputs is "error"', () => {
     expect(combineDiagnosticsSeverities("error", "error")).to.eq("error");
     expect(combineDiagnosticsSeverities("error", undefined)).to.eq("error");
     expect(combineDiagnosticsSeverities("error", false)).to.eq("error");
@@ -61,7 +59,7 @@ describe("combineDiagnosticsSeverities", () => {
     expect(combineDiagnosticsSeverities(false, "error")).to.eq("error");
   });
 
-  it("returns \"warning\" when any of the inputs is \"warning\" or higher", () => {
+  it('returns "warning" when any of the inputs is "warning" or higher', () => {
     expect(combineDiagnosticsSeverities("warning", "warning")).to.eq("warning");
     expect(combineDiagnosticsSeverities("warning", undefined)).to.eq("warning");
     expect(combineDiagnosticsSeverities("warning", false)).to.eq("warning");
@@ -71,7 +69,7 @@ describe("combineDiagnosticsSeverities", () => {
     expect(combineDiagnosticsSeverities("error", "warning")).to.eq("warning");
   });
 
-  it("returns \"info\" when any of the inputs is \"info\" or higher", () => {
+  it('returns "info" when any of the inputs is "info" or higher', () => {
     expect(combineDiagnosticsSeverities("info", "info")).to.eq("info");
     expect(combineDiagnosticsSeverities("info", undefined)).to.eq("info");
     expect(combineDiagnosticsSeverities("info", false)).to.eq("info");
@@ -83,7 +81,7 @@ describe("combineDiagnosticsSeverities", () => {
     expect(combineDiagnosticsSeverities("warning", "info")).to.eq("info");
   });
 
-  it("returns \"debug\" when any of the inputs is \"debug\" or higher", () => {
+  it('returns "debug" when any of the inputs is "debug" or higher', () => {
     expect(combineDiagnosticsSeverities("debug", "debug")).to.eq("debug");
     expect(combineDiagnosticsSeverities("debug", undefined)).to.eq("debug");
     expect(combineDiagnosticsSeverities("debug", false)).to.eq("debug");
@@ -97,7 +95,7 @@ describe("combineDiagnosticsSeverities", () => {
     expect(combineDiagnosticsSeverities("info", "debug")).to.eq("debug");
   });
 
-  it("returns \"debug\" when any of the inputs is `true` or higher than \"debug\"", () => {
+  it('returns "debug" when any of the inputs is `true` or higher than "debug"', () => {
     expect(combineDiagnosticsSeverities(true, true)).to.eq("debug");
     expect(combineDiagnosticsSeverities(true, undefined)).to.eq("debug");
     expect(combineDiagnosticsSeverities(true, false)).to.eq("debug");
@@ -111,7 +109,7 @@ describe("combineDiagnosticsSeverities", () => {
     expect(combineDiagnosticsSeverities("info", true)).to.eq("debug");
   });
 
-  it("returns \"trace\" when any of the inputs is \"trace\" or higher", () => {
+  it('returns "trace" when any of the inputs is "trace" or higher', () => {
     expect(combineDiagnosticsSeverities("trace", "trace")).to.eq("trace");
     expect(combineDiagnosticsSeverities("trace", undefined)).to.eq("trace");
     expect(combineDiagnosticsSeverities("trace", false)).to.eq("trace");
@@ -147,11 +145,19 @@ describe("compareDiagnosticsSeverities", () => {
   });
 
   it("returns positive when given lhs is higher severity than rhs", () => {
-    expect(compareDiagnosticsSeverities(undefined, "warning")).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities(undefined, "info")).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities(undefined, "debug")).to.be.greaterThan(0);
+    expect(
+      compareDiagnosticsSeverities(undefined, "warning")
+    ).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities(undefined, "info")).to.be.greaterThan(
+      0
+    );
+    expect(compareDiagnosticsSeverities(undefined, "debug")).to.be.greaterThan(
+      0
+    );
     expect(compareDiagnosticsSeverities(undefined, true)).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities(undefined, "trace")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities(undefined, "trace")).to.be.greaterThan(
+      0
+    );
 
     expect(compareDiagnosticsSeverities(false, "warning")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities(false, "info")).to.be.greaterThan(0);
@@ -159,16 +165,24 @@ describe("compareDiagnosticsSeverities", () => {
     expect(compareDiagnosticsSeverities(false, true)).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities(false, "trace")).to.be.greaterThan(0);
 
-    expect(compareDiagnosticsSeverities("error", "warning")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities("error", "warning")).to.be.greaterThan(
+      0
+    );
     expect(compareDiagnosticsSeverities("error", "info")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", "debug")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", true)).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("error", "trace")).to.be.greaterThan(0);
 
-    expect(compareDiagnosticsSeverities("warning", "info")).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities("warning", "debug")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities("warning", "info")).to.be.greaterThan(
+      0
+    );
+    expect(compareDiagnosticsSeverities("warning", "debug")).to.be.greaterThan(
+      0
+    );
     expect(compareDiagnosticsSeverities("warning", true)).to.be.greaterThan(0);
-    expect(compareDiagnosticsSeverities("warning", "trace")).to.be.greaterThan(0);
+    expect(compareDiagnosticsSeverities("warning", "trace")).to.be.greaterThan(
+      0
+    );
 
     expect(compareDiagnosticsSeverities("info", "debug")).to.be.greaterThan(0);
     expect(compareDiagnosticsSeverities("info", true)).to.be.greaterThan(0);
@@ -205,6 +219,8 @@ describe("compareDiagnosticsSeverities", () => {
 
     expect(compareDiagnosticsSeverities("warning", "error")).to.be.lessThan(0);
     expect(compareDiagnosticsSeverities("warning", false)).to.be.lessThan(0);
-    expect(compareDiagnosticsSeverities("warning", undefined)).to.be.lessThan(0);
+    expect(compareDiagnosticsSeverities("warning", undefined)).to.be.lessThan(
+      0
+    );
   });
 });

@@ -6,10 +6,10 @@ A frontend ECSQL query is executed by calling [IModelConnection.query]($core-fro
 
 > On the frontend, only ECSQL SELECT statements can be executed. Data modification must be done through the API.
 
-## Avoid *Chatty* Patterns
+## Avoid _Chatty_ Patterns
 
 An ECSQL query initiated from the frontend necessarily requires a round trip with the backend server.
-In Web Apps, round trips mean exposure to network latency, so a *chunky* request pattern will perform better than a *chatty* request pattern.
+In Web Apps, round trips mean exposure to network latency, so a _chunky_ request pattern will perform better than a _chatty_ request pattern.
 If multiple queries are required to build up the desired result, consider moving the operation to the backend.
 
 See [Code Examples](./ECSQLCodeExamples) for examples of how the API is used.

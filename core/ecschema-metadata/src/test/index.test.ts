@@ -83,16 +83,21 @@ describe("Index", () => {
 
   it("should match the explicit module imports", () => {
     for (const name in moduleImports) {
-      if (name.startsWith("Mutable"))
-        continue;
+      if (name.startsWith("Mutable")) continue;
 
-      expect(index.hasOwnProperty(name), `The type '${name}' is missing from the index.ts barrel module.`).true;
+      expect(
+        index.hasOwnProperty(name),
+        `The type '${name}' is missing from the index.ts barrel module.`
+      ).true;
     }
   });
 
   it("Ensure no Mutable classes are exported", () => {
     // eslint-disable-next-line guard-for-in
     for (const name in index)
-      expect(!name.startsWith("Mutable"), `The class '${name}' should not be exported from the index.ts file.`).true;
+      expect(
+        !name.startsWith("Mutable"),
+        `The class '${name}' should not be exported from the index.ts file.`
+      ).true;
   });
 });

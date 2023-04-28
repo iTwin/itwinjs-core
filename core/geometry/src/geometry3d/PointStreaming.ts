@@ -7,7 +7,10 @@
  * @module CartesianGeometry
  */
 
-import { LineStringDataVariant, MultiLineStringDataVariant } from "../topology/Triangulation";
+import {
+  LineStringDataVariant,
+  MultiLineStringDataVariant,
+} from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -25,9 +28,15 @@ import { Range3d } from "./Range";
  * @internal
  */
 export class PointStreamXYZHandlerBase {
-  public startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void { }
-  public handleXYZ(_x: number, _y: number, _z: number): void { }
-  public endChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void { }
+  public startChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {}
+  public handleXYZ(_x: number, _y: number, _z: number): void {}
+  public endChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {}
 }
 /** Base class for handling points in pairs.
  * * Callers implement handleXYZXYZ to receive point pairs.
@@ -47,7 +56,10 @@ export class PointStreamXYZXYZHandlerBase extends PointStreamXYZHandlerBase {
     this._y0 = y;
     this._z0 = z;
   }
-  public override startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
+  public override startChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {
     this._x0 = this._y0 = this._z0 = undefined;
   }
   /**
@@ -59,7 +71,14 @@ export class PointStreamXYZXYZHandlerBase extends PointStreamXYZHandlerBase {
    * @param _y1 y coordinate of point 1
    * @param _z1 z coordinate of point 1
    */
-  public handleXYZXYZ(_x0: number, _y0: number, _z0: number, _x1: number, _y1: number, _z1: number): void { }
+  public handleXYZXYZ(
+    _x0: number,
+    _y0: number,
+    _z0: number,
+    _x1: number,
+    _y1: number,
+    _z1: number
+  ): void {}
 }
 /**
  * Concrete class to handle startChain, handleXYZ and endChain calls and return a (one-level deep array of
@@ -68,18 +87,22 @@ export class PointStreamXYZXYZHandlerBase extends PointStreamXYZHandlerBase {
 export class PointStreamGrowableXYZArrayCollector extends PointStreamXYZHandlerBase {
   private _pointArrays?: GrowableXYZArray[];
   private _currentData?: GrowableXYZArray;
-  public override startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
+  public override startChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {
     this._currentData = undefined;
   }
   public override handleXYZ(x: number, y: number, z: number): void {
-    if (!this._currentData)
-      this._currentData = new GrowableXYZArray();
+    if (!this._currentData) this._currentData = new GrowableXYZArray();
     this._currentData.pushXYZ(x, y, z);
   }
-  public override endChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
+  public override endChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {
     if (this._currentData !== undefined) {
-      if (this._pointArrays === undefined)
-        this._pointArrays = [];
+      if (this._pointArrays === undefined) this._pointArrays = [];
       this._pointArrays.push(this._currentData);
       this._currentData = undefined;
     }
@@ -97,15 +120,13 @@ export class PointStreamGrowableXYZArrayCollector extends PointStreamXYZHandlerB
 export class PointStreamRangeCollector extends PointStreamXYZHandlerBase {
   private _range?: Range3d = Range3d.createNull();
   public override handleXYZ(x: number, y: number, z: number): void {
-    if (!this._range)
-      this._range = Range3d.createNull();
+    if (!this._range) this._range = Range3d.createNull();
     this._range.extendXYZ(x, y, z);
   }
   public claimResult(): Range3d {
     const range = this._range;
     this._range = undefined;
-    if (!range)
-      return Range3d.createNull();
+    if (!range) return Range3d.createNull();
     return range;
   }
 }
@@ -127,14 +148,22 @@ export class PointStringDeepXYZArrayCollector {
     this._resultStack.push([]);
   }
 
-  public startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
+  public startChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {
     this._resultStack.push([]);
   }
 
   public handleXYZ(x: number, y: number, z: number): void {
-    this._resultStack[this._resultStack.length - 1].push(this._xyzFunction(x, y, z));
+    this._resultStack[this._resultStack.length - 1].push(
+      this._xyzFunction(x, y, z)
+    );
   }
-  public endChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
+  public endChain(
+    _chainData: MultiLineStringDataVariant,
+    _isLeaf: boolean
+  ): void {
     const q = this._resultStack[this._resultStack.length - 1];
     this._resultStack.pop();
     this._resultStack[this._resultStack.length - 1].push(q);
@@ -142,8 +171,7 @@ export class PointStringDeepXYZArrayCollector {
 
   public claimResult(): any[] {
     const r = this._resultStack[0];
-    if (r.length === 1)
-      return r[0];
+    if (r.length === 1) return r[0];
     return r;
   }
 }
@@ -158,7 +186,10 @@ export class VariantPointDataStream {
    * @param pointCallback (index, x,y,z) = function to receive point coordinates one by one
    * @param endChainCallback called to announce the end of handling of an array.
    */
-  public static streamXYZ(data: MultiLineStringDataVariant, handler: PointStreamXYZHandlerBase) {
+  public static streamXYZ(
+    data: MultiLineStringDataVariant,
+    handler: PointStreamXYZHandlerBase
+  ) {
     let numPoint = 0;
     if (Array.isArray(data)) {
       // If the first entry is a point, expect the entire array to be points.
@@ -169,8 +200,7 @@ export class VariantPointDataStream {
           const x = Point3d.accessX(p);
           const y = Point3d.accessY(p);
           const z = Point3d.accessZ(p, 0) as number;
-          if (x !== undefined && y !== undefined)
-            handler.handleXYZ(x, y, z);
+          if (x !== undefined && y !== undefined) handler.handleXYZ(x, y, z);
           numPoint++;
         }
         handler.endChain(data, true);
@@ -178,13 +208,21 @@ export class VariantPointDataStream {
         // This is an array that does not immediately have points.
         handler.startChain(data, false);
         for (const child of data) {
-          numPoint += this.streamXYZ((child as unknown) as LineStringDataVariant, handler);
+          numPoint += this.streamXYZ(
+            child as unknown as LineStringDataVariant,
+            handler
+          );
         }
         handler.endChain(data, false);
       }
     } else if (data instanceof IndexedXYZCollection) {
       handler.startChain(data, true);
-      const q = VariantPointDataStream._workPoint = Point3d.create(0, 0, 0, VariantPointDataStream._workPoint);
+      const q = (VariantPointDataStream._workPoint = Point3d.create(
+        0,
+        0,
+        0,
+        VariantPointDataStream._workPoint
+      ));
       for (let i = 0; i < data.length; i++) {
         data.getPoint3dAtCheckedPointIndex(i, q);
         numPoint++;
@@ -194,5 +232,4 @@ export class VariantPointDataStream {
     }
     return numPoint;
   }
-
 }

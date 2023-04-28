@@ -67,7 +67,10 @@ export class FlashSettings {
    * ```
    */
   public constructor(options?: FlashSettingsOptions) {
-    this.litMode = options?.litMode === FlashMode.Hilite ? FlashMode.Hilite : FlashMode.Brighten;
+    this.litMode =
+      options?.litMode === FlashMode.Hilite
+        ? FlashMode.Hilite
+        : FlashMode.Brighten;
 
     const maxIntensity = options?.maxIntensity ?? 1;
     this.maxIntensity = Math.min(1, Math.max(0, maxIntensity));
@@ -90,8 +93,7 @@ export class FlashSettings {
    * @returns A copy of these settings identical except as specified by `options`.
    */
   public clone(options?: FlashSettingsOptions): FlashSettings {
-    if (!options)
-      return this;
+    if (!options) return this;
 
     return new FlashSettings({ ...this, ...options });
   }

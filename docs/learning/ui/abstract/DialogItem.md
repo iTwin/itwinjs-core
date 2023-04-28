@@ -71,16 +71,19 @@ The [PropertyDescriptionHelper]($appui-abstract) provides helper functions that 
   }
   public get length(): number { return this.lengthProperty.value; }
   public set length(value: number) { this.lengthProperty.value = value; }
-  ```
+```
 
 The code fragment below shows how to return a DialogItem that can be passed to UI for display.
 
 ```tsx
-  // ensure controls are enabled/disabled base on current lock property state
-  this.lengthProperty.isDisabled = !this.useLength;
+// ensure controls are enabled/disabled base on current lock property state
+this.lengthProperty.isDisabled = !this.useLength;
 
-  // get dialog item with nested "lock" item
-  this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, this.useLengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+// get dialog item with nested "lock" item
+this.lengthProperty.toDialogItem(
+  { rowPriority: 2, columnIndex: 1 },
+  this.useLengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 })
+);
 ```
 
 ## API Reference

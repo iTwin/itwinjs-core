@@ -7,7 +7,10 @@
  */
 
 import { ByteStream, Id64String } from "@itwin/core-bentley";
-import { BentleyGeometryFlatBuffer, IndexedPolyface } from "@itwin/core-geometry";
+import {
+  BentleyGeometryFlatBuffer,
+  IndexedPolyface,
+} from "@itwin/core-geometry";
 
 /** Options used to control how [Polyface]($core-geometry)s are produced from elements by [IModelConnection.generateElementMeshes]($frontend).
  * @beta
@@ -53,9 +56,13 @@ function nextChunk(stream: ByteStream): Chunk | undefined {
   }
 
   // Type codes are a sequence of four uppercase ASCII letters.
-  const chars = [stream.readUint8(), stream.readUint8(), stream.readUint8(), stream.readUint8()];
-  if (chars.some((c) => c < 65 || c > 90))
-    return undefined;
+  const chars = [
+    stream.readUint8(),
+    stream.readUint8(),
+    stream.readUint8(),
+    stream.readUint8(),
+  ];
+  if (chars.some((c) => c < 65 || c > 90)) return undefined;
 
   const dataLength = stream.readUint32();
   const data = dataLength > 0 ? stream.nextBytes(dataLength) : undefined;
@@ -75,18 +82,15 @@ export function readElementMeshes(data: Uint8Array): IndexedPolyface[] {
 
   const stream = ByteStream.fromUint8Array(data);
   const firstChunk = nextChunk(stream);
-  if (!firstChunk || "LMSH" !== firstChunk.type)
-    return polyfaces;
+  if (!firstChunk || "LMSH" !== firstChunk.type) return polyfaces;
 
   while (stream.remainingLength > 0) {
     const chunk = nextChunk(stream);
-    if (!chunk || chunk.type !== "PLFC" || !chunk.data)
-      continue;
+    if (!chunk || chunk.type !== "PLFC" || !chunk.data) continue;
 
     try {
       const geom = BentleyGeometryFlatBuffer.bytesToGeometry(chunk.data, true);
-      if (geom instanceof IndexedPolyface)
-        polyfaces.push(geom);
+      if (geom instanceof IndexedPolyface) polyfaces.push(geom);
     } catch (_) {
       //
     }

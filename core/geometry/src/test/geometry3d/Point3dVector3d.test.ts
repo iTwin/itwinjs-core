@@ -3,7 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
+import {
+  AxisIndex,
+  AxisOrder,
+  Geometry,
+  PerpParallelOptions,
+} from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
@@ -25,15 +30,24 @@ describe("Point3d", () => {
     const pointA = Point3d.create(1, 2);
     const epsilon = 1.0e-15;
     const pointB = Point3d.create(pointA.x, pointA.x + 0.01);
-    ck.testFalse(Point3d.create(epsilon, epsilon).isAlmostEqualMetric(pointB), "is almost zero (epsilon)");
+    ck.testFalse(
+      Point3d.create(epsilon, epsilon).isAlmostEqualMetric(pointB),
+      "is almost zero (epsilon)"
+    );
     ck.testFalse(pointA.isAlmostZero, "is almost zero");
     ck.testFalse(alwaysZero.isExactEqual(pointA));
 
     pointA.setZero();
     ck.testPoint3d(alwaysZero, pointA);
     ck.testTrue(alwaysZero.isAlmostZero, "is almost zero");
-    ck.testTrue(Point3d.create(epsilon, epsilon).isAlmostZero, "is almost zero (epsilon)");
-    ck.testTrue(Point3d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero), "is almost zero (epsilon)");
+    ck.testTrue(
+      Point3d.create(epsilon, epsilon).isAlmostZero,
+      "is almost zero (epsilon)"
+    );
+    ck.testTrue(
+      Point3d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero),
+      "is almost zero (epsilon)"
+    );
     ck.testPoint3d(alwaysZero, alwaysZeroA);
     ck.checkpoint("Point3d.zeros");
     expect(ck.getNumErrors()).equals(0);
@@ -60,14 +74,30 @@ describe("Point3d", () => {
     pointB3d.z = 29.1;
     const vectorMax = vectorAB.maxAbs();
     ck.testCoordinate(pointDiff, vectorMax, "maxDiff, maxAbs");
-    ck.testCoordinate(vectorAB.magnitude(), pointA.distance(pointB), "distance and magnitude");
-    ck.testCoordinate(vectorAB.magnitudeSquared(), pointA.distanceSquared(pointB), "distance and magnitude");
-    ck.testCoordinate(vectorAB.magnitudeSquaredXY(), pointA.distanceSquaredXY(pointB), "distance and magnitude");
+    ck.testCoordinate(
+      vectorAB.magnitude(),
+      pointA.distance(pointB),
+      "distance and magnitude"
+    );
+    ck.testCoordinate(
+      vectorAB.magnitudeSquared(),
+      pointA.distanceSquared(pointB),
+      "distance and magnitude"
+    );
+    ck.testCoordinate(
+      vectorAB.magnitudeSquaredXY(),
+      pointA.distanceSquaredXY(pointB),
+      "distance and magnitude"
+    );
 
     const d3 = pointA3d.distanceXY(pointB3d);
     const pointDist = pointA.distance(pointB);
     ck.testCoordinate(pointDist, d3, "point3d.distanceXY");
-    ck.testCoordinate(pointDist * pointDist, pointA3d.distanceSquaredXY(pointB3d), "point3d.distanceXY");
+    ck.testCoordinate(
+      pointDist * pointDist,
+      pointA3d.distanceSquaredXY(pointB3d),
+      "point3d.distanceXY"
+    );
 
     const symmetricLattice3 = Sample.createPoint3dLattice(-3, 1, 3);
     for (const point of symmetricLattice3) {
@@ -76,7 +106,11 @@ describe("Point3d", () => {
       const i2 = Geometry.cyclic3dAxis(i + 2);
       ck.testLE(Math.abs(point.at(i1)), Math.abs(point.at(i)), "max abs 1");
       ck.testLE(Math.abs(point.at(i2)), Math.abs(point.at(i)), "max abs 2");
-      ck.testExactNumber(Math.abs(point.at(i)), point.maxAbs(), "max abs versus index");
+      ck.testExactNumber(
+        Math.abs(point.at(i)),
+        point.maxAbs(),
+        "max abs versus index"
+      );
     }
 
     const boxI = Sample.createPoint3dLattice(1, 1, 2); // the usual 8 box points ...
@@ -109,11 +143,13 @@ describe("Point3d", () => {
         ck.testAngleNoShift(
           vectorI.angleTo(vectorJ),
           signedAngle,
-          "cross product used consistently for signed angle");
+          "cross product used consistently for signed angle"
+        );
         ck.testCoordinate(
           vectorJ.angleTo(vectorI).radians,
           signedAngle.radians,
-          "cross product used consistently for reverse order signed angle");
+          "cross product used consistently for reverse order signed angle"
+        );
 
         const vectorQ = vectorIJcross.plus(vectorI.scale(0.219));
         ck.testVector3d(vectorJ, vectorI.plus(vectorI.vectorTo(vectorJ)));
@@ -124,12 +160,19 @@ describe("Point3d", () => {
 
         const vectorIJ = pointI.vectorTo(pointJ);
         const vectorIJV = vectorI.vectorTo(vectorJ);
-        ck.testVector3d(vectorIJ, vectorIJV, "vectorTo between points, vectors");
+        ck.testVector3d(
+          vectorIJ,
+          vectorIJV,
+          "vectorTo between points, vectors"
+        );
 
         const unitIJV = vectorI.unitVectorTo(vectorJ);
         if (ck.testPointer(unitIJV)) {
           ck.testParallel(unitIJV, vectorIJ);
-          ck.testCoordinate(unitIJV.dotProduct(vectorIJV), vectorI.distance(vectorJ));
+          ck.testCoordinate(
+            unitIJV.dotProduct(vectorIJV),
+            vectorI.distance(vectorJ)
+          );
         }
 
         /* be sure to exercise interpolatePointAndTangent with fractions on both sides of 0.5 */
@@ -141,10 +184,10 @@ describe("Point3d", () => {
         }
 
         /* remark -- we trust that:
-        * pointI and pointJ are never equal
-        * vectorI and vectorJ are never equal or parallel
-        * vectorI and vectorJ are never parallel to a principal axis
-        */
+         * pointI and pointJ are never equal
+         * vectorI and vectorJ are never equal or parallel
+         * vectorI and vectorJ are never parallel to a principal axis
+         */
         const unitIJ = pointI.unitVectorTo(pointJ)!;
         ck.testCoordinate(unitIJ.dotProduct(vectorIJ), pointI.distance(pointJ));
         const fIJ = vectorI.fractionOfProjectionToVector(vectorJ);
@@ -189,8 +232,18 @@ describe("Point3d", () => {
 
   it("Point3dArrayCarrier", () => {
     const ck = new bsiChecker.Checker();
-    const pointArray1 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
-    const pointArray2 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
+    const pointArray1 = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(1, 1, 1),
+    ];
+    const pointArray2 = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(1, 1, 1),
+    ];
     const carrier = new Point3dArrayCarrier(pointArray1);
     const carrierReverse = new Point3dArrayCarrier(pointArray2);
     carrierReverse.reverseInPlace();
@@ -222,9 +275,20 @@ describe("Vector3d", () => {
     const vectorABq = pointA.scaledVectorTo(pointB, q);
     const vectorAB = pointA.vectorTo(pointB);
     ck.testParallel(vectorAB, vectorABq, "parallel vectors");
-    ck.testCoordinate(q * vectorAB.magnitude(), vectorABq.magnitude(), "enforced magnitude");
+    ck.testCoordinate(
+      q * vectorAB.magnitude(),
+      vectorABq.magnitude(),
+      "enforced magnitude"
+    );
 
-    const vectorABxyz = Vector3d.createStartEndXYZXYZ(pointA.x, pointA.y, pointA.z, pointB.x, pointB.y, pointB.z);
+    const vectorABxyz = Vector3d.createStartEndXYZXYZ(
+      pointA.x,
+      pointA.y,
+      pointA.z,
+      pointB.x,
+      pointB.y,
+      pointB.z
+    );
     ck.testVector3d(vectorAB, vectorABxyz);
 
     ck.checkpoint("Vector3d.hello");
@@ -238,8 +302,16 @@ describe("Vector3d", () => {
     const vectorB = Vector3d.create(0.3, 9.1, -2);
     const pointB0 = Point3d.create(3, 2, 8);
     const pointB1 = pointB0.plus(vectorB);
-    ck.testCoordinate(vectorA.crossProductXY(vectorB), vectorA.tripleProduct(vectorB, unitZ), "crossProductXY");
-    ck.testCoordinate(vectorA.crossProductStartEndXY(pointB0, pointB1), vectorA.tripleProduct(vectorB, unitZ), "crossProductXY");
+    ck.testCoordinate(
+      vectorA.crossProductXY(vectorB),
+      vectorA.tripleProduct(vectorB, unitZ),
+      "crossProductXY"
+    );
+    ck.testCoordinate(
+      vectorA.crossProductStartEndXY(pointB0, pointB1),
+      vectorA.tripleProduct(vectorB, unitZ),
+      "crossProductXY"
+    );
 
     ck.checkpoint("Vector3d.DotProducts");
     expect(ck.getNumErrors()).equals(0);
@@ -283,7 +355,11 @@ it("RotateVectorAroundVector", () => {
   const vectorA = Vector3d.create(1, 2, 3);
   const axis = Vector3d.create(-1, 3, 6);
   const theta = Angle.createDegrees(20);
-  const vectorA1 = Vector3d.createRotateVectorAroundVector(vectorA, axis, theta);
+  const vectorA1 = Vector3d.createRotateVectorAroundVector(
+    vectorA,
+    axis,
+    theta
+  );
   if (ck.testPointer(vectorA1)) {
     const theta1 = vectorA.planarAngleTo(vectorA1, axis);
     ck.testAngleNoShift(theta, theta1);
@@ -294,7 +370,9 @@ it("RotateVectorAroundVector", () => {
     const theta1 = vectorA.planarAngleTo(vectorA2, axis);
     ck.testAngleNoShift(theta1, Angle.createDegrees(90));
   }
-  ck.testUndefined(Vector3d.createRotateVectorAroundVector(vectorA, Vector3d.create(0, 0, 0)));
+  ck.testUndefined(
+    Vector3d.createRotateVectorAroundVector(vectorA, Vector3d.create(0, 0, 0))
+  );
   expect(ck.getNumErrors()).equals(0);
 });
 
@@ -491,7 +569,8 @@ describe("Vector3d.fractionOfProjectionToVector", () => {
   it("Vector3d.fractionOfProjectionToVector", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const targetVector: Vector3d = Vector3d.create(0, 0, 0);
-    const fraction: number = thisVector.fractionOfProjectionToVector(targetVector);
+    const fraction: number =
+      thisVector.fractionOfProjectionToVector(targetVector);
     expect(fraction).equal(0);
   });
 });
@@ -519,8 +598,15 @@ describe("Vector3d.normalize", () => {
     const vec = Vector3d.createNormalized(3, 3)!;
     ck.testVector3d(unitVec, vec, "expect normalized vector");
     vec.setZero();
-    ck.testVector3d(unitVec, Vector3d.createNormalized(1, 1, 0, vec)!, "expect normalized vector with initialized result");
-    ck.testUndefined(Vector3d.createNormalized(), "expect undefined when input is zero vector");
+    ck.testVector3d(
+      unitVec,
+      Vector3d.createNormalized(1, 1, 0, vec)!,
+      "expect normalized vector with initialized result"
+    );
+    ck.testUndefined(
+      Vector3d.createNormalized(),
+      "expect undefined when input is zero vector"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -545,7 +631,13 @@ describe("Vector3d.dotProductStartEndXYZW", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const pointA: Point3d = Point3d.create(4, 5, 6);
     const weight: number = 0;
-    const output: number = thisVector.dotProductStartEndXYZW(pointA, 10, 15, 20, weight);
+    const output: number = thisVector.dotProductStartEndXYZW(
+      pointA,
+      10,
+      15,
+      20,
+      weight
+    );
     expect(output).equal(0);
   });
 });
@@ -587,15 +679,31 @@ describe("Vector3d.isParallelTo", () => {
     it("Vector3d.isParallelToTrueWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(1.01, 2.01, 3.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
-      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1,
+        distanceSquaredTol: 1,
+      };
+      const output: boolean = thisVector.isParallelTo(
+        other,
+        undefined,
+        undefined,
+        options
+      );
       expect(output).equal(true);
     }),
     it("Vector3d.isParallelToFalseWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(1.01, 2.01, 3.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
-      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1e-10,
+        distanceSquaredTol: 1e-10,
+      };
+      const output: boolean = thisVector.isParallelTo(
+        other,
+        undefined,
+        undefined,
+        options
+      );
       expect(output).equal(false);
     });
 });
@@ -610,15 +718,29 @@ describe("Vector3d.isPerpendicularTo", () => {
     it("Vector3d.isPerpendicularToTrueWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(-2.01, 1.01, 3.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
-      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1,
+        distanceSquaredTol: 1,
+      };
+      const output: boolean = thisVector.isPerpendicularTo(
+        other,
+        undefined,
+        options
+      );
       expect(output).equal(true);
     }),
     it("Vector3d.isPerpendicularToFalseWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(-2.01, 1.01, 3.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
-      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1e-10,
+        distanceSquaredTol: 1e-10,
+      };
+      const output: boolean = thisVector.isPerpendicularTo(
+        other,
+        undefined,
+        options
+      );
       expect(output).equal(false);
     });
 });
@@ -629,29 +751,45 @@ describe("Geometry", () => {
     const axisX: AxisIndex = AxisIndex.X;
     const axisY: AxisIndex = AxisIndex.Y;
     const axisZ: AxisIndex = AxisIndex.Z;
-    ck.testExactNumber(AxisOrder.XYZ,
-      Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ"
+    ck.testExactNumber(
+      AxisOrder.XYZ,
+      Geometry.axisIndexToRightHandedAxisOrder(axisX),
+      "X==>XYZ"
     );
-    ck.testExactNumber(AxisOrder.YZX,
-      Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX"
+    ck.testExactNumber(
+      AxisOrder.YZX,
+      Geometry.axisIndexToRightHandedAxisOrder(axisY),
+      "Y==>YZX"
     );
-    ck.testExactNumber(AxisOrder.ZXY,
-      Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY"
+    ck.testExactNumber(
+      AxisOrder.ZXY,
+      Geometry.axisIndexToRightHandedAxisOrder(axisZ),
+      "X==>ZXY"
     );
 
     for (const phase of [0, 1, 2, 500, -10, -8, -2, -1]) {
-      ck.testExactNumber(AxisOrder.XYZ,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ"
+      ck.testExactNumber(
+        AxisOrder.XYZ,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase),
+        "X==>XYZ"
       );
-      ck.testExactNumber(AxisOrder.YZX,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX"
+      ck.testExactNumber(
+        AxisOrder.YZX,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1),
+        "Y==>YZX"
       );
-      ck.testExactNumber(AxisOrder.ZXY,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY"
+      ck.testExactNumber(
+        AxisOrder.ZXY,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2),
+        "X==>ZXY"
       );
       for (const baseAxis of [0, 1, 2]) {
         const axis = phase * 3 + baseAxis;
-        ck.testExactNumber(baseAxis, Geometry.cyclic3dAxis(axis), "Cyclic axis reduction");
+        ck.testExactNumber(
+          baseAxis,
+          Geometry.cyclic3dAxis(axis),
+          "Cyclic axis reduction"
+        );
       }
     }
     expect(ck.getNumErrors()).equals(0);
@@ -662,7 +800,10 @@ describe("Geometry", () => {
       const pointJ = Point3d.create();
       const lattice = Sample.createPoint3dLattice(-1, 2, 1);
       for (let i = 0; i < lattice.length; i++) {
-        ck.testExactNumber(0, Geometry.lexicalXYZLessThan(lattice[i], lattice[i]));
+        ck.testExactNumber(
+          0,
+          Geometry.lexicalXYZLessThan(lattice[i], lattice[i])
+        );
 
         for (let j = i + 1; j < lattice.length; j++) {
           pointI.set(lattice[i].z, lattice[i].y, lattice[i].x);

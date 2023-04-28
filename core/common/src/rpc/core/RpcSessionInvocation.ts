@@ -18,14 +18,18 @@ import { RpcRequest } from "./RpcRequest";
 
 class SessionConfiguration extends RpcConfiguration {
   public interfaces = () => [];
-  public get protocol() { return SessionProtocol.instance; }
+  public get protocol() {
+    return SessionProtocol.instance;
+  }
 }
 
 class SessionProtocol extends RpcProtocol {
   public static instance = new SessionProtocol();
   public requestType = RpcRequest;
   public override supportsStatusCategory = true;
-  constructor() { super(new SessionConfiguration()); }
+  constructor() {
+    super(new SessionConfiguration());
+  }
 }
 
 /** @internal */
@@ -50,7 +54,10 @@ export class RpcSessionInvocation extends RpcInvocation {
       protocolVersion: parseInt(request.context.protocolVersion, 10),
     };
 
-    return new RpcSessionInvocation(SessionProtocol.instance, serializedRequest);
+    return new RpcSessionInvocation(
+      SessionProtocol.instance,
+      serializedRequest
+    );
   }
 
   public get rejected() {

@@ -10,7 +10,11 @@
  * @public
  * @extensions
  */
-export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
+export enum FontType {
+  TrueType = 1,
+  Rsc = 2,
+  Shx = 3,
+}
 
 /** An iModel-local identifier for a font.
  * @public
@@ -34,7 +38,9 @@ export interface FontProps {
  * @public
  * @extensions
  */
-export interface FontMapProps { fonts: FontProps[] }
+export interface FontMapProps {
+  fonts: FontProps[];
+}
 
 /**
  * A FontMap holds the set of font names available in an iModel.
@@ -47,8 +53,7 @@ export interface FontMapProps { fonts: FontProps[] }
 export class FontMap {
   public readonly fonts = new Map<FontId, FontProps>();
   constructor(props?: FontMapProps) {
-    if (undefined !== props)
-      this.addFonts(props.fonts);
+    if (undefined !== props) this.addFonts(props.fonts);
   }
   public addFonts(fonts: FontProps[]) {
     fonts.forEach((font) => this.fonts.set(font.id, font));
@@ -60,12 +65,9 @@ export class FontMap {
   }
   /** look up a font by name or number and return its FontProps */
   public getFont(arg: string | FontId): FontProps | undefined {
-    if (typeof arg === "number")
-      return this.fonts.get(arg);
+    if (typeof arg === "number") return this.fonts.get(arg);
 
-    for (const font of this.fonts.values())
-      if (font.name === arg)
-        return font;
+    for (const font of this.fonts.values()) if (font.name === arg) return font;
 
     return undefined;
   }

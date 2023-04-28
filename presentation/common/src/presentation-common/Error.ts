@@ -43,7 +43,6 @@ export enum PresentationStatus {
  * @public
  */
 export class PresentationError extends BentleyError {
-
   /**
    * Creates an instance of Error.
    * @param errorNumber Error code
@@ -52,7 +51,11 @@ export class PresentationError extends BentleyError {
    * @param log Optional log function which logs the error.
    * @param getMetaData Optional function that returns meta-data related to an error.
    */
-  public constructor(errorNumber: PresentationStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(
+    errorNumber: PresentationStatus,
+    message?: string,
+    getMetaData?: GetMetaDataFunction
+  ) {
     super(errorNumber, message, getMetaData);
   }
 
@@ -63,8 +66,7 @@ export class PresentationError extends BentleyError {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   protected override _initName(): string {
     let value = PresentationStatus[this.errorNumber];
-    if (!value)
-      value = `Unknown Error (${this.errorNumber})`;
+    if (!value) value = `Unknown Error (${this.errorNumber})`;
     return value;
   }
 }

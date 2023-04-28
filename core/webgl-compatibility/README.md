@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/webgl-compatibility__ package provides APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.
+The **@itwin/webgl-compatibility** package provides APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.
 
 ## Documentation
 

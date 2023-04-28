@@ -24,7 +24,11 @@ describe("FrameStats", () => {
     await IModelApp.shutdown();
   });
 
-  function testViewport(width: number, height: number, callback: (vp: ScreenViewport) => void): void {
+  function testViewport(
+    width: number,
+    height: number,
+    callback: (vp: ScreenViewport) => void
+  ): void {
     const vp = openBlankViewport({ width, height });
     vp.viewFlags = vp.viewFlags.copy({ acsTriad: false, grid: false });
 

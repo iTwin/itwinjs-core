@@ -25,7 +25,9 @@ Since an iTwin.js app [frontend](../learning/App.md#app-frontend) is written usi
 In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
 
 ```ts
-const isIos: bool = /iphone|ipod|ipad/.test(window.navigator.userAgent.toLowerCase());
+const isIos: bool = /iphone|ipod|ipad/.test(
+  window.navigator.userAgent.toLowerCase()
+);
 // ... other mobile platforms ...
 
 if (isIos) {
@@ -50,32 +52,32 @@ A backend can use platform-specific globals and modules, but only in guarded cod
 For example, a backend can use node builtins in guarded code, like this:
 
 ```ts
-  import { Platform } from "@itwin/core-backend";
+import { Platform } from "@itwin/core-backend";
 
-  if (Platform.isNodeJs()) {
-    // access nodejs-specific modules and/or globals
-    __dirname;
-    process.env;
-    require("fs");
-    // ...
-  }
+if (Platform.isNodeJs()) {
+  // access nodejs-specific modules and/or globals
+  __dirname;
+  process.env;
+  require("fs");
+  // ...
+}
 ```
 
 ### Avoiding Node.js dependencies
 
 A backend can use the following portable `@itwin/core-backend` classes to avoid unnecessary node dependencies:
 
-|Node builtin|portable substitute|
-|---|---|
-|fs|[IModelJsFs]($backend)
-|os|[Platform]($backend)
-|process|[Platform]($backend)
-|__dirname|[KnownLocations]($backend)
-|__filename|[KnownLocations]($backend)
-|console|[Logger]($bentley)
-|path|[path](#path)|
+| Node builtin | portable substitute        |
+| ------------ | -------------------------- |
+| fs           | [IModelJsFs]($backend)     |
+| os           | [Platform]($backend)       |
+| process      | [Platform]($backend)       |
+| \_\_dirname  | [KnownLocations]($backend) |
+| \_\_filename | [KnownLocations]($backend) |
+| console      | [Logger]($bentley)         |
+| path         | [path](#path)              |
 
-In most cases, the substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.
+In most cases, the substitutes do _not_ provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.
 
 #### path
 
@@ -86,6 +88,6 @@ Use only these methods in unguarded code.
 
 #### Unsupported
 
-An app backend must *never* depend on node-specific *packages*, including any package that is based on native code.
+An app backend must _never_ depend on node-specific _packages_, including any package that is based on native code.
 
 > For fs-extra, use [IModelJsFs]($backend).

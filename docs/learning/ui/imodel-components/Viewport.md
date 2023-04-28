@@ -29,7 +29,10 @@ create a HOC viewport component that supports unified selection.
 
 ```tsx
 import * as React from "react";
-import { ViewportComponent, ViewportProps } from "@itwin/imodel-components-react";
+import {
+  ViewportComponent,
+  ViewportProps,
+} from "@itwin/imodel-components-react";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 
 // create a HOC viewport component that supports unified selection

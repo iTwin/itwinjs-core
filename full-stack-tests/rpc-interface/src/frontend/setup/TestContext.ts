@@ -8,12 +8,18 @@ import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+  getAccessTokenFromBackend,
+  TestBrowserAuthorizationClientConfiguration,
+  TestFrontendAuthorizationClient,
+  TestUserCredentials,
 } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
-import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
+import {
+  getClientAccessTokenFromBackend,
+  getProcessEnvFromBackend,
+} from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 
 declare const PACKAGE_VERSION: string;
@@ -45,52 +51,86 @@ export class TestContext {
   }
 
   /** Initialize configuration for the rpc interfaces used by the application. */
-  private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line deprecation/deprecation
+  private initializeRpcInterfaces(info: OpenAPIInfo) {
+    // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces(this.settings));
+    BentleyCloudRpcManager.initializeClient(
+      { info, uriPrefix },
+      getRpcInterfaces(this.settings)
+    );
   }
 
   private async initialize() {
-    expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
-    expect(this.settings.iModels.length).to.be.gte(1, `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`);
+    expect(this.settings.users.length).to.be.gte(
+      1,
+      `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`
+    );
+    expect(this.settings.iModels.length).to.be.gte(
+      1,
+      `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`
+    );
 
     // Print out the configuration
     console.log(this.settings.toString());
 
     // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
-    Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
+    Logger.setLevelDefault(
+      this.settings.logLevel === undefined
+        ? LogLevel.Warning
+        : this.settings.logLevel
+    );
 
     if (undefined !== this.settings.oidcClientId) {
-      this.adminUserAccessToken = await getAccessTokenFromBackend({
-        email: this.settings.users[0].email,
-        password: this.settings.users[0].password,
-      } as TestUserCredentials, {
-        clientId: this.settings.oidcClientId,
-        redirectUri: this.settings.oidcRedirect,
-        scope: this.settings.oidcScopes,
-        authority: this.settings.oidcAuthority,
-      } as TestBrowserAuthorizationClientConfiguration);
+      this.adminUserAccessToken = await getAccessTokenFromBackend(
+        {
+          email: this.settings.users[0].email,
+          password: this.settings.users[0].password,
+        } as TestUserCredentials,
+        {
+          clientId: this.settings.oidcClientId,
+          redirectUri: this.settings.oidcRedirect,
+          scope: this.settings.oidcScopes,
+          authority: this.settings.oidcAuthority,
+        } as TestBrowserAuthorizationClientConfiguration
+      );
     }
 
     if (undefined !== this.settings.clientConfiguration)
       this.clientAccessToken = await getClientAccessTokenFromBackend();
 
-    this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
+    this.initializeRpcInterfaces({
+      title: this.settings.Backend.name,
+      version: this.settings.Backend.version,
+    });
 
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    const iModelClient = new IModelsClient({
+      api: {
+        baseUrl: `https://${
+          process.env.IMJS_URL_PREFIX ?? ""
+        }api.bentley.com/imodels`,
+      },
+    });
     await NoRenderApp.startup({
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
-      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      authorizationClient: new TestFrontendAuthorizationClient(
+        this.adminUserAccessToken
+      ),
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
+    this.iModelWithChangesets = await IModelSession.create(
+      this.adminUserAccessToken,
+      this.settings.iModel
+    );
     this.iTwinId = this.iModelWithChangesets.iTwinId;
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(
+        this.adminUserAccessToken,
+        this.settings.writeIModel
+      );
 
     console.log("TestSetup: Done");
   }

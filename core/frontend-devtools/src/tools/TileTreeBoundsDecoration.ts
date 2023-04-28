@@ -8,7 +8,13 @@
  */
 
 import { ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@itwin/core-frontend";
+import {
+  DecorateContext,
+  GraphicType,
+  IModelApp,
+  TileTreeReference,
+  Tool,
+} from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TreeDecoration {
@@ -30,16 +36,29 @@ class TreeDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    context.viewport.forEachTileTreeRef((ref) => this.drawBoundingBox(ref, context));
+    context.viewport.forEachTileTreeRef((ref) =>
+      this.drawBoundingBox(ref, context)
+    );
   }
 
-  private drawBoundingBox(ref: TileTreeReference, context: DecorateContext): void {
+  private drawBoundingBox(
+    ref: TileTreeReference,
+    context: DecorateContext
+  ): void {
     const tree = ref.treeOwner.tileTree;
     const location = ref.getLocation();
-    if (undefined === location || undefined === tree || tree.isContentUnbounded || tree.range.isNull)
+    if (
+      undefined === location ||
+      undefined === tree ||
+      tree.isContentUnbounded ||
+      tree.range.isNull
+    )
       return;
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, location);
+    const builder = context.createGraphicBuilder(
+      GraphicType.WorldDecoration,
+      location
+    );
     builder.setSymbology(ColorDef.green, ColorDef.green, 1, LinePixels.Solid);
     builder.addRangeBox(tree.range);
 
@@ -53,8 +72,7 @@ class TreeDecoration {
 
   public static toggle(enabled?: boolean): void {
     const instance = TreeDecoration._instance;
-    if (undefined !== enabled && (undefined !== instance) === enabled)
-      return;
+    if (undefined !== enabled && (undefined !== instance) === enabled) return;
 
     if (undefined === instance) {
       TreeDecoration._instance = new TreeDecoration();
@@ -70,8 +88,12 @@ class TreeDecoration {
  */
 export class ToggleTileTreeBoundsDecorationTool extends Tool {
   public static override toolId = "ToggleTileTreeBoundsDecoration";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     TreeDecoration.toggle(enable);
@@ -80,8 +102,7 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      await this.run(enable);
+    if (typeof enable !== "string") await this.run(enable);
 
     return true;
   }

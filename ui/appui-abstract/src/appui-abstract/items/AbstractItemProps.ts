@@ -17,7 +17,7 @@ export type StringGetter = () => string;
 
 /** Definition that specifies properties shared between many ConfigurableUi components.
  * @public
- */
+ */
 export interface CommonItemProps {
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
@@ -46,7 +46,7 @@ export interface CommonItemProps {
 
 /** Definition for a command handler.
  * @public
- */
+ */
 export interface CommandHandler {
   /** Function to execute */
   execute?: (args?: any) => any;
@@ -59,5 +59,6 @@ export interface CommandHandler {
 /** Definition for an item that executes and action.
  * @public
  */
-export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
-}
+export interface AbstractActionItemProps
+  extends CommonItemProps,
+    CommandHandler {}

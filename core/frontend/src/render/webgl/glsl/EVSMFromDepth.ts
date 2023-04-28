@@ -9,7 +9,13 @@
 import { AttributeMap } from "../AttributeMap";
 import { EVSMGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import {
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariablePrecision,
+  VariableType,
+  VertexShaderComponent,
+} from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
@@ -49,13 +55,21 @@ const computeEVSM = `
 `;
 
 /** @internal */
-export function createEVSMProgram(context: WebGL2RenderingContext): ShaderProgram {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
+export function createEVSMProgram(
+  context: WebGL2RenderingContext
+): ShaderProgram {
+  const builder = new ProgramBuilder(
+    AttributeMap.findAttributeMap(undefined, false)
+  );
   const vert = builder.vert;
   const frag = builder.frag;
 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
+  builder.addInlineComputedVarying(
+    "v_texCoord",
+    VariableType.Vec2,
+    computeTexCoord
+  );
 
   frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
@@ -64,12 +78,17 @@ export function createEVSMProgram(context: WebGL2RenderingContext): ShaderProgra
     });
   });
 
-  frag.addUniform("u_stepSize", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_stepSize", (uniform, params) => {
-      const geom = params.geometry as EVSMGeometry;
-      uniform.setUniform2fv(geom.stepSize);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_stepSize",
+    VariableType.Vec2,
+    (prog) => {
+      prog.addGraphicUniform("u_stepSize", (uniform, params) => {
+        const geom = params.geometry as EVSMGeometry;
+        uniform.setUniform2fv(geom.stepSize);
+      });
+    },
+    VariablePrecision.High
+  );
 
   addEvsmExponent(frag);
 

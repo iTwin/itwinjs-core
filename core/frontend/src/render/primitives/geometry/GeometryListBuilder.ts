@@ -7,10 +7,33 @@
  */
 
 import {
-  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+  Arc3d,
+  CurvePrimitive,
+  IndexedPolyface,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Path,
+  Point2d,
+  Point3d,
+  Polyface,
+  Range3d,
+  SolidPrimitive,
+  Transform,
 } from "@itwin/core-geometry";
-import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
-import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
+import {
+  Feature,
+  FeatureTable,
+  Gradient,
+  GraphicParams,
+  PackedFeatureTable,
+  RenderTexture,
+} from "@itwin/core-common";
+import {
+  CustomGraphicBuilderOptions,
+  GraphicBuilder,
+  ViewportGraphicBuilderOptions,
+} from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
@@ -33,7 +56,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+  public constructor(
+    system: RenderSystem,
+    options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions,
+    accumulatorTransform = Transform.identity
+  ) {
     super(options);
     this.accum = new GeometryAccumulator({
       system,
@@ -43,7 +70,13 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     });
 
     if (this.pickable)
-      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
+      this.activateFeature(
+        new Feature(
+          this.pickable.id,
+          this.pickable.subCategoryId,
+          this.pickable.geometryClass
+        )
+      );
   }
 
   public finish(): RenderGraphic {
@@ -60,7 +93,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.accum.currentFeature = feature;
   }
 
-  public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
+  public addArc2d(
+    ellipse: Arc3d,
+    isEllipse: boolean,
+    filled: boolean,
+    zDepth: number
+  ): void {
     if (0.0 === zDepth) {
       this.addArc(ellipse, isEllipse, filled);
     } else {
@@ -79,23 +117,35 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     }
 
     if (filled && !isEllipse && !ellipse.sweep.isFullCircle) {
-      const gapSegment: CurvePrimitive = LineSegment3d.create(ellipse.startPoint(), ellipse.endPoint());
+      const gapSegment: CurvePrimitive = LineSegment3d.create(
+        ellipse.startPoint(),
+        ellipse.endPoint()
+      );
       (gapSegment as any).markerBits = 0x00010000; // Set the CURVE_PRIMITIVE_BIT_GapCurve marker bit
       curve.children.push(gapSegment);
     }
-    const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+    const displayParams = curve.isAnyRegionType
+      ? this.getMeshDisplayParams()
+      : this.getLinearDisplayParams();
     if (curve instanceof Loop)
       this.accum.addLoop(curve, displayParams, this.placement, false);
-    else
-      this.accum.addPath(curve, displayParams, this.placement, false);
+    else this.accum.addPath(curve, displayParams, this.placement, false);
   }
 
   /** take ownership of input points and add as a line string to this builder */
   public addLineString(points: Point3d[]): void {
     if (2 === points.length && points[0].isAlmostEqual(points[1]))
-      this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+      this.accum.addPointString(
+        points,
+        this.getLinearDisplayParams(),
+        this.placement
+      );
     else
-      this.accum.addLineString(points, this.getLinearDisplayParams(), this.placement);
+      this.accum.addLineString(
+        points,
+        this.getLinearDisplayParams(),
+        this.placement
+      );
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
@@ -105,7 +155,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   /** take ownership of input points and add as a point string to this builder */
   public addPointString(points: Point3d[]): void {
-    this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+    this.accum.addPointString(
+      points,
+      this.getLinearDisplayParams(),
+      this.placement
+    );
   }
 
   public addPointString2d(points: Point2d[], zDepth: number): void {
@@ -115,7 +169,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public addShape(points: Point3d[]): void {
     const loop = Loop.create(LineString3d.create(points));
-    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
+    this.accum.addLoop(
+      loop,
+      this.getMeshDisplayParams(),
+      this.placement,
+      false
+    );
   }
 
   public addShape2d(points: Point2d[], zDepth: number): void {
@@ -124,31 +183,67 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public addPath(path: Path): void {
-    this.accum.addPath(path, this.getLinearDisplayParams(), this.placement, false);
+    this.accum.addPath(
+      path,
+      this.getLinearDisplayParams(),
+      this.placement,
+      false
+    );
   }
 
   public addLoop(loop: Loop): void {
-    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
+    this.accum.addLoop(
+      loop,
+      this.getMeshDisplayParams(),
+      this.placement,
+      false
+    );
   }
 
   public addPolyface(meshData: Polyface): void {
-    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
+    this.accum.addPolyface(
+      meshData as IndexedPolyface,
+      this.getMeshDisplayParams(),
+      this.placement
+    );
   }
 
   public addSolidPrimitive(primitive: SolidPrimitive): void {
-    this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
+    this.accum.addSolidPrimitive(
+      primitive,
+      this.getMeshDisplayParams(),
+      this.placement
+    );
   }
 
-  public getGraphicParams(): GraphicParams { return this.graphicParams; }
+  public getGraphicParams(): GraphicParams {
+    return this.graphicParams;
+  }
 
-  public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
-  public getMeshDisplayParams(): DisplayParams { return DisplayParams.createForMesh(this.graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad)); }
-  public getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this.graphicParams); }
-  public get textDisplayParams(): DisplayParams { return DisplayParams.createForText(this.graphicParams); }
+  public getDisplayParams(type: DisplayParams.Type): DisplayParams {
+    return DisplayParams.createForType(type, this.graphicParams);
+  }
+  public getMeshDisplayParams(): DisplayParams {
+    return DisplayParams.createForMesh(
+      this.graphicParams,
+      !this.wantNormals,
+      (grad) => this.resolveGradient(grad)
+    );
+  }
+  public getLinearDisplayParams(): DisplayParams {
+    return DisplayParams.createForLinear(this.graphicParams);
+  }
+  public get textDisplayParams(): DisplayParams {
+    return DisplayParams.createForText(this.graphicParams);
+  }
 
-  public get system(): RenderSystem { return this.accum.system; }
+  public get system(): RenderSystem {
+    return this.accum.system;
+  }
 
-  public add(geom: Geometry): void { this.accum.addGeometry(geom); }
+  public add(geom: Geometry): void {
+    this.accum.addGeometry(geom);
+  }
 
   private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
     return this.system.getGradientTexture(gradient, this.iModel);
@@ -172,27 +267,42 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
+      meshes = accum.saveToGraphicList(
+        this.primitives,
+        options,
+        tolerance,
+        this.pickable
+      );
       if (undefined !== meshes) {
-        if (meshes.features?.anyDefined)
-          featureTable = meshes.features;
+        if (meshes.features?.anyDefined) featureTable = meshes.features;
 
         range = meshes.range;
       }
     }
 
-    let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
+    let graphic =
+      this.primitives.length !== 1
+        ? this.accum.system.createGraphicList(this.primitives)
+        : (this.primitives.pop() as RenderGraphic);
     if (undefined !== featureTable) {
       const batchRange = range ?? new Range3d();
       const batchOptions = this._options.pickable;
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
+      graphic = this.accum.system.createBatch(
+        graphic,
+        PackedFeatureTable.pack(featureTable),
+        batchRange,
+        batchOptions
+      );
     }
 
     if (addDebugRangeBox && range) {
       addDebugRangeBox = false;
       const builder = this.accum.system.createGraphic({ ...this._options });
       builder.addRangeBox(range);
-      graphic = this.accum.system.createGraphicList([graphic, builder.finish()]);
+      graphic = this.accum.system.createGraphicList([
+        graphic,
+        builder.finish(),
+      ]);
       addDebugRangeBox = true;
     }
 

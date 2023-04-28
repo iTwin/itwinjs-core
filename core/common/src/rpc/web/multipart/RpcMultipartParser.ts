@@ -87,8 +87,7 @@ export class RpcMultipartParser {
     let boundary = "";
     CONTENT_TYPE_PARAM_RE.lastIndex = m.index + m[0].length - 1;
     while ((m = CONTENT_TYPE_PARAM_RE.exec(contentType))) {
-      if (m[1].toLowerCase() !== "boundary")
-        continue;
+      if (m[1].toLowerCase() !== "boundary") continue;
 
       boundary = m[2] || m[3];
       break;
@@ -154,14 +153,12 @@ export class RpcMultipartParser {
             state = CLOSE_BOUNDARY;
             break;
           } else if (index === boundaryLength - 2) {
-            if (c !== CR)
-              throw new Error(`Expected CR Received ${c}`);
+            if (c !== CR) throw new Error(`Expected CR Received ${c}`);
 
             index++;
             break;
           } else if (index === boundaryLength - 1) {
-            if (c !== LF)
-              throw new Error(`Expected LF Received ${c}`);
+            if (c !== LF) throw new Error(`Expected LF Received ${c}`);
 
             index = 0;
             this._onParsePartBegin();
@@ -169,11 +166,9 @@ export class RpcMultipartParser {
             break;
           }
 
-          if (c !== boundary[index + 2])
-            index = -2;
+          if (c !== boundary[index + 2]) index = -2;
 
-          if (c === boundary[index + 2])
-            index++;
+          if (c === boundary[index + 2]) index++;
 
           break;
         case HEADER_FIELD_START:
@@ -189,15 +184,16 @@ export class RpcMultipartParser {
           }
 
           index++;
-          if (c === HYPHEN)
-            break;
+          if (c === HYPHEN) break;
 
           if (c === COLON) {
             if (index === 1) {
               // empty header field
               throw new Error("Empty header field");
             }
-            this._onParseHeaderField(this._buffer.subarray(this._headerFieldMark as number, i));
+            this._onParseHeaderField(
+              this._buffer.subarray(this._headerFieldMark as number, i)
+            );
             this._headerFieldMark = null;
             state = HEADER_VALUE_START;
             break;
@@ -209,33 +205,31 @@ export class RpcMultipartParser {
           }
           break;
         case HEADER_VALUE_START:
-          if (c === SPACE)
-            break;
+          if (c === SPACE) break;
 
           this._headerValueMark = i;
           state = HEADER_VALUE;
         /* falls through */
         case HEADER_VALUE:
           if (c === CR) {
-            this._onParseHeaderValue(this._buffer.subarray(this._headerValueMark as number, i));
+            this._onParseHeaderValue(
+              this._buffer.subarray(this._headerValueMark as number, i)
+            );
             this._headerValueMark = null;
             this._onParseHeaderEnd();
             state = HEADER_VALUE_ALMOST_DONE;
           }
           break;
         case HEADER_VALUE_ALMOST_DONE:
-          if (c !== LF)
-            throw new Error(`Expected LF Received ${c}`);
+          if (c !== LF) throw new Error(`Expected LF Received ${c}`);
 
           state = HEADER_FIELD_START;
           break;
         case HEADERS_ALMOST_DONE:
-          if (c !== LF)
-            throw new Error(`Expected LF Received ${c}`);
+          if (c !== LF) throw new Error(`Expected LF Received ${c}`);
 
           const err: any = this._onParseHeadersEnd(i + 1);
-          if (err)
-            throw err;
+          if (err) throw err;
 
           state = PART_DATA_START;
           break;
@@ -259,7 +253,9 @@ export class RpcMultipartParser {
           if (index < boundaryLength) {
             if (boundary[index] === c) {
               if (index === 0) {
-                this._onParsePartData(this._buffer.subarray(this._partDataMark as number, i));
+                this._onParsePartData(
+                  this._buffer.subarray(this._partDataMark as number, i)
+                );
                 this._partDataMark = null;
               }
               index++;
@@ -311,8 +307,7 @@ export class RpcMultipartParser {
 
           break;
         case CLOSE_BOUNDARY:
-          if (c !== HYPHEN)
-            throw new Error(`Expected HYPHEN Received ${c}`);
+          if (c !== HYPHEN) throw new Error(`Expected HYPHEN Received ${c}`);
 
           if (index === 1) {
             this._onParsePartEnd();
@@ -374,7 +369,7 @@ export class RpcMultipartParser {
 
     let m: RegExpMatchArray | null;
     if (this._headerField === "content-disposition") {
-      if (m = this._headerValue.match(/\bname="([^"]+)"/i)) {
+      if ((m = this._headerValue.match(/\bname="([^"]+)"/i))) {
         this._partName = m[1];
       }
       // this._partFilename = parseFilename(this._headerValue);
@@ -410,7 +405,8 @@ export class RpcMultipartParser {
   }
 
   private _onParsePartEnd() {
-    const partValue = this._partChunks.length === 1 ? this._partChunks[0] : this._concatParts();
+    const partValue =
+      this._partChunks.length === 1 ? this._partChunks[0] : this._concatParts();
 
     if (this._partName === "objects") {
       const partDecoder = new TextDecoder();
@@ -422,6 +418,5 @@ export class RpcMultipartParser {
     this._clearPartVars();
   }
 
-  private _onParseHeadersEnd(_offset: number) {
-  }
+  private _onParseHeadersEnd(_offset: number) {}
 }

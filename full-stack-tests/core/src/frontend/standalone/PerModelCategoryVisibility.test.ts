@@ -4,9 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@itwin/core-common";
 import {
-  FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  ColorDef,
+  Feature,
+  FeatureAppearance,
+  SubCategoryOverride,
+} from "@itwin/core-common";
+import {
+  FeatureSymbology,
+  PerModelCategoryVisibility,
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+  StandardViewId,
   Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -16,25 +26,40 @@ class Overrides extends FeatureSymbology.Overrides {
     super(vp);
   }
 
-  public get modelSubCategoryOverrides() { return this._modelSubCategoryOverrides; }
-
-  public getOverride(modelId: Id64String): Id64.Uint32Set | undefined {
-    return this.modelSubCategoryOverrides.get(Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId));
+  public get modelSubCategoryOverrides() {
+    return this._modelSubCategoryOverrides;
   }
 
-  public expectOverridden(modelId: Id64String, subcategoryId: Id64String): void {
+  public getOverride(modelId: Id64String): Id64.Uint32Set | undefined {
+    return this.modelSubCategoryOverrides.get(
+      Id64.getLowerUint32(modelId),
+      Id64.getUpperUint32(modelId)
+    );
+  }
+
+  public expectOverridden(
+    modelId: Id64String,
+    subcategoryId: Id64String
+  ): void {
     const set = this.getOverride(modelId);
     expect(set).not.to.be.undefined;
     expect(set!.hasId(subcategoryId)).to.be.true;
   }
 
-  public expectNotOverridden(modelId: Id64String, subcategoryId: Id64String): void {
+  public expectNotOverridden(
+    modelId: Id64String,
+    subcategoryId: Id64String
+  ): void {
     const set = this.getOverride(modelId);
-    if (undefined !== set)
-      expect(set.hasId(subcategoryId)).to.be.false;
+    if (undefined !== set) expect(set.hasId(subcategoryId)).to.be.false;
   }
 
-  public expectSubCategoryAppearance(modelId: Id64String, subcatId: Id64String, visible: boolean, color?: ColorDef): void {
+  public expectSubCategoryAppearance(
+    modelId: Id64String,
+    subcatId: Id64String,
+    visible: boolean,
+    color?: ColorDef
+  ): void {
     const app = this.getElementAppearance(modelId, subcatId);
     expect(undefined !== app).to.equal(visible);
     if (undefined !== app) {
@@ -48,7 +73,11 @@ class Overrides extends FeatureSymbology.Overrides {
     }
   }
 
-  public getElementAppearance(modelId: Id64String, subcatId: Id64String, elemId: Id64String = "0xabcdef"): FeatureAppearance | undefined {
+  public getElementAppearance(
+    modelId: Id64String,
+    subcatId: Id64String,
+    elemId: Id64String = "0xabcdef"
+  ): FeatureAppearance | undefined {
     return this.getFeatureAppearance(new Feature(elemId, subcatId), modelId);
   }
 
@@ -73,16 +102,16 @@ describe("Per-model category visibility overrides", () => {
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
+    spatialView = (await imodel.views.load("0x34")) as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 
     // Make sure all subcategories we need are loaded ahead of time.
     const req = imodel.subcategories.load(usedCatIds);
-    if (undefined !== req)
-      await req.promise;
+    if (undefined !== req) await req.promise;
 
     for (const usedCatId of usedCatIds)
-      expect(imodel.subcategories.getSubCategories(usedCatId)).not.to.be.undefined;
+      expect(imodel.subcategories.getSubCategories(usedCatId)).not.to.be
+        .undefined;
   });
 
   beforeEach(() => {
@@ -94,8 +123,7 @@ describe("Per-model category visibility overrides", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -131,13 +159,21 @@ describe("Per-model category visibility overrides", () => {
       const lo = Id64.getLowerUint32(modelId);
       const hi = Id64.getUpperUint32(modelId);
 
-      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).to.equal(expectVisible);
-      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).to.equal(expectVisible);
+      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).to.equal(
+        expectVisible
+      );
+      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).to.equal(
+        expectVisible
+      );
       expect(ovrs.isSubCategoryVisibleInModel(0x18, 0, lo, hi)).to.be.false;
       expect(ovrs.isSubCategoryVisibleInModel(0x2e, 0, lo, hi)).to.be.false;
 
-      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).to.equal(expectVisible);
-      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).to.equal(expectVisible);
+      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).to.equal(
+        expectVisible
+      );
+      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).to.equal(
+        expectVisible
+      );
     }
   });
 
@@ -165,14 +201,24 @@ describe("Per-model category visibility overrides", () => {
     ovrs.expectOverridden("0x1f", "0x18");
 
     for (const modelId of spatialView.modelSelector.models) {
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).to.be.undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.to.be
+        .undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.to.be
+        .undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).to.be
+        .undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).to.be
+        .undefined;
 
-      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).to.equal(modelId !== "0x1c");
-      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).to.equal(modelId === "0x1f");
-      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).to.equal(modelId !== "0x1f");
+      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).to.equal(
+        modelId !== "0x1c"
+      );
+      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).to.equal(
+        modelId === "0x1f"
+      );
+      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).to.equal(
+        modelId !== "0x1f"
+      );
     }
   });
 
@@ -182,10 +228,28 @@ describe("Per-model category visibility overrides", () => {
     vp.changeCategoryDisplay("0x2d", false);
 
     // Override 30, 32, and 33 to be invisible. Override color of 30, 33, 18, and 2e. (2e's category is turned off).
-    vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
-    vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr }));
-    vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr }));
-    vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white.tbgr, invisible: true }));
+    vp.overrideSubCategory(
+      "0x30",
+      SubCategoryOverride.fromJSON({
+        color: ColorDef.green.tbgr,
+        invisible: true,
+      })
+    );
+    vp.overrideSubCategory(
+      "0x18",
+      SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })
+    );
+    vp.overrideSubCategory(
+      "0x2e",
+      SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr })
+    );
+    vp.overrideSubCategory(
+      "0x33",
+      SubCategoryOverride.fromJSON({
+        color: ColorDef.white.tbgr,
+        invisible: true,
+      })
+    );
     vp.changeSubCategoryDisplay("0x32", false); // adds an override of { invisible: true }
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.
@@ -200,7 +264,11 @@ describe("Per-model category visibility overrides", () => {
     // If any of those subcategories have appearance overrides they must be loaded.
     // Cat 31 already enabled, but its subcat is invisible. Cat 2f is enabled; its subcat 30 is invisible and green; its subcat 18 is visible and red.
     // Cat 2d is disabled; its subcat 2e is blue.
-    vp.perModelCategoryVisibility.setOverride("0x1c", ["0x2f", "0x31", "0x2d"], show);
+    vp.perModelCategoryVisibility.setOverride(
+      "0x1c",
+      ["0x2f", "0x31", "0x2d"],
+      show
+    );
     vp.perModelCategoryVisibility.setOverride("0x1c", "0x17", hide);
 
     ovrs = new Overrides(vp);
@@ -275,9 +343,8 @@ describe("Per-model category visibility overrides with setOverrides function", (
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
+    spatialView = (await imodel.views.load("0x34")) as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-
   });
 
   beforeEach(() => {
@@ -289,8 +356,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -307,8 +373,8 @@ describe("Per-model category visibility overrides with setOverrides function", (
     // Turn on category 2f for model 1c, and turn off category 17 for model 1f (latter is no-op because already off).
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
-    overrides.push({modelId: "0x1c", categoryIds: "0x2f", visOverride: show});
-    overrides.push({modelId: "0x1f", categoryIds: "0x17", visOverride: hide});
+    overrides.push({ modelId: "0x1c", categoryIds: "0x2f", visOverride: show });
+    overrides.push({ modelId: "0x1f", categoryIds: "0x17", visOverride: hide });
     await pmcv.setOverrides(overrides);
 
     expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show);
@@ -328,13 +394,21 @@ describe("Per-model category visibility overrides with setOverrides function", (
       const lo = Id64.getLowerUint32(modelId);
       const hi = Id64.getUpperUint32(modelId);
 
-      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).to.equal(expectVisible);
-      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).to.equal(expectVisible);
+      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).to.equal(
+        expectVisible
+      );
+      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).to.equal(
+        expectVisible
+      );
       expect(ovrs.isSubCategoryVisibleInModel(0x18, 0, lo, hi)).to.be.false;
       expect(ovrs.isSubCategoryVisibleInModel(0x2e, 0, lo, hi)).to.be.false;
 
-      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).to.equal(expectVisible);
-      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).to.equal(expectVisible);
+      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).to.equal(
+        expectVisible
+      );
+      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).to.equal(
+        expectVisible
+      );
     }
   });
 
@@ -346,9 +420,17 @@ describe("Per-model category visibility overrides with setOverrides function", (
     // Model 1c turns category 31 off. Model 1f turns category 17 on and category 2d off.
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
-    overrides.push({modelId: "0x1c", categoryIds: ["0x31"], visOverride: hide});
-    overrides.push({modelId: "0x1f", categoryIds: ["0x17"], visOverride: show});
-    overrides.push({modelId: "0x1f", categoryIds: "0x2d", visOverride: hide});
+    overrides.push({
+      modelId: "0x1c",
+      categoryIds: ["0x31"],
+      visOverride: hide,
+    });
+    overrides.push({
+      modelId: "0x1f",
+      categoryIds: ["0x17"],
+      visOverride: show,
+    });
+    overrides.push({ modelId: "0x1f", categoryIds: "0x2d", visOverride: hide });
     await pmcv.setOverrides(overrides);
     expect(pmcv.getOverride("0x1c", "0x31")).to.equal(hide);
     expect(pmcv.getOverride("0x1f", "0x17")).to.equal(show);
@@ -364,14 +446,24 @@ describe("Per-model category visibility overrides with setOverrides function", (
     ovrs.expectOverridden("0x1f", "0x18");
 
     for (const modelId of spatialView.modelSelector.models) {
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).to.be.undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.to.be
+        .undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.to.be
+        .undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).to.be
+        .undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).to.be
+        .undefined;
 
-      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).to.equal(modelId !== "0x1c");
-      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).to.equal(modelId === "0x1f");
-      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).to.equal(modelId !== "0x1f");
+      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).to.equal(
+        modelId !== "0x1c"
+      );
+      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).to.equal(
+        modelId === "0x1f"
+      );
+      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).to.equal(
+        modelId !== "0x1f"
+      );
     }
   });
 
@@ -381,10 +473,28 @@ describe("Per-model category visibility overrides with setOverrides function", (
     vp.changeCategoryDisplay("0x2d", false);
 
     // Override 30, 32, and 33 to be invisible. Override color of 30, 33, 18, and 2e. (2e's category is turned off).
-    vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
-    vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr }));
-    vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr }));
-    vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white.tbgr, invisible: true }));
+    vp.overrideSubCategory(
+      "0x30",
+      SubCategoryOverride.fromJSON({
+        color: ColorDef.green.tbgr,
+        invisible: true,
+      })
+    );
+    vp.overrideSubCategory(
+      "0x18",
+      SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })
+    );
+    vp.overrideSubCategory(
+      "0x2e",
+      SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr })
+    );
+    vp.overrideSubCategory(
+      "0x33",
+      SubCategoryOverride.fromJSON({
+        color: ColorDef.white.tbgr,
+        invisible: true,
+      })
+    );
     vp.changeSubCategoryDisplay("0x32", false); // adds an override of { invisible: true }
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.
@@ -402,8 +512,16 @@ describe("Per-model category visibility overrides with setOverrides function", (
     // vp.perModelCategoryVisibility.setOverride("0x1c", ["0x2f", "0x31", "0x2d"], show);
     // vp.perModelCategoryVisibility.setOverride("0x1c", "0x17", hide);
     const overrides: PerModelCategoryVisibility.Props[] = [];
-    overrides.push({modelId: "0x1c", categoryIds: ["0x2f", "0x31", "0x2d"], visOverride: show});
-    overrides.push({modelId: "0x1c", categoryIds: ["0x17"], visOverride: hide});
+    overrides.push({
+      modelId: "0x1c",
+      categoryIds: ["0x2f", "0x31", "0x2d"],
+      visOverride: show,
+    });
+    overrides.push({
+      modelId: "0x1c",
+      categoryIds: ["0x17"],
+      visOverride: hide,
+    });
     await vp.perModelCategoryVisibility.setOverrides(overrides);
 
     ovrs = new Overrides(vp);
@@ -429,10 +547,22 @@ describe("Per-model category visibility overrides with setOverrides function", (
   it("supports iteration", async () => {
     const pmcv = vp.perModelCategoryVisibility;
     const overrides: PerModelCategoryVisibility.Props[] = [];
-    overrides.push({modelId: "0x1c", categoryIds: ["0x2f", "0x31"], visOverride: show});
-    overrides.push({modelId: "0x1c", categoryIds: ["0x2d"], visOverride:hide});
-    overrides.push({modelId: "0x1d", categoryIds: "0x2d", visOverride: show});
-    overrides.push({modelId: "0x1d", categoryIds: ["0x2f", "0x2e"], visOverride: hide});
+    overrides.push({
+      modelId: "0x1c",
+      categoryIds: ["0x2f", "0x31"],
+      visOverride: show,
+    });
+    overrides.push({
+      modelId: "0x1c",
+      categoryIds: ["0x2d"],
+      visOverride: hide,
+    });
+    overrides.push({ modelId: "0x1d", categoryIds: "0x2d", visOverride: show });
+    overrides.push({
+      modelId: "0x1d",
+      categoryIds: ["0x2f", "0x2e"],
+      visOverride: hide,
+    });
     await pmcv.setOverrides(overrides);
 
     let nIterations = 0;

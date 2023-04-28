@@ -3,14 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, PointCloudDisplayProps, RealityModelDisplayProps, RealityModelDisplaySettings,
+  DisplayStyleSettings,
+  FeatureAppearance,
+  FeatureAppearanceProps,
+  PointCloudDisplayProps,
+  RealityModelDisplayProps,
+  RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import {
-  ContextRealityModelState, IModelApp, ScreenViewport, SpatialModelState, Tool, Viewport,
+  ContextRealityModelState,
+  IModelApp,
+  ScreenViewport,
+  SpatialModelState,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
 import {
   ComboBoxEntry,
-  convertHexToRgb, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
+  convertHexToRgb,
+  createCheckBox,
+  createColorInput,
+  createComboBox,
+  createRadioBox,
+  createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { ToolBarDropDown } from "./ToolBar";
@@ -29,13 +44,27 @@ class ContextModel implements RealityModel {
     this._state = state;
   }
 
-  public get name() { return this._state.name || this._state.orbitGtBlob?.blobFileName || this._state.url; }
+  public get name() {
+    return (
+      this._state.name ||
+      this._state.orbitGtBlob?.blobFileName ||
+      this._state.url
+    );
+  }
 
-  public get settings() { return this._state.displaySettings; }
-  public set settings(value: RealityModelDisplaySettings) { this._state.displaySettings = value; }
+  public get settings() {
+    return this._state.displaySettings;
+  }
+  public set settings(value: RealityModelDisplaySettings) {
+    this._state.displaySettings = value;
+  }
 
-  public get appearance() { return this._state.appearanceOverrides; }
-  public set appearance(value: FeatureAppearance | undefined) { this._state.appearanceOverrides = value; }
+  public get appearance() {
+    return this._state.appearanceOverrides;
+  }
+  public set appearance(value: FeatureAppearance | undefined) {
+    this._state.appearanceOverrides = value;
+  }
 }
 
 class PersistentModel implements RealityModel {
@@ -47,29 +76,40 @@ class PersistentModel implements RealityModel {
     this._settings = settings;
   }
 
-  public get name() { return this._model.name ?? this._model.jsonProperties.tilesetUrl; }
+  public get name() {
+    return this._model.name ?? this._model.jsonProperties.tilesetUrl;
+  }
 
-  public get settings() { return this._settings.getRealityModelDisplaySettings(this._model.id) ?? RealityModelDisplaySettings.defaults; }
-  public set settings(value: RealityModelDisplaySettings) { this._settings.setRealityModelDisplaySettings(this._model.id, value); }
+  public get settings() {
+    return (
+      this._settings.getRealityModelDisplaySettings(this._model.id) ??
+      RealityModelDisplaySettings.defaults
+    );
+  }
+  public set settings(value: RealityModelDisplaySettings) {
+    this._settings.setRealityModelDisplaySettings(this._model.id, value);
+  }
 
-  public get appearance() { return this._settings.getModelAppearanceOverride(this._model.id); }
+  public get appearance() {
+    return this._settings.getModelAppearanceOverride(this._model.id);
+  }
   public set appearance(value: FeatureAppearance | undefined) {
-    if (value)
-      this._settings.overrideModelAppearance(this._model.id, value);
-    else
-      this._settings.dropModelAppearanceOverride(this._model.id);
+    if (value) this._settings.overrideModelAppearance(this._model.id, value);
+    else this._settings.dropModelAppearanceOverride(this._model.id);
   }
 }
 
-function createRealityModelSettingsPanel(model: RealityModel, element: HTMLElement) {
-  const updateSettings = (props: RealityModelDisplayProps) => model.settings = model.settings.clone(props);
+function createRealityModelSettingsPanel(
+  model: RealityModel,
+  element: HTMLElement
+) {
+  const updateSettings = (props: RealityModelDisplayProps) =>
+    (model.settings = model.settings.clone(props));
   const updateAppearance = (props: FeatureAppearanceProps | undefined) => {
-    if (!props)
-      model.appearance = undefined;
+    if (!props) model.appearance = undefined;
     else if (!model.appearance)
       model.appearance = FeatureAppearance.fromJSON(props);
-    else
-      model.appearance = model.appearance.clone(props);
+    else model.appearance = model.appearance.clone(props);
   };
 
   // Color
@@ -81,7 +121,10 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
   colorCb.id = "rms_cbColor";
   colorDiv.appendChild(colorCb);
 
-  const updateColor = () => updateAppearance(colorCb.checked ? { rgb: convertHexToRgb(colorInput.value) } : undefined);
+  const updateColor = () =>
+    updateAppearance(
+      colorCb.checked ? { rgb: convertHexToRgb(colorInput.value) } : undefined
+    );
   const colorInput = createColorInput({
     parent: colorDiv,
     id: "rms_color",
@@ -99,10 +142,16 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
   });
 
   const colorRatio = createSlider({
-    parent: colorDiv, id: "rms_ratio", name: " Ratio ",
-    min: "0", max: "1", step: "0.05",
+    parent: colorDiv,
+    id: "rms_ratio",
+    name: " Ratio ",
+    min: "0",
+    max: "1",
+    step: "0.05",
     value: model.settings.overrideColorRatio.toString(),
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const overrideColorRatio = Number.parseFloat(slider.value);
       if (!Number.isNaN(overrideColorRatio))
@@ -113,12 +162,15 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
   colorRatio.slider.disabled = !colorCb.checked;
 
   // Point shape
-  const updatePointCloud = (props: PointCloudDisplayProps) => updateSettings(model.settings.clone({ pointCloud: props }));
+  const updatePointCloud = (props: PointCloudDisplayProps) =>
+    updateSettings(model.settings.clone({ pointCloud: props }));
   createCheckBox({
-    name: "Square points:", id: "rms_square",
+    name: "Square points:",
+    id: "rms_square",
     parent: element,
     isChecked: model.settings.pointCloud.shape === "square",
-    handler: (cb) => updatePointCloud({ shape: cb.checked ? "square" : "round" }),
+    handler: (cb) =>
+      updatePointCloud({ shape: cb.checked ? "square" : "round" }),
   });
 
   // Point size mode
@@ -143,26 +195,36 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
 
   // Pixel size
   const voxelSizeSlider = createSlider({
-    name: " Size ", id: "rms_scale", parent: sizeMode.div,
-    min: "0.25", max: "10", step: "0.25",
+    name: " Size ",
+    id: "rms_scale",
+    parent: sizeMode.div,
+    min: "0.25",
+    max: "10",
+    step: "0.25",
     value: model.settings.pointCloud.voxelScale.toString(),
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      if (!Number.isNaN(scale))
-        updatePointCloud({ voxelScale: scale });
+      if (!Number.isNaN(scale)) updatePointCloud({ voxelScale: scale });
     },
   }).div;
 
   const pixelSizeSlider = createSlider({
-    name: " Size ", id: "rms_size", parent: sizeMode.div,
-    min: "1", max: "64", step: "1",
+    name: " Size ",
+    id: "rms_size",
+    parent: sizeMode.div,
+    min: "1",
+    max: "64",
+    step: "1",
     value: model.settings.pointCloud.pixelSize.toString(),
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const pixelSize = Number.parseInt(slider.value, 10);
-      if (!Number.isNaN(pixelSize))
-        updatePointCloud({ pixelSize });
+      if (!Number.isNaN(pixelSize)) updatePointCloud({ pixelSize });
     },
   }).div;
 
@@ -207,74 +269,100 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
 
   // EDL strength
   const edlStrengthSlider = createSlider({
-    name: " Strength ", id: "pcs_strength", parent: element,
-    min: "0.0", max: "25", step: "0.25",
+    name: " Strength ",
+    id: "pcs_strength",
+    parent: element,
+    min: "0.0",
+    max: "25",
+    step: "0.25",
     value: model.settings.pointCloud.edlStrength.toString(),
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      if (!Number.isNaN(scale))
-        updatePointCloud({ edlStrength: scale });
+      if (!Number.isNaN(scale)) updatePointCloud({ edlStrength: scale });
     },
   }).div;
   edlStrengthSlider.style.display = "";
 
   // EDL radius
   const edlRadiusSlider = createSlider({
-    name: " Radius ", id: "pcs_radius", parent: element,
-    min: "0.0", max: "25", step: "0.25",
+    name: " Radius ",
+    id: "pcs_radius",
+    parent: element,
+    min: "0.0",
+    max: "25",
+    step: "0.25",
     value: model.settings.pointCloud.edlRadius.toString(),
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      if (!Number.isNaN(scale))
-        updatePointCloud({ edlRadius: scale });
+      if (!Number.isNaN(scale)) updatePointCloud({ edlRadius: scale });
     },
   }).div;
   edlRadiusSlider.style.display = "";
 
   const edlFilter = createCheckBox({
-    name: " Filter", id: "pcs_filter",
+    name: " Filter",
+    id: "pcs_filter",
     parent: element,
     isChecked: model.settings.pointCloud.edlFilter === 1,
     handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
   }).div;
 
   const edlMixWt1Slider = createSlider({
-    name: " Mix Wt 1 ", id: "pcs_mixwt1", parent: element,
-    min: "0.0", max: "1", step: "0.01",
+    name: " Mix Wt 1 ",
+    id: "pcs_mixwt1",
+    parent: element,
+    min: "0.0",
+    max: "1",
+    step: "0.01",
     value: model.settings.pointCloud.edlMixWts1?.toString() ?? "1",
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      if (!Number.isNaN(scale))
-        updatePointCloud({ edlMixWts1: scale });
+      if (!Number.isNaN(scale)) updatePointCloud({ edlMixWts1: scale });
     },
   }).div;
   edlMixWt1Slider.style.display = "";
 
   const edlMixWt2Slider = createSlider({
-    name: " Mix Wt 2 ", id: "pcs_mixwt2", parent: element,
-    min: "0.0", max: "1", step: "0.01",
+    name: " Mix Wt 2 ",
+    id: "pcs_mixwt2",
+    parent: element,
+    min: "0.0",
+    max: "1",
+    step: "0.01",
     value: model.settings.pointCloud.edlMixWts2?.toString() ?? "0.5",
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      if (!Number.isNaN(scale))
-        updatePointCloud({ edlMixWts2: scale });
+      if (!Number.isNaN(scale)) updatePointCloud({ edlMixWts2: scale });
     },
   }).div;
   edlMixWt2Slider.style.display = "";
 
   const edlMixWt4Slider = createSlider({
-    name: " Mix Wt 4 ", id: "pcs_mixwt4", parent: element,
-    min: "0.0", max: "1", step: "0.01",
+    name: " Mix Wt 4 ",
+    id: "pcs_mixwt4",
+    parent: element,
+    min: "0.0",
+    max: "1",
+    step: "0.01",
     value: model.settings.pointCloud.edlMixWts4?.toString() ?? "0.25",
-    readout: "right", verticalAlign: false, textAlign: false,
+    readout: "right",
+    verticalAlign: false,
+    textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      if (!Number.isNaN(scale))
-        updatePointCloud({ edlMixWts4: scale });
+      if (!Number.isNaN(scale)) updatePointCloud({ edlMixWts4: scale });
     },
   }).div;
   edlMixWt4Slider.style.display = "";
@@ -329,18 +417,28 @@ class RealityModelSettingsWidget extends Window {
     viewportIdsWithOpenWidgets.delete(this._viewport.viewportId);
   }
 
-  public get windowId() { return this._windowId; }
-  public override get isResizable() { return false; }
+  public get windowId() {
+    return this._windowId;
+  }
+  public override get isResizable() {
+    return false;
+  }
 }
 
 export class OpenRealityModelSettingsTool extends Tool {
   public static override toolId = "OpenRealityModelSettings";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
-  public override async run(vp?: Viewport, model?: RealityModel): Promise<boolean> {
-    if (!vp || !model)
-      return false;
+  public override async run(
+    vp?: Viewport,
+    model?: RealityModel
+  ): Promise<boolean> {
+    if (!vp || !model) return false;
 
     const win = new RealityModelSettingsWidget(vp, model);
     win.surface.addWindow(win);
@@ -351,11 +449,9 @@ export class OpenRealityModelSettingsTool extends Tool {
 
   public override async parseAndRun(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp || !vp.view.isSpatialView())
-      return false;
+    if (!vp || !vp.view.isSpatialView()) return false;
 
-    if (viewportIdsWithOpenWidgets.has(vp.viewportId))
-      return true;
+    if (viewportIdsWithOpenWidgets.has(vp.viewportId)) return true;
 
     // ###TODO permit specific reality model to be specified in args.
     // For now use first one we can find.
@@ -368,7 +464,10 @@ export class OpenRealityModelSettingsTool extends Tool {
       for (const modelId of vp.view.modelSelector.models) {
         const model = vp.iModel.models.getLoaded(modelId);
         if (model instanceof SpatialModelState && model.isRealityModel) {
-          realityModel = new PersistentModel(model, vp.view.displayStyle.settings);
+          realityModel = new PersistentModel(
+            model,
+            vp.view.displayStyle.settings
+          );
           break;
         }
       }
@@ -379,8 +478,7 @@ export class OpenRealityModelSettingsTool extends Tool {
 }
 
 function clearElement(element: HTMLElement): void {
-  while (element.hasChildNodes())
-    element.removeChild(element.firstChild!);
+  while (element.hasChildNodes()) element.removeChild(element.firstChild!);
 }
 
 export class RealityModelSettingsPanel extends ToolBarDropDown {
@@ -389,7 +487,10 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
   private readonly _element: HTMLElement;
   private _realityModelListDiv: HTMLDivElement;
   private _selectedRealityModelIndex: number = 0;
-  private _realityModels: Array<{ realityModel: RealityModel, modelName: string }> = [];
+  private _realityModels: Array<{
+    realityModel: RealityModel;
+    modelName: string;
+  }> = [];
 
   public constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
@@ -434,14 +535,20 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
       for (const modelId of this._vp.view.modelSelector.models) {
         const model = this._vp.iModel.models.getLoaded(modelId);
         if (model instanceof SpatialModelState && model.isRealityModel) {
-          const realityModel = new PersistentModel(model, this._vp.view.displayStyle.settings);
-          this._realityModels.push({ realityModel, modelName: realityModel.name });
+          const realityModel = new PersistentModel(
+            model,
+            this._vp.view.displayStyle.settings
+          );
+          this._realityModels.push({
+            realityModel,
+            modelName: realityModel.name,
+          });
         }
       }
     }
     // create list of entries
     const entries = this._realityModels.map((realityModel, i) => {
-      return ({ name: realityModel.modelName, value: i } as ComboBoxEntry);
+      return { name: realityModel.modelName, value: i } as ComboBoxEntry;
     });
 
     clearElement(this._realityModelListDiv);
@@ -460,17 +567,23 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
-    if (!this._vp || !this._vp.view.isSpatialView())
-      return;
+    if (!this._vp || !this._vp.view.isSpatialView()) return;
     this.populateRealityModelList();
-    const realityModel = this._realityModels.at(this._selectedRealityModelIndex)?.realityModel;
-    if (undefined === realityModel)
-      return;
+    const realityModel = this._realityModels.at(
+      this._selectedRealityModelIndex
+    )?.realityModel;
+    if (undefined === realityModel) return;
 
     createRealityModelSettingsPanel(realityModel, this._element);
   }
 
-  public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  protected _open(): void { this._element.style.display = "block"; }
-  protected _close(): void { this._element.style.display = "none"; }
+  public get isOpen(): boolean {
+    return "none" !== this._element.style.display;
+  }
+  protected _open(): void {
+    this._element.style.display = "block";
+  }
+  protected _close(): void {
+    this._element.style.display = "none";
+  }
 }

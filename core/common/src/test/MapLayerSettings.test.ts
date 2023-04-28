@@ -5,13 +5,33 @@
 
 import { expect } from "chai";
 import { BackgroundMapType } from "../BackgroundMapProvider";
-import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
+import {
+  BaseMapLayerSettings,
+  ImageMapLayerProps,
+  ImageMapLayerSettings,
+  MapSubLayerProps,
+  MapSubLayerSettings,
+} from "../core-common";
 
-const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
-const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };
+const testMapSubLayer0 = {
+  name: "TestName",
+  visible: true,
+  title: "TestTitle",
+};
+const testMapSubLayer1 = {
+  name: "TestName",
+  visible: true,
+  title: "TestTitle",
+  id: 0,
+  parent: -1,
+  children: [1, 2, 3],
+};
 
 describe("MapSubLayerSettings", () => {
-  const expectMatch = (output: MapSubLayerProps, expected: MapSubLayerProps) => {
+  const expectMatch = (
+    output: MapSubLayerProps,
+    expected: MapSubLayerProps
+  ) => {
     expect(output.id).to.equal(expected.id);
     expect(output.name).to.equal(expected.name);
     expect(output.title).to.equal(expected.title);
@@ -24,11 +44,13 @@ describe("MapSubLayerSettings", () => {
       for (let i = 0; i < expected.children.length; i++)
         expect(expected.children[i]).to.equal(output.children![i]);
     }
-
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: MapSubLayerProps, expected: MapSubLayerProps | "input") => {
+    const roundTrip = (
+      input: MapSubLayerProps,
+      expected: MapSubLayerProps | "input"
+    ) => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
       const settings = MapSubLayerSettings.fromJSON(input)!;
@@ -41,33 +63,96 @@ describe("MapSubLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: MapSubLayerProps, changed: Partial<MapSubLayerProps>, expected: MapSubLayerProps) => {
+    const clone = (
+      input: MapSubLayerProps,
+      changed: Partial<MapSubLayerProps>,
+      expected: MapSubLayerProps
+    ) => {
       const settings = MapSubLayerSettings.fromJSON(input);
       const output = settings.clone(changed);
       expectMatch(output.toJSON(), expected);
     };
 
     // Turn off visibility
-    clone(testMapSubLayer0, { visible: false }, { name: "TestName", title: "TestTitle", visible: false });
-    clone(testMapSubLayer1, { visible: false }, { name: "TestName", title: "TestTitle", visible: false, id: 0, parent: -1, children: [1, 2, 3] });
+    clone(
+      testMapSubLayer0,
+      { visible: false },
+      { name: "TestName", title: "TestTitle", visible: false }
+    );
+    clone(
+      testMapSubLayer1,
+      { visible: false },
+      {
+        name: "TestName",
+        title: "TestTitle",
+        visible: false,
+        id: 0,
+        parent: -1,
+        children: [1, 2, 3],
+      }
+    );
   });
 });
 
-const testMapLayer0 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: true };
-const testMapLayer1 = { name: "TestName", url: "www.bentley.com", formatId: "WMTS", transparency: .5, transparentBackground: false, visible: true };
-const testMapLayer2 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: true };
-const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: true };
-const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true, visible: false };
-const testMapLayer6 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false };
-const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } });
+const testMapLayer0 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMS",
+  visible: true,
+};
+const testMapLayer1 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMTS",
+  transparency: 0.5,
+  transparentBackground: false,
+  visible: true,
+};
+const testMapLayer2 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMS",
+  subLayers: [testMapSubLayer0, testMapSubLayer1],
+  visible: true,
+};
+const testMapLayer3 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMS",
+  subLayers: [testMapSubLayer0, testMapSubLayer1],
+  visible: true,
+};
+const testMapLayer4 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMS",
+  subLayers: [testMapSubLayer0, testMapSubLayer1],
+  isBase: true,
+  visible: false,
+};
+const testMapLayer6 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMS",
+  visible: false,
+};
+const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({
+  providerName: "BingProvider",
+  providerData: { mapType: BackgroundMapType.Hybrid },
+});
 
 describe("ImageMapLayerSettings", () => {
-  const expectMatches = (output: ImageMapLayerProps, expected: ImageMapLayerProps) => {
+  const expectMatches = (
+    output: ImageMapLayerProps,
+    expected: ImageMapLayerProps
+  ) => {
     expect(output.name).to.equal(expected.name);
     expect(output.visible).to.equal(expected.visible);
     expect(output.url).to.equal(expected.url);
     expect(output.transparency).to.equal(expected.transparency);
-    expect(output.transparentBackground).to.equal(expected.transparentBackground);
+    expect(output.transparentBackground).to.equal(
+      expected.transparentBackground
+    );
 
     if (expected.subLayers) {
       expect(output.subLayers).not.to.be.undefined;
@@ -77,15 +162,20 @@ describe("ImageMapLayerSettings", () => {
     }
   };
 
-  const expectSettingsMatches = (output: ImageMapLayerSettings, expected: ImageMapLayerSettings) => {
+  const expectSettingsMatches = (
+    output: ImageMapLayerSettings,
+    expected: ImageMapLayerSettings
+  ) => {
     expectMatches(output.toJSON(), expected.toJSON());
     expect(output.userName).to.equal(expected.userName);
     expect(output.password).to.equal(expected.password);
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: ImageMapLayerProps, expected: ImageMapLayerProps | "input") => {
-
+    const roundTrip = (
+      input: ImageMapLayerProps,
+      expected: ImageMapLayerProps | "input"
+    ) => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as ImageMapLayerProps;
 
@@ -105,7 +195,11 @@ describe("ImageMapLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: ImageMapLayerProps, changed: Partial<ImageMapLayerProps>, expected: ImageMapLayerProps) => {
+    const clone = (
+      input: ImageMapLayerProps,
+      changed: Partial<ImageMapLayerProps>,
+      expected: ImageMapLayerProps
+    ) => {
       const settings = ImageMapLayerSettings.fromJSON(input);
       const output = settings.clone(changed);
       expectMatches(output.toJSON(), expected);
@@ -116,15 +210,64 @@ describe("ImageMapLayerSettings", () => {
     };
 
     // Turn off visibility
-    clone(testMapLayer0, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false });
-    clone(testMapLayer3, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: false });
+    clone(
+      testMapLayer0,
+      { visible: false },
+      {
+        name: "TestName",
+        url: "www.bentley.com",
+        formatId: "WMS",
+        visible: false,
+      }
+    );
+    clone(
+      testMapLayer3,
+      { visible: false },
+      {
+        name: "TestName",
+        url: "www.bentley.com",
+        formatId: "WMS",
+        subLayers: [testMapSubLayer0, testMapSubLayer1],
+        visible: false,
+      }
+    );
 
     // turn on visibility
-    clone(testMapLayer6, { visible: true }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: true });
+    clone(
+      testMapLayer6,
+      { visible: true },
+      {
+        name: "TestName",
+        url: "www.bentley.com",
+        formatId: "WMS",
+        visible: true,
+      }
+    );
 
     // Set transparency
-    clone(testMapLayer0, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", transparency: .5, visible: true });
-    clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5, visible: true });
+    clone(
+      testMapLayer0,
+      { transparency: 0.5 },
+      {
+        name: "TestName",
+        url: "www.bentley.com",
+        formatId: "WMS",
+        transparency: 0.5,
+        visible: true,
+      }
+    );
+    clone(
+      testMapLayer3,
+      { transparency: 0.5 },
+      {
+        name: "TestName",
+        url: "www.bentley.com",
+        formatId: "WMS",
+        subLayers: [testMapSubLayer0, testMapSubLayer1],
+        transparency: 0.5,
+        visible: true,
+      }
+    );
 
     // Test settings not part of ImageMapLayerProps
     const settings1 = ImageMapLayerSettings.fromJSON(testMapLayer0)!;

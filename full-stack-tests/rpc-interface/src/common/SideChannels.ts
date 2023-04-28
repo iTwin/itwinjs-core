@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 // import { ServiceAuthorizationClient, ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 import { AccessToken } from "@itwin/core-bentley";
-import { executeBackendCallback, registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import {
+  executeBackendCallback,
+  registerBackendCallback,
+} from "@itwin/certa/lib/utils/CallbackUtils";
 
 const getEnvCallbackName = "getEnv";
 const getClientAccessTokenCallbackName = "getClientAccessToken";

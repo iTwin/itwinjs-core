@@ -13,7 +13,7 @@ The following React components comprise the ControlledTree component.
 - [TreeRenderer]($components-react) - default component for rendering the tree
 - [TreeNodeRenderer]($components-react) - default component for rendering tree nodes
 
-There are also several [Tree]($core-react:Tree) presentational  components in the `@itwin/core-react`
+There are also several [Tree]($core-react:Tree) presentational components in the `@itwin/core-react`
 package used for rendering.
 
 The following React hooks work in conjunction with the ControlledTree component.
@@ -22,7 +22,7 @@ The following React hooks work in conjunction with the ControlledTree component.
 - [useTreeModelSource]($components-react) - creates a [TreeModelSource]($components-react)
 - [useTreeModel]($components-react) - returns an immutable [TreeModel]($components-react) from given [TreeModelSource]($components-react) and subscribes to `onModelChanged` event to update the model when it changes.
 - [useTreeNodeLoader]($components-react) - creates a nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
-- [usePresentationTreeNodeLoader]($presentation-components) -  creates a [PagedTreeNodeLoader]($$components-react) with [PresentationTreeDataProvider]($presentation-components) using supplied imodel and ruleset
+- [usePresentationTreeNodeLoader]($presentation-components) - creates a [PagedTreeNodeLoader]($$components-react) with [PresentationTreeDataProvider]($presentation-components) using supplied imodel and ruleset
 - [useUnifiedSelectionTreeEventHandler]($presentation-components) - creates and disposes [UnifiedSelectionTreeEventHandler]($presentation-components)
 
 ## Tree Node Loader, Data Provider and Model
@@ -77,8 +77,15 @@ This React component utilizes the [ControlledTree]($components-react) component 
 ```tsx
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ControlledTree, useTreeModel, SelectionMode } from "@itwin/components-react";
-import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
+import {
+  ControlledTree,
+  useTreeModel,
+  SelectionMode,
+} from "@itwin/components-react";
+import {
+  usePresentationTreeNodeLoader,
+  useUnifiedSelectionTreeEventHandler,
+} from "@itwin/presentation-components";
 const RULESET_TREE = require("./Tree.ruleset.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** React properties for the tree component */
@@ -89,7 +96,11 @@ export interface Props {
 
 /** Tree component for the viewer app */
 export default function SimpleTreeComponent(props: Props) {
-  const nodeLoader = usePresentationTreeNodeLoader({ imodel: props.imodel, ruleset: RULESET_TREE, pageSize: 20 });
+  const nodeLoader = usePresentationTreeNodeLoader({
+    imodel: props.imodel,
+    ruleset: RULESET_TREE,
+    pageSize: 20,
+  });
   return (
     <ControlledTree
       nodeLoader={nodeLoader}

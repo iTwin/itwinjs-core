@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/express-server__ package contains the express webserver utilities to write an iTwin.js backend service.
+The **@itwin/express-server** package contains the express webserver utilities to write an iTwin.js backend service.
 
 ## Documentation
 

@@ -7,7 +7,11 @@
  */
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
+import {
+  BriefcaseProps,
+  LocalBriefcaseProps,
+  RequestNewBriefcaseProps,
+} from "./BriefcaseTypes";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
@@ -49,7 +53,6 @@ export interface NativeAppNotifications {
  * @internal
  */
 export interface NativeAppFunctions {
-
   /** If the user is signed in a valid access token will be returned. */
   getAccessToken: () => Promise<AccessToken | undefined>;
 
@@ -59,18 +62,25 @@ export interface NativeAppFunctions {
   /** Manually override internet reachability for testing purposes.
    * @param _status New status to set on backend.
    */
-  overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
+  overrideInternetConnectivity(
+    _overriddenBy: OverriddenBy,
+    _status: InternetConnectivityStatus
+  ): Promise<void>;
 
   /** Acquire a new BriefcaseId for the supplied iModelId from iModelHub */
   acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
 
   /** Get the filename in the briefcase cache for the supplied BriefcaseId and iModelId.
    * @note this merely returns the full path fileName. It does not test for the existence of the file.
-    */
+   */
   getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
 
   /** Download a briefcase file for the supplied briefcase properties. */
-  downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number): Promise<LocalBriefcaseProps>;
+  downloadBriefcase(
+    _requestProps: RequestNewBriefcaseProps,
+    _reportProgress: boolean,
+    _interval?: number
+  ): Promise<LocalBriefcaseProps>;
 
   /**
    * Cancels the previously requested download of a briefcase
@@ -116,7 +126,10 @@ export interface NativeAppFunctions {
    * @param _key key identifier for value
    * @note returns key value or undefined
    */
-  storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
+  storageGet(
+    _storageId: string,
+    _key: string
+  ): Promise<StorageValue | undefined>;
 
   /**
    * Set a value for a key.
@@ -124,7 +137,11 @@ export interface NativeAppFunctions {
    * @param _key key identifier for value
    * @param _value value to be set
    */
-  storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
+  storageSet(
+    _storageId: string,
+    _key: string,
+    _value: StorageValue
+  ): Promise<void>;
 
   /**
    * Remove a key/value pair.
@@ -147,5 +164,10 @@ export interface NativeAppFunctions {
   storageRemoveAll(_storageId: string): Promise<void>;
 
   /** get the type of a value for a key, or undefined if not present. */
-  storageGetValueType(_storageId: string, _key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
+  storageGetValueType(
+    _storageId: string,
+    _key: string
+  ): Promise<
+    "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined
+  >;
 }

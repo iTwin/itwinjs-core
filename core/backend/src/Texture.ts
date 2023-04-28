@@ -8,7 +8,13 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import {
-  Base64EncodedString, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureProps,
+  Base64EncodedString,
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ImageSourceFormat,
+  TextureProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -26,7 +32,9 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
  */
 export class Texture extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "Texture"; }
+  public static override get className(): string {
+    return "Texture";
+  }
   public format: ImageSourceFormat;
   public data: Uint8Array;
   public description?: string;
@@ -35,7 +43,10 @@ export class Texture extends DefinitionElement {
   constructor(props: TextureCreateProps, iModel: IModelDb) {
     super(props, iModel);
     this.format = props.format;
-    this.data = typeof props.data === "string" ? Base64EncodedString.toUint8Array(props.data) : props.data;
+    this.data =
+      typeof props.data === "string"
+        ? Base64EncodedString.toUint8Array(props.data)
+        : props.data;
     this.description = props.description;
   }
 
@@ -53,9 +64,15 @@ export class Texture extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the Texture and provides the scope for its name.
    * @param name The Texture name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code {
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    name: string
+  ): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.texture);
-    return 0 === name.length ? Code.createEmpty() : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
+    return 0 === name.length
+      ? Code.createEmpty()
+      : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
   }
 
   /** Create a texture with the given parameters.
@@ -69,7 +86,14 @@ export class Texture extends DefinitionElement {
    * @throws [[IModelError]] if unable to create the element.
    * @see [[insertTexture]] to insert a new texture into the iModel.
    */
-  public static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture {
+  public static createTexture(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    format: ImageSourceFormat,
+    data: Uint8Array | Base64EncodedString,
+    description?: string
+  ): Texture {
     const textureProps: TextureCreateProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -94,8 +118,22 @@ export class Texture extends DefinitionElement {
    * @throws [[IModelError]] if unable to insert the element.
    * @see [[insertTexture]] to insert a new texture into the iModel.
    */
-  public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
-    const texture = this.createTexture(iModelDb, definitionModelId, name, format, data, description);
+  public static insertTexture(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    format: ImageSourceFormat,
+    data: Uint8Array | Base64EncodedString,
+    description?: string
+  ): Id64String {
+    const texture = this.createTexture(
+      iModelDb,
+      definitionModelId,
+      name,
+      format,
+      data,
+      description
+    );
     return iModelDb.elements.insertElement(texture.toJSON());
   }
 }

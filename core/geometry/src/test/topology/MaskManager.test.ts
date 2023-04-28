@@ -8,12 +8,14 @@ import { MaskManager } from "../../topology/MaskManager";
 import { Checker } from "../Checker";
 
 describe("MaskManager", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
-    const allFreeMasks = 0x000F0F00;
+    const allFreeMasks = 0x000f0f00;
     const numFreeMasks = 8;
-    ck.testUndefined(MaskManager.create(0), " Expect undefined when no masks are provided.");
+    ck.testUndefined(
+      MaskManager.create(0),
+      " Expect undefined when no masks are provided."
+    );
     const manager = MaskManager.create(allFreeMasks)!;
     ck.testDefined(manager, "Mask manager created");
     const grabList = [];
@@ -38,5 +40,4 @@ describe("MaskManager", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

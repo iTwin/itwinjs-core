@@ -63,7 +63,11 @@ export class YawPitchRollAngles {
    * @param pitch **clockwise** rotation angle around y
    * @param roll counterclockwise rotation angle around x
    */
-  constructor(yaw: Angle = Angle.zero(), pitch: Angle = Angle.zero(), roll: Angle = Angle.zero()) {
+  constructor(
+    yaw: Angle = Angle.zero(),
+    pitch: Angle = Angle.zero(),
+    roll: Angle = Angle.zero()
+  ) {
     this.yaw = yaw;
     this.pitch = pitch;
     this.roll = roll;
@@ -81,7 +85,11 @@ export class YawPitchRollAngles {
    * @param pitchDegrees **clockwise** rotation angle (in degrees) around y
    * @param rollDegrees counterclockwise rotation angle (in degrees) around x
    */
-  public static createDegrees(yawDegrees: number, pitchDegrees: number, rollDegrees: number): YawPitchRollAngles {
+  public static createDegrees(
+    yawDegrees: number,
+    pitchDegrees: number,
+    rollDegrees: number
+  ): YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createDegrees(yawDegrees),
       Angle.createDegrees(pitchDegrees),
@@ -94,7 +102,11 @@ export class YawPitchRollAngles {
    * @param pitchRadians **clockwise** rotation angle (in radians) around y
    * @param rollRadians counterclockwise rotation angle (in radians) around x
    */
-  public static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles {
+  public static createRadians(
+    yawRadians: number,
+    pitchRadians: number,
+    rollRadians: number
+  ): YawPitchRollAngles {
     return new YawPitchRollAngles(
       Angle.createRadians(yawRadians),
       Angle.createRadians(pitchRadians),
@@ -123,12 +135,9 @@ export class YawPitchRollAngles {
    */
   public toJSON(): YawPitchRollProps {
     const val: YawPitchRollProps = {};
-    if (!this.pitch.isAlmostZero)
-      val.pitch = this.pitch.toJSON();
-    if (!this.roll.isAlmostZero)
-      val.roll = this.roll.toJSON();
-    if (!this.yaw.isAlmostZero)
-      val.yaw = this.yaw.toJSON();
+    if (!this.pitch.isAlmostZero) val.pitch = this.pitch.toJSON();
+    if (!this.roll.isAlmostZero) val.roll = this.roll.toJSON();
+    if (!this.yaw.isAlmostZero) val.yaw = this.yaw.toJSON();
     return val;
   }
   /**
@@ -146,9 +155,11 @@ export class YawPitchRollAngles {
    * @param other YawPitchRollAngles source
    */
   public isAlmostEqual(other: YawPitchRollAngles) {
-    return this.yaw.isAlmostEqualAllowPeriodShift(other.yaw)
-      && this.pitch.isAlmostEqualAllowPeriodShift(other.pitch)
-      && this.roll.isAlmostEqualAllowPeriodShift(other.roll);
+    return (
+      this.yaw.isAlmostEqualAllowPeriodShift(other.yaw) &&
+      this.pitch.isAlmostEqualAllowPeriodShift(other.pitch) &&
+      this.roll.isAlmostEqualAllowPeriodShift(other.roll)
+    );
   }
   /** Make a copy of this YawPitchRollAngles */
   public clone() {
@@ -172,32 +183,38 @@ export class YawPitchRollAngles {
     const cx = Math.cos(this.roll.radians);
     const sx = Math.sin(this.roll.radians);
     /**
-    * The axis order is XYZ (i.e., RPY) so the rotation matrix is calculated via rZ*rY*rX where
-    * rX, rY, and rZ are base rotation matrixes:
-    *
-    *     const rX = Matrix3d.createRowValues(
-    *        1, 0, 0,
-    *        0, Math.cos(x), -Math.sin(x),
-    *        0, Math.sin(x), Math.cos(x),
-    *      );
-    *      const rY = Matrix3d.createRowValues(
-    *        Math.cos(y), 0, Math.sin(y),
-    *        0, 1, 0,
-    *        -Math.sin(y), 0, Math.cos(y),
-    *      );
-    *      const rZ = Matrix3d.createRowValues(
-    *        Math.cos(z), -Math.sin(z), 0,
-    *        Math.sin(z), Math.cos(z), 0,
-    *        0, 0, 1,
-    *      );
-    *
-    * Then we replace sin(y) with -sin(y) because y rotation (i.e., pitch) is clockwise (alternatively, you
-    * can use transpose of rY in the matrix multiplication to get the same result)
-    */
+     * The axis order is XYZ (i.e., RPY) so the rotation matrix is calculated via rZ*rY*rX where
+     * rX, rY, and rZ are base rotation matrixes:
+     *
+     *     const rX = Matrix3d.createRowValues(
+     *        1, 0, 0,
+     *        0, Math.cos(x), -Math.sin(x),
+     *        0, Math.sin(x), Math.cos(x),
+     *      );
+     *      const rY = Matrix3d.createRowValues(
+     *        Math.cos(y), 0, Math.sin(y),
+     *        0, 1, 0,
+     *        -Math.sin(y), 0, Math.cos(y),
+     *      );
+     *      const rZ = Matrix3d.createRowValues(
+     *        Math.cos(z), -Math.sin(z), 0,
+     *        Math.sin(z), Math.cos(z), 0,
+     *        0, 0, 1,
+     *      );
+     *
+     * Then we replace sin(y) with -sin(y) because y rotation (i.e., pitch) is clockwise (alternatively, you
+     * can use transpose of rY in the matrix multiplication to get the same result)
+     */
     return Matrix3d.createRowValues(
-      cz * cy, -(sz * cx + cz * sy * sx), (sz * sx - cz * sy * cx),
-      sz * cy, (cz * cx - sz * sy * sx), -(cz * sx + sz * sy * cx),
-      sy, cy * sx, cy * cx,
+      cz * cy,
+      -(sz * cx + cz * sy * sx),
+      sz * sx - cz * sy * cx,
+      sz * cy,
+      cz * cx - sz * sy * sx,
+      -(cz * sx + sz * sy * cx),
+      sy,
+      cy * sx,
+      cy * cx,
       result
     );
   }
@@ -208,21 +225,33 @@ export class YawPitchRollAngles {
    */
   public isIdentity(allowPeriodShift: boolean = true): boolean {
     if (allowPeriodShift)
-      return Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.yaw.radians)
-        && Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.pitch.radians)
-        && Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.roll.radians);
+      return (
+        Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.yaw.radians) &&
+        Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.pitch.radians) &&
+        Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.roll.radians)
+      );
     else
-      return Angle.isAlmostEqualRadiansNoPeriodShift(0.0, this.yaw.radians)
-        && Angle.isAlmostEqualRadiansNoPeriodShift(0.0, this.pitch.radians)
-        && Angle.isAlmostEqualRadiansNoPeriodShift(0.0, this.roll.radians);
+      return (
+        Angle.isAlmostEqualRadiansNoPeriodShift(0.0, this.yaw.radians) &&
+        Angle.isAlmostEqualRadiansNoPeriodShift(0.0, this.pitch.radians) &&
+        Angle.isAlmostEqualRadiansNoPeriodShift(0.0, this.roll.radians)
+      );
   }
   /** Return the largest angle in radians */
   public maxAbsRadians(): number {
-    return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
+    return Geometry.maxAbsXYZ(
+      this.yaw.radians,
+      this.pitch.radians,
+      this.roll.radians
+    );
   }
   /** Return the sum of the angles in squared radians */
   public sumSquaredRadians(): number {
-    return Geometry.hypotenuseSquaredXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
+    return Geometry.hypotenuseSquaredXYZ(
+      this.yaw.radians,
+      this.pitch.radians,
+      this.roll.radians
+    );
   }
   /** Return the largest difference of angles (in radians) between this and other */
   public maxDiffRadians(other: YawPitchRollAngles): number {
@@ -234,11 +263,19 @@ export class YawPitchRollAngles {
   }
   /** Return the largest angle in degrees. */
   public maxAbsDegrees(): number {
-    return Geometry.maxAbsXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees);
+    return Geometry.maxAbsXYZ(
+      this.yaw.degrees,
+      this.pitch.degrees,
+      this.roll.degrees
+    );
   }
   /** Return the sum of squared angles in degrees. */
   public sumSquaredDegrees(): number {
-    return Geometry.hypotenuseSquaredXYZ(this.yaw.degrees, this.pitch.degrees, this.roll.degrees);
+    return Geometry.hypotenuseSquaredXYZ(
+      this.yaw.degrees,
+      this.pitch.degrees,
+      this.roll.degrees
+    );
   }
   /** Return the largest difference of angles (in degrees) between this and other */
   public maxDiffDegrees(other: YawPitchRollAngles): number {
@@ -265,7 +302,10 @@ export class YawPitchRollAngles {
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with
    * a set of angles.
    */
-  public static createFromMatrix3d(matrix: Matrix3d, result?: YawPitchRollAngles): YawPitchRollAngles | undefined {
+  public static createFromMatrix3d(
+    matrix: Matrix3d,
+    result?: YawPitchRollAngles
+  ): YawPitchRollAngles | undefined {
     /**
      * The rotation matrix for is
      *
@@ -278,7 +318,9 @@ export class YawPitchRollAngles {
      * where cx = cos(x), sx = sin(x), cy = cos(y), sy = sin(y), cz = cos(z), and sz = sin(z)
      */
     const sy = matrix.at(2, 0); // sin(y)
-    const cy = Math.sqrt(matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2)); // |cos(y)|
+    const cy = Math.sqrt(
+      matrix.at(2, 1) * matrix.at(2, 1) + matrix.at(2, 2) * matrix.at(2, 2)
+    ); // |cos(y)|
     const pitchA = Angle.createAtan2(sy, cy); // with positive cosine
     const pitchB = Angle.createAtan2(sy, -cy); // with negative cosine
     const angles = result ? result : new YawPitchRollAngles();
@@ -337,6 +379,8 @@ export class YawPitchRollAngles {
     }
     // sanity check
     const matrix1 = angles.toMatrix3d();
-    return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
+    return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians
+      ? angles
+      : undefined;
   }
 }

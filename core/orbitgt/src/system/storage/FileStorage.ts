@@ -25,54 +25,63 @@ import { FileRange } from "./FileRange";
  */
 /** @internal */
 export class FileStorage {
-    /**
-     * Create new storage.
-     */
-    public constructor() {
-    }
+  /**
+   * Create new storage.
+   */
+  public constructor() {}
 
-    /**
-     * Close the storage.
-     */
-    public close(): void {
-        /* Override if needed */
-    }
+  /**
+   * Close the storage.
+   */
+  public close(): void {
+    /* Override if needed */
+  }
 
-    /**
-     * Print (and optionally clear) file access statistics.
-     */
-    public printStatistics(clear: boolean): void {
-        /* Override if needed */
-    }
+  /**
+   * Print (and optionally clear) file access statistics.
+   */
+  public printStatistics(clear: boolean): void {
+    /* Override if needed */
+  }
 
-    /**
-     * Get the length of a file (returns -1 if the file is not found).
-     */
-    public async getFileLength(fileName: string): Promise<ALong> {
-        /* Override this method */
-        return ALong.MINUS_ONE;
-    }
+  /**
+   * Get the length of a file (returns -1 if the file is not found).
+   */
+  public async getFileLength(fileName: string): Promise<ALong> {
+    /* Override this method */
+    return ALong.MINUS_ONE;
+  }
 
-    /**
-     * Read some parts of a file.
-     */
-    public async readFileParts(fileName: string, ranges: AList<FileRange>): Promise<AList<FileContent>> {
-        /* Override this method */
-        return null;
-    }
+  /**
+   * Read some parts of a file.
+   */
+  public async readFileParts(
+    fileName: string,
+    ranges: AList<FileRange>
+  ): Promise<AList<FileContent>> {
+    /* Override this method */
+    return null;
+  }
 
-    /**
-     * Read a part of a file.
-     */
-    public async readFilePart(fileName: string, offset: ALong, size: int32): Promise<ABuffer> {
-        /* Override this method */
-        return null;
-    }
+  /**
+   * Read a part of a file.
+   */
+  public async readFilePart(
+    fileName: string,
+    offset: ALong,
+    size: int32
+  ): Promise<ABuffer> {
+    /* Override this method */
+    return null;
+  }
 
-    /**
-     * Write a file.
-     */
-    public async writeFile(fileName: string, fileContent: ABuffer): Promise<void> {
-        /* Override this method */
-    }
+  /**
+   * Write a file.
+   */
+  public async writeFile(
+    fileName: string,
+    fileContent: ABuffer
+  ): Promise<void> {
+    /* Override this method */
+  }
 }

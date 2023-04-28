@@ -2,10 +2,7 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib",
-    "allowJs": true,
+    "allowJs": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.js"]
 }

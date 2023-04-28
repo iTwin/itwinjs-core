@@ -34,11 +34,23 @@ export class PointInOnOutContext {
    * @param x tested x coordinate
    * @param y tested y coordinate
    */
-  public static testPointInOnOutLoopXY(loop: Loop, x: number, y: number): number {
+  public static testPointInOnOutLoopXY(
+    loop: Loop,
+    x: number,
+    y: number
+  ): number {
     let plane: Plane3dByOriginAndUnitNormal;
     const xy = Point3d.create(x, y);
-    for (let radians = 0.0; Math.abs(radians) < 6.0; radians = -1.2313 * (radians + 0.3212897)) {
-      plane = Plane3dByOriginAndUnitNormal.createXYAngle(x, y, Angle.createRadians(radians))!;
+    for (
+      let radians = 0.0;
+      Math.abs(radians) < 6.0;
+      radians = -1.2313 * (radians + 0.3212897)
+    ) {
+      plane = Plane3dByOriginAndUnitNormal.createXYAngle(
+        x,
+        y,
+        Angle.createRadians(radians)
+      )!;
       const normal = plane.getNormalRef();
       const intersections: CurveLocationDetail[] = [];
       for (const cp of loop.children) {
@@ -55,28 +67,26 @@ export class PointInOnOutContext {
       // If there are any tricky ones, go around with a different plane.
       // A intently devious tester could make every plane hit tricky things.
       for (const intersection of intersections) {
-        if (intersection.intervalRole !== CurveIntervalRole.isolated
-          && intersection.intervalRole !== undefined) {
+        if (
+          intersection.intervalRole !== CurveIntervalRole.isolated &&
+          intersection.intervalRole !== undefined
+        ) {
           numTricky++;
         }
         wx = intersection.point.x - x;
         wy = intersection.point.y - y;
-        if (Geometry.isSameCoordinateXY(wx, wy, 0, 0))
-          return 0;
+        if (Geometry.isSameCoordinateXY(wx, wy, 0, 0)) return 0;
         const cross = Geometry.crossProductXYXY(normal.x, normal.y, wx, wy);
-        if (xy.isAlmostEqualXY(intersection.point))
-          return 0;
-        if (cross < 0.0)
-          numLeft++;
-        else if (cross > 0.0)
-          numRight++;
+        if (xy.isAlmostEqualXY(intersection.point)) return 0;
+        if (cross < 0.0) numLeft++;
+        else if (cross > 0.0) numRight++;
       }
-      if (numTricky !== 0) // try another angle !!
+      if (numTricky !== 0)
+        // try another angle !!
         continue;
-      const leftParity = numLeft & (0x01);
-      const rightParity = numRight & (0x01);
-      if (leftParity === rightParity)
-        return leftParity === 1 ? 1 : -1;
+      const leftParity = numLeft & 0x01;
+      const rightParity = numRight & 0x01;
+      if (leftParity === rightParity) return leftParity === 1 ? 1 : -1;
     }
     return -1;
   }
@@ -86,28 +96,37 @@ export class PointInOnOutContext {
    * @param x
    * @param y
    */
-  public static testPointInOnOutParityRegionXY(parent: ParityRegion, x: number, y: number): number {
+  public static testPointInOnOutParityRegionXY(
+    parent: ParityRegion,
+    x: number,
+    y: number
+  ): number {
     let result = -1;
     for (const loop of parent.children) {
       if (loop instanceof Loop) {
         const q = this.testPointInOnOutLoopXY(loop, x, y);
-        if (q === 0)
-          return 0;
-        if (q > 0)
-          result = - result;
+        if (q === 0) return 0;
+        if (q > 0) result = -result;
       }
     }
     return result;
   }
-  public static testPointInOnOutUnionRegionXY(parent: UnionRegion, x: number, y: number): number {
+  public static testPointInOnOutUnionRegionXY(
+    parent: UnionRegion,
+    x: number,
+    y: number
+  ): number {
     for (const loop of parent.children) {
       const classify = this.testPointInOnOutRegionXY(loop, x, y);
-      if (classify >= 0)
-        return classify;
+      if (classify >= 0) return classify;
     }
     return -1;
   }
-  public static testPointInOnOutRegionXY(parent: AnyRegion, x: number, y: number): number {
+  public static testPointInOnOutRegionXY(
+    parent: AnyRegion,
+    x: number,
+    y: number
+  ): number {
     if (parent instanceof Loop)
       return this.testPointInOnOutLoopXY(parent, x, y);
     else if (parent instanceof ParityRegion)
@@ -116,5 +135,4 @@ export class PointInOnOutContext {
       return this.testPointInOnOutUnionRegionXY(parent, x, y);
     return -1;
   }
-
 }

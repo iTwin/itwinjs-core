@@ -6,7 +6,11 @@
  * @module LinearReferencing
  */
 
-import { ElementAspectProps, GeometricElement3dProps, RelatedElementProps } from "@itwin/core-common";
+import {
+  ElementAspectProps,
+  GeometricElement3dProps,
+  RelatedElementProps,
+} from "@itwin/core-common";
 
 /** Properties of an ILinearElement
  * @beta
@@ -27,8 +31,9 @@ export interface ILinearlyLocatedAttributionProps {
 /** Properties of a [LinearlyLocatedAttribution]($linear-referencing-backend)
  * @beta
  */
-export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
-}
+export interface LinearlyLocatedAttributionProps
+  extends GeometricElement3dProps,
+    ILinearlyLocatedAttributionProps {}
 
 /** Properties of an IReferent
  * @beta
@@ -40,8 +45,9 @@ export interface IReferentProps {
 /** Properties of a [ReferentElement]($linear-referencing-backend)
  * @beta
  */
-export interface ReferentElementProps extends GeometricElement3dProps, IReferentProps {
-}
+export interface ReferentElementProps
+  extends GeometricElement3dProps,
+    IReferentProps {}
 
 /** Properties of a [DistanceExpression]($linear-referencing-backend)
  * @beta
@@ -74,11 +80,13 @@ export interface LinearlyReferencedFromToLocationProps {
 /** Properties of a [LinearlyReferencedAtLocation]($linear-referencing-backend)
  * @beta
  */
-export interface LinearlyReferencedAtLocationAspectProps extends LinearlyReferencedAtLocationProps, ElementAspectProps {
-}
+export interface LinearlyReferencedAtLocationAspectProps
+  extends LinearlyReferencedAtLocationProps,
+    ElementAspectProps {}
 
 /** Properties of a [LinearlyReferencedFromToLocation]($linear-referencing-backend)
  * @beta
  */
-export interface LinearlyReferencedFromToLocationAspectProps extends LinearlyReferencedFromToLocationProps, ElementAspectProps {
-}
+export interface LinearlyReferencedFromToLocationAspectProps
+  extends LinearlyReferencedFromToLocationProps,
+    ElementAspectProps {}

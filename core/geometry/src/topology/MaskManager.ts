@@ -38,10 +38,9 @@ export class MaskManager {
         firstFree = testBit;
         break;
       }
-      testBit = (testBit << 1);
+      testBit = testBit << 1;
     }
-    if (firstFree === 0)
-      return undefined;
+    if (firstFree === 0) return undefined;
     return new MaskManager(freeMasks, firstFree);
   }
   /**
@@ -49,10 +48,8 @@ export class MaskManager {
    */
   public grabMask(): number {
     let mask = this._firstFreeMask;
-    if (this._freeMasks === 0)
-      return 0;
-    while (!(mask & this._freeMasks))
-      mask = mask << 1;
+    if (this._freeMasks === 0) return 0;
+    while (!(mask & this._freeMasks)) mask = mask << 1;
 
     this._freeMasks &= ~mask;
     return mask;
@@ -61,8 +58,7 @@ export class MaskManager {
    * Find a mask bit that is not "in use".
    */
   public dropMask(mask: number) {
-    mask &= this._originalFreeMasks;    // prevent "drop" of mask not in the pool.
+    mask &= this._originalFreeMasks; // prevent "drop" of mask not in the pool.
     this._freeMasks |= mask;
   }
-
 }

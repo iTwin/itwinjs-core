@@ -1,17 +1,17 @@
 ### cmd
 
-``` cmd
+```cmd
 set variable_name=<variable value>
 ```
 
 ### PowerShell
 
-``` cmd
+```cmd
 $env:variable_name = '<variable value>'
 ```
 
 ### bash
 
-``` cmd
+```cmd
 export variable_name=<variable value>
 ```

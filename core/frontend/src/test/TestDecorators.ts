@@ -16,7 +16,9 @@ import { GraphicBranch } from "../core-frontend";
  */
 export class TestDecorator {
   public static dropAll(): void {
-    for (const decorator of IModelApp.viewManager.decorators.filter((x) => x instanceof TestDecorator))
+    for (const decorator of IModelApp.viewManager.decorators.filter(
+      (x) => x instanceof TestDecorator
+    ))
       IModelApp.viewManager.dropDecorator(decorator);
   }
 }
@@ -99,7 +101,14 @@ export class BoxDecorator extends TestDecorator {
  * @internal
  */
 export class SphereDecorator extends TestDecorator {
-  public constructor(public readonly vp: ScreenViewport, public readonly color: ColorDef, public readonly pickable?: PickableGraphicOptions, public readonly placement?: Transform, private _center: Point3d = new Point3d(), private _radius: number = 1) {
+  public constructor(
+    public readonly vp: ScreenViewport,
+    public readonly color: ColorDef,
+    public readonly pickable?: PickableGraphicOptions,
+    public readonly placement?: Transform,
+    private _center: Point3d = new Point3d(),
+    private _radius: number = 1
+  ) {
     super();
     IModelApp.viewManager.addDecorator(this);
   }

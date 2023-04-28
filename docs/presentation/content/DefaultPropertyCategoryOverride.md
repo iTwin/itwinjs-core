@@ -10,10 +10,10 @@ The default property category is a category that gets assigned to properties tha
 
 | Name                                            | Required? | Type                                                                  | Default |
 | ----------------------------------------------- | --------- | --------------------------------------------------------------------- | ------- |
-| *Picking attributes*                            |
+| _Picking attributes_                            |
 | [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)  | `[]`    |
 | [`priority`](#attribute-priority)               | No        | `number`                                                              | `1000`  |
-| *Content Modifiers*                             |
+| _Content Modifiers_                             |
 | [`specification`](#attribute-specification)     | Yes       | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) |         |
 
 ### Attribute: `requiredSchemas`

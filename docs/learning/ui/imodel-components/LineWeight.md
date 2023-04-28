@@ -3,10 +3,10 @@
 The [LineWeight]($imodel-components-react:LineWeight) category in the `@itwin/imodel-components-react` package includes
 classes and components for working with and picking a Line Weight.
 
-|Component|Description
-|-----|-----
-|[LineWeightSwatch]($imodel-components-react)|displays a line weight swatch in a button
-|[WeightPickerButton]($imodel-components-react)|used to pick a line weight from an array of available weights
+| Component                                      | Description                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| [LineWeightSwatch]($imodel-components-react)   | displays a line weight swatch in a button                     |
+| [WeightPickerButton]($imodel-components-react) | used to pick a line weight from an array of available weights |
 
 ## WeightPickerButton Sample
 
@@ -24,7 +24,10 @@ interface State {
 ### render() Method
 
 ```tsx
-<WeightPickerButton activeWeight={this.state.weight} onLineWeightPick={this._handleWeightChange} />
+<WeightPickerButton
+  activeWeight={this.state.weight}
+  onLineWeightPick={this._handleWeightChange}
+/>
 ```
 
 ### Handler Function

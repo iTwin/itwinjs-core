@@ -29,9 +29,13 @@ export class Loop extends CurveChain {
   /** tag value that can be set to true for user code to mark inner and outer loops. */
   public override isInner: boolean = false;
   /** test if `other` is a `Loop` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Loop; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof Loop;
+  }
   /** Test if `other` is an instance of `Loop` */
-  public constructor() { super(); }
+  public constructor() {
+    super();
+  }
   /**
    * Create a loop from variable length list of CurvePrimitives
    * @param curves array of individual curve primitives
@@ -63,8 +67,7 @@ export class Loop extends CurveChain {
   /** Create a loop with the stroked form of this loop. */
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
-    for (const curve of this.children)
-      curve.emitStrokes(strokes, options);
+    for (const curve of this.children) curve.emitStrokes(strokes, options);
     // eliminate near-duplicate points between children
     strokes.removeDuplicatePoints();
     if (strokes.isPhysicallyClosed) {
@@ -74,13 +77,20 @@ export class Loop extends CurveChain {
     return Loop.create(strokes);
   }
   /** Return the boundary type (2) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 2; } // (2) all "Loop" become "outer"
+  public dgnBoundaryType(): number {
+    return 2;
+  } // (2) all "Loop" become "outer"
   /** invoke `processor.announceLoop(this, indexInParent)` */
-  public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
+  public announceToCurveProcessor(
+    processor: RecursiveCurveProcessor,
+    indexInParent: number = -1
+  ): void {
     return processor.announceLoop(this, indexInParent);
   }
   /** Create a new `Loop` with no children */
-  public cloneEmptyPeer(): Loop { return new Loop(); }
+  public cloneEmptyPeer(): Loop {
+    return new Loop();
+  }
   /** Second step of double dispatch:  call `handler.handleLoop(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLoop(this);
@@ -100,7 +110,12 @@ export class LoopCurveLoopCurve {
   public loopB?: Loop;
   /** A curve (typically an edge of loopB) */
   public curveB?: CurvePrimitive;
-  public constructor(loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined) {
+  public constructor(
+    loopA: Loop | undefined,
+    curveA: CurvePrimitive | undefined,
+    loopB: Loop | undefined,
+    curveB: CurvePrimitive | undefined
+  ) {
     this.loopA = loopA;
     this.curveA = curveA;
     this.loopB = loopB;
@@ -127,6 +142,6 @@ export interface SignedLoops {
   negativeAreaLoops: Loop[];
   /** slivers where there are coincident sections of input curves. */
   slivers: Loop[];
-/** Array indicating edges between loops */
+  /** Array indicating edges between loops */
   edges?: LoopCurveLoopCurve[];
 }

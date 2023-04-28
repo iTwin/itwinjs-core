@@ -39,8 +39,14 @@ export class Box extends SolidPrimitive {
   private _topX: number;
   private _topY: number;
 
-  protected constructor(map: Transform,
-    baseX: number, baseY: number, topX: number, topY: number, capped: boolean) {
+  protected constructor(
+    map: Transform,
+    baseX: number,
+    baseY: number,
+    topX: number,
+    topY: number,
+    capped: boolean
+  ) {
     super(capped);
     this._localToWorld = map;
     this._baseX = baseX;
@@ -50,7 +56,14 @@ export class Box extends SolidPrimitive {
   }
   /** Return a clone */
   public clone(): Box {
-    return new Box(this._localToWorld.clone(), this._baseX, this._baseY, this._topX, this._topY, this.capped);
+    return new Box(
+      this._localToWorld.clone(),
+      this._baseX,
+      this._baseY,
+      this._topX,
+      this._topY,
+      this.capped
+    );
   }
 
   /** Return a coordinate frame (right handed unit vectors)
@@ -66,15 +79,20 @@ export class Box extends SolidPrimitive {
    * * Note that this may make the frame nonrigid.
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    if (transform.matrix.isSingular())
-      return false;
-    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.isSingular()) return false;
+    transform.multiplyTransformTransform(
+      this._localToWorld,
+      this._localToWorld
+    );
     return true;
   }
   /** Clone the box and immediately apply `transform` to the local frame of the clone. */
   public cloneTransformed(transform: Transform): Box | undefined {
     const result = this.clone();
-    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
+    transform.multiplyTransformTransform(
+      result._localToWorld,
+      result._localToWorld
+    );
     return result;
   }
 
@@ -90,12 +108,24 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBox(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d,
+  public static createDgnBox(
+    origin: Point3d,
+    vectorX: Vector3d,
+    vectorY: Vector3d,
     topOrigin: Point3d,
-    baseX: number, baseY: number, topX: number, topY: number,
-    capped: boolean): Box | undefined {
+    baseX: number,
+    baseY: number,
+    topX: number,
+    topY: number,
+    capped: boolean
+  ): Box | undefined {
     const vectorZ = origin.vectorTo(topOrigin);
-    const localToWorld = Transform.createOriginAndMatrixColumns(origin, vectorX, vectorY, vectorZ);
+    const localToWorld = Transform.createOriginAndMatrixColumns(
+      origin,
+      vectorX,
+      vectorY,
+      vectorZ
+    );
     return new Box(localToWorld, baseX, baseY, topX, topY, capped);
   }
 
@@ -110,12 +140,27 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBoxWithAxes(origin: Point3d, axes: Matrix3d,
+  public static createDgnBoxWithAxes(
+    origin: Point3d,
+    axes: Matrix3d,
     topOrigin: Point3d,
-    baseX: number, baseY: number, topX: number, topY: number,
-    capped: boolean): Box | undefined {
-    return Box.createDgnBox(origin, axes.columnX(), axes.columnY(), topOrigin,
-      baseX, baseY, topX, topY, capped);
+    baseX: number,
+    baseY: number,
+    topX: number,
+    topY: number,
+    capped: boolean
+  ): Box | undefined {
+    return Box.createDgnBox(
+      origin,
+      axes.columnX(),
+      axes.columnY(),
+      topOrigin,
+      baseX,
+      baseY,
+      topX,
+      topY,
+      capped
+    );
   }
 
   /**
@@ -132,41 +177,69 @@ export class Box extends SolidPrimitive {
       zPoint.z = zPoint.z + range.zLength();
       return Box.createDgnBox(
         lowPoint,
-        Vector3d.unitX(), Vector3d.unitY(),
+        Vector3d.unitX(),
+        Vector3d.unitY(),
         zPoint,
-        xSize, ySize, xSize, ySize, capped);
+        xSize,
+        ySize,
+        xSize,
+        ySize,
+        capped
+      );
     }
     return undefined;
   }
   /** (property accessor) return the x length at z = 0 */
-  public getBaseX(): number { return this._baseX; }
+  public getBaseX(): number {
+    return this._baseX;
+  }
   /** (property accessor) return the y length at z = 0 */
-  public getBaseY(): number { return this._baseY; }
+  public getBaseY(): number {
+    return this._baseY;
+  }
   /** (property accessor) return the x length at z = 1 */
-  public getTopX(): number { return this._topX; }
+  public getTopX(): number {
+    return this._topX;
+  }
   /** (property accessor) return the x length at z = 1 */
-  public getTopY(): number { return this._topY; }
+  public getTopY(): number {
+    return this._topY;
+  }
   /** (property accessor) return the local coordinates point (0,0,0) to world */
-  public getBaseOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  public getBaseOrigin(): Point3d {
+    return this._localToWorld.multiplyXYZ(0, 0, 0);
+  }
   /** (property accessor) return the local coordinates point (0,0,1) to world */
-  public getTopOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  public getTopOrigin(): Point3d {
+    return this._localToWorld.multiplyXYZ(0, 0, 1);
+  }
   /** (property accessor) return the local coordinate frame x vector */
-  public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  public getVectorX(): Vector3d {
+    return this._localToWorld.matrix.columnX();
+  }
   /** (property accessor) return the local coordinate frame y vector */
-  public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  public getVectorY(): Vector3d {
+    return this._localToWorld.matrix.columnY();
+  }
   /** (property accessor) return the local coordinate frame z vector */
-  public getVectorZ(): Vector3d { return this._localToWorld.matrix.columnZ(); }
+  public getVectorZ(): Vector3d {
+    return this._localToWorld.matrix.columnZ();
+  }
   /** Test of `other` is also of class `Box` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof Box; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof Box;
+  }
   /** test for near equality */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Box) {
       if (this.capped !== other.capped) return false;
       if (!this._localToWorld.isAlmostEqual(other._localToWorld)) return false;
-      return Geometry.isSameCoordinate(this._baseX, other._baseX)
-        && Geometry.isSameCoordinate(this._baseY, other._baseY)
-        && Geometry.isSameCoordinate(this._topX, other._topX)
-        && Geometry.isSameCoordinate(this._topY, other._topY);
+      return (
+        Geometry.isSameCoordinate(this._baseX, other._baseX) &&
+        Geometry.isSameCoordinate(this._baseY, other._baseY) &&
+        Geometry.isSameCoordinate(this._topX, other._topX) &&
+        Geometry.isSameCoordinate(this._topY, other._topY)
+      );
     }
     return false;
   }
@@ -232,14 +305,62 @@ export class Box extends SolidPrimitive {
     const bx = this._topX;
     const by = this._topY;
     if (transform) {
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 0);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, ax, 0, 0);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, ay, 0);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, ax, ay, 0);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 1);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, bx, 0, 1);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, by, 1);
-      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, bx, by, 1);
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        0,
+        0,
+        0
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        ax,
+        0,
+        0
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        0,
+        ay,
+        0
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        ax,
+        ay,
+        0
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        0,
+        0,
+        1
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        bx,
+        0,
+        1
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        0,
+        by,
+        1
+      );
+      rangeToExtend.extendTransformTransformedXYZ(
+        transform,
+        boxTransform,
+        bx,
+        by,
+        1
+      );
     } else {
       rangeToExtend.extendTransformedXYZ(boxTransform, 0, 0, 0);
       rangeToExtend.extendTransformedXYZ(boxTransform, ax, 0, 0);

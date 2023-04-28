@@ -7,9 +7,25 @@
  */
 
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert,
+  BeEvent,
+  BentleyError,
+  compareStrings,
+  CompressedId64Set,
+  DbResult,
+  Id64Array,
+  Id64String,
+  IModelStatus,
+  IndexMap,
+  Logger,
+  OrderedId64Array,
 } from "@itwin/core-bentley";
-import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
+import {
+  ChangedEntities,
+  EntityIdAndClassIdIterable,
+  ModelGeometryChangesProps,
+  ModelIdAndGeometryGuid,
+} from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -87,13 +103,19 @@ class ChangedEntitiesArray {
     this._classIndices.length = 0;
   }
 
-  public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
+  public addToChangedEntities(
+    entities: ChangedEntities,
+    type: "deleted" | "inserted" | "updated"
+  ): void {
     if (this.entityIds.length > 0)
       entities[type] = CompressedId64Set.compressIds(this.entityIds);
   }
 
   public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
-    function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
+    function* iterator(
+      entityIds: ReadonlyArray<Id64String>,
+      classIndices: number[]
+    ) {
       const entity = { id: "", classId: "" };
       for (let i = 0; i < entityIds.length; i++) {
         entity.id = entityIds[i];
@@ -103,13 +125,16 @@ class ChangedEntitiesArray {
     }
 
     return {
-      [Symbol.iterator]: () => iterator(this.entityIds.array, this._classIndices),
+      [Symbol.iterator]: () =>
+        iterator(this.entityIds.array, this._classIndices),
     };
   }
 }
 
 class ChangedEntitiesProc {
-  private readonly _classIds = new IndexMap<Id64String>((lhs, rhs) => compareStrings(lhs, rhs));
+  private readonly _classIds = new IndexMap<Id64String>((lhs, rhs) =>
+    compareStrings(lhs, rhs)
+  );
   private readonly _inserted = new ChangedEntitiesArray(this._classIds);
   private readonly _deleted = new ChangedEntitiesArray(this._classIds);
   private readonly _updated = new ChangedEntitiesArray(this._classIds);
@@ -117,7 +142,10 @@ class ChangedEntitiesProc {
 
   public static maxPerEvent = 1000;
 
-  public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
+  public static process(
+    iModel: BriefcaseDb | StandaloneDb,
+    mgr: TxnManager
+  ): void {
     if (mgr.isDisposed) {
       // The iModel is being closed. Do not prepare new sqlite statements.
       return;
@@ -127,9 +155,12 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
-    if (this._currSize === 0)
-      return;
+  private sendEvent(
+    iModel: BriefcaseDb | StandaloneDb,
+    evt: EntitiesChangedEvent,
+    evtName: "notifyElementsChanged" | "notifyModelsChanged"
+  ) {
+    if (this._currSize === 0) return;
 
     const classIds = this._classIds.toArray();
 
@@ -156,13 +187,18 @@ class ChangedEntitiesProc {
     this._currSize = 0;
   }
 
-  private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+  private static processChanges(
+    iModel: BriefcaseDb | StandaloneDb,
+    changedEvent: EntitiesChangedEvent,
+    evtName: "notifyElementsChanged" | "notifyModelsChanged"
+  ) {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
-      const select = "notifyElementsChanged" === evtName
-        ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
-        : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
+      const select =
+        "notifyElementsChanged" === evtName
+          ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
+          : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
       iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
         const stmt = sql.stmt;
         while (sql.step() === DbResult.BE_SQLITE_ROW) {
@@ -187,7 +223,10 @@ class ChangedEntitiesProc {
 
       changes.sendEvent(iModel, changedEvent, evtName);
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
+      Logger.logError(
+        BackendLoggerCategory.IModelDb,
+        BentleyError.getErrorMessage(err)
+      );
     }
   }
 }
@@ -214,7 +253,9 @@ export class TxnManager {
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
-  private get _nativeDb() { return this._iModel.nativeDb; }
+  private get _nativeDb() {
+    return this._iModel.nativeDb;
+  }
   private _getElementClass(elClassName: string): typeof Element {
     return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
   }
@@ -222,23 +263,40 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
   /** @internal */
-  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel);
+  protected _onBeforeOutputsHandled(
+    elClassName: string,
+    elId: Id64String
+  ): void {
+    (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(
+      elId,
+      this._iModel
+    );
   }
   /** @internal */
   protected _onAllInputsHandled(elClassName: string, elId: Id64String): void {
-    (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel);
+    (this._getElementClass(elClassName) as any).onAllInputsHandled(
+      elId,
+      this._iModel
+    );
   }
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel);
+    this._getRelationshipClass(props.classFullName).onRootChanged(
+      props,
+      this._iModel
+    );
   }
   /** @internal */
   protected _onDeletedDependency(props: RelationshipProps): void {
-    this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel);
+    this._getRelationshipClass(props.classFullName).onDeletedDependency(
+      props,
+      this._iModel
+    );
   }
   /** @internal */
-  protected _onBeginValidate() { this.validationErrors.length = 0; }
+  protected _onBeginValidate() {
+    this.validationErrors.length = 0;
+  }
 
   /** called from native code after validation of a Txn, either from saveChanges or apply changeset.
    * @internal
@@ -252,7 +310,11 @@ export class TxnManager {
   /** @internal */
   protected _onGeometryChanged(modelProps: ModelGeometryChangesProps[]) {
     this.onGeometryChanged.raiseEvent(modelProps);
-    IpcHost.notifyEditingScope(this._iModel, "notifyGeometryChanged", modelProps); // send to frontend
+    IpcHost.notifyEditingScope(
+      this._iModel,
+      "notifyGeometryChanged",
+      modelProps
+    ); // send to frontend
   }
 
   /** @internal */
@@ -270,7 +332,12 @@ export class TxnManager {
   /** @internal */
   protected _onCommitted() {
     this.onCommitted.raiseEvent();
-    IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
+    IpcHost.notifyTxns(
+      this._iModel,
+      "notifyCommitted",
+      this.hasPendingTxns,
+      Date.now()
+    );
   }
 
   /** @internal */
@@ -301,7 +368,9 @@ export class TxnManager {
   }
 
   /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
-  public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
+  public get hasFatalError(): boolean {
+    return this._nativeDb.hasFatalTxnError();
+  }
 
   /** @internal */
   public readonly onEndValidation = new BeEvent<() => void>();
@@ -310,13 +379,17 @@ export class TxnManager {
    * The argument to the event holds the list of elements that were inserted, updated, and deleted.
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
+  public readonly onElementsChanged = new BeEvent<
+    (changes: TxnChangedEntities) => void
+  >();
 
   /** Called after validation completes from [[IModelDb.saveChanges]].
    * The argument to the event holds the list of models that were inserted, updated, and deleted.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
+  public readonly onModelsChanged = new BeEvent<
+    (changes: TxnChangedEntities) => void
+  >();
 
   /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:
@@ -324,9 +397,13 @@ export class TxnManager {
    *  - Modification of an existing element's geometric properties; or
    *  - An explicit request to flag it as changed via [[IModelDb.Models.updateModel]].
    */
-  public readonly onModelGeometryChanged = new BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>();
+  public readonly onModelGeometryChanged = new BeEvent<
+    (changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void
+  >();
 
-  public readonly onGeometryChanged = new BeEvent<(models: ModelGeometryChangesProps[]) => void>();
+  public readonly onGeometryChanged = new BeEvent<
+    (models: ModelGeometryChangesProps[]) => void
+  >();
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]], unless there are no changes to save. */
   public readonly onCommit = new BeEvent<() => void>();
   /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]], even if there were no changes to save. */
@@ -352,23 +429,33 @@ export class TxnManager {
   }
 
   /** Determine whether current txn is propagating indirect changes or not. */
-  public get isIndirectChanges(): boolean { return this._nativeDb.isIndirectChanges(); }
+  public get isIndirectChanges(): boolean {
+    return this._nativeDb.isIndirectChanges();
+  }
 
   /** Determine if there are currently any reversible (undoable) changes from this editing session. */
-  public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
+  public get isUndoPossible(): boolean {
+    return this._nativeDb.isUndoPossible();
+  }
 
   /** Determine if there are currently any reinstatable (redoable) changes */
-  public get isRedoPossible(): boolean { return this._nativeDb.isRedoPossible(); }
+  public get isRedoPossible(): boolean {
+    return this._nativeDb.isRedoPossible();
+  }
 
   /** Get the description of the operation that would be reversed by calling reverseTxns(1).
    * This is useful for showing the operation that would be undone, for example in a menu.
    */
-  public getUndoString(): string { return this._nativeDb.getUndoString(); }
+  public getUndoString(): string {
+    return this._nativeDb.getUndoString();
+  }
 
   /** Get a description of the operation that would be reinstated by calling reinstateTxn.
    * This is useful for showing the operation that would be redone, in a pull-down menu for example.
    */
-  public getRedoString(): string { return this._nativeDb.getRedoString(); }
+  public getRedoString(): string {
+    return this._nativeDb.getRedoString();
+  }
 
   /** Begin a new multi-Txn operation. This can be used to cause a series of Txns that would normally
    * be considered separate actions for undo to be grouped into a single undoable operation. This means that when reverseTxns(1) is called,
@@ -376,13 +463,19 @@ export class TxnManager {
    * all changes constitute a single operation.
    * @note This method must always be paired with a call to endMultiTxnAction.
    */
-  public beginMultiTxnOperation(): DbResult { return this._nativeDb.beginMultiTxnOperation(); }
+  public beginMultiTxnOperation(): DbResult {
+    return this._nativeDb.beginMultiTxnOperation();
+  }
 
   /** End a multi-Txn operation */
-  public endMultiTxnOperation(): DbResult { return this._nativeDb.endMultiTxnOperation(); }
+  public endMultiTxnOperation(): DbResult {
+    return this._nativeDb.endMultiTxnOperation();
+  }
 
   /** Return the depth of the multi-Txn stack. Generally for diagnostic use only. */
-  public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
+  public getMultiTxnOperationDepth(): number {
+    return this._nativeDb.getMultiTxnOperationDepth();
+  }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
@@ -397,57 +490,84 @@ export class TxnManager {
   }
 
   /** Reverse the most recent operation. */
-  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+  public reverseSingleTxn(): IModelStatus {
+    return this.reverseTxns(1);
+  }
 
   /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  public reverseAll(): IModelStatus {
+    return this._nativeDb.reverseAll();
+  }
 
   /** Reverse all changes back to a previously saved TxnId.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.reverseTo(txnId);
+  }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString): IModelStatus {
+    return this._nativeDb.cancelTo(txnId);
+  }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
    */
-  public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus {
+    return this._iModel.reinstateTxn();
+  }
 
   /** Get the Id of the first transaction, if any.
    */
-  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
+  public queryFirstTxnId(): TxnIdString {
+    return this._nativeDb.queryFirstTxnId();
+  }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
+  public queryNextTxnId(txnId: TxnIdString): TxnIdString {
+    return this._nativeDb.queryNextTxnId(txnId);
+  }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
+  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString {
+    return this._nativeDb.queryPreviousTxnId(txnId);
+  }
 
   /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
+  public getCurrentTxnId(): TxnIdString {
+    return this._nativeDb.getCurrentTxnId();
+  }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
+  public getTxnDescription(txnId: TxnIdString): string {
+    return this._nativeDb.getTxnDescription(txnId);
+  }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
+  public isTxnIdValid(txnId: TxnIdString): boolean {
+    return this._nativeDb.isTxnIdValid(txnId);
+  }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
+  public get hasPendingTxns(): boolean {
+    return this._nativeDb.hasPendingTxns();
+  }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
+  public get hasUnsavedChanges(): boolean {
+    return this._nativeDb.hasUnsavedChanges();
+  }
 
   /** Query if there are un-saved or un-pushed local changes. */
-  public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
-
+  public get hasLocalChanges(): boolean {
+    return this.hasUnsavedChanges || this.hasPendingTxns;
+  }
 }

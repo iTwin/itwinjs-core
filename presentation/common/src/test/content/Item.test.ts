@@ -7,28 +7,42 @@ import * as faker from "faker";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
 import { NestedContentValueJSON } from "../../presentation-common/content/Value";
 import { createTestECInstanceKey } from "../_helpers/EC";
-import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
+import {
+  createRandomECClassInfo,
+  createRandomECInstanceKey,
+  createRandomLabelDefinition,
+} from "../_helpers/random";
 
 describe("Item", () => {
-
   describe("constructor", () => {
-
     it("creates valid item with label", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(),
-        undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      const item = new Item(
+        [],
+        faker.random.word(),
+        faker.random.uuid(),
+        undefined,
+        { key: faker.random.word() },
+        { key: faker.random.word() },
+        []
+      );
       expect(item).to.matchSnapshot();
     });
 
     it("creates valid item with label definition", () => {
-      const item = new Item([], createRandomLabelDefinition(), faker.random.uuid(),
-        undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      const item = new Item(
+        [],
+        createRandomLabelDefinition(),
+        faker.random.uuid(),
+        undefined,
+        { key: faker.random.word() },
+        { key: faker.random.word() },
+        []
+      );
       expect(item).to.matchSnapshot();
     });
-
   });
 
   describe("toJSON", () => {
-
     it("serializes inputKeys", () => {
       const inputKey = createTestECInstanceKey();
       const item = new Item([], "", "", undefined, {}, {}, []);
@@ -36,11 +50,9 @@ describe("Item", () => {
       const json = item.toJSON();
       expect(json.inputKeys).to.deep.eq([inputKey]);
     });
-
   });
 
   describe("fromJSON", () => {
-
     let testItemJSON!: ItemJSON;
     beforeEach(() => {
       testItemJSON = {
@@ -115,23 +127,33 @@ describe("Item", () => {
       const item = Item.fromJSON(undefined);
       expect(item).to.be.undefined;
     });
-
   });
 
   describe("isFieldMerged", () => {
-
     it("returns false for unmerged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(),
-        undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      const item = new Item(
+        [],
+        faker.random.word(),
+        faker.random.uuid(),
+        undefined,
+        { key: faker.random.word() },
+        { key: faker.random.word() },
+        []
+      );
       expect(item.isFieldMerged("key")).to.be.false;
     });
 
     it("returns true for merged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(),
-        undefined, { key: faker.random.word() }, { key: faker.random.word() }, ["key"]);
+      const item = new Item(
+        [],
+        faker.random.word(),
+        faker.random.uuid(),
+        undefined,
+        { key: faker.random.word() },
+        { key: faker.random.word() },
+        ["key"]
+      );
       expect(item.isFieldMerged("key")).to.be.true;
     });
-
   });
-
 });

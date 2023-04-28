@@ -18,12 +18,12 @@ The primary motivation for formally tracking the production status of schemas is
 
 The intended use of a schema is tracked through the `ProductionStatus` `CustomAttribute`. The `ProductionStatus` `CustomAttribute` may be placed on any BIS schema. That `CustomAttribute` has a `SupportedUse` property that can have one of these values:
 
-| Value | Meaning |
-|-------|---------|
-| `Production` | This schema is suitable for use in production workflows. Data created using this schema  will be supported long-term (possibly through transformation). |
-| `FieldTesting` | This schema is suitable for field testing of production workflows. Data created using this schema may not be supported long-term and may not be upgradable. |
+| Value              | Meaning                                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Production`       | This schema is suitable for use in production workflows. Data created using this schema will be supported long-term (possibly through transformation).        |
+| `FieldTesting`     | This schema is suitable for field testing of production workflows. Data created using this schema may not be supported long-term and may not be upgradable.   |
 | `NotForProduction` | This schema is under development and should never be used for production workflows. Data created with this schema is not supported and may not be upgradable. |
-| `Deprecated` | This schema is no longer recommended for production workflows. Better alternatives exist and should be used instead. |
+| `Deprecated`       | This schema is no longer recommended for production workflows. Better alternatives exist and should be used instead.                                          |
 
 ## iModel Support for ProductionStatus
 
@@ -33,20 +33,20 @@ The iModel ecosystem uses the `ProductionStatus` of schemas to determine if a sc
 
 To determine whether a schema with a `ProductionStatus` other than `Production` can be loaded into an iModel, the iModel technology stack needs to understand the intended use of the iModel. For this reason, every iModel contains a `ProductionStatus` setting that declares the suitability of the iModel for production use. The possible values for this setting correspond to those in the `ProductionStatus` custom attribute, although their definitions are slightly different:
 
-| Value | Meaning |
-|-------|---------|
-| `Production` | This iModel is suitable for use in production workflows. |
-| `FieldTesting` | This iModel is suitable for field testing of production workflows. Data contained in it may not be supported long-term. |
+| Value              | Meaning                                                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Production`       | This iModel is suitable for use in production workflows.                                                                                                    |
+| `FieldTesting`     | This iModel is suitable for field testing of production workflows. Data contained in it may not be supported long-term.                                     |
 | `NotForProduction` | This iModel is suitable for developer testing only and should never be used for production workflows. Data contained in it will not be supported long-term. |
-| `Deprecated` | (this value should not be used for iModels) |
+| `Deprecated`       | (this value should not be used for iModels)                                                                                                                 |
 
 The iModel's `ProductionStatus` setting is stored in the be_prop table as follows:
 
-| Column | Value |
-|--------|-------|
-| NameSpace |  "dgn_Db" |
-| Name | "ProductionStatus" |
-| StrData | "Production", "FieldTesting" or "NotForProduction" |
+| Column    | Value                                              |
+| --------- | -------------------------------------------------- |
+| NameSpace | "dgn_Db"                                           |
+| Name      | "ProductionStatus"                                 |
+| StrData   | "Production", "FieldTesting" or "NotForProduction" |
 
 The `ProductionStatus` value of the iModel is set when the iModel is created.
 
@@ -54,11 +54,11 @@ The `ProductionStatus` value of the iModel is set when the iModel is created.
 
 At schema load time, the iModel technology confirms that the schema's `ProductionStatus` is compatible with the iModel's `ProductionStatus`. The compatibility of these settings is shown below:
 
-| iModel `ProductionStatus` | Compatible Schema `ProductionStatus` |
-|---------------------------|--------------------------------------|
-| `Production` | `Production`, `Deprecated` |
-| `FieldTesting` | `Production`, `FieldTesting`, `Deprecated` |
-| `NotForProduction` | `Production`, `FieldTesting`, `NotForProduction`, `Deprecated` |
+| iModel `ProductionStatus` | Compatible Schema `ProductionStatus`                           |
+| ------------------------- | -------------------------------------------------------------- |
+| `Production`              | `Production`, `Deprecated`                                     |
+| `FieldTesting`            | `Production`, `FieldTesting`, `Deprecated`                     |
+| `NotForProduction`        | `Production`, `FieldTesting`, `NotForProduction`, `Deprecated` |
 
 The attempted loading of a schema that is not compatible will result in a schema load failure.
 
@@ -67,23 +67,24 @@ The attempted loading of a schema that is not compatible will result in a schema
 An iModel's `ProductionStatus` can conceptually be "downgraded" as follows:
 
 | iModel `ProductionStatus` | Compatible Downgraded `ProductionStatus` |
-|-------------------------|----------------------------------------|
-| `Production` | `FieldTesting`, `NotForProduction` |
-| `FieldTesting` | `NotForProduction` |
-| `NotForProduction` | (no further downgrade is possible) |
+| ------------------------- | ---------------------------------------- |
+| `Production`              | `FieldTesting`, `NotForProduction`       |
+| `FieldTesting`            | `NotForProduction`                       |
+| `NotForProduction`        | (no further downgrade is possible)       |
 
 In the future, the ability for a user to downgrade the `ProductionStatus` of an iModel will be provided.
 
 An iModel's `ProductionStatus` can conceptually be upgraded as follows:
 
-| Upgraded iModel `ProductionStatus` | Condition |
-|------------------------------------|-----------|
-| `Production` | No schemas of `ProductionStatus` `FieldTesting` or `NotForProduction` |
-| `FieldTesting` | No schemas of `ProductionStatus` `NotForProduction` |
-| `NotForProduction` | (not possible as upgrade) |
+| Upgraded iModel `ProductionStatus` | Condition                                                             |
+| ---------------------------------- | --------------------------------------------------------------------- |
+| `Production`                       | No schemas of `ProductionStatus` `FieldTesting` or `NotForProduction` |
+| `FieldTesting`                     | No schemas of `ProductionStatus` `NotForProduction`                   |
+| `NotForProduction`                 | (not possible as upgrade)                                             |
 
 In the future, the ability for a user to upgrade the `ProductionStatus` of an iModel will be provided.
 
 ---
+
 | Next: [Rules and Recommendations](../naming-guidelines/rules-and-recommendations.md)
 |:---

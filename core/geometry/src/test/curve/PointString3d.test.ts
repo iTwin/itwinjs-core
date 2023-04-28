@@ -22,7 +22,11 @@ function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   const lsC = lsA.clone()!;
   ck.testTrue(lsC.tryTransformInPlace(transform));
   const planeC = planeA.cloneTransformed(transform)!;
-  ck.testBoolean(inXYPlane, lsC.isInPlane(planeC), "in plane preserved by transform");
+  ck.testBoolean(
+    inXYPlane,
+    lsC.isInPlane(planeC),
+    "in plane preserved by transform"
+  );
   const rangeC = Range3d.create();
   lsC.extendRange(rangeC);
 
@@ -66,13 +70,16 @@ describe("PointString3d", () => {
       Point3d.create(1, 0, 0),
       Point3d.create(4, 2, 0),
       Point3d.create(4, 5, 0),
-      Point3d.create(1, 5, 0)]);
+      Point3d.create(1, 5, 0),
+    ]);
     exercisePointString3d(ck, lsA);
     // create with varargs point array.
-    const lsB = PointString3d.create(Point3d.create(1, 0, 0),
+    const lsB = PointString3d.create(
+      Point3d.create(1, 0, 0),
       Point3d.create(4, 2, 0),
       Point3d.create(4, 5, 0),
-      Point3d.create(1, 5, 0));
+      Point3d.create(1, 5, 0)
+    );
     ck.testTrue(lsA.isAlmostEqual(lsB), "create variant");
     const xyz = Point3dArray.packToFloat64Array(lsA.points);
     const lsC = PointString3d.createFloat64Array(xyz);

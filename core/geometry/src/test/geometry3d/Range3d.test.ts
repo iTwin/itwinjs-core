@@ -21,7 +21,11 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
 // (assume points are distinct ...)
-function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
+function exerciseWithTransformedPoints(
+  ck: Checker,
+  frame: Transform,
+  points: Point3d[]
+) {
   const rangeA = Range3d.createTransformedArray(frame, points);
   const transformedPoints = frame.multiplyPoint3dArray(points)!;
   const inverseFrame = frame.inverse();
@@ -29,17 +33,22 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
     const rangeQ = Range3d.createArray(points);
     const rangeQRoundTrip = Range3d.create();
     rangeQRoundTrip.extendInverseTransformedArray(transformedPoints, frame);
-    ck.testRange3d(rangeQ, rangeQRoundTrip, prettyPrint(frame),
+    ck.testRange3d(
+      rangeQ,
+      rangeQRoundTrip,
+      prettyPrint(frame),
       prettyPrint(points.slice(0, 3)),
-      prettyPrint(
-        transformedPoints.slice(0, 3)));
+      prettyPrint(transformedPoints.slice(0, 3))
+    );
     // const gPoints = GrowableXYZArray.create(points);
     const hPoints = GrowableXYZArray.create(transformedPoints);
-    const gRangeRoundTrip = Range3d.createInverseTransformedArray(frame, hPoints);
+    const gRangeRoundTrip = Range3d.createInverseTransformedArray(
+      frame,
+      hPoints
+    );
     const gRangeInverse = Range3d.createTransformedArray(inverseFrame, hPoints);
     ck.testRange3d(rangeQ, gRangeRoundTrip);
     ck.testRange3d(rangeQ, gRangeInverse);
-
   }
   const rangeA1 = Range3d.create();
   const rangeB = Range3d.create();
@@ -52,7 +61,9 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
     ck.testCoordinate(0, rangeA.distanceToPoint(q));
     ck.testTrue(rangeA.containsPoint(q));
     ck.testTrue(rangeA.containsPointXY(q));
-    ck.testTrue(rangeA.containsPointXY(q.plusXYZ(0, 0, 2.0 * rangeA.zLength() + 1)));
+    ck.testTrue(
+      rangeA.containsPointXY(q.plusXYZ(0, 0, 2.0 * rangeA.zLength() + 1))
+    );
     rangeA1.extendTransformedPoint(frame, p);
   }
   ck.testPoint3d(rangeA.low, rangeB.low);
@@ -76,7 +87,7 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
     ck.testFalse(rangeC.isAlmostZeroZ, "2 point range has nonzero zLength");
   }
   const unitRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
-  const testLattice = Sample.createPoint3dLattice(-0.1, 0.30, 1.1);
+  const testLattice = Sample.createPoint3dLattice(-0.1, 0.3, 1.1);
   const bigDist = 2.0 * rangeA.maxAbs() + 1;
   for (const uvw of testLattice) {
     const xyz = rangeA.fractionToPoint(uvw.x, uvw.y, uvw.z);
@@ -90,13 +101,17 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
   }
   const r01 = Range1d.createXX(0, 1);
   for (const f of [-0.25, 0.0011, 0.4, 0.998, 1.03, 9]) {
-    ck.testBoolean(r01.containsX(f),
-      rangeA.containsPoint(rangeA.diagonalFractionToPoint(f)), "points along diagonal");
+    ck.testBoolean(
+      r01.containsX(f),
+      rangeA.containsPoint(rangeA.diagonalFractionToPoint(f)),
+      "points along diagonal"
+    );
   }
   const diagonal = rangeA.diagonal();
   ck.testCoordinate(
     rangeA.diagonal().magnitude(),
-    rangeA.fractionToPoint(0, 0, 0).distance(rangeA.fractionToPoint(1, 1, 1)));
+    rangeA.fractionToPoint(0, 0, 0).distance(rangeA.fractionToPoint(1, 1, 1))
+  );
 
   ck.testCoordinate(rangeA.xLength(), diagonal.x);
   ck.testCoordinate(rangeA.yLength(), diagonal.y);
@@ -116,7 +131,7 @@ function exerciseWithPoints(ck: Checker, points: Point3d[]) {
 
   const range5 = Range3d.createNull();
   // "extend" i blocks of 4 to exercise variable arg list ..
-  for (let i = 0; i < points.length;) {
+  for (let i = 0; i < points.length; ) {
     if (i + 4 < points.length) {
       range5.extend(points[i], points[i + 1], points[i + 2], points[i + 3]);
       i += 4;
@@ -128,23 +143,37 @@ function exerciseWithPoints(ck: Checker, points: Point3d[]) {
   ck.testTrue(range.isAlmostEqual(range5), "create vs createAndExtend");
 
   const range6 = Range3d.createNull();
-  ck.testTrue(RangeBase.isExtremePoint3d(range6.low), "null range low is extreme");
-  ck.testTrue(RangeBase.isExtremePoint3d(range6.high), "null range low is extreme");
+  ck.testTrue(
+    RangeBase.isExtremePoint3d(range6.low),
+    "null range low is extreme"
+  );
+  ck.testTrue(
+    RangeBase.isExtremePoint3d(range6.high),
+    "null range low is extreme"
+  );
   // "create" i blocks of 3 to exercise variable arg list ..
-  for (let i = 0; i < points.length;) {
+  for (let i = 0; i < points.length; ) {
     if (i + 3 < points.length) {
       range6.extendRange(
-        Range3d.create(points[i], points[i + 1], points[i + 2]));
+        Range3d.create(points[i], points[i + 1], points[i + 2])
+      );
       i += 3;
     } else {
-      range6.extendRange(Range3d.createXYZ(points[i].x, points[i].y, points[i].z));
+      range6.extendRange(
+        Range3d.createXYZ(points[i].x, points[i].y, points[i].z)
+      );
       i++;
     }
   }
 
-  ck.testFalse(RangeBase.isExtremePoint3d(range6.low), "Live range low is not extreme");
-  ck.testFalse(RangeBase.isExtremePoint3d(range6.high), "live range high is not extreme");
-
+  ck.testFalse(
+    RangeBase.isExtremePoint3d(range6.low),
+    "Live range low is not extreme"
+  );
+  ck.testFalse(
+    RangeBase.isExtremePoint3d(range6.high),
+    "live range high is not extreme"
+  );
 }
 describe("Range3d", () => {
   it("HelloWorld", () => {
@@ -160,18 +189,27 @@ describe("Range3d", () => {
       const rangeAB = Range3d.createNull();
       const lattice2 = frames[i + 1].multiplyPoint3dArray(lattice1);
       for (const xyz of lattice1) {
-        rangeAB.extendTransformTransformedXYZ(frames[i], frames[i + 1], xyz.x, xyz.y, xyz.z);
+        rangeAB.extendTransformTransformedXYZ(
+          frames[i],
+          frames[i + 1],
+          xyz.x,
+          xyz.y,
+          xyz.z
+        );
       }
       const rangeA = Range3d.createTransformedArray(frames[i], lattice2);
       ck.testRange3d(rangeA, rangeAB, "multistage transform");
-
     }
 
     const rangeQ = Range3d.createNull();
     const pointQ = Point3d.create(2, 3, 1);
     rangeQ.setXYZ(pointQ.x, pointQ.y, pointQ.z);
     ck.testTrue(rangeQ.containsPoint(pointQ));
-    ck.testCoordinate(0, rangeQ.diagonal().magnitude(), "single point diagonal is 000");
+    ck.testCoordinate(
+      0,
+      rangeQ.diagonal().magnitude(),
+      "single point diagonal is 000"
+    );
 
     ck.checkpoint("Range3d.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
@@ -197,8 +235,14 @@ describe("Range3d", () => {
     const lattice1 = Sample.createPoint2dLattice(-1, 1.3, 4);
     const rangeA2d = Range2d.createArray(lattice1);
     const rangeA3d = Range3d.createRange2d(rangeA2d);
-    ck.testFalse(RangeBase.isExtremePoint2d(rangeA2d.low), "null range low is extreme");
-    ck.testFalse(RangeBase.isExtremePoint2d(rangeA2d.high), "null range low is extreme");
+    ck.testFalse(
+      RangeBase.isExtremePoint2d(rangeA2d.low),
+      "null range low is extreme"
+    );
+    ck.testFalse(
+      RangeBase.isExtremePoint2d(rangeA2d.high),
+      "null range low is extreme"
+    );
     ck.testTrue(rangeA2d.low.isAlmostEqual(rangeA3d.low), "2d 3d range");
     ck.testTrue(rangeA2d.high.isAlmostEqual(rangeA3d.high), "2d 3d range");
 
@@ -227,11 +271,17 @@ describe("Range3d", () => {
       Point3d.create(1, 2, 3),
       Point3d.create(4, 2, 9),
       Point3d.create(2, 8, 3),
-      Point3d.create(-1, 4, -2)];
+      Point3d.create(-1, 4, -2),
+    ];
     for (const frame of frames) {
       const rangeA = Range3d.createTransformedArray(frame, points);
-      const rangeB = Range3d.createTransformed(frame,
-        points[0], points[1], points[2], points[3]);
+      const rangeB = Range3d.createTransformed(
+        frame,
+        points[0],
+        points[1],
+        points[2],
+        points[3]
+      );
       ck.testRange3d(rangeA, rangeB);
     }
 
@@ -249,11 +299,20 @@ describe("Range3d", () => {
     const rangeZ = Range1d.createXX(range.low.z, range.high.z);
     for (const xyz of lattice1) {
       const d = range.distanceToPoint(xyz);
-      ck.testBoolean(range.containsPoint(xyz), d === 0.0, "distanceToRange agrees with containment");
-      ck.testCoordinate(d,
-        Geometry.hypotenuseXYZ(rangeX.distanceToX(xyz.x),
+      ck.testBoolean(
+        range.containsPoint(xyz),
+        d === 0.0,
+        "distanceToRange agrees with containment"
+      );
+      ck.testCoordinate(
+        d,
+        Geometry.hypotenuseXYZ(
+          rangeX.distanceToX(xyz.x),
           rangeY.distanceToX(xyz.y),
-          rangeZ.distanceToX(xyz.z)), "distance to range 3d, 1d");
+          rangeZ.distanceToX(xyz.z)
+        ),
+        "distance to range 3d, 1d"
+      );
     }
 
     ck.checkpoint("Range3d.Distance");
@@ -283,7 +342,8 @@ describe("Range3d", () => {
     Range1d.createX(10),
     Range1d.createX(15),
     Range1d.createX(20),
-    Range1d.createX(30)];
+    Range1d.createX(30),
+  ];
 
   it("ScalarQueries", () => {
     const ck = new Checker();
@@ -295,19 +355,51 @@ describe("Range3d", () => {
       rangeY.scaleAboutCenterInPlace(0.4);
       rangeZ.scaleAboutCenterInPlace(0.9);
       const r1 = rangeX.clone();
-      const r2 = Range2d.createXYXY(rangeX.low, rangeY.low, rangeX.high, rangeY.high);
-      const r3 = Range3d.createXYZXYZ(rangeX.low, rangeY.low, rangeZ.low, rangeX.high, rangeY.high, rangeZ.high);
+      const r2 = Range2d.createXYXY(
+        rangeX.low,
+        rangeY.low,
+        rangeX.high,
+        rangeY.high
+      );
+      const r3 = Range3d.createXYZXYZ(
+        rangeX.low,
+        rangeY.low,
+        rangeZ.low,
+        rangeX.high,
+        rangeY.high,
+        rangeZ.high
+      );
       if (!rangeB.isNull) {
         ck.testTrue(r1.containsX(rangeX.fractionToPoint(0.5)));
-        ck.testTrue(r2.containsXY(rangeX.fractionToPoint(0.5), rangeY.fractionToPoint(0.5)));
-        ck.testTrue(r3.containsXYZ(rangeX.fractionToPoint(0.5), rangeY.fractionToPoint(0.5), rangeZ.fractionToPoint(0.5)));
+        ck.testTrue(
+          r2.containsXY(
+            rangeX.fractionToPoint(0.5),
+            rangeY.fractionToPoint(0.5)
+          )
+        );
+        ck.testTrue(
+          r3.containsXYZ(
+            rangeX.fractionToPoint(0.5),
+            rangeY.fractionToPoint(0.5),
+            rangeZ.fractionToPoint(0.5)
+          )
+        );
 
-        ck.testTrue(r2.containsPoint(r2.diagonalFractionToPoint(0.2)), "diagonal point in");
-        ck.testTrue(r3.containsPoint(r3.diagonalFractionToPoint(0.2)), "diagonal point in");
-        const a = 3.2;      // greater than 1 expands in all directions
-        const r1A = r1.clone(); r1A.scaleAboutCenterInPlace(a);
-        const r2A = r2.clone(); r2A.scaleAboutCenterInPlace(a);
-        const r3A = r3.clone(); r3A.scaleAboutCenterInPlace(a);
+        ck.testTrue(
+          r2.containsPoint(r2.diagonalFractionToPoint(0.2)),
+          "diagonal point in"
+        );
+        ck.testTrue(
+          r3.containsPoint(r3.diagonalFractionToPoint(0.2)),
+          "diagonal point in"
+        );
+        const a = 3.2; // greater than 1 expands in all directions
+        const r1A = r1.clone();
+        r1A.scaleAboutCenterInPlace(a);
+        const r2A = r2.clone();
+        r2A.scaleAboutCenterInPlace(a);
+        const r3A = r3.clone();
+        r3A.scaleAboutCenterInPlace(a);
         const bx = 0.99;
         const by = 0.95;
         const bz = 0.92;
@@ -326,18 +418,42 @@ describe("Range3d", () => {
         ck.testBoolean(isSingle, r2.containsXY(p2.x, p2.y));
         ck.testBoolean(isSingle, r3.containsXYZ(p3.x, p3.y, p3.z));
 
-        ck.testCoordinate(0, r2A.distanceToPoint(p2), "0 distance to contained point 2d");
-        ck.testCoordinate(0, r3A.distanceToPoint(p3), "0 distance to contained point 2d");
+        ck.testCoordinate(
+          0,
+          r2A.distanceToPoint(p2),
+          "0 distance to contained point 2d"
+        );
+        ck.testCoordinate(
+          0,
+          r3A.distanceToPoint(p3),
+          "0 distance to contained point 2d"
+        );
 
         if (!isSingle) {
-          ck.testLT(0, r2.distanceToPoint(p2), "nonzero distance to contained point 2d");
-          ck.testLT(0, r3.distanceToPoint(p3), "nonzero distance to contained point 2d");
+          ck.testLT(
+            0,
+            r2.distanceToPoint(p2),
+            "nonzero distance to contained point 2d"
+          );
+          ck.testLT(
+            0,
+            r3.distanceToPoint(p3),
+            "nonzero distance to contained point 2d"
+          );
         }
 
         const diagonal2 = r2.diagonal();
         const diagonal3 = r3.diagonal();
-        ck.testBoolean(diagonal2.isAlmostZero, r2.isAlmostZeroX && r2.isAlmostZeroY, "2d almostZero");
-        ck.testBoolean(diagonal3.isAlmostZero, r3.isAlmostZeroX && r3.isAlmostZeroY && r3.isAlmostZeroZ, "2d almostZero");
+        ck.testBoolean(
+          diagonal2.isAlmostZero,
+          r2.isAlmostZeroX && r2.isAlmostZeroY,
+          "2d almostZero"
+        );
+        ck.testBoolean(
+          diagonal3.isAlmostZero,
+          r3.isAlmostZeroX && r3.isAlmostZeroY && r3.isAlmostZeroZ,
+          "2d almostZero"
+        );
       }
     }
     ck.checkpoint("Range3d.Containment1d");
@@ -356,23 +472,33 @@ describe("Range3d", () => {
       ck.testTrue(rangeQ.containsRange(rangeB), "extend acts as union");
 
       ck.testBoolean(
-        intervalA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
+        intervalA.containsRange(rangeB),
+        rangeAB.isAlmostEqual(rangeB),
+        "contained range matches operand"
+      );
       ck.testCoordinate(d1, d2, "distance between ranges is symmetric");
       if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
-        ck.testCoordinate(0, d1, "nonempty intersection must have zero distance");
+        ck.testCoordinate(
+          0,
+          d1,
+          "nonempty intersection must have zero distance"
+        );
       const rangeC = intervalA.union(rangeB);
       ck.testTrue(rangeC.containsRange(intervalA), "Union contains operand");
       ck.testTrue(rangeC.containsRange(rangeB), "Union contains operand");
-      ck.testExactNumber(rangeC.maxAbs(), Math.max(intervalA.maxAbs(), rangeB.maxAbs()), "maxAbs of union");
+      ck.testExactNumber(
+        rangeC.maxAbs(),
+        Math.max(intervalA.maxAbs(), rangeB.maxAbs()),
+        "maxAbs of union"
+      );
 
       const rangeM = Range1d.createNull();
       rangeM.setFrom(rangeB);
       const rangeN = Range1d.createFrom(rangeB);
       ck.testTrue(rangeM.isAlmostEqual(rangeB), "setFrom");
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
-
     }
     ck.checkpoint("Range3d.Containment1d");
     expect(ck.getNumErrors()).equals(0);
@@ -381,13 +507,23 @@ describe("Range3d", () => {
   it("DiagonalContainment3d", () => {
     const ck = new Checker();
     const rangeA = Range3d.createXYZXYZ(
-      intervalA.low, intervalA.low, intervalA.low,
-      intervalA.high, intervalA.high, intervalA.high);
+      intervalA.low,
+      intervalA.low,
+      intervalA.low,
+      intervalA.high,
+      intervalA.high,
+      intervalA.high
+    );
     // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range3d.createXYZXYZOrCorrectToNull(
-        intervalB.low, intervalB.low, intervalB.low,
-        intervalB.high, intervalB.high, intervalB.high);
+        intervalB.low,
+        intervalB.low,
+        intervalB.low,
+        intervalB.high,
+        intervalB.high,
+        intervalB.high
+      );
       const rangeAB = rangeA.intersect(rangeB);
 
       const rangeQ = rangeAB.clone();
@@ -398,16 +534,27 @@ describe("Range3d", () => {
       const d2 = rangeB.distanceToRange(rangeA);
       ck.testCoordinate(d1, d2, "distance between ranges is symmetric");
       ck.testBoolean(
-        rangeA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
+        rangeA.containsRange(rangeB),
+        rangeAB.isAlmostEqual(rangeB),
+        "contained range matches operand"
+      );
       if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
-        ck.testCoordinate(0, d1, "nonempty intersection must have zero distance");
+        ck.testCoordinate(
+          0,
+          d1,
+          "nonempty intersection must have zero distance"
+        );
 
       const rangeC = rangeA.union(rangeB);
       ck.testTrue(rangeC.containsRange(rangeA), "Union contains operand");
       ck.testTrue(rangeC.containsRange(rangeB), "Union contains operand");
-      ck.testExactNumber(rangeC.maxAbs(), Math.max(rangeA.maxAbs(), rangeB.maxAbs()), "maxAbs of union");
+      ck.testExactNumber(
+        rangeC.maxAbs(),
+        Math.max(rangeA.maxAbs(), rangeB.maxAbs()),
+        "maxAbs of union"
+      );
 
       const rangeM = Range3d.createNull();
       rangeM.setFrom(rangeB);
@@ -422,13 +569,19 @@ describe("Range3d", () => {
   it("DiagonalContainment2d", () => {
     const ck = new Checker();
     const rangeA = Range2d.createXYXY(
-      intervalA.low, intervalA.low,
-      intervalA.high, intervalA.high);
+      intervalA.low,
+      intervalA.low,
+      intervalA.high,
+      intervalA.high
+    );
     // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range2d.createXYXYOrCorrectToNull(
-        intervalB.low, intervalB.low,
-        intervalB.high, intervalB.high);
+        intervalB.low,
+        intervalB.low,
+        intervalB.high,
+        intervalB.high
+      );
       const rangeAB = rangeA.intersect(rangeB);
       const rangeQ = rangeAB.clone();
       rangeQ.extendRange(rangeB);
@@ -440,17 +593,28 @@ describe("Range3d", () => {
       d1 = rangeA.distanceToRange(rangeB);
       d2 = rangeB.distanceToRange(rangeA);
       ck.testBoolean(
-        rangeA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
+        rangeA.containsRange(rangeB),
+        rangeAB.isAlmostEqual(rangeB),
+        "contained range matches operand"
+      );
 
       if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
-        ck.testCoordinate(0, d1, "nonempty intersection must have zero distance");
+        ck.testCoordinate(
+          0,
+          d1,
+          "nonempty intersection must have zero distance"
+        );
 
       const rangeC = rangeA.union(rangeB);
       ck.testTrue(rangeC.containsRange(rangeA), "Union contains operand");
       ck.testTrue(rangeC.containsRange(rangeB), "Union contains operand");
-      ck.testExactNumber(rangeC.maxAbs(), Math.max(rangeA.maxAbs(), rangeB.maxAbs()), "maxAbs of union");
+      ck.testExactNumber(
+        rangeC.maxAbs(),
+        Math.max(rangeA.maxAbs(), rangeB.maxAbs()),
+        "maxAbs of union"
+      );
 
       const rangeM = Range2d.createNull();
       rangeM.setFrom(rangeB);
@@ -472,7 +636,8 @@ describe("Range3d", () => {
     const a1 = 1.5;
     const a2 = -0.3;
     const trigFunction = new SineCosinePolynomial(a0, a1, a2);
-    const func = (radians: number) => a0 + a1 * Math.cos(radians) + a2 * Math.sin(radians);
+    const func = (radians: number) =>
+      a0 + a1 * Math.cos(radians) + a2 * Math.sin(radians);
     const x0 = 0;
     let y0 = 0;
     const sweeps = [
@@ -480,7 +645,8 @@ describe("Range3d", () => {
       AngleSweep.createStartEndDegrees(degreesA, degreesB + 180),
       AngleSweep.createStartEndDegrees(degreesA, degreesA + 360),
       AngleSweep.createStartEndDegrees(degreesA, degreesC),
-      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360)];
+      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360),
+    ];
 
     for (let theta0 = 0; theta0 < 360; theta0 += 35) {
       sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 40));
@@ -500,7 +666,12 @@ describe("Range3d", () => {
         sampledRange.extendXY(theta, y);
       }
       const analyticRange1d = trigFunction.rangeInSweep(sweep);
-      const analyticRange = Range2d.createXYXY(sampledRange.low.x, analyticRange1d.low, sampledRange.high.x, analyticRange1d.high);
+      const analyticRange = Range2d.createXYXY(
+        sampledRange.low.x,
+        analyticRange1d.low,
+        sampledRange.high.x,
+        analyticRange1d.high
+      );
       ck.testTrue(analyticRange.containsRange(sampledRange));
       const expandedSampledRange = sampledRange.clone();
       expandedSampledRange.expandInPlace(0.2);
@@ -516,7 +687,7 @@ describe("Range3d", () => {
   it("MiscRange1d", () => {
     const ck = new Checker();
     const dataA = [4, 5, -1];
-    const dataB = [-10, 20, 30];  // ALL are outside range of A
+    const dataB = [-10, 20, 30]; // ALL are outside range of A
     const rangeA = Range1d.createArray(dataA);
     const rangeAB = rangeA.clone();
     ck.testFalse(rangeA.isSinglePoint, "A not single point");
@@ -529,9 +700,18 @@ describe("Range3d", () => {
       ck.testTrue(rangeAB.containsX(d), "extended range contains B data");
       ck.testFalse(rangeA.containsX(d), "B data not in A");
     }
-    ck.testTrue(rangeA.containsX(rangeA.fractionToPoint(0.4)), "fractionToPoint, interior case");
-    ck.testFalse(rangeA.containsX(rangeA.fractionToPoint(-0.4)), "fractionToPoint, exterior case");
-    ck.testFalse(rangeA.containsX(rangeA.fractionToPoint(10.4)), "fractionToPoint, exterior case");
+    ck.testTrue(
+      rangeA.containsX(rangeA.fractionToPoint(0.4)),
+      "fractionToPoint, interior case"
+    );
+    ck.testFalse(
+      rangeA.containsX(rangeA.fractionToPoint(-0.4)),
+      "fractionToPoint, exterior case"
+    );
+    ck.testFalse(
+      rangeA.containsX(rangeA.fractionToPoint(10.4)),
+      "fractionToPoint, exterior case"
+    );
 
     ck.checkpoint("Range3d.MiscRange1d");
 
@@ -579,7 +759,10 @@ describe("Range3d", () => {
     ck.testRange3d(range0, unionA);
     ck.testRange3d(range0, unionB);
 
-    const range1 = Range3d.fromJSON([Point3d.create(1, 2, 3), Point3d.create(6, 3, 2)]);
+    const range1 = Range3d.fromJSON([
+      Point3d.create(1, 2, 3),
+      Point3d.create(6, 3, 2),
+    ]);
     ck.testRange3d(range0, range1);
 
     expect(ck.getNumErrors()).equals(0);
@@ -628,7 +811,7 @@ describe("Range3d", () => {
       rangeA.worldToLocal(xyzA, xyzB);
       rangeA.localToWorld(xyzB, xyzC);
       localPoints.push(xyzB.clone());
-      localPointsB.push(worldPoint.clone());  // to be transformed as full array
+      localPointsB.push(worldPoint.clone()); // to be transformed as full array
     }
 
     rangeA.worldToLocalArrayInPlace(localPointsB);
@@ -642,7 +825,14 @@ describe("Range3d", () => {
   it("ScalarQueries3d", () => {
     const ck = new Checker();
     const rangeA = Range3d.createXYZXYZ(1, 2, 4, 10, 21, 31);
-    const rangeB = Range3d.createXYZXYZ(rangeA.xLow, rangeA.yLow, rangeA.zLow, rangeA.xHigh, rangeA.yHigh, rangeA.zHigh);
+    const rangeB = Range3d.createXYZXYZ(
+      rangeA.xLow,
+      rangeA.yLow,
+      rangeA.zLow,
+      rangeA.xHigh,
+      rangeA.yHigh,
+      rangeA.zHigh
+    );
     ck.testRange3d(rangeA, rangeB, "Range scalar queries");
     ck.testTrue(rangeA.containsPoint(rangeB.center));
 
@@ -651,15 +841,24 @@ describe("Range3d", () => {
     ck.testPoint3d(centerA, rangeA.center);
     // For single point range, transform (of degenerate range images) is identity . .
     const singlePointRange = Range3d.createXYZ(1, 2, 3);
-    const singlePointNpcToWorld = singlePointRange.getNpcToWorldRangeTransform();
-    ck.testTrue(singlePointNpcToWorld.matrix.isIdentity, "npcToWorld for single point has identity scales");
+    const singlePointNpcToWorld =
+      singlePointRange.getNpcToWorldRangeTransform();
+    ck.testTrue(
+      singlePointNpcToWorld.matrix.isIdentity,
+      "npcToWorld for single point has identity scales"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("ScalarQueries2d", () => {
     const ck = new Checker();
     const rangeA = Range2d.createXYXY(1, 2, 10, 21);
-    const rangeB = Range2d.createXYXY(rangeA.xLow, rangeA.yLow, rangeA.xHigh, rangeA.yHigh);
+    const rangeB = Range2d.createXYXY(
+      rangeA.xLow,
+      rangeA.yLow,
+      rangeA.xHigh,
+      rangeA.yHigh
+    );
     ck.testRange2d(rangeA, rangeB, "Range scalar queries");
     ck.testTrue(rangeA.containsPoint(rangeB.center));
     expect(ck.getNumErrors()).equals(0);
@@ -681,7 +880,11 @@ describe("Range3d", () => {
   });
   it("ZeroCases", () => {
     const ck = new Checker();
-    ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
+    ck.testTrue(
+      RangeBase.isExtremeValue(
+        RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)
+      )
+    );
     expect(ck.getNumErrors()).equals(0);
   });
   it("DistanceToNullRange", () => {
@@ -691,11 +894,23 @@ describe("Range3d", () => {
     const null3 = Range3d.createNull();
     const q = Math.abs(null1.high); // All dimensions should use the same extreme positive
     ck.testExactNumber(q, null1.distanceToX(100), "null Range1d distance to X");
-    ck.testExactNumber(q, null2.distanceToPoint(Point2d.create(1, 2)), "null Range1d distance to X");
-    ck.testExactNumber(q, null3.distanceToPoint(Point3d.create(1, 2, 3)), "null Range1d distance to X");
+    ck.testExactNumber(
+      q,
+      null2.distanceToPoint(Point2d.create(1, 2)),
+      "null Range1d distance to X"
+    );
+    ck.testExactNumber(
+      q,
+      null3.distanceToPoint(Point3d.create(1, 2, 3)),
+      "null Range1d distance to X"
+    );
 
     ck.testExactNumber(0, null3.maxAbs(), "Range3d.null maxAbs is 0");
-    ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
+    ck.testTrue(
+      RangeBase.isExtremeValue(
+        RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)
+      )
+    );
     expect(ck.getNumErrors()).equals(0);
   });
   it("Float64ArrayConstructors", () => {
@@ -724,10 +939,12 @@ describe("Range3d", () => {
     const cornerA = range.corners();
     const cornerB: Point3d[] = [];
     const cornerB0 = range.corners(cornerB);
-    ck.testTrue(cornerB !== cornerB0, "Range corners creates new array if result has wrong size");
+    ck.testTrue(
+      cornerB !== cornerB0,
+      "Range corners creates new array if result has wrong size"
+    );
 
-    for (let i = 0; i < 8; i++)
-      cornerB.push(Point3d.create(i, i, i));
+    for (let i = 0; i < 8; i++) cornerB.push(Point3d.create(i, i, i));
     const cornerB1 = range.corners(cornerB);
     ck.testTrue(cornerB === cornerB1, "Range corners reuses result array");
     for (let i = 0; i < 8; i++) {
@@ -748,7 +965,10 @@ describe("Range3d", () => {
   });
   it("SmallSweep", () => {
     const ck = new Checker();
-    const sweep = AngleSweep.createStartEndRadians(0.14859042783429374, 0.14859042783429377);
+    const sweep = AngleSweep.createStartEndRadians(
+      0.14859042783429374,
+      0.14859042783429377
+    );
     const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
     const range = Range3d.createNull();
     arc.extendRange(range);

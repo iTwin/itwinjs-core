@@ -51,7 +51,8 @@ export class DiagnosticsPanel {
   public readonly keyinField?: KeyinField;
 
   public constructor(vp: Viewport, props?: DiagnosticsPanelProps) {
-    const exclude = (undefined !== props && undefined !== props.exclude) ? props.exclude : {};
+    const exclude =
+      undefined !== props && undefined !== props.exclude ? props.exclude : {};
 
     this._element = document.createElement("div");
     this._element.className = "debugPanel";
@@ -102,7 +103,9 @@ export class DiagnosticsPanel {
       this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
   }
 
-  public get element(): HTMLElement { return this._element; }
+  public get element(): HTMLElement {
+    return this._element;
+  }
 
   public dispose(): void {
     dispose(this._fpsTracker);

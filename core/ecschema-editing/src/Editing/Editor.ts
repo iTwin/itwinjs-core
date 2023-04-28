@@ -7,7 +7,16 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import {
+  CustomAttribute,
+  ECObjectsError,
+  ECObjectsStatus,
+  Schema,
+  SchemaContext,
+  SchemaItemKey,
+  SchemaKey,
+  SchemaMatchType,
+} from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -83,7 +92,9 @@ export class SchemaContextEditor {
   }
 
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
+  public get schemaContext(): SchemaContext {
+    return this._schemaContext;
+  }
 
   public async finish(): Promise<SchemaContext> {
     return this._schemaContext;
@@ -92,11 +103,17 @@ export class SchemaContextEditor {
   /**
    * Helper method for retrieving a schema, previously added, from the SchemaContext.
    * @param schemaKey The SchemaKey identifying the schema.
-  */
+   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(
+      schemaKey,
+      SchemaMatchType.Latest
+    );
     if (schema === undefined)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,`Schema Key ${schemaKey.toString(true)} not found in context`);
+      throw new ECObjectsError(
+        ECObjectsStatus.UnableToLocateSchema,
+        `Schema Key ${schemaKey.toString(true)} not found in context`
+      );
 
     return schema;
   }
@@ -109,8 +126,21 @@ export class SchemaContextEditor {
    * @param minorVersion The minor version number of the schema.
    * @returns Resolves to a SchemaEditResults object.
    */
-  public async createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults> {
-    const newSchema = new Schema(this._schemaContext, name, alias, readVersion, writeVersion, minorVersion);
+  public async createSchema(
+    name: string,
+    alias: string,
+    readVersion: number,
+    writeVersion: number,
+    minorVersion: number
+  ): Promise<SchemaEditResults> {
+    const newSchema = new Schema(
+      this._schemaContext,
+      name,
+      alias,
+      readVersion,
+      writeVersion,
+      minorVersion
+    );
     await this._schemaContext.addSchema(newSchema);
     return { schemaKey: newSchema.schemaKey };
   }
@@ -120,10 +150,20 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
    * @param refSchema The referenced schema to add.
    */
-  public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
+  public async addSchemaReference(
+    schemaKey: SchemaKey,
+    refSchema: Schema
+  ): Promise<SchemaEditResults> {
+    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(
+      schemaKey,
+      SchemaMatchType.Exact
+    );
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      return {
+        errorMessage: `Schema Key ${schemaKey.toString(
+          true
+        )} not found in context`,
+      };
 
     await schema.addReference(refSchema);
     const diagnostics = Rules.validateSchemaReferences(schema);
@@ -138,7 +178,7 @@ export class SchemaContextEditor {
       return result;
     }
 
-    if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
+    if (!(await this.schemaContext.getCachedSchema(refSchema.schemaKey))) {
       await this.schemaContext.addSchema(refSchema);
     }
 
@@ -150,14 +190,27 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
    * @param customAttribute The CustomAttribute instance to add.
    */
-  public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+  public async addCustomAttribute(
+    schemaKey: SchemaKey,
+    customAttribute: CustomAttribute
+  ): Promise<SchemaEditResults> {
+    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(
+      schemaKey,
+      SchemaMatchType.Latest
+    );
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      return {
+        errorMessage: `Schema Key ${schemaKey.toString(
+          true
+        )} not found in context`,
+      };
 
     schema.addCustomAttribute(customAttribute);
 
-    const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
+    const diagnostics = Rules.validateCustomAttributeInstance(
+      schema,
+      customAttribute
+    );
 
     const result: SchemaEditResults = { errorMessage: "" };
     for await (const diagnostic of diagnostics) {
@@ -179,12 +232,28 @@ export class SchemaContextEditor {
    * @param writeVersion The write version of the schema. If not specified, the existing write version will be maintained.
    * @param minorVersion The minor version of the schema. If not specified, the existing minor version will be maintained.
    */
-  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
+  public async setVersion(
+    schemaKey: SchemaKey,
+    readVersion?: number,
+    writeVersion?: number,
+    minorVersion?: number
+  ): Promise<SchemaEditResults> {
+    const schema = await this.schemaContext.getCachedSchema(
+      schemaKey,
+      SchemaMatchType.Latest
+    );
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      return {
+        errorMessage: `Schema Key ${schemaKey.toString(
+          true
+        )} not found in context`,
+      };
 
-    schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
+    schema.setVersion(
+      readVersion || schema.readVersion,
+      writeVersion || schema.writeVersion,
+      minorVersion || schema.minorVersion
+    );
     return {};
   }
 
@@ -192,12 +261,25 @@ export class SchemaContextEditor {
    * Increments the minor version of a schema.
    * @param schemaKey The SchemaKey identifying the schema.
    */
-  public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
+  public async incrementMinorVersion(
+    schemaKey: SchemaKey
+  ): Promise<SchemaEditResults> {
+    const schema = await this.schemaContext.getCachedSchema(
+      schemaKey,
+      SchemaMatchType.Latest
+    );
     if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+      return {
+        errorMessage: `Schema Key ${schemaKey.toString(
+          true
+        )} not found in context`,
+      };
 
-    schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
+    schema.setVersion(
+      schema.readVersion,
+      schema.writeVersion,
+      schema.minorVersion + 1
+    );
     return {};
   }
 
@@ -208,10 +290,12 @@ export class SchemaContextEditor {
     }
   }
 
-  private removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute) {
+  private removeCustomAttribute(
+    schema: Schema,
+    customAttribute: CustomAttribute
+  ) {
     assert(schema.customAttributes !== undefined);
     const map = schema.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);
   }
 }
-

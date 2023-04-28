@@ -13,13 +13,22 @@ describe("DisplayStyle", () => {
   let db: StandaloneDb;
 
   before(() => {
-    db = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DisplayStyle", "DisplayStyle.bim"), {
-      rootSubject: { name: "DisplayStyle tests", description: "DisplayStyle tests" },
-      client: "DisplayStyle",
-      globalOrigin: { x: 0, y: 0 },
-      projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-      guid: Guid.createValue(),
-    });
+    db = StandaloneDb.createEmpty(
+      IModelTestUtils.prepareOutputFile("DisplayStyle", "DisplayStyle.bim"),
+      {
+        rootSubject: {
+          name: "DisplayStyle tests",
+          description: "DisplayStyle tests",
+        },
+        client: "DisplayStyle",
+        globalOrigin: { x: 0, y: 0 },
+        projectExtents: {
+          low: { x: -500, y: -500, z: -50 },
+          high: { x: 500, y: 500, z: 50 },
+        },
+        guid: Guid.createValue(),
+      }
+    );
   });
 
   after(() => {
@@ -60,9 +69,35 @@ describe("DisplayStyle", () => {
     roundTrip({ image: { type: SkyBoxImageType.None } });
 
     roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "0x123" } });
-    roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "images/sky.jpg" } });
+    roundTrip({
+      image: { type: SkyBoxImageType.Spherical, texture: "images/sky.jpg" },
+    });
 
-    roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" } } });
-    roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "front.jpg", back: "back.png", left: "left.jpeg", right: "right.jpg", top: "top.png", bottom: "bottom.png" } } });
+    roundTrip({
+      image: {
+        type: SkyBoxImageType.Cube,
+        textures: {
+          front: "0x1",
+          back: "0x2",
+          left: "0x3",
+          right: "0x4",
+          top: "0x5",
+          bottom: "0x6",
+        },
+      },
+    });
+    roundTrip({
+      image: {
+        type: SkyBoxImageType.Cube,
+        textures: {
+          front: "front.jpg",
+          back: "back.png",
+          left: "left.jpeg",
+          right: "right.jpg",
+          top: "top.png",
+          bottom: "bottom.png",
+        },
+      },
+    });
   });
 });

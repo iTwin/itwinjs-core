@@ -44,13 +44,14 @@ A BIS schema shall advertise its author's intended layer for it by applying the 
 
 The conversion of products to use BIS Domain Schemas can occur incrementally, but an ecosystem of BIS-based infrastructure (including iModelHub and Design Review) is rapidly expanding. This creates a short-term need for BIS-based “compatibility” schemas that have not been as rigorously designed as true BIS schemas but allow usage and some level of interoperability with the BIS ecosystem. For this reason, a grading level for BIS schemas has been created:
 
-- *Grade A*: True BIS schemas carefully designed for editing and interoperability
-- *Grade B*: Either:
+- _Grade A_: True BIS schemas carefully designed for editing and interoperability
+- _Grade B_: Either:
   - Legacy “consensus” schemas (such as ISM), intelligently converted to BIS, or
   - New BIS schemas, with one-way conversion to BIS in mind, but not intended for editing (native format).
-- *Grade C*: Legacy schema with software-discoverable semantics, intelligently converted to follow relevant BIS rules and patterns.
-- *Grade D*: Legacy schema with minimim or no software-discoverable semantics, typically auto-converted, following basic BIS rules and patterns.
+- _Grade C_: Legacy schema with software-discoverable semantics, intelligently converted to follow relevant BIS rules and patterns.
+- _Grade D_: Legacy schema with minimim or no software-discoverable semantics, typically auto-converted, following basic BIS rules and patterns.
 
 ---
+
 | Next: [Fabric of the Universe](./fabric-of-the-universe.md)
 |:---

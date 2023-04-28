@@ -6,7 +6,14 @@
  * @module Geometry
  */
 
-import { Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import {
+  Point3d,
+  Transform,
+  Vector3d,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
+} from "@itwin/core-geometry";
 import { FontId } from "../Fonts";
 
 /** Properties for a TextString class.
@@ -59,7 +66,9 @@ export class TextString {
   public readonly origin: Point3d;
   /** Rotation relative to element's placement */
   public readonly rotation: YawPitchRollAngles;
-  public get width() { return this.height * (this.widthFactor ? this.widthFactor : 1.0); }
+  public get width() {
+    return this.height * (this.widthFactor ? this.widthFactor : 1.0);
+  }
 
   public constructor(props: TextStringProps) {
     this.text = props.text;
@@ -82,32 +91,32 @@ export class TextString {
     val.bold = this.bold;
     val.italic = this.italic;
     val.underline = this.underline;
-    if (!this.origin.isAlmostZero)
-      val.origin = this.origin;
+    if (!this.origin.isAlmostZero) val.origin = this.origin;
 
-    if (!this.rotation.isIdentity())
-      val.rotation = this.rotation;
+    if (!this.rotation.isIdentity()) val.rotation = this.rotation;
 
     return val;
   }
 
   public transformInPlace(transform: Transform): boolean {
     const newOrigin = transform.multiplyPoint3d(this.origin, this.origin);
-    const newTransform = this.rotation.toMatrix3d().multiplyMatrixTransform(transform);
+    const newTransform = this.rotation
+      .toMatrix3d()
+      .multiplyMatrixTransform(transform);
     const scales = new Vector3d();
-    if (!newTransform.matrix.normalizeColumnsInPlace(scales))
-      return false;
-    const newRotation = YawPitchRollAngles.createFromMatrix3d(newTransform.matrix);
-    if (undefined === newRotation)
-      return false;
+    if (!newTransform.matrix.normalizeColumnsInPlace(scales)) return false;
+    const newRotation = YawPitchRollAngles.createFromMatrix3d(
+      newTransform.matrix
+    );
+    if (undefined === newRotation) return false;
     const newHeight = this.height * scales.y;
     const newWidth = this.width * scales.x;
-    if (newHeight < 1.0e-10 || newWidth < 1.0e-10)
-      return false;
+    if (newHeight < 1.0e-10 || newWidth < 1.0e-10) return false;
     this.origin.setFrom(newOrigin);
     this.rotation.setFrom(newRotation);
     this.height = newHeight;
-    this.widthFactor = (newHeight === newWidth ? undefined : (newWidth / newHeight));
+    this.widthFactor =
+      newHeight === newWidth ? undefined : newWidth / newHeight;
     return true;
   }
 }

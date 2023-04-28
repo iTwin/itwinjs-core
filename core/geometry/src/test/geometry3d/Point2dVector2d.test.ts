@@ -24,15 +24,24 @@ describe("Point2d", () => {
     const pointA = Point2d.create(1, 2);
     const epsilon = 1.0e-15;
     const pointB = Point2d.create(pointA.x, pointA.x + 0.01);
-    ck.testFalse(Point2d.create(epsilon, epsilon).isAlmostEqualMetric(pointB), "is almost zero (epsilon)");
+    ck.testFalse(
+      Point2d.create(epsilon, epsilon).isAlmostEqualMetric(pointB),
+      "is almost zero (epsilon)"
+    );
     ck.testFalse(pointA.isAlmostZero, "is almost zero");
     ck.testFalse(alwaysZero.isExactEqual(pointA));
 
     pointA.setZero();
     ck.testPoint2d(alwaysZero, pointA);
     ck.testTrue(alwaysZero.isAlmostZero, "is almost zero");
-    ck.testTrue(Point2d.create(epsilon, epsilon).isAlmostZero, "is almost zero (epsilon)");
-    ck.testTrue(Point2d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero), "is almost zero (epsilon)");
+    ck.testTrue(
+      Point2d.create(epsilon, epsilon).isAlmostZero,
+      "is almost zero (epsilon)"
+    );
+    ck.testTrue(
+      Point2d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero),
+      "is almost zero (epsilon)"
+    );
     ck.testPoint2d(alwaysZero, alwaysZeroA);
 
     const p0 = Point2d.createFrom(undefined);
@@ -55,12 +64,24 @@ describe("Point2d", () => {
     pointB3d.z = 29.1;
     const vectorMax = vectorAB.maxAbs();
     ck.testCoordinate(pointDiff, vectorMax, "maxDiff, maxAbs");
-    ck.testCoordinate(vectorAB.magnitude(), pointA.distance(pointB), "distance and magnitude");
-    ck.testCoordinate(vectorAB.magnitudeSquared(), pointA.distanceSquared(pointB), "distance and magnitude");
+    ck.testCoordinate(
+      vectorAB.magnitude(),
+      pointA.distance(pointB),
+      "distance and magnitude"
+    );
+    ck.testCoordinate(
+      vectorAB.magnitudeSquared(),
+      pointA.distanceSquared(pointB),
+      "distance and magnitude"
+    );
     const d3 = pointA3d.distanceXY(pointB3d);
     const pointDist = pointA.distance(pointB);
     ck.testCoordinate(pointDist, d3, "point3d.distanceXY");
-    ck.testCoordinate(pointDist * pointDist, pointA3d.distanceSquaredXY(pointB3d), "point3d.distanceXY");
+    ck.testCoordinate(
+      pointDist * pointDist,
+      pointA3d.distanceSquaredXY(pointB3d),
+      "point3d.distanceXY"
+    );
 
     ck.checkpoint("Point2d.Diffs");
     expect(ck.getNumErrors()).equals(0);
@@ -88,8 +109,16 @@ describe("Point2d", () => {
     for (const point of symmetricLattice2) {
       const iMax = point.indexOfMaxAbs();
       const iMin = (iMax + 1) % 2;
-      ck.testLE(Math.abs(point.at(iMin)), Math.abs(point.at(iMax)), "min less than max");
-      ck.testExactNumber(Math.abs(point.at(iMax)), point.maxAbs(), "max abs versus index");
+      ck.testLE(
+        Math.abs(point.at(iMin)),
+        Math.abs(point.at(iMax)),
+        "min less than max"
+      );
+      ck.testExactNumber(
+        Math.abs(point.at(iMax)),
+        point.maxAbs(),
+        "max abs versus index"
+      );
     }
 
     const boxI = Sample.createPoint2dLattice(1, 1, 2);
@@ -140,16 +169,21 @@ describe("Point2d", () => {
           "cross product used consistently for reverse order signed angle"
         );
         /*
-        * ccw angle is positive and cw is negative. cross product is positive if thumb points up
-        * in the right hand rule and is negative if thumb points down in the right hand rule.
-        */
-        ck.testLT(0, vectorI.crossProduct(vectorJ) * signedAngle.radians, "cross product sign agrees with signed angle");
+         * ccw angle is positive and cw is negative. cross product is positive if thumb points up
+         * in the right hand rule and is negative if thumb points down in the right hand rule.
+         */
+        ck.testLT(
+          0,
+          vectorI.crossProduct(vectorJ) * signedAngle.radians,
+          "cross product sign agrees with signed angle"
+        );
 
         const vectorQ = Vector2d.create(1.2312321, 4.23);
         const vectorR = Vector2d.create(-0.23428, 1.231);
         ck.testPoint2d(
           origin.plus3Scaled(vectorI, s1, vectorJ, s2, vectorQ, s3),
-          origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3));
+          origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3)
+        );
         ck.testVector2d(
           vectorR.plus3Scaled(vectorI, s1, vectorJ, s2, vectorQ, s3),
           vectorR.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3)
@@ -164,10 +198,17 @@ describe("Point2d", () => {
 
         const vectorIJV = vectorI.vectorTo(vectorJ);
         const unitIJV = vectorI.unitVectorTo(vectorJ);
-        ck.testVector2d(vectorIJ, vectorIJV, "vectorTo between points, vectors");
+        ck.testVector2d(
+          vectorIJ,
+          vectorIJV,
+          "vectorTo between points, vectors"
+        );
         if (ck.testPointer(unitIJV)) {
           ck.testParallel2d(unitIJV, vectorIJ);
-          ck.testCoordinate(unitIJV.dotProduct(vectorIJV), vectorI.distance(vectorJ));
+          ck.testCoordinate(
+            unitIJV.dotProduct(vectorIJV),
+            vectorI.distance(vectorJ)
+          );
         }
 
         const b = 2.5;
@@ -175,10 +216,10 @@ describe("Point2d", () => {
         ck.testCoordinate(vectorIJb.magnitude(), b);
 
         /* remark -- we trust that:
-        * pointI and pointJ are never equal
-        * vectorI and vectorJ are never equal or parallel
-        * vectorI and vectorJ are never parallel to a principal axis
-        */
+         * pointI and pointJ are never equal
+         * vectorI and vectorJ are never equal or parallel
+         * vectorI and vectorJ are never parallel to a principal axis
+         */
         const unitIJ = pointI.unitVectorTo(pointJ)!;
         ck.testCoordinate(unitIJ.dotProduct(vectorIJ), pointI.distance(pointJ));
         const fIJ = vectorI.fractionOfProjectionToVector(vectorJ);
@@ -206,7 +247,10 @@ describe("Point2d", () => {
     pointB3d.z = 29.1;
     const pointC2d = pointA2d.interpolateXY(0.3, 0.9, pointB2d);
     const pointC3d = pointA3d.interpolateXYZ(0.3, 0.9, 0.5, pointB3d);
-    ck.testTrue(pointC3d.isAlmostEqualXY(pointC2d), "separately interpolated x,y");
+    ck.testTrue(
+      pointC3d.isAlmostEqualXY(pointC2d),
+      "separately interpolated x,y"
+    );
 
     ck.checkpoint("Point2d.3dXY");
     expect(ck.getNumErrors()).equals(0);
@@ -219,7 +263,11 @@ describe("Point2d", () => {
     const vectorU = Vector2d.createFrom(data);
     const vectorV = Vector2d.create(4, -1);
     ck.testVector2d(vectorU, Vector2d.create(1, 2), "Vector2d.createFrom ()");
-    ck.testVector2d(vectorU, Vector2d.createFrom(point0), "Vector2d.createFrom ()");
+    ck.testVector2d(
+      vectorU,
+      Vector2d.createFrom(point0),
+      "Vector2d.createFrom ()"
+    );
 
     const pointP = Point2d.create(3, 4);
     const pointPPlusU = pointP.plus(vectorU);
@@ -303,7 +351,10 @@ describe("Point2d", () => {
     ck.testCoordinate(v.dotProduct(u), v.dotProductStartEnd(a, b));
 
     const defaultFraction = 101.5;
-    ck.testExactNumber(defaultFraction, b.fractionOfProjectionToLine(a, a, defaultFraction));
+    ck.testExactNumber(
+      defaultFraction,
+      b.fractionOfProjectionToLine(a, a, defaultFraction)
+    );
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -325,14 +376,22 @@ describe("Point2d", () => {
 
     const q = Vector2d.create(1, 2).normalize()!;
     const r = q.scale(-1.0);
-    ck.testUndefined(Vector2d.createOffsetBisector(q, r, 2.0), "undefined bisector for opposite normals");
+    ck.testUndefined(
+      Vector2d.createOffsetBisector(q, r, 2.0),
+      "undefined bisector for opposite normals"
+    );
 
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Point2dArrayCarrier", () => {
     const ck = new bsiChecker.Checker();
-    const pointArray = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    const pointArray = [
+      Point2d.create(0, 0),
+      Point2d.create(1, 0),
+      Point2d.create(1, 1),
+      Point2d.create(0, 1),
+    ];
     const carrier = new Point2dArrayCarrier(pointArray);
     for (let i = 0; i < carrier.length; i++) {
       ck.testUndefined(carrier.getPoint2dAtCheckedPointIndex(10 + i));
@@ -341,8 +400,12 @@ describe("Point2d", () => {
       ck.testUndefined(carrier.vectorIndexIndex(10 + i, i));
     }
     ck.testUndefined(carrier.vectorXAndYIndex({ x: 1, y: 2 }, -3));
-    ck.testUndefined(carrier.crossProductXAndYIndexIndex({ x: 1, y: 2 }, 20, 0));
-    ck.testUndefined(carrier.crossProductXAndYIndexIndex({ x: 1, y: 2 }, 0, 20));
+    ck.testUndefined(
+      carrier.crossProductXAndYIndexIndex({ x: 1, y: 2 }, 20, 0)
+    );
+    ck.testUndefined(
+      carrier.crossProductXAndYIndexIndex({ x: 1, y: 2 }, 0, 20)
+    );
     ck.testUndefined(carrier.crossProductIndexIndexIndex(0, 1, 20));
     ck.testUndefined(carrier.crossProductIndexIndexIndex(10, 1, 0));
     ck.testUndefined(carrier.crossProductIndexIndexIndex(0, 21, 2));
@@ -370,7 +433,11 @@ describe("Vector2d.createOffsetBisector", () => {
     const unitPerpB: Vector2d = Vector2d.create(-1 / sqrt2, 1 / sqrt2);
     const offset: number = 3;
     const expectedBisector: Vector2d = Vector2d.create(0, 3 * sqrt2);
-    const outputBisector: Vector2d = Vector2d.createOffsetBisector(unitPerpA, unitPerpB, offset)!;
+    const outputBisector: Vector2d = Vector2d.createOffsetBisector(
+      unitPerpA,
+      unitPerpB,
+      offset
+    )!;
     expect(outputBisector).to.deep.equal(expectedBisector);
   });
 });
@@ -385,15 +452,31 @@ describe("Vector2d.isParallelTo", () => {
     it("Vector2d.isParallelToTrueWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(1.01, 2.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
-      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1,
+        distanceSquaredTol: 1,
+      };
+      const output: boolean = thisVector.isParallelTo(
+        other,
+        undefined,
+        undefined,
+        options
+      );
       expect(output).equal(true);
     }),
     it("Vector2d.isParallelToFalseWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(1.01, 2.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
-      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1e-10,
+        distanceSquaredTol: 1e-10,
+      };
+      const output: boolean = thisVector.isParallelTo(
+        other,
+        undefined,
+        undefined,
+        options
+      );
       expect(output).equal(false);
     });
 });
@@ -408,15 +491,29 @@ describe("Vector2d.isPerpendicularTo", () => {
     it("Vector2d.isPerpendicularToTrueWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(-2.01, 1.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
-      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1,
+        distanceSquaredTol: 1,
+      };
+      const output: boolean = thisVector.isPerpendicularTo(
+        other,
+        undefined,
+        options
+      );
       expect(output).equal(true);
     }),
     it("Vector2d.isPerpendicularToFalseWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(-2.01, 1.01);
-      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
-      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      const options: PerpParallelOptions = {
+        radianSquaredTol: 1e-10,
+        distanceSquaredTol: 1e-10,
+      };
+      const output: boolean = thisVector.isPerpendicularTo(
+        other,
+        undefined,
+        options
+      );
       expect(output).equal(false);
     });
 });

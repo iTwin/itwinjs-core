@@ -3,20 +3,45 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@itwin/core-bentley";
-import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@itwin/core-common";
-import { IModelAppOptions, IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
+import {
+  AsyncMethodsOf,
+  BeEvent,
+  Logger,
+  PromiseReturnType,
+} from "@itwin/core-bentley";
+import {
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  IpcWebSocketFrontend,
+} from "@itwin/core-common";
+import {
+  IModelAppOptions,
+  IpcApp,
+  NativeApp,
+  NativeAppOpts,
+  NotificationHandler,
+} from "@itwin/core-frontend";
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
-import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
+import {
+  MobileAppFunctions,
+  MobileNotifications,
+} from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationFrontend } from "./MobileAuthorizationFrontend";
 
 /** @beta */
-export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?: never } };
+export type MobileAppOpts = NativeAppOpts & {
+  iModelApp: { authorizationClient?: never };
+};
 
 /** receive notifications from backend */
-class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
-  public get channelName() { return mobileAppNotify; }
+class MobileAppNotifyHandler
+  extends NotificationHandler
+  implements MobileNotifications
+{
+  public get channelName() {
+    return mobileAppNotify;
+  }
 
   public notifyMemoryWarning() {
     Logger.logWarning("mobileApp", "Low memory warning");
@@ -25,9 +50,16 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
     }
     MobileApp.onMemoryWarning.raiseEvent();
   }
-  public notifyOrientationChanged() { MobileApp.onOrientationChanged.raiseEvent(); }
-  public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
-  public notifyAuthAccessTokenChanged(accessToken: string | undefined, expirationDate: string | undefined) {
+  public notifyOrientationChanged() {
+    MobileApp.onOrientationChanged.raiseEvent();
+  }
+  public notifyWillTerminate() {
+    MobileApp.onWillTerminate.raiseEvent();
+  }
+  public notifyAuthAccessTokenChanged(
+    accessToken: string | undefined,
+    expirationDate: string | undefined
+  ) {
     MobileApp.onAuthAccessTokenChanged.raiseEvent(accessToken, expirationDate);
   }
 }
@@ -39,13 +71,27 @@ export class MobileApp {
   public static onEnterForeground = new BeEvent<() => void>();
   public static onEnterBackground = new BeEvent<() => void>();
   public static onWillTerminate = new BeEvent<() => void>();
-  public static onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
-  public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>) {
-    return IpcApp.callIpcChannel(mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
+  public static onAuthAccessTokenChanged = new BeEvent<
+    (
+      accessToken: string | undefined,
+      expirationDate: string | undefined
+    ) => void
+  >();
+  public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(
+    methodName: T,
+    ...args: Parameters<MobileAppFunctions[T]>
+  ) {
+    return IpcApp.callIpcChannel(
+      mobileAppChannel,
+      methodName,
+      ...args
+    ) as PromiseReturnType<MobileAppFunctions[T]>;
   }
 
   private static _isValid = false;
-  public static get isValid() { return this._isValid; }
+  public static get isValid() {
+    return this._isValid;
+  }
   /** @beta */
   public static async startup(opts?: MobileAppOpts) {
     attachDirectEventCallbacks();
@@ -57,11 +103,19 @@ export class MobileApp {
     iModelAppOpts.authorizationClient = authorizationClient;
 
     if (!this._isValid) {
-      this.onAuthAccessTokenChanged.addListener((accessToken: string | undefined, expirationDate: string | undefined) => {
-        authorizationClient.setAccessToken(accessToken, expirationDate);
-      });
+      this.onAuthAccessTokenChanged.addListener(
+        (
+          accessToken: string | undefined,
+          expirationDate: string | undefined
+        ) => {
+          authorizationClient.setAccessToken(accessToken, expirationDate);
+        }
+      );
 
-      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface]; // eslint-disable-line deprecation/deprecation
+      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [
+        IModelReadRpcInterface,
+        IModelTileRpcInterface,
+      ]; // eslint-disable-line deprecation/deprecation
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }

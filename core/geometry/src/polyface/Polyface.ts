@@ -40,34 +40,44 @@ export abstract class Polyface extends GeometryQuery {
   /** create and return a visitor for this concrete polyface. */
   public abstract createVisitor(_numWrap: number): PolyfaceVisitor;
   /** Flag indicating if the mesh display must assume both sides are visible. */
-  public get twoSided() { return this.data.twoSided; }
-  public set twoSided(value: boolean) { this.data.twoSided = value; }
+  public get twoSided() {
+    return this.data.twoSided;
+  }
+  public set twoSided(value: boolean) {
+    this.data.twoSided = value;
+  }
   /** Flag indicating if the mesh closure is unknown (0), open sheet (1), closed (2) */
-  public get expectedClosure(): number { return this.data.expectedClosure; }
-  public set expectedClosure(value: number) { this.data.expectedClosure = value; }
+  public get expectedClosure(): number {
+    return this.data.expectedClosure;
+  }
+  public set expectedClosure(value: number) {
+    this.data.expectedClosure = value;
+  }
   /**
-     * Check validity of indices into a data array.
-     * * It is valid to have  both indices and data undefined.
-     * * It is NOT valid for just one to be defined.
-     * * Index values at indices[indexPositionA <= i < indexPositionB] must be valid indices to the data array.
-     * @param indices array of indices.
-     * @param indexPositionA first index to test
-     * @param indexPositionB one past final index to test
-     * @param data data array
-     * @param dataLength length of data array
-     */
-  public static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean {
-    if (indices === undefined && data === undefined)
-      return true;
-    if (!indices || !data)
-      return false;
-    if (indexPositionA < 0 || indexPositionA >= indices.length)
-      return false;
+   * Check validity of indices into a data array.
+   * * It is valid to have  both indices and data undefined.
+   * * It is NOT valid for just one to be defined.
+   * * Index values at indices[indexPositionA <= i < indexPositionB] must be valid indices to the data array.
+   * @param indices array of indices.
+   * @param indexPositionA first index to test
+   * @param indexPositionB one past final index to test
+   * @param data data array
+   * @param dataLength length of data array
+   */
+  public static areIndicesValid(
+    indices: number[] | undefined,
+    indexPositionA: number,
+    indexPositionB: number,
+    data: any | undefined,
+    dataLength: number
+  ): boolean {
+    if (indices === undefined && data === undefined) return true;
+    if (!indices || !data) return false;
+    if (indexPositionA < 0 || indexPositionA >= indices.length) return false;
     if (indexPositionB < indexPositionA || indexPositionB > indices.length)
       return false;
     for (let i = indexPositionA; i < indexPositionB; i++)
-      if (indices[i] < 0 || indices[i] >= dataLength)
-        return false;
+      if (indices[i] < 0 || indices[i] >= dataLength) return false;
     return true;
   }
   /**
@@ -87,19 +97,26 @@ export abstract class Polyface extends GeometryQuery {
  */
 export class IndexedPolyface extends Polyface {
   /** Test if other is an instance of `IndexedPolyface` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof IndexedPolyface; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof IndexedPolyface;
+  }
   /** Tests for equivalence between two IndexedPolyfaces. */
   public override isAlmostEqual(other: any): boolean {
     if (other instanceof IndexedPolyface) {
-      return this.data.isAlmostEqual(other.data) && NumberArray.isExactEqual(this._facetStart, other._facetStart) &&
-        NumberArray.isExactEqual(this._facetToFaceData, other._facetToFaceData);
+      return (
+        this.data.isAlmostEqual(other.data) &&
+        NumberArray.isExactEqual(this._facetStart, other._facetStart) &&
+        NumberArray.isExactEqual(this._facetToFaceData, other._facetToFaceData)
+      );
     }
     return false;
   }
   /**
    * Returns true if either the point array or the point index array is empty.
    */
-  public get isEmpty(): boolean { return this.data.pointCount === 0 || this.data.pointIndex.length === 0; }
+  public get isEmpty(): boolean {
+    return this.data.pointCount === 0 || this.data.pointIndex.length === 0;
+  }
   /**
    * * apply the transform to points
    * * apply the (inverse transpose of) the matrix part to normals
@@ -109,8 +126,7 @@ export class IndexedPolyface extends Polyface {
    * @param transform
    */
   public tryTransformInPlace(transform: Transform) {
-    if (!this.data.tryTransformInPlace(transform))
-      return false;
+    if (!this.data.tryTransformInPlace(transform)) return false;
 
     const determinant = transform.matrix.determinant();
     if (determinant < 0) {
@@ -126,7 +142,11 @@ export class IndexedPolyface extends Polyface {
   }
   /** Return a deep clone. */
   public clone(): IndexedPolyface {
-    const result = new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());
+    const result = new IndexedPolyface(
+      this.data.clone(),
+      this._facetStart.slice(),
+      this._facetToFaceData.slice()
+    );
     return result;
   }
   /** Return a deep clone with transformed points and normals */
@@ -136,9 +156,13 @@ export class IndexedPolyface extends Polyface {
     return result;
   }
   /** Reverse the order of indices around all facets. */
-  public reverseIndices() { this.data.reverseIndices(this._facetStart); }
+  public reverseIndices() {
+    this.data.reverseIndices(this._facetStart);
+  }
   /** Reverse the direction of all normal vectors. */
-  public reverseNormals() { this.data.reverseNormals(); }
+  public reverseNormals() {
+    this.data.reverseNormals();
+  }
   /**
    * * index to the index array entries for a specific facet.
    * * the facet count is facetStart.length - 1
@@ -156,8 +180,7 @@ export class IndexedPolyface extends Polyface {
   /** return face data using a facet index. This is the REFERENCE to the FacetFaceData, not a copy. Returns undefined if none found. */
   public tryGetFaceData(i: number): FacetFaceData | undefined {
     const faceIndex = this._facetToFaceData[i];
-    if (faceIndex >= this.data.face.length)
-      return undefined;
+    if (faceIndex >= this.data.face.length) return undefined;
     return this.data.face[faceIndex];
   }
   /**
@@ -166,18 +189,19 @@ export class IndexedPolyface extends Polyface {
    * @param facetStart optional array of facet start indices (e.g. known during clone)
    * @param facetToFacetData optional array of face identifiers (e.g. known during clone)
    */
-  protected constructor(data: PolyfaceData, facetStart?: number[], facetToFaceData?: number[]) {
+  protected constructor(
+    data: PolyfaceData,
+    facetStart?: number[],
+    facetToFaceData?: number[]
+  ) {
     super(data);
-    if (facetStart)
-      this._facetStart = facetStart.slice();
+    if (facetStart) this._facetStart = facetStart.slice();
     else {
       this._facetStart = [];
       this._facetStart.push(0);
     }
-    if (facetToFaceData)
-      this._facetToFaceData = facetToFaceData.slice();
-    else
-      this._facetToFaceData = [];
+    if (facetToFaceData) this._facetToFaceData = facetToFaceData.slice();
+    else this._facetToFaceData = [];
   }
   /**
    * * Add facets from source to this polyface.
@@ -185,7 +209,11 @@ export class IndexedPolyface extends Polyface {
    * * Optionally apply a transform to points and normals.
    * * Will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them.
    */
-  public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
+  public addIndexedPolyface(
+    source: IndexedPolyface,
+    reversed: boolean,
+    transform: Transform | undefined
+  ) {
     const numSourceFacets = source.facetCount;
 
     // Add point, point index, and edge visibility data
@@ -197,33 +225,44 @@ export class IndexedPolyface extends Polyface {
       if (transform) {
         transform.multiplyPoint3d(xyz, xyz);
         this.addPoint(xyz);
-      } else
-        this.addPoint(xyz);
+      } else this.addPoint(xyz);
     }
     for (let i = 0; i < numSourceFacets; i++) {
       const i0 = source._facetStart[i];
       const i1 = source._facetStart[i + 1];
       if (reversed) {
-        for (let j = i1; j-- > i0;) { // visibility is transferred from far vertex, e.g., -abc-d => dc-b-a
-          this.addPointIndex(startOfNewPoints + source.data.pointIndex[j], source.data.edgeVisible[j > i0 ? j - 1 : i1 - 1]);
+        for (let j = i1; j-- > i0; ) {
+          // visibility is transferred from far vertex, e.g., -abc-d => dc-b-a
+          this.addPointIndex(
+            startOfNewPoints + source.data.pointIndex[j],
+            source.data.edgeVisible[j > i0 ? j - 1 : i1 - 1]
+          );
         }
       } else {
         for (let j = i0; j < i1; j++) {
-          this.addPointIndex(startOfNewPoints + source.data.pointIndex[j], source.data.edgeVisible[j]);
+          this.addPointIndex(
+            startOfNewPoints + source.data.pointIndex[j],
+            source.data.edgeVisible[j]
+          );
         }
       }
       this.terminateFacet(false);
     }
 
     // Add param and param index data
-    if (undefined !== this.data.param && undefined !== source.data.param && undefined !== source.data.paramIndex) {
+    if (
+      undefined !== this.data.param &&
+      undefined !== source.data.param &&
+      undefined !== source.data.paramIndex
+    ) {
       const startOfNewParams = this.data.param.length;
       this.data.param.pushFromGrowableXYArray(source.data.param);
-      for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match normals
+      for (let i = 0; i < numSourceFacets; i++) {
+        // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
-          for (let j = i1; j-- > i0;)
+          for (let j = i1; j-- > i0; )
             this.addParamIndex(startOfNewParams + source.data.paramIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
@@ -233,21 +272,25 @@ export class IndexedPolyface extends Polyface {
     }
 
     // Add normal and normal index data
-    if (undefined !== this.data.normal && undefined !== source.data.normal && undefined !== source.data.normalIndex) {
+    if (
+      undefined !== this.data.normal &&
+      undefined !== source.data.normal &&
+      undefined !== source.data.normalIndex
+    ) {
       const startOfNewNormals = this.data.normal.length;
       for (let i = 0; i < source.data.normal.length; i++) {
-        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
-        if (transform)
-          transform.multiplyVector(sourceNormal, sourceNormal);
-        if (reversed)
-          sourceNormal.scaleInPlace(-1.0);
+        const sourceNormal =
+          source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
+        if (transform) transform.multiplyVector(sourceNormal, sourceNormal);
+        if (reversed) sourceNormal.scaleInPlace(-1.0);
         this.addNormal(sourceNormal);
       }
-      for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match normals
+      for (let i = 0; i < numSourceFacets; i++) {
+        // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
-          for (let j = i1; j-- > i0;)
+          for (let j = i1; j-- > i0; )
             this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
@@ -257,15 +300,19 @@ export class IndexedPolyface extends Polyface {
     }
 
     // Add color and color index data
-    if (undefined !== this.data.color && undefined !== source.data.color && undefined !== source.data.colorIndex) {
+    if (
+      undefined !== this.data.color &&
+      undefined !== source.data.color &&
+      undefined !== source.data.colorIndex
+    ) {
       const startOfNewColors = this.data.color.length;
-      for (const sourceColor of source.data.color)
-        this.addColor(sourceColor);
-      for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match colors
+      for (const sourceColor of source.data.color) this.addColor(sourceColor);
+      for (let i = 0; i < numSourceFacets; i++) {
+        // Expect facet start and ends for points to match colors
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
-          for (let j = i1; j-- > i0;)
+          for (let j = i1; j-- > i0; )
             this.addColorIndex(startOfNewColors + source.data.colorIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
@@ -293,14 +340,23 @@ export class IndexedPolyface extends Polyface {
    * @note Note that all index arrays (point, normal, param, color) have the same counts, so there
    * is not a separate query for each of them.
    */
-  public get zeroTerminatedIndexCount(): number { return this.data.pointIndex.length + this._facetStart.length - 1; }
+  public get zeroTerminatedIndexCount(): number {
+    return this.data.pointIndex.length + this._facetStart.length - 1;
+  }
   /** Create an empty facet set, with coordinate and index data to be supplied later.
    * @param needNormals true if normals will be constructed
    * @param needParams true if uv parameters will be constructed
    * @param needColors true if colors will e constructed.
    */
-  public static create(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false): IndexedPolyface {
-    return new IndexedPolyface(new PolyfaceData(needNormals, needParams, needColors, twoSided));
+  public static create(
+    needNormals: boolean = false,
+    needParams: boolean = false,
+    needColors: boolean = false,
+    twoSided: boolean = false
+  ): IndexedPolyface {
+    return new IndexedPolyface(
+      new PolyfaceData(needNormals, needParams, needColors, twoSided)
+    );
   }
   /** add (a clone of ) a point. return its 0 based index.
    * @param point point coordinates
@@ -320,7 +376,10 @@ export class IndexedPolyface extends Polyface {
   /** add a point.
    * @returns Returns the zero-based index of the added point.
    */
-  public addPointXYZ(x: number, y: number, z: number): number { this.data.point.pushXYZ(x, y, z); return this.data.point.length - 1; }
+  public addPointXYZ(x: number, y: number, z: number): number {
+    this.data.point.pushXYZ(x, y, z);
+    return this.data.point.length - 1;
+  }
   /** Add a uv param.
    * @returns 0-based index of the added param.
    */
@@ -334,11 +393,22 @@ export class IndexedPolyface extends Polyface {
    * @param priorIndexB second index to check for possible duplicate value.
    * @returns 0-based index of the added or reused param.
    */
-  public addParamUV(u: number, v: number, priorIndexA?: number, priorIndexB?: number): number {
+  public addParamUV(
+    u: number,
+    v: number,
+    priorIndexA?: number,
+    priorIndexB?: number
+  ): number {
     if (!this.data.param) this.data.param = new GrowableXYArray();
-    if (priorIndexA !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexA, u, v))
+    if (
+      priorIndexA !== undefined &&
+      this.data.isAlmostEqualParamIndexUV(priorIndexA, u, v)
+    )
       return priorIndexA;
-    if (priorIndexB !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexB, u, v))
+    if (
+      priorIndexB !== undefined &&
+      this.data.isAlmostEqualParamIndexUV(priorIndexB, u, v)
+    )
       return priorIndexB;
     this.data.param.pushXY(u, v);
     return this.data.param.length - 1;
@@ -349,7 +419,11 @@ export class IndexedPolyface extends Polyface {
    * @param priorIndexB second index to check for possible duplicate value.
    * @returns 0-based index of the added or reused normal.
    */
-  public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
+  public addNormal(
+    normal: Vector3d,
+    priorIndexA?: number,
+    priorIndexB?: number
+  ): number {
     if (this.data.normal !== undefined) {
       let distance;
 
@@ -394,23 +468,23 @@ export class IndexedPolyface extends Polyface {
     return this.data.color.length - 1;
   }
   /** Add a point index with edge visibility flag. */
-  public addPointIndex(index: number, visible: boolean = true): void { this.data.pointIndex.push(index); this.data.edgeVisible.push(visible); }
+  public addPointIndex(index: number, visible: boolean = true): void {
+    this.data.pointIndex.push(index);
+    this.data.edgeVisible.push(visible);
+  }
   /** Add a normal index */
   public addNormalIndex(index: number): void {
-    if (!this.data.normalIndex)
-      this.data.normalIndex = [];
+    if (!this.data.normalIndex) this.data.normalIndex = [];
     this.data.normalIndex.push(index);
   }
   /** Add a param index */
   public addParamIndex(index: number): void {
-    if (!this.data.paramIndex)
-      this.data.paramIndex = [];
+    if (!this.data.paramIndex) this.data.paramIndex = [];
     this.data.paramIndex.push(index);
   }
   /** Add a color index */
   public addColorIndex(index: number): void {
-    if (!this.data.colorIndex)
-      this.data.colorIndex = [];
+    if (!this.data.colorIndex) this.data.colorIndex = [];
     this.data.colorIndex.push(index);
   }
 
@@ -429,7 +503,7 @@ export class IndexedPolyface extends Polyface {
    */
   public terminateFacet(validateAllIndices: boolean = true): any {
     const numFacets = this._facetStart.length - 1;
-    const lengthA = this._facetStart[numFacets];  // number of indices in accepted facets
+    const lengthA = this._facetStart[numFacets]; // number of indices in accepted facets
     const lengthB = this.data.pointIndex.length; // number of indices including the open facet
     if (validateAllIndices) {
       const messages: any[] = [];
@@ -445,7 +519,15 @@ export class IndexedPolyface extends Polyface {
       if (this.data.edgeVisible.length !== lengthB)
         messages.push("visibleIndex count must equal pointIndex count");
 
-      if (!Polyface.areIndicesValid(this.data.normalIndex, lengthA, lengthB, this.data.normal, this.data.normal ? this.data.normal.length : 0))
+      if (
+        !Polyface.areIndicesValid(
+          this.data.normalIndex,
+          lengthA,
+          lengthB,
+          this.data.normal,
+          this.data.normal ? this.data.normal.length : 0
+        )
+      )
         messages.push("invalid normal indices in open facet");
       if (messages.length > 0) {
         this.cleanupOpenFacet();
@@ -461,17 +543,29 @@ export class IndexedPolyface extends Polyface {
    * will be grouped into a new face with their own 2D range.
    */
   /** (read-only property) number of facets */
-  public override get facetCount(): number { return this._facetStart.length - 1; }
+  public override get facetCount(): number {
+    return this._facetStart.length - 1;
+  }
   /** (read-only property) number of faces */
-  public get faceCount(): number { return this.data.faceCount; }
+  public get faceCount(): number {
+    return this.data.faceCount;
+  }
   /** (read-only property) number of points */
-  public get pointCount(): number { return this.data.pointCount; }
+  public get pointCount(): number {
+    return this.data.pointCount;
+  }
   /** (read-only property) number of colors */
-  public get colorCount(): number { return this.data.colorCount; }
+  public get colorCount(): number {
+    return this.data.colorCount;
+  }
   /** (read-only property) number of parameters */
-  public get paramCount(): number { return this.data.paramCount; }
+  public get paramCount(): number {
+    return this.data.paramCount;
+  }
   /** (read-only property) number of normals */
-  public get normalCount(): number { return this.data.normalCount; }
+  public get normalCount(): number {
+    return this.data.normalCount;
+  }
   /** Return the number of edges in a particular facet. */
   public numEdgeInFacet(facetIndex: number): number {
     if (this.isValidFacetIndex(facetIndex))
@@ -479,17 +573,29 @@ export class IndexedPolyface extends Polyface {
     return 0;
   }
   /** test if `index` is a valid facet index. */
-  public isValidFacetIndex(index: number): boolean { return index >= 0 && index + 1 < this._facetStart.length; }
+  public isValidFacetIndex(index: number): boolean {
+    return index >= 0 && index + 1 < this._facetStart.length;
+  }
   /** ASSUME valid facet index . .. return its start index in index arrays. */
-  public facetIndex0(index: number): number { return this._facetStart[index]; }
+  public facetIndex0(index: number): number {
+    return this._facetStart[index];
+  }
   /** ASSUME valid facet index . .. return its end index in index arrays. */
-  public facetIndex1(index: number): number { return this._facetStart[index + 1]; }
+  public facetIndex1(index: number): number {
+    return this._facetStart[index + 1];
+  }
   /** create a visitor for this polyface */
-  public createVisitor(numWrap: number = 0): PolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
+  public createVisitor(numWrap: number = 0): PolyfaceVisitor {
+    return IndexedPolyfaceVisitor.create(this, numWrap);
+  }
   /** Return the range of (optionally transformed) points in this mesh. */
-  public override range(transform?: Transform, result?: Range3d): Range3d { return this.data.range(result, transform); }
+  public override range(transform?: Transform, result?: Range3d): Range3d {
+    return this.data.range(result, transform);
+  }
   /** Extend `range` with coordinates from this mesh */
-  public extendRange(range: Range3d, transform?: Transform): void { this.data.range(range, transform); }
+  public extendRange(range: Range3d, transform?: Transform): void {
+    this.data.range(range, transform);
+  }
 
   /** Given the index of a facet, return the data pertaining to the face it is a part of. */
   public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
@@ -502,16 +608,17 @@ export class IndexedPolyface extends Polyface {
    */
   public setNewFaceData(endFacetIndex: number = 0): boolean {
     const facetStart = this._facetToFaceData.length;
-    if (facetStart >= this._facetStart.length)
-      return false;
+    if (facetStart >= this._facetStart.length) return false;
 
-    if (0 === endFacetIndex)  // The default for endFacetIndex is really the last facet
+    if (0 === endFacetIndex)
+      // The default for endFacetIndex is really the last facet
       endFacetIndex = this._facetStart.length; // Last facetStart index corresponds to the next facet if we were to create one
 
     const faceData = FacetFaceData.createNull();
     const visitor = IndexedPolyfaceVisitor.create(this, 0);
 
-    if (!visitor.moveToReadIndex(facetStart)) {  // Move visitor to first facet of new face
+    if (!visitor.moveToReadIndex(facetStart)) {
+      // Move visitor to first facet of new face
       return false;
     }
 
@@ -522,10 +629,21 @@ export class IndexedPolyface extends Polyface {
     do {
       if (setParamRange && visitor.param !== undefined)
         visitor.param.extendRange(faceData.paramRange);
-    } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
+    } while (
+      visitor.moveToNextFacet() &&
+      visitor.currentReadIndex() < endFacetIndex
+    );
 
-    if (paramDefined && !(this.data.param!.length === 0) && faceData.paramDistanceRange.isNull)
-      faceData.setParamDistanceRangeFromNewFaceData(this, facetStart, endFacetIndex);
+    if (
+      paramDefined &&
+      !(this.data.param!.length === 0) &&
+      faceData.paramDistanceRange.isNull
+    )
+      faceData.setParamDistanceRangeFromNewFaceData(
+        this,
+        facetStart,
+        endFacetIndex
+      );
 
     this.data.face.push(faceData);
     const faceDataIndex = this.data.face.length - 1;
@@ -578,6 +696,10 @@ export interface PolyfaceVisitor extends PolyfaceData {
   /** transfer interpolated data from the other visitor.
    * * all data values are interpolated at `fraction` between `other` values at index0 and index1.
    */
-  pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
+  pushInterpolatedDataFrom(
+    other: PolyfaceVisitor,
+    index0: number,
+    fraction: number,
+    index1: number
+  ): void;
 }
-

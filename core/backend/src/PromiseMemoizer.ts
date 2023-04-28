@@ -19,17 +19,25 @@ export class QueryablePromise<T> {
   private _fulfilled: boolean = false;
   private _rejected: boolean = false;
 
-  public get isPending(): boolean { return !this.isFulfilled && !this.isRejected; }
-  public get isFulfilled(): boolean { return this._fulfilled; }
-  public get isRejected(): boolean { return this._rejected; }
+  public get isPending(): boolean {
+    return !this.isFulfilled && !this.isRejected;
+  }
+  public get isFulfilled(): boolean {
+    return this._fulfilled;
+  }
+  public get isRejected(): boolean {
+    return this._rejected;
+  }
   public constructor(public readonly promise: Promise<T>) {
-    this.promise.then((res: T) => {
-      this.result = res;
-      this._fulfilled = true;
-    }).catch((err: any) => {
-      this.error = err;
-      this._rejected = true;
-    });
+    this.promise
+      .then((res: T) => {
+        this.result = res;
+        this._fulfilled = true;
+      })
+      .catch((err: any) => {
+        this.error = err;
+        this._rejected = true;
+      });
   }
 }
 
@@ -43,8 +51,14 @@ export type GenerateKeyFnType = (...args: any[]) => string;
  * @internal
  */
 export class PromiseMemoizer<T> implements IDisposable {
-  private readonly _cachedPromises: Map<string, QueryablePromise<T>> = new Map<string, QueryablePromise<T>>();
-  private readonly _timers: Map<string, NodeJS.Timer> = new Map<string, NodeJS.Timer>();
+  private readonly _cachedPromises: Map<string, QueryablePromise<T>> = new Map<
+    string,
+    QueryablePromise<T>
+  >();
+  private readonly _timers: Map<string, NodeJS.Timer> = new Map<
+    string,
+    NodeJS.Timer
+  >();
   private readonly _memoizeFn: MemoizeFnType<T>;
   private readonly _generateKeyFn: GenerateKeyFnType;
   private readonly _maxCacheSize: number;
@@ -59,7 +73,12 @@ export class PromiseMemoizer<T> implements IDisposable {
    * may have been unclaimed/orphaned promises. If the cache size is still above the maxCacheSize
    * threshold, the entire cache is then cleared.
    */
-  public constructor(memoizeFn: MemoizeFnType<T>, generateKeyFn: GenerateKeyFnType, maxCacheSize: number = 500, cacheTimeout: number = 30000) {
+  public constructor(
+    memoizeFn: MemoizeFnType<T>,
+    generateKeyFn: GenerateKeyFnType,
+    maxCacheSize: number = 500,
+    cacheTimeout: number = 30000
+  ) {
     this._memoizeFn = memoizeFn;
     this._generateKeyFn = generateKeyFn;
     this._maxCacheSize = maxCacheSize;
@@ -70,12 +89,14 @@ export class PromiseMemoizer<T> implements IDisposable {
   public memoize(...args: any[]): QueryablePromise<T> {
     const key: string = this._generateKeyFn(...args);
     let qp: QueryablePromise<T> | undefined = this._cachedPromises.get(key);
-    if (qp)
-      return qp;
+    if (qp) return qp;
 
     if (this._cachedPromises.size >= this._maxCacheSize) {
       if (this._maxCacheSize > 1)
-        Logger.logError(BackendLoggerCategory.PromiseMemoizer, "Cleared too many unresolved entries in memoizer cache");
+        Logger.logError(
+          BackendLoggerCategory.PromiseMemoizer,
+          "Cleared too many unresolved entries in memoizer cache"
+        );
       this.clearCache();
     }
 
@@ -102,8 +123,7 @@ export class PromiseMemoizer<T> implements IDisposable {
     const key: string = this._generateKeyFn(...args);
     this._cachedPromises.delete(key);
     const timer = this._timers.get(key);
-    if (timer)
-      clearTimeout(timer);
+    if (timer) clearTimeout(timer);
   }
 
   /** Clear all entries in the memoizer cache */
@@ -112,8 +132,7 @@ export class PromiseMemoizer<T> implements IDisposable {
   }
 
   public dispose() {
-    for (const timer of this._timers.values())
-      clearTimeout(timer);
+    for (const timer of this._timers.values()) clearTimeout(timer);
 
     this._timers.clear();
     this.clearCache();

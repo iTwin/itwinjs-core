@@ -51,20 +51,31 @@ export class RegionMomentsXY extends NullGeometryHandler {
       c = -1.0;
       s1 = 0.0;
     }
-    const q = 2 * s * s * s * c / (alphaRadians - s * c);
+    const q = (2 * s * s * s * c) / (alphaRadians - s * c);
     const s3 = s * s * s;
     const s6 = s3 * s3;
     const area = 0.5 * (sweepRadians - s1);
     const inertiaXX = 0.25 * area * (1.0 - q / 3.0);
     const inertiaYY1 = 0.25 * area * (1.0 + q);
-    const inertiaYY = inertiaYY1 - 4.0 * s6 / (9.0 * area);
+    const inertiaYY = inertiaYY1 - (4.0 * s6) / (9.0 * area);
     const productXX = inertiaYY;
     const productYY = inertiaXX;
-    const centerToCentroid = 4.0 * s * s * s / (3.0 * (sweepRadians - s1));
+    const centerToCentroid = (4.0 * s * s * s) / (3.0 * (sweepRadians - s1));
     const midRadians = arc.sweep.fractionToRadians(0.5);
     const centralPlane = arc.radiansToRotatedBasis(midRadians);
-    const centroid = centralPlane.origin.plusScaled(centralPlane.vectorU, centerToCentroid);
-    momentData.accumulateXYProductsInCentroidalFrame(productXX, 0.0, productYY, area, centroid, centralPlane.vectorU, centralPlane.vectorV);
+    const centroid = centralPlane.origin.plusScaled(
+      centralPlane.vectorU,
+      centerToCentroid
+    );
+    momentData.accumulateXYProductsInCentroidalFrame(
+      productXX,
+      0.0,
+      productYY,
+      area,
+      centroid,
+      centralPlane.vectorU,
+      centralPlane.vectorV
+    );
     const pointB = arc.fractionToPoint(0.0);
     const pointC = arc.fractionToPoint(1.0);
     momentData.accumulateTriangleMomentsXY(undefined, pointB, pointC);
@@ -73,21 +84,27 @@ export class RegionMomentsXY extends NullGeometryHandler {
   /** Accumulate integrals over the (triangular) areas from the origin to each line segment */
   public override handleLineString3d(ls: LineString3d): void {
     const momentData = this._activeMomentData!;
-    momentData.accumulateTriangleToLineStringMomentsXY(undefined, ls.packedPoints);
+    momentData.accumulateTriangleToLineStringMomentsXY(
+      undefined,
+      ls.packedPoints
+    );
   }
   /** Accumulate integrals over the (triangular) area from the origin to this line segment */
   public override handleLineSegment3d(segment: LineSegment3d): void {
     const momentData = this._activeMomentData!;
     segment.startPoint(this._point0);
     segment.endPoint(this._point1);
-    momentData.accumulateTriangleMomentsXY(undefined, this._point0, this._point1);
+    momentData.accumulateTriangleMomentsXY(
+      undefined,
+      this._point0,
+      this._point1
+    );
   }
   /** Accumulate integrals from origin to all primitives in the chain. */
   public override handleLoop(loop: Loop): MomentData | undefined {
-    const momentData = this._activeMomentData = MomentData.create();
+    const momentData = (this._activeMomentData = MomentData.create());
     momentData.needOrigin = false;
-    for (const child of loop.children)
-      child.dispatchToGeometryHandler(this);
+    for (const child of loop.children) child.dispatchToGeometryHandler(this);
     this._activeMomentData = undefined;
     return momentData;
   }
@@ -100,7 +117,9 @@ export class RegionMomentsXY extends NullGeometryHandler {
    * * Outer area signs must be positive -- negate all integrations as needed
    * @param region
    */
-  public override handleParityRegion(region: ParityRegion): MomentData | undefined {
+  public override handleParityRegion(
+    region: ParityRegion
+  ): MomentData | undefined {
     const allChildMoments: MomentData[] = [];
     let maxAbsArea = 0.0;
     let largestChildMoments: MomentData | undefined;
@@ -114,7 +133,6 @@ export class RegionMomentsXY extends NullGeometryHandler {
             maxAbsArea = q;
             largestChildMoments = childMoments;
           }
-
         }
       }
     }
@@ -133,7 +151,9 @@ export class RegionMomentsXY extends NullGeometryHandler {
     return undefined;
   }
   /** Accumulate (as simple addition) products over each component of the union region. */
-  public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
+  public override handleUnionRegion(
+    region: UnionRegion
+  ): MomentData | undefined {
     const summedMoments = MomentData.create();
     for (const child of region.children) {
       const childMoments = child.dispatchToGeometryHandler(this);
@@ -147,8 +167,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
 
   private _strokeOptions?: StrokeOptions;
   private getStrokeOptions(): StrokeOptions {
-    if (this._strokeOptions)
-      return this._strokeOptions;
+    if (this._strokeOptions) return this._strokeOptions;
     const options = StrokeOptions.createForCurves();
     // this is unusually fine for stroking, but appropriate for sum.
     options.angleTol = Angle.createDegrees(5.0);
@@ -166,10 +185,15 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this.handleLineString3d(strokes);
   }
   /** handle strongly typed  BSplineCurve3d  as generic curve primitive */
-  public override handleBSplineCurve3d(g: BSplineCurve3d) { return this.handleCurvePrimitive(g); }
+  public override handleBSplineCurve3d(g: BSplineCurve3d) {
+    return this.handleCurvePrimitive(g);
+  }
   /** handle strongly typed  BSplineCurve3dH  as generic curve primitive */
-  public override handleBSplineCurve3dH(g: BSplineCurve3dH) { return this.handleCurvePrimitive(g); }
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH) {
+    return this.handleCurvePrimitive(g);
+  }
   /** handle strongly typed  TransitionSpiral as generic curve primitive  */
-  public override handleTransitionSpiral(g: TransitionSpiral3d) { return this.handleCurvePrimitive(g); }
-
+  public override handleTransitionSpiral(g: TransitionSpiral3d) {
+    return this.handleCurvePrimitive(g);
+  }
 }

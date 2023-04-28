@@ -6,4 +6,4 @@
 export default {
   manifest: import("../package.json"),
   loader: async () => (await import("./index.js")).default(),
-}
+};

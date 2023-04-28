@@ -15,6 +15,7 @@ All classes support inheritance within their own class type. Therefore, an ECEnt
 **displayLabel** a localized display label that will be used instead of the name in the GUI. If not set the Type Name of the class will be used.
 
 **modifier** identifies the class as abstract or sealed.
+
 - Valid options are:
 
   - None (default) – normal, instantiable class. Not valid for ECRelationshipClass type.
@@ -23,23 +24,23 @@ All classes support inheritance within their own class type. Therefore, an ECEnt
 
 ## Custom Attributes
 
-An ECClass may have [Custom Attributes](./ec-custom-attributes.md) applied and inherit the custom attributes applied to their base class.  Custom attributes applied to a base class may be overriden by applying the same custom attribute applied to a derived class.
+An ECClass may have [Custom Attributes](./ec-custom-attributes.md) applied and inherit the custom attributes applied to their base class. Custom attributes applied to a base class may be overriden by applying the same custom attribute applied to a derived class.
 
 ## Common Sub-Elements
 
 [ECCustomAttributes](./ec-custom-attributes.md) _(0..1)_
 
-BaseClass _(0..*)_
+BaseClass _(0..\*)_
 
 - The multiplicity of base classes changes depending on the individual ECClass Type.
 
-[ECPrimitiveProperty](./ec-property.md#ecprimitiveproperty) _(0..*)_
+[ECPrimitiveProperty](./ec-property.md#ecprimitiveproperty) _(0..\*)_
 
-[ECStructProperty](./ec-property.md#ecstructproperty) _(0..*)_
+[ECStructProperty](./ec-property.md#ecstructproperty) _(0..\*)_
 
-[ECArrayProperty](./ec-property.md#ecprimitivearrayproperty) _(0..*)_
+[ECArrayProperty](./ec-property.md#ecprimitivearrayproperty) _(0..\*)_
 
-[ECStructArrayProperty](./ec-property.md#ecstructarrayproperty) _(0..*)_
+[ECStructArrayProperty](./ec-property.md#ecstructarrayproperty) _(0..\*)_
 
 ## Traversal Order of Base ECClasses
 

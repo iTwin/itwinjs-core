@@ -8,7 +8,11 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import {
+  JsonUtils,
+  Mutable,
+  NonFunctionPropertiesOf,
+} from "@itwin/core-bentley";
 
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
@@ -263,7 +267,9 @@ export class ViewFlags {
    * @see [[override]] to have `undefined` properties retain their current values.
    */
   public copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags {
-    return JsonUtils.isNonEmptyObject(changedFlags) ? new ViewFlags({ ...this, ...changedFlags }) : this;
+    return JsonUtils.isNonEmptyObject(changedFlags)
+      ? new ViewFlags({ ...this, ...changedFlags })
+      : this;
   }
 
   /** Produce a copy of these ViewFlags, overriding some of its properties. Any properties not explicitly specified by `overrides` will retain their current values,
@@ -306,9 +312,11 @@ export class ViewFlags {
    * @see [[withRenderMode]] to change the [[renderMode]] property.
    * @see [[copy]] and [[override]] to change multiple properties.
    */
-  public with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags {
-    if (this[flag] === value)
-      return this;
+  public with(
+    flag: keyof Omit<ViewFlagsProperties, "renderMode">,
+    value: boolean
+  ): ViewFlags {
+    if (this[flag] === value) return this;
 
     const props: ViewFlagsProperties = { ...this };
     props[flag] = value;
@@ -334,8 +342,7 @@ export class ViewFlags {
           return this.copy({ visibleEdges: false, hiddenEdges: false });
         break;
       case RenderMode.SmoothShade:
-        if (!this.visibleEdges)
-          return this.copy({ hiddenEdges: false });
+        if (!this.visibleEdges) return this.copy({ hiddenEdges: false });
         break;
       case RenderMode.HiddenLine:
       case RenderMode.SolidFill:
@@ -367,52 +374,30 @@ export class ViewFlags {
   /** Convert to JSON representation. */
   public toJSON(): ViewFlagProps {
     const out: ViewFlagProps = {};
-    if (!this.constructions)
-      out.noConstruct = true;
-    if (!this.dimensions)
-      out.noDim = true;
-    if (!this.patterns)
-      out.noPattern = true;
-    if (!this.weights)
-      out.noWeight = true;
-    if (!this.styles)
-      out.noStyle = true;
-    if (!this.transparency)
-      out.noTransp = true;
-    if (!this.fill)
-      out.noFill = true;
-    if (this.grid)
-      out.grid = true;
-    if (this.acsTriad)
-      out.acs = true;
-    if (!this.textures)
-      out.noTexture = true;
-    if (!this.materials)
-      out.noMaterial = true;
+    if (!this.constructions) out.noConstruct = true;
+    if (!this.dimensions) out.noDim = true;
+    if (!this.patterns) out.noPattern = true;
+    if (!this.weights) out.noWeight = true;
+    if (!this.styles) out.noStyle = true;
+    if (!this.transparency) out.noTransp = true;
+    if (!this.fill) out.noFill = true;
+    if (this.grid) out.grid = true;
+    if (this.acsTriad) out.acs = true;
+    if (!this.textures) out.noTexture = true;
+    if (!this.materials) out.noMaterial = true;
     if (!this.lighting)
       out.noCameraLights = out.noSourceLights = out.noSolarLight = true;
-    if (this.visibleEdges)
-      out.visEdges = true;
-    if (this.hiddenEdges)
-      out.hidEdges = true;
-    if (this.shadows)
-      out.shadows = true;
-    if (this.clipVolume)
-      out.clipVol = true;
-    if (this.monochrome)
-      out.monochrome = true;
-    if (this.backgroundMap)
-      out.backgroundMap = true;
-    if (this.ambientOcclusion)
-      out.ambientOcclusion = true;
-    if (this.thematicDisplay)
-      out.thematicDisplay = true;
-    if (this.wiremesh)
-      out.wiremesh = true;
-    if (this.forceSurfaceDiscard)
-      out.forceSurfaceDiscard = true;
-    if (!this.whiteOnWhiteReversal)
-      out.noWhiteOnWhiteReversal = true;
+    if (this.visibleEdges) out.visEdges = true;
+    if (this.hiddenEdges) out.hidEdges = true;
+    if (this.shadows) out.shadows = true;
+    if (this.clipVolume) out.clipVol = true;
+    if (this.monochrome) out.monochrome = true;
+    if (this.backgroundMap) out.backgroundMap = true;
+    if (this.ambientOcclusion) out.ambientOcclusion = true;
+    if (this.thematicDisplay) out.thematicDisplay = true;
+    if (this.wiremesh) out.wiremesh = true;
+    if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
+    if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -459,7 +444,9 @@ export class ViewFlags {
    * @param flags The properties to initialize. Any properties not specified are initialized to their default values.
    */
   public static create(flags?: Partial<ViewFlagsProperties>): ViewFlags {
-    return flags && !JsonUtils.isEmptyObject(flags) ? new ViewFlags(flags) : this.defaults;
+    return flags && !JsonUtils.isEmptyObject(flags)
+      ? new ViewFlags(flags)
+      : this.defaults;
   }
 
   /** Create a ViewFlags from its JSON representation.
@@ -471,8 +458,7 @@ export class ViewFlags {
    *  - [[lighting]] defaults to true unless all of [[ViewFlagProps.noSolarLight]], [[ViewFlagProps.noCameraLights]], and [[ViewFlagProps.noSourceLights]] are true.
    */
   public static fromJSON(json?: ViewFlagProps): ViewFlags {
-    if (!json)
-      return this.defaults;
+    if (!json) return this.defaults;
 
     let renderMode: RenderMode;
     const renderModeValue = JsonUtils.asInt(json.renderMode);
@@ -480,10 +466,12 @@ export class ViewFlags {
       renderMode = RenderMode.Wireframe;
     else if (renderModeValue > RenderMode.SolidFill)
       renderMode = RenderMode.SmoothShade;
-    else
-      renderMode = renderModeValue;
+    else renderMode = renderModeValue;
 
-    const lighting = !JsonUtils.asBool(json.noCameraLights) || !JsonUtils.asBool(json.noSourceLights) || !JsonUtils.asBool(json.noSolarLight);
+    const lighting =
+      !JsonUtils.asBool(json.noCameraLights) ||
+      !JsonUtils.asBool(json.noSourceLights) ||
+      !JsonUtils.asBool(json.noSolarLight);
     return new ViewFlags({
       renderMode,
       lighting,
@@ -514,33 +502,34 @@ export class ViewFlags {
 
   /** Returns true if `this` and `other` are equivalent. */
   public equals(other: Readonly<ViewFlagsProperties>): boolean {
-    if (this === other)
-      return true;
+    if (this === other) return true;
 
-    return this.renderMode === other.renderMode
-      && this.dimensions === other.dimensions
-      && this.patterns === other.patterns
-      && this.weights === other.weights
-      && this.styles === other.styles
-      && this.transparency === other.transparency
-      && this.fill === other.fill
-      && this.textures === other.textures
-      && this.materials === other.materials
-      && this.acsTriad === other.acsTriad
-      && this.grid === other.grid
-      && this.visibleEdges === other.visibleEdges
-      && this.hiddenEdges === other.hiddenEdges
-      && this.lighting === other.lighting
-      && this.shadows === other.shadows
-      && this.clipVolume === other.clipVolume
-      && this.constructions === other.constructions
-      && this.monochrome === other.monochrome
-      && this.backgroundMap === other.backgroundMap
-      && this.ambientOcclusion === other.ambientOcclusion
-      && this.thematicDisplay === other.thematicDisplay
-      && this.wiremesh === other.wiremesh
-      && this.forceSurfaceDiscard === other.forceSurfaceDiscard
-      && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
+    return (
+      this.renderMode === other.renderMode &&
+      this.dimensions === other.dimensions &&
+      this.patterns === other.patterns &&
+      this.weights === other.weights &&
+      this.styles === other.styles &&
+      this.transparency === other.transparency &&
+      this.fill === other.fill &&
+      this.textures === other.textures &&
+      this.materials === other.materials &&
+      this.acsTriad === other.acsTriad &&
+      this.grid === other.grid &&
+      this.visibleEdges === other.visibleEdges &&
+      this.hiddenEdges === other.hiddenEdges &&
+      this.lighting === other.lighting &&
+      this.shadows === other.shadows &&
+      this.clipVolume === other.clipVolume &&
+      this.constructions === other.constructions &&
+      this.monochrome === other.monochrome &&
+      this.backgroundMap === other.backgroundMap &&
+      this.ambientOcclusion === other.ambientOcclusion &&
+      this.thematicDisplay === other.thematicDisplay &&
+      this.wiremesh === other.wiremesh &&
+      this.forceSurfaceDiscard === other.forceSurfaceDiscard &&
+      this.whiteOnWhiteReversal === other.whiteOnWhiteReversal
+    );
   }
 }
 

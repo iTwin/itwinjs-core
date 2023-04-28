@@ -8,13 +8,25 @@
 
 import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
-  UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
+  AlternateUnitLabelsProvider,
+  Format,
+  FormatProps,
+  FormatterSpec,
+  ParseError,
+  ParserSpec,
+  QuantityParseResult,
+  UnitConversionProps,
+  UnitProps,
+  UnitsProvider,
+  UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
+import {
+  BasicUnitsProvider,
+  getDefaultAlternateUnitLabels,
+} from "./BasicUnitsProvider";
 import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
@@ -41,7 +53,7 @@ export enum QuantityType {
   /** LengthSurvey is a distance value stored in meters. Typically formatted to display in meters or US Survey Feet based on active unit system.. */
   LengthSurvey = 8,
   /** LengthEngineering is a distance value stored in meters. Typically formatted to display either meters or feet based on active unit system. */
-  LengthEngineering = 9
+  LengthEngineering = 9,
 }
 
 /**
@@ -65,11 +77,15 @@ export type UnitNameKey = string;
  * One use case is to allow a "^", which is easily input, to be used to specify "°".
  * @internal
  */
-export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider {
+export class AlternateUnitLabelsRegistry
+  implements AlternateUnitLabelsProvider
+{
   private _alternateLabelRegistry = new Map<UnitNameKey, Set<string>>();
 
   public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
-    [...labels].forEach((value) => this._alternateLabelRegistry.get(key)?.add(value));
+    [...labels].forEach((value) =>
+      this._alternateLabelRegistry.get(key)?.add(value)
+    );
   }
 
   constructor(defaultAlternates?: Map<UnitNameKey, Set<string>>) {
@@ -81,8 +97,7 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
   public getAlternateUnitLabels(unit: UnitProps): string[] | undefined {
     const key: UnitNameKey = unit.name;
     const labels = this._alternateLabelRegistry.get(key);
-    if (labels)
-      return [...labels.values()];
+    if (labels) return [...labels.values()];
 
     return undefined;
   }
@@ -119,11 +134,20 @@ export interface QuantityTypeDefinition {
   /** Localized description that may be used to provide detailed description for the Quantity type. */
   description: string;
   /* Provide a default FormatProps for a unit system. */
-  getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
+  getDefaultFormatPropsBySystem: (
+    requestedSystem: UnitSystemKey
+  ) => FormatProps;
   /** Async function to generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
-  generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
+  generateFormatterSpec: (
+    formatProps: FormatProps,
+    unitsProvider: UnitsProvider
+  ) => Promise<FormatterSpec>;
   /** Async function to generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
-  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) => Promise<ParserSpec>;
+  generateParserSpec: (
+    formatProps: FormatProps,
+    unitsProvider: UnitsProvider,
+    alternateUnitLabelsProvider?: AlternateUnitLabelsProvider
+  ) => Promise<ParserSpec>;
 }
 
 /** CustomQuantityTypeDefinition interface is used to define a Custom quantity type that can be registered with the [[QuantityFormatter]].
@@ -145,8 +169,10 @@ export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
 
 /** CustomQuantityTypeDefinition type guard.
  * @public
-*/
-export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition {
+ */
+export function isCustomQuantityTypeDefinition(
+  item: QuantityTypeDefinition
+): item is CustomQuantityTypeDefinition {
   return !!(item as CustomQuantityTypeDefinition).isCompatibleFormatProps;
 }
 
@@ -156,11 +182,18 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
   private _description: string | undefined;
   private _key: string;
 
-  constructor(public type: QuantityType, public persistenceUnit: UnitProps, private _labelKey: string, private _descriptionKey: string) {
+  constructor(
+    public type: QuantityType,
+    public persistenceUnit: UnitProps,
+    private _labelKey: string,
+    private _descriptionKey: string
+  ) {
     this._key = getQuantityTypeKey(type);
   }
 
-  public get key(): string { return this._key; }
+  public get key(): string {
+    return this._key;
+  }
 
   public get label(): string {
     if (!this._label) {
@@ -171,13 +204,17 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
 
   public get description(): string {
     if (!this._description) {
-      this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
+      this._description = IModelApp.localization.getLocalizedString(
+        this._descriptionKey
+      );
     }
     return this._description ?? this.label;
   }
 
   /** Get a default format to show quantity in persistence unit with precision or 6 decimal places.  */
-  public getDefaultFormatPropsBySystem(requestedSystem: UnitSystemKey): FormatProps {
+  public getDefaultFormatPropsBySystem(
+    requestedSystem: UnitSystemKey
+  ): FormatProps {
     // Fallback same as Format "DefaultRealU" in Formats ecschema
     const fallbackProps: FormatProps = {
       formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
@@ -187,27 +224,57 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
       decimalSeparator: ".",
     };
 
-    const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find((value) => value.system === requestedSystem);
+    const defaultUnitSystemData = DEFAULT_FORMATKEY_BY_UNIT_SYSTEM.find(
+      (value) => value.system === requestedSystem
+    );
     if (defaultUnitSystemData) {
-      const defaultFormatEntry = defaultUnitSystemData.entries.find((value) => value.type === this.key);
+      const defaultFormatEntry = defaultUnitSystemData.entries.find(
+        (value) => value.type === this.key
+      );
       if (defaultFormatEntry) {
-        const defaultFormatPropsEntry = DEFAULT_FORMATPROPS.find((props) => props.key === defaultFormatEntry.formatKey);
-        if (defaultFormatPropsEntry)
-          return defaultFormatPropsEntry.format;
+        const defaultFormatPropsEntry = DEFAULT_FORMATPROPS.find(
+          (props) => props.key === defaultFormatEntry.formatKey
+        );
+        if (defaultFormatPropsEntry) return defaultFormatPropsEntry.format;
       }
     }
 
     return fallbackProps;
   }
 
-  public async generateFormatterSpec(formatProps: FormatProps, unitsProvider: UnitsProvider): Promise<FormatterSpec> {
-    const format = await Format.createFromJSON(this.key, unitsProvider, formatProps);
-    return FormatterSpec.create(format.name, format, unitsProvider, this.persistenceUnit);
+  public async generateFormatterSpec(
+    formatProps: FormatProps,
+    unitsProvider: UnitsProvider
+  ): Promise<FormatterSpec> {
+    const format = await Format.createFromJSON(
+      this.key,
+      unitsProvider,
+      formatProps
+    );
+    return FormatterSpec.create(
+      format.name,
+      format,
+      unitsProvider,
+      this.persistenceUnit
+    );
   }
 
-  public async generateParserSpec(formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) {
-    const format = await Format.createFromJSON(this.key, unitsProvider, formatProps);
-    return ParserSpec.create(format, unitsProvider, this.persistenceUnit, alternateUnitLabelsProvider);
+  public async generateParserSpec(
+    formatProps: FormatProps,
+    unitsProvider: UnitsProvider,
+    alternateUnitLabelsProvider?: AlternateUnitLabelsProvider
+  ) {
+    const format = await Format.createFromJSON(
+      this.key,
+      unitsProvider,
+      formatProps
+    );
+    return ParserSpec.create(
+      format,
+      unitsProvider,
+      this.persistenceUnit,
+      alternateUnitLabelsProvider
+    );
   }
 }
 
@@ -274,9 +341,14 @@ export interface QuantityFormatOverridesChangedArgs {
  */
 export interface UnitFormattingSettingsProvider {
   /** serializes JSON object containing format overrides for a specific quantity type. */
-  store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+  store(
+    quantityTypeKey: QuantityTypeKey,
+    overrideProps: OverrideFormatEntry
+  ): Promise<boolean>;
   /** retrieves serialized JSON object containing format overrides for a specific quantity type. */
-  retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+  retrieve(
+    quantityTypeKey: QuantityTypeKey
+  ): Promise<OverrideFormatEntry | undefined>;
   /** removes the override formats for a specific quantity type. */
   remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
   /** retrieves the active unit system typically based on the "active" iModelConnection */
@@ -308,36 +380,53 @@ export interface UnitFormattingSettingsProvider {
  */
 export class QuantityFormatter implements UnitsProvider {
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
-  private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
+  private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(
+    getDefaultAlternateUnitLabels()
+  );
   /** Registry containing available quantity type definitions. */
-  protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
+  protected _quantityTypeRegistry: Map<
+    QuantityTypeKey,
+    QuantityTypeDefinition
+  > = new Map<QuantityTypeKey, QuantityTypeDefinition>();
   /** Active UnitSystem key - must be one of "imperial", "metric", "usCustomary", or "usSurvey". */
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   /** Map of FormatSpecs for all available QuantityTypes and the active Unit System */
-  protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
+  protected _activeFormatSpecsByType = new Map<
+    QuantityTypeKey,
+    FormatterSpec
+  >();
   /** Map of ParserSpecs for all available QuantityTypes and the active Unit System */
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
   /** Map of FormatSpecs that have been overriden from the default. */
-  protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
+  protected _overrideFormatPropsByUnitSystem = new Map<
+    UnitSystemKey,
+    Map<QuantityTypeKey, FormatProps>
+  >();
   /** Optional object that gets called to store and retrieve format overrides. */
-  protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
+  protected _unitFormattingSettingsProvider:
+    | UnitFormattingSettingsProvider
+    | undefined;
 
   /** Set the settings provider and if not iModel specific initialize setting for user. */
-  public async setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider) {
+  public async setUnitFormattingSettingsProvider(
+    provider: UnitFormattingSettingsProvider
+  ) {
     this._unitFormattingSettingsProvider = provider;
     if (!provider.maintainOverridesPerIModel)
       await provider.loadOverrides(undefined);
   }
 
   /** Called after the active unit system is changed.
-  * The system will report the UnitSystemKey/name of the the system that was activated.
-  */
-  public readonly onActiveFormattingUnitSystemChanged = new BeUiEvent<FormattingUnitSystemChangedArgs>();
+   * The system will report the UnitSystemKey/name of the the system that was activated.
+   */
+  public readonly onActiveFormattingUnitSystemChanged =
+    new BeUiEvent<FormattingUnitSystemChangedArgs>();
 
   /** Called when the format of a QuantityType is overriden or the override is cleared. The string returned will
    * be a QuantityTypeKey generated by method `getQuantityTypeKey`.
    */
-  public readonly onQuantityFormatsChanged = new BeUiEvent<QuantityFormatsChangedArgs>();
+  public readonly onQuantityFormatsChanged =
+    new BeUiEvent<QuantityFormatsChangedArgs>();
 
   /** Fired when the active UnitsProvider is updated. This will allow cached Formatter and Parser specs to be updated if necessary. */
   public readonly onUnitsProviderChanged = new BeUiEvent<void>();
@@ -351,16 +440,18 @@ export class QuantityFormatter implements UnitsProvider {
     if (undefined !== showMetricOrUnitSystem) {
       if (typeof showMetricOrUnitSystem === "boolean")
         this._activeUnitSystem = showMetricOrUnitSystem ? "metric" : "imperial";
-      else
-        this._activeUnitSystem = showMetricOrUnitSystem;
+      else this._activeUnitSystem = showMetricOrUnitSystem;
     }
   }
 
-  private getOverrideFormatPropsByQuantityType(quantityTypeKey: QuantityTypeKey, unitSystem?: UnitSystemKey): FormatProps | undefined {
+  private getOverrideFormatPropsByQuantityType(
+    quantityTypeKey: QuantityTypeKey,
+    unitSystem?: UnitSystemKey
+  ): FormatProps | undefined {
     const requestedUnitSystem = unitSystem ?? this.activeUnitSystem;
-    const overrideMap = this._overrideFormatPropsByUnitSystem.get(requestedUnitSystem);
-    if (!overrideMap)
-      return undefined;
+    const overrideMap =
+      this._overrideFormatPropsByUnitSystem.get(requestedUnitSystem);
+    if (!overrideMap) return undefined;
 
     return overrideMap.get(quantityTypeKey);
   }
@@ -369,51 +460,99 @@ export class QuantityFormatter implements UnitsProvider {
   protected async initializeQuantityTypesRegistry() {
     // QuantityType.Length
     const lengthUnit = await this.findUnitByName("Units.M");
-    const lengthDefinition = new StandardQuantityTypeDefinition(QuantityType.Length, lengthUnit,
-      "iModelJs:QuantityType.Length.label", "iModelJs:QuantityType.Length.description");
+    const lengthDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Length,
+      lengthUnit,
+      "iModelJs:QuantityType.Length.label",
+      "iModelJs:QuantityType.Length.description"
+    );
     this._quantityTypeRegistry.set(lengthDefinition.key, lengthDefinition);
 
     // QuantityType.LengthEngineering
-    const lengthEngineeringDefinition = new StandardQuantityTypeDefinition(QuantityType.LengthEngineering, lengthUnit,
-      "iModelJs:QuantityType.LengthEngineering.label", "iModelJs:QuantityType.LengthEngineering.description");
-    this._quantityTypeRegistry.set(lengthEngineeringDefinition.key, lengthEngineeringDefinition);
+    const lengthEngineeringDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.LengthEngineering,
+      lengthUnit,
+      "iModelJs:QuantityType.LengthEngineering.label",
+      "iModelJs:QuantityType.LengthEngineering.description"
+    );
+    this._quantityTypeRegistry.set(
+      lengthEngineeringDefinition.key,
+      lengthEngineeringDefinition
+    );
 
     // QuantityType.Coordinate
-    const coordinateDefinition = new StandardQuantityTypeDefinition(QuantityType.Coordinate, lengthUnit,
-      "iModelJs:QuantityType.Coordinate.label", "iModelJs:QuantityType.Coordinate.description");
-    this._quantityTypeRegistry.set(coordinateDefinition.key, coordinateDefinition);
+    const coordinateDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Coordinate,
+      lengthUnit,
+      "iModelJs:QuantityType.Coordinate.label",
+      "iModelJs:QuantityType.Coordinate.description"
+    );
+    this._quantityTypeRegistry.set(
+      coordinateDefinition.key,
+      coordinateDefinition
+    );
 
     // QuantityType.Stationing
-    const stationingDefinition = new StandardQuantityTypeDefinition(QuantityType.Stationing, lengthUnit,
-      "iModelJs:QuantityType.Stationing.label", "iModelJs:QuantityType.Stationing.description");
-    this._quantityTypeRegistry.set(stationingDefinition.key, stationingDefinition);
+    const stationingDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Stationing,
+      lengthUnit,
+      "iModelJs:QuantityType.Stationing.label",
+      "iModelJs:QuantityType.Stationing.description"
+    );
+    this._quantityTypeRegistry.set(
+      stationingDefinition.key,
+      stationingDefinition
+    );
 
     // QuantityType.LengthSurvey
-    const lengthSurveyDefinition = new StandardQuantityTypeDefinition(QuantityType.LengthSurvey, lengthUnit,
-      "iModelJs:QuantityType.LengthSurvey.label", "iModelJs:QuantityType.LengthSurvey.description");
-    this._quantityTypeRegistry.set(lengthSurveyDefinition.key, lengthSurveyDefinition);
+    const lengthSurveyDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.LengthSurvey,
+      lengthUnit,
+      "iModelJs:QuantityType.LengthSurvey.label",
+      "iModelJs:QuantityType.LengthSurvey.description"
+    );
+    this._quantityTypeRegistry.set(
+      lengthSurveyDefinition.key,
+      lengthSurveyDefinition
+    );
 
     // QuantityType.Angle
     const radUnit = await this.findUnitByName("Units.RAD");
-    const angleDefinition = new StandardQuantityTypeDefinition(QuantityType.Angle, radUnit,
-      "iModelJs:QuantityType.Angle.label", "iModelJs:QuantityType.Angle.description");
+    const angleDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Angle,
+      radUnit,
+      "iModelJs:QuantityType.Angle.label",
+      "iModelJs:QuantityType.Angle.description"
+    );
     this._quantityTypeRegistry.set(angleDefinition.key, angleDefinition);
 
     // QuantityType.LatLong
-    const latLongDefinition = new StandardQuantityTypeDefinition(QuantityType.LatLong, radUnit,
-      "iModelJs:QuantityType.LatLong.label", "iModelJs:QuantityType.LatLong.description");
+    const latLongDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.LatLong,
+      radUnit,
+      "iModelJs:QuantityType.LatLong.label",
+      "iModelJs:QuantityType.LatLong.description"
+    );
     this._quantityTypeRegistry.set(latLongDefinition.key, latLongDefinition);
 
     // QuantityType.Area
     const sqMetersUnit = await this.findUnitByName("Units.SQ_M");
-    const areaDefinition = new StandardQuantityTypeDefinition(QuantityType.Area, sqMetersUnit,
-      "iModelJs:QuantityType.Area.label", "iModelJs:QuantityType.Area.description");
+    const areaDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Area,
+      sqMetersUnit,
+      "iModelJs:QuantityType.Area.label",
+      "iModelJs:QuantityType.Area.description"
+    );
     this._quantityTypeRegistry.set(areaDefinition.key, areaDefinition);
 
     // QuantityType.Volume
     const cubicMetersUnit = await this.findUnitByName("Units.CUB_M");
-    const volumeDefinition = new StandardQuantityTypeDefinition(QuantityType.Volume, cubicMetersUnit,
-      "iModelJs:QuantityType.Volume.label", "iModelJs:QuantityType.Volume.description");
+    const volumeDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Volume,
+      cubicMetersUnit,
+      "iModelJs:QuantityType.Volume.label",
+      "iModelJs:QuantityType.Volume.description"
+    );
     this._quantityTypeRegistry.set(volumeDefinition.key, volumeDefinition);
   }
 
@@ -421,14 +560,20 @@ export class QuantityFormatter implements UnitsProvider {
    *  so they can be quickly accessed.
    * @internal public for unit test usage
    */
-  protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void> {
-    const systemKey = (undefined !== systemType) ? systemType : this._activeUnitSystem;
+  protected async loadFormatAndParsingMapsForSystem(
+    systemType?: UnitSystemKey
+  ): Promise<void> {
+    const systemKey =
+      undefined !== systemType ? systemType : this._activeUnitSystem;
     const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
     // load cache for every registered QuantityType
     [...this.quantityTypesRegistry.keys()].forEach((key) => {
       const entry = this.quantityTypesRegistry.get(key)!;
-      formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
+      formatPropsByType.set(
+        entry,
+        this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey)
+      );
     });
 
     for (const [entry, formatProps] of formatPropsByType) {
@@ -436,41 +581,69 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  private getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+  private getFormatPropsByQuantityTypeEntryAndSystem(
+    quantityEntry: QuantityTypeDefinition,
+    requestedSystem: UnitSystemKey,
+    ignoreOverrides?: boolean
+  ): FormatProps {
     if (!ignoreOverrides) {
-      const overrideProps = this.getOverrideFormatPropsByQuantityType(quantityEntry.key, requestedSystem);
-      if (overrideProps)
-        return overrideProps;
+      const overrideProps = this.getOverrideFormatPropsByQuantityType(
+        quantityEntry.key,
+        requestedSystem
+      );
+      if (overrideProps) return overrideProps;
     }
 
     return quantityEntry.getDefaultFormatPropsBySystem(requestedSystem);
   }
 
-  private async loadFormatAndParserSpec(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps) {
-    const formatterSpec = await quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
-    const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider, this.alternateUnitLabelsProvider);
-    this._activeFormatSpecsByType.set(quantityTypeDefinition.key, formatterSpec);
+  private async loadFormatAndParserSpec(
+    quantityTypeDefinition: QuantityTypeDefinition,
+    formatProps: FormatProps
+  ) {
+    const formatterSpec = await quantityTypeDefinition.generateFormatterSpec(
+      formatProps,
+      this.unitsProvider
+    );
+    const parserSpec = await quantityTypeDefinition.generateParserSpec(
+      formatProps,
+      this.unitsProvider,
+      this.alternateUnitLabelsProvider
+    );
+    this._activeFormatSpecsByType.set(
+      quantityTypeDefinition.key,
+      formatterSpec
+    );
     this._activeParserSpecsByType.set(quantityTypeDefinition.key, parserSpec);
   }
 
   // repopulate formatSpec and parserSpec entries using only default format
-  private async loadDefaultFormatAndParserSpecForQuantity(typeKey: QuantityTypeKey) {
+  private async loadDefaultFormatAndParserSpecForQuantity(
+    typeKey: QuantityTypeKey
+  ) {
     const quantityTypeDefinition = this.quantityTypesRegistry.get(typeKey);
     if (!quantityTypeDefinition)
       throw new Error(`Unable to locate QuantityType by key ${typeKey}`);
 
-    const defaultFormat = quantityTypeDefinition.getDefaultFormatPropsBySystem(this.activeUnitSystem);
+    const defaultFormat = quantityTypeDefinition.getDefaultFormatPropsBySystem(
+      this.activeUnitSystem
+    );
     await this.loadFormatAndParserSpec(quantityTypeDefinition, defaultFormat);
   }
 
-  private async setOverrideFormatsByQuantityTypeKey(typeKey: QuantityTypeKey, overrideEntry: OverrideFormatEntry) {
+  private async setOverrideFormatsByQuantityTypeKey(
+    typeKey: QuantityTypeKey,
+    overrideEntry: OverrideFormatEntry
+  ) {
     // extract overrides and insert into appropriate override map entry
     Object.keys(overrideEntry).forEach((systemKey) => {
       const unitSystemKey = systemKey as UnitSystemKey;
       const props = overrideEntry[unitSystemKey];
       if (props) {
         if (this._overrideFormatPropsByUnitSystem.has(unitSystemKey)) {
-          this._overrideFormatPropsByUnitSystem.get(unitSystemKey)!.set(typeKey, props);
+          this._overrideFormatPropsByUnitSystem
+            .get(unitSystemKey)!
+            .set(typeKey, props);
         } else {
           const newMap = new Map<string, FormatProps>();
           newMap.set(typeKey, props);
@@ -479,9 +652,15 @@ export class QuantityFormatter implements UnitsProvider {
       }
     });
 
-    await this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, overrideEntry });
+    await this._unitFormattingSettingsProvider?.storeFormatOverrides({
+      typeKey,
+      overrideEntry,
+    });
 
-    const formatProps = this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem);
+    const formatProps = this.getOverrideFormatPropsByQuantityType(
+      typeKey,
+      this.activeUnitSystem
+    );
     if (formatProps) {
       const typeEntry = this.quantityTypesRegistry.get(typeKey);
       if (typeEntry) {
@@ -499,7 +678,10 @@ export class QuantityFormatter implements UnitsProvider {
       const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
       if (overrideMap && overrideMap.has(type)) {
         overrideMap.delete(type);
-        await this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey: type, unitSystem });
+        await this._unitFormattingSettingsProvider?.storeFormatOverrides({
+          typeKey: type,
+          unitSystem,
+        });
 
         await this.loadDefaultFormatAndParserSpecForQuantity(type);
         // trigger a message to let callers know the format has changed.
@@ -554,32 +736,39 @@ export class QuantityFormatter implements UnitsProvider {
     try {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
-    } catch(err) {
-      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
-      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
+    } catch (err) {
+      Logger.logWarning(
+        `${FrontendLoggerCategory.Package}.quantityFormatter`,
+        BentleyError.getErrorMessage(err),
+        BentleyError.getErrorMetadata(err)
+      );
+      Logger.logWarning(
+        `${FrontendLoggerCategory.Package}.quantityFormatter`,
+        "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider."
+      );
       // If there is a problem initializing with the given provider, default back to the internal provider
       await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
       return;
     }
 
     // force default tool to start so any tool that may be using cached data will not be using bad data.
-    if (IModelApp.toolAdmin)
-      await IModelApp.toolAdmin.startDefaultTool();
+    if (IModelApp.toolAdmin) await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
   }
 
   /** Async call typically used after IModel is closed to reset UnitsProvider to default one that does not require an Units schema. */
   public async resetToUseInternalUnitsProvider() {
-    if (this._unitsProvider instanceof BasicUnitsProvider)
-      return;
+    if (this._unitsProvider instanceof BasicUnitsProvider) return;
 
     await this.setUnitsProvider(new BasicUnitsProvider());
   }
 
   /** Async call to register a CustomQuantityType and load the FormatSpec and ParserSpec for the new type. */
-  public async registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean) {
-    if (!replace && this._quantityTypeRegistry.has(entry.key))
-      return false;
+  public async registerQuantityType(
+    entry: CustomQuantityTypeDefinition,
+    replace?: boolean
+  ) {
+    if (!replace && this._quantityTypeRegistry.has(entry.key)) return false;
 
     this._quantityTypeRegistry.set(entry.key, entry);
     // load any overrides so any saved overrides for the type being registered are applied
@@ -587,7 +776,9 @@ export class QuantityFormatter implements UnitsProvider {
       await this._unitFormattingSettingsProvider.loadOverrides(undefined);
 
     if (entry.getDefaultFormatPropsBySystem) {
-      const formatProps = entry.getDefaultFormatPropsBySystem(this.activeUnitSystem);
+      const formatProps = entry.getDefaultFormatPropsBySystem(
+        this.activeUnitSystem
+      );
       await this.loadFormatAndParserSpec(entry, formatProps);
       return true;
     }
@@ -598,8 +789,15 @@ export class QuantityFormatter implements UnitsProvider {
    * startDefaultTool - set to true to start the Default to instead of leaving any active tool pointing to cached unit data that is no longer valid
    * @public
    */
-  public async reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
-    unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void> {
+  public async reinitializeFormatAndParsingsMaps(
+    overrideFormatPropsByUnitSystem: Map<
+      UnitSystemKey,
+      Map<QuantityTypeKey, FormatProps>
+    >,
+    unitSystemKey?: UnitSystemKey,
+    fireUnitSystemChanged?: boolean,
+    startDefaultTool?: boolean
+  ): Promise<void> {
     this._overrideFormatPropsByUnitSystem.clear();
     if (overrideFormatPropsByUnitSystem.size) {
       this._overrideFormatPropsByUnitSystem = overrideFormatPropsByUnitSystem;
@@ -607,25 +805,33 @@ export class QuantityFormatter implements UnitsProvider {
 
     unitSystemKey && (this._activeUnitSystem = unitSystemKey);
     await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
-    fireUnitSystemChanged && this.onActiveFormattingUnitSystemChanged.emit({ system: this._activeUnitSystem });
-    IModelApp.toolAdmin && startDefaultTool && await IModelApp.toolAdmin.startDefaultTool();
+    fireUnitSystemChanged &&
+      this.onActiveFormattingUnitSystemChanged.emit({
+        system: this._activeUnitSystem,
+      });
+    IModelApp.toolAdmin &&
+      startDefaultTool &&
+      (await IModelApp.toolAdmin.startDefaultTool());
   }
 
   /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
-  public async setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void> {
+  public async setActiveUnitSystem(
+    isImperialOrUnitSystem: UnitSystemKey | boolean,
+    restartActiveTool?: boolean
+  ): Promise<void> {
     let systemType: UnitSystemKey;
     if (typeof isImperialOrUnitSystem === "boolean")
       systemType = isImperialOrUnitSystem ? "imperial" : "metric";
-    else
-      systemType = isImperialOrUnitSystem;
+    else systemType = isImperialOrUnitSystem;
 
-    if (this._activeUnitSystem === systemType)
-      return;
+    if (this._activeUnitSystem === systemType) return;
 
     this._activeUnitSystem = systemType;
     await this.loadFormatAndParsingMapsForSystem(systemType);
     // allow settings provider to store the change
-    await this._unitFormattingSettingsProvider?.storeUnitSystemSetting({ system: systemType });
+    await this._unitFormattingSettingsProvider?.storeUnitSystemSetting({
+      system: systemType,
+    });
     // fire current event
     this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
@@ -633,20 +839,33 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Retrieve the active [[UnitSystemKey]] which is used to determine what formats are to be used to display quantities */
-  public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
+  public get activeUnitSystem(): UnitSystemKey {
+    return this._activeUnitSystem;
+  }
 
   /** Clear any formatting override for specified quantity type, but only for the "active" Unit System. */
   public async clearOverrideFormats(type: QuantityTypeArg) {
-    await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
+    await this.clearOverrideFormatsByQuantityTypeKey(
+      this.getQuantityTypeKey(type)
+    );
   }
 
   /** Set formatting override for specified quantity type, but only for the "active" Unit System. */
-  public async setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry) {
-    await this.setOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type), overrideEntry);
+  public async setOverrideFormats(
+    type: QuantityTypeArg,
+    overrideEntry: OverrideFormatEntry
+  ) {
+    await this.setOverrideFormatsByQuantityTypeKey(
+      this.getQuantityTypeKey(type),
+      overrideEntry
+    );
   }
 
   /** Set Override Format for a quantity type, but only in the "active" Unit System. */
-  public async setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps) {
+  public async setOverrideFormat(
+    type: QuantityTypeArg,
+    overrideFormat: FormatProps
+  ) {
     const typeKey = this.getQuantityTypeKey(type);
     let overrideEntry: OverrideFormatEntry = {};
     if (this.activeUnitSystem === "imperial")
@@ -655,35 +874,46 @@ export class QuantityFormatter implements UnitsProvider {
       overrideEntry = { metric: overrideFormat };
     else if (this.activeUnitSystem === "usCustomary")
       overrideEntry = { usCustomary: overrideFormat };
-    else
-      overrideEntry = { usSurvey: overrideFormat };
+    else overrideEntry = { usSurvey: overrideFormat };
 
     await this.setOverrideFormatsByQuantityTypeKey(typeKey, overrideEntry);
   }
 
   /** Clear formatting override for all quantity types, but only for the "active" Unit System. */
   public async clearAllOverrideFormats() {
-    if (0 === this._overrideFormatPropsByUnitSystem.size)
-      return;
+    if (0 === this._overrideFormatPropsByUnitSystem.size) return;
 
     if (this._overrideFormatPropsByUnitSystem.has(this.activeUnitSystem)) {
-      const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
+      const overrides = this._overrideFormatPropsByUnitSystem.get(
+        this.activeUnitSystem
+      );
       const typesRemoved: string[] = [];
       if (overrides && overrides.size) {
         const promises = new Array<Promise<void> | undefined>();
         overrides.forEach((_props, typeKey) => {
           typesRemoved.push(typeKey);
-          promises.push(this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem }));
+          promises.push(
+            this._unitFormattingSettingsProvider?.storeFormatOverrides({
+              typeKey,
+              unitSystem: this.activeUnitSystem,
+            })
+          );
         });
         await Promise.all(promises);
       }
 
       if (typesRemoved.length) {
         const promises = new Array<Promise<void>>();
-        typesRemoved.forEach((typeRemoved) => promises.push(this.loadDefaultFormatAndParserSpecForQuantity(typeRemoved)));
+        typesRemoved.forEach((typeRemoved) =>
+          promises.push(
+            this.loadDefaultFormatAndParserSpecForQuantity(typeRemoved)
+          )
+        );
         await Promise.all(promises);
         // trigger a message to let callers know the format has changed.
-        this.onQuantityFormatsChanged.emit({ quantityType: typesRemoved.join("|") });
+        this.onQuantityFormatsChanged.emit({
+          quantityType: typesRemoved.join("|"),
+        });
       }
     }
   }
@@ -701,15 +931,26 @@ export class QuantityFormatter implements UnitsProvider {
   /** Synchronous call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
    * cache is populated by the async call loadFormatAndParsingMapsForSystem.
    */
-  public findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined {
+  public findFormatterSpecByQuantityType(
+    type: QuantityTypeArg,
+    _unused?: boolean
+  ): FormatterSpec | undefined {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
   /** Asynchronous Call to get a FormatterSpec for a QuantityType. This formatter spec can be used to synchronously format quantities. */
-  public async generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps) {
-    const quantityTypeDefinition = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
+  public async generateFormatterSpecByType(
+    type: QuantityTypeArg,
+    formatProps: FormatProps
+  ) {
+    const quantityTypeDefinition = this.quantityTypesRegistry.get(
+      this.getQuantityTypeKey(type)
+    );
     if (quantityTypeDefinition)
-      return quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
+      return quantityTypeDefinition.generateFormatterSpec(
+        formatProps,
+        this.unitsProvider
+      );
 
     throw new Error(`Unable to generate FormatSpec for QuantityType ${type}`);
   }
@@ -720,20 +961,27 @@ export class QuantityFormatter implements UnitsProvider {
    * quantity types of a unit system.
    * @return A FormatterSpec Promise.
    */
-  public async getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {
+  public async getFormatterSpecByQuantityTypeAndSystem(
+    type: QuantityTypeArg,
+    system?: UnitSystemKey
+  ): Promise<FormatterSpec | undefined> {
     const quantityKey = this.getQuantityTypeKey(type);
     const requestedSystem = system ?? this.activeUnitSystem;
 
     if (requestedSystem === this.activeUnitSystem) {
       const formatterSpec = this._activeFormatSpecsByType.get(quantityKey);
-      if (formatterSpec)
-        return formatterSpec;
+      if (formatterSpec) return formatterSpec;
     }
 
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
-      throw new Error(`Unable to find registered quantity type with key ${quantityKey}`);
-    return entry.generateFormatterSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider);
+      throw new Error(
+        `Unable to find registered quantity type with key ${quantityKey}`
+      );
+    return entry.generateFormatterSpec(
+      this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem),
+      this.unitsProvider
+    );
   }
 
   /** Asynchronous Call to get a FormatterSpec for a QuantityType.
@@ -741,7 +989,10 @@ export class QuantityFormatter implements UnitsProvider {
    * @param isImperial  Argument to specify use of imperial or metric unit system. If left undefined the active unit system is used.
    * @return A FormatterSpec Promise.
    */
-  public async getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined> {
+  public async getFormatterSpecByQuantityType(
+    type: QuantityTypeArg,
+    isImperial?: boolean
+  ): Promise<FormatterSpec | undefined> {
     let requestedSystem = this.activeUnitSystem;
     if (undefined !== isImperial)
       requestedSystem = isImperial ? "imperial" : "metric";
@@ -751,25 +1002,34 @@ export class QuantityFormatter implements UnitsProvider {
   /** Synchronous call to get a ParserSpec for a QuantityType. If the ParserSpec is not yet cached an undefined object is returned. The
    * cache is populated when the active units system is set.
    */
-  public findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined {
+  public findParserSpecByQuantityType(
+    type: QuantityTypeArg
+  ): ParserSpec | undefined {
     return this._activeParserSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType. If the UnitSystemKey is not specified the active Unit System is used. **/
-  public async getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined> {
+  public async getParserSpecByQuantityTypeAndSystem(
+    type: QuantityTypeArg,
+    system?: UnitSystemKey
+  ): Promise<ParserSpec | undefined> {
     const quantityKey = this.getQuantityTypeKey(type);
     const requestedSystem = system ?? this.activeUnitSystem;
 
     if (requestedSystem === this.activeUnitSystem) {
       const parserSpec = this._activeParserSpecsByType.get(quantityKey);
-      if (parserSpec)
-        return parserSpec;
+      if (parserSpec) return parserSpec;
     }
 
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
-      throw new Error(`Unable to find registered quantity type with key ${quantityKey}`);
-    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider);
+      throw new Error(
+        `Unable to find registered quantity type with key ${quantityKey}`
+      );
+    return entry.generateParserSpec(
+      this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem),
+      this.unitsProvider
+    );
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType.
@@ -777,7 +1037,10 @@ export class QuantityFormatter implements UnitsProvider {
    * @param isImperial  Argument to specify use of imperial or metric unit system. If left undefined the active unit system is used.
    * @return A FormatterSpec Promise.
    */
-  public async getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined> {
+  public async getParserSpecByQuantityType(
+    type: QuantityTypeArg,
+    isImperial?: boolean
+  ): Promise<ParserSpec | undefined> {
     let requestedSystem = this.activeUnitSystem;
     if (undefined !== isImperial)
       requestedSystem = isImperial ? "imperial" : "metric";
@@ -789,10 +1052,12 @@ export class QuantityFormatter implements UnitsProvider {
    * @param formatSpec      The format specification. See methods getFormatterSpecByQuantityType and findFormatterSpecByQuantityType.
    * @return the formatted string.
    */
-  public formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string {
+  public formatQuantity(
+    magnitude: number,
+    formatSpec: FormatterSpec | undefined
+  ): string {
     /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
-    if (formatSpec)
-      return formatSpec.applyFormatting(magnitude);
+    if (formatSpec) return formatSpec.applyFormatting(magnitude);
     return magnitude.toString();
   }
 
@@ -801,9 +1066,11 @@ export class QuantityFormatter implements UnitsProvider {
    * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
    * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
-  public parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult {
-    if (parserSpec)
-      return parserSpec.parseToQuantityValue(inString);
+  public parseToQuantityValue(
+    inString: string,
+    parserSpec: ParserSpec | undefined
+  ): QuantityParseResult {
+    if (parserSpec) return parserSpec.parseToQuantityValue(inString);
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
@@ -811,7 +1078,10 @@ export class QuantityFormatter implements UnitsProvider {
    * Get a UnitSystemKey from a string that may have been entered via a key-in. Supports different variation of
    * unit system names that have been used in the past.
    */
-  public getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey {
+  public getUnitSystemFromString(
+    inputSystem: string,
+    fallback?: UnitSystemKey
+  ): UnitSystemKey {
     switch (inputSystem.toLowerCase()) {
       case "metric":
       case "si":
@@ -828,27 +1098,29 @@ export class QuantityFormatter implements UnitsProvider {
       case "survey":
         return "usSurvey";
       default:
-        if (undefined !== fallback)
-          return fallback;
+        if (undefined !== fallback) return fallback;
         break;
     }
     return "imperial";
   }
 
   /** Return true if the QuantityType is using an override format. */
-  public hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean {
+  public hasActiveOverride(
+    type: QuantityTypeArg,
+    checkOnlyActiveUnitSystem?: boolean
+  ): boolean {
     const quantityTypeKey = this.getQuantityTypeKey(type);
 
     if (checkOnlyActiveUnitSystem) {
-      const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
-      if (overrides && overrides.has(quantityTypeKey))
-        return true;
+      const overrides = this._overrideFormatPropsByUnitSystem.get(
+        this.activeUnitSystem
+      );
+      if (overrides && overrides.has(quantityTypeKey)) return true;
       return false;
     }
 
     for (const [_key, overrideMap] of this._overrideFormatPropsByUnitSystem) {
-      if (overrideMap.has(quantityTypeKey))
-        return true;
+      if (overrideMap.has(quantityTypeKey)) return true;
     }
     return false;
   }
@@ -856,17 +1128,37 @@ export class QuantityFormatter implements UnitsProvider {
   /** Get the cached FormatProps give a quantity type. If ignoreOverrides is false then if the format has been overridden
    * the overridden format is returned, else the standard format is returned.
    */
-  public getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean) {
-    const quantityEntry = this.quantityTypesRegistry.get(this.getQuantityTypeKey(quantityType));
+  public getFormatPropsByQuantityType(
+    quantityType: QuantityTypeArg,
+    requestedSystem?: UnitSystemKey,
+    ignoreOverrides?: boolean
+  ) {
+    const quantityEntry = this.quantityTypesRegistry.get(
+      this.getQuantityTypeKey(quantityType)
+    );
     if (quantityEntry)
-      return this.getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry, requestedSystem ?? this.activeUnitSystem, ignoreOverrides);
+      return this.getFormatPropsByQuantityTypeEntryAndSystem(
+        quantityEntry,
+        requestedSystem ?? this.activeUnitSystem,
+        ignoreOverrides
+      );
     return undefined;
   }
 
   // keep following to maintain existing API of implementing UnitsProvider
   /** Find [UnitProp] for a specific unit label. */
-  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    return this._unitsProvider.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
+  public async findUnit(
+    unitLabel: string,
+    schemaName?: string,
+    phenomenon?: string,
+    unitSystem?: string
+  ): Promise<UnitProps> {
+    return this._unitsProvider.findUnit(
+      unitLabel,
+      schemaName,
+      phenomenon,
+      unitSystem
+    );
   }
 
   /** Returns all defined units for the specified Unit Family/Phenomenon. */
@@ -880,7 +1172,10 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
+  public async getConversion(
+    fromUnit: UnitProps,
+    toUnit: UnitProps
+  ): Promise<UnitConversionProps> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }
 }
@@ -890,59 +1185,167 @@ export class QuantityFormatter implements UnitsProvider {
 // ========================================================================================================================================
 const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
   {
-    system: "metric",  // PresentationUnitSystem.Metric,
+    system: "metric", // PresentationUnitSystem.Metric,
     entries: [
-      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]meter4" },
-      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]degree2" },
-      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]mSquared4" },
-      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]mCubed4" },
-      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
-      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]meter2" },
-      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]m-sta2" },
-      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]meter4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]meter4" },
+      {
+        type: getQuantityTypeKey(QuantityType.Length),
+        formatKey: "[units:length]meter4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Angle),
+        formatKey: "[units:angle]degree2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Area),
+        formatKey: "[units:area]mSquared4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Volume),
+        formatKey: "[units:volume]mCubed4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LatLong),
+        formatKey: "[units:angle]dms",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Coordinate),
+        formatKey: "[units:length]meter2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Stationing),
+        formatKey: "[units:length]m-sta2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthSurvey),
+        formatKey: "[units:length]meter4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthEngineering),
+        formatKey: "[units:length]meter4",
+      },
     ],
   },
   {
     system: "imperial", // PresentationUnitSystem.BritishImperial,
     entries: [
-      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]fi8" },
-      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
-      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]fSquared4" },
-      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]fCubed4" },
-      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
-      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
-      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
-      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4-labeled" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      {
+        type: getQuantityTypeKey(QuantityType.Length),
+        formatKey: "[units:length]fi8",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Angle),
+        formatKey: "[units:angle]dms2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Area),
+        formatKey: "[units:area]fSquared4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Volume),
+        formatKey: "[units:volume]fCubed4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LatLong),
+        formatKey: "[units:angle]dms",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Coordinate),
+        formatKey: "[units:length]feet2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Stationing),
+        formatKey: "[units:length]f-sta2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthSurvey),
+        formatKey: "[units:length]f-survey-4-labeled",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthEngineering),
+        formatKey: "[units:length]feet4",
+      },
     ],
   },
   {
-    system: "usCustomary",  // PresentationUnitSystem.UsCustomary
+    system: "usCustomary", // PresentationUnitSystem.UsCustomary
     entries: [
-      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]fi8" },
-      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
-      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]fSquared4" },
-      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]fCubed4" },
-      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
-      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]feet2" },
-      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-sta2" },
-      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]feet4" },
+      {
+        type: getQuantityTypeKey(QuantityType.Length),
+        formatKey: "[units:length]fi8",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Angle),
+        formatKey: "[units:angle]dms2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Area),
+        formatKey: "[units:area]fSquared4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Volume),
+        formatKey: "[units:volume]fCubed4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LatLong),
+        formatKey: "[units:angle]dms",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Coordinate),
+        formatKey: "[units:length]feet2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Stationing),
+        formatKey: "[units:length]f-sta2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthSurvey),
+        formatKey: "[units:length]f-survey-4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthEngineering),
+        formatKey: "[units:length]feet4",
+      },
     ],
   },
   {
-    system: "usSurvey",  // PresentationUnitSystem.UsSurvey
+    system: "usSurvey", // PresentationUnitSystem.UsSurvey
     entries: [
-      { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
-      { type: getQuantityTypeKey(QuantityType.Area), formatKey: "[units:area]usSurveyFtSquared4" },
-      { type: getQuantityTypeKey(QuantityType.Volume), formatKey: "[units:volume]usSurveyFtCubed4" },
-      { type: getQuantityTypeKey(QuantityType.LatLong), formatKey: "[units:angle]dms" },
-      { type: getQuantityTypeKey(QuantityType.Coordinate), formatKey: "[units:length]f-survey-2" },
-      { type: getQuantityTypeKey(QuantityType.Stationing), formatKey: "[units:length]f-survey-sta2" },
-      { type: getQuantityTypeKey(QuantityType.LengthSurvey), formatKey: "[units:length]f-survey-4" },
-      { type: getQuantityTypeKey(QuantityType.LengthEngineering), formatKey: "[units:length]f-survey-4" },
+      {
+        type: getQuantityTypeKey(QuantityType.Length),
+        formatKey: "[units:length]f-survey-4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Angle),
+        formatKey: "[units:angle]dms2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Area),
+        formatKey: "[units:area]usSurveyFtSquared4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Volume),
+        formatKey: "[units:volume]usSurveyFtCubed4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LatLong),
+        formatKey: "[units:angle]dms",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Coordinate),
+        formatKey: "[units:length]f-survey-2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.Stationing),
+        formatKey: "[units:length]f-survey-sta2",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthSurvey),
+        formatKey: "[units:length]f-survey-4",
+      },
+      {
+        type: getQuantityTypeKey(QuantityType.LengthEngineering),
+        formatKey: "[units:length]f-survey-4",
+      },
     ],
   },
 ];
@@ -1020,7 +1423,10 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       composite: {
         includeZero: true,
         spacer: "-",
-        units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+        units: [
+          { label: "'", name: "Units.FT" },
+          { label: '"', name: "Units.IN" },
+        ],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 8,
@@ -1139,7 +1545,11 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+        units: [
+          { label: "°", name: "Units.ARC_DEG" },
+          { label: "'", name: "Units.ARC_MINUTE" },
+          { label: '"', name: "Units.ARC_SECOND" },
+        ],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
@@ -1154,7 +1564,11 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+        units: [
+          { label: "°", name: "Units.ARC_DEG" },
+          { label: "'", name: "Units.ARC_MINUTE" },
+          { label: '"', name: "Units.ARC_SECOND" },
+        ],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 2,

@@ -10,14 +10,18 @@ import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileRequest,
+  TileTree,
   TileTreeOwner,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 
 describe("Tiles", () => {
-
   class TestGraphic extends RenderGraphic {
     public constructor(private _size: number) {
       super();
@@ -28,8 +32,7 @@ describe("Tiles", () => {
     }
 
     public collectStatistics(stats: RenderMemory.Statistics) {
-      if (this._size > 0)
-        stats.addTexture(this._size);
+      if (this._size > 0) stats.addTexture(this._size);
     }
   }
 
@@ -38,21 +41,29 @@ describe("Tiles", () => {
     public retainMemory = false;
     public visible = true;
 
-    public constructor(tileTree: TileTree, contentSize: number, retainMemory = false) {
-      super({
-        contentId: contentSize.toString(),
-        range: new Range3d(0, 0, 0, 1, 1, 1),
-        maximumSize: 42,
-      }, tileTree);
+    public constructor(
+      tileTree: TileTree,
+      contentSize: number,
+      retainMemory = false
+    ) {
+      super(
+        {
+          contentId: contentSize.toString(),
+          range: new Range3d(0, 0, 0, 1, 1, 1),
+          maximumSize: 42,
+        },
+        tileTree
+      );
 
       this._contentSize = contentSize;
       this.retainMemory = retainMemory;
 
-      if (contentSize === 0)
-        this.setIsReady();
+      if (contentSize === 0) this.setIsReady();
     }
 
-    protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
+    protected _loadChildren(
+      resolve: (children: Tile[] | undefined) => void
+    ): void {
       resolve(undefined);
     }
 
@@ -69,8 +80,7 @@ describe("Tiles", () => {
     }
 
     public override freeMemory(): void {
-      if (!this.retainMemory)
-        super.freeMemory();
+      if (!this.retainMemory) super.freeMemory();
     }
 
     public computeBytesUsed(): number {
@@ -86,7 +96,11 @@ describe("Tiles", () => {
     public readonly contentSize: number;
     private readonly _rootTile: TestTile;
 
-    public constructor(contentSize: number, iModel: IModelConnection, retainMemory = false) {
+    public constructor(
+      contentSize: number,
+      iModel: IModelConnection,
+      retainMemory = false
+    ) {
       super({
         iModel,
         id: (++TestTree._nextId).toString(),
@@ -100,19 +114,25 @@ describe("Tiles", () => {
       this._rootTile = new TestTile(this, contentSize, retainMemory);
     }
 
-    public get rootTile(): TestTile { return this._rootTile; }
-    public get is3d() { return true; }
-    public get maxDepth() { return undefined; }
-    public get viewFlagOverrides() { return { }; }
+    public get rootTile(): TestTile {
+      return this._rootTile;
+    }
+    public get is3d() {
+      return true;
+    }
+    public get maxDepth() {
+      return undefined;
+    }
+    public get viewFlagOverrides() {
+      return {};
+    }
 
     protected _selectTiles(args: TileDrawArgs): Tile[] {
       const tiles = [];
       const tile = this.rootTile;
       if (tile.visible) {
-        if (tile.isReady)
-          tiles.push(tile);
-        else
-          args.insertMissing(tile);
+        if (tile.isReady) tiles.push(tile);
+        else args.insertMissing(tile);
       }
 
       return tiles;
@@ -120,20 +140,20 @@ describe("Tiles", () => {
 
     public draw(args: TileDrawArgs) {
       const tiles = this.selectTiles(args);
-      for (const tile of tiles)
-        tile.drawGraphics(args);
+      for (const tile of tiles) tile.drawGraphics(args);
 
       args.drawGraphics();
     }
 
-    public prune() { }
+    public prune() {}
   }
 
-  const createOnTileTreeLoadPromise: (treeOwner: TileTreeOwner) => Promise<void> =  async (treeOwner: TileTreeOwner)  => {
+  const createOnTileTreeLoadPromise: (
+    treeOwner: TileTreeOwner
+  ) => Promise<void> = async (treeOwner: TileTreeOwner) => {
     return new Promise((resolve) => {
       IModelApp.tileAdmin.onTileTreeLoad.addListener((tileTreeOwner) => {
-        if (treeOwner === tileTreeOwner)
-          resolve();
+        if (treeOwner === tileTreeOwner) resolve();
       });
     });
   };
@@ -160,12 +180,10 @@ describe("Tiles", () => {
 
   afterEach(async () => {
     await imodel.close();
-    if (IModelApp.initialized)
-      await MockRender.App.shutdown();
+    if (IModelApp.initialized) await MockRender.App.shutdown();
   });
 
   it("resetTileTreeOwner should remove the tiletree", async () => {
-
     const contentSize = 100;
     const tree1 = new TestTree(contentSize, imodel);
     const tree2 = new TestTree(contentSize, imodel);
@@ -175,14 +193,17 @@ describe("Tiles", () => {
     // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
     // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
     // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
-    const promises = [createOnTileTreeLoadPromise(treeOwner1), createOnTileTreeLoadPromise(treeOwner2)];
+    const promises = [
+      createOnTileTreeLoadPromise(treeOwner1),
+      createOnTileTreeLoadPromise(treeOwner2),
+    ];
 
     treeOwner1.load();
     treeOwner2.load();
     await Promise.all(promises);
 
     let nbItems = 0;
-    for ( const _item of imodel.tiles) {
+    for (const _item of imodel.tiles) {
       nbItems++;
     }
     expect(nbItems).to.equals(2);
@@ -195,7 +216,7 @@ describe("Tiles", () => {
     expect(tree2.isDisposed).to.be.false;
 
     nbItems = 0;
-    for ( const item of imodel.tiles) {
+    for (const item of imodel.tiles) {
       expect(item.id.id).to.equals(tree2.id);
       nbItems++;
     }

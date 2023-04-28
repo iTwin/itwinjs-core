@@ -44,11 +44,9 @@ export function createCheckBox(props: CheckBoxProps): CheckBox {
   label.innerText = props.name;
   div.appendChild(label);
 
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
+  if (undefined !== props.parent) props.parent.appendChild(div);
 
-  if (undefined !== props.tooltip)
-    div.title = props.tooltip;
+  if (undefined !== props.tooltip) div.title = props.tooltip;
 
   return { label, checkbox, div };
 }

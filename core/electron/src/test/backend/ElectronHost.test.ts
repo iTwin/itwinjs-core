@@ -64,15 +64,23 @@ async function testStartWithOptions() {
   assertElectronHostIsInitialized();
 
   // If relative path doesn't exist (is empty), paths are the same.
-  let relativePath = path.relative(ElectronHost.webResourcesPath, options.webResourcesPath!);
+  let relativePath = path.relative(
+    ElectronHost.webResourcesPath,
+    options.webResourcesPath!
+  );
   assert(relativePath.length === 0);
-  relativePath = path.relative(ElectronHost.appIconPath, path.join(options.webResourcesPath!, options.iconName!));
+  relativePath = path.relative(
+    ElectronHost.appIconPath,
+    path.join(options.webResourcesPath!, options.iconName!)
+  );
   assert(relativePath.length === 0);
 }
 
 async function testRegisterIpcHandler() {
   class IpcHandlerMock extends IpcHandler {
-    public override get channelName() { return "IpcHandlerMock-channel"; }
+    public override get channelName() {
+      return "IpcHandlerMock-channel";
+    }
     public static wasRegisterCalled = false;
 
     public static override register() {
@@ -91,7 +99,8 @@ async function testRegisterIpcHandler() {
 }
 
 async function testInitializeProvidedRpcInterface() {
-  abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+  abstract class TestRpcInterface extends RpcInterface {
+    // eslint-disable-line deprecation/deprecation
     public static readonly interfaceName = "TestRpcInterface";
     public static interfaceVersion = "0.0.0";
   }
@@ -102,7 +111,9 @@ async function testInitializeProvidedRpcInterface() {
     },
   });
 
-  assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
+  assert(
+    RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)
+  );
 }
 
 async function testOpenMainWindow() {
@@ -132,7 +143,9 @@ async function testMainWindowUrl() {
   const window = ElectronHost.electron.BrowserWindow.getAllWindows()[0];
   assert(window !== undefined);
 
-  await new Promise((resolve) => window.webContents.once("did-finish-load", resolve));
+  await new Promise((resolve) =>
+    window.webContents.once("did-finish-load", resolve)
+  );
   assert(url === window.webContents.getURL());
 }
 
@@ -150,7 +163,8 @@ async function testWindowSizeSettings() {
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  let sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  let sizeAndPos =
+    ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   const expectedBounds = window.getBounds();
   assert(sizeAndPos?.width === expectedBounds.width);
   assert(sizeAndPos?.height === expectedBounds.height);
@@ -162,18 +176,20 @@ async function testWindowSizeSettings() {
 
   window.maximize();
   if (isXvfbRunning)
-    window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(100); // "maximize" event is not always emitted immediately
+    window.emit(
+      "maximize"
+    ); // "maximize" event is not emitted when running with xvfb (linux)
+  else await BeDuration.wait(100); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
 
   window.unmaximize();
   if (isXvfbRunning)
-    window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
+    window.emit(
+      "unmaximize"
+    ); // "unmaximize" event is not emitted when running with xvfb (linux)
+  else await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(!isMaximized);
@@ -226,8 +242,7 @@ function assertElectronHostIsInitialized() {
  * @note `true` doesn't necessary mean that tests are using `xvfb`.
  */
 async function isXvfbProcessRunning(): Promise<boolean> {
-  if (process.platform !== "linux")
-    return false;
+  if (process.platform !== "linux") return false;
 
   let doesXvfbProcessExists = false;
   const bashProcess = exec("pgrep xvfb", (_, stdout) => {

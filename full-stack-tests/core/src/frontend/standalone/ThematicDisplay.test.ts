@@ -4,9 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
+  ColorDef,
+  RenderMode,
+  ThematicDisplay,
+  ThematicDisplayMode,
+  ThematicDisplayProps,
+  ThematicGradientColorScheme,
+  ThematicGradientMode,
 } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection, ViewRect, ViewState3d } from "@itwin/core-frontend";
+import {
+  IModelConnection,
+  SnapshotConnection,
+  ViewRect,
+  ViewState3d,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
@@ -104,20 +115,38 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
         gradientSettings: {
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
-        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
+        range: {
+          low: imodel.projectExtents.xLow,
+          high: imodel.projectExtents.xHigh,
+        }, // grab imodel project extents to set range of thematic display
         axis: [1.0, 0.0, 0.0],
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -133,7 +162,12 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -141,14 +175,27 @@ describe("Thematic display", () => {
           mode: ThematicGradientMode.Stepped,
           stepCount: 2,
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
-        range: { low: imodel.projectExtents.xLow - 3.0, high: imodel.projectExtents.xHigh + 3.0 }, // grab imodel project extents to set range of thematic display
+        range: {
+          low: imodel.projectExtents.xLow - 3.0,
+          high: imodel.projectExtents.xHigh + 3.0,
+        }, // grab imodel project extents to set range of thematic display
         axis: [1.0, 0.0, 0.0],
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -164,21 +211,39 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
         gradientSettings: {
           mode: ThematicGradientMode.IsoLines,
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
-        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
+        range: {
+          low: imodel.projectExtents.xLow,
+          high: imodel.projectExtents.xHigh,
+        }, // grab imodel project extents to set range of thematic display
         axis: [1.0, 0.0, 0.0],
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -194,21 +259,39 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
         gradientSettings: {
           mode: ThematicGradientMode.SteppedWithDelimiter,
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
-        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
+        range: {
+          low: imodel.projectExtents.xLow,
+          high: imodel.projectExtents.xHigh,
+        }, // grab imodel project extents to set range of thematic display
         axis: [1.0, 0.0, 0.0],
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -224,14 +307,28 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
         displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
         gradientSettings: {
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
         sensorSettings: {
           sensors: [
@@ -242,7 +339,8 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -258,7 +356,12 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -266,7 +369,16 @@ describe("Thematic display", () => {
           mode: ThematicGradientMode.Stepped,
           stepCount: 2,
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
         range: { low: 0.0, high: 90.0 }, // range of 0 to 90 degree slopes
         axis: [1.0, 0.0, 0.0],
@@ -274,7 +386,8 @@ describe("Thematic display", () => {
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();
@@ -290,7 +403,12 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+        thematicDisplay: true,
+      });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -298,14 +416,24 @@ describe("Thematic display", () => {
           mode: ThematicGradientMode.Stepped,
           stepCount: 2,
           colorScheme: ThematicGradientColorScheme.Custom,
-          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+          customKeys: [
+            {
+              value: 0.0,
+              color: ColorDef.computeTbgrFromComponents(0, 0, 255),
+            },
+            {
+              value: 1.0,
+              color: ColorDef.computeTbgrFromComponents(255, 0, 0),
+            },
+          ],
         },
         sunDirection: { x: 0.0, y: 0.0, z: 1.0 },
         displayMode: ThematicDisplayMode.HillShade,
       };
       const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d()
+        .settings;
       displaySettings.thematic = thematicDisplay;
 
       await vp.waitForAllTilesToRender();

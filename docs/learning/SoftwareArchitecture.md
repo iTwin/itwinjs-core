@@ -30,7 +30,7 @@ Portable application logic is written in TypeScript and calls TypeScript APIs ex
 
 Notice that the backend architecture is identical between Agents and backends for interactive Web Applications.
 
-Web App frontends run in a web browser and use HTML GUI for presentation, and APIs exposed from the `@itwin/core-frontend` package for *Remote Procedure Calls* (RPC) to request services from the backend.
+Web App frontends run in a web browser and use HTML GUI for presentation, and APIs exposed from the `@itwin/core-frontend` package for _Remote Procedure Calls_ (RPC) to request services from the backend.
 
 The [frontend --> backend communication](./RpcInterface.md) is over HTTPS for interactive web applications.
 
@@ -50,7 +50,7 @@ iTwin.js desktop applications use the [Electron](https://electronjs.org/) Framew
 The backend architecture is the same as with iTwin.js Web Apps because Electron also uses Node.js.
 The primary difference in the frontend architecture is that an embedded [Chromium Browser](https://www.chromium.org/Home) replaces a standalone Web Browser.
 
-The [frontend --> backend communication](./RpcInterface.md) is over *Inter Process Communication* (IPC) as provided by Electron. Note that iTwin.js desktop applications always have at least
+The [frontend --> backend communication](./RpcInterface.md) is over _Inter Process Communication_ (IPC) as provided by Electron. Note that iTwin.js desktop applications always have at least
 two (one frontend and at least one backend) processes active together.
 
 ![SoftwareArchitecture-Desktop](./SoftwareArchitecture-Desktop.png)

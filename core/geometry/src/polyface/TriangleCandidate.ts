@@ -22,7 +22,14 @@ export class TriangleCandidate extends BarycentricTriangle {
   private _quality: number;
   private _isValid: boolean;
   public id: number;
-  private constructor(point0: Point3d, point1: Point3d, point2: Point3d, id: number, quality: number, isValid: boolean) {
+  private constructor(
+    point0: Point3d,
+    point1: Point3d,
+    point2: Point3d,
+    id: number,
+    quality: number,
+    isValid: boolean
+  ) {
     super(point0, point1, point2);
     this._isValid = isValid;
     this._quality = quality;
@@ -44,25 +51,50 @@ export class TriangleCandidate extends BarycentricTriangle {
    * * Access points from multiple `IndexedXYZCollection`
    * * mark invalid if any indices are invalid.
    */
-  public static createFromIndexedXYZ(source0: IndexedXYZCollection, index0: number, source1: IndexedXYZCollection, index1: number, source2: IndexedXYZCollection, index2: number, id: number, result?: TriangleCandidate): TriangleCandidate {
+  public static createFromIndexedXYZ(
+    source0: IndexedXYZCollection,
+    index0: number,
+    source1: IndexedXYZCollection,
+    index1: number,
+    source2: IndexedXYZCollection,
+    index2: number,
+    id: number,
+    result?: TriangleCandidate
+  ): TriangleCandidate {
     if (!result)
-      result = new TriangleCandidate(Point3d.create(), Point3d.create(), Point3d.create(), id, 0.0, false);
+      result = new TriangleCandidate(
+        Point3d.create(),
+        Point3d.create(),
+        Point3d.create(),
+        id,
+        0.0,
+        false
+      );
     result.id = id;
     let numValid = 0;
-    if (undefined !== source0.getPoint3dAtCheckedPointIndex(index0, result.points[0]))
+    if (
+      undefined !==
+      source0.getPoint3dAtCheckedPointIndex(index0, result.points[0])
+    )
       numValid++;
-    if (undefined !== source1.getPoint3dAtCheckedPointIndex(index1, result.points[1]))
+    if (
+      undefined !==
+      source1.getPoint3dAtCheckedPointIndex(index1, result.points[1])
+    )
       numValid++;
-    if (undefined !== source2.getPoint3dAtCheckedPointIndex(index2, result.points[2]))
+    if (
+      undefined !==
+      source2.getPoint3dAtCheckedPointIndex(index2, result.points[2])
+    )
       numValid++;
-    if (numValid === 3)
-      result.updateAspectRatio();
-    else
-      result.markInvalid();
+    if (numValid === 3) result.updateAspectRatio();
+    else result.markInvalid();
     return result;
   }
   /** (property) return the validity flag. */
-  public get isValid(): boolean { return this._isValid; }
+  public get isValid(): boolean {
+    return this._isValid;
+  }
   /**
    * * Mark this triangle invalid.
    * * optionally set aspect ratio.
@@ -71,8 +103,7 @@ export class TriangleCandidate extends BarycentricTriangle {
    */
   public markInvalid(quality?: number) {
     this._isValid = false;
-    if (quality !== undefined)
-      this._quality = quality;
+    if (quality !== undefined) this._quality = quality;
   }
   /**
    * * Recompute the aspect ratio.
@@ -87,9 +118,15 @@ export class TriangleCandidate extends BarycentricTriangle {
    * @param result optional preallocated `TriangleCandidate`
    */
   public override clone(result?: TriangleCandidate): TriangleCandidate {
-    if (result)
-      return result.setFrom(this);
-    return new TriangleCandidate(this.points[0].clone(), this.points[1].clone(), this.points[2].clone(), this.id, this._quality, this._isValid);
+    if (result) return result.setFrom(this);
+    return new TriangleCandidate(
+      this.points[0].clone(),
+      this.points[1].clone(),
+      this.points[2].clone(),
+      this.id,
+      this._quality,
+      this._isValid
+    );
   }
   /**
    * Return a `TriangleCandidate` with
@@ -100,13 +137,19 @@ export class TriangleCandidate extends BarycentricTriangle {
    * @param candidateB candidate that may by valid
    * @param result copy of candidate A, but if candidateB is valid the result aspect ratio is reduced (a) to the minimum of the two ratios and then (b) reduced by 1 if orientations clash.
    */
-  public static copyWithLowerQuality(candidateA: TriangleCandidate, candidateB: TriangleCandidate, result?: TriangleCandidate): TriangleCandidate {
+  public static copyWithLowerQuality(
+    candidateA: TriangleCandidate,
+    candidateB: TriangleCandidate,
+    result?: TriangleCandidate
+  ): TriangleCandidate {
     result = candidateA.clone(result);
     if (candidateB.isValid) {
       const dot = candidateA.dotProductOfCrossProductsFromOrigin(candidateB);
-      result._quality = Geometry.minXY(candidateA.aspectRatio, candidateB.aspectRatio);
-      if (dot < 0.0)
-        result._quality -= 1.0;
+      result._quality = Geometry.minXY(
+        candidateA.aspectRatio,
+        candidateB.aspectRatio
+      );
+      if (dot < 0.0) result._quality -= 1.0;
     }
     return result;
   }
@@ -115,7 +158,10 @@ export class TriangleCandidate extends BarycentricTriangle {
    * @param triangle known valid triangle, to be updated
    * @param other candidate replacement
    */
-  public static updateIfOtherHasHigherQuality(triangle: TriangleCandidate, other: TriangleCandidate) {
+  public static updateIfOtherHasHigherQuality(
+    triangle: TriangleCandidate,
+    other: TriangleCandidate
+  ) {
     if (other.isValid && other._quality > triangle._quality)
       triangle.setFrom(other);
   }

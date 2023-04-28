@@ -22,17 +22,17 @@ export class Angle implements BeJSONFunctions {
   /** maximal accuracy value of pi/12 (15 degrees), in radians */
   public static readonly piOver12Radians = 0.26179938779914946;
   /** maximal accuracy value of pi/4 (45 degrees), in radians */
-  public static readonly piOver4Radians = 7.853981633974483e-001;
+  public static readonly piOver4Radians = 7.853981633974483e-1;
   /** maximal accuracy value of pi/2 (90 degrees), in radians */
-  public static readonly piOver2Radians = 1.5707963267948966e+000;
+  public static readonly piOver2Radians = 1.5707963267948966;
   /** maximal accuracy value of pi (180 degrees), in radians */
-  public static readonly piRadians = 3.141592653589793e+000;
+  public static readonly piRadians = 3.141592653589793;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
-  public static readonly pi2Radians = 6.283185307179586e+000;
+  public static readonly pi2Radians = 6.283185307179586;
   /** scale factor for converting radians to degrees */
-  public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
+  public static readonly degreesPerRadian = 45.0 / Angle.piOver4Radians;
   /** scale factor for converting degrees to radians */
-  public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
+  public static readonly radiansPerDegree = Angle.piOver4Radians / 45.0;
   private _radians: number;
   private _degrees?: number;
   private constructor(radians = 0, degrees?: number) {
@@ -67,8 +67,14 @@ export class Angle implements BeJSONFunctions {
    * @param fraction the interpolation fraction
    * @param angle1 second angle in radians
    */
-  public static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle {
-    return new Angle(Geometry.interpolate(angle0.radians, fraction, angle1.radians));
+  public static createInterpolate(
+    angle0: Angle,
+    fraction: number,
+    angle1: Angle
+  ): Angle {
+    return new Angle(
+      Geometry.interpolate(angle0.radians, fraction, angle1.radians)
+    );
   }
   /**
    * Return a (new) Angle object, with angle scaled from existing angle.
@@ -124,8 +130,7 @@ export class Angle implements BeJSONFunctions {
    */
   public setFromJSON(json?: AngleProps, defaultValRadians?: number) {
     this._radians = defaultValRadians ? defaultValRadians : 0;
-    if (!json)
-      return;
+    if (!json) return;
     if (typeof json === "number") {
       this.setDegrees(json);
     } else if (typeof (json as any).degrees === "number") {
@@ -163,38 +168,35 @@ export class Angle implements BeJSONFunctions {
   }
   /** Return the angle measured in degrees. */
   public get degrees(): number {
-    return this._degrees !== undefined ? this._degrees : Angle.radiansToDegrees(this._radians);
+    return this._degrees !== undefined
+      ? this._degrees
+      : Angle.radiansToDegrees(this._radians);
   }
   /**
    * Convert an angle in degrees to radians.
    * @param degrees angle in degrees
    */
   public static degreesToRadians(degrees: number): number {
-    return degrees * Math.PI / 180;
+    return (degrees * Math.PI) / 180;
   }
   /**
    * Convert an angle in radians to degrees.
    * @param degrees angle in radians
    */
   public static radiansToDegrees(radians: number): number {
-    if (radians < 0)
-      return -Angle.radiansToDegrees(-radians);
+    if (radians < 0) return -Angle.radiansToDegrees(-radians);
     // Now radians is positive ...
     const pi = Math.PI;
     const factor = 180.0 / pi;
     /* the following if statements are for round-off reasons. The problem is that no IEEE number is
-      * an exact hit for any primary multiple of pi (90, 180, etc). The following is supposed to have
-      * a better chance that if the input was computed by direct assignment from 90, 180, etc degrees
-      * it will return exactly 90,180 etc.
-      */
-    if (radians <= 0.25 * pi)
-      return factor * radians;
-    if (radians < 0.75 * pi)
-      return 90.0 + 180 * ((radians - 0.5 * pi) / pi);
-    if (radians <= 1.25 * pi)
-      return 180.0 + 180 * ((radians - pi) / pi);
-    if (radians <= 1.75 * pi)
-      return 270.0 + 180 * ((radians - 1.5 * pi) / pi);
+     * an exact hit for any primary multiple of pi (90, 180, etc). The following is supposed to have
+     * a better chance that if the input was computed by direct assignment from 90, 180, etc degrees
+     * it will return exactly 90,180 etc.
+     */
+    if (radians <= 0.25 * pi) return factor * radians;
+    if (radians < 0.75 * pi) return 90.0 + 180 * ((radians - 0.5 * pi) / pi);
+    if (radians <= 1.25 * pi) return 180.0 + 180 * ((radians - pi) / pi);
+    if (radians <= 1.75 * pi) return 270.0 + 180 * ((radians - 1.5 * pi) / pi);
     // all larger radians reference from 360 degrees (2PI)
     return 360.0 + 180 * ((radians - 2.0 * pi) / pi);
   }
@@ -230,8 +232,7 @@ export class Angle implements BeJSONFunctions {
   public static adjustDegrees0To360(degrees: number): number {
     if (degrees >= 0) {
       const period = 360.0;
-      if (degrees < period)
-        return degrees;
+      if (degrees < period) return degrees;
       const numPeriods = Math.floor(degrees / period);
       return degrees - numPeriods * period;
     } else if (degrees < 0) {
@@ -244,8 +245,7 @@ export class Angle implements BeJSONFunctions {
   }
   /** Adjust a radians value so it is in -180..180 */
   public static adjustDegreesSigned180(degrees: number): number {
-    if (Math.abs(degrees) <= 180.0)
-      return degrees;
+    if (Math.abs(degrees) <= 180.0) return degrees;
     if (degrees >= 0) {
       const period = 360.0;
       const numPeriods = 1 + Math.floor((degrees - 180.0) / period);
@@ -261,8 +261,7 @@ export class Angle implements BeJSONFunctions {
   public static adjustRadians0To2Pi(radians: number): number {
     if (radians >= 0) {
       const period = Math.PI * 2.0;
-      if (radians < period)
-        return radians;
+      if (radians < period) return radians;
       const numPeriods = Math.floor(radians / period);
       return radians - numPeriods * period;
     } else if (radians < 0) {
@@ -274,8 +273,7 @@ export class Angle implements BeJSONFunctions {
   }
   /** Adjust a radians value so it is positive in -PI..PI */
   public static adjustRadiansMinusPiPlusPi(radians: number): number {
-    if (Math.abs(radians) <= Math.PI)
-      return radians;
+    if (Math.abs(radians) <= Math.PI) return radians;
     if (radians >= 0) {
       const period = Math.PI * 2.0;
       const numPeriods = 1 + Math.floor((radians - Math.PI) / period);
@@ -317,14 +315,15 @@ export class Angle implements BeJSONFunctions {
    * @param radiansB second radians value
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number,
-    radianTol: number = Geometry.smallAngleRadians): boolean {
+  public static isAlmostEqualRadiansAllowPeriodShift(
+    radiansA: number,
+    radiansB: number,
+    radianTol: number = Geometry.smallAngleRadians
+  ): boolean {
     const delta = Math.abs(radiansA - radiansB);
-    if (delta <= radianTol)
-      return true;
+    if (delta <= radianTol) return true;
     const period = Math.PI * 2.0;
-    if (Math.abs(delta - period) <= radianTol)
-      return true;
+    if (Math.abs(delta - period) <= radianTol) return true;
     const numPeriod = Math.round(delta / period);
     const delta1 = delta - numPeriod * period;
     return Math.abs(delta1) <= radianTol;
@@ -334,8 +333,15 @@ export class Angle implements BeJSONFunctions {
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqualAllowPeriodShift(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
-    return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians, other._radians, radianTol);
+  public isAlmostEqualAllowPeriodShift(
+    other: Angle,
+    radianTol: number = Geometry.smallAngleRadians
+  ): boolean {
+    return Angle.isAlmostEqualRadiansAllowPeriodShift(
+      this._radians,
+      other._radians,
+      radianTol
+    );
   }
   /**
    * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
@@ -343,8 +349,11 @@ export class Angle implements BeJSONFunctions {
    * @param radiansB second radians value
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number,
-    radianTol: number = Geometry.smallAngleRadians): boolean {
+  public static isAlmostEqualRadiansNoPeriodShift(
+    radiansA: number,
+    radiansB: number,
+    radianTol: number = Geometry.smallAngleRadians
+  ): boolean {
     return Math.abs(radiansA - radiansB) < radianTol;
   }
   /**
@@ -352,8 +361,15 @@ export class Angle implements BeJSONFunctions {
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqualNoPeriodShift(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
-    return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians, other._radians, radianTol);
+  public isAlmostEqualNoPeriodShift(
+    other: Angle,
+    radianTol: number = Geometry.smallAngleRadians
+  ): boolean {
+    return Angle.isAlmostEqualRadiansNoPeriodShift(
+      this._radians,
+      other._radians,
+      radianTol
+    );
   }
   /**
    * Test if two this angle and other are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
@@ -361,7 +377,10 @@ export class Angle implements BeJSONFunctions {
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqual(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
+  public isAlmostEqual(
+    other: Angle,
+    radianTol: number = Geometry.smallAngleRadians
+  ): boolean {
     return this.isAlmostEqualNoPeriodShift(other, radianTol);
   }
   /**
@@ -370,10 +389,16 @@ export class Angle implements BeJSONFunctions {
    * @param dotVV dot product of vectorV with itself
    * @param dotUV dot product of vectorU with vectorV
    */
-  public static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean {
-    return dotUU > Geometry.smallMetricDistanceSquared
-      && dotVV > Geometry.smallMetricDistanceSquared
-      && dotUV * dotUV <= Geometry.smallAngleRadiansSquared * dotUU * dotVV;
+  public static isPerpendicularDotSet(
+    dotUU: number,
+    dotVV: number,
+    dotUV: number
+  ): boolean {
+    return (
+      dotUU > Geometry.smallMetricDistanceSquared &&
+      dotVV > Geometry.smallMetricDistanceSquared &&
+      dotUV * dotUV <= Geometry.smallAngleRadiansSquared * dotUU * dotVV
+    );
   }
   /**
    * Return cosine, sine, and radians for the half angle of a "cosine,sine" pair.
@@ -382,7 +407,10 @@ export class Angle implements BeJSONFunctions {
    * @param rCos2A cosine value (scaled by radius) for initial angle.
    * @param rSin2A sine value (scaled by radius) for final angle.
    */
-  public static trigValuesToHalfAngleTrigValues(rCos2A: number, rSin2A: number): TrigValues {
+  public static trigValuesToHalfAngleTrigValues(
+    rCos2A: number,
+    rSin2A: number
+  ): TrigValues {
     const r = Geometry.hypotenuseXY(rCos2A, rSin2A);
     if (r < Geometry.smallMetricDistance) {
       return { c: 1.0, s: 0.0, radians: 0.0 }; // angle = 0
@@ -427,16 +455,16 @@ export class Angle implements BeJSONFunctions {
     }
   }
   /** If value is close to -1, -0.5, 0, 0.5, 1, adjust it to the exact value. */
-  public static cleanupTrigValue(value: number, tolerance: number = 1.0e-15): number {
+  public static cleanupTrigValue(
+    value: number,
+    tolerance: number = 1.0e-15
+  ): number {
     const absValue = Math.abs(value);
-    if (absValue <= tolerance)
-      return 0;
+    if (absValue <= tolerance) return 0;
     let a = Math.abs(absValue - 0.5);
-    if (a <= tolerance)
-      return value < 0.0 ? -0.5 : 0.5;
+    if (a <= tolerance) return value < 0.0 ? -0.5 : 0.5;
     a = Math.abs(absValue - 1.0);
-    if (a <= tolerance)
-      return value < 0.0 ? -1.0 : 1.0;
+    if (a <= tolerance) return value < 0.0 ? -1.0 : 1.0;
     return value;
   }
   /**
@@ -454,12 +482,18 @@ export class Angle implements BeJSONFunctions {
    * @param dotUV dot product of vectorU with vectorV
    */
   public static dotProductsToHalfAngleTrigValues(
-    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true
+    dotUU: number,
+    dotVV: number,
+    dotUV: number,
+    favorZero: boolean = true
   ): TrigValues {
-
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
-    if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
+    if (
+      favorZero &&
+      Math.abs(sin2t0) <
+        Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV))
+    )
       return { c: 1.0, s: 0.0, radians: 0.0 };
     return Angle.trigValuesToHalfAngleTrigValues(cos2t0, sin2t0);
   }
@@ -474,10 +508,18 @@ export class Angle implements BeJSONFunctions {
    * @param vz z component of vector v
    */
   public static radiansBetweenVectorsXYZ(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number
   ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
-    return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
+    return Math.atan2(
+      Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz),
+      uDotV
+    );
   }
   /**
    * Returns the angle between two vectors, with the vectors given as xyz components, and an up vector to resolve
@@ -498,9 +540,18 @@ export class Angle implements BeJSONFunctions {
    * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI). If false, return
    * signed (-PI < radians <= PI)
    */
-  public static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
-    upVectorX: number, upVectorY: number, upVectorZ: number,
-    adjustToPositive: boolean = false): number {
+  public static orientedRadiansBetweenVectorsXYZ(
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    upVectorX: number,
+    upVectorY: number,
+    upVectorZ: number,
+    adjustToPositive: boolean = false
+  ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
     const wx = uy * vz - uz * vy;
     const wy = uz * vx - ux * vz;

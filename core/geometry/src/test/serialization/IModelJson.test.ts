@@ -22,7 +22,8 @@ import { testGeometryQueryRoundTrip } from "./FlatBuffer.test";
 // cspell:word BSIJSON
 
 // directory containing imjs files produced by native geomlibs tests:
-const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";
+const iModelJsonNativeSamplesDirectory =
+  "./src/test/iModelJsonSamples/fromNative/";
 // directory containing imjs files produced by prior executions of this test file:
 const iModelJsonSamplesDirectory = "./src/test/iModelJsonSamples/fromGC/";
 // Output folder typically not tracked by git... make directory if not there
@@ -30,11 +31,9 @@ const iModelJsonOutputSubFolder = "iModelJsonSamples";
 
 function deepAlmostEqual(g0: any, g1: any): boolean {
   if (Array.isArray(g0) && Array.isArray(g1)) {
-    if (g0.length !== g1.length)
-      return false;
+    if (g0.length !== g1.length) return false;
     for (let i = 0; i < g0.length; i++) {
-      if (!deepAlmostEqual(g0[i], g1[i]))
-        return false;
+      if (!deepAlmostEqual(g0[i], g1[i])) return false;
     }
     return true;
   } else if (g0 instanceof GeometryQuery && g1 instanceof GeometryQuery) {
@@ -46,14 +45,17 @@ function deepAlmostEqual(g0: any, g1: any): boolean {
 /** For each property P of the json value:  save the value as a new member of the array counter.P
  */
 function saveJson(jsv: object, counter: { [key: string]: any }) {
-  if (typeof jsv === "object" && typeof jsv !== "function" && !Array.isArray(jsv)) {
+  if (
+    typeof jsv === "object" &&
+    typeof jsv !== "function" &&
+    !Array.isArray(jsv)
+  ) {
     for (const property in jsv) {
       if (jsv.hasOwnProperty(property)) {
         // const key = "sampleData_" + property;
         const key = property;
         // Add property to counter if not already there
-        if (!counter.hasOwnProperty(key))
-          counter[key] = [];
+        if (!counter.hasOwnProperty(key)) counter[key] = [];
         counter[key].push(jsv);
       }
     }
@@ -78,22 +80,30 @@ function applyShifts(g: any, dx: number, dy: number): any {
   }
   return g;
 }
-function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy: boolean = false) {
+function exerciseIModelJSon(
+  ck: Checker,
+  g: any,
+  doParse: boolean = false,
+  noisy: boolean = false
+) {
   if (Array.isArray(g)) {
-    for (const g1 of g)
-      exerciseIModelJSon(ck, g1, doParse, noisy);
+    for (const g1 of g) exerciseIModelJSon(ck, g1, doParse, noisy);
     return;
   }
 
   if (g instanceof GeometryQuery) {
     const imData = IModelJson.Writer.toIModelJson(g);
     saveJson(imData, allIModelJsonSamples);
-    if (noisy)
-      GeometryCoreTestIO.consoleLog(prettyPrint(imData));
+    if (noisy) GeometryCoreTestIO.consoleLog(prettyPrint(imData));
     if (doParse) {
       const g1 = IModelJson.Reader.parse(imData) as GeometryQuery;
       if (!g1 || !g.isAlmostEqual(g1)) {
-        ck.announceError("IModelJson round trip error", g, prettyPrint(imData), prettyPrint(g1));
+        ck.announceError(
+          "IModelJson round trip error",
+          g,
+          prettyPrint(imData),
+          prettyPrint(g1)
+        );
         IModelJson.Reader.parse(imData);
         GeometryCoreTestIO.consoleLog("*********** round trip data *********");
         GeometryCoreTestIO.consoleLog(prettyPrint(g));
@@ -106,20 +116,22 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
         const g2 = IModelJson.Reader.parse(imData1) as GeometryQuery;
         g.isAlmostEqual(g2);
       }
-      if (noisy)
-        GeometryCoreTestIO.consoleLog("Round Trip", prettyPrint(g1));
+      if (noisy) GeometryCoreTestIO.consoleLog("Round Trip", prettyPrint(g1));
     }
     return;
   }
-
 }
 
-function exerciseIModelJSonArray(ck: Checker, g: any[], doParse: boolean = false, noisy: boolean = false) {
+function exerciseIModelJSonArray(
+  ck: Checker,
+  g: any[],
+  doParse: boolean = false,
+  noisy: boolean = false
+) {
   const writer = new IModelJson.Writer();
   const imData = writer.emit(g);
   saveJson(imData, allIModelJsonSamples);
-  if (noisy)
-    GeometryCoreTestIO.consoleLog(prettyPrint(imData));
+  if (noisy) GeometryCoreTestIO.consoleLog(prettyPrint(imData));
   if (doParse) {
     const g1 = IModelJson.Reader.parse(imData) as any[];
     if (ck.testTrue(Array.isArray(g1), "[] returns as array", g1)) {
@@ -146,11 +158,24 @@ describe("CreateIModelJsonSamples", () => {
   it("GeometryQueryToIModelJS", () => {
     const ck = new Checker();
     const numSample = 3;
-    ck.testUndefined(IModelJson.Writer.toIModelJson(undefined), "IModelJsonWriter(undefined)");
+    ck.testUndefined(
+      IModelJson.Writer.toIModelJson(undefined),
+      "IModelJsonWriter(undefined)"
+    );
 
     exerciseIModelJSon(ck, Sample.createLineStrings(), true, false);
-    exerciseIModelJSon(ck, Sample.createSmoothCurvePrimitives(numSample), true, false);
-    exerciseIModelJSon(ck, CoordinateXYZ.create(Point3d.create(11, 7, 5)), true, false);
+    exerciseIModelJSon(
+      ck,
+      Sample.createSmoothCurvePrimitives(numSample),
+      true,
+      false
+    );
+    exerciseIModelJSon(
+      ck,
+      CoordinateXYZ.create(Point3d.create(11, 7, 5)),
+      true,
+      false
+    );
 
     exerciseIModelJSon(ck, Sample.createSimplePaths(), true, false);
     exerciseIModelJSon(ck, Sample.createSimpleLoops(), true, false);
@@ -164,20 +189,56 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSon(ck, Sample.createSimpleRotationalSweeps(), true, false);
     exerciseIModelJSon(ck, Sample.createRuledSweeps(), true, false);
 
-    exerciseIModelJSon(ck, applyShifts(Sample.createBsplineCurves(true), 10, 0), true, false);
-    exerciseIModelJSon(ck, applyShifts(Sample.createBspline3dHCurves(), 10, 10), true, false);
-    exerciseIModelJSon(ck, Sample.createXYGridBsplineSurface(4, 3, 3, 2)!, true, false);
-    exerciseIModelJSon(ck, Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!, true, false);
+    exerciseIModelJSon(
+      ck,
+      applyShifts(Sample.createBsplineCurves(true), 10, 0),
+      true,
+      false
+    );
+    exerciseIModelJSon(
+      ck,
+      applyShifts(Sample.createBspline3dHCurves(), 10, 10),
+      true,
+      false
+    );
+    exerciseIModelJSon(
+      ck,
+      Sample.createXYGridBsplineSurface(4, 3, 3, 2)!,
+      true,
+      false
+    );
+    exerciseIModelJSon(
+      ck,
+      Sample.createWeightedXYGridBsplineSurface(
+        4,
+        3,
+        3,
+        2,
+        1.0,
+        1.1,
+        0.9,
+        1.0
+      )!,
+      true,
+      false
+    );
     exerciseIModelJSon(ck, Sample.createSimpleIndexedPolyfaces(1), true, false);
     exerciseIModelJSon(ck, Sample.createSimplePointStrings(), true, false);
     exerciseIModelJSon(ck, Sample.createSimpleTransitionSpirals(), true, false);
     // exerciseIModelJSon(ck, Sample.createSimpleIndexedPolyfaces(3), true, true);
-    GeometryCoreTestIO.savePropertiesAsSeparateFiles(iModelJsonOutputSubFolder, allIModelJsonSamples);
-    exerciseIModelJSonArray(ck, Sample.createSmoothCurvePrimitives(numSample), true, false);
+    GeometryCoreTestIO.savePropertiesAsSeparateFiles(
+      iModelJsonOutputSubFolder,
+      allIModelJsonSamples
+    );
+    exerciseIModelJSonArray(
+      ck,
+      Sample.createSmoothCurvePrimitives(numSample),
+      true,
+      false
+    );
 
     // GeometryCoreTestIO.consoleLog(allIModelJsonSamples);
     expect(ck.getNumErrors()).equals(0);
-
   });
   // exercise the secondary ArcBy3Points property, with various point formats . ..
   it("ArcByStartMiddleEnd", () => {
@@ -195,7 +256,10 @@ describe("CreateIModelJsonSamples", () => {
       const point12 = arc.fractionToPoint(1.0);
       ck.testPoint3d(point0, point10, "start point");
       ck.testPoint3d(point2, point12, "end point");
-      ck.testCoordinate(arc.center.distance(point0), arc.center.distance(point1));
+      ck.testCoordinate(
+        arc.center.distance(point0),
+        arc.center.distance(point1)
+      );
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -211,7 +275,7 @@ describe("CreateIModelJsonSamples", () => {
     mesh.data.pointIndex.push(0, 1, 2);
     mesh.data.edgeVisible.push(true, true, true);
     mesh.addNormalXYZ(0, 0, 1);
-    mesh.addNormal(Vector3d.create(0, 0, 1));    // in bug state, this reuses the first normal
+    mesh.addNormal(Vector3d.create(0, 0, 1)); // in bug state, this reuses the first normal
     mesh.addNormalXYZ(0, 0, 1);
     mesh.addNormalIndex(0);
     mesh.addNormalIndex(1);
@@ -222,7 +286,11 @@ describe("CreateIModelJsonSamples", () => {
     ck.testExactNumber(mesh.data.normal!.length, 3);
     ck.testExactNumber(mesh.data.normalIndex!.length, 3);
     mesh.expectedClosure = 1;
-    ck.testExactNumber(1, mesh.expectedClosure, "expectedClosure property accessors");
+    ck.testExactNumber(
+      1,
+      mesh.expectedClosure,
+      "expectedClosure property accessors"
+    );
     const meshJson = IModelJson.Writer.toIModelJson(mesh);
     const meshB = IModelJson.Reader.parse(meshJson);
     ck.testTrue(mesh.isAlmostEqual(meshB), "confirm json round trip");
@@ -232,14 +300,19 @@ describe("CreateIModelJsonSamples", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
-    const expectedJsonMismatchList = ["indexedMesh.numPerFace.",  // the mesh flips to zero-terminated
-      "cone.imjs",                // cone can change to cylinder
-      "box.minimal.imjs",         // minimal box gets remaining fields populated
+    const expectedJsonMismatchList = [
+      "indexedMesh.numPerFace.", // the mesh flips to zero-terminated
+      "cone.imjs", // cone can change to cylinder
+      "box.minimal.imjs", // minimal box gets remaining fields populated
     ];
-    const expectedFBMismatchList = ["point.imjs", // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
+    const expectedFBMismatchList = [
+      "point.imjs", // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
     ];
     // read imjs files from various places -- some produced by native, some by core-geometry ...
-    for (const sourceDirectory of [iModelJsonSamplesDirectory, iModelJsonNativeSamplesDirectory]) {
+    for (const sourceDirectory of [
+      iModelJsonSamplesDirectory,
+      iModelJsonNativeSamplesDirectory,
+    ]) {
       const items = fs.readdirSync(sourceDirectory);
       let numItems = 0;
       let numValuePassed = 0;
@@ -249,7 +322,10 @@ describe("CreateIModelJsonSamples", () => {
         // skip known non-round-trip files ...
         let isFiltered = false;
         for (const candidate of skipList)
-          if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+          if (currFile.lastIndexOf(candidate) >= 0) {
+            isFiltered = true;
+            break;
+          }
         if (isFiltered) continue;
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
@@ -266,7 +342,9 @@ describe("CreateIModelJsonSamples", () => {
           const geometryQuery1 = IModelJson.Reader.parse(jsonObject1);
           const jsonObject2 = IModelJson.Writer.toIModelJson(geometryQuery1);
           if (compareObj.compare(jsonObject1, jsonObject2)) {
-            if (Checker.noisy.printJSONSuccess) { GeometryCoreTestIO.consoleLog(`PASS: ${i}`); }
+            if (Checker.noisy.printJSONSuccess) {
+              GeometryCoreTestIO.consoleLog(`PASS: ${i}`);
+            }
             numValuePassed++;
           } else {
             const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
@@ -274,30 +352,62 @@ describe("CreateIModelJsonSamples", () => {
             if (deepAlmostEqual(geometryQuery1, geometryQuery3)) {
               isFiltered = false;
               for (const candidate of expectedJsonMismatchList)
-                if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
-              GeometryCoreTestIO.consoleLog("%s json round trip mismatch (geometry matches):", isFiltered ? "Expected" : "Warning: Unexpected", currFile);
+                if (currFile.lastIndexOf(candidate) >= 0) {
+                  isFiltered = true;
+                  break;
+                }
+              GeometryCoreTestIO.consoleLog(
+                "%s json round trip mismatch (geometry matches):",
+                isFiltered ? "Expected" : "Warning: Unexpected",
+                currFile
+              );
               if (!isFiltered) {
-                GeometryCoreTestIO.consoleLog("jsonObject1:", prettyPrint(jsonObject1));
-                GeometryCoreTestIO.consoleLog("jsonObject3:", prettyPrint(jsonObject3));
+                GeometryCoreTestIO.consoleLog(
+                  "jsonObject1:",
+                  prettyPrint(jsonObject1)
+                );
+                GeometryCoreTestIO.consoleLog(
+                  "jsonObject3:",
+                  prettyPrint(jsonObject3)
+                );
               }
             } else {
-              ck.announceError("imjs => GeometryQuery => imjs round trip failure", currFile);
-              GeometryCoreTestIO.consoleLog("jsonObject1:", prettyPrint(jsonObject1));
-              GeometryCoreTestIO.consoleLog("jsonObject2:", prettyPrint(jsonObject2));
-              if (Checker.noisy.printJSONFailure) { GeometryCoreTestIO.consoleLog(`FAIL: ${i}`); GeometryCoreTestIO.consoleLog(compareObj.errorTracker); }
+              ck.announceError(
+                "imjs => GeometryQuery => imjs round trip failure",
+                currFile
+              );
+              GeometryCoreTestIO.consoleLog(
+                "jsonObject1:",
+                prettyPrint(jsonObject1)
+              );
+              GeometryCoreTestIO.consoleLog(
+                "jsonObject2:",
+                prettyPrint(jsonObject2)
+              );
+              if (Checker.noisy.printJSONFailure) {
+                GeometryCoreTestIO.consoleLog(`FAIL: ${i}`);
+                GeometryCoreTestIO.consoleLog(compareObj.errorTracker);
+              }
             }
           }
           // test geometry roundtrip thru flatbuffer (and IMJS again)
           isFiltered = false;
           for (const candidate of expectedFBMismatchList)
-            if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+            if (currFile.lastIndexOf(candidate) >= 0) {
+              isFiltered = true;
+              break;
+            }
           if (isFiltered) continue;
           testGeometryQueryRoundTrip(ck, geometryQuery1);
         }
       }
       if (Checker.noisy.printJSONSuccess) {
-        GeometryCoreTestIO.consoleLog(` imjs => geometry files from ${sourceDirectory}`);
-        GeometryCoreTestIO.consoleLog(`*************** ${numValuePassed} files passed out of ${numItems} checked`);
+        GeometryCoreTestIO.consoleLog(
+          ` imjs => geometry files from ${sourceDirectory}`
+        );
+        GeometryCoreTestIO.consoleLog(
+          `*************** ${numValuePassed} files passed out of ${numItems} checked`
+        );
       }
     }
     ck.checkpoint("BSIJSON.ParseIMJS");
@@ -324,11 +434,14 @@ describe("BoxProps", () => {
   });
 
   it("prefers origin if both origin and baseOrigin are specified", () => {
-    expectBoxOrigin({
-      origin: [5, 5, 5],
-      baseOrigin: [6, 6, 6],
-      baseX: 7,
-    }, 5);
+    expectBoxOrigin(
+      {
+        origin: [5, 5, 5],
+        baseOrigin: [6, 6, 6],
+        baseX: 7,
+      },
+      5
+    );
   });
 
   it("requires either origin or baseOrigin", () => {

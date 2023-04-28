@@ -40,7 +40,10 @@ export interface TestRadialMenuState {
   data: any;
 }
 
-export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRadialMenuState> {
+export class TestRadialMenu extends React.Component<
+  TestRadialMenuProps,
+  TestRadialMenuState
+> {
   public readonly state: Readonly<TestRadialMenuState>;
 
   constructor(props: TestRadialMenuProps) {
@@ -69,13 +72,14 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
         opened={this.state.opened}
         onBlur={this._close}
         onEsc={this._close}
-        innerRadius={55} outerRadius={140}>
+        innerRadius={55}
+        outerRadius={140}
+      >
         {this.state.data.map((obj: any, index: any) => {
           return (
-            <RadialButton
-              key={index}
-              icon={obj.icon}
-              onSelect={this._close}>{obj.label}</RadialButton>
+            <RadialButton key={index} icon={obj.icon} onSelect={this._close}>
+              {obj.label}
+            </RadialButton>
           );
         })}
       </RadialMenu>
@@ -84,10 +88,9 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
 
   private _close = () => {
     this.setState({ opened: false }, () => {
-      if (this.props.onClose)
-        this.props.onClose();
+      if (this.props.onClose) this.props.onClose();
     });
-  }
+  };
 
   public componentDidUpdate(prevProps: TestRadialMenuProps) {
     if (prevProps.opened !== this.props.opened) {

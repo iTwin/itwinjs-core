@@ -65,14 +65,18 @@ export interface QueryTileFeaturesOptions {
  * @see [[Viewport.queryVisibleFeatures]].
  * @public
  */
-export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
+export type QueryVisibleFeaturesOptions =
+  | QueryScreenFeaturesOptions
+  | QueryTileFeaturesOptions;
 
 /** A function supplied to [[Viewport.queryVisibleFeatures]] to process the results. The iterable supplied to the callback consists of all of the
  * [Feature]($common)s determined to be visible. The same feature may recur multiple times.
  * @note The iterable supplied to the callback is usable only within the callback. Once the callback exits, the iterable becomes empty.
  * @public
  */
-export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
+export type QueryVisibleFeaturesCallback = (
+  features: Iterable<VisibleFeature>
+) => void;
 
 /** Ensures that the iterable supplied to QueryVisibleFeaturesCallback becomes invalidated once the callback exits.
  * The iterable relies on RenderTarget state that changes from one frame to another.
@@ -91,12 +95,18 @@ class ExpiringIterable implements Iterable<VisibleFeature> {
   }
 
   public [Symbol.iterator](): Iterator<VisibleFeature> {
-    assert(!this._disposed, "The iterable supplied to QueryVisibleFeaturesCallback is valid only for the duration of the callback.");
+    assert(
+      !this._disposed,
+      "The iterable supplied to QueryVisibleFeaturesCallback is valid only for the duration of the callback."
+    );
     return this._features[Symbol.iterator]();
   }
 }
 
-function invokeCallback(features: Iterable<VisibleFeature>, callback: QueryVisibleFeaturesCallback): void {
+function invokeCallback(
+  features: Iterable<VisibleFeature>,
+  callback: QueryVisibleFeaturesCallback
+): void {
   const iterable = new ExpiringIterable(features);
   try {
     callback(iterable);
@@ -120,7 +130,11 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
   }
 
   public [Symbol.iterator](): Iterator<VisibleFeature> {
-    function* iterator(pixels: Pixel.Buffer, rect: ViewRect, iModel: IModelConnection) {
+    function* iterator(
+      pixels: Pixel.Buffer,
+      rect: ViewRect,
+      iModel: IModelConnection
+    ) {
       for (let x = rect.left; x < rect.right; x++) {
         for (let y = rect.top; y < rect.bottom; y++) {
           const pixel = pixels.getPixel(x, y);
@@ -144,15 +158,32 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
 /** Implementation of [[Viewport.queryVisibleFeatures]].
  * @internal
  */
-export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
+export function queryVisibleFeatures(
+  viewport: Viewport,
+  options: QueryVisibleFeaturesOptions,
+  callback: QueryVisibleFeaturesCallback
+): void {
   assert("screen" === options.source || "tiles" === options.source);
   switch (options.source) {
     case "screen":
       const rect = options.rect ?? viewport.viewRect;
-      viewport.readPixels(rect, Pixel.Selector.Feature, (pixels) => invokeCallback(pixels ? new ScreenFeatures(pixels, rect, viewport) : [], callback), true !== options.includeNonLocatable);
+      viewport.readPixels(
+        rect,
+        Pixel.Selector.Feature,
+        (pixels) =>
+          invokeCallback(
+            pixels ? new ScreenFeatures(pixels, rect, viewport) : [],
+            callback
+          ),
+        true !== options.includeNonLocatable
+      );
       break;
     case "tiles":
-      viewport.target.queryVisibleTileFeatures(options, viewport.iModel, (features) => invokeCallback(features, callback));
+      viewport.target.queryVisibleTileFeatures(
+        options,
+        viewport.iModel,
+        (features) => invokeCallback(features, callback)
+      );
       break;
     default:
       invokeCallback([], callback);

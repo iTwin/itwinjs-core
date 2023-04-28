@@ -33,10 +33,15 @@ export class BuildingCodeOffsetOps {
    * @param offsetAB offset along edge from pointA to pointB.  Positive is to the right (outside of a CCW turn)
    * @param offsetBC offset along edge from pointB to pointC.  Positive is tot he right (outside of a CCW turn)
    */
-  public static createJointWithRadiusChange(pointA: Point3d, pointB: Point3d, pointC: Point3d, offsetAB: number, offsetBC: number): CurvePrimitive | Point3d | undefined {
+  public static createJointWithRadiusChange(
+    pointA: Point3d,
+    pointB: Point3d,
+    pointC: Point3d,
+    offsetAB: number,
+    offsetBC: number
+  ): CurvePrimitive | Point3d | undefined {
     // enforce same-sign:
-    if (offsetAB * offsetBC < 0.0)
-      return undefined;
+    if (offsetAB * offsetBC < 0.0) return undefined;
     const vectorAB = Vector3d.createStartEnd(pointA, pointB);
     const vectorBC = Vector3d.createStartEnd(pointB, pointC);
     const perpAB = vectorAB.rotate90CCWXY();
@@ -59,34 +64,76 @@ export class BuildingCodeOffsetOps {
         const offsetRatio = offsetAB / offsetBC;
         const cosine = totalTurn.cos();
         const sine = totalTurn.sin();
-        const intersectionRadians = this.pickFromUpperPlaneIntersections(alphaSign * offsetRatio, betaSign * cosine, sine, phiSign);
+        const intersectionRadians = this.pickFromUpperPlaneIntersections(
+          alphaSign * offsetRatio,
+          betaSign * cosine,
+          sine,
+          phiSign
+        );
         if (intersectionRadians !== undefined) {
           arcVector0 = perpBC.scaleToLength(offsetBC)!;
           arcVector90 = vectorBC.scaleToLength(offsetBC)!;
-          arc = Arc3d.create(pointB, arcVector0, arcVector90, AngleSweep.createStartEndRadians(-phiSign * intersectionRadians, 0.0));
+          arc = Arc3d.create(
+            pointB,
+            arcVector0,
+            arcVector90,
+            AngleSweep.createStartEndRadians(
+              -phiSign * intersectionRadians,
+              0.0
+            )
+          );
         } else {
-          const offsetPointAB = this.offsetPointFromSegment(pointA, pointB, -offsetAB, 1.0);
-          const offsetPointBC = this.offsetPointFromSegment(pointB, pointC, -offsetBC, 0.0);
+          const offsetPointAB = this.offsetPointFromSegment(
+            pointA,
+            pointB,
+            -offsetAB,
+            1.0
+          );
+          const offsetPointBC = this.offsetPointFromSegment(
+            pointB,
+            pointC,
+            -offsetBC,
+            0.0
+          );
           arc = LineSegment3d.create(offsetPointAB, offsetPointBC);
         }
       } else {
         const offsetRatio = offsetBC / offsetAB;
         const cosine = totalTurn.cos();
         const sine = totalTurn.sin();
-        const intersectionRadians = this.pickFromUpperPlaneIntersections(alphaSign * offsetRatio, betaSign * cosine, sine, phiSign);
+        const intersectionRadians = this.pickFromUpperPlaneIntersections(
+          alphaSign * offsetRatio,
+          betaSign * cosine,
+          sine,
+          phiSign
+        );
         if (intersectionRadians !== undefined) {
           arcVector0 = perpAB.scaleToLength(offsetAB)!;
           arcVector90 = vectorAB.scaleToLength(offsetAB)!;
-          arc = Arc3d.create(pointB, arcVector0, arcVector90, AngleSweep.createStartEndRadians(0, phiSign * intersectionRadians));
+          arc = Arc3d.create(
+            pointB,
+            arcVector0,
+            arcVector90,
+            AngleSweep.createStartEndRadians(0, phiSign * intersectionRadians)
+          );
         } else {
-          const offsetPointAB = this.offsetPointFromSegment(pointA, pointB, -offsetAB, 1.0);
-          const offsetPointBC = this.offsetPointFromSegment(pointB, pointC, -offsetBC, 0.0);
+          const offsetPointAB = this.offsetPointFromSegment(
+            pointA,
+            pointB,
+            -offsetAB,
+            1.0
+          );
+          const offsetPointBC = this.offsetPointFromSegment(
+            pointB,
+            pointC,
+            -offsetBC,
+            0.0
+          );
           arc = LineSegment3d.create(offsetPointAB, offsetPointBC);
         }
       }
     }
-    if (arc !== undefined)
-      return arc;
+    if (arc !== undefined) return arc;
     // on fallthrough, create intersection of offset lines.
     const intersectionParameters = Vector2d.create();
     if (perpAB.normalizeInPlace() && perpBC.normalizeInPlace()) {
@@ -94,18 +141,44 @@ export class BuildingCodeOffsetOps {
       const yAB = pointB.y + offsetAB * perpAB.y;
       const xBC = pointB.x + offsetBC * perpBC.x;
       const yBC = pointB.y + offsetBC * perpBC.y;
-      if (SmallSystem.linearSystem2d(vectorAB.x, -vectorBC.x, vectorAB.y, -vectorBC.y, xBC - xAB, yBC - yAB, intersectionParameters)) {
-        return Point3d.create(xAB + vectorAB.x * intersectionParameters.x, yAB + vectorAB.y * intersectionParameters.x, pointB.z);
+      if (
+        SmallSystem.linearSystem2d(
+          vectorAB.x,
+          -vectorBC.x,
+          vectorAB.y,
+          -vectorBC.y,
+          xBC - xAB,
+          yBC - yAB,
+          intersectionParameters
+        )
+      ) {
+        return Point3d.create(
+          xAB + vectorAB.x * intersectionParameters.x,
+          yAB + vectorAB.y * intersectionParameters.x,
+          pointB.z
+        );
       }
     }
     return undefined;
   }
-  public static offsetPointFromSegment(pointA: Point3d, pointB: Point3d, offsetDistance: number, fraction: number): Point3d {
+  public static offsetPointFromSegment(
+    pointA: Point3d,
+    pointB: Point3d,
+    offsetDistance: number,
+    fraction: number
+  ): Point3d {
     const dAB = pointA.distance(pointB);
-    const perpendicularFraction = Geometry.conditionalDivideFraction(offsetDistance, dAB);
+    const perpendicularFraction = Geometry.conditionalDivideFraction(
+      offsetDistance,
+      dAB
+    );
     if (perpendicularFraction === undefined)
       return pointA.interpolate(fraction, pointB);
-    return pointA.interpolatePerpendicularXY(fraction, pointB, perpendicularFraction);
+    return pointA.interpolatePerpendicularXY(
+      fraction,
+      pointB,
+      perpendicularFraction
+    );
   }
   /**
    * Append a line segment and variant joint to a growing chain
@@ -118,7 +191,11 @@ export class BuildingCodeOffsetOps {
    * @param point0 start point.  see note about input and output status
    * @param joint Curve primitive or point for joint path.
    */
-  public static appendSegmentAndJoint(chain: Path | Loop, point0: Point3d, joint: CurvePrimitive | Point3d | undefined) {
+  public static appendSegmentAndJoint(
+    chain: Path | Loop,
+    point0: Point3d,
+    joint: CurvePrimitive | Point3d | undefined
+  ) {
     if (joint instanceof CurvePrimitive) {
       chain.children.push(LineSegment3d.create(point0, joint.startPoint()));
       chain.children.push(joint);
@@ -134,42 +211,67 @@ export class BuildingCodeOffsetOps {
    * @param offsetDistances edgeDistances[i] is offset from points[i] to points[i+1]
    * @param close if true, force closure from last to first point.
    */
-  public static edgeByEdgeOffsetFromPoints(points: Point3d[], offsetDistances: number[], close: boolean): Path | Loop | undefined {
+  public static edgeByEdgeOffsetFromPoints(
+    points: Point3d[],
+    offsetDistances: number[],
+    close: boolean
+  ): Path | Loop | undefined {
     let n = points.length;
-    if (n < 2)
-      return undefined;
+    if (n < 2) return undefined;
     if (close) {
-      if (points[0].isAlmostEqual(points[n - 1]))
-        n--;
+      if (points[0].isAlmostEqual(points[n - 1])) n--;
       const loop = Loop.create();
-      if (offsetDistances.length < n)
-        return undefined;
+      if (offsetDistances.length < n) return undefined;
       let point0;
-      const joint0 = this.createJointWithRadiusChange(points[n - 1], points[0], points[1], offsetDistances[n - 1], offsetDistances[0]);
-      if (!joint0)
-        return undefined;
-      if (joint0 instanceof Point3d)
-        point0 = joint0.clone();
-      else
-        point0 = joint0.endPoint();
+      const joint0 = this.createJointWithRadiusChange(
+        points[n - 1],
+        points[0],
+        points[1],
+        offsetDistances[n - 1],
+        offsetDistances[0]
+      );
+      if (!joint0) return undefined;
+      if (joint0 instanceof Point3d) point0 = joint0.clone();
+      else point0 = joint0.endPoint();
       for (let i = 0; i < n; i++) {
         const i0 = i;
         const i1 = (i + 1) % n;
         const i2 = (i + 2) % n;
-        const joint = this.createJointWithRadiusChange(points[i0], points[i1], points[i2], offsetDistances[i0], offsetDistances[i1]);
+        const joint = this.createJointWithRadiusChange(
+          points[i0],
+          points[i1],
+          points[i2],
+          offsetDistances[i0],
+          offsetDistances[i1]
+        );
         this.appendSegmentAndJoint(loop, point0, joint);
       }
       return loop;
     } else {
-      if (offsetDistances.length + 1 < n)
-        return undefined;
+      if (offsetDistances.length + 1 < n) return undefined;
       const path = Path.create();
-      const point0 = this.offsetPointFromSegment(points[0], points[1], -offsetDistances[0], 0.0);
+      const point0 = this.offsetPointFromSegment(
+        points[0],
+        points[1],
+        -offsetDistances[0],
+        0.0
+      );
       for (let i = 0; i + 2 < n; i++) {
-        const joint = this.createJointWithRadiusChange(points[i], points[i + 1], points[i + 2], offsetDistances[i], offsetDistances[i + 1]);
+        const joint = this.createJointWithRadiusChange(
+          points[i],
+          points[i + 1],
+          points[i + 2],
+          offsetDistances[i],
+          offsetDistances[i + 1]
+        );
         this.appendSegmentAndJoint(path, point0, joint);
       }
-      const point1 = this.offsetPointFromSegment(points[n - 2], points[n - 1], -offsetDistances[n - 2], 1.0);
+      const point1 = this.offsetPointFromSegment(
+        points[n - 2],
+        points[n - 1],
+        -offsetDistances[n - 2],
+        1.0
+      );
       this.appendSegmentAndJoint(path, point0, point1);
       return path;
     }
@@ -186,9 +288,21 @@ export class BuildingCodeOffsetOps {
    * @param sineCoff
    * @param phiSign
    */
-  public static pickFromUpperPlaneIntersections(alpha: number, cosineCoff: number, sineCoff: number, phiSign: number): number | undefined {
+  public static pickFromUpperPlaneIntersections(
+    alpha: number,
+    cosineCoff: number,
+    sineCoff: number,
+    phiSign: number
+  ): number | undefined {
     const intersectionRadians = new GrowableFloat64Array(2);
-    AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, cosineCoff, sineCoff, undefined, undefined, intersectionRadians);
+    AnalyticRoots.appendImplicitLineUnitCircleIntersections(
+      alpha,
+      cosineCoff,
+      sineCoff,
+      undefined,
+      undefined,
+      intersectionRadians
+    );
     let candidate: number | undefined;
     if (intersectionRadians.length === 1) {
       candidate = phiSign * intersectionRadians.atUncheckedIndex(0);

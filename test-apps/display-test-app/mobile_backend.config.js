@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const webpack = require("webpack");
@@ -12,17 +12,15 @@ module.exports = (env) => {
 
 function getConfig(env) {
   // set sourcedir if not specified in arguments.
-  if (!env.sourcedir)
-    env.sourcedir = "./";
+  if (!env.sourcedir) env.sourcedir = "./";
 
-  if (!env.outdir)
-    env.outdir = "./lib/module" + (env.prod ? "/prod" : "/dev");
+  if (!env.outdir) env.outdir = "./lib/module" + (env.prod ? "/prod" : "/dev");
 
   // get the directory for the bundle.
   const bundleDirectory = path.resolve(env.sourcedir, env.outdir);
 
   // unless specified with env.prod, create a development build.
-  const devMode = !(env.prod);
+  const devMode = !env.prod;
 
   // this is the "barrel" file of the module, which imports all of the sources.
   const bundleEntry = env.entry;

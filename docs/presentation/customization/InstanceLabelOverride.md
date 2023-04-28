@@ -8,12 +8,12 @@ Instance label override rule provides a way to set instance label to one of its 
 
 | Name                                              | Required? | Type                                                                     | Default |
 | ------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------- |
-| *Filtering*                                       |
+| _Filtering_                                       |
 | [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`    |
 | [`priority`](#attribute-priority)                 | No        | `number`                                                                 | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                                | `false` |
 | [`class`](#attribute-class)                       | Yes       | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |         |
-| *Overrides*                                       |
+| _Overrides_                                       |
 | [`values`](#attribute-values)                     | Yes       | `InstanceLabelOverrideValueSpecification[]`                              |         |
 
 ### Attribute: `requiredSchemas`

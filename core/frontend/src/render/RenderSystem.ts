@@ -6,12 +6,45 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
-  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
+  base64StringToUint8Array,
+  Id64String,
+  IDisposable,
+} from "@itwin/core-bentley";
+import {
+  ColorDef,
+  ColorIndex,
+  ElementAlignedBox3d,
+  FeatureIndex,
+  FeatureIndexType,
+  FillFlags,
+  Frustum,
+  Gradient,
+  ImageBuffer,
+  ImageBufferFormat,
+  ImageSource,
+  ImageSourceFormat,
+  isValidImageSourceFormat,
+  QParams3d,
+  QPoint3dList,
+  RenderFeatureTable,
+  RenderMaterial,
+  RenderTexture,
+  SkyGradient,
+  TextureProps,
+  TextureTransparency,
 } from "@itwin/core-common";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import {
+  ClipVector,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  Transform,
+  Vector2d,
+  XAndY,
+} from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -22,8 +55,17 @@ import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
+import {
+  BatchOptions,
+  CustomGraphicBuilderOptions,
+  GraphicBuilder,
+  GraphicType,
+  ViewportGraphicBuilderOptions,
+} from "./GraphicBuilder";
+import {
+  InstancedGraphicParams,
+  PatternGraphicParams,
+} from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
@@ -37,8 +79,15 @@ import { CreateRenderMaterialArgs } from "./RenderMaterial";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import {
+  CreateTextureArgs,
+  CreateTextureFromSourceArgs,
+  TextureCacheKey,
+} from "./RenderTexture";
+import {
+  ScreenSpaceEffectBuilder,
+  ScreenSpaceEffectBuilderParams,
+} from "./ScreenSpaceEffectBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -100,8 +149,12 @@ export type GLTimerResultCallback = (result: GLTimerResult) => void;
 
 /** Default implementation of RenderGraphicOwner. */
 class GraphicOwner extends RenderGraphicOwner {
-  public constructor(private readonly _graphic: RenderGraphic) { super(); }
-  public get graphic(): RenderGraphic { return this._graphic; }
+  public constructor(private readonly _graphic: RenderGraphic) {
+    super();
+  }
+  public get graphic(): RenderGraphic {
+    return this._graphic;
+  }
 }
 
 /** An interface optionally exposed by a RenderSystem that allows control of various debugging features.
@@ -141,7 +194,9 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTerrainGeometry
+  implements IDisposable, RenderMemory.Consumer
+{
   public abstract dispose(): void;
   public abstract get transform(): Transform | undefined;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -158,10 +213,19 @@ export class TerrainTexture {
     public readonly layerIndex: number,
     public transparency: number,
     public readonly clipRectangle?: Range2d
-  ) { }
+  ) {}
 
   public cloneWithClip(clipRectangle: Range2d) {
-    return new TerrainTexture (this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
+    return new TerrainTexture(
+      this.texture,
+      this.featureId,
+      this.scale,
+      this.translate,
+      this.targetRectangle,
+      this.layerIndex,
+      this.transparency,
+      clipRectangle
+    );
   }
 }
 /** @internal */
@@ -172,18 +236,18 @@ export class DebugShaderFile {
     public isVS: boolean,
     public isGL: boolean,
     public isUsed: boolean
-  ) { }
+  ) {}
 }
 /** Transparency settings for planar grid display.
  * @alpha
  */
 export class PlanarGridTransparency {
   /** Transparency for the grid plane.   This should generally be fairly high to avoid obscuring other geometry */
-  public readonly planeTransparency = .9;
+  public readonly planeTransparency = 0.9;
   /** Transparency of the grid lines.  This should be higher than the plane, but less than reference line transparency */
-  public readonly lineTransparency = .75;
+  public readonly lineTransparency = 0.75;
   /** Transparency of the reference lines.   This should be less than plane or line transparency so that reference lines are more prominent */
-  public readonly refTransparency = .5;
+  public readonly refTransparency = 0.5;
 }
 
 /** Settings for planar grid display.
@@ -236,7 +300,10 @@ export interface RenderSkyCubeParams {
 }
 
 /** @internal */
-export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
+export type RenderSkyBoxParams =
+  | RenderSkyGradientParams
+  | RenderSkySphereParams
+  | RenderSkyCubeParams;
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -277,16 +344,24 @@ export abstract class RenderSystem implements IDisposable {
   public abstract dispose(): void;
 
   /** @internal */
-  public get maxTextureSize(): number { return 0; }
+  public get maxTextureSize(): number {
+    return 0;
+  }
 
   /** @internal */
-  public get supportsCreateImageBitmap(): boolean { return false; }
+  public get supportsCreateImageBitmap(): boolean {
+    return false;
+  }
 
   /** @internal */
-  public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
+  public get dpiAwareLOD(): boolean {
+    return true === this.options.dpiAwareLOD;
+  }
 
   /** @internal */
-  public get isMobile(): boolean { return false; }
+  public get isMobile(): boolean {
+    return false;
+  }
 
   /** @internal */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -303,7 +378,12 @@ export abstract class RenderSystem implements IDisposable {
    * @param _imodel The IModelConnection with which the material is associated.
    * @returns A previously-created material matching the specified ID, or undefined if no such material exists.
    */
-  public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
+  public findMaterial(
+    _key: string,
+    _imodel: IModelConnection
+  ): RenderMaterial | undefined {
+    return undefined;
+  }
 
   /** Create a [RenderMaterial]($common) from parameters
    * If the parameters include a non-empty key, and no previously-created material already exists with that key, the newly-created material will be cached on the IModelConnection such
@@ -314,12 +394,19 @@ export abstract class RenderSystem implements IDisposable {
    * @deprecated in 3.x. Use [[createRenderMaterial]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
+  public createMaterial(
+    _params: RenderMaterial.Params,
+    _imodel: IModelConnection
+  ): RenderMaterial | undefined {
+    return undefined;
+  }
 
   /** Create a [RenderMaterial]($common).
    * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
    */
-  public createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined {
+  public createRenderMaterial(
+    _args: CreateRenderMaterialArgs
+  ): RenderMaterial | undefined {
     return undefined;
   }
 
@@ -333,7 +420,12 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderContext.createGraphicBuilder]].
    * @see [[Decorator]]
    */
-  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {
+  public createGraphicBuilder(
+    placement: Transform,
+    type: GraphicType,
+    viewport: Viewport,
+    pickableId?: Id64String
+  ): GraphicBuilder {
     const pickable = undefined !== pickableId ? { id: pickableId } : undefined;
     return this.createGraphic({ type, viewport, placement, pickable });
   }
@@ -342,116 +434,215 @@ export abstract class RenderSystem implements IDisposable {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
+  public abstract createGraphic(
+    options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions
+  ): GraphicBuilder;
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
    * @returns undefined if screen-space effects are not supported by this RenderSystem.
    */
-  public createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined {
+  public createScreenSpaceEffectBuilder(
+    _params: ScreenSpaceEffectBuilderParams
+  ): ScreenSpaceEffectBuilder | undefined {
     return undefined;
   }
 
   /** @internal */
-  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+  public createTriMesh(
+    args: MeshArgs,
+    instances?: InstancedGraphicParams | RenderAreaPattern | Point3d
+  ): RenderGraphic | undefined {
     const params = MeshParams.create(args);
     return this.createMesh(params, instances);
   }
 
   /** @internal */
-  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+  public createIndexedPolylines(
+    args: PolylineArgs,
+    instances?: InstancedGraphicParams | RenderAreaPattern | Point3d
+  ): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
-      return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
+      return undefined !== pointStringParams
+        ? this.createPointString(pointStringParams, instances)
+        : undefined;
     } else {
       const polylineParams = PolylineParams.create(args);
-      return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
+      return undefined !== polylineParams
+        ? this.createPolyline(polylineParams, instances)
+        : undefined;
     }
   }
 
   /** @internal */
-  public createMeshGeometry(_params: MeshParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+  public createMeshGeometry(
+    _params: MeshParams,
+    _viewIndependentOrigin?: Point3d
+  ): RenderGeometry | undefined {
+    return undefined;
+  }
   /** @internal */
-  public createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+  public createPolylineGeometry(
+    _params: PolylineParams,
+    _viewIndependentOrigin?: Point3d
+  ): RenderGeometry | undefined {
+    return undefined;
+  }
   /** @internal */
-  public createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+  public createPointStringGeometry(
+    _params: PointStringParams,
+    _viewIndependentOrigin?: Point3d
+  ): RenderGeometry | undefined {
+    return undefined;
+  }
 
   /** @internal */
-  public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
+  public createAreaPattern(
+    _params: PatternGraphicParams
+  ): RenderAreaPattern | undefined {
+    return undefined;
+  }
 
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
    */
-  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
+  public abstract createRenderGraphic(
+    _geometry: RenderGeometry,
+    instances?: InstancedGraphicParams | RenderAreaPattern
+  ): RenderGraphic | undefined;
 
   private createGraphicFromGeometry(
-    createGeometry: (viewIndependentOrigin?: Point3d) => RenderGeometry | undefined,
-    instancesOrOrigin?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+    createGeometry: (
+      viewIndependentOrigin?: Point3d
+    ) => RenderGeometry | undefined,
+    instancesOrOrigin?: InstancedGraphicParams | RenderAreaPattern | Point3d
+  ): RenderGraphic | undefined {
     let viOrigin;
     let instances;
-    if (instancesOrOrigin instanceof Point3d)
-      viOrigin = instancesOrOrigin;
-    else
-      instances = instancesOrOrigin;
+    if (instancesOrOrigin instanceof Point3d) viOrigin = instancesOrOrigin;
+    else instances = instancesOrOrigin;
 
     const geom = createGeometry(viOrigin);
     return geom ? this.createRenderGraphic(geom, instances) : undefined;
   }
 
   /** @internal */
-  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    return this.createGraphicFromGeometry((viOrigin) => this.createMeshGeometry(params, viOrigin), instances);
+  public createMesh(
+    params: MeshParams,
+    instances?: InstancedGraphicParams | RenderAreaPattern | Point3d
+  ): RenderGraphic | undefined {
+    return this.createGraphicFromGeometry(
+      (viOrigin) => this.createMeshGeometry(params, viOrigin),
+      instances
+    );
   }
 
   /** @internal */
-  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    return this.createGraphicFromGeometry((origin) => this.createPolylineGeometry(params, origin), instances);
+  public createPolyline(
+    params: PolylineParams,
+    instances?: InstancedGraphicParams | RenderAreaPattern | Point3d
+  ): RenderGraphic | undefined {
+    return this.createGraphicFromGeometry(
+      (origin) => this.createPolylineGeometry(params, origin),
+      instances
+    );
   }
 
   /** @internal */
-  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    return this.createGraphicFromGeometry((origin) => this.createPointStringGeometry(params, origin), instances);
+  public createPointString(
+    params: PointStringParams,
+    instances?: InstancedGraphicParams | RenderAreaPattern | Point3d
+  ): RenderGraphic | undefined {
+    return this.createGraphicFromGeometry(
+      (origin) => this.createPointStringGeometry(params, origin),
+      instances
+    );
   }
 
   /** @internal */
-  public createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined {
+  public createTerrainMesh(
+    _params: RealityMeshParams,
+    _transform?: Transform,
+    _disableTextureDisposal = false
+  ): RenderTerrainGeometry | undefined {
     return undefined;
   }
 
   /** @internal */
-  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(
+    _params: RealityMeshGraphicParams,
+    _disableTextureDisposal = false
+  ): RenderGraphic | undefined {
+    return undefined;
+  }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(
+    _realityMesh: RealityMeshParams,
+    _disableTextureDisposal = false
+  ): RenderGraphic | undefined {
+    return undefined;
+  }
   /** @internal */
-  public get maxRealityImageryLayers() { return 0; }
+  public get maxRealityImageryLayers() {
+    return 0;
+  }
   /** @internal */
-  public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  public createPointCloud(
+    _args: PointCloudArgs,
+    _imodel: IModelConnection
+  ): RenderGraphic | undefined {
+    return undefined;
+  }
 
   /** Create a clip volume to clip geometry.
    * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.
    * @param _clipVector Defines how the volume clips geometry.
    * @returns A clip volume, or undefined if, e.g., the clip vector does not clip anything.
    */
-  public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
+  public createClipVolume(
+    _clipVector: ClipVector
+  ): RenderClipVolume | undefined {
+    return undefined;
+  }
 
   /** @internal */
-  public createPlanarGrid(_frustum: Frustum, _grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
+  public createPlanarGrid(
+    _frustum: Frustum,
+    _grid: PlanarGridProps
+  ): RenderGraphic | undefined {
+    return undefined;
+  }
   /** @internal */
-  public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
+  public createBackgroundMapDrape(
+    _drapedTree: TileTreeReference,
+    _mapTree: MapTileTreeReference
+  ): RenderTextureDrape | undefined {
+    return undefined;
+  }
   /** @internal */
-  public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
+  public createTile(
+    tileTexture: RenderTexture,
+    corners: Point3d[],
+    featureIndex?: number
+  ): RenderGraphic | undefined {
     // corners
     // [0] [1]
     // [2] [3]
     // Quantize the points according to their range
-    const points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
-    for (let i = 0; i < 4; i++)
-      points.add(corners[i]);
+    const points = new QPoint3dList(
+      QParams3d.fromRange(Range3d.create(...corners))
+    );
+    for (let i = 0; i < 4; i++) points.add(corners[i]);
 
     // Now remove the translation from the quantized points and put it into a transform instead.
     // This prevents graphical artifacts when quantization origin is large relative to quantization scale.
     // ###TODO: Would be better not to create a branch for every tile.
     const qorigin = points.params.origin;
-    const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+    const transform = Transform.createTranslationXYZ(
+      qorigin.x,
+      qorigin.y,
+      qorigin.z
+    );
     qorigin.setZero();
 
     const features = new FeatureIndex();
@@ -468,14 +659,18 @@ export abstract class RenderSystem implements IDisposable {
       colors: new ColorIndex(),
       fillFlags: FillFlags.None,
       textureMapping: {
-        uvParams: [new Point2d(0, 0), new Point2d(1, 0), new Point2d(0, 1), new Point2d(1, 1)],
+        uvParams: [
+          new Point2d(0, 0),
+          new Point2d(1, 0),
+          new Point2d(0, 1),
+          new Point2d(1, 1),
+        ],
         texture: tileTexture,
       },
     };
 
     const trimesh = this.createTriMesh(rasterTile);
-    if (undefined === trimesh)
-      return undefined;
+    if (undefined === trimesh) return undefined;
 
     const branch = new GraphicBranch(true);
     branch.add(trimesh);
@@ -485,18 +680,27 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera.
    * @internal
    */
-  public createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined { return undefined; }
+  public createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined {
+    return undefined;
+  }
 
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform and symbology overrides applied to the list */
-  public createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic {
+  public createBranch(
+    branch: GraphicBranch,
+    transform: Transform
+  ): RenderGraphic {
     return this.createGraphicBranch(branch, transform);
   }
 
   /** Create a graphic from a [[GraphicBranch]]. */
-  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
+  public abstract createGraphicBranch(
+    branch: GraphicBranch,
+    transform: Transform,
+    options?: GraphicBranchOptions
+  ): RenderGraphic;
 
   /** Create a node in the scene graph corresponding to a transform node in the scene's schedule script.
    * Nodes under this branch will only be drawn if they belong to the specified transform node.
@@ -504,19 +708,31 @@ export abstract class RenderSystem implements IDisposable {
    * The node Id is either the Id of a single transform node in the script, of 0xffffffff to indicate all nodes that have no transform applied to them.
    * @internal
    */
-  public createAnimationTransformNode(graphic: RenderGraphic, _nodeId: number): RenderGraphic {
+  public createAnimationTransformNode(
+    graphic: RenderGraphic,
+    _nodeId: number
+  ): RenderGraphic {
     return graphic;
   }
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
-  public abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
+  public abstract createBatch(
+    graphic: RenderGraphic,
+    features: RenderFeatureTable,
+    range: ElementAlignedBox3d,
+    options?: BatchOptions
+  ): RenderGraphic;
 
   /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
-  public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
+  public async waitForAllExternalTextures(): Promise<void> {
+    return Promise.resolve();
+  }
   /** @internal */
-  public get hasExternalTextureRequests(): boolean { return false; }
+  public get hasExternalTextureRequests(): boolean {
+    return false;
+  }
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
@@ -524,7 +740,9 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderGraphicOwner]] for details regarding ownership semantics.
    * @public
    */
-  public createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner { return new GraphicOwner(ownedGraphic); }
+  public createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner {
+    return new GraphicOwner(ownedGraphic);
+  }
 
   /** Create a "layer" containing the graphics belonging to it. A layer has a unique identifier and all of its geometry lies in an XY plane.
    * Different layers can be drawn coincident with one another; their draw order can be controlled by a per-layer priority value so that one layer draws
@@ -533,19 +751,34 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[createGraphicLayerContainer]]
    * @internal
    */
-  public createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic { return graphic; }
+  public createGraphicLayer(
+    graphic: RenderGraphic,
+    _layerId: string
+  ): RenderGraphic {
+    return graphic;
+  }
 
   /** Create a graphic that can contain [[GraphicLayer]]s.
    * @internal
    */
-  public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number, _elevation: number): RenderGraphic { return graphic; }
+  public createGraphicLayerContainer(
+    graphic: RenderGraphic,
+    _drawAsOverlay: boolean,
+    _transparency: number,
+    _elevation: number
+  ): RenderGraphic {
+    return graphic;
+  }
 
   /** Find a previously-created [[RenderTexture]] by its key.
    * @param _key The unique key of the texture within the context of the IModelConnection. Typically an element Id.
    * @param _imodel The IModelConnection with which the texture is associated.
    * @returns A previously-created texture matching the specified key, or undefined if no such texture exists.
    */
-  public findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined {
+  public findTexture(
+    _key: TextureCacheKey,
+    _imodel: IModelConnection
+  ): RenderTexture | undefined {
     return undefined;
   }
 
@@ -557,7 +790,10 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderSystem.loadTextureImage]].
    * @internal
    */
-  public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
+  public async loadTexture(
+    id: Id64String,
+    iModel: IModelConnection
+  ): Promise<RenderTexture | undefined> {
     let texture = this.findTexture(id.toString(), iModel);
     if (undefined === texture) {
       const image = await this.loadTextureImage(id, iModel);
@@ -568,7 +804,10 @@ export abstract class RenderSystem implements IDisposable {
           ownership: { key: id, iModel },
           image: {
             source: image.image,
-            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
+            transparency:
+              ImageSourceFormat.Png === image.format
+                ? TextureTransparency.Mixed
+                : TextureTransparency.Opaque,
           },
         });
       }
@@ -585,20 +824,29 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderSystem.loadTexture]]
    * @internal
    */
-  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined> {
+  public async loadTextureImage(
+    id: Id64String,
+    iModel: IModelConnection
+  ): Promise<OldTextureImage | undefined> {
     const elemProps = await iModel.elements.getProps(id);
-    if (1 !== elemProps.length)
-      return undefined;
+    if (1 !== elemProps.length) return undefined;
 
     const textureProps = elemProps[0] as TextureProps;
-    if (undefined === textureProps.data || "string" !== typeof (textureProps.data) || undefined === textureProps.format || "number" !== typeof (textureProps.format))
+    if (
+      undefined === textureProps.data ||
+      "string" !== typeof textureProps.data ||
+      undefined === textureProps.format ||
+      "number" !== typeof textureProps.format
+    )
       return undefined;
 
     const format = textureProps.format;
-    if (!isValidImageSourceFormat(format))
-      return undefined;
+    if (!isValidImageSourceFormat(format)) return undefined;
 
-    const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data), format);
+    const imageSource = new ImageSource(
+      base64StringToUint8Array(textureProps.data),
+      format
+    );
     const image = await imageElementFromImageSource(imageSource);
     return { image, format };
   }
@@ -611,7 +859,10 @@ export abstract class RenderSystem implements IDisposable {
    * Otherwise, if an iModel is supplied, the newly-created texture will be cached on the iModel such that subsequent calls with an equivalent gradient and the
    * same iModel will return the cached texture instead of creating a new one.
    */
-  public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined {
+  public getGradientTexture(
+    _symb: Gradient.Symb,
+    _imodel?: IModelConnection
+  ): RenderTexture | undefined {
     return undefined;
   }
 
@@ -619,14 +870,25 @@ export abstract class RenderSystem implements IDisposable {
    * @deprecated in 3.x. Use [[createTexture]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
+  public createTextureFromImageBuffer(
+    image: ImageBuffer,
+    iModel: IModelConnection,
+    params: RenderTexture.Params
+  ): RenderTexture | undefined {
+    const ownership = params.key
+      ? { key: params.key, iModel }
+      : params.isOwned
+      ? "external"
+      : undefined;
     return this.createTexture({
       type: params.type,
       ownership,
       image: {
         source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
+        transparency:
+          ImageBufferFormat.Rgba === image.format
+            ? TextureTransparency.Mixed
+            : TextureTransparency.Opaque,
       },
     });
   }
@@ -635,14 +897,26 @@ export abstract class RenderSystem implements IDisposable {
    * @deprecated in 3.x. Use [[createTexture]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
+  public createTextureFromImage(
+    image: HTMLImageElement,
+    hasAlpha: boolean,
+    iModel: IModelConnection | undefined,
+    params: RenderTexture.Params
+  ): RenderTexture | undefined {
+    const ownership =
+      params.key && iModel
+        ? { key: params.key, iModel }
+        : params.isOwned
+        ? "external"
+        : undefined;
     return this.createTexture({
       type: params.type,
       ownership,
       image: {
         source: image,
-        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
+        transparency: hasAlpha
+          ? TextureTransparency.Mixed
+          : TextureTransparency.Opaque,
       },
     });
   }
@@ -651,24 +925,40 @@ export abstract class RenderSystem implements IDisposable {
    * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
    */
   // eslint-disable-next-line deprecation/deprecation
-  public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
+  public async createTextureFromImageSource(
+    source: ImageSource,
+    iModel: IModelConnection | undefined,
+    params: RenderTexture.Params
+  ): Promise<RenderTexture | undefined> {
+    const ownership =
+      iModel && params.key
+        ? { iModel, key: params.key }
+        : params.isOwned
+        ? "external"
+        : undefined;
     return this.createTextureFromSource({
       type: params.type,
       source,
       ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
+      transparency:
+        source.format === ImageSourceFormat.Jpeg
+          ? TextureTransparency.Opaque
+          : TextureTransparency.Mixed,
     });
   }
 
   /** Create a texture from an ImageSource. */
-  public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
+  public async createTextureFromSource(
+    args: CreateTextureFromSourceArgs
+  ): Promise<RenderTexture | undefined> {
     try {
       // JPEGs don't support transparency.
-      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
+      const transparency =
+        ImageSourceFormat.Jpeg === args.source.format
+          ? TextureTransparency.Opaque
+          : args.transparency ?? TextureTransparency.Mixed;
       const image = await imageElementFromImageSource(args.source);
-      if (!IModelApp.hasRenderSystem)
-        return undefined;
+      if (!IModelApp.hasRenderSystem) return undefined;
 
       return this.createTexture({
         type: args.type,
@@ -685,7 +975,12 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
   // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
+  public createTextureFromElement(
+    _id: Id64String,
+    _imodel: IModelConnection,
+    _params: RenderTexture.Params,
+    _format: ImageSourceFormat
+  ): RenderTexture | undefined {
     return undefined;
   }
 
@@ -697,26 +992,39 @@ export abstract class RenderSystem implements IDisposable {
    * @internal
    */
   // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
+  public createTextureFromCubeImages(
+    _posX: HTMLImageElement,
+    _negX: HTMLImageElement,
+    _posY: HTMLImageElement,
+    _negY: HTMLImageElement,
+    _posZ: HTMLImageElement,
+    _negZ: HTMLImageElement,
+    _imodel: IModelConnection,
+    _params: RenderTexture.Params
+  ): RenderTexture | undefined {
     return undefined;
   }
 
   /** @internal */
-  public onInitialized(): void { }
+  public onInitialized(): void {}
 
   /** @internal */
-  public enableDiagnostics(_enable: RenderDiagnostics): void { }
+  public enableDiagnostics(_enable: RenderDiagnostics): void {}
 
   /** @internal */
-  public get supportsLogZBuffer(): boolean { return false !== this.options.logarithmicDepthBuffer; }
+  public get supportsLogZBuffer(): boolean {
+    return false !== this.options.logarithmicDepthBuffer;
+  }
 
   /** Obtain an object that can be used to control various debugging features. Returns `undefined` if debugging features are unavailable for this `RenderSystem`.
    * @beta
    */
-  public get debugControl(): RenderSystemDebugControl | undefined { return undefined; }
+  public get debugControl(): RenderSystemDebugControl | undefined {
+    return undefined;
+  }
 
   /** @internal */
-  public collectStatistics(_stats: RenderMemory.Statistics): void { }
+  public collectStatistics(_stats: RenderMemory.Statistics): void {}
 
   /** A function that is invoked after the WebGL context is lost. Context loss is almost always caused by excessive consumption of GPU memory.
    * After context loss occurs, the RenderSystem will be unable to interact with WebGL by rendering viewports, creating graphics and textures, etc.
@@ -732,7 +1040,9 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[TileAdmin.totalTileContentBytes]] for the amount of GPU memory allocated for tile graphics.
    */
   public static async contextLossHandler(): Promise<any> {
-    const msg = IModelApp.localization.getLocalizedString("iModelJs:Errors.WebGLContextLost");
+    const msg = IModelApp.localization.getLocalizedString(
+      "iModelJs:Errors.WebGLContextLost"
+    );
     return ToolAdmin.exceptionHandler(msg);
   }
 }
@@ -743,7 +1053,8 @@ export abstract class RenderSystem implements IDisposable {
  * @see [[IModelApp.renderSystem]].
  * @public
  */
-export namespace RenderSystem { // eslint-disable-line no-redeclare
+export namespace RenderSystem {
+  // eslint-disable-line no-redeclare
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
    * @public

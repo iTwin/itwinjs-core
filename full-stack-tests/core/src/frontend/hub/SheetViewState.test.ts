@@ -17,20 +17,24 @@ describe("Sheet views (#integration)", () => {
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
-    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
+    const iTwinId = await TestUtility.queryITwinIdByName(
+      TestUtility.testITwinName
+    );
+    const iModelId = await TestUtility.queryIModelIdByName(
+      iTwinId,
+      TestUtility.testIModelNames.sectionDrawingLocations
+    );
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
 
   it("loads view attachment info", async () => {
-    const view = await imodel.views.load(sheetViewId) as SheetViewState;
+    const view = (await imodel.views.load(sheetViewId)) as SheetViewState;
     expect(view).instanceof(SheetViewState);
 
     const props = view.viewAttachmentProps;
@@ -39,7 +43,7 @@ describe("Sheet views (#integration)", () => {
   });
 
   it("preserves view attachment info when cloned", async () => {
-    const v1 = await imodel.views.load(sheetViewId) as SheetViewState;
+    const v1 = (await imodel.views.load(sheetViewId)) as SheetViewState;
     const v2 = v1.clone();
     expect(v1).not.to.equal(v2);
     expect(v1.viewAttachmentProps).to.equal(v2.viewAttachmentProps);
@@ -72,7 +76,7 @@ describe("Sheet views (#integration)", () => {
   });
 
   it("allocates attachments when attached to viewport and deallocates when detached", async () => {
-    const v1 = await imodel.views.load(sheetViewId) as SheetViewState;
+    const v1 = (await imodel.views.load(sheetViewId)) as SheetViewState;
     expect(v1.attachments).to.be.undefined;
     let v2: SheetViewState;
     let v3: SheetViewState;
@@ -101,7 +105,7 @@ describe("Sheet views (#integration)", () => {
   });
 
   it("updates view attachment info when viewed model changes", async () => {
-    const v1 = await imodel.views.load(sheetViewId) as SheetViewState;
+    const v1 = (await imodel.views.load(sheetViewId)) as SheetViewState;
     expect(v1.baseModelId).to.equal("0x6f");
     const p1 = v1.viewAttachmentProps;
     expect(p1.length).to.equal(1);
@@ -120,7 +124,7 @@ describe("Sheet views (#integration)", () => {
   it("should update subcategories cache when loading a sheetview", async () => {
     // 0x1a, 0x93 are the two category ids that are passed to preload for this view.
     const catIds = ["0x1a", "0x93"];
-    const view = await imodel.views.load(sheetViewId) as SheetViewState;
+    const view = (await imodel.views.load(sheetViewId)) as SheetViewState;
     const props = view.toProps();
 
     expect(props.sheetProps).not.to.be.undefined;
@@ -131,7 +135,7 @@ describe("Sheet views (#integration)", () => {
   });
 
   it("preserves view attachment info when round-tripped through JSON", async () => {
-    const view = await imodel.views.load(sheetViewId) as SheetViewState;
+    const view = (await imodel.views.load(sheetViewId)) as SheetViewState;
     const props = view.toProps();
 
     expect(props.sheetProps).not.to.be.undefined;
@@ -139,7 +143,9 @@ describe("Sheet views (#integration)", () => {
     expect(props.sheetProps!.height).to.equal(view.sheetSize.y);
 
     expect(props.sheetAttachments).not.to.be.undefined;
-    expect(props.sheetAttachments).to.deep.equal(view.viewAttachmentProps.map((x) => x.id));
+    expect(props.sheetAttachments).to.deep.equal(
+      view.viewAttachmentProps.map((x) => x.id)
+    );
 
     const clone = SheetViewState.createFromProps(props, imodel);
     await clone.load();

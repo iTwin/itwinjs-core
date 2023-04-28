@@ -6,7 +6,13 @@
  * @module Rendering
  */
 
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import {
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariableType,
+  VertexShaderBuilder,
+  VertexShaderComponent,
+} from "../ShaderBuilder";
 import { addInstanceColor } from "./Instancing";
 
 // Vertex
@@ -37,7 +43,9 @@ function getComputeColor(vert: VertexShaderBuilder): string {
   const quantized = "quantized" === vert.positionType;
   if (vert.usesInstancedGeometry) {
     addInstanceColor(vert);
-    return `${getComputeElementColor(quantized)}${applyInstanceColor}${returnColor}`;
+    return `${getComputeElementColor(
+      quantized
+    )}${applyInstanceColor}${returnColor}`;
   } else {
     return `${getComputeElementColor(quantized)}${returnColor}`;
   }
@@ -61,7 +69,10 @@ export function addColor(builder: ProgramBuilder) {
 }
 
 /** @internal */
-export function addVaryingColor(builder: ProgramBuilder, computeVertexBase: string) {
+export function addVaryingColor(
+  builder: ProgramBuilder,
+  computeVertexBase: string
+) {
   builder.addVarying("v_color", VariableType.Vec4);
   builder.vert.set(VertexShaderComponent.ComputeBaseColor, computeVertexBase);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

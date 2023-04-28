@@ -6,10 +6,7 @@
     "frontendDebugging": 9223
   },
   "chromeOptions": {
-    "args": [
-      "--disable-web-security",
-      "--no-sandbox"
-    ]
+    "args": ["--disable-web-security", "--no-sandbox"]
   },
   "mochaOptions": {
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",

@@ -27,46 +27,61 @@ export class SectionMarkerHandler {
   /** Respond to activation of the specified marker. Return true if the marker should become the active marker - i.e., if the marker was successfully activated.
    * @see [[SectionMarkerHandler.deactivateMarker]].
    */
-  public async activateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<boolean> {
+  public async activateMarker(
+    marker: SectionMarker,
+    decorator: HyperModelingDecorator
+  ): Promise<boolean> {
     return decorator.toggleSection(marker, true);
   }
 
   /** Respond to deactivation of the specified marker. Invoked when the user clicks on the marker while it is the active marker.
    * This should perform the inverse of [[SectionMarkerHandler.activateMarker]]. The marker becomes inactive as a result.
    */
-  public async deactivateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void> {
+  public async deactivateMarker(
+    marker: SectionMarker,
+    decorator: HyperModelingDecorator
+  ): Promise<void> {
     await decorator.toggleSection(marker, false);
   }
 
   /** Return toolbar items for the specified marker. If the array of toolbar items is empty, no toolbar will be displayed.
    * @see [[executeCommand]] to implement each toolbar command.
    */
-  public getToolbarProps(marker: SectionMarker, _decorator: HyperModelingDecorator): AbstractToolbarProps {
+  public getToolbarProps(
+    marker: SectionMarker,
+    _decorator: HyperModelingDecorator
+  ): AbstractToolbarProps {
     const localization = IModelApp.localization;
     return {
       items: [
         {
           id: "apply_view",
           itemPriority: 10,
-          label: localization.getLocalizedString("HyperModeling:Message.ApplyView"),
+          label: localization.getLocalizedString(
+            "HyperModeling:Message.ApplyView"
+          ),
           icon: "icon-spatial-view-apply",
-          execute: () => { },
+          execute: () => {},
           isDisabled: false,
         },
         {
           id: "open_section",
           itemPriority: 20,
-          label: localization.getLocalizedString("HyperModeling:Message.OpenSection"),
+          label: localization.getLocalizedString(
+            "HyperModeling:Message.OpenSection"
+          ),
           icon: "icon-plan-drawing",
-          execute: () => { },
+          execute: () => {},
           isDisabled: false,
         },
         {
           id: "open_sheet",
           itemPriority: 30,
-          label: localization.getLocalizedString("HyperModeling:Message.OpenSheet"),
+          label: localization.getLocalizedString(
+            "HyperModeling:Message.OpenSheet"
+          ),
           icon: "icon-plan-floor",
-          execute: () => { },
+          execute: () => {},
           isDisabled: undefined === marker.state.viewAttachment?.viewId,
         },
       ],
@@ -76,7 +91,11 @@ export class SectionMarkerHandler {
   /** Execute the command associated with the specified tool bar item.
    * @see [[getToolbarProps]] to define the set of commands.
    */
-  public async executeCommand(commandId: string, marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void> {
+  public async executeCommand(
+    commandId: string,
+    marker: SectionMarker,
+    decorator: HyperModelingDecorator
+  ): Promise<void> {
     switch (commandId) {
       case "apply_view":
         await decorator.applySpatialView(marker);
@@ -105,14 +124,27 @@ export class SectionMarkerHandler {
    * @returns true if the marker should be displayed; false to make it invisible.
    * @see [[HyperModelingDecorator.requestSync]] to force the decorator to reevaluate marker visibility when the criterion used by your implementation of this method changes.
    */
-  public isMarkerVisible(marker: SectionMarker, decorator: HyperModelingDecorator, config: SectionMarkerConfig): boolean {
-    if (undefined !== config.hiddenSectionTypes && config.hiddenSectionTypes.includes(marker.state.sectionType))
+  public isMarkerVisible(
+    marker: SectionMarker,
+    decorator: HyperModelingDecorator,
+    config: SectionMarkerConfig
+  ): boolean {
+    if (
+      undefined !== config.hiddenSectionTypes &&
+      config.hiddenSectionTypes.includes(marker.state.sectionType)
+    )
       return false;
 
-    if (!config.ignoreCategorySelector && !decorator.viewport.view.viewsCategory(marker.state.category))
+    if (
+      !config.ignoreCategorySelector &&
+      !decorator.viewport.view.viewsCategory(marker.state.category)
+    )
       return false;
 
-    if (!config.ignoreModelSelector && !decorator.viewport.view.viewsModel(marker.state.model))
+    if (
+      !config.ignoreModelSelector &&
+      !decorator.viewport.view.viewsModel(marker.state.model)
+    )
       return false;
 
     return true;

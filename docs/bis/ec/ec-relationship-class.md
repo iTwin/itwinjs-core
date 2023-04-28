@@ -18,6 +18,7 @@ Relationship inheritance rules:
 
 - Relationships only support single inheritance
 - Derived relationships narrow relationship constraints of their parent relationship
+
   - Constraint classes must be equal to or more derived than those defined in a base class
   - Multiplicities must be equal to or more restrictive than those defined in a base class
     - The minimal number of required endpoints can be increased but not decreased
@@ -35,6 +36,7 @@ Relationship inheritance rules:
 **strength** Identifies how the lifetime of the source and target objects are related.
 
 **strengthDirection** indicates if source is the parent or vice versa…
+
 - Forward indicates that the source is the "holder", "embedder" or "referencer". "Forward" is the default. Backward indicates that the target is the holder/embedder/referencer.
 
 ## Additional Sub-Elements
@@ -69,6 +71,6 @@ A relationship constraint may have [Custom Attributes](./ec-custom-attributes.md
 
 [ECCustomAttributes](./ec-custom-attributes.md) _(0..1)_
 
-[Class](./ec-class.md) _(1..*)_
+[Class](./ec-class.md) _(1..\*)_
 
 - the ECClass on this end of the relationship

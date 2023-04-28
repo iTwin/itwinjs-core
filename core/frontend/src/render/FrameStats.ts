@@ -53,7 +53,9 @@ export interface FrameStats {
  * @see [[Viewport.enableFrameStatsListener]]
  * @alpha
  */
-export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+export type OnFrameStatsReadyEvent = BeEvent<
+  (frameStats: Readonly<FrameStats>) => void
+>;
 
 /** @internal */
 export class FrameStatsCollector {
@@ -102,7 +104,9 @@ export class FrameStatsCollector {
     this._frameStats.backgroundTime = 0;
   }
 
-  public constructor(onFrameStatsReady?: OnFrameStatsReadyEvent) { this._onFrameStatsReady = onFrameStatsReady; }
+  public constructor(onFrameStatsReady?: OnFrameStatsReadyEvent) {
+    this._onFrameStatsReady = onFrameStatsReady;
+  }
 
   private _begin(entry: keyof FrameStats) {
     const prevSpan = this._frameStats[entry];
@@ -115,7 +119,9 @@ export class FrameStatsCollector {
   }
 
   public beginFrame() {
-    this._shouldRecordFrame = undefined !== this._onFrameStatsReady && this._onFrameStatsReady.numberOfListeners > 0;
+    this._shouldRecordFrame =
+      undefined !== this._onFrameStatsReady &&
+      this._onFrameStatsReady.numberOfListeners > 0;
   }
 
   public endFrame(wasFrameDrawn = false) {
@@ -131,12 +137,10 @@ export class FrameStatsCollector {
   }
 
   public beginTime(entry: keyof FrameStats) {
-    if (this._shouldRecordFrame)
-      this._begin(entry);
+    if (this._shouldRecordFrame) this._begin(entry);
   }
 
   public endTime(entry: keyof FrameStats) {
-    if (this._shouldRecordFrame)
-      this._end(entry);
+    if (this._shouldRecordFrame) this._end(entry);
   }
 }

@@ -3,8 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CompressedId64Set, Id64Array, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
-import { CustomViewState3dCreatorOptions, CustomViewState3dProps } from "@itwin/core-common";
+import {
+  CompressedId64Set,
+  Id64Array,
+  Id64String,
+  Logger,
+  StopWatch,
+} from "@itwin/core-bentley";
+import {
+  CustomViewState3dCreatorOptions,
+  CustomViewState3dProps,
+} from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
@@ -24,12 +33,17 @@ export class CustomViewState3dCreator {
    * @param [modelIds] Ids of models to display in the view.
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
-  public async getCustomViewState3dData(options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
+  public async getCustomViewState3dData(
+    options: CustomViewState3dCreatorOptions
+  ): Promise<CustomViewState3dProps> {
     let decompressedModelIds;
     if (options?.modelIds !== undefined)
-      decompressedModelIds = CompressedId64Set.decompressArray(options.modelIds);
+      decompressedModelIds = CompressedId64Set.decompressArray(
+        options.modelIds
+      );
 
-    const models: Id64Array = decompressedModelIds ?? await this._getAllModels();
+    const models: Id64Array =
+      decompressedModelIds ?? (await this._getAllModels());
     const categories: Id64Array = await this._getAllCategories();
     const modelExtents: Range3d = await this._getModelExtents(models);
     return {
@@ -50,14 +64,15 @@ export class CustomViewState3dCreator {
 
   /** Compute the union of the extents of all the specified models. */
   private async _getModelExtents(modelIds: Id64String[]): Promise<Range3d> {
-    if (modelIds.length === 0)
-      return new Range3d();
+    if (modelIds.length === 0) return new Range3d();
 
     const timer = new StopWatch("getModelExtents query", true);
     const range = await this._imodel.models.queryRange(modelIds);
 
     timer.stop();
-    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", { timeElapsedMs: timer.elapsed });
+    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", {
+      timeElapsedMs: timer.elapsed,
+    });
 
     return range;
   }
@@ -67,8 +82,10 @@ export class CustomViewState3dCreator {
     // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
     // If the iModel has an earlier version, the statement will throw because the property does not exist.
     // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
-    const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
-    const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
+    const select =
+      "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+    const spatialCriterion =
+      "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
 
     let models = [];
     Logger.logInfo(loggerCategory, "Starting getAllModels query.");

@@ -35,7 +35,11 @@ export class LinearSweep extends SolidPrimitive {
   private _contour: SweepContour;
   private _direction: Vector3d;
 
-  private constructor(contour: SweepContour, direction: Vector3d, capped: boolean) {
+  private constructor(
+    contour: SweepContour,
+    direction: Vector3d,
+    capped: boolean
+  ) {
     super(capped);
     this._contour = contour;
     this._direction = direction;
@@ -46,10 +50,13 @@ export class LinearSweep extends SolidPrimitive {
    * @param direction sweep vector.  The contour is swept the full length of the vector.
    * @param capped true to include end caps
    */
-  public static create(contour: CurveCollection, direction: Vector3d, capped: boolean): LinearSweep | undefined {
+  public static create(
+    contour: CurveCollection,
+    direction: Vector3d,
+    capped: boolean
+  ): LinearSweep | undefined {
     const sweepable = SweepContour.createForLinearSweep(contour, direction);
-    if (!sweepable)
-      return undefined;
+    if (!sweepable) return undefined;
     return new LinearSweep(sweepable, direction, capped);
   }
   /** Create a z-direction sweep of the polyline or polygon given as xy linestring values.
@@ -63,33 +70,50 @@ export class LinearSweep extends SolidPrimitive {
    * @param zSweep the sweep distance in the z direction.
    * @param capped true if caps are to be added.
    */
-  public static createZSweep(xyPoints: XAndY[], z: number, zSweep: number, capped: boolean): LinearSweep | undefined {
+  public static createZSweep(
+    xyPoints: XAndY[],
+    z: number,
+    zSweep: number,
+    capped: boolean
+  ): LinearSweep | undefined {
     const xyz = LineString3d.createXY(xyPoints, z, capped);
     if (capped) {
       xyz.addClosurePoint();
       const area = PolygonOps.areaXY(xyz.points);
-      if (area * zSweep < 0.0)
-        xyz.points.reverse();
+      if (area * zSweep < 0.0) xyz.points.reverse();
     }
-    const contour: CurveCollection = capped ? Loop.create(xyz) : Path.create(xyz);
+    const contour: CurveCollection = capped
+      ? Loop.create(xyz)
+      : Path.create(xyz);
     return LinearSweep.create(contour, Vector3d.create(0, 0, zSweep), capped);
   }
   /** get a reference to the swept curves */
-  public getCurvesRef(): CurveCollection { return this._contour.curves; }
+  public getCurvesRef(): CurveCollection {
+    return this._contour.curves;
+  }
   /** Get a reference to the `SweepContour` carrying the plane of the curves */
-  public getSweepContourRef(): SweepContour { return this._contour; }
+  public getSweepContourRef(): SweepContour {
+    return this._contour;
+  }
   /** return a clone of the sweep vector */
-  public cloneSweepVector(): Vector3d { return this._direction.clone(); }
+  public cloneSweepVector(): Vector3d {
+    return this._direction.clone();
+  }
   /** Test if `other` is also an instance of `LinearSweep` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof LinearSweep; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof LinearSweep;
+  }
   /** Return a deep clone */
   public clone(): LinearSweep {
-    return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
+    return new LinearSweep(
+      this._contour.clone(),
+      this._direction.clone(),
+      this.capped
+    );
   }
   /** apply a transform to the curves and sweep vector */
   public tryTransformInPlace(transform: Transform): boolean {
-    if (transform.matrix.isSingular())
-      return false;
+    if (transform.matrix.isSingular()) return false;
     if (this._contour.tryTransformInPlace(transform)) {
       transform.multiplyVector(this._direction, this._direction);
       return true;
@@ -114,9 +138,11 @@ export class LinearSweep extends SolidPrimitive {
   /** Test for near-equality of coordinates in `other` */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof LinearSweep) {
-      return this._contour.isAlmostEqual(other._contour)
-        && this._direction.isAlmostEqual(other._direction)
-        && this.capped === other.capped;
+      return (
+        this._contour.isAlmostEqual(other._contour) &&
+        this._direction.isAlmostEqual(other._direction) &&
+        this.capped === other.capped
+      );
     }
     return false;
   }
@@ -131,7 +157,9 @@ export class LinearSweep extends SolidPrimitive {
   public constantVSection(vFraction: number): CurveCollection | undefined {
     const section = this._contour.curves.clone();
     if (section && vFraction !== 0.0)
-      section.tryTransformInPlace(Transform.createTranslation(this._direction.scale(vFraction)));
+      section.tryTransformInPlace(
+        Transform.createTranslation(this._direction.scale(vFraction))
+      );
     return section;
   }
   /** Extend `rangeToExtend` to include this geometry. */

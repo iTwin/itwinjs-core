@@ -3,7 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyCategory, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import {
+  PropertyCategory,
+  SchemaContext,
+  SchemaItemType,
+  SchemaKey,
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Property Category tests", () => {
@@ -19,10 +24,18 @@ describe("Property Category tests", () => {
   });
 
   it("should create a valid PropertyCategory", async () => {
-    const result = await testEditor.propertyCategories.create(testKey, "testPropCategory", 5);
-    const testPropCategory = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as PropertyCategory;
+    const result = await testEditor.propertyCategories.create(
+      testKey,
+      "testPropCategory",
+      5
+    );
+    const testPropCategory = (await testEditor.schemaContext.getSchemaItem(
+      result.itemKey!
+    )) as PropertyCategory;
     expect(testPropCategory.priority).to.eql(5);
-    expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+    expect(testPropCategory.schemaItemType).to.eql(
+      SchemaItemType.PropertyCategory
+    );
   });
 
   it("should create a valid Property Category from props", async () => {
@@ -31,10 +44,17 @@ describe("Property Category tests", () => {
       label: "testLbl",
       priority: 9,
     };
-    const result = await testEditor.propertyCategories.createFromProps(testKey, propCatProps);
-    const testPropCategory = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as PropertyCategory;
+    const result = await testEditor.propertyCategories.createFromProps(
+      testKey,
+      propCatProps
+    );
+    const testPropCategory = (await testEditor.schemaContext.getSchemaItem(
+      result.itemKey!
+    )) as PropertyCategory;
     expect(testPropCategory.priority).to.eql(9);
     expect(testPropCategory.label).to.eql("testLbl");
-    expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+    expect(testPropCategory.schemaItemType).to.eql(
+      SchemaItemType.PropertyCategory
+    );
   });
 });

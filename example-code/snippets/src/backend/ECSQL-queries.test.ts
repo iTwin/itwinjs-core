@@ -4,7 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@itwin/core-backend";
+import {
+  ECSqlStatement,
+  Element,
+  IModelDb,
+  PhysicalPartition,
+  SnapshotDb,
+  Subject,
+} from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */
@@ -12,7 +19,9 @@ describe("Useful ECSQL queries", () => {
   let iModel: SnapshotDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "ecsql-queries.bim" });
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", {
+      copyFilename: "ecsql-queries.bim",
+    });
   });
 
   after(() => {
@@ -30,7 +39,8 @@ describe("Useful ECSQL queries", () => {
     // You could write the following query to find it. This query specifies that the
     // element you want is a PhysicalPartition, it has a code value of "Physical",
     // and it is a child of a Subject named "Subject1".
-    const partitionIds: Id64Set = iModel.withPreparedStatement(`
+    const partitionIds: Id64Set = iModel.withPreparedStatement(
+      `
       select
         partition.ecinstanceid
       from
@@ -38,14 +48,16 @@ describe("Useful ECSQL queries", () => {
         (select ecinstanceid from ${Subject.classFullName} where CodeValue=:parentName) as parent
       where
         partition.codevalue=:partitionName and partition.parent.id = parent.ecinstanceid;
-    `, (stmt: ECSqlStatement) => {
-      stmt.bindValue("parentName", "Subject1");
-      stmt.bindValue("partitionName", "Physical");
-      const ids: Id64Set = new Set<Id64String>();
-      while (stmt.step() === DbResult.BE_SQLITE_ROW)
-        ids.add(stmt.getValue(0).getId());
-      return ids;
-    });
+    `,
+      (stmt: ECSqlStatement) => {
+        stmt.bindValue("parentName", "Subject1");
+        stmt.bindValue("partitionName", "Physical");
+        const ids: Id64Set = new Set<Id64String>();
+        while (stmt.step() === DbResult.BE_SQLITE_ROW)
+          ids.add(stmt.getValue(0).getId());
+        return ids;
+      }
+    );
 
     assert.isNotEmpty(partitionIds);
     assert.equal(partitionIds.size, 1);
@@ -60,7 +72,11 @@ describe("Useful ECSQL queries", () => {
     // If you are sure that the name of the PhysicalPartition is unique within the
     // iModel or if you have some way of filtering results, you could do a direct query
     // for just its code value using the IModelDb.queryEntityIds convenience method.
-    for (const eidStr of iModel.queryEntityIds({ from: PhysicalPartition.classFullName, where: "CodeValue=:cv", bindings: { cv: "Physical" } })) {
+    for (const eidStr of iModel.queryEntityIds({
+      from: PhysicalPartition.classFullName,
+      where: "CodeValue=:cv",
+      bindings: { cv: "Physical" },
+    })) {
       assert.equal(iModel.elements.getElement(eidStr).code.value, "Physical");
     }
     // __PUBLISH_EXTRACT_END__
@@ -69,37 +85,45 @@ describe("Useful ECSQL queries", () => {
   it("should select all elements in a model", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-elements-in-model
     const modelId: Id64String = IModelDb.repositoryModelId;
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
+    iModel.withPreparedStatement(
+      `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`,
+      (statement: ECSqlStatement) => {
+        statement.bindId("modelId", modelId);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          // do something with each row
+        }
       }
-    });
+    );
     // __PUBLISH_EXTRACT_END__
   });
 
   it("should select all top-level elements in a model", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-top-level-elements-in-model
     const modelId: Id64String = IModelDb.repositoryModelId;
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
+    iModel.withPreparedStatement(
+      `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`,
+      (statement: ECSqlStatement) => {
+        statement.bindId("modelId", modelId);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          // do something with each row
+        }
       }
-    });
+    );
     // __PUBLISH_EXTRACT_END__
   });
 
   it("should select all child elements of the specified element", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-child-elements
     const parentId: Id64String = IModelDb.rootSubjectId;
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id=:parentId`, (statement: ECSqlStatement) => {
-      statement.bindId("parentId", parentId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
+    iModel.withPreparedStatement(
+      `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id=:parentId`,
+      (statement: ECSqlStatement) => {
+        statement.bindId("parentId", parentId);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          // do something with each row
+        }
       }
-    });
+    );
     // __PUBLISH_EXTRACT_END__
   });
-
 });

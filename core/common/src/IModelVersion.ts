@@ -12,10 +12,30 @@ import { ChangesetId } from "./ChangesetProps";
  * @public
  */
 export type IModelVersionProps =
-  { first: true, latest?: never, afterChangeSetId?: never, versionName?: never } |
-  { latest: true, first?: never, afterChangeSetId?: never, versionName?: never } |
-  { afterChangeSetId: string, first?: never, latest?: never, versionName?: never } |
-  { versionName: string, first?: never, latest?: never, afterChangeSetId?: never };
+  | {
+      first: true;
+      latest?: never;
+      afterChangeSetId?: never;
+      versionName?: never;
+    }
+  | {
+      latest: true;
+      first?: never;
+      afterChangeSetId?: never;
+      versionName?: never;
+    }
+  | {
+      afterChangeSetId: string;
+      first?: never;
+      latest?: never;
+      versionName?: never;
+    }
+  | {
+      versionName: string;
+      first?: never;
+      latest?: never;
+      afterChangeSetId?: never;
+    };
 
 /** Option to specify the version of the iModel to be acquired and used
  * @public
@@ -26,7 +46,7 @@ export class IModelVersion {
   private _afterChangeSetId?: string;
   private _versionName?: string;
 
-  private constructor() { }
+  private constructor() {}
 
   /** Describes the first version of the iModel */
   public static first(): IModelVersion {
@@ -69,10 +89,13 @@ export class IModelVersion {
   }
 
   public toJSON(): IModelVersionProps {
-    return this._versionName ? { versionName: this._versionName } :
-      this._afterChangeSetId ? { afterChangeSetId: this._afterChangeSetId } :
-        this._first ? { first: this._first } :
-          { latest: true };
+    return this._versionName
+      ? { versionName: this._versionName }
+      : this._afterChangeSetId
+      ? { afterChangeSetId: this._afterChangeSetId }
+      : this._first
+      ? { first: this._first }
+      : { latest: true };
   }
 
   /** Creates a version from an IModelVersionProps */
@@ -86,10 +109,14 @@ export class IModelVersion {
   }
 
   /** Returns true if this describes the first version */
-  public get isFirst(): boolean { return !!this._first; }
+  public get isFirst(): boolean {
+    return !!this._first;
+  }
 
   /** Returns true if this describes the latest version */
-  public get isLatest(): boolean { return !!this._latest; }
+  public get isLatest(): boolean {
+    return !!this._latest;
+  }
 
   /** Returns the last change set id to be applied to the iModel
    * to get to this specified version. @see asOfChangeSet().
@@ -97,8 +124,12 @@ export class IModelVersion {
    * if this describes the first version, last version, named version, etc.
    * @see evaluateChangeSet() for those use cases.
    */
-  public getAsOfChangeSet(): ChangesetId | undefined { return this._afterChangeSetId; }
+  public getAsOfChangeSet(): ChangesetId | undefined {
+    return this._afterChangeSetId;
+  }
 
   /** Returns the name of the version if this describes a named version. @see named() */
-  public getName(): string | undefined { return this._versionName; }
+  public getName(): string | undefined {
+    return this._versionName;
+  }
 }

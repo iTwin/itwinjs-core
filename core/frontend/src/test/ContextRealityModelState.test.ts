@@ -5,14 +5,22 @@
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
+  Code,
+  EmptyLocalization,
+  PlanarClipMaskMode,
+  PlanarClipMaskProps,
+  PlanarClipMaskSettings,
+  RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner,
+  createOrbitGtTileTreeReference,
+  createRealityTileTreeReference,
+  OrbitGtTreeReference,
+  TileTreeOwner,
 } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
@@ -40,12 +48,15 @@ describe("ContextRealityModelState", () => {
 
   class Style extends DisplayStyle3dState {
     public constructor() {
-      super({
-        id: "0",
-        code: Code.createEmpty(),
-        model: IModelConnection.dictionaryId,
-        classFullName: "BisCore:DisplayStyle3d",
-      }, imodel);
+      super(
+        {
+          id: "0",
+          code: Code.createEmpty(),
+          model: IModelConnection.dictionaryId,
+          classFullName: "BisCore:DisplayStyle3d",
+        },
+        imodel
+      );
     }
 
     public attachOrbit(id: string, iTwinId?: string): ContextRealityModelState {
@@ -186,12 +197,18 @@ describe("ContextRealityModelState", () => {
       style.expectTrees([id]);
       const a = style.trees[0].owner;
 
-      style.forEachRealityModel((model) => model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask));
+      style.forEachRealityModel(
+        (model) =>
+          (model.planarClipMaskSettings =
+            PlanarClipMaskSettings.fromJSON(planarClipMask))
+      );
       style.expectTrees([id]);
       const b = style.trees[0].owner;
       expect(b).not.to.equal(a);
 
-      style.forEachRealityModel((model) => model.planarClipMaskSettings = undefined);
+      style.forEachRealityModel(
+        (model) => (model.planarClipMaskSettings = undefined)
+      );
       style.expectTrees([id]);
       expect(style.trees[0].owner).to.equal(a);
     });

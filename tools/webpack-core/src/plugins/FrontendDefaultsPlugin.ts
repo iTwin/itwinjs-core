@@ -3,7 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
+import {
+  Compiler,
+  Configuration,
+  DefinePlugin,
+  ExternalsPlugin,
+  RuleSetRule,
+  WebpackOptionsNormalized,
+} from "webpack";
 
 const isProductionLikeMode = (
   options: Configuration | WebpackOptionsNormalized
@@ -12,7 +19,7 @@ const isProductionLikeMode = (
 };
 
 export class FrontendDefaultsPlugin {
-  constructor(private _enableSourcemaps = true) { }
+  constructor(private _enableSourcemaps = true) {}
   public apply(compiler: Compiler) {
     // Add a loader to remove all asserts in production builds.
     const defaultRules: RuleSetRule[] = [
@@ -41,8 +48,7 @@ export class FrontendDefaultsPlugin {
         value: any,
         options: Configuration
       ) => {
-        if (value)
-          return value;
+        if (value) return value;
 
         if (isProductionLikeMode(options))
           return (info: any) =>
@@ -59,7 +65,9 @@ export class FrontendDefaultsPlugin {
 
     if (compiler.options.ignoreWarnings === undefined)
       compiler.options.ignoreWarnings = [];
-    compiler.options.ignoreWarnings.push((warn) => /Failed to parse source map/.test(warn.message));
+    compiler.options.ignoreWarnings.push((warn) =>
+      /Failed to parse source map/.test(warn.message)
+    );
 
     // Add default plugins
     new DefinePlugin({

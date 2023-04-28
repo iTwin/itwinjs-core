@@ -5,7 +5,13 @@
 
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import {
+  BentleyLoggerCategory,
+  IDisposable,
+  Logger,
+  LogLevel,
+  ProcessDetector,
+} from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostOptions } from "../IModelHost";
 
@@ -40,8 +46,7 @@ export class DisableNativeAssertions implements IDisposable {
   }
 
   public dispose(): void {
-    if (!this._native)
-      return;
+    if (!this._native) return;
 
     this._native.dispose();
     this._native = undefined;
@@ -61,7 +66,7 @@ export class TestUtils {
     if (ProcessDetector.isIOSAppBackend) {
       cfg.cacheDir = undefined; // Let the native side handle the cache.
     } else {
-      cfg.cacheDir = cfg.cacheDir ?? path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+      cfg.cacheDir = cfg.cacheDir ?? path.join(__dirname, ".cache"); // Set the cache dir to be under the lib directory.
     }
     await IModelHost.startup(cfg);
   }
@@ -77,10 +82,22 @@ export class TestUtils {
 
   private static initDebugLogLevels(reset?: boolean) {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
-    Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
-    Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(
+      BentleyLoggerCategory.Performance,
+      reset ? LogLevel.Error : LogLevel.Info
+    );
+    Logger.setLevel(
+      BackendLoggerCategory.IModelDb,
+      reset ? LogLevel.Error : LogLevel.Trace
+    );
+    Logger.setLevel(
+      NativeLoggerCategory.DgnCore,
+      reset ? LogLevel.Error : LogLevel.Trace
+    );
+    Logger.setLevel(
+      NativeLoggerCategory.BeSQLite,
+      reset ? LogLevel.Error : LogLevel.Trace
+    );
   }
 
   // Setup typical programmatic log level overrides here
@@ -103,4 +120,3 @@ before(async () => {
 after(async () => {
   await TestUtils.shutdownBackend();
 });
-

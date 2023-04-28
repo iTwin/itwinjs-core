@@ -8,9 +8,22 @@
 
 import { assert, Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef,
+  Environment,
+  Gradient,
+  GraphicParams,
+  RenderTexture,
+  SkyCube,
+  SkySphere,
+  TextureImageSpec,
+  TextureMapping,
 } from "@itwin/core-common";
-import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
+import {
+  Point2d,
+  Point3d,
+  PolyfaceBuilder,
+  StrokeOptions,
+} from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -47,15 +60,18 @@ export class EnvironmentDecorations {
   protected _ground?: GroundPlaneDecorations;
   protected _sky: SkyBoxDecorations;
 
-  public constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void) {
+  public constructor(
+    view: ViewState3d,
+    onLoaded: () => void,
+    onDispose: () => void
+  ) {
     this._environment = view.displayStyle.environment;
     this._view = view;
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
     this._sky = {};
     this.loadSkyBox();
-    if (this._environment.displayGround)
-      this.loadGround();
+    if (this._environment.displayGround) this.loadGround();
   }
 
   public dispose(): void {
@@ -67,8 +83,7 @@ export class EnvironmentDecorations {
 
   public setEnvironment(env: Environment): void {
     const prev = this._environment;
-    if (prev === env)
-      return;
+    if (prev === env) return;
 
     this._environment = env;
 
@@ -76,12 +91,10 @@ export class EnvironmentDecorations {
     if (!env.displayGround || env.ground !== prev.ground)
       this._ground = undefined;
 
-    if (env.displayGround && !this._ground)
-      this.loadGround();
+    if (env.displayGround && !this._ground) this.loadGround();
 
     // Update sky box
-    if (env.sky !== prev.sky)
-      this.loadSkyBox();
+    if (env.sky !== prev.sky) this.loadSkyBox();
   }
 
   public decorate(context: DecorateContext): void {
@@ -93,22 +106,26 @@ export class EnvironmentDecorations {
     } else if (env.displaySky && this._sky.params) {
       sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
     }
-    if (sky)
-      context.setSkyBox(sky);
+    if (sky) context.setSkyBox(sky);
 
-    if (!env.displayGround || !this._ground)
-      return;
+    if (!env.displayGround || !this._ground) return;
 
     const extents = this._view.getGroundExtents(context.viewport);
-    if (extents.isNull)
-      return;
+    if (extents.isNull) return;
 
-    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
+    const points: Point3d[] = [
+      extents.low.clone(),
+      extents.low.clone(),
+      extents.high.clone(),
+      extents.high.clone(),
+    ];
     points[1].x = extents.high.x;
     points[3].x = extents.low.x;
 
     const aboveGround = this._view.isEyePointAbove(extents.low.z);
-    const params = aboveGround ? this._ground.aboveParams : this._ground.belowParams;
+    const params = aboveGround
+      ? this._ground.aboveParams
+      : this._ground.belowParams;
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     builder.activateGraphicParams(params);
 
@@ -116,7 +133,12 @@ export class EnvironmentDecorations {
     strokeOptions.needParams = true;
     const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
     polyfaceBuilder.toggleReversedFacetFlag();
-    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    const uvParams: Point2d[] = [
+      Point2d.create(0, 0),
+      Point2d.create(1, 0),
+      Point2d.create(1, 1),
+      Point2d.create(0, 1),
+    ];
     polyfaceBuilder.addQuadFacet(points, uvParams);
     const polyface = polyfaceBuilder.claimPolyface(false);
 
@@ -128,8 +150,7 @@ export class EnvironmentDecorations {
     assert(undefined === this._ground);
     const aboveParams = this.createGroundParams(true);
     const belowParams = this.createGroundParams(false);
-    if (aboveParams && belowParams)
-      this._ground = { aboveParams, belowParams };
+    if (aboveParams && belowParams) this._ground = { aboveParams, belowParams };
   }
 
   private createGroundParams(above: boolean): GraphicParams | undefined {
@@ -143,10 +164,16 @@ export class EnvironmentDecorations {
 
     const gradient = new Gradient.Symb();
     gradient.mode = Gradient.Mode.Spherical;
-    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
-    const texture = IModelApp.renderSystem.getGradientTexture(gradient, this._view.iModel);
-    if (!texture)
-      return undefined;
+    gradient.keys = [
+      { color: groundColors[0], value: values[0] },
+      { color: groundColors[1], value: values[1] },
+      { color: groundColors[2], value: values[2] },
+    ];
+    const texture = IModelApp.renderSystem.getGradientTexture(
+      gradient,
+      this._view.iModel
+    );
+    if (!texture) return undefined;
 
     // Create a material using the gradient texture
     const material = IModelApp.renderSystem.createRenderMaterial({
@@ -157,13 +184,12 @@ export class EnvironmentDecorations {
       },
     });
 
-    if (!material)
-      return undefined;
+    if (!material) return undefined;
 
     // Create GraphicParams using the material.
     const params = new GraphicParams();
     params.lineColor = gradient.keys[0].color;
-    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
+    params.fillColor = ColorDef.white; // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
     return params;
@@ -178,13 +204,14 @@ export class EnvironmentDecorations {
 
     const promise = loader.preload;
     this._sky.promise = promise;
-    loader.preload.then((loaded) => {
-      if (promise === this._sky.promise)
-        this.setSky(loaded ? loader.load() : undefined);
-    }).catch(() => {
-      if (promise === this._sky.promise)
-        this.setSky(undefined);
-    });
+    loader.preload
+      .then((loaded) => {
+        if (promise === this._sky.promise)
+          this.setSky(loaded ? loader.load() : undefined);
+      })
+      .catch(() => {
+        if (promise === this._sky.promise) this.setSky(undefined);
+      });
   }
 
   private setSky(params: RenderSkyBoxParams | undefined): void {
@@ -194,65 +221,98 @@ export class EnvironmentDecorations {
   }
 
   private loadSkyBoxParams(): SkyBoxParamsLoader {
-    let load: (() => RenderSkyBoxParams | undefined);
+    let load: () => RenderSkyBoxParams | undefined;
     let preload: Promise<boolean> | undefined;
 
     const sky = this._environment.sky;
     if (sky instanceof SkyCube) {
       const key = this.createCubeImageKey(sky);
       load = () => {
-        const texture = IModelApp.renderSystem.findTexture(key, this._view.iModel);
+        const texture = IModelApp.renderSystem.findTexture(
+          key,
+          this._view.iModel
+        );
         return texture ? { type: "cube", texture } : undefined;
       };
 
       if (!IModelApp.renderSystem.findTexture(key, this._view.iModel)) {
         // Some faces may use the same image. Only request each image once.
         const promises = [];
-        const specs = new Set<string>([sky.images.front, sky.images.back, sky.images.left, sky.images.right, sky.images.top, sky.images.bottom]);
-        for (const spec of specs)
-          promises.push(this.imageFromSpec(spec));
+        const specs = new Set<string>([
+          sky.images.front,
+          sky.images.back,
+          sky.images.left,
+          sky.images.right,
+          sky.images.top,
+          sky.images.bottom,
+        ]);
+        for (const spec of specs) promises.push(this.imageFromSpec(spec));
 
         preload = Promise.all(promises).then((images) => {
           const idToImage = new Map<TextureImageSpec, HTMLImageElement>();
           let index = 0;
           for (const spec of specs) {
             const image = images[index++];
-            if (!image)
-              return false;
-            else
-              idToImage.set(spec, image);
+            if (!image) return false;
+            else idToImage.set(spec, image);
           }
 
           // eslint-disable-next-line deprecation/deprecation
-          const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
+          const params = new RenderTexture.Params(
+            key,
+            RenderTexture.Type.SkyBox
+          );
           const txImgs = [
-            idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
-            idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
+            idToImage.get(sky.images.front)!,
+            idToImage.get(sky.images.back)!,
+            idToImage.get(sky.images.top)!,
+            idToImage.get(sky.images.bottom)!,
+            idToImage.get(sky.images.right)!,
+            idToImage.get(sky.images.left)!,
           ];
 
-          return undefined !== IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
+          return (
+            undefined !==
+            IModelApp.renderSystem.createTextureFromCubeImages(
+              txImgs[0],
+              txImgs[1],
+              txImgs[2],
+              txImgs[3],
+              txImgs[4],
+              txImgs[5],
+              this._view.iModel,
+              params
+            )
+          );
         });
       }
     } else if (sky instanceof SkySphere) {
       load = () => {
-        const texture = IModelApp.renderSystem.findTexture(sky.image, this._view.iModel);
-        return texture ? {
-          type: "sphere",
-          texture,
-          rotation: 0,
-          zOffset: this._view.iModel.globalOrigin.z,
-        } : undefined;
+        const texture = IModelApp.renderSystem.findTexture(
+          sky.image,
+          this._view.iModel
+        );
+        return texture
+          ? {
+              type: "sphere",
+              texture,
+              rotation: 0,
+              zOffset: this._view.iModel.globalOrigin.z,
+            }
+          : undefined;
       };
 
       if (!IModelApp.renderSystem.findTexture(sky.image, this._view.iModel)) {
         preload = this.imageFromSpec(sky.image).then((image) => {
-          if (!image)
-            return false;
+          if (!image) return false;
 
-          return undefined !== IModelApp.renderSystem.createTexture({
-            image: { source: image },
-            ownership: { iModel: this._view.iModel, key: sky.image },
-          });
+          return (
+            undefined !==
+            IModelApp.renderSystem.createTexture({
+              image: { source: image },
+              ownership: { iModel: this._view.iModel, key: sky.image },
+            })
+          );
         });
       }
     } else {
@@ -275,9 +335,13 @@ export class EnvironmentDecorations {
     };
   }
 
-  private async imageFromSpec(spec: TextureImageSpec): Promise<HTMLImageElement | undefined> {
+  private async imageFromSpec(
+    spec: TextureImageSpec
+  ): Promise<HTMLImageElement | undefined> {
     if (Id64.isValidId64(spec))
-      return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
+      return (
+        await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel)
+      )?.image;
 
     return tryImageElementFromUrl(spec);
   }

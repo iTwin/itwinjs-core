@@ -2,12 +2,12 @@
 
 <!-- Responsible for this page: ??? -->
 
-As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), objects in the real world can be thought about from different *modeling perspectives*. A modeling perspective is a way of conceptualizing the real world for a particular purpose. For example, a Sewer System can be thought about from many modeling perspectives:
+As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), objects in the real world can be thought about from different _modeling perspectives_. A modeling perspective is a way of conceptualizing the real world for a particular purpose. For example, a Sewer System can be thought about from many modeling perspectives:
 
-* As a physical 3D reality with form, material and mass (the *physical* perspective).
-* As a system for hydrological conveyance (an *analytical* perspective)
-* As a set of components that require scheduled and emergency maintenance (a *maintenance* perspective)
-* As a load on a wastewater treatment facility that needs to have adequate capacity (a *functional* perspective)
+- As a physical 3D reality with form, material and mass (the _physical_ perspective).
+- As a system for hydrological conveyance (an _analytical_ perspective)
+- As a set of components that require scheduled and emergency maintenance (a _maintenance_ perspective)
+- As a load on a wastewater treatment facility that needs to have adequate capacity (a _functional_ perspective)
 
 ## Keeping Modeling Perspectives Segregated
 
@@ -20,9 +20,9 @@ Each perspective's data
 
 Modeling perspectives are represented directly in the BIS class hierarchies as:
 
-* `InformationPartitionElement` subclasses
-* `Model` subclasses
-* `Element` subclasses
+- `InformationPartitionElement` subclasses
+- `Model` subclasses
+- `Element` subclasses
 
 For every modeling perspective there is a corresponding `InformationPartitionElement` subclass and a `Model` subclass.
 
@@ -58,11 +58,11 @@ We will need to document 3 cases:
 
 Modeling Perspectives can be considered to be abstract, concrete, or sealed to correspond with the `InformationPartitionElement` and `Model` subclasses that implement them:
 
-* An *abstract* modeling perspective is used only to logically group more-specialized perspectives and is implemented by abstract `InformationPartitionElement` and `Model` subclasses.
+- An _abstract_ modeling perspective is used only to logically group more-specialized perspectives and is implemented by abstract `InformationPartitionElement` and `Model` subclasses.
 
-* A *concrete* modeling perspective is used directly to model reality and is implemented by concrete `InformationPartitionElement` and `Model` subclasses.
+- A _concrete_ modeling perspective is used directly to model reality and is implemented by concrete `InformationPartitionElement` and `Model` subclasses.
 
-* A *sealed* modeling perspective is a concrete modeling perspective that is not allowed to be further specialized. A sealed modeling perspective is implemented with sealed `InformationPartitionElement` and `Model` subclasses.
+- A _sealed_ modeling perspective is a concrete modeling perspective that is not allowed to be further specialized. A sealed modeling perspective is implemented with sealed `InformationPartitionElement` and `Model` subclasses.
 
 ## Standard Modeling Perspectives
 
@@ -70,18 +70,18 @@ It is not possible to predict all of the modeling perspectives that may eventual
 
 The core modeling perspectives are:
 
-* InformationPartitionElement (abstract)
-  * AnalyticalPartition (abstract)
-  * DefinitionPartition (sealed)
-  * DocumentPartition (sealed)
-  * FunctionalPartition (concrete but considered abstract)
-  * GraphicalPartition3d (sealed)
-  * GroupInformationPartition (sealed)
-  * InformationRecordPartition (sealed)
-  * LinkPartition (sealed)
-  * PhysicalPartition (sealed)
-  * PhysicalSystemPartition (sealed)
-  * SpatialLocationPartition (sealed)
+- InformationPartitionElement (abstract)
+  - AnalyticalPartition (abstract)
+  - DefinitionPartition (sealed)
+  - DocumentPartition (sealed)
+  - FunctionalPartition (concrete but considered abstract)
+  - GraphicalPartition3d (sealed)
+  - GroupInformationPartition (sealed)
+  - InformationRecordPartition (sealed)
+  - LinkPartition (sealed)
+  - PhysicalPartition (sealed)
+  - PhysicalSystemPartition (sealed)
+  - SpatialLocationPartition (sealed)
 
 If the need for a new core modeling perspective is discovered (none of the existing core modeling perspectives is appropriate as a parent perspective), new ones can be added.
 
@@ -139,7 +139,7 @@ This allows `DefinitionElements` to be organized by how they relate to the paren
 The can be multiple `DefinitionPartition` Elements and corresponding `DefinitionModel` Models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
 Each `DefinitionPartition` is identified by its [Code](../references/glossary.md#code).
 
-See [Organizing Repository-global Definition Elements](./organizing-definition-elements.md) for details on the expected organization of repository-global definition elements in the *DictionaryModel*.
+See [Organizing Repository-global Definition Elements](./organizing-definition-elements.md) for details on the expected organization of repository-global definition elements in the _DictionaryModel_.
 
 ### Document Partitions
 
@@ -148,7 +148,7 @@ This allows `Document` elements to be organized by how they relate to the parent
 `Drawing` and `Sheet` are 2 example subclasses of `Document`.
 `Drawings` and `Sheets` are further sub-modeled by `DrawingModels` and `SheetModels` which graphically break down the content of the drawing or sheet.
 
-The following instance-diagram depicts that hierarchy for a hypothetical iModel about a Plant building. Two drawing documents are shown as well as associations between 2D graphics from one of them with the Physical elements of the iModel. BIS offers the `DrawingGraphicRepresentsElement` relationship to address the need of associations between elements in a *Drawing* with elements in a different modeling perspective. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
+The following instance-diagram depicts that hierarchy for a hypothetical iModel about a Plant building. Two drawing documents are shown as well as associations between 2D graphics from one of them with the Physical elements of the iModel. BIS offers the `DrawingGraphicRepresentsElement` relationship to address the need of associations between elements in a _Drawing_ with elements in a different modeling perspective. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 &nbsp;
 ![Document Partitions](../media/document-partition.png)
@@ -158,10 +158,11 @@ The following instance-diagram depicts that hierarchy for a hypothetical iModel 
 
 A domain may or may not require a custom modeling perspective. The need for a custom modeling perspective corresponds to a need to model reality using concepts that are significantly different from other existing modeling perspectives.
 
-Structural Steel Detailing is an example of a domain that does ***not*** require its own modeling perspective. That domain will require custom classes to represent the physical items that are important to it, but all of those items are viewed from the Physical modeling perspective. Structural Steel Detailing might also need some scheduling or costing information; that information is unlikely to require a custom modeling perspective, as costing and scheduling are common needs.
+Structural Steel Detailing is an example of a domain that does **_not_** require its own modeling perspective. That domain will require custom classes to represent the physical items that are important to it, but all of those items are viewed from the Physical modeling perspective. Structural Steel Detailing might also need some scheduling or costing information; that information is unlikely to require a custom modeling perspective, as costing and scheduling are common needs.
 
 Hydraulic Analysis, on the other hand, does require a custom modeling perspective. This perspective will model reality as a system that transports and stores water. Reality will be simplified into a network of conduits and other items, with properties and relationships appropriate for hydraulic analysis.
 
 ---
+
 | Next: [Top of the World](./top-of-the-world.md)
 |:---

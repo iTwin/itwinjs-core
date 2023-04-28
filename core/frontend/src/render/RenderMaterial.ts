@@ -7,7 +7,13 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ColorDef, NormalMapParams, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
+import {
+  ColorDef,
+  NormalMapParams,
+  RenderTexture,
+  RgbColorProps,
+  TextureMapping,
+} from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** Specifies the provenance of a [RenderMaterial]($common) created for a persistent material element.

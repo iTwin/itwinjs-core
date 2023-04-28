@@ -4,8 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
-import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import {
+  BackgroundMapSettings,
+  ColorByName,
+  ColorDef,
+  GlobeMode,
+  PlanProjectionSettings,
+  PlanProjectionSettingsProps,
+} from "@itwin/core-common";
+import {
+  DisplayStyle3dState,
+  GeometricModel3dState,
+  IModelConnection,
+  Pixel,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 
@@ -21,11 +34,13 @@ describe("Plan projections (#integration)", () => {
         dpiAwareViewports: false,
       },
       mapLayerOptions: {
-        BingMaps: { // eslint-disable-line
+        BingMaps: {
+          // eslint-disable-line
           key: "key",
           value: process.env.TEST_BING_MAPS_KEY!, // will be caught in the assert above if undefined.
         },
-        MapBoxImagery: { // eslint-disable-line
+        MapBoxImagery: {
+          // eslint-disable-line
           key: "access_token",
           value: process.env.TEST_MAPBOX_KEY!, // will be caught in the assert above if undefined.
         },
@@ -68,8 +83,13 @@ describe("Plan projections (#integration)", () => {
     await testOnScreenViewport("0x29", mirukuru, 100, 100, async (vp) => {
       for (const test of tests) {
         // Top view; rectangle is coincident with background map.
-        vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
-        vp.displayStyle.backgroundColor = ColorDef.fromJSON(ColorByName.magenta);
+        vp.viewFlags = vp.viewFlags.copy({
+          backgroundMap: true,
+          lighting: false,
+        });
+        vp.displayStyle.backgroundColor = ColorDef.fromJSON(
+          ColorByName.magenta
+        );
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
           useDepthBuffer: test.mapDepth,
           globeMode: GlobeMode.Plane,
@@ -78,7 +98,10 @@ describe("Plan projections (#integration)", () => {
 
         // Set up plan projection settings.
         const style = vp.displayStyle as DisplayStyle3dState;
-        style.settings.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(test));
+        style.settings.setPlanProjectionSettings(
+          modelId,
+          PlanProjectionSettings.fromJSON(test)
+        );
         vp.invalidateScene();
 
         // Render the scene.
@@ -90,7 +113,8 @@ describe("Plan projections (#integration)", () => {
         // the rectangle if the test expects it to based on the plan projection and map settings.
         const expectPixel = (x: number, y: number, expectMap: boolean) => {
           const color = vp.readColor(x, y);
-          expect(color.equalsColorDef(vp.displayStyle.backgroundColor)).to.be.false;
+          expect(color.equalsColorDef(vp.displayStyle.backgroundColor)).to.be
+            .false;
           expect(color.equalsColorDef(ColorDef.white)).not.to.equal(expectMap);
 
           const pixel = vp.readPixel(x, y, true);

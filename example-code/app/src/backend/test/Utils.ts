@@ -33,8 +33,7 @@ export class IModelTestUtils {
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
 
     const outputFile = path.join(KnownTestLocations.outputDir, fileName);
-    if (IModelJsFs.existsSync(outputFile))
-      IModelJsFs.unlinkSync(outputFile);
+    if (IModelJsFs.existsSync(outputFile)) IModelJsFs.unlinkSync(outputFile);
 
     return outputFile;
   }

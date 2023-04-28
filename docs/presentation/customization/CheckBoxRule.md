@@ -10,12 +10,12 @@ CheckBox rules provide a way to create a checkbox for specific types of ECInstan
 
 | Name                                                              | Required? | Type                                                                 | Default     |
 | ----------------------------------------------------------------- | --------- | -------------------------------------------------------------------- | ----------- |
-| *Filtering*                                                       |
+| _Filtering_                                                       |
 | [`requiredSchemas`](#attribute-requiredschemas)                   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`        |
 | [`priority`](#attribute-priority)                                 | No        | `number`                                                             | `1000`      |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                 | No        | `boolean`                                                            | `false`     |
 | [`condition`](#attribute-condition)                               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
-| *CheckBox Attributes*                                             |
+| _CheckBox Attributes_                                             |
 | [`propertyName`](#attribute-propertyname)                         | No        | `string`                                                             | `undefined` |
 | [`useInversedPropertyValue`](#attribute-useinversedpropertyvalue) | No        | `boolean`                                                            | `false`     |
 | [`defaultValue`](#attribute-defaultvalue)                         | No        | `boolean`                                                            | `false`     |
@@ -83,7 +83,7 @@ Should property value be inversed for the check box state. **Note:** Only makes 
 
 ### Attribute: `defaultValue`
 
-Default value to use for the check box state. **Note:** Only makes sense when *not* bound to an ECProperty.
+Default value to use for the check box state. **Note:** Only makes sense when _not_ bound to an ECProperty.
 
 |                   |           |
 | ----------------- | --------- |

@@ -14,16 +14,17 @@ const app = express();
 app.all("/*", (_req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version"
+  );
   next();
 });
 
 // The generated HTML file should be served at the "root" URL (i.e., http://localhost:3000/).
 app.use("/", (req, resp, next) => {
-  if (req.path === "/")
-    resp.sendFile(process.env.CERTA_PATH!);
-  else
-    next();
+  if (req.path === "/") resp.sendFile(process.env.CERTA_PATH!);
+  else next();
 });
 
 // Handle a special route for serving absolute paths and files from node_modules
@@ -31,7 +32,7 @@ app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
   resp.sendFile(path.resolve("/", filePath), {
-    headers: (sourceMap) && {
+    headers: sourceMap && {
       "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
     },
   });
@@ -48,7 +49,9 @@ const alreadyLogged = new Set<string>();
 app.use("*", (req, resp) => {
   // Don't repeat these warnings if the same asset was requested multiple times.
   if (!alreadyLogged.has(req.originalUrl)) {
-    console.warn(`WARNING: Tests attempted to load missing asset: "${req.originalUrl}"`);
+    console.warn(
+      `WARNING: Tests attempted to load missing asset: "${req.originalUrl}"`
+    );
     alreadyLogged.add(req.originalUrl);
   }
   resp.sendStatus(404);

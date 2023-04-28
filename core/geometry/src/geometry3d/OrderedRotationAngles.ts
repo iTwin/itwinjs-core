@@ -104,8 +104,14 @@ export class OrderedRotationAngles {
    * * if xyzRotationIsClockwise is undefined it's set to [false, false, false].
    * @param result caller-allocated OrderedRotationAngles
    */
-  public static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder,
-    xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles {
+  public static createRadians(
+    xRadians: number,
+    yRadians: number,
+    zRadians: number,
+    order: AxisOrder,
+    xyzRotationIsClockwise?: [boolean, boolean, boolean],
+    result?: OrderedRotationAngles
+  ): OrderedRotationAngles {
     if (!xyzRotationIsClockwise) {
       xyzRotationIsClockwise = [false, false, false];
     }
@@ -141,8 +147,14 @@ export class OrderedRotationAngles {
    * * if xyzRotationIsClockwise is undefined it's set to [false, false, false].
    * @param result caller-allocated OrderedRotationAngles
    */
-  public static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder,
-    xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles {
+  public static createDegrees(
+    xDegrees: number,
+    yDegrees: number,
+    zDegrees: number,
+    order: AxisOrder,
+    xyzRotationIsClockwise?: [boolean, boolean, boolean],
+    result?: OrderedRotationAngles
+  ): OrderedRotationAngles {
     return OrderedRotationAngles.createRadians(
       Angle.degreesToRadians(xDegrees),
       Angle.degreesToRadians(yDegrees),
@@ -167,8 +179,14 @@ export class OrderedRotationAngles {
    * * if xyzRotationIsClockwise is undefined it's set to [false, false, false].
    * @param result caller-allocated OrderedRotationAngles
    */
-  public static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder,
-    xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles {
+  public static createAngles(
+    xRotation: Angle,
+    yRotation: Angle,
+    zRotation: Angle,
+    order: AxisOrder,
+    xyzRotationIsClockwise?: [boolean, boolean, boolean],
+    result?: OrderedRotationAngles
+  ): OrderedRotationAngles {
     return OrderedRotationAngles.createRadians(
       xRotation.radians,
       yRotation.radians,
@@ -187,17 +205,26 @@ export class OrderedRotationAngles {
    * * In the failure case, if the optional result was supplied, that result will nonetheless be filled with
    * a set of angles.
    */
-  public static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles):
-    OrderedRotationAngles | undefined {
+  public static createFromMatrix3d(
+    matrix: Matrix3d,
+    order: AxisOrder,
+    result?: OrderedRotationAngles
+  ): OrderedRotationAngles | undefined {
     // treat vector as columns
-    let m11 = matrix.coffs[0], m12 = matrix.coffs[1], m13 = matrix.coffs[2];
-    let m21 = matrix.coffs[3], m22 = matrix.coffs[4], m23 = matrix.coffs[5];
-    let m31 = matrix.coffs[6], m32 = matrix.coffs[7], m33 = matrix.coffs[8];
+    let m11 = matrix.coffs[0],
+      m12 = matrix.coffs[1],
+      m13 = matrix.coffs[2];
+    let m21 = matrix.coffs[3],
+      m22 = matrix.coffs[4],
+      m23 = matrix.coffs[5];
+    let m31 = matrix.coffs[6],
+      m32 = matrix.coffs[7],
+      m33 = matrix.coffs[8];
     // treat vector as rows
     if (!OrderedRotationAngles.treatVectorsAsColumns) {
-      m11 = matrix.coffs[0], m12 = matrix.coffs[3], m13 = matrix.coffs[6];
-      m21 = matrix.coffs[1], m22 = matrix.coffs[4], m23 = matrix.coffs[7];
-      m31 = matrix.coffs[2], m32 = matrix.coffs[5], m33 = matrix.coffs[8];
+      (m11 = matrix.coffs[0]), (m12 = matrix.coffs[3]), (m13 = matrix.coffs[6]);
+      (m21 = matrix.coffs[1]), (m22 = matrix.coffs[4]), (m23 = matrix.coffs[7]);
+      (m31 = matrix.coffs[2]), (m32 = matrix.coffs[5]), (m33 = matrix.coffs[8]);
     }
 
     let xRad: number;
@@ -229,7 +256,8 @@ export class OrderedRotationAngles {
           zRad = 0;
         }
         break;
-      } case AxisOrder.YXZ: {
+      }
+      case AxisOrder.YXZ: {
         xRad = Math.asin(Math.max(-1, Math.min(1, m32))); // limit asin domain to [-1,1]
 
         if (Math.abs(m32) < 0.99999) {
@@ -240,7 +268,8 @@ export class OrderedRotationAngles {
           zRad = 0;
         }
         break;
-      } case AxisOrder.ZXY: {
+      }
+      case AxisOrder.ZXY: {
         xRad = Math.asin(Math.max(-1, Math.min(1, -m23))); // limit asin domain to [-1,1]
 
         if (Math.abs(m23) < 0.99999) {
@@ -251,7 +280,8 @@ export class OrderedRotationAngles {
           zRad = Math.atan2(-m12, m11);
         }
         break;
-      } case AxisOrder.ZYX: {
+      }
+      case AxisOrder.ZYX: {
         yRad = Math.asin(Math.max(-1, Math.min(1, m13))); // limit asin domain to [-1,1]
 
         if (Math.abs(m13) < 0.99999) {
@@ -262,7 +292,8 @@ export class OrderedRotationAngles {
           zRad = Math.atan2(m21, m22);
         }
         break;
-      } case AxisOrder.YZX: {
+      }
+      case AxisOrder.YZX: {
         zRad = Math.asin(Math.max(-1, Math.min(1, -m12))); // limit asin domain to [-1,1]
 
         if (Math.abs(m12) < 0.99999) {
@@ -273,7 +304,8 @@ export class OrderedRotationAngles {
           yRad = Math.atan2(-m31, m33);
         }
         break;
-      } case AxisOrder.XZY: {
+      }
+      case AxisOrder.XZY: {
         zRad = Math.asin(Math.max(-1, Math.min(1, m21))); // limit asin domain to [-1,1]
 
         if (Math.abs(m21) < 0.99999) {
@@ -284,12 +316,24 @@ export class OrderedRotationAngles {
           yRad = 0;
         }
         break;
-      } default: {
+      }
+      default: {
         xRad = yRad = zRad = 0;
       }
     }
-    const xyzRotationIsClockwise: [boolean, boolean, boolean] = [false, false, false];
-    const angles = OrderedRotationAngles.createRadians(xRad, yRad, zRad, order, xyzRotationIsClockwise, result);
+    const xyzRotationIsClockwise: [boolean, boolean, boolean] = [
+      false,
+      false,
+      false,
+    ];
+    const angles = OrderedRotationAngles.createRadians(
+      xRad,
+      yRad,
+      zRad,
+      order,
+      xyzRotationIsClockwise,
+      result
+    );
     // sanity check
     const matrix1 = angles.toMatrix3d();
     /**
@@ -302,68 +346,119 @@ export class OrderedRotationAngles {
      *
      * with treatVectorsAsColumns = true.
      */
-    return (matrix.maxDiff(matrix1) < 10 * Geometry.smallFraction) ? angles : undefined;
+    return matrix.maxDiff(matrix1) < 10 * Geometry.smallFraction
+      ? angles
+      : undefined;
   }
   /**
    * Create a 3x3 rotational matrix from this OrderedRotationAngles.
    ** math details can be found at docs/learning/geometry/Angle.md
    **/
   public toMatrix3d(result?: Matrix3d): Matrix3d {
-    const rot = (result !== undefined) ? result : new Matrix3d();
+    const rot = result !== undefined ? result : new Matrix3d();
     const axisOrder = this.order;
-    const x = this.xAngle, y = this.yAngle, z = this.zAngle;
+    const x = this.xAngle,
+      y = this.yAngle,
+      z = this.zAngle;
 
-    const cx = x.cos(), sx = x.sin();
-    const cy = y.cos(), sy = y.sin();
-    const cz = z.cos(), sz = z.sin();
+    const cx = x.cos(),
+      sx = x.sin();
+    const cy = y.cos(),
+      sy = y.sin();
+    const cz = z.cos(),
+      sz = z.sin();
 
-    const cxcz = cx * cz, cxsz = cx * sz, cxcy = cx * cy, cxsy = cx * sy;
-    const sxcz = sx * cz, sxsz = sx * sz, sxcy = sx * cy, sxsy = sx * sy;
-    const cycz = cy * cz, cysz = cy * sz, sycz = sy * cz, sysz = sy * sz;
+    const cxcz = cx * cz,
+      cxsz = cx * sz,
+      cxcy = cx * cy,
+      cxsy = cx * sy;
+    const sxcz = sx * cz,
+      sxsz = sx * sz,
+      sxcy = sx * cy,
+      sxsy = sx * sy;
+    const cycz = cy * cz,
+      cysz = cy * sz,
+      sycz = sy * cz,
+      sysz = sy * sz;
 
     // the rotation matrix we build below is created using column-based base rotation matrixes
     if (axisOrder === AxisOrder.XYZ) {
       rot.setRowValues(
-        cy * cz, sxcz * sy - cxsz, cxcz * sy + sxsz,
-        cy * sz, cxcz + sxsz * sy, cxsz * sy - sxcz,
-        -sy, sx * cy, cx * cy,
+        cy * cz,
+        sxcz * sy - cxsz,
+        cxcz * sy + sxsz,
+        cy * sz,
+        cxcz + sxsz * sy,
+        cxsz * sy - sxcz,
+        -sy,
+        sx * cy,
+        cx * cy
       );
     } else if (axisOrder === AxisOrder.YXZ) {
       rot.setRowValues(
-        cycz - sysz * sx, -cx * sz, cysz * sx + sycz,
-        sycz * sx + cysz, cx * cz, sysz - cycz * sx,
-        -cx * sy, sx, cx * cy,
+        cycz - sysz * sx,
+        -cx * sz,
+        cysz * sx + sycz,
+        sycz * sx + cysz,
+        cx * cz,
+        sysz - cycz * sx,
+        -cx * sy,
+        sx,
+        cx * cy
       );
     } else if (axisOrder === AxisOrder.ZXY) {
       rot.setRowValues(
-        cycz + sysz * sx, sycz * sx - cysz, cx * sy,
-        cx * sz, cx * cz, -sx,
-        cysz * sx - sycz, cycz * sx + sysz, cx * cy,
+        cycz + sysz * sx,
+        sycz * sx - cysz,
+        cx * sy,
+        cx * sz,
+        cx * cz,
+        -sx,
+        cysz * sx - sycz,
+        cycz * sx + sysz,
+        cx * cy
       );
     } else if (axisOrder === AxisOrder.ZYX) {
       rot.setRowValues(
-        cy * cz, -cy * sz, sy,
-        sxcz * sy + cxsz, cxcz - sxsz * sy, -sx * cy,
-        sxsz - cxcz * sy, sxcz + cxsz * sy, cx * cy,
+        cy * cz,
+        -cy * sz,
+        sy,
+        sxcz * sy + cxsz,
+        cxcz - sxsz * sy,
+        -sx * cy,
+        sxsz - cxcz * sy,
+        sxcz + cxsz * sy,
+        cx * cy
       );
     } else if (axisOrder === AxisOrder.YZX) {
       rot.setRowValues(
-        cy * cz, -sz, sy * cz,
-        sxsy + cxcy * sz, cx * cz, cxsy * sz - sxcy,
-        sxcy * sz - cxsy, sx * cz, cxcy + sxsy * sz,
+        cy * cz,
+        -sz,
+        sy * cz,
+        sxsy + cxcy * sz,
+        cx * cz,
+        cxsy * sz - sxcy,
+        sxcy * sz - cxsy,
+        sx * cz,
+        cxcy + sxsy * sz
       );
     } else if (axisOrder === AxisOrder.XZY) {
       rot.setRowValues(
-        cy * cz, sxsy - cxcy * sz, cxsy + sxcy * sz,
-        sz, cx * cz, -sx * cz,
-        -sy * cz, sxcy + cxsy * sz, cxcy - sxsy * sz,
+        cy * cz,
+        sxsy - cxcy * sz,
+        cxsy + sxcy * sz,
+        sz,
+        cx * cz,
+        -sx * cz,
+        -sy * cz,
+        sxcy + cxsy * sz,
+        cxcy - sxsy * sz
       );
     } else {
       rot.setIdentity();
     }
     // if we need row-based rotation matrix, we transpose the rotation matrix
-    if (!OrderedRotationAngles.treatVectorsAsColumns)
-      rot.transposeInPlace();
+    if (!OrderedRotationAngles.treatVectorsAsColumns) rot.transposeInPlace();
 
     return rot;
   }

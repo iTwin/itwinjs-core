@@ -6,7 +6,12 @@
  * @module WebGL
  */
 
-import { FragmentShaderBuilder, FragmentShaderComponent, SourceBuilder, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  SourceBuilder,
+  VariableType,
+} from "../ShaderBuilder";
 import { encodeDepthRgb } from "./Decode";
 import { addRenderPass } from "./RenderPass";
 
@@ -26,7 +31,10 @@ export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   frag.addUniform("u_reverseWhiteOnWhite", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
       const wantWoW = params.target.uniforms.style.wantWoWReversal;
-      const doReversal = (wantWoW && params.geometry.wantWoWReversal(params.programParams)) ? 1 : 0;
+      const doReversal =
+        wantWoW && params.geometry.wantWoWReversal(params.programParams)
+          ? 1
+          : 0;
       uniform.setUniform1i(doReversal);
     });
   });
@@ -81,8 +89,13 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   const prelude = new SourceBuilder();
   const overrideOrder = frag.get(FragmentShaderComponent.OverrideRenderOrder);
   if (overrideOrder) {
-    frag.addFunction("float overrideRenderOrder(float currentOrder)", overrideOrder);
-    prelude.addline("  float renderOrder = overrideRenderOrder(u_renderOrder);");
+    frag.addFunction(
+      "float overrideRenderOrder(float currentOrder)",
+      overrideOrder
+    );
+    prelude.addline(
+      "  float renderOrder = overrideRenderOrder(u_renderOrder);"
+    );
   } else {
     prelude.addline("  float renderOrder = u_renderOrder;");
   }
@@ -97,13 +110,19 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
 
   const overrideFeatureId = frag.get(FragmentShaderComponent.OverrideFeatureId);
   if (undefined !== overrideFeatureId) {
-    frag.addFunction("vec4 overrideFeatureId(vec4 currentId)", overrideFeatureId);
+    frag.addFunction(
+      "vec4 overrideFeatureId(vec4 currentId)",
+      overrideFeatureId
+    );
     prelude.addline(reassignFeatureId);
   }
 
   addRenderPass(frag);
   frag.addDrawBuffersExtension(3);
-  frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
+  frag.set(
+    FragmentShaderComponent.AssignFragData,
+    prelude.source + assignPickBufferOutputsMRT
+  );
 }
 
 /** @internal */
@@ -119,18 +138,29 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
 
   addRenderPass(frag);
   frag.addDrawBuffersExtension(3);
-  frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
+  frag.set(
+    FragmentShaderComponent.AssignFragData,
+    prelude.source + assignPickBufferOutputsMRT
+  );
 }
 
 /** @internal */
-export function addFragColorWithPreMultipliedAlpha(frag: FragmentShaderBuilder): void {
+export function addFragColorWithPreMultipliedAlpha(
+  frag: FragmentShaderBuilder
+): void {
   addRenderPass(frag);
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
   if (undefined === overrideColor) {
-    frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
+    frag.set(
+      FragmentShaderComponent.AssignFragData,
+      assignFragColorWithPreMultipliedAlpha
+    );
   } else {
     frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
-    frag.set(FragmentShaderComponent.AssignFragData, overrideAndAssignFragColorWithPreMultipliedAlpha);
+    frag.set(
+      FragmentShaderComponent.AssignFragData,
+      overrideAndAssignFragColorWithPreMultipliedAlpha
+    );
   }
 }
 

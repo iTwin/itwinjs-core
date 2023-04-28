@@ -27,13 +27,28 @@ export abstract class FloatColor {
   }
 
   protected abstract maskTbgr(tbgr: number): number;
-  protected abstract setComponents(r: number, g: number, b: number, a: number): void;
+  protected abstract setComponents(
+    r: number,
+    g: number,
+    b: number,
+    a: number
+  ): void;
 
-  public get red() { return this._components[0]; }
-  public get green() { return this._components[1]; }
-  public get blue() { return this._components[2]; }
-  public get tbgr() { return this._tbgr; }
-  public get isWhite() { return 1.0 === this.red && 1.0 === this.green && 1.0 === this.blue; }
+  public get red() {
+    return this._components[0];
+  }
+  public get green() {
+    return this._components[1];
+  }
+  public get blue() {
+    return this._components[2];
+  }
+  public get tbgr() {
+    return this._tbgr;
+  }
+  public get isWhite() {
+    return 1.0 === this.red && 1.0 === this.green && 1.0 === this.blue;
+  }
 
   public setColorDef(def: ColorDef) {
     this.setTbgr(def.tbgr);
@@ -45,8 +60,7 @@ export abstract class FloatColor {
 
   public setTbgr(tbgr: number) {
     tbgr = this.maskTbgr(tbgr);
-    if (tbgr === this.tbgr)
-      return;
+    if (tbgr === this.tbgr) return;
 
     const c = ColorDef.getColors(tbgr);
     this.setComponents(c.r / 255, c.g / 255, c.b / 255, 1.0 - c.t / 255);
@@ -59,13 +73,20 @@ export abstract class FloatColor {
     this._components[2] = b;
   }
 
-  protected setRgbaComponents(r: number, g: number, b: number, a: number): void {
+  protected setRgbaComponents(
+    r: number,
+    g: number,
+    b: number,
+    a: number
+  ): void {
     r = clamp(r);
     g = clamp(g);
     b = clamp(b);
     a = clamp(a);
 
-    const tbgr = (scale(r) | (scale(g) << 8) | (scale(b) << 16) | (scale(1 - a) << 24)) >>> 0;
+    const tbgr =
+      (scale(r) | (scale(g) << 8) | (scale(b) << 16) | (scale(1 - a) << 24)) >>>
+      0;
     this._tbgr = this.maskTbgr(tbgr);
     this.setComponents(r, g, b, a);
   }
@@ -132,9 +153,15 @@ export class FloatRgba extends FloatColor {
     this.setRgbaComponents(r, g, b, a);
   }
 
-  public get alpha(): number { return this._components[3]; }
-  public set alpha(alpha: number) { this._components[3] = alpha; }
-  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
+  public get alpha(): number {
+    return this._components[3];
+  }
+  public set alpha(alpha: number) {
+    this._components[3] = alpha;
+  }
+  public get hasTranslucency(): boolean {
+    return 1.0 !== this.alpha;
+  }
 
   public bind(uniform: UniformHandle): void {
     uniform.setUniform4fv(this._components);

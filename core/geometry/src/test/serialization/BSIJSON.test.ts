@@ -49,12 +49,12 @@ Checker.noisy.printJSONFailure = true;
 
 /** Compares the constructor references of objects */
 function isDifferentTypeName(obj: object, noisy: boolean = false): boolean {
-  if (!obj.constructor)   // Unsure of case in which this would equate to false
+  if (!obj.constructor)
+    // Unsure of case in which this would equate to false
     return true;
   if (obj.constructor) {
     if (obj.constructor !== previousConstructor) {
-      if (noisy)
-        GeometryCoreTestIO.consoleLog("First ", obj.constructor.name);
+      if (noisy) GeometryCoreTestIO.consoleLog("First ", obj.constructor.name);
       previousConstructor = obj.constructor;
       return true;
     }
@@ -72,12 +72,20 @@ function exerciseGo(obj: any, noisy: boolean): number {
     GeometryCoreTestIO.consoleLog("  log format", obj);
     GeometryCoreTestIO.consoleLog("  stringify", JSON.stringify(obj));
     if ((obj as BeJSONFunctions).toJSON())
-      GeometryCoreTestIO.consoleLog("BSIJSONValues", (obj as BeJSONFunctions).toJSON());
+      GeometryCoreTestIO.consoleLog(
+        "BSIJSONValues",
+        (obj as BeJSONFunctions).toJSON()
+      );
   }
   if (obj instanceof GeometryQuery) {
-
     const clone = obj.clone();
-    if (!(clone !== undefined && clone instanceof GeometryQuery && clone.isSameGeometryClass(obj))) {
+    if (
+      !(
+        clone !== undefined &&
+        clone instanceof GeometryQuery &&
+        clone.isSameGeometryClass(obj)
+      )
+    ) {
       errors++;
       GeometryCoreTestIO.consoleLog("clone failure ", obj);
     }
@@ -85,7 +93,10 @@ function exerciseGo(obj: any, noisy: boolean): number {
     // heavy object ... method fulfillment assured by inheritance.
     let imjsObject = IModelJson.Writer.toIModelJson(gq);
     if (!imjsObject) {
-      GeometryCoreTestIO.consoleLog("GeometryQuery object did not convert to IModelJson", obj);
+      GeometryCoreTestIO.consoleLog(
+        "GeometryQuery object did not convert to IModelJson",
+        obj
+      );
       // repeat call for so easy to catch in debugger. ..
       imjsObject = IModelJson.Writer.toIModelJson(gq);
     } else {
@@ -96,14 +107,22 @@ function exerciseGo(obj: any, noisy: boolean): number {
         // repeat call for so easy to catch in debugger. ..
         obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
       } else {
-        if (noisy || (firstAppearance && Checker.noisy.bsiJSONFirstAppearance)) {
+        if (
+          noisy ||
+          (firstAppearance && Checker.noisy.bsiJSONFirstAppearance)
+        ) {
           GeometryCoreTestIO.consoleLog("original", obj);
           GeometryCoreTestIO.consoleLog("imjsObject", imjsObject);
         }
         if (!gq.isAlmostEqual(obj1)) {
           // repeat call for so easy to catch in debugger. ..
           obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
-          GeometryCoreTestIO.consoleLog("RoundTrip but not equal ", gq.isAlmostEqual(obj1), obj, obj1);
+          GeometryCoreTestIO.consoleLog(
+            "RoundTrip but not equal ",
+            gq.isAlmostEqual(obj1),
+            obj,
+            obj1
+          );
           errors++;
         }
       }
@@ -114,17 +133,24 @@ function exerciseGo(obj: any, noisy: boolean): number {
     errors++;
   } else {
     // This is a leaf-level bsijson ...
-    if (!obj.setFrom)
-      bsiJsonPunchList.push({ noSetFromMethod: obj });
+    if (!obj.setFrom) bsiJsonPunchList.push({ noSetFromMethod: obj });
 
-    if (!obj.clone)
-      bsiJsonPunchList.push({ noCloneMethod: obj });
-    if (!obj.isAlmostEqual
-      && !(obj.isAlmostEqualRadiansAllowPeriodShift || obj.isAlmostEqualNoPeriodShift))
+    if (!obj.clone) bsiJsonPunchList.push({ noCloneMethod: obj });
+    if (
+      !obj.isAlmostEqual &&
+      !(
+        obj.isAlmostEqualRadiansAllowPeriodShift ||
+        obj.isAlmostEqualNoPeriodShift
+      )
+    )
       bsiJsonPunchList.push({ noAlmostEqualMethod: obj });
 
     if (isDifferentTypeName(obj) && Checker.noisy.bsiJSONFirstAppearance)
-      GeometryCoreTestIO.consoleLog(obj, "first toJSON() ==>", (obj as BeJSONFunctions).toJSON());
+      GeometryCoreTestIO.consoleLog(
+        obj,
+        "first toJSON() ==>",
+        (obj as BeJSONFunctions).toJSON()
+      );
     const jsonFuncs = obj as BeJSONFunctions;
     const asJson = jsonFuncs.toJSON();
     if (asJson === undefined) {
@@ -349,7 +375,11 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     // exercise variants of row-major array json ..
     {
       const a1 = Transform.fromJSON([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-      const a2 = Transform.fromJSON([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]);
+      const a2 = Transform.fromJSON([
+        [1, 2, 3, 4],
+        [5, 6, 7, 8],
+        [9, 10, 11, 12],
+      ]);
       ck.testTransform(a1, a2, "Transform.fromJSON via [] and [][] variants.");
     }
     {
@@ -399,31 +429,49 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 
     {
       const data = Sample.createSimplePaths(true);
-      let d; for (d of data) { exercise(d, false); }
+      let d;
+      for (d of data) {
+        exercise(d, false);
+      }
     }
 
     {
       const data = Sample.createSimpleLoops();
-      let d; for (d of data) { exercise(d, false); }
+      let d;
+      for (d of data) {
+        exercise(d, false);
+      }
     }
 
     {
       const data = Sample.createSimpleParityRegions();
-      let d; for (d of data) { exercise(d, false); }
+      let d;
+      for (d of data) {
+        exercise(d, false);
+      }
     }
     {
       const data = Sample.createSimpleUnions();
-      let d; for (d of data) { exercise(d, false); }
+      let d;
+      for (d of data) {
+        exercise(d, false);
+      }
     }
 
     {
       const data = Sample.createBsplineCurves(true);
-      let d; for (d of data) { exercise(d, false); }
+      let d;
+      for (d of data) {
+        exercise(d, false);
+      }
     }
 
     {
       const data = Sample.createSimplePointStrings();
-      let d; for (d of data) { exercise(d, false); }
+      let d;
+      for (d of data) {
+        exercise(d, false);
+      }
     }
     // exercise(CurveChain.createZero());
     // exercise(Path.createZero());
@@ -444,7 +492,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 });
 
 function exerciseBSIJSONValuesQuick(name: string, obj: any) {
-  if (Checker.noisy.bsiJsonValuesQuick && obj as BeJSONFunctions) {
+  if (Checker.noisy.bsiJsonValuesQuick && (obj as BeJSONFunctions)) {
     GeometryCoreTestIO.consoleLog(`${name}.toJSON():`);
     GeometryCoreTestIO.consoleLog(obj.toJSON());
   }
@@ -459,17 +507,66 @@ describe("BSIJSONValuesQuick", () => {
     exerciseBSIJSONValuesQuick("Vector2d", Vector2d.create(1, 2));
     exerciseBSIJSONValuesQuick("Vector3d", Vector3d.create(1, 2, 3));
     exerciseBSIJSONValuesQuick("Angle", Angle.createDegrees(90));
-    exerciseBSIJSONValuesQuick("AngleSweep", AngleSweep.createStartEndDegrees(45, 90));
-    exerciseBSIJSONValuesQuick("Plane3dByOriginAndUnitNormal", Plane3dByOriginAndUnitNormal.create(Point3d.create(1, 2, 3), Vector3d.create(6, 2, 1)));
+    exerciseBSIJSONValuesQuick(
+      "AngleSweep",
+      AngleSweep.createStartEndDegrees(45, 90)
+    );
+    exerciseBSIJSONValuesQuick(
+      "Plane3dByOriginAndUnitNormal",
+      Plane3dByOriginAndUnitNormal.create(
+        Point3d.create(1, 2, 3),
+        Vector3d.create(6, 2, 1)
+      )
+    );
     exerciseBSIJSONValuesQuick("Ray3d", Ray3d.createXYZUVW(1, 2, 3, 10, 5, 9));
-    exerciseBSIJSONValuesQuick("Plane3dByOriginAndVectors", Plane3dByOriginAndVectors.createOriginAndVectors
-      (Point3d.create(1, 2, 3), Vector3d.create(5, 6, 3), Vector3d.create(-6, 5, 1)));
-    exerciseBSIJSONValuesQuick("YawPitchRollAngles", YawPitchRollAngles.createDegrees(10, 20, 30));
-    exerciseBSIJSONValuesQuick("Range3d", Range3d.createXYZXYZ(1, 2, 3, 10, 11, 20));
-    exerciseBSIJSONValuesQuick("Matrix3d", Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9));
-    exerciseBSIJSONValuesQuick("Transform", Transform.createOriginAndMatrix(
-      Point3d.create(10, 20, 30), Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9)));
-    exerciseBSIJSONValuesQuick("Matrix4d", Matrix4d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
+    exerciseBSIJSONValuesQuick(
+      "Plane3dByOriginAndVectors",
+      Plane3dByOriginAndVectors.createOriginAndVectors(
+        Point3d.create(1, 2, 3),
+        Vector3d.create(5, 6, 3),
+        Vector3d.create(-6, 5, 1)
+      )
+    );
+    exerciseBSIJSONValuesQuick(
+      "YawPitchRollAngles",
+      YawPitchRollAngles.createDegrees(10, 20, 30)
+    );
+    exerciseBSIJSONValuesQuick(
+      "Range3d",
+      Range3d.createXYZXYZ(1, 2, 3, 10, 11, 20)
+    );
+    exerciseBSIJSONValuesQuick(
+      "Matrix3d",
+      Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    );
+    exerciseBSIJSONValuesQuick(
+      "Transform",
+      Transform.createOriginAndMatrix(
+        Point3d.create(10, 20, 30),
+        Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9)
+      )
+    );
+    exerciseBSIJSONValuesQuick(
+      "Matrix4d",
+      Matrix4d.createRowValues(
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      )
+    );
     exerciseBSIJSONValuesQuick("Complex", Complex.create(1, 2));
 
     ck.checkpoint("BSIJSONValuesQuick.Test1");
@@ -478,7 +575,9 @@ describe("BSIJSONValuesQuick", () => {
 });
 
 class TempHandler extends NullGeometryHandler {
-  public handleLineSegment(_g: LineSegment3d): any { return true; }
+  public handleLineSegment(_g: LineSegment3d): any {
+    return true;
+  }
 }
 
 describe("ExerciseGeometryHandler", () => {
@@ -492,28 +591,67 @@ describe("ExerciseGeometryHandler", () => {
     ck.testUndefined(tempHandler.handleLineString3d(LineString3d.create()));
     ck.testUndefined(tempHandler.handlePointString3d(PointString3d.create()));
     ck.testUndefined(tempHandler.handleArc3d(Arc3d.createUnitCircle()));
-    ck.testUndefined(tempHandler.handleCurveCollection(Sample.createSimpleLoops()[0]));
-    ck.testUndefined(tempHandler.handleBSplineCurve3d(Sample.createBsplineCurves()[0]));
-    ck.testUndefined(tempHandler.handleBSplineSurface3d(Sample.createXYGridBsplineSurface(4, 3, 3, 2)!));
-    ck.testUndefined(tempHandler.handleCoordinateXYZ(CoordinateXYZ.create(origin)));
-    ck.testUndefined(tempHandler.handleBSplineSurface3dH(Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!));
-    ck.testUndefined(tempHandler.handleIndexedPolyface(IndexedPolyface.create()));
-    ck.testUndefined(tempHandler.handleTransitionSpiral(
-      IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1), AngleSweep.create360(), Segment1d.create(0, 1),
-        Transform.createIdentity())!));
+    ck.testUndefined(
+      tempHandler.handleCurveCollection(Sample.createSimpleLoops()[0])
+    );
+    ck.testUndefined(
+      tempHandler.handleBSplineCurve3d(Sample.createBsplineCurves()[0])
+    );
+    ck.testUndefined(
+      tempHandler.handleBSplineSurface3d(
+        Sample.createXYGridBsplineSurface(4, 3, 3, 2)!
+      )
+    );
+    ck.testUndefined(
+      tempHandler.handleCoordinateXYZ(CoordinateXYZ.create(origin))
+    );
+    ck.testUndefined(
+      tempHandler.handleBSplineSurface3dH(
+        Sample.createWeightedXYGridBsplineSurface(
+          4,
+          3,
+          3,
+          2,
+          1.0,
+          1.1,
+          0.9,
+          1.0
+        )!
+      )
+    );
+    ck.testUndefined(
+      tempHandler.handleIndexedPolyface(IndexedPolyface.create())
+    );
+    ck.testUndefined(
+      tempHandler.handleTransitionSpiral(
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(0, 1),
+          AngleSweep.create360(),
+          Segment1d.create(0, 1),
+          Transform.createIdentity()
+        )!
+      )
+    );
     ck.testUndefined(tempHandler.handleSphere(Sample.createSpheres()[0]));
     ck.testUndefined(tempHandler.handleCone(Sample.createCones()[0]));
     ck.testUndefined(tempHandler.handleBox(Sample.createBoxes()[0]));
     ck.testUndefined(tempHandler.handleTorusPipe(Sample.createTorusPipes()[0]));
-    ck.testUndefined(tempHandler.handleLinearSweep(Sample.createSimpleLinearSweeps()[0]));
-    ck.testUndefined(tempHandler.handleRotationalSweep(Sample.createSimpleRotationalSweeps()[0]));
-    ck.testUndefined(tempHandler.handleRuledSweep(Sample.createRuledSweeps()[0]));
+    ck.testUndefined(
+      tempHandler.handleLinearSweep(Sample.createSimpleLinearSweeps()[0])
+    );
+    ck.testUndefined(
+      tempHandler.handleRotationalSweep(
+        Sample.createSimpleRotationalSweeps()[0]
+      )
+    );
+    ck.testUndefined(
+      tempHandler.handleRuledSweep(Sample.createRuledSweeps()[0])
+    );
 
     ck.testUndefined(tempHandler.handlePath(Path.create()));
     ck.testUndefined(tempHandler.handleLoop(Loop.create()));
     ck.testUndefined(tempHandler.handleParityRegion(ParityRegion.create()));
     ck.testUndefined(tempHandler.handleUnionRegion(UnionRegion.create()));
     ck.testUndefined(tempHandler.handleBagOfCurves(BagOfCurves.create()));
-
   });
 });

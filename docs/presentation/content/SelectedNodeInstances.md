@@ -8,19 +8,19 @@ Returns content for selected (input) instances.
 
 | Name                                                                | Required? | Type                                                                            | Default |
 | ------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | ------- |
-| *Filtering*                                                         |
+| _Filtering_                                                         |
 | [`acceptableSchemaName`](#attribute-acceptableschemaname)           | No        | `string`                                                                        | `""`    |
 | [`acceptableClassNames`](#attribute-acceptableclassnames)           | No        | `string[]`                                                                      | `[]`    |
 | [`acceptablePolymorphically`](#attribute-acceptablepolymorphically) | No        | `boolean`                                                                       | `false` |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                   | No        | `boolean`                                                                       | `false` |
-| *Ordering*                                                          |
+| _Ordering_                                                          |
 | [`priority`](#attribute-priority)                                   | No        | `number`                                                                        | `1000`  |
-| *Content Modifiers*                                                 |
+| _Content Modifiers_                                                 |
 | [`relatedProperties`](#attribute-relatedproperties)                 | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`    |
 | [`calculatedProperties`](#attribute-calculatedproperties)           | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`    |
 | [`propertyCategories`](#attribute-propertycategories)               | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)         | `[]`    |
 | [`propertyOverrides`](#attribute-propertyoverrides)                 | No        | [`PropertySpecification[]`](./PropertySpecification.md)                         | `[]`    |
-| *Misc.*                                                             |
+| _Misc._                                                             |
 | [`relatedInstances`](#attribute-relatedinstances)                   | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)          | `[]`    |
 
 ### Attribute: `acceptableSchemaName`

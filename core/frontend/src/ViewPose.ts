@@ -7,7 +7,13 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
+import {
+  Angle,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Vector3d,
+} from "@itwin/core-geometry";
 import { Camera } from "@itwin/core-common";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
@@ -51,10 +57,14 @@ export abstract class ViewPose {
   }
 
   /** Returns the target point of the view. This is the same as [[center]] unless [[cameraOn]] is `true`. */
-  public get target() { return this.center; }
+  public get target() {
+    return this.center;
+  }
 
   /** Computes the Z vector of the [[rotation]] matrix. */
-  public get zVec() { return this.rotation.getRow(2); }
+  public get zVec() {
+    return this.rotation.getRow(2);
+  }
 
   public constructor(cameraOn: boolean) {
     this.cameraOn = cameraOn;
@@ -89,31 +99,38 @@ export class ViewPose3d extends ViewPose {
 
   /** @internal override */
   public override get target() {
-    return this.cameraOn ? this.camera.eye.plusScaled(this.rotation.getRow(2), -1.0 * this.camera.focusDist) : this.center;
+    return this.cameraOn
+      ? this.camera.eye.plusScaled(
+          this.rotation.getRow(2),
+          -1.0 * this.camera.focusDist
+        )
+      : this.center;
   }
 
   /** @internal override */
   public override equal(other: ViewPose): boolean {
-    if (!(other instanceof ViewPose3d))
-      return false;
+    if (!(other instanceof ViewPose3d)) return false;
 
-    return this.cameraOn === other.cameraOn &&
+    return (
+      this.cameraOn === other.cameraOn &&
       this.origin.isAlmostEqual(other.origin) &&
       this.extents.isAlmostEqual(other.extents) &&
       this.rotation.isAlmostEqual(other.rotation) &&
-      (!this.cameraOn || this.camera.equals(other.camera));
+      (!this.cameraOn || this.camera.equals(other.camera))
+    );
   }
 
   /** @internal override */
   public override equalState(view: ViewState): boolean {
-    if (!(view instanceof ViewState3d))
-      return false;
+    if (!(view instanceof ViewState3d)) return false;
 
-    return this.cameraOn === view.isCameraOn &&
+    return (
+      this.cameraOn === view.isCameraOn &&
       this.origin.isAlmostEqual(view.origin) &&
       this.extents.isAlmostEqual(view.extents) &&
       this.rotation.isAlmostEqual(view.rotation) &&
-      (!this.cameraOn || this.camera.equals(view.camera));
+      (!this.cameraOn || this.camera.equals(view.camera))
+    );
   }
 }
 
@@ -145,28 +162,36 @@ export class ViewPose2d extends ViewPose {
 
   /** @internal override */
   public equal(other: ViewPose): boolean {
-    if (!(other instanceof ViewPose2d))
-      return false;
+    if (!(other instanceof ViewPose2d)) return false;
 
-    return this.origin2d.isAlmostEqual(other.origin) &&
+    return (
+      this.origin2d.isAlmostEqual(other.origin) &&
       this.delta.isAlmostEqual(other.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(other.angle);
+      this.angle.isAlmostEqualNoPeriodShift(other.angle)
+    );
   }
 
   /** @internal override */
   public equalState(view: ViewState): boolean {
-    if (!(view instanceof ViewState2d))
-      return false;
+    if (!(view instanceof ViewState2d)) return false;
 
-    return this.origin2d.isAlmostEqual(view.origin) &&
+    return (
+      this.origin2d.isAlmostEqual(view.origin) &&
       this.delta.isAlmostEqual(view.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(view.angle);
+      this.angle.isAlmostEqualNoPeriodShift(view.angle)
+    );
   }
 
   /** @internal override */
-  public get origin() { return new Point3d(this.origin2d.x, this.origin2d.y); }
+  public get origin() {
+    return new Point3d(this.origin2d.x, this.origin2d.y);
+  }
   /** @internal override */
-  public get extents() { return new Vector3d(this.delta.x, this.delta.y); }
+  public get extents() {
+    return new Vector3d(this.delta.x, this.delta.y);
+  }
   /** @internal override */
-  public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  public get rotation() {
+    return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!;
+  }
 }

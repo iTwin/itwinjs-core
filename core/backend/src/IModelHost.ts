@@ -11,9 +11,29 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import * as os from "os";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import {
+  DependenciesConfig,
+  Types as ExtensionTypes,
+} from "@itwin/cloud-agnostic-core";
+import {
+  AccessToken,
+  assert,
+  BeEvent,
+  DbResult,
+  Guid,
+  GuidString,
+  IModelStatus,
+  Logger,
+  Mutable,
+  ProcessDetector,
+} from "@itwin/core-bentley";
+import {
+  AuthorizationClient,
+  BentleyStatus,
+  IModelError,
+  LocalDirName,
+  SessionProps,
+} from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
@@ -33,9 +53,17 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
+import {
+  BaseSettings,
+  SettingDictionary,
+  SettingsPriority,
+} from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import {
+  ITwinWorkspace,
+  Workspace,
+  WorkspaceOpts,
+} from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 
@@ -210,13 +238,17 @@ export class IModelHostConfiguration implements IModelHostOptions {
   /** @beta */
   public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
   /** @internal */
-  public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  public tileTreeRequestTimeout =
+    IModelHostConfiguration.defaultTileRequestTimeout;
   /** @internal */
-  public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  public tileContentRequestTimeout =
+    IModelHostConfiguration.defaultTileRequestTimeout;
   /** @internal */
-  public logTileLoadTimeThreshold = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  public logTileLoadTimeThreshold =
+    IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
   /** @internal */
-  public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
+  public logTileSizeThreshold =
+    IModelHostConfiguration.defaultLogTileSizeThreshold;
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
 }
@@ -228,21 +260,23 @@ export class IModelHostConfiguration implements IModelHostOptions {
 class ApplicationSettings extends BaseSettings {
   private _remove?: VoidFunction;
   protected override verifyPriority(priority: SettingsPriority) {
-    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
+    if (priority >= SettingsPriority.iModel)
+      // iModel settings may not appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {
     const defaults: SettingDictionary = {};
     for (const [schemaName, val] of SettingsSchemas.allSchemas) {
-      if (val.default)
-        defaults[schemaName] = val.default;
+      if (val.default) defaults[schemaName] = val.default;
     }
     this.addDictionary("_default_", 0 as SettingsPriority, defaults);
   }
 
   public constructor() {
     super();
-    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
+    this._remove = SettingsSchemas.onSchemaChanged.addListener(() =>
+      this.updateDefaults()
+    );
     this.updateDefaults();
   }
 
@@ -259,7 +293,7 @@ class ApplicationSettings extends BaseSettings {
  * @public
  */
 export class IModelHost {
-  private constructor() { }
+  private constructor() {}
 
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
@@ -315,22 +349,40 @@ export class IModelHost {
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
   /** @internal */
-  public static readonly session: Mutable<SessionProps> = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
+  public static readonly session: Mutable<SessionProps> = {
+    applicationId: "2686",
+    applicationVersion: "1.0.0",
+    sessionId: "",
+  };
 
   /** A uniqueId for this session */
-  public static get sessionId() { return this.session.sessionId; }
-  public static set sessionId(id: GuidString) { this.session.sessionId = id; }
+  public static get sessionId() {
+    return this.session.sessionId;
+  }
+  public static set sessionId(id: GuidString) {
+    this.session.sessionId = id;
+  }
 
   /** The Id of this application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
-  public static get applicationId() { return this.session.applicationId; }
-  public static set applicationId(id: string) { this.session.applicationId = id; }
+  public static get applicationId() {
+    return this.session.applicationId;
+  }
+  public static set applicationId(id: string) {
+    this.session.applicationId = id;
+  }
 
   /** The version of this application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
-  public static get applicationVersion() { return this.session.applicationVersion; }
-  public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
+  public static get applicationVersion() {
+    return this.session.applicationVersion;
+  }
+  public static set applicationVersion(version: string) {
+    this.session.applicationVersion = version;
+  }
 
   /** Root directory holding files that iTwin.js caches */
-  public static get cacheDir(): LocalDirName { return this._cacheDir; }
+  public static get cacheDir(): LocalDirName {
+    return this._cacheDir;
+  }
 
   /** The application [[Workspace]] for this `IModelHost`
    * @note this `Workspace` only holds [[WorkspaceContainer]]s and [[Settings]] scoped to the currently loaded application(s).
@@ -338,7 +390,9 @@ export class IModelHost {
    * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get appWorkspace(): Workspace { return this._appWorkspace!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public static get appWorkspace(): Workspace {
+    return this._appWorkspace!;
+  } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -367,14 +421,22 @@ export class IModelHost {
     this.platform.clearLogLevelCache();
   }
   private static loadNative(options: IModelHostOptions) {
-    if (undefined !== this._platform)
-      return;
+    if (undefined !== this._platform) return;
 
-    this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
+    this._platform = ProcessDetector.isMobileAppBackend
+      ? ((process as any)._linkedBinding(
+          "iModelJsNative"
+        ) as typeof IModelJsNative)
+      : NativeLibrary.load();
     this._platform.logger = Logger;
     Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
 
-    if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
+    if (
+      options.crashReportingConfig &&
+      options.crashReportingConfig.crashDir &&
+      !ProcessDetector.isElectronAppBackend &&
+      !ProcessDetector.isMobileAppBackend
+    ) {
       this.platform.setCrashReporting(options.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", {
@@ -391,7 +453,10 @@ export class IModelHost {
           process.report.directory = options.crashReportingConfig.crashDir;
           Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
         } else {
-          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
+          Logger.logWarning(
+            loggerCategory,
+            "Unable to configure Node.js crash reporting"
+          );
         }
       }
     }
@@ -402,12 +467,16 @@ export class IModelHost {
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+  public static setHubAccess(hubAccess: BackendHubAccess | undefined) {
+    this._hubAccess = hubAccess;
+  }
 
   /** get the current hubAccess, if present.
    * @internal
    */
-  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
+  public static getHubAccess(): BackendHubAccess | undefined {
+    return this._hubAccess;
+  }
 
   /** Provides access to the IModelHub for this IModelHost
    * @internal
@@ -416,23 +485,37 @@ export class IModelHost {
    */
   public static get hubAccess(): BackendHubAccess {
     if (IModelHost._hubAccess === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
+      throw new IModelError(
+        IModelStatus.BadRequest,
+        "No BackendHubAccess supplied in IModelHostOptions"
+      );
     return IModelHost._hubAccess;
   }
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    this._appWorkspace = new ITwinWorkspace(
+      new ApplicationSettings(),
+      configuration.workspace
+    );
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {
       this.appWorkspace.getCloudCache();
     } catch (e: any) {
-      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`) : e;
+      throw e.errorNumber === DbResult.BE_SQLITE_BUSY
+        ? new IModelError(
+            DbResult.BE_SQLITE_BUSY,
+            `Profile [${this.profileDir}] is already in use by another process`
+          )
+        : e;
     }
 
-    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
+    this.appWorkspace.settings.addDirectory(
+      settingAssets,
+      SettingsPriority.defaults
+    );
 
     GeoCoordConfig.onStartup();
     // allow applications to load their default settings
@@ -452,13 +535,11 @@ export class IModelHost {
    * @see [[shutdown]].
    */
   public static async startup(options?: IModelHostOptions): Promise<void> {
-    if (this._isValid)
-      return; // we're already initialized
+    if (this._isValid) return; // we're already initialized
     this._isValid = true;
 
     options = options ?? {};
-    if (this.sessionId === "")
-      this.sessionId = Guid.createValue();
+    if (this.sessionId === "") this.sessionId = Guid.createValue();
 
     this.authorizationClient = options.authorizationClient;
 
@@ -479,14 +560,11 @@ export class IModelHost {
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
-    [
-      BisCoreSchema,
-      GenericSchema,
-      FunctionalSchema,
-    ].forEach((schema) => schema.registerSchema()); // register all of the schemas
+    [BisCoreSchema, GenericSchema, FunctionalSchema].forEach((schema) =>
+      schema.registerSchema()
+    ); // register all of the schemas
 
-    if (undefined !== options.hubAccess)
-      this._hubAccess = options.hubAccess;
+    if (undefined !== options.hubAccess) this._hubAccess = options.hubAccess;
 
     this.configuration = options;
     this.setupTileCache();
@@ -496,11 +574,16 @@ export class IModelHost {
   }
 
   private static setupCacheDir(configuration: IModelHostOptions) {
-    this._cacheDir = normalizeDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
+    this._cacheDir = normalizeDir(
+      configuration.cacheDir ?? NativeLibrary.defaultCacheDir
+    );
     IModelJsFs.recursiveMkDirSync(this._cacheDir);
 
     this._profileName = configuration.profileName ?? "default";
-    Logger.logInfo(loggerCategory, `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`);
+    Logger.logInfo(
+      loggerCategory,
+      `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`
+    );
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
@@ -511,8 +594,7 @@ export class IModelHost {
   }
 
   private static async doShutdown() {
-    if (!this._isValid)
-      return;
+    if (!this._isValid) return;
 
     this._isValid = false;
     this.onBeforeShutdown.raiseEvent();
@@ -551,29 +633,43 @@ export class IModelHost {
 
   /** The directory where application assets may be found */
   public static get appAssetsDir(): string | undefined {
-    return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined;
+    return undefined !== IModelHost.configuration
+      ? IModelHost.configuration.appAssetsDir
+      : undefined;
   }
 
   /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileTreeProps should wait before returning a "pending" status.
    * @internal
    */
   public static get tileTreeRequestTimeout(): number {
-    return IModelHost.configuration?.tileTreeRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
+    return (
+      IModelHost.configuration?.tileTreeRequestTimeout ??
+      IModelHostConfiguration.defaultTileRequestTimeout
+    );
   }
   /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileContent should wait before returning a "pending" status.
    * @internal
    */
   public static get tileContentRequestTimeout(): number {
-    return IModelHost.configuration?.tileContentRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
+    return (
+      IModelHost.configuration?.tileContentRequestTimeout ??
+      IModelHostConfiguration.defaultTileRequestTimeout
+    );
   }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
   public static get logTileLoadTimeThreshold(): number {
-    return IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+    return (
+      IModelHost.configuration?.logTileLoadTimeThreshold ??
+      IModelHostConfiguration.defaultLogTileLoadTimeThreshold
+    );
   }
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
   public static get logTileSizeThreshold(): number {
-    return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold;
+    return (
+      IModelHost.configuration?.logTileSizeThreshold ??
+      IModelHostConfiguration.defaultLogTileSizeThreshold
+    );
   }
 
   /** Whether external tile caching is active.
@@ -587,7 +683,10 @@ export class IModelHost {
    * @internal
    */
   public static get restrictTileUrlsByClientIp(): boolean {
-    return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false);
+    return (
+      undefined !== IModelHost.configuration &&
+      (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false)
+    );
   }
 
   /** Whether to compress cached tiles.
@@ -604,18 +703,23 @@ export class IModelHost {
     const credentials = config.tileCacheAzureCredentials;
 
     if (!storage && !credentials) {
-      this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
+      this.platform.setMaxTileCacheSize(
+        config.maxTileCacheDbSize ??
+          IModelHostConfiguration.defaultMaxTileCacheDbSize
+      );
       return;
     }
 
     this.platform.setMaxTileCacheSize(0);
     if (credentials) {
       if (storage)
-        throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
+        throw new IModelError(
+          BentleyStatus.ERROR,
+          "Cannot use both Azure and custom cloud storage providers for tile cache."
+        );
       this.setupAzureTileCache(credentials);
     }
-    if (storage)
-      IModelHost.tileStorage = new TileStorage(storage);
+    if (storage) IModelHost.tileStorage = new TileStorage(storage);
   }
 
   private static setupAzureTileCache(credentials: AzureBlobStorageCredentials) {
@@ -625,17 +729,25 @@ export class IModelHost {
         dependencyName: "azure",
         accountName: credentials.account,
         accountKey: credentials.accessKey,
-        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
+        baseUrl:
+          credentials.baseUrl ??
+          `https://${credentials.account}.blob.core.windows.net`,
       },
     };
     const ioc: Container = new Container();
-    ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
+    ioc
+      .bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig)
+      .toConstantValue(config);
     new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
     IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
   }
 
   /** @internal */
-  public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
+  public static computeSchemaChecksum(arg: {
+    schemaXmlPath: string;
+    referencePaths: string[];
+    exactMatch?: boolean;
+  }): string {
     return this.platform.computeSchemaChecksum(arg);
   }
 }
@@ -645,7 +757,13 @@ export class IModelHost {
  */
 export class Platform {
   /** Get the name of the platform. */
-  public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
+  public static get platformName():
+    | "win32"
+    | "linux"
+    | "darwin"
+    | "ios"
+    | "android"
+    | "uwp" {
     return process.platform as any;
   }
 }
@@ -654,7 +772,6 @@ export class Platform {
  * @public
  */
 export class KnownLocations {
-
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): LocalDirName {
     return IModelHost.platform.DgnDb.getAssetsDir();
@@ -681,7 +798,9 @@ export abstract class FileNameResolver {
    * @param _fileKey The key that identifies the file name in a `Map` or other similar data structure.
    * @returns The resolved file name or `undefined` if not found.
    */
-  public tryResolveKey(_fileKey: string): string | undefined { return undefined; }
+  public tryResolveKey(_fileKey: string): string | undefined {
+    return undefined;
+  }
   /** Resolve a file name from the specified key.
    * @param fileKey The key that identifies the file name in a `Map` or other similar data structure.
    * @returns The resolved file name.
@@ -698,16 +817,22 @@ export abstract class FileNameResolver {
    * @param inFileName The partial file name.
    * @returns The resolved full path file name or `undefined` if not found.
    */
-  public tryResolveFileName(inFileName: string): string | undefined { return inFileName; }
+  public tryResolveFileName(inFileName: string): string | undefined {
+    return inFileName;
+  }
   /** Resolve the input file name, which may be a partial name, into a full path file name.
    * @param inFileName The partial file name.
    * @returns The resolved full path file name.
    * @throws [[IModelError]] if not found.
    */
   public resolveFileName(inFileName: string): string {
-    const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
+    const resolvedFileName: string | undefined =
+      this.tryResolveFileName(inFileName);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`);
+      throw new IModelError(
+        IModelStatus.NotFound,
+        `${inFileName} not resolved`
+      );
     }
     return resolvedFileName;
   }

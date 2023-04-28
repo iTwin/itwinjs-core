@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @internal */
-export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
+export interface RequestBasicCredentials {
+  // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
 }
@@ -13,14 +14,9 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
  * @internal
  */
 export class HttpResponseError extends Error {
-
-  public constructor(
-    public status: number,
-    public responseText?: string,
-  ) {
+  public constructor(public status: number, public responseText?: string) {
     let message = `HTTP response status code: ${status}.`;
-    if (responseText)
-      message += ` Response body: ${responseText}`;
+    if (responseText) message += ` Response body: ${responseText}`;
 
     super(message);
   }
@@ -35,26 +31,43 @@ export interface RequestOptions {
 }
 
 /** @internal */
-export async function request(url: string, responseType: "arraybuffer", options?: RequestOptions): Promise<ArrayBuffer>;
+export async function request(
+  url: string,
+  responseType: "arraybuffer",
+  options?: RequestOptions
+): Promise<ArrayBuffer>;
 
 /** @internal */
-export async function request(url: string, responseType: "json", options?: RequestOptions): Promise<any>;
+export async function request(
+  url: string,
+  responseType: "json",
+  options?: RequestOptions
+): Promise<any>;
 
 /** @internal */
-export async function request(url: string, responseType: "text", options?: RequestOptions): Promise<string>;
+export async function request(
+  url: string,
+  responseType: "text",
+  options?: RequestOptions
+): Promise<string>;
 
 /** @internal */
-export async function request(url: string, responseType: "arraybuffer" | "json" | "text", options?: RequestOptions): Promise<any> {
+export async function request(
+  url: string,
+  responseType: "arraybuffer" | "json" | "text",
+  options?: RequestOptions
+): Promise<any> {
   const headers: any = {
     ...options?.headers,
   };
 
   if (options?.auth)
-    headers.authorization = `Basic ${window.btoa(`${options.auth.user}:${options.auth.password}`)}`;
+    headers.authorization = `Basic ${window.btoa(
+      `${options.auth.user}:${options.auth.password}`
+    )}`;
 
   const controller = new AbortController();
-  if (options?.timeout)
-    setTimeout(() => controller.abort(), options.timeout);
+  if (options?.timeout) setTimeout(() => controller.abort(), options.timeout);
 
   const fetchOptions: RequestInit = {
     headers,
@@ -77,15 +90,16 @@ export async function request(url: string, responseType: "arraybuffer" | "json" 
   }
 }
 
-async function fetchWithRetry(fetchFunc: () => Promise<Response>, remainingRetries: number): Promise<Response> {
+async function fetchWithRetry(
+  fetchFunc: () => Promise<Response>,
+  remainingRetries: number
+): Promise<Response> {
   try {
     return await fetchFunc();
   } catch (error: unknown) {
-    if (error instanceof Error && error.name === "AbortError")
-      throw error;
+    if (error instanceof Error && error.name === "AbortError") throw error;
 
-    if (remainingRetries === 0)
-      throw error;
+    if (remainingRetries === 0) throw error;
 
     return fetchWithRetry(fetchFunc, --remainingRetries);
   }

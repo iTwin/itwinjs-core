@@ -13,7 +13,7 @@ import { ShaderProgram } from "./ShaderProgram";
 import { SyncToken } from "./Sync";
 import { System } from "./System";
 
-const enum DataType {// eslint-disable-line no-restricted-syntax
+const enum DataType { // eslint-disable-line no-restricted-syntax
   Undefined, // eslint-disable-line id-blacklist
   Mat3,
   Mat4,
@@ -36,12 +36,17 @@ export class UniformHandle {
   private readonly _data: number[] = [];
   public syncToken?: SyncToken;
 
-  private constructor(location: WebGLUniformLocation | null) { this._location = location; }
+  private constructor(location: WebGLUniformLocation | null) {
+    this._location = location;
+  }
 
   public static create(program: ShaderProgram, name: string): UniformHandle {
     let location = null;
     if (undefined !== program.glProgram) {
-      location = System.instance.context.getUniformLocation(program.glProgram, name);
+      location = System.instance.context.getUniformLocation(
+        program.glProgram,
+        name
+      );
     }
     if (null === location) {
       const errMsg = `uniform ${name} not found in ${program.description}.`;
@@ -54,14 +59,21 @@ export class UniformHandle {
     return new UniformHandle(location);
   }
 
-  private updateData(type: DataType, data: Float32Array | Int32Array | number[]): boolean {
-    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type && DataType.Uint !== type);
+  private updateData(
+    type: DataType,
+    data: Float32Array | Int32Array | number[]
+  ): boolean {
+    assert(
+      DataType.Undefined !== type &&
+        DataType.Int !== type &&
+        DataType.Float !== type &&
+        DataType.Uint !== type
+    );
 
     let updated = this._type !== type;
     if (updated) {
       this._type = type;
-      if (this._data.length !== data.length)
-        this._data.length = data.length;
+      if (this._data.length !== data.length) this._data.length = data.length;
     }
 
     for (let i = 0; i < data.length; i++) {
@@ -74,11 +86,12 @@ export class UniformHandle {
   }
 
   private updateDatum(type: DataType, datum: number): boolean {
-    assert(DataType.Int === type || DataType.Uint === type || DataType.Float === type);
+    assert(
+      DataType.Int === type || DataType.Uint === type || DataType.Float === type
+    );
 
     // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
-    if (this._data.length !== 1)
-      this._data.length = 1;
+    if (this._data.length !== 1) this._data.length = 1;
 
     const updated = this._type !== type || this._data[0] !== datum;
     this._type = type;

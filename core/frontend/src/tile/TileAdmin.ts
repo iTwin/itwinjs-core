@@ -6,19 +6,53 @@
  * @module Tiles
  */
 import {
-  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
+  assert,
+  BeDuration,
+  BeEvent,
+  BentleyStatus,
+  BeTimePoint,
+  Id64,
+  Id64Array,
+  Id64String,
+  IModelStatus,
+  ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
-  IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
+  BackendError,
+  defaultTileOptions,
+  EdgeOptions,
+  ElementGraphicsRequestProps,
+  getMaximumMajorTileFormatVersion,
+  IModelError,
+  IModelTileRpcInterface,
+  IModelTileTreeProps,
+  RenderSchedule,
+  RpcOperation,
+  RpcResponseCacheControl,
+  ServerTimeoutError,
+  TileContentSource,
+  TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
-  TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
+  DisclosedTileTreeSet,
+  IModelTileTree,
+  LRUTileList,
+  ReadonlyTileUserSet,
+  Tile,
+  TileContentDecodingStatistics,
+  TileLoadStatus,
+  TileRequest,
+  TileRequestChannels,
+  TileStorage,
+  TileTree,
+  TileTreeOwner,
+  TileUsageMarker,
+  TileUser,
+  UniqueTileUserSets,
 } from "./internal";
 import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 
@@ -81,7 +115,12 @@ export interface SelectedAndReadyTiles {
  * @public
  * @extensions
  */
-export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
+export type GpuMemoryLimit =
+  | "none"
+  | "default"
+  | "aggressive"
+  | "relaxed"
+  | number;
 
 /** Defines separate [[GpuMemoryLimit]]s for mobile and desktop clients.
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
@@ -108,8 +147,14 @@ export class TileAdmin {
   public readonly channels: TileRequestChannels;
   private readonly _users = new Set<TileUser>();
   private readonly _requestsPerUser = new Map<TileUser, Set<Tile>>();
-  private readonly _tileUsagePerUser = new Map<TileUser, Set<TileUsageMarker>>();
-  private readonly _selectedAndReady = new Map<TileUser, SelectedAndReadyTiles>();
+  private readonly _tileUsagePerUser = new Map<
+    TileUser,
+    Set<TileUsageMarker>
+  >();
+  private readonly _selectedAndReady = new Map<
+    TileUser,
+    SelectedAndReadyTiles
+  >();
   private readonly _tileUserSetsForRequests = new UniqueTileUserSets();
   private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
@@ -174,20 +219,23 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
-    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.appFunctionIpc.queryConcurrency("cpu")) : undefined;
+    const rpcConcurrency = IpcApp.isValid
+      ? await IpcApp.appFunctionIpc.queryConcurrency("cpu")
+      : undefined;
     const isMobile = ProcessDetector.isMobileBrowser;
     return new TileAdmin(isMobile, rpcConcurrency, props);
   }
 
   /** @internal */
-  public get emptyTileUserSet(): ReadonlyTileUserSet { return UniqueTileUserSets.emptySet; }
+  public get emptyTileUserSet(): ReadonlyTileUserSet {
+    return UniqueTileUserSets.emptySet;
+  }
 
   /** Returns basic statistics about the TileAdmin's current state. */
   public get statistics(): TileAdmin.Statistics {
     let numActiveTileTreePropsRequests = 0;
     for (const req of this._tileTreePropsRequests) {
-      if (!req.isDispatched)
-        break;
+      if (!req.isDispatched) break;
 
       ++numActiveTileTreePropsRequests;
     }
@@ -196,7 +244,8 @@ export class TileAdmin {
       ...this.channels.statistics,
       totalElidedTiles: this._totalElided,
       numActiveTileTreePropsRequests,
-      numPendingTileTreePropsRequests: this._tileTreePropsRequests.length - numActiveTileTreePropsRequests,
+      numPendingTileTreePropsRequests:
+        this._tileTreePropsRequests.length - numActiveTileTreePropsRequests,
     };
   }
 
@@ -209,54 +258,88 @@ export class TileAdmin {
   /** Exposed as public strictly for tests.
    * @internal
    */
-  public constructor(isMobile: boolean, rpcConcurrency: number | undefined, options?: TileAdmin.Props) {
+  public constructor(
+    isMobile: boolean,
+    rpcConcurrency: number | undefined,
+    options?: TileAdmin.Props
+  ) {
     this._isMobile = isMobile;
-    if (undefined === options)
-      options = {};
+    if (undefined === options) options = {};
 
-    this.channels = new TileRequestChannels(rpcConcurrency, true === options.cacheTileMetadata);
+    this.channels = new TileRequestChannels(
+      rpcConcurrency,
+      true === options.cacheTileMetadata
+    );
 
-    this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
-    this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
-    this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
-    this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
-    this._enableIndexedEdges = options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
-    this._generateAllPolyfaceEdges = options.generateAllPolyfaceEdges ?? defaultTileOptions.generateAllPolyfaceEdges;
-    this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
-    this.enableFrontendScheduleScripts = options.enableFrontendScheduleScripts ?? false;
-    this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
-    this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
-    this.disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
+    this._maxActiveTileTreePropsRequests =
+      options.maxActiveTileTreePropsRequests ?? 10;
+    this._defaultTileSizeModifier =
+      undefined !== options.defaultTileSizeModifier &&
+      options.defaultTileSizeModifier > 0
+        ? options.defaultTileSizeModifier
+        : 1.0;
+    this._retryInterval =
+      undefined !== options.retryInterval ? options.retryInterval : 1000;
+    this._enableInstancing =
+      options.enableInstancing ?? defaultTileOptions.enableInstancing;
+    this._enableIndexedEdges =
+      options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
+    this._generateAllPolyfaceEdges =
+      options.generateAllPolyfaceEdges ??
+      defaultTileOptions.generateAllPolyfaceEdges;
+    this.enableImprovedElision =
+      options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
+    this.enableFrontendScheduleScripts =
+      options.enableFrontendScheduleScripts ?? false;
+    this.ignoreAreaPatterns =
+      options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
+    this.enableExternalTextures =
+      options.enableExternalTextures ??
+      defaultTileOptions.enableExternalTextures;
+    this.disableMagnification =
+      options.disableMagnification ?? defaultTileOptions.disableMagnification;
     this.alwaysRequestEdges = true === options.alwaysRequestEdges;
-    this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
-    this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
-    this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
-    this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
-    this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
-    this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
+    this.alwaysSubdivideIncompleteTiles =
+      options.alwaysSubdivideIncompleteTiles ??
+      defaultTileOptions.alwaysSubdivideIncompleteTiles;
+    this.maximumMajorTileFormatVersion =
+      options.maximumMajorTileFormatVersion ??
+      defaultTileOptions.maximumMajorTileFormatVersion;
+    this.useProjectExtents =
+      options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.optimizeBRepProcessing =
+      options.optimizeBRepProcessing ??
+      defaultTileOptions.optimizeBRepProcessing;
+    this.useLargerTiles =
+      options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
+    this.mobileRealityTileMinToleranceRatio = Math.max(
+      options.mobileRealityTileMinToleranceRatio ?? 3.0,
+      1.0
+    );
     this.cesiumIonKey = options.cesiumIonKey;
     this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
     let gpuMemoryLimit: GpuMemoryLimit | undefined;
     if (typeof gpuMemoryLimits === "object")
-      gpuMemoryLimit = isMobile ? gpuMemoryLimits.mobile : gpuMemoryLimits.nonMobile;
-    else
-      gpuMemoryLimit = gpuMemoryLimits;
+      gpuMemoryLimit = isMobile
+        ? gpuMemoryLimits.mobile
+        : gpuMemoryLimits.nonMobile;
+    else gpuMemoryLimit = gpuMemoryLimits;
 
-    if (undefined === gpuMemoryLimit && isMobile)
-      gpuMemoryLimit = "default";
+    if (undefined === gpuMemoryLimit && isMobile) gpuMemoryLimit = "default";
 
-    if (undefined !== gpuMemoryLimit)
-      this.gpuMemoryLimit = gpuMemoryLimit;
+    if (undefined !== gpuMemoryLimit) this.gpuMemoryLimit = gpuMemoryLimit;
 
     if (undefined !== options.maximumLevelsToSkip)
-      this.maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
-    else
-      this.maximumLevelsToSkip = 1;
+      this.maximumLevelsToSkip = Math.floor(
+        Math.max(0, options.maximumLevelsToSkip)
+      );
+    else this.maximumLevelsToSkip = 1;
 
     const minSpatialTol = options.minimumSpatialTolerance;
-    this.minimumSpatialTolerance = undefined !== minSpatialTol ? Math.max(minSpatialTol, 0) : 0.001;
+    this.minimumSpatialTolerance =
+      undefined !== minSpatialTol ? Math.max(minSpatialTol, 0) : 0.001;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
       seconds = Math.min(seconds, max);
@@ -269,21 +352,48 @@ export class TileAdmin {
     const minTreeTime = ignoreMinimums ? 0.1 : 10;
 
     // If unspecified, tile expiration time defaults to 20 seconds.
-    this.tileExpirationTime = clamp((options.tileExpirationTime ?? 20), minTileTime, 60)!;
+    this.tileExpirationTime = clamp(
+      options.tileExpirationTime ?? 20,
+      minTileTime,
+      60
+    )!;
 
     // If unspecified, trees never expire (will change this to use a default later).
-    this.tileTreeExpirationTime = clamp(options.tileTreeExpirationTime ?? 300, minTreeTime, 3600);
+    this.tileTreeExpirationTime = clamp(
+      options.tileTreeExpirationTime ?? 300,
+      minTreeTime,
+      3600
+    );
 
     const now = BeTimePoint.now();
     this._nextPruneTime = now.plus(this.tileExpirationTime);
     this._nextPurgeTime = now.plus(this.tileTreeExpirationTime);
 
-    this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
+    this._removeIModelConnectionOnCloseListener =
+      IModelConnection.onClose.addListener((iModel) =>
+        this.onIModelClosed(iModel)
+      );
 
     // If unspecified preload 2 levels of parents for context tiles.
-    this.contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
+    this.contextPreloadParentDepth = Math.max(
+      0,
+      Math.min(
+        options.contextPreloadParentDepth === undefined
+          ? 2
+          : options.contextPreloadParentDepth,
+        8
+      )
+    );
     // If unspecified skip one level before preloading  of parents of context tiles.
-    this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
+    this.contextPreloadParentSkip = Math.max(
+      0,
+      Math.min(
+        options.contextPreloadParentSkip === undefined
+          ? 1
+          : options.contextPreloadParentSkip,
+        5
+      )
+    );
 
     const removals = [
       this.onTileLoad.addListener(() => this.invalidateAllScenes()),
@@ -305,12 +415,10 @@ export class TileAdmin {
   private _tileStorage?: TileStorage;
   private _tileStoragePromise?: Promise<TileStorage>;
   private async getTileStorage(): Promise<TileStorage> {
-    if (this._tileStorage !== undefined)
-      return this._tileStorage;
+    if (this._tileStorage !== undefined) return this._tileStorage;
 
     // if object-storage-azure is already being dynamically loaded, just return the promise.
-    if (this._tileStoragePromise !== undefined)
-      return this._tileStoragePromise;
+    if (this._tileStoragePromise !== undefined) return this._tileStoragePromise;
 
     // if custom implementation is provided, construct a new TileStorage instance and return it.
     if (this._cloudStorage !== undefined) {
@@ -322,8 +430,13 @@ export class TileAdmin {
     this._tileStoragePromise = (async () => {
       await import("reflect-metadata");
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
-      const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
+      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } =
+        await import(
+          /* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend"
+        );
+      const azureStorage = new AzureFrontendStorage(
+        new FrontendBlockBlobClientWrapperFactory()
+      );
       this._tileStorage = new TileStorage(azureStorage);
       return this._tileStorage;
     })();
@@ -331,12 +444,20 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get enableInstancing() { return this._enableInstancing; }
+  public get enableInstancing() {
+    return this._enableInstancing;
+  }
   /** @internal */
-  public get enableIndexedEdges() { return this._enableIndexedEdges; }
+  public get enableIndexedEdges() {
+    return this._enableIndexedEdges;
+  }
   /** @internal */
-  public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
-  public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
+  public get generateAllPolyfaceEdges() {
+    return this._generateAllPolyfaceEdges;
+  }
+  public set generateAllPolyfaceEdges(val: boolean) {
+    this._generateAllPolyfaceEdges = val;
+  }
   /** @internal */
   public get edgeOptions(): EdgeOptions {
     return {
@@ -351,7 +472,10 @@ export class TileAdmin {
    * @see [[CurrentImdlVersion]]
    */
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
-    return getMaximumMajorTileFormatVersion(this.maximumMajorTileFormatVersion, formatVersion);
+    return getMaximumMajorTileFormatVersion(
+      this.maximumMajorTileFormatVersion,
+      formatVersion
+    );
   }
 
   /** A default multiplier applied to the size in pixels of a [[Tile]] during tile selection for any [[Viewport]].
@@ -362,9 +486,15 @@ export class TileAdmin {
    * Changing it after startup will change it for all Viewports that do not explicitly override it with their own multiplier.
    * This value must be greater than zero.
    */
-  public get defaultTileSizeModifier() { return this._defaultTileSizeModifier; }
+  public get defaultTileSizeModifier() {
+    return this._defaultTileSizeModifier;
+  }
   public set defaultTileSizeModifier(modifier: number) {
-    if (modifier !== this._defaultTileSizeModifier && modifier > 0 && !Number.isNaN(modifier)) {
+    if (
+      modifier !== this._defaultTileSizeModifier &&
+      modifier > 0 &&
+      !Number.isNaN(modifier)
+    ) {
       this._defaultTileSizeModifier = modifier;
       IModelApp.viewManager.invalidateScenes();
     }
@@ -394,8 +524,7 @@ export class TileAdmin {
     return this._gpuMemoryLimit;
   }
   public set gpuMemoryLimit(limit: GpuMemoryLimit) {
-    if (limit === this.gpuMemoryLimit)
-      return;
+    if (limit === this.gpuMemoryLimit) return;
 
     let maxBytes: number | undefined;
     if (typeof limit === "number") {
@@ -406,7 +535,9 @@ export class TileAdmin {
         case "default":
         case "aggressive":
         case "relaxed":
-          const spec = this._isMobile ? TileAdmin.mobileGpuMemoryLimits : TileAdmin.nonMobileGpuMemoryLimits;
+          const spec = this._isMobile
+            ? TileAdmin.mobileGpuMemoryLimits
+            : TileAdmin.nonMobileGpuMemoryLimits;
           maxBytes = spec[limit];
           break;
         default:
@@ -459,8 +590,7 @@ export class TileAdmin {
     const requests = this.getRequestsForUser(user);
     let count = requests?.size ?? 0;
     const tiles = this.getTilesForUser(user);
-    if (tiles)
-      count += tiles.external.requested;
+    if (tiles) count += tiles.external.requested;
 
     return count;
   }
@@ -494,7 +624,12 @@ export class TileAdmin {
    * The TileAdmin takes ownership of the `ready` set - do not modify it after passing it in.
    * @internal
    */
-  public addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>, touched: Set<Tile>): void {
+  public addTilesForUser(
+    user: TileUser,
+    selected: Tile[],
+    ready: Set<Tile>,
+    touched: Set<Tile>
+  ): void {
     // "selected" are tiles we are drawing.
     this._lruList.markUsed(user.tileUserId, selected);
     // "ready" are tiles we want to draw but can't yet because, for example, their siblings are not yet ready to be drawn.
@@ -504,25 +639,34 @@ export class TileAdmin {
 
     const entry = this.getTilesForUser(user);
     if (undefined === entry) {
-      this._selectedAndReady.set(user, { ready, selected: new Set<Tile>(selected), external: { selected: 0, requested: 0, ready: 0 } });
+      this._selectedAndReady.set(user, {
+        ready,
+        selected: new Set<Tile>(selected),
+        external: { selected: 0, requested: 0, ready: 0 },
+      });
       return;
     }
 
-    for (const tile of selected)
-      entry.selected.add(tile);
+    for (const tile of selected) entry.selected.add(tile);
 
-    for (const tile of ready)
-      entry.ready.add(tile);
+    for (const tile of ready) entry.ready.add(tile);
   }
 
   /** Disclose statistics about tiles that are handled externally from TileAdmin. At this time, that means OrbitGT point cloud tiles.
    * These statistics are included in the return value of [[getTilesForUser]].
    * @internal
    */
-  public addExternalTilesForUser(user: TileUser, statistics: ExternalTileStatistics): void {
+  public addExternalTilesForUser(
+    user: TileUser,
+    statistics: ExternalTileStatistics
+  ): void {
     const entry = this.getTilesForUser(user);
     if (!entry) {
-      this._selectedAndReady.set(user, { ready: new Set<Tile>(), selected: new Set<Tile>(), external: { ...statistics } });
+      this._selectedAndReady.set(user, {
+        ready: new Set<Tile>(),
+        selected: new Set<Tile>(),
+        external: { ...statistics },
+      });
       return;
     }
 
@@ -563,8 +707,7 @@ export class TileAdmin {
   /** @internal */
   public invalidateAllScenes() {
     for (const user of this.tileUsers)
-      if (user instanceof Viewport)
-        user.invalidateScene();
+      if (user instanceof Viewport) user.invalidateScene();
   }
 
   /** @internal */
@@ -577,8 +720,7 @@ export class TileAdmin {
     this._removeIModelConnectionOnCloseListener();
     this.channels.onShutDown();
 
-    for (const req of this._tileTreePropsRequests)
-      req.abandon();
+    for (const req of this._tileTreePropsRequests) req.abandon();
 
     this._requestsPerUser.clear();
     this._tileUserSetsForRequests.clear();
@@ -590,7 +732,10 @@ export class TileAdmin {
   /** Returns the union of the input set and the input TileUser, to be associated with a [[TileRequest]].
    * @internal
    */
-  public getTileUserSetForRequest(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet {
+  public getTileUserSetForRequest(
+    user: TileUser,
+    users?: ReadonlyTileUserSet
+  ): ReadonlyTileUserSet {
     return this._tileUserSetsForRequests.getTileUserSet(user, users);
   }
 
@@ -602,7 +747,7 @@ export class TileAdmin {
   public markTileUsed(marker: TileUsageMarker, user: TileUser): void {
     let set = this._tileUsagePerUser.get(user);
     if (!set)
-      this._tileUsagePerUser.set(user, set = new Set<TileUsageMarker>());
+      this._tileUsagePerUser.set(user, (set = new Set<TileUsageMarker>()));
 
     set.add(marker);
   }
@@ -614,8 +759,7 @@ export class TileAdmin {
   public isTileInUse(marker: TileUsageMarker): boolean {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     for (const [_user, markers] of this._tileUsagePerUser)
-      if (markers.has(marker))
-        return true;
+      if (markers.has(marker)) return true;
 
     return false;
   }
@@ -629,13 +773,19 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps> {
+  public async requestTileTreeProps(
+    iModel: IModelConnection,
+    treeId: string
+  ): Promise<IModelTileTreeProps> {
     this.initializeRpc();
     const requests = this._tileTreePropsRequests;
     return new Promise<IModelTileTreeProps>((resolve, reject) => {
       const request = new TileTreePropsRequest(iModel, treeId, resolve, reject);
       requests.push(request);
-      if (this._tileTreePropsRequests.length <= this._maxActiveTileTreePropsRequests)
+      if (
+        this._tileTreePropsRequests.length <=
+        this._maxActiveTileTreePropsRequests
+      )
         request.dispatch();
     });
   }
@@ -649,26 +799,54 @@ export class TileAdmin {
    * ```
    * @internal
    */
-  public async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void> {
+  public async purgeTileTrees(
+    iModel: IModelConnection,
+    modelIds: Id64Array | undefined
+  ): Promise<void> {
     this.initializeRpc();
-    return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.getRpcProps(), modelIds);
+    return IModelTileRpcInterface.getClient().purgeTileTrees(
+      iModel.getRpcProps(),
+      modelIds
+    );
   }
 
   /** @internal */
-  public async requestCachedTileContent(tile: { iModelTree: IModelTileTree, contentId: string }): Promise<Uint8Array | undefined> {
+  public async requestCachedTileContent(tile: {
+    iModelTree: IModelTileTree;
+    contentId: string;
+  }): Promise<Uint8Array | undefined> {
     if (tile.iModelTree.iModel.iModelId === undefined)
       throw new Error("Provided iModel has no iModelId");
 
     const { guid, tokenProps, treeId } = this.getTileRequestProps(tile);
-    const content = await (await this.getTileStorage()).downloadTile(tokenProps, tile.iModelTree.iModel.iModelId, tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
+    const content = await (
+      await this.getTileStorage()
+    ).downloadTile(
+      tokenProps,
+      tile.iModelTree.iModel.iModelId,
+      tile.iModelTree.iModel.changeset.id,
+      treeId,
+      tile.contentId,
+      guid
+    );
     return content;
   }
 
   /** @internal */
-  public async generateTileContent(tile: { iModelTree: IModelTileTree, contentId: string, request?: { isCanceled: boolean } }): Promise<Uint8Array> {
+  public async generateTileContent(tile: {
+    iModelTree: IModelTileTree;
+    contentId: string;
+    request?: { isCanceled: boolean };
+  }): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
-    const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    const retrieveMethod =
+      await IModelTileRpcInterface.getClient().generateTileContent(
+        props.tokenProps,
+        props.treeId,
+        props.contentId,
+        props.guid
+      );
     if (tile.request?.isCanceled) {
       // the content is no longer needed, return an empty array.
       return new Uint8Array();
@@ -677,21 +855,33 @@ export class TileAdmin {
     if (retrieveMethod === TileContentSource.ExternalCache) {
       const tileContent = await this.requestCachedTileContent(tile);
       if (tileContent === undefined)
-        throw new IModelError(IModelStatus.NoContent, "Failed to fetch generated tile from external cache");
+        throw new IModelError(
+          IModelStatus.NoContent,
+          "Failed to fetch generated tile from external cache"
+        );
       return tileContent;
     } else if (retrieveMethod === TileContentSource.Backend) {
-      return IModelTileRpcInterface.getClient().retrieveTileContent(props.tokenProps, this.getTileRequestProps(tile));
+      return IModelTileRpcInterface.getClient().retrieveTileContent(
+        props.tokenProps,
+        this.getTileRequestProps(tile)
+      );
     }
-    throw new BackendError(BentleyStatus.ERROR, "", "Invalid response from RPC backend");
+    throw new BackendError(
+      BentleyStatus.ERROR,
+      "",
+      "Invalid response from RPC backend"
+    );
   }
 
   /** @internal */
-  public getTileRequestProps(tile: { iModelTree: IModelTileTree, contentId: string }) {
+  public getTileRequestProps(tile: {
+    iModelTree: IModelTileTree;
+    contentId: string;
+  }) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
     let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
-    if (tree.contentIdQualifier)
-      guid = `${guid}_${tree.contentIdQualifier}`;
+    if (tree.contentIdQualifier) guid = `${guid}_${tree.contentIdQualifier}`;
 
     const contentId = tile.contentId;
     const treeId = tree.id;
@@ -702,12 +892,21 @@ export class TileAdmin {
    * @see [[readElementGraphics]] to convert the result into a [[RenderGraphic]] for display.
    * @public
    */
-  public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+  public async requestElementGraphics(
+    iModel: IModelConnection,
+    requestProps: ElementGraphicsRequestProps
+  ): Promise<Uint8Array | undefined> {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
-      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
+      requestProps = {
+        ...requestProps,
+        edgeType: this.enableIndexedEdges ? 2 : 1,
+      };
 
     // For backwards compatibility, these options default to true in the backend. Explicitly set them to false in (newer) frontends if not supplied.
-    if (undefined === requestProps.quantizePositions || undefined === requestProps.useAbsolutePositions) {
+    if (
+      undefined === requestProps.quantizePositions ||
+      undefined === requestProps.useAbsolutePositions
+    ) {
       requestProps = {
         ...requestProps,
         quantizePositions: requestProps.quantizePositions ?? false,
@@ -724,7 +923,8 @@ export class TileAdmin {
   public async queryVersionInfo(): Promise<Readonly<TileVersionInfo>> {
     if (!this._versionInfo) {
       this.initializeRpc();
-      this._versionInfo = await IModelTileRpcInterface.getClient().queryVersionInfo();
+      this._versionInfo =
+        await IModelTileRpcInterface.getClient().queryVersionInfo();
     }
 
     return this._versionInfo;
@@ -767,16 +967,28 @@ export class TileAdmin {
   public readonly onTileLoad = new BeEvent<(tile: Tile) => void>();
 
   /** Event raised when a request to load a tile tree completes. */
-  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTreeOwner) => void>();
+  public readonly onTileTreeLoad = new BeEvent<
+    (tileTree: TileTreeOwner) => void
+  >();
 
   /** Event raised when a request to load a tile's child tiles completes. */
-  public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
+  public readonly onTileChildrenLoad = new BeEvent<
+    (parentTile: Tile) => void
+  >();
 
   /** Subscribe to [[onTileLoad]], [[onTileTreeLoad]], and [[onTileChildrenLoad]]. */
-  public addLoadListener(callback: (imodel: IModelConnection) => void): () => void {
-    const tileLoad = this.onTileLoad.addListener((tile) => callback(tile.tree.iModel));
-    const treeLoad = this.onTileTreeLoad.addListener((tree) => callback(tree.iModel));
-    const childLoad = this.onTileChildrenLoad.addListener((tile) => callback(tile.tree.iModel));
+  public addLoadListener(
+    callback: (imodel: IModelConnection) => void
+  ): () => void {
+    const tileLoad = this.onTileLoad.addListener((tile) =>
+      callback(tile.tree.iModel)
+    );
+    const treeLoad = this.onTileTreeLoad.addListener((tree) =>
+      callback(tree.iModel)
+    );
+    const childLoad = this.onTileChildrenLoad.addListener((tile) =>
+      callback(tile.tree.iModel)
+    );
     return () => {
       tileLoad();
       treeLoad();
@@ -790,23 +1002,40 @@ export class TileAdmin {
    * Otherwise, special tiles must be requested based on the script's sourceId (RenderTimeline or DisplayStyle element).
    * @internal
    */
-  public getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.ScriptReference | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
-    if (!script || !script.script.requiresBatching)
-      return undefined;
+  public getScriptInfoForTreeId(
+    modelId: Id64String,
+    script: RenderSchedule.ScriptReference | undefined
+  ):
+    | { timeline?: RenderSchedule.ModelTimeline; animationId?: Id64String }
+    | undefined {
+    if (!script || !script.script.requiresBatching) return undefined;
 
-    const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
-    if (!timeline || (!timeline.requiresBatching && !timeline.containsTransform))
+    const timeline = script.script.modelTimelines.find(
+      (x) => x.modelId === modelId
+    );
+    if (
+      !timeline ||
+      (!timeline.requiresBatching && !timeline.containsTransform)
+    )
       return undefined;
 
     // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
-    if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !timeline.omitsElementIds))
+    if (
+      !Id64.isValidId64(script.sourceId) ||
+      (this.enableFrontendScheduleScripts && !timeline.omitsElementIds)
+    )
       return { timeline };
 
     return { animationId: script.sourceId };
   }
 
   private dispatchTileTreePropsRequests(): void {
-    for (let i = 0; i < this._maxActiveTileTreePropsRequests && i < this._tileTreePropsRequests.length; i++)
+    for (
+      let i = 0;
+      i < this._maxActiveTileTreePropsRequests &&
+      i < this._tileTreePropsRequests.length;
+      i++
+    )
       this._tileTreePropsRequests[i].dispatch();
   }
 
@@ -818,7 +1047,9 @@ export class TileAdmin {
     this.channels.swapPending();
 
     // Repopulate pending requests queue from each user. We do NOT sort by priority while doing so.
-    this._requestsPerUser.forEach((value, key) => this.processRequests(key, value));
+    this._requestsPerUser.forEach((value, key) =>
+      this.processRequests(key, value)
+    );
 
     // Ask channels to update their queues and dispatch requests.
     this.channels.process();
@@ -834,17 +1065,19 @@ export class TileAdmin {
     const now = BeTimePoint.now();
     const needPrune = this._nextPruneTime.before(now);
     const needPurge = this._nextPurgeTime.before(now);
-    if (!needPrune && !needPurge)
-      return;
+    if (!needPrune && !needPurge) return;
 
     // Identify all of the TileTrees in use by all of the TileUsers known to the TileAdmin.
     // NOTE: A single viewport can display tiles from more than one IModelConnection.
     // NOTE: A viewport may be displaying no trees - but we need to record its IModel so we can purge those which are NOT being displayed
     //  NOTE: That won't catch external tile trees previously used by that viewport.
     const trees = new DisclosedTileTreeSet();
-    const treesByIModel = needPurge ? new Map<IModelConnection, Set<TileTree>>() : undefined;
+    const treesByIModel = needPurge
+      ? new Map<IModelConnection, Set<TileTree>>()
+      : undefined;
     for (const user of this._users) {
-      if (!user.iModel.isOpen) // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
+      if (!user.iModel.isOpen)
+        // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
         continue;
 
       user.discloseTileTrees(trees);
@@ -854,8 +1087,7 @@ export class TileAdmin {
 
     if (needPrune) {
       // Request that each displayed tile tree discard any tiles and/or tile content that is no longer needed.
-      for (const tree of trees)
-        tree.prune();
+      for (const tree of trees) tree.prune();
 
       this._nextPruneTime = now.plus(this.tileExpirationTime);
     }
@@ -864,7 +1096,7 @@ export class TileAdmin {
       for (const tree of trees) {
         let set = treesByIModel.get(tree.iModel);
         if (undefined === set)
-          treesByIModel.set(tree.iModel, set = new Set<TileTree>());
+          treesByIModel.set(tree.iModel, (set = new Set<TileTree>()));
 
         set.add(tree);
       }
@@ -895,8 +1127,7 @@ export class TileAdmin {
         assert(undefined !== req);
         if (undefined !== req) {
           // Request may already be dispatched (in channel's active requests) - if so do not re-enqueue!
-          if (req.isQueued && 0 === req.users.length)
-            req.channel.append(req);
+          if (req.isQueued && 0 === req.users.length) req.channel.append(req);
 
           req.addUser(user);
           assert(0 < req.users.length);
@@ -925,14 +1156,12 @@ export class TileAdmin {
 
   private onIModelClosed(iModel: IModelConnection): void {
     this._requestsPerUser.forEach((_req, user) => {
-      if (user.iModel === iModel)
-        this.onUserIModelClosed(user);
+      if (user.iModel === iModel) this.onUserIModelClosed(user);
     });
 
     // Remove any TileTreeProps requests associated with this iModel.
     this._tileTreePropsRequests = this._tileTreePropsRequests.filter((req) => {
-      if (req.iModel !== iModel)
-        return true;
+      if (req.iModel !== iModel) return true;
 
       req.abandon();
       return false;
@@ -946,21 +1175,27 @@ export class TileAdmin {
 
   private initializeRpc(): void {
     // Would prefer to do this in constructor - but nothing enforces that the app initializes the rpc interfaces before it creates the TileAdmin (via IModelApp.startup()) - so do it on first request instead.
-    if (this._rpcInitialized)
-      return;
+    if (this._rpcInitialized) return;
 
     this._rpcInitialized = true;
     const retryInterval = this._retryInterval;
-    RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
+    RpcOperation.lookup(
+      IModelTileRpcInterface,
+      "requestTileTreeProps"
+    ).policy.retryInterval = () => retryInterval;
 
-    const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
+    const policy = RpcOperation.lookup(
+      IModelTileRpcInterface,
+      "generateTileContent"
+    ).policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
   }
 }
 
 /** @public */
-export namespace TileAdmin { // eslint-disable-line no-redeclare
+export namespace TileAdmin {
+  // eslint-disable-line no-redeclare
   /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
    * @public
    */
@@ -1294,24 +1529,27 @@ class TileTreePropsRequest {
     public readonly iModel: IModelConnection,
     private readonly _treeId: string,
     private readonly _resolve: (props: IModelTileTreeProps) => void,
-    private readonly _reject: (error: Error) => void) {
+    private readonly _reject: (error: Error) => void
+  ) {}
+
+  public get isDispatched(): boolean {
+    return this._isDispatched;
   }
 
-  public get isDispatched(): boolean { return this._isDispatched; }
-
   public dispatch(): void {
-    if (this.isDispatched)
-      return;
+    if (this.isDispatched) return;
 
     this._isDispatched = true;
 
-    requestTileTreeProps(this.iModel, this._treeId).then((props) => {
-      this.terminate();
-      this._resolve(props);
-    }).catch((err) => {
-      this.terminate();
-      this._reject(err);
-    });
+    requestTileTreeProps(this.iModel, this._treeId)
+      .then((props) => {
+        this.terminate();
+        this._resolve(props);
+      })
+      .catch((err) => {
+        this.terminate();
+        this._reject(err);
+      });
   }
 
   /** The IModelConnection was closed, or IModelApp was shut down. Don't call terminate(), because we don't want to dispatch pending requests as a result.
@@ -1330,20 +1568,31 @@ class TileTreePropsRequest {
 }
 
 /** @internal */
-export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
+export type RequestTileTreePropsFunc = (
+  iModel: IModelConnection,
+  treeId: string
+) => Promise<IModelTileTreeProps>;
 
 let requestTileTreePropsOverride: RequestTileTreePropsFunc | undefined;
 
-async function requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<IModelTileTreeProps> {
+async function requestTileTreeProps(
+  iModel: IModelConnection,
+  treeId: string
+): Promise<IModelTileTreeProps> {
   if (requestTileTreePropsOverride)
     return requestTileTreePropsOverride(iModel, treeId);
 
-  return IModelTileRpcInterface.getClient().requestTileTreeProps(iModel.getRpcProps(), treeId);
+  return IModelTileRpcInterface.getClient().requestTileTreeProps(
+    iModel.getRpcProps(),
+    treeId
+  );
 }
 
 /** Strictly for tests - overrides the call to IModelTileRpcInterface.requestTileTreeProps with a custom function, or clears the override.
  * @internal
  */
-export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void {
+export function overrideRequestTileTreeProps(
+  func: RequestTileTreePropsFunc | undefined
+): void {
   requestTileTreePropsOverride = func;
 }

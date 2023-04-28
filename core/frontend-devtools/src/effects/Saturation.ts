@@ -6,7 +6,12 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
+import {
+  ScreenSpaceEffectBuilder,
+  Tool,
+  UniformType,
+  VaryingType,
+} from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -16,8 +21,12 @@ import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 export class SaturationEffect extends AddEffectTool {
   public static override toolId = "SaturationEffect";
 
-  protected get effectName() { return "Saturation"; }
-  protected get textureCoordFromPosition() { return true; }
+  protected get effectName() {
+    return "Saturation";
+  }
+  protected get textureCoordFromPosition() {
+    return true;
+  }
 
   protected get source() {
     // rgb <-> hsl conversion routines from https://gamedev.stackexchange.com/questions/59797/glsl-shader-change-hue-saturation-brightness
@@ -70,8 +79,12 @@ export class SaturationEffect extends AddEffectTool {
  */
 export class SaturationConfig extends Tool {
   public static override toolId = "SaturationConfig";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** Multiplier applied to the saturation of each color in the source image. */
   public static multiplier = 2.0;
@@ -87,4 +100,3 @@ export class SaturationConfig extends Tool {
     return this.run(args.getFloat("s"));
   }
 }
-

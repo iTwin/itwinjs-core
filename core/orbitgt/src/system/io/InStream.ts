@@ -19,23 +19,21 @@ type float64 = number;
  */
 /** @internal */
 export class InStream {
-    /**
-     * Create a new stream.
-     */
-    public constructor() {
-    }
+  /**
+   * Create a new stream.
+   */
+  public constructor() {}
 
-    /**
-     * Read the next byte (range 0..255, or -1 at the end of the stream).
-     */
-    public read(): int32 {
-        /* Override in subclasses */
-        return -1;
-    }
+  /**
+   * Read the next byte (range 0..255, or -1 at the end of the stream).
+   */
+  public read(): int32 {
+    /* Override in subclasses */
+    return -1;
+  }
 
-    /**
-     * Close the stream
-     */
-    public close(): void {
-    }
+  /**
+   * Close the stream
+   */
+  public close(): void {}
 }

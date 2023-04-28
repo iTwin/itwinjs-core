@@ -3,9 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import {
-  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+  BentleyError,
+  BentleyStatus,
+  ProcessDetector,
+} from "@itwin/core-bentley";
+import {
+  IModelError,
+  iTwinChannel,
+  RpcPushChannel,
+  RpcPushConnection,
+  RpcRequestFulfillment,
+  RpcSerializedValue,
+  SerializedRpcRequest,
 } from "@itwin/core-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
@@ -15,18 +25,34 @@ import { ElectronRpcRequest } from "./ElectronRpcRequest";
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");
 
-interface PartialPayload { id: string, index: number, data: Uint8Array }
+interface PartialPayload {
+  id: string;
+  index: number;
+  data: Uint8Array;
+}
 
 /** @internal */
-export interface IpcTransportMessage { id: string, parameters?: RpcSerializedValue, result?: RpcSerializedValue }
+export interface IpcTransportMessage {
+  id: string;
+  parameters?: RpcSerializedValue;
+  result?: RpcSerializedValue;
+}
 
 /** @internal */
-export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
-  private _partials: Map<string, { message: TIn, received: number } | PartialPayload[]>;
+export abstract class ElectronIpcTransport<
+  TIn extends IpcTransportMessage = IpcTransportMessage,
+  TOut extends IpcTransportMessage = IpcTransportMessage
+> {
+  private _partials: Map<
+    string,
+    { message: TIn; received: number } | PartialPayload[]
+  >;
   private _removeListeners: VoidFunction[] = [];
   protected _protocol: ElectronRpcProtocol;
 
-  public get protocol() { return this._protocol; }
+  public get protocol() {
+    return this._protocol;
+  }
 
   public sendRequest(request: SerializedRpcRequest) {
     const value = this._extractValue(request);
@@ -41,54 +67,63 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
     this.setupPush();
   }
 
-  protected setupPush() { }
+  protected setupPush() {}
 
   private _setupDataChannel() {
-    const removeListener = this.protocol.ipcSocket.addListener(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
-      let pending = this._partials.get(chunk.id);
-      if (!pending) {
-        pending = [];
-        this._partials.set(chunk.id, pending);
-      }
+    const removeListener = this.protocol.ipcSocket.addListener(
+      DATA_CHANNEL,
+      async (evt: any, chunk: PartialPayload) => {
+        let pending = this._partials.get(chunk.id);
+        if (!pending) {
+          pending = [];
+          this._partials.set(chunk.id, pending);
+        }
 
-      if (Array.isArray(pending)) {
-        pending.push(chunk);
-      } else {
-        ++pending.received;
+        if (Array.isArray(pending)) {
+          pending.push(chunk);
+        } else {
+          ++pending.received;
 
-        const value = this._extractValue(pending.message);
-        value.data[chunk.index] = chunk.data;
+          const value = this._extractValue(pending.message);
+          value.data[chunk.index] = chunk.data;
 
-        if (pending.received === (value.chunks || 0)) {
-          this.handleComplete(pending.message.id, evt);
+          if (pending.received === (value.chunks || 0)) {
+            this.handleComplete(pending.message.id, evt);
+          }
         }
       }
-    });
+    );
     this._removeListeners.push(removeListener);
   }
 
   private _setupObjectsChannel() {
-    const removeListener = this.protocol.ipcSocket.addListener(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
-      const pending = this._partials.get(message.id);
-      if (pending && !Array.isArray(pending)) {
-        throw new IModelError(BentleyStatus.ERROR, `Message already received for id "${message.id}".`);
-      }
+    const removeListener = this.protocol.ipcSocket.addListener(
+      OBJECTS_CHANNEL,
+      async (evt: any, message: TIn) => {
+        const pending = this._partials.get(message.id);
+        if (pending && !Array.isArray(pending)) {
+          throw new IModelError(
+            BentleyStatus.ERROR,
+            `Message already received for id "${message.id}".`
+          );
+        }
 
-      const partial = { message, received: 0 };
-      this._partials.set(message.id, partial);
-      const value = this._extractValue(partial.message);
+        const partial = { message, received: 0 };
+        this._partials.set(message.id, partial);
+        const value = this._extractValue(partial.message);
 
-      if (pending && Array.isArray(pending)) {
-        for (const chunk of pending) {
-          ++partial.received;
-          value.data[chunk.index] = chunk.data;
+        if (pending && Array.isArray(pending)) {
+          for (const chunk of pending) {
+            ++partial.received;
+            value.data[chunk.index] = chunk.data;
+          }
+        }
+
+        if (partial.received === (value.chunks || 0)) {
+          this.handleComplete(message.id, evt);
         }
       }
-
-      if (partial.received === (value.chunks || 0)) {
-        this.handleComplete(message.id, evt);
-      }
-    });
+    );
     this._removeListeners.push(removeListener);
   }
 
@@ -104,7 +139,11 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
     throw new IModelError(BentleyStatus.ERROR, "Unknown value type.");
   }
 
-  private _send(message: IpcTransportMessage, value: RpcSerializedValue, evt?: any) {
+  private _send(
+    message: IpcTransportMessage,
+    value: RpcSerializedValue,
+    evt?: any
+  ) {
     const chunks = value.data;
     if (chunks.length) {
       value.chunks = chunks.length;
@@ -114,7 +153,11 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
     this.performSend(OBJECTS_CHANNEL, message, evt);
 
     for (let index = 0; index !== chunks.length; ++index) {
-      const chunk: PartialPayload = { id: message.id, index, data: chunks[index] };
+      const chunk: PartialPayload = {
+        id: message.id,
+        index,
+        data: chunks[index],
+      };
       this.performSend(DATA_CHANNEL, chunk, evt);
     }
   }
@@ -134,7 +177,10 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   protected loadMessage(id: string) {
     const partial = this._partials.get(id);
     if (!partial || Array.isArray(partial)) {
-      throw new IModelError(BentleyStatus.ERROR, `Incomplete transmission for id "${id}".`);
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        `Incomplete transmission for id "${id}".`
+      );
     }
 
     this._partials.delete(id);
@@ -170,11 +216,15 @@ export class FrontendIpcTransport extends ElectronIpcTransport<RpcRequestFulfill
 }
 
 /** @internal */
-export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcRequest, RpcRequestFulfillment> {
+export class BackendIpcTransport extends ElectronIpcTransport<
+  SerializedRpcRequest,
+  RpcRequestFulfillment
+> {
   private _browserWindow: any;
 
   protected override setupPush() {
-    RpcPushConnection.for = (channel, client) => new ElectronPushConnection(channel, client, this);
+    RpcPushConnection.for = (channel, client) =>
+      new ElectronPushConnection(channel, client, this);
     RpcPushChannel.enabled = true;
   }
 
@@ -202,7 +252,9 @@ export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcReque
 
     this._requireBrowserWindow();
     const target = ElectronRpcConfiguration.targetWindowId;
-    const windows = target ? [this._browserWindow.fromId(target)] : this._browserWindow.getAllWindows();
+    const windows = target
+      ? [this._browserWindow.fromId(target)]
+      : this._browserWindow.getAllWindows();
     windows.forEach((window: any) => window.webContents.send(channel, message));
   }
 
@@ -211,10 +263,15 @@ export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcReque
       return;
     }
 
-    try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
+    try {
+      // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
       this._browserWindow = require("electron").BrowserWindow; // eslint-disable-line @typescript-eslint/no-var-requires
     } catch (err) {
-      throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, () => BentleyError.getErrorProps(err));
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        `Error requiring electron`,
+        () => BentleyError.getErrorProps(err)
+      );
     }
   }
 }
@@ -229,7 +286,9 @@ export function initializeIpc(protocol: ElectronRpcProtocol) {
   }
 
   if (undefined === transport)
-    transport = ProcessDetector.isElectronAppFrontend ? new FrontendIpcTransport(protocol) : new BackendIpcTransport(protocol);
+    transport = ProcessDetector.isElectronAppFrontend
+      ? new FrontendIpcTransport(protocol)
+      : new BackendIpcTransport(protocol);
 
   return transport;
 }

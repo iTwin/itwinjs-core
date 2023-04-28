@@ -32,7 +32,9 @@ export namespace LabelCompositeValue {
    * @deprecated in 3.x. Use [[LabelCompositeValue]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON {
+  export function toJSON(
+    compositeValue: LabelCompositeValue
+  ): LabelCompositeValueJSON {
     return { ...compositeValue };
   }
 
@@ -90,7 +92,9 @@ export namespace LabelDefinition {
    * @deprecated in 3.x. Use [[LabelDefinition]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON {
+  export function toJSON(
+    labelDefinition: LabelDefinition
+  ): LabelDefinitionJSON {
     return { ...labelDefinition };
   }
 
@@ -99,9 +103,10 @@ export namespace LabelDefinition {
    * @deprecated in 3.x. Use [[LabelDefinition]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition {
-    if (typeof json === "string")
-      return JSON.parse(json);
+  export function fromJSON(
+    json: LabelDefinitionJSON | string
+  ): LabelDefinition {
+    if (typeof json === "string") return JSON.parse(json);
     return { ...json };
   }
 
@@ -112,7 +117,9 @@ export namespace LabelDefinition {
    * Checks if provided [[LabelDefinition]] has raw value of type [[LabelCompositeValue]].
    * @public
    */
-  export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & { rawValue: LabelCompositeValue } {
+  export function isCompositeDefinition(
+    def: LabelDefinition
+  ): def is LabelDefinition & { rawValue: LabelCompositeValue } {
     return def.typeName === COMPOSITE_DEFINITION_TYPENAME;
   }
 

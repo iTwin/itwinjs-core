@@ -1,8 +1,8 @@
 # Ruleset variables
 
-> Ruleset Variables is a new name for now deprecated *User Settings* concept.
+> Ruleset Variables is a new name for now deprecated _User Settings_ concept.
 
-Presentation rulesets have a concept called *ruleset variables* whose purpose is to allow modifying ruleset behavior during the session without having to change
+Presentation rulesets have a concept called _ruleset variables_ whose purpose is to allow modifying ruleset behavior during the session without having to change
 the ruleset itself. The values of ruleset variables can be accessed using [ECExpressions](./ECExpressions.md#ruleset-variables-user-settings) in:
 
 - Rule conditions ([example](#using-variables-in-rule-condition)).
@@ -79,9 +79,9 @@ Clearing the ruleset value brings us back to the initial unfiltered view:
 
 Using a ruleset variable in ECExpression-based value makes the value customizable by users.
 
-The below example shows a hierarchy that loads *Spatial View Definition* elements as root nodes. By default, when `prefix` variable is not set, node labels are created from `CodeValue` property of the element. When the `prefix` variable is set, it's value is used as a prefix for node labels.
+The below example shows a hierarchy that loads _Spatial View Definition_ elements as root nodes. By default, when `prefix` variable is not set, node labels are created from `CodeValue` property of the element. When the `prefix` variable is set, it's value is used as a prefix for node labels.
 
-By default the ruleset value is not set - *CodeValue* property value is used as the label:
+By default the ruleset value is not set - _CodeValue_ property value is used as the label:
 
 ```ts
 [[include:Presentation.RulesetVariables.InCustomizationRuleValueExpression.Ruleset]]

@@ -33,13 +33,21 @@ import * as displayStyleMod from "./DisplayStyle";
  * @public
  */
 export class BisCoreSchema extends Schema {
-  public static override get schemaName(): string { return "BisCore"; }
-  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", `${BisCoreSchema.schemaName}.ecschema.xml`); }
+  public static override get schemaName(): string {
+    return "BisCore";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(
+      KnownLocations.nativeAssetsDir,
+      "ECSchemas",
+      "Dgn",
+      `${BisCoreSchema.schemaName}.ecschema.xml`
+    );
+  }
 
   /** @internal */
   public static registerSchema() {
-    if (this === Schemas.getRegisteredSchema(this.schemaName))
-      return;
+    if (this === Schemas.getRegisteredSchema(this.schemaName)) return;
 
     Schemas.unregisterSchema(this.schemaName);
     Schemas.registerSchema(this);

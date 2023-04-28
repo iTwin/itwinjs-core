@@ -27,11 +27,17 @@ const computeColorNoAlpha = `
 `;
 
 /** @internal */
-export function createCopyColorProgram(context: WebGL2RenderingContext, copyAlpha: boolean = true): ShaderProgram {
+export function createCopyColorProgram(
+  context: WebGL2RenderingContext,
+  copyAlpha: boolean = true
+): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, copyAlpha ? computeColor : computeColorNoAlpha);
+  frag.set(
+    FragmentShaderComponent.ComputeBaseColor,
+    copyAlpha ? computeColor : computeColorNoAlpha
+  );
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_color", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_color", (uniform, params) => {
@@ -48,7 +54,7 @@ export function createCopyColorProgram(context: WebGL2RenderingContext, copyAlph
     });
   }
 
-  const flagString = (copyAlpha ? "-CopyAlpha" : "-NoAlpha");
+  const flagString = copyAlpha ? "-CopyAlpha" : "-NoAlpha";
   builder.vert.headerComment = `//!V! CopyColor${flagString}`;
   builder.frag.headerComment = `//!F! CopyColor${flagString}`;
 

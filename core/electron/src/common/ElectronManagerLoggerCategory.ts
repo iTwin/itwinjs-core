@@ -11,4 +11,4 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum ElectronManagerLoggerCategory { }
+export enum ElectronManagerLoggerCategory {}

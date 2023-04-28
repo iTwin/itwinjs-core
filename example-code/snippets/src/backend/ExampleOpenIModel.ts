@@ -4,12 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseDb } from "@itwin/core-backend";
-import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
+import {
+  IModelError,
+  IModelStatus,
+  OpenBriefcaseProps,
+} from "@itwin/core-common";
 import { TestUserCredentials, TestUtility } from "@itwin/oidc-signin-tool";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
+async function getUserAccessToken(
+  userCredentials: TestUserCredentials
+): Promise<AccessToken> {
   return TestUtility.getAccessToken(userCredentials);
 }
 
@@ -24,8 +30,7 @@ function configureIModel() {
 
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpened
   BriefcaseDb.onOpened.addListener((iModel: BriefcaseDb) => {
-    if (iModel.openMode !== OpenMode.ReadWrite)
-      return;
+    if (iModel.openMode !== OpenMode.ReadWrite) return;
     // ... do something with the writeable briefcase
   });
   // __PUBLISH_EXTRACT_END__
@@ -37,7 +42,8 @@ const cred = {
   password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
 };
 
-getUserAccessToken(cred).then((_accessToken: AccessToken | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+getUserAccessToken(cred).then((_accessToken: AccessToken | undefined) => {
+  // eslint-disable-line @typescript-eslint/no-floating-promises
 });
 
 configureIModel();

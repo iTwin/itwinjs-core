@@ -1,25 +1,26 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const fs = require("fs");
 
 exports.command = "linkExtensions";
 exports.builder = (yargs) =>
-  yargs.strict(true)
+  yargs
+    .strict(true)
     .options({
-      "extension": {
+      extension: {
         alias: "e",
         type: "array",
         describe: "Extension to be symlinked/copied.",
       },
-      "testApp": {
+      testApp: {
         alias: "t",
         describe: "Directory of the test-app.",
         type: "array",
-        default: process.cwd()
+        default: process.cwd(),
       },
     })
     .demandOption(["extension", "testApp"]);
@@ -29,11 +30,12 @@ exports.handler = async (argv) => {
 
   //go through every testApp specified in the arguments
   for (let testApp of argv.testApp) {
-
     //get path to test-app directories
-    const destRoot = path.resolve(rootDir, "test-apps", testApp)
+    const destRoot = path.resolve(rootDir, "test-apps", testApp);
     if (!fs.existsSync(destRoot)) {
-      console.log(`Cannot find the root directory of the destination: ${destRoot}`)
+      console.log(
+        `Cannot find the root directory of the destination: ${destRoot}`
+      );
       return;
     }
 
@@ -45,16 +47,24 @@ exports.handler = async (argv) => {
 
     //symlink extensions
     for (let extension of argv.extension) {
-      const buildDir = path.resolve(rootDir, "extensions", extension, "lib", "extension");
+      const buildDir = path.resolve(
+        rootDir,
+        "extensions",
+        extension,
+        "lib",
+        "extension"
+      );
       if (!fs.existsSync(buildDir)) {
-        console.log(`Cannot find the target path: ${buildDir}`)
+        console.log(`Cannot find the target path: ${buildDir}`);
       }
       const outDir = path.resolve(extensionDirectory, extension);
       if (fs.existsSync(outDir)) {
-        console.log(`  Extension ${outDir} is already installed to ${extensionDirectory}`);
+        console.log(
+          `  Extension ${outDir} is already installed to ${extensionDirectory}`
+        );
         return;
       }
       fs.symlinkSync(buildDir, outDir, "junction");
     }
   }
-}
+};

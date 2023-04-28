@@ -22,8 +22,7 @@ export class Debug {
    * @param message A function which returns a string. If [[Debug.printEnabled]] is false, the function is never evaluated.
    */
   public static print(message: () => string): void {
-    if (this.printEnabled)
-      console.log(message()); // eslint-disable-line no-console
+    if (this.printEnabled) console.log(message()); // eslint-disable-line no-console
   }
 
   /** If [[Debug.evaluate]] is true, executes the supplied function and returns its result; otherwise returns the supplied default value.
@@ -36,10 +35,16 @@ export class Debug {
   }
 
   /** If [[Debug.evaluateEnabled]] is true, returns whether the currently-bound framebuffer is complete. */
-  public static get isValidFrameBuffer(): boolean { return GL.FrameBuffer.Status.Complete === this.checkFrameBufferStatus(); }
+  public static get isValidFrameBuffer(): boolean {
+    return GL.FrameBuffer.Status.Complete === this.checkFrameBufferStatus();
+  }
 
   /** If [[Debug.evaluateEnabled]] is true, returns the status of the currently-bound framebuffer. */
   public static checkFrameBufferStatus(): GL.FrameBuffer.Status {
-    return this.evaluate(() => System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET), GL.FrameBuffer.Status.Complete);
+    return this.evaluate(
+      () =>
+        System.instance.context.checkFramebufferStatus(GL.FrameBuffer.TARGET),
+      GL.FrameBuffer.Status.Complete
+    );
   }
 }

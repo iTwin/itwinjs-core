@@ -1,45 +1,46 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 "use strict";
 
 const path = require("path");
 const chalk = require("chalk");
 const {
   spawn,
-  handleInterrupts
+  handleInterrupts,
 } = require("@itwin/build-tools/scripts/utils/simpleSpawn");
 
 exports.command = "start";
 exports.describe = chalk.bold("Runs the app's backend in development mode.");
 exports.builder = (yargs) =>
-  yargs.options({
-    "source": {
-      alias: "s",
-      type: "string",
-      describe: "The main entrypoint for webpack."
-    },
-    "outDir": {
-      alias: "o",
-      type: "string",
-      describe: "The directory where bundle should be emitted."
-    },
-    "electron": {
-      alias: "e",
-      type: "boolean",
-      describe: `Launch the output bundle with electron.`
-    },
-    "node": {
-      alias: "n",
-      type: "boolean",
-      describe: `Launch the output bundle with node.`
-    },
-    "execArgs": {
-      type: "string",
-      describe: `Additional arguments to be passed to node (or electron).`
-    },
-  })
+  yargs
+    .options({
+      source: {
+        alias: "s",
+        type: "string",
+        describe: "The main entrypoint for webpack.",
+      },
+      outDir: {
+        alias: "o",
+        type: "string",
+        describe: "The directory where bundle should be emitted.",
+      },
+      electron: {
+        alias: "e",
+        type: "boolean",
+        describe: `Launch the output bundle with electron.`,
+      },
+      node: {
+        alias: "n",
+        type: "boolean",
+        describe: `Launch the output bundle with node.`,
+      },
+      execArgs: {
+        type: "string",
+        describe: `Additional arguments to be passed to node (or electron).`,
+      },
+    })
     .demandOption(["source", "outDir"]);
 
 exports.handler = async (argv) => {
@@ -49,7 +50,7 @@ exports.handler = async (argv) => {
   const { getWebpackConfig } = require("../config/getWebpackConfig");
   const { watchBackend } = require("./utils/webpackWrappers");
 
-  const execArgs = (argv.execArgs) ? argv.execArgs.spit(" ") : [];
+  const execArgs = argv.execArgs ? argv.execArgs.spit(" ") : [];
   const outDir = path.resolve(process.cwd(), argv.outDir);
   const sourceFile = path.resolve(process.cwd(), argv.source);
   const outFile = path.join(outDir, path.basename(sourceFile));
@@ -62,13 +63,32 @@ exports.handler = async (argv) => {
   const quote = (s) => `"${s}"`;
 
   if (argv.node) {
-    args.push(["node", require.resolve("nodemon/bin/nodemon"), "--max-http-header-size=16000", "--no-colors", "--watch", outFile, ...execArgs, outFile]);
+    args.push([
+      "node",
+      require.resolve("nodemon/bin/nodemon"),
+      "--max-http-header-size=16000",
+      "--no-colors",
+      "--watch",
+      outFile,
+      ...execArgs,
+      outFile,
+    ]);
     names.push("node");
     colors.push("cyan");
   }
 
   if (argv.electron) {
-    args.push(["node", require.resolve("nodemon/bin/nodemon"), "--max-http-header-size=16000", "--no-colors", "--watch", outFile, "node_modules/electron/cli.js", ...execArgs, outFile]);
+    args.push([
+      "node",
+      require.resolve("nodemon/bin/nodemon"),
+      "--max-http-header-size=16000",
+      "--no-colors",
+      "--watch",
+      outFile,
+      "node_modules/electron/cli.js",
+      ...execArgs,
+      outFile,
+    ]);
     names.push("electron");
     colors.push("magenta");
   }
@@ -77,8 +97,11 @@ exports.handler = async (argv) => {
     spawn("node", [
       require.resolve("concurrently"),
       ...args.map((a) => quote(a.join(" "))),
-      "--color", "-c", colors.join(","),
-      "--names", names.join(",")
+      "--color",
+      "-c",
+      colors.join(","),
+      "--names",
+      names.join(","),
     ]);
   }
 };

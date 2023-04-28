@@ -22,7 +22,7 @@ The allowable value are dependent on the type:
 - If the type is **decimal**, **scientific** or **station**, decimal precision is used to signify the number of decimal places after the decimal separator. The allowed precisions are, `0` - `12`.
 - If the type is **fractional**, the denominator of the value can be set to the following, `1|2|4|8|16|32|64|128|256`.
 
-**roundFactor** value is rounded to a multiple of the round factor if it is a nonzero value and the `applyRounding` trait is set.  e.g. if the roundFactor is set to `2`, `42.2` would be rounded to `42` and `43.2` to `44`.
+**roundFactor** value is rounded to a multiple of the round factor if it is a nonzero value and the `applyRounding` trait is set. e.g. if the roundFactor is set to `2`, `42.2` would be rounded to `42` and `43.2` to `44`.
 
 **minWidth** Determines the minimum number of characters included within parsed format. The count includes digits and separator chars (Decimal and Thousand).
 Note: The number of chars defined does not override the precision, if the combination of precision and trailZeroes takes precedence over minWidth.

@@ -18,7 +18,8 @@ export type Base64EncodedString = string;
 /** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as persisted in an [ECDb]($backend) for properties of `binary` type.
  * @public
  */
-export namespace Base64EncodedString { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace Base64EncodedString {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   /** The prefix prepended to the string identifying it as base-64-encoded. */
   export const prefix = "encoding=base64;";
 

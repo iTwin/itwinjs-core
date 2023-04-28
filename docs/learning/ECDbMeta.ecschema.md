@@ -24,17 +24,17 @@ ECClass
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownsclasses)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|Type||ECClassType||
-|Modifier||ECClassModifier||
-|CustomAttributeContainerType|ECClassType::CustomAttribute: Specifies on which containers the custom attribute ECClass can be applied to.|ECCustomAttributeContainerType||
-|RelationshipStrength|Applies to ECClassType::Relationship only.|ECRelationshipStrength||
-|RelationshipStrengthDirection|Applies to ECClassType::Relationship only.|ECRelationshipDirection||
+| Name                          | Description                                                                                                 | Type                             | Extended Type |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------- | :------------------------------- | :------------ |
+| Schema                        |                                                                                                             | [navigation](#schemaownsclasses) |               |
+| Name                          |                                                                                                             | string                           |               |
+| DisplayLabel                  |                                                                                                             | string                           |               |
+| Description                   |                                                                                                             | string                           |               |
+| Type                          |                                                                                                             | ECClassType                      |               |
+| Modifier                      |                                                                                                             | ECClassModifier                  |               |
+| CustomAttributeContainerType  | ECClassType::CustomAttribute: Specifies on which containers the custom attribute ECClass can be applied to. | ECCustomAttributeContainerType   |               |
+| RelationshipStrength          | Applies to ECClassType::Relationship only.                                                                  | ECRelationshipStrength           |               |
+| RelationshipStrengthDirection | Applies to ECClassType::Relationship only.                                                                  | ECRelationshipDirection          |               |
 
 ### ECEnumerationDef
 
@@ -48,15 +48,15 @@ ECEnumeration
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownsenumerations)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|Type||PrimitiveType||
-|IsStrict||boolean||
-|EnumValues||struct array||
+| Name         | Description | Type                                  | Extended Type |
+| :----------- | :---------- | :------------------------------------ | :------------ |
+| Schema       |             | [navigation](#schemaownsenumerations) |               |
+| Name         |             | string                                |               |
+| DisplayLabel |             | string                                |               |
+| Description  |             | string                                |               |
+| Type         |             | PrimitiveType                         |               |
+| IsStrict     |             | boolean                               |               |
+| EnumValues   |             | struct array                          |               |
 
 ### ECPropertyDef
 
@@ -70,30 +70,30 @@ ECProperty
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Class||[navigation](#classownslocalproperties)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|IsReadonly||boolean||
-|Priority||int||
-|Ordinal|Position of the ECProperty in its ECClass|int||
-|Kind||ECPropertyKind||
-|PrimitiveType|ECPropertyKind::Primitive: data type. ECPropertyKind::PrimitiveArray: data type of array elements.|PrimitiveType||
-|PrimitiveTypeMinLength|Minimum length of strings or blobs.|int||
-|PrimitiveTypeMaxLength|Maximum length of strings or blobs.|int||
-|PrimitiveTypeMinValue|Minimum value of numeric primitives.|double||
-|PrimitiveTypeMaxValue|Maximum value of numeric primitives.|double||
-|Enumeration|ECPropertyKind::Primitive: Id of this property's ECEnumerationDef.|[navigation](#propertyhasenumeration)||
-|ExtendedTypeName|ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Extended type name further describing PrimitiveType.|string||
-|StructClass|ECPropertyKind::Struct: ECClassId of property's struct type. ECPropertyKind::StructArray: ECClassId of array element struct type.|[navigation](#propertyhasstructtype)||
-|KindOfQuantity|ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Id of this property's KindOfQuantityDef.|[navigation](#propertyhaskindofquantity)||
-|Category|Id of this property's PropertyCategoryDef.|[navigation](#propertyhascategory)||
-|ArrayMinOccurs|ECPropertyKind::PrimitiveArray or ECPropertyKind::StructArray|int||
-|ArrayMaxOccurs|ECPropertyKind::PrimitiveArray or ECPropertyKind::StructArray|int||
-|NavigationRelationshipClass|ECPropertyKind::Navigation: ECClassId of property's relationship class.|[navigation](#propertyhasnavigationrelationshipclassid)||
-|NavigationDirection|ECPropertyKind::Navigation: Direction to follow the relationship defined in NonPrimitiveTypeClassId.|ECRelationshipDirection||
+| Name                        | Description                                                                                                                       | Type                                                    | Extended Type |
+| :-------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------ | :------------ |
+| Class                       |                                                                                                                                   | [navigation](#classownslocalproperties)                 |               |
+| Name                        |                                                                                                                                   | string                                                  |               |
+| DisplayLabel                |                                                                                                                                   | string                                                  |               |
+| Description                 |                                                                                                                                   | string                                                  |               |
+| IsReadonly                  |                                                                                                                                   | boolean                                                 |               |
+| Priority                    |                                                                                                                                   | int                                                     |               |
+| Ordinal                     | Position of the ECProperty in its ECClass                                                                                         | int                                                     |               |
+| Kind                        |                                                                                                                                   | ECPropertyKind                                          |               |
+| PrimitiveType               | ECPropertyKind::Primitive: data type. ECPropertyKind::PrimitiveArray: data type of array elements.                                | PrimitiveType                                           |               |
+| PrimitiveTypeMinLength      | Minimum length of strings or blobs.                                                                                               | int                                                     |               |
+| PrimitiveTypeMaxLength      | Maximum length of strings or blobs.                                                                                               | int                                                     |               |
+| PrimitiveTypeMinValue       | Minimum value of numeric primitives.                                                                                              | double                                                  |               |
+| PrimitiveTypeMaxValue       | Maximum value of numeric primitives.                                                                                              | double                                                  |               |
+| Enumeration                 | ECPropertyKind::Primitive: Id of this property's ECEnumerationDef.                                                                | [navigation](#propertyhasenumeration)                   |               |
+| ExtendedTypeName            | ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Extended type name further describing PrimitiveType.                 | string                                                  |               |
+| StructClass                 | ECPropertyKind::Struct: ECClassId of property's struct type. ECPropertyKind::StructArray: ECClassId of array element struct type. | [navigation](#propertyhasstructtype)                    |               |
+| KindOfQuantity              | ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Id of this property's KindOfQuantityDef.                             | [navigation](#propertyhaskindofquantity)                |               |
+| Category                    | Id of this property's PropertyCategoryDef.                                                                                        | [navigation](#propertyhascategory)                      |               |
+| ArrayMinOccurs              | ECPropertyKind::PrimitiveArray or ECPropertyKind::StructArray                                                                     | int                                                     |               |
+| ArrayMaxOccurs              | ECPropertyKind::PrimitiveArray or ECPropertyKind::StructArray                                                                     | int                                                     |               |
+| NavigationRelationshipClass | ECPropertyKind::Navigation: ECClassId of property's relationship class.                                                           | [navigation](#propertyhasnavigationrelationshipclassid) |               |
+| NavigationDirection         | ECPropertyKind::Navigation: Direction to follow the relationship defined in NonPrimitiveTypeClassId.                              | ECRelationshipDirection                                 |               |
 
 ### ECRelationshipConstraintDef
 
@@ -103,15 +103,15 @@ ECProperty
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|RelationshipClass||[navigation](#relationshiphasconstraints)||
-|RelationshipEnd||ECRelationshipEnd||
-|MultiplicityLowerLimit||int||
-|MultiplicityUpperLimit||int||
-|IsPolymorphic||boolean||
-|RoleLabel||string||
-|AbstractConstraintClass|ECClassId of base class for constraint classes of this constraint|[navigation](#relationshipconstrainthasabstractconstraintclass)||
+| Name                    | Description                                                       | Type                                                            | Extended Type |
+| :---------------------- | :---------------------------------------------------------------- | :-------------------------------------------------------------- | :------------ |
+| RelationshipClass       |                                                                   | [navigation](#relationshiphasconstraints)                       |               |
+| RelationshipEnd         |                                                                   | ECRelationshipEnd                                               |               |
+| MultiplicityLowerLimit  |                                                                   | int                                                             |               |
+| MultiplicityUpperLimit  |                                                                   | int                                                             |               |
+| IsPolymorphic           |                                                                   | boolean                                                         |               |
+| RoleLabel               |                                                                   | string                                                          |               |
+| AbstractConstraintClass | ECClassId of base class for constraint classes of this constraint | [navigation](#relationshipconstrainthasabstractconstraintclass) |               |
 
 ### ECSchemaDef
 
@@ -125,17 +125,17 @@ ECSchema
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|Alias||string||
-|VersionMajor||int||
-|VersionWrite||int||
-|VersionMinor||int||
-|OriginalECXmlVersionMajor||int||
-|OriginalECXmlVersionMinor||int||
+| Name                      | Description | Type   | Extended Type |
+| :------------------------ | :---------- | :----- | :------------ |
+| Name                      |             | string |               |
+| DisplayLabel              |             | string |               |
+| Description               |             | string |               |
+| Alias                     |             | string |               |
+| VersionMajor              |             | int    |               |
+| VersionWrite              |             | int    |               |
+| VersionMinor              |             | int    |               |
+| OriginalECXmlVersionMajor |             | int    |               |
+| OriginalECXmlVersionMinor |             | int    |               |
 
 ### FormatCompositeUnitDef
 
@@ -149,12 +149,12 @@ FormatCompositeUnit
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Format||[navigation](#formatownscompositeunits)||
-|Label||string||
-|Unit||[navigation](#compositeunitreferstounit)||
-|Ordinal|Position of the Composite Unit in its Format|int||
+| Name    | Description                                  | Type                                     | Extended Type |
+| :------ | :------------------------------------------- | :--------------------------------------- | :------------ |
+| Format  |                                              | [navigation](#formatownscompositeunits)  |               |
+| Label   |                                              | string                                   |               |
+| Unit    |                                              | [navigation](#compositeunitreferstounit) |               |
+| Ordinal | Position of the Composite Unit in its Format | int                                      |               |
 
 ### FormatDef
 
@@ -168,14 +168,14 @@ Format
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownsformats)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|NumericSpec||string|JSON|
-|CompositeSpec|CompositeSpec without units. Composite units are held by FormatCompositeUnitDef|string|JSON|
+| Name          | Description                                                                     | Type                             | Extended Type |
+| :------------ | :------------------------------------------------------------------------------ | :------------------------------- | :------------ |
+| Schema        |                                                                                 | [navigation](#schemaownsformats) |               |
+| Name          |                                                                                 | string                           |               |
+| DisplayLabel  |                                                                                 | string                           |               |
+| Description   |                                                                                 | string                           |               |
+| NumericSpec   |                                                                                 | string                           | JSON          |
+| CompositeSpec | CompositeSpec without units. Composite units are held by FormatCompositeUnitDef | string                           | JSON          |
 
 ### KindOfQuantityDef
 
@@ -189,15 +189,15 @@ KindOfQuantity
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownskindofquantities)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|PersistenceUnit||string||
-|RelativeError||double||
-|PresentationUnits||string array||
+| Name              | Description | Type                                      | Extended Type |
+| :---------------- | :---------- | :---------------------------------------- | :------------ |
+| Schema            |             | [navigation](#schemaownskindofquantities) |               |
+| Name              |             | string                                    |               |
+| DisplayLabel      |             | string                                    |               |
+| Description       |             | string                                    |               |
+| PersistenceUnit   |             | string                                    |               |
+| RelativeError     |             | double                                    |               |
+| PresentationUnits |             | string array                              |               |
 
 ### PhenomenonDef
 
@@ -211,13 +211,13 @@ Phenomenon
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownsphenomena)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|Definition||string||
+| Name         | Description | Type                               | Extended Type |
+| :----------- | :---------- | :--------------------------------- | :------------ |
+| Schema       |             | [navigation](#schemaownsphenomena) |               |
+| Name         |             | string                             |               |
+| DisplayLabel |             | string                             |               |
+| Description  |             | string                             |               |
+| Definition   |             | string                             |               |
 
 ### PropertyCategoryDef
 
@@ -231,13 +231,13 @@ PropertyCategory
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownspropertycategories)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|Priority||int||
+| Name         | Description | Type                                        | Extended Type |
+| :----------- | :---------- | :------------------------------------------ | :------------ |
+| Schema       |             | [navigation](#schemaownspropertycategories) |               |
+| Name         |             | string                                      |               |
+| DisplayLabel |             | string                                      |               |
+| Description  |             | string                                      |               |
+| Priority     |             | int                                         |               |
 
 ### UnitDef
 
@@ -251,20 +251,20 @@ Unit
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownsunits)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
-|UnitSystem||[navigation](#unitsystemhasunits)||
-|Phenomenon||[navigation](#phenomenonownsunits)||
-|Definition||string||
-|Numerator||double||
-|Denominator||double||
-|Offset||double||
-|IsConstant||boolean||
-|InvertingUnit|If this property is set, this UnitDef is an inverted unit. It inverts the unit specified by this property.|[navigation](#unithasinvertedunit)||
+| Name          | Description                                                                                                | Type                               | Extended Type |
+| :------------ | :--------------------------------------------------------------------------------------------------------- | :--------------------------------- | :------------ |
+| Schema        |                                                                                                            | [navigation](#schemaownsunits)     |               |
+| Name          |                                                                                                            | string                             |               |
+| DisplayLabel  |                                                                                                            | string                             |               |
+| Description   |                                                                                                            | string                             |               |
+| UnitSystem    |                                                                                                            | [navigation](#unitsystemhasunits)  |               |
+| Phenomenon    |                                                                                                            | [navigation](#phenomenonownsunits) |               |
+| Definition    |                                                                                                            | string                             |               |
+| Numerator     |                                                                                                            | double                             |               |
+| Denominator   |                                                                                                            | double                             |               |
+| Offset        |                                                                                                            | double                             |               |
+| IsConstant    |                                                                                                            | boolean                            |               |
+| InvertingUnit | If this property is set, this UnitDef is an inverted unit. It inverts the unit specified by this property. | [navigation](#unithasinvertedunit) |               |
 
 ### UnitSystemDef
 
@@ -278,12 +278,12 @@ UnitSystem
 
 #### Properties
 
-|    Name    |    Description    |    Type    |      Extended Type     |
-|:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](#schemaownsunitsystems)||
-|Name||string||
-|DisplayLabel||string||
-|Description||string||
+| Name         | Description | Type                                 | Extended Type |
+| :----------- | :---------- | :----------------------------------- | :------------ |
+| Schema       |             | [navigation](#schemaownsunitsystems) |               |
+| Name         |             | string                               |               |
+| DisplayLabel |             | string                               |               |
+| Description  |             | string                               |               |
 
 ## Relationship Classes
 
@@ -305,7 +305,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is a
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -317,7 +317,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is ancestor of
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -339,7 +339,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is subclass of
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -351,7 +351,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is base class of
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -385,7 +385,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -407,7 +407,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** refers to
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -453,7 +453,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -487,7 +487,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 **roleLabel:** is of
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -511,7 +511,7 @@ Relates the property to its PropertyCategory.
 
 **roleLabel:** is in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -547,7 +547,7 @@ ECPropertyKind::Enumeration: relates the property to its ECEnumeration.
 
 **roleLabel:** is of type
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -583,7 +583,7 @@ ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: relates the propert
 
 **roleLabel:** has
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -619,7 +619,7 @@ ECPropertyKind::Navigation: relates the navigation property to its backing Relat
 
 **roleLabel:** is backed by
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -655,7 +655,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is of type
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -689,7 +689,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** defines
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -723,7 +723,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** contains
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -735,7 +735,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is constraint class of
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -791,7 +791,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** references
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -803,7 +803,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is referenced by
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -837,7 +837,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -871,7 +871,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -905,7 +905,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -939,7 +939,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -973,7 +973,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -1007,7 +1007,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -1041,7 +1041,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -1075,7 +1075,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -1143,7 +1143,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **roleLabel:** is defined in
 
-**multiplicity:** (0..*)
+**multiplicity:** (0..\*)
 
 ##### Constraint Classes
 
@@ -1159,11 +1159,11 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|None|0|
-|Abstract|1|
-|Sealed|2|
+| Label    | Value |
+| :------- | :---- |
+| None     | 0     |
+| Abstract | 1     |
+| Sealed   | 2     |
 
 ### ECClassType
 
@@ -1173,12 +1173,12 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Entity|0|
-|Relationship|1|
-|Struct|2|
-|CustomAttribute|3|
+| Label           | Value |
+| :-------------- | :---- |
+| Entity          | 0     |
+| Relationship    | 1     |
+| Struct          | 2     |
+| CustomAttribute | 3     |
 
 ### ECCustomAttributeContainerType
 
@@ -1188,24 +1188,24 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Schema|1|
-|EntityClass|2|
-|CustomAttributeClass|4|
-|StructClass|8|
-|RelationshipClass|16|
-|AnyClass|30|
-|PrimitiveProperty|32|
-|StructProperty|64|
-|PrimitiveArrayProperty|128|
-|StructArrayProperty|256|
-|NavigationProperty|512|
-|AnyProperty|992|
-|SourceRelationshipConstraint|1024|
-|TargetRelationshipConstraint|2048|
-|AnyRelationshipConstraint|3072|
-|Any|4095|
+| Label                        | Value |
+| :--------------------------- | :---- |
+| Schema                       | 1     |
+| EntityClass                  | 2     |
+| CustomAttributeClass         | 4     |
+| StructClass                  | 8     |
+| RelationshipClass            | 16    |
+| AnyClass                     | 30    |
+| PrimitiveProperty            | 32    |
+| StructProperty               | 64    |
+| PrimitiveArrayProperty       | 128   |
+| StructArrayProperty          | 256   |
+| NavigationProperty           | 512   |
+| AnyProperty                  | 992   |
+| SourceRelationshipConstraint | 1024  |
+| TargetRelationshipConstraint | 2048  |
+| AnyRelationshipConstraint    | 3072  |
+| Any                          | 4095  |
 
 ### ECPropertyKind
 
@@ -1215,13 +1215,13 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Primitive|0|
-|Struct|1|
-|PrimitiveArray|2|
-|StructArray|3|
-|Navigation|4|
+| Label          | Value |
+| :------------- | :---- |
+| Primitive      | 0     |
+| Struct         | 1     |
+| PrimitiveArray | 2     |
+| StructArray    | 3     |
+| Navigation     | 4     |
 
 ### ECRelationshipDirection
 
@@ -1231,10 +1231,10 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Forward|1|
-|Backward|2|
+| Label    | Value |
+| :------- | :---- |
+| Forward  | 1     |
+| Backward | 2     |
 
 ### ECRelationshipEnd
 
@@ -1244,10 +1244,10 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Source|0|
-|Target|1|
+| Label  | Value |
+| :----- | :---- |
+| Source | 0     |
+| Target | 1     |
 
 ### ECRelationshipStrength
 
@@ -1257,11 +1257,11 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Referencing|0|
-|Holding|1|
-|Embedding|2|
+| Label       | Value |
+| :---------- | :---- |
+| Referencing | 0     |
+| Holding     | 1     |
+| Embedding   | 2     |
 
 ### PrimitiveType
 
@@ -1271,18 +1271,18 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 **Strict:** true
 
-|    Label    |    Value    |
-|:------------|:------------|
-|Binary|257|
-|Boolean|513|
-|DateTime|769|
-|Double|1025|
-|Integer|1281|
-|Long|1537|
-|Point2d|1793|
-|Point3d|2049|
-|String|2305|
-|IGeometry|2561|
+| Label     | Value |
+| :-------- | :---- |
+| Binary    | 257   |
+| Boolean   | 513   |
+| DateTime  | 769   |
+| Double    | 1025  |
+| Integer   | 1281  |
+| Long      | 1537  |
+| Point2d   | 1793  |
+| Point3d   | 2049  |
+| String    | 2305  |
+| IGeometry | 2561  |
 
 ### ECEnumeratorDef
 
@@ -1292,10 +1292,10 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 #### Properties
 
-|    Name    |  Description  |    Label    |  Category  |    Read Only     |    Priority    |
-|:-----------|:--------------|:------------|:-----------|:-----------------|:---------------|
-|Name||||false|0|
-|DisplayLabel||||false|0|
-|Description||||false|0|
-|IntValue||||false|0|
-|StringValue||||false|0|
+| Name         | Description | Label | Category | Read Only | Priority |
+| :----------- | :---------- | :---- | :------- | :-------- | :------- |
+| Name         |             |       |          | false     | 0        |
+| DisplayLabel |             |       |          | false     | 0        |
+| Description  |             |       |          | false     | 0        |
+| IntValue     |             |       |          | false     | 0        |
+| StringValue  |             |       |          | false     | 0        |

@@ -6,32 +6,40 @@ import { ViewStateProps } from "@itwin/core-common";
 import { ViewStateSpec } from "./TestConfig";
 
 export class SavedViewsFetcher {
-  private readonly _cache: {[iModelId: string]: ViewStateSpec[]} = {};
+  private readonly _cache: { [iModelId: string]: ViewStateSpec[] } = {};
 
   public async getSavedViews(
     iTwinId: string,
     iModelId: string,
     accessToken: string
   ): Promise<ViewStateSpec[]> {
-    if(this._cache[iModelId])
-      return this._cache[iModelId];
+    if (this._cache[iModelId]) return this._cache[iModelId];
 
-    const savedViewsList = await fetchSavedViewsList(iTwinId, iModelId, accessToken);
+    const savedViewsList = await fetchSavedViewsList(
+      iTwinId,
+      iModelId,
+      accessToken
+    );
 
     const savedViews = await Promise.all(
-      savedViewsList.savedViews.map(async (sv) => fetchSavedView(sv.id, accessToken))
+      savedViewsList.savedViews.map(async (sv) =>
+        fetchSavedView(sv.id, accessToken)
+      )
     );
 
     // Sanity check for the future
-    if(savedViews[0].savedView.savedViewData.legacyView === undefined)
+    if (savedViews[0].savedView.savedViewData.legacyView === undefined)
       throw new Error("Saved views API no longer returns legacyView");
 
-    const viewStateSpecs = savedViews.map((sv) => ({
-      name: sv.savedView.displayName,
-      viewProps: sv.savedView.savedViewData.legacyView,
-      elementOverrides: undefined, // api does not provide this
-      selectedElements: undefined, // api does not provide this
-    } as ViewStateSpec));
+    const viewStateSpecs = savedViews.map(
+      (sv) =>
+        ({
+          name: sv.savedView.displayName,
+          viewProps: sv.savedView.savedViewData.legacyView,
+          elementOverrides: undefined, // api does not provide this
+          selectedElements: undefined, // api does not provide this
+        } as ViewStateSpec)
+    );
 
     this._cache[iModelId] = viewStateSpecs;
     return viewStateSpecs;
@@ -68,7 +76,11 @@ interface SavedViewResponse {
  * Returns all saved view descriptions.
  * To get complete saved view data, call {@link fetchSavedView}
  * */
-async function fetchSavedViewsList(projectId: string, iModelId: string, accessToken: string): Promise<SavedViewListResponse> {
+async function fetchSavedViewsList(
+  projectId: string,
+  iModelId: string,
+  accessToken: string
+): Promise<SavedViewListResponse> {
   return fetch(
     `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/?projectId=${projectId}&iModelId=${iModelId}`,
     {
@@ -76,11 +88,15 @@ async function fetchSavedViewsList(projectId: string, iModelId: string, accessTo
       headers: {
         Authorization: accessToken, // eslint-disable-line @typescript-eslint/naming-convention
       },
-    }).then(async (response) => response.json());
+    }
+  ).then(async (response) => response.json());
 }
 
 /** Returns the saved view with the actual view data */
-async function fetchSavedView(savedViewId: string, accessToken: string): Promise<SavedViewResponse> {
+async function fetchSavedView(
+  savedViewId: string,
+  accessToken: string
+): Promise<SavedViewResponse> {
   return fetch(
     `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/${savedViewId}`,
     {

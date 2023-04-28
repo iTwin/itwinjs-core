@@ -29,7 +29,11 @@ export class StyleUniforms {
   public syncKey = 0;
 
   public update(plan: RenderPlan): void {
-    if (this._bgColor.equals(plan.bgColor) && this._monoColor.equals(plan.monoColor) && this._wowReversalSettings.equals(plan.whiteOnWhiteReversal))
+    if (
+      this._bgColor.equals(plan.bgColor) &&
+      this._monoColor.equals(plan.monoColor) &&
+      this._wowReversalSettings.equals(plan.whiteOnWhiteReversal)
+    )
       return;
 
     desync(this);
@@ -45,13 +49,16 @@ export class StyleUniforms {
     this._bgColor = bgColor;
     this._bgRgba.setColorDef(bgColor);
     this._bgRgb.setColorDef(bgColor);
-    this._wantWoWReversal = this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
-    this._bgIntensity = this._bgRgb.red * 0.3 + this._bgRgb.green * 0.59 + this._bgRgb.blue * 0.11;
+    this._wantWoWReversal =
+      this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
+    this._bgIntensity =
+      this._bgRgb.red * 0.3 +
+      this._bgRgb.green * 0.59 +
+      this._bgRgb.blue * 0.11;
   }
 
   public changeBackgroundColor(bgColor: ColorDef): void {
-    if (bgColor.equals(this._bgColor))
-      return;
+    if (bgColor.equals(this._bgColor)) return;
 
     desync(this);
     this.updateBackgroundColor(bgColor);
@@ -59,20 +66,17 @@ export class StyleUniforms {
 
   // vec4
   public bindBackgroundRgba(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._bgRgba.bind(uniform);
+    if (!sync(this, uniform)) this._bgRgba.bind(uniform);
   }
 
   //  vec3
   public bindBackgroundRgb(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._bgRgb.bind(uniform);
+    if (!sync(this, uniform)) this._bgRgb.bind(uniform);
   }
 
   // vec3
   public bindMonochromeRgb(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._monoRgb.bind(uniform);
+    if (!sync(this, uniform)) this._monoRgb.bind(uniform);
   }
 
   public get backgroundIntensity(): number {

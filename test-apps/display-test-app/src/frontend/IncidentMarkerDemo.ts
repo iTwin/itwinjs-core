@@ -3,11 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
-import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import {
+  AngleSweep,
+  Arc3d,
+  Point2d,
+  Point3d,
+  XAndY,
+  XYAndZ,
+} from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
-  MessageBoxType, Tool,
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  GraphicType,
+  imageElementFromUrl,
+  IModelApp,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  MessageBoxIconType,
+  MessageBoxType,
+  Tool,
 } from "@itwin/core-frontend";
 
 // cspell:ignore lerp
@@ -26,29 +44,39 @@ class IncidentMarker extends Marker {
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
   public static makeColor(severity: number): ColorDef {
-    return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
-      this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
+    return severity <= 16
+      ? ColorDef.green.lerp(this._amber, (severity - 1) / 15)
+      : this._amber.lerp(ColorDef.red, (severity - 16) / 14);
   }
 
   // when someone clicks on our marker, open a message box with the severity of the incident.
   public override onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data && ev.isDown) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information);
+      IModelApp.notifications.openMessageBox(
+        MessageBoxType.LargeOk,
+        `severity = ${this.severity}`,
+        MessageBoxIconType.Information
+      );
     }
 
     return true;
   }
 
   /** Create a new IncidentMarker */
-  constructor(location: XYAndZ, public severity: number, public id: number, icon: HTMLImageElement) {
+  constructor(
+    location: XYAndZ,
+    public severity: number,
+    public id: number,
+    icon: HTMLImageElement
+  ) {
     super(location, IncidentMarker._size);
     this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
     this.setImage(icon); // save icon
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels so the bottom of the flag is at the incident location in the view.
     this.imageSize = IncidentMarker._imageSize; // 40x40
     this.title = `Severity: ${severity}<br>Id: ${id}`; // tooltip
-    this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+    this.setScaleFactor({ low: 0.2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
     this.label = id.toString();
   }
 
@@ -64,7 +92,13 @@ class IncidentMarker extends Marker {
   public override addMarker(context: DecorateContext) {
     super.addMarker(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
+    const ellipse = Arc3d.createScaledXYColumns(
+      this.worldLocation,
+      context.viewport.rotation.transpose(),
+      0.2,
+      0.2,
+      IncidentMarker._sweep360
+    );
     // draw the circle the color of the marker, but with some transparency.
     let color = this._color;
     builder.setSymbology(ColorDef.white, color, 1);
@@ -93,21 +127,26 @@ class IncidentClusterMarker extends Marker {
   }
 
   /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
+  constructor(
+    location: XYAndZ,
+    size: XAndY,
+    cluster: Cluster<IncidentMarker>,
+    image: MarkerImage | Promise<MarkerImage> | undefined
+  ) {
     super(location, size);
 
     // get the top 10 incidents by severity
     const sorted: IncidentMarker[] = [];
     const maxLen = 10;
     cluster.markers.forEach((marker) => {
-      if (maxLen > sorted.length || marker.severity > sorted[sorted.length - 1].severity) {
+      if (
+        maxLen > sorted.length ||
+        marker.severity > sorted[sorted.length - 1].severity
+      ) {
         const index = sorted.findIndex((val) => val.severity < marker.severity);
-        if (index === -1)
-          sorted.push(marker);
-        else
-          sorted.splice(index, 0, marker);
-        if (sorted.length > maxLen)
-          sorted.length = maxLen;
+        if (index === -1) sorted.push(marker);
+        else sorted.splice(index, 0, marker);
+        if (sorted.length > maxLen) sorted.length = maxLen;
       }
     });
 
@@ -116,30 +155,34 @@ class IncidentClusterMarker extends Marker {
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
     this.labelFont = "bold 14px sans-serif";
-    this.setScaleFactor({ low: .7, high: 1.2 });
+    this.setScaleFactor({ low: 0.7, high: 1.2 });
 
     let title = "";
     sorted.forEach((marker) => {
-      if (title !== "")
-        title += "<br>";
+      if (title !== "") title += "<br>";
       title += `Severity: ${marker.severity} Id: ${marker.id}`;
     });
-    if (cluster.markers.length > maxLen)
-      title += "<br>...";
+    if (cluster.markers.length > maxLen) title += "<br>...";
 
     const div = document.createElement("div"); // Use HTML as markup isn't supported for string.
     div.innerHTML = title;
     this.title = div;
-    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
-    if (image)
-      this.setImage(image);
+    this._clusterColor = IncidentMarker.makeColor(
+      sorted[0].severity
+    ).toHexString();
+    if (image) this.setImage(image);
   }
 }
 
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return new IncidentClusterMarker(cluster.getClusterLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(
+      cluster.getClusterLocation(),
+      cluster.markers[0].size,
+      cluster,
+      IncidentMarkerDemo.decorator!.warningSign
+    );
   }
 }
 
@@ -155,7 +198,9 @@ export class IncidentMarkerDemo {
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
-  public get warningSign() { return this._images[0]; }
+  public get warningSign() {
+    return this._images[0];
+  }
 
   // Load one image, logging if there was an error
   private async loadOne(src: string) {
@@ -182,18 +227,19 @@ export class IncidentMarkerDemo {
       this.loadOne("Hazard_tripping.svg"),
     ];
     await (this._loading = Promise.all(loads)); // this is a member so we can tell if we're still loading
-    for (const img of loads)
-      this._images.push(await img);
+    for (const img of loads) this._images.push(await img);
 
     const len = this._images.length;
     const pos = new Point3d();
     for (let i = 0; i < IncidentMarkerDemo._numMarkers; ++i) {
-      pos.x = extents.low.x + (Math.random() * extents.xLength());
-      pos.y = extents.low.y + (Math.random() * extents.yLength());
-      pos.z = extents.low.z + (Math.random() * extents.zLength());
+      pos.x = extents.low.x + Math.random() * extents.xLength();
+      pos.y = extents.low.y + Math.random() * extents.yLength();
+      pos.z = extents.low.z + Math.random() * extents.zLength();
       const img = this._images[(i % len) + 1];
       if (undefined !== img)
-        this.incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
+        this.incidents.markers.add(
+          new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img)
+        );
     }
     this._loading = undefined;
   }
@@ -207,8 +253,7 @@ export class IncidentMarkerDemo {
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
   public decorate(context: DecorateContext) {
-    if (!context.viewport.view.isSpatialView())
-      return;
+    if (!context.viewport.view.isSpatialView()) return;
 
     if (undefined === this._loading) {
       this.incidents.addDecoration(context);
@@ -218,10 +263,12 @@ export class IncidentMarkerDemo {
     // if we're still loading, just mark this viewport as needing decorations when all loads are complete
     if (!this._awaiting) {
       this._awaiting = true;
-      this._loading.then(() => {
-        context.viewport.invalidateCachedDecorations(this);
-        this._awaiting = false;
-      }).catch(() => undefined);
+      this._loading
+        .then(() => {
+          context.viewport.invalidateCachedDecorations(this);
+          this._awaiting = false;
+        })
+        .catch(() => undefined);
     }
   }
 
@@ -231,7 +278,9 @@ export class IncidentMarkerDemo {
     IModelApp.viewManager.addDecorator(IncidentMarkerDemo.decorator);
 
     // hook the event for viewport changing and stop the demo. This is called when the view is closed too. */
-    IncidentMarkerDemo.decorator.incidents.viewport!.onChangeView.addOnce(() => this.stop());
+    IncidentMarkerDemo.decorator.incidents.viewport!.onChangeView.addOnce(() =>
+      this.stop()
+    );
   }
 
   /** stop the demo */
@@ -243,10 +292,8 @@ export class IncidentMarkerDemo {
 
   /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
   public static toggle(extents: AxisAlignedBox3d) {
-    if (undefined === IncidentMarkerDemo.decorator)
-      this.start(extents);
-    else
-      this.stop();
+    if (undefined === IncidentMarkerDemo.decorator) this.start(extents);
+    else this.stop();
   }
 }
 

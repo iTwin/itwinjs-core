@@ -9,7 +9,13 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import {
+  BeEvent,
+  JSONSchema,
+  JSONSchemaType,
+  JSONSchemaTypeName,
+  Mutable,
+} from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 
@@ -49,7 +55,7 @@ export interface SettingSchemaGroup {
  * @beta
  */
 export class SettingsSchemas {
-  private constructor() { } // singleton
+  private constructor() {} // singleton
   private static readonly _allGroups = new Map<string, SettingSchemaGroup>();
   /** a map of all registered [[SettingSchema]]s */
   public static readonly allSchemas = new Map<string, SettingSchema>();
@@ -67,23 +73,26 @@ export class SettingsSchemas {
   }
 
   /** @internal */
-  public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
+  public static validateArrayObject<T>(
+    val: T,
+    schemaName: string,
+    msg: string
+  ): T {
     const schema = this.allSchemas.get(schemaName);
     const items = schema?.items;
-    if (undefined === items)
-      return val;
+    if (undefined === items) return val;
     const required = items.required;
     const properties = items.properties;
-    if (undefined === required || undefined === properties)
-      return val;
+    if (undefined === required || undefined === properties) return val;
 
     for (const entry of required) {
       const entryType = properties[entry].type;
       const value = (val as any)[entry];
-      if (entryType === "array" && Array.isArray(value))
-        continue;
+      if (entryType === "array" && Array.isArray(value)) continue;
       if (typeof value !== entryType)
-        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`);
+        throw new Error(
+          `invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`
+        );
     }
     return val;
   }
@@ -92,9 +101,10 @@ export class SettingsSchemas {
    * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    */
-  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
-    if (!Array.isArray(settingsGroup))
-      settingsGroup = [settingsGroup];
+  public static addGroup(
+    settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]
+  ): void {
+    if (!Array.isArray(settingsGroup)) settingsGroup = [settingsGroup];
 
     this.doAdd(settingsGroup);
     this.onSchemaChanged.raiseEvent();
@@ -110,7 +120,9 @@ export class SettingsSchemas {
     try {
       this.addJson(fs.readFileSync(fileName, "utf-8"));
     } catch (e: any) {
-      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
+      throw new Error(
+        `parsing SettingSchema file "${fileName}": ${e.message}"`
+      );
     }
   }
 
@@ -150,18 +162,18 @@ export class SettingsSchemas {
   }
 
   private static validateName(name: string) {
-    if (!name.trim())
-      throw new Error(`empty property name`);
+    if (!name.trim()) throw new Error(`empty property name`);
     if (this.allSchemas.has(name))
       throw new Error(`property "${name}" is already defined`);
   }
 
-  private static validateProperty(name: string, property: SettingSchema | undefined) {
-    if (!property)
-      throw new Error(`missing required property ${name}`);
+  private static validateProperty(
+    name: string,
+    property: SettingSchema | undefined
+  ) {
+    if (!property) throw new Error(`missing required property ${name}`);
 
-    if (!property.type)
-      throw new Error(`property ${name} has no type`);
+    if (!property.type) throw new Error(`property ${name} has no type`);
 
     switch (property.type) {
       case "boolean":
@@ -212,12 +224,15 @@ export class SettingsSchemas {
       this.validateName(key);
       this.validateProperty(key, properties[key]);
       const property: Mutable<SettingSchema> = properties[key];
-      property.default = property.default ?? this.getDefaultValue(property.type);
+      property.default =
+        property.default ?? this.getDefaultValue(property.type);
       this.allSchemas.set(key, property);
     }
   }
 
-  private static getDefaultValue(type: JSONSchemaTypeName | JSONSchemaTypeName[]): JSONSchemaType | undefined {
+  private static getDefaultValue(
+    type: JSONSchemaTypeName | JSONSchemaTypeName[]
+  ): JSONSchemaType | undefined {
     type = Array.isArray(type) ? type[0] : type;
     switch (type) {
       case "boolean":

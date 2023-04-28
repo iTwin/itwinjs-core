@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
@@ -190,7 +191,7 @@ A new abstract base class [Plane3d]($core-geometry) is defined to provide shared
   - [Point4d]($core-geometry) extends [Plane3d]($core-geometry)
   - [ClipPlane]($core-geometry) extends [Plane3d]($core-geometry)
 
-This will provide more consistency and functionality than previously provided by the _interface_ [PlaneAltitudeEvaluator]($core-geometry).   API compatibility with the weaker [PlaneAltitudeEvaluator]($core-geometry) is maintained as follows:
+This will provide more consistency and functionality than previously provided by the _interface_ [PlaneAltitudeEvaluator]($core-geometry). API compatibility with the weaker [PlaneAltitudeEvaluator]($core-geometry) is maintained as follows:
 
 - The abstract base class [Plane3d]($core-geometry) declares that it implements the [PlaneAltitudeEvaluator]($core-geometry).
 - Classes that _extend_ [Plane3d]($core-geometry) inherit the _extended_ declaration of the base class (compatibility "by interface name").
@@ -233,7 +234,7 @@ To create a [RenderMaterialElement]($backend) with a constant LOD normal map on 
 
 The image below illustrates the effects of constant LOD mapping.
 
-![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.")     ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
+![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.") ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
 
 ## Presentation
 

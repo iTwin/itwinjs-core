@@ -26,13 +26,21 @@ describe("Geometry", () => {
     const vector2dA = Vector2d.create(3, 7);
     const point2dB = point2dA.plus(vector2dA);
     ck.testCoordinate(point2dA.distance(point2dA), 0, "zero distance to self");
-    ck.testCoordinate(vector2dA.magnitude(), point2dA.distance(point2dB), "magnitude and distance");
+    ck.testCoordinate(
+      vector2dA.magnitude(),
+      point2dA.distance(point2dB),
+      "magnitude and distance"
+    );
 
     const point3dA = Point3d.create(1, 2);
     const vector3dA = Vector3d.create(3, 7);
     const point3dB = point3dA.plus(vector3dA);
     ck.testCoordinate(point3dA.distance(point3dA), 0, "zero distance to self");
-    ck.testCoordinate(vector3dA.magnitude(), point3dA.distance(point3dB), "magnitude and distance");
+    ck.testCoordinate(
+      vector3dA.magnitude(),
+      point3dA.distance(point3dB),
+      "magnitude and distance"
+    );
     ck.checkpoint("End Geometry.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -47,21 +55,37 @@ describe("Geometry", () => {
     assert.deepEqual(a1, a3);
     assert.deepEqual(a1, a4);
     assert.deepEqual(Angle.zero(), Angle.fromJSON());
-    assert.deepEqual(Angle.createRadians(1.0), Angle.fromJSON({ radians: 1.0 }));
+    assert.deepEqual(
+      Angle.createRadians(1.0),
+      Angle.fromJSON({ radians: 1.0 })
+    );
     assert.deepEqual(Angle.createRadians(1.0), Angle.fromJSON(undefined, 1.0));
 
-    const ypr1 = new YawPitchRollAngles(Angle.createDegrees(30), Angle.create360(), Angle.createDegrees(90));
+    const ypr1 = new YawPitchRollAngles(
+      Angle.createDegrees(30),
+      Angle.create360(),
+      Angle.createDegrees(90)
+    );
     json = JSON.stringify(ypr1);
     assert.deepEqual(ypr1, YawPitchRollAngles.fromJSON(JSON.parse(json)));
-    assert.deepEqual(new YawPitchRollAngles(), YawPitchRollAngles.fromJSON({ yaw: 0 }));
-    assert.deepEqual(new YawPitchRollAngles(), YawPitchRollAngles.fromJSON(undefined));
+    assert.deepEqual(
+      new YawPitchRollAngles(),
+      YawPitchRollAngles.fromJSON({ yaw: 0 })
+    );
+    assert.deepEqual(
+      new YawPitchRollAngles(),
+      YawPitchRollAngles.fromJSON(undefined)
+    );
 
     const p1 = new Point3d(1, 3, 56);
     json = JSON.stringify(p1);
     assert.deepEqual(p1, Point3d.fromJSON(JSON.parse(json)));
     assert.deepEqual(p1, Point3d.fromJSON(p1));
     assert.deepEqual(p1, Point3d.fromJSON({ x: 1, y: 3, z: 56 }));
-    assert.deepEqual(new Point3d(1, 2, 0), Point3d.fromJSON({ y: 2, x: 1 } as any));
+    assert.deepEqual(
+      new Point3d(1, 2, 0),
+      Point3d.fromJSON({ y: 2, x: 1 } as any)
+    );
     assert.deepEqual(p1, Point3d.fromJSON([1, 3, 56]));
     assert.deepEqual(Point3d.fromJSON(undefined), Point3d.createZero());
     assert.deepEqual(Point3d.fromJSON({} as any), Point3d.createZero());
@@ -80,33 +104,49 @@ describe("Geometry", () => {
 
 class GeometryCheck {
   public ck: Checker;
-  public constructor() { this.ck = new Checker(); }
+  public constructor() {
+    this.ck = new Checker();
+  }
 
   public testTrigForm(a: number, cosCoff: number, sinCoff: number): void {
     const rootA = Geometry.solveTrigForm(a, cosCoff, sinCoff);
     if (rootA !== undefined && this.ck.testPointer(rootA)) {
       let xy;
       for (xy of rootA) {
-        this.ck.testCoordinate(0.0, a + cosCoff * xy.x + sinCoff * xy.y, "trig root");
+        this.ck.testCoordinate(
+          0.0,
+          a + cosCoff * xy.x + sinCoff * xy.y,
+          "trig root"
+        );
         this.ck.testCoordinate(1.0, xy.magnitude(), "trig root on unit circle");
       }
     } else {
       // no roots. expect trig condition ....
-      this.ck.testCoordinateOrder(Geometry.hypotenuseXY(cosCoff, sinCoff), Math.abs(a), " no-root coff condition");
+      this.ck.testCoordinateOrder(
+        Geometry.hypotenuseXY(cosCoff, sinCoff),
+        Math.abs(a),
+        " no-root coff condition"
+      );
     }
-
   }
   public testQuadratic(a: number, b: number, c: number): void {
     const rootA = Degree2PowerPolynomial.solveQuadratic(a, b, c);
     if (rootA !== undefined) {
       let root;
       for (root of rootA) {
-        this.ck.testCoordinate(0.0, a * root * root + b * root + c, "quadratic root");
+        this.ck.testCoordinate(
+          0.0,
+          a * root * root + b * root + c,
+          "quadratic root"
+        );
       }
     } else {
-      this.ck.testCoordinateOrder(b * b - 4 * a * c, 0.0, " no-root coff condition");
+      this.ck.testCoordinateOrder(
+        b * b - 4 * a * c,
+        0.0,
+        " no-root coff condition"
+      );
     }
-
   }
 }
 describe("Geometry.solveTrigForm", () => {
@@ -114,7 +154,7 @@ describe("Geometry.solveTrigForm", () => {
     const gc = new GeometryCheck();
     gc.testTrigForm(0, 1, 0);
     gc.testTrigForm(0.2, 0.3, 0.9);
-    gc.testTrigForm(5, 1, 1);  // no solutions !!!
+    gc.testTrigForm(5, 1, 1); // no solutions !!!
 
     expect(gc.ck.getNumErrors()).equals(0);
   });
@@ -160,8 +200,11 @@ describe("Geometry.modulo", () => {
       theta2.setFromJSON(theta.radians); // NUMBER
       ck.testAngleAllowShift(theta, theta1, "JSON: simple number (radians)");
       theta3.setFromJSON(theta); // typed Angle
-      ck.testAngleAllowShift(theta, theta3, "JSON: strongly typed Angle object");
-
+      ck.testAngleAllowShift(
+        theta,
+        theta3,
+        "JSON: strongly typed Angle object"
+      );
     }
     expect(gc.ck.getNumErrors()).equals(0);
   });
@@ -180,7 +223,10 @@ describe("Vector3d.CrossProduct", () => {
     ck.testPerpendicular(frame.columnY(), W);
     ck.testParallel(frame.columnZ(), W);
     ck.testBoolean(true, frame.isRigid());
-    ck.testCoordinate(W.magnitude(), U.magnitude() * V.magnitude() * U.angleTo(V).sin());
+    ck.testCoordinate(
+      W.magnitude(),
+      U.magnitude() * V.magnitude() * U.angleTo(V).sin()
+    );
     ck.checkpoint("CrossProduct");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -216,7 +262,8 @@ describe("GeometryA", () => {
   // cspell:word kahan
   it("ErrorChecks", () => {
     const ck = new Checker();
-    for (const multiplier of [0.5, 0.999999999]) { // multipliers are all LESS THAN 1
+    for (const multiplier of [0.5, 0.999999999]) {
+      // multipliers are all LESS THAN 1
       const d = multiplier * Geometry.smallMetricDistance;
       const d1 = Geometry.smallMetricDistance / multiplier;
       ck.testUndefined(Geometry.inverseMetricDistance(d));
@@ -227,11 +274,15 @@ describe("GeometryA", () => {
       // clamping with reversed ends
       ck.testExactNumber(
         Geometry.clampToStartEnd(a, 2, 4),
-        Geometry.clampToStartEnd(a, 4, 2), "Clamp is same result with reversed ends");
+        Geometry.clampToStartEnd(a, 4, 2),
+        "Clamp is same result with reversed ends"
+      );
       // modulo with negated period
       ck.testCoordinate(
         Geometry.modulo(a, 4),
-        -Geometry.modulo(-a, -4), "Modulo with negative period");
+        -Geometry.modulo(-a, -4),
+        "Modulo with negative period"
+      );
       ck.testExactNumber(a, Geometry.modulo(a, 0), "modulo with zero period");
     }
     const q: any[] = [1, 2, 3, 6, 9];
@@ -252,16 +303,30 @@ describe("GeometryA", () => {
       }
     }
     // inverse interpolate with huge target and small interval . . .
-    ck.testUndefined(
-      Geometry.inverseInterpolate(0, 1, 1, 3, 1.0e12));
+    ck.testUndefined(Geometry.inverseInterpolate(0, 1, 1, 3, 1.0e12));
     const e = Geometry.smallAngleRadians;
-    ck.testUndefined(
-      Geometry.inverseInterpolate(0, 1, 1, 1 + e, 1000));
+    ck.testUndefined(Geometry.inverseInterpolate(0, 1, 1, 1 + e, 1000));
 
-    ck.testExactNumber(Geometry.stepCount(0, 100, 4, 30), 4, "stepSize 0 returns min");
-    ck.testExactNumber(Geometry.stepCount(200, 100, 4, 30), 4, "stepSize huge returns min");
-    ck.testExactNumber(Geometry.stepCount(0.5, 100, 1, 10), 10, "stepSize caps with max");
-    ck.testExactNumber(Geometry.stepCount(2, 10, 8, 10), 8, "stepSize lower cap with min");
+    ck.testExactNumber(
+      Geometry.stepCount(0, 100, 4, 30),
+      4,
+      "stepSize 0 returns min"
+    );
+    ck.testExactNumber(
+      Geometry.stepCount(200, 100, 4, 30),
+      4,
+      "stepSize huge returns min"
+    );
+    ck.testExactNumber(
+      Geometry.stepCount(0.5, 100, 1, 10),
+      10,
+      "stepSize caps with max"
+    );
+    ck.testExactNumber(
+      Geometry.stepCount(2, 10, 8, 10),
+      8,
+      "stepSize lower cap with min"
+    );
 
     for (const f of [-1, 0, 0.5, 1, 2])
       ck.testTrue(Geometry.isIn01(f, false), "isIn01 with test suppressed)");
@@ -292,5 +357,4 @@ describe("GeometryA", () => {
     ck.testTrue(Number.isFinite(Number.MAX_VALUE));
     ck.testFalse(Number.isFinite(Number.NaN));
   });
-
 });

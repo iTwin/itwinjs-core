@@ -8,11 +8,21 @@
 
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AngleProps, ClipVectorProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps,
+  AngleProps,
+  ClipVectorProps,
+  LowAndHighXY,
+  LowAndHighXYZ,
+  TransformProps,
+  XYProps,
+  XYZProps,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
-import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry";
+import {
+  ElementGeometryBuilderParams,
+  ElementGeometryBuilderParamsForPart,
+} from "./geometry/ElementGeometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
@@ -65,7 +75,9 @@ export class RelatedElement implements RelatedElementProps {
     this.relClassName = props.relClassName;
   }
 
-  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined {
+  public static fromJSON(
+    json?: RelatedElementProps
+  ): RelatedElement | undefined {
     return json ? new RelatedElement(json) : undefined;
   }
 
@@ -74,10 +86,13 @@ export class RelatedElement implements RelatedElementProps {
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64String {
-    if ((typeof json === "object") && ("id" in json)) {
+    if (typeof json === "object" && "id" in json) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json");
+        throw new IModelError(
+          IModelStatus.BadArg,
+          "Problem parsing Id64 from json"
+        );
       return r.id;
     }
     return Id64.fromJSON(json);
@@ -94,8 +109,7 @@ export class RelatedElement implements RelatedElementProps {
 /** A [RelatedElement]($common) relationship that describes the [TypeDefinitionElement]($backend) of an element.
  * @public
  */
-export class TypeDefinition extends RelatedElement {
-}
+export class TypeDefinition extends RelatedElement {}
 
 /** Properties of a [GeometricElement]($backend)
  * @public
@@ -143,14 +157,18 @@ export type PlacementProps = Placement2dProps | Placement3dProps;
 /** determine if this is Placement2dProps
  * @public
  */
-export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
+export function isPlacement2dProps(
+  props: PlacementProps
+): props is Placement2dProps {
   return (props as Placement2dProps).angle !== undefined;
 }
 
 /** determine if this is Placement3dProps
  * @public
  */
-export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
+export function isPlacement3dProps(
+  props: PlacementProps
+): props is Placement3dProps {
   return !isPlacement2dProps(props);
 }
 
@@ -428,7 +446,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
    * @note Warning: if defined, jsonProperties must be a *string*, specifically a valid JSON string.
    * @note Warning: in a future major release, the type of `jsonProperties` will be changed to object, and itwin.js will automatically stringify it when writing to the iModel.
    * This will be a breaking change, since application code will have to change from supplying a string to supplying an object.
-  */
+   */
   jsonProperties?: any;
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;

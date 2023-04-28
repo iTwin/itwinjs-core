@@ -43,8 +43,7 @@ export interface SourceAndTarget {
  * @public
  * @extensions
  */
-export interface RelationshipProps extends EntityProps, SourceAndTarget {
-}
+export interface RelationshipProps extends EntityProps, SourceAndTarget {}
 
 /** Parameters for performing a query on [Entity]($backend) classes.
  * @public
@@ -150,8 +149,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 
   public constructor(jsonObj: PropertyMetaDataProps) {
     this.primitiveType = jsonObj.primitiveType;
-    if (jsonObj.structName)
-      this.structName = jsonObj.structName;
+    if (jsonObj.structName) this.structName = jsonObj.structName;
     this.extendedType = jsonObj.extendedType;
     this.description = jsonObj.description;
     this.displayLabel = jsonObj.displayLabel;
@@ -166,10 +164,8 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     this.readOnly = jsonObj.readOnly;
     this.kindOfQuantity = jsonObj.kindOfQuantity;
     this.isCustomHandled = jsonObj.isCustomHandled;
-    if (undefined !== jsonObj.minOccurs)
-      this.minOccurs = jsonObj.minOccurs;
-    if (undefined !== jsonObj.maxOccurs)
-      this.maxOccurs = jsonObj.maxOccurs;
+    if (undefined !== jsonObj.minOccurs) this.minOccurs = jsonObj.minOccurs;
+    if (undefined !== jsonObj.maxOccurs) this.maxOccurs = jsonObj.maxOccurs;
     this.direction = jsonObj.direction;
     this.relationshipClass = jsonObj.relationshipClass;
     this.customAttributes = jsonObj.customAttributes;
@@ -177,8 +173,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 
   /** Create a typed value, or array of values, from a factory and an input object */
   private createValueOrArray(func: FactoryFunc, jsonObj: any) {
-    if (undefined === this.minOccurs)
-      return func(jsonObj); // not an array
+    if (undefined === this.minOccurs) return func(jsonObj); // not an array
 
     const val: any = [];
     jsonObj.forEach((element: any) => val.push(func(element)));
@@ -187,8 +182,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 
   /** construct a single property from an input object according to this metadata */
   public createProperty(jsonObj: any): any {
-    if (jsonObj === undefined)
-      return undefined;
+    if (jsonObj === undefined) return undefined;
 
     if (undefined !== this.primitiveType) {
       switch (this.primitiveType) {
@@ -206,14 +200,16 @@ export class PropertyMetaData implements PropertyMetaDataProps {
       }
     }
     if (this.isNavigation)
-      return jsonObj.id !== undefined ? new RelatedElement(jsonObj) : Id64.fromJSON(jsonObj);
+      return jsonObj.id !== undefined
+        ? new RelatedElement(jsonObj)
+        : Id64.fromJSON(jsonObj);
 
     return jsonObj;
   }
 
   /** Return `true` if this property is a NavigationProperty. */
   public get isNavigation(): boolean {
-    return (this.direction !== undefined); // the presence of `direction` means it is a navigation property
+    return this.direction !== undefined; // the presence of `direction` means it is a navigation property
   }
 }
 
@@ -256,8 +252,11 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.customAttributes = jsonObj.customAttributes;
     this.properties = {};
 
-    for (const propName in jsonObj.properties) { // eslint-disable-line guard-for-in
-      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
+    for (const propName in jsonObj.properties) {
+      // eslint-disable-line guard-for-in
+      this.properties[propName] = new PropertyMetaData(
+        jsonObj.properties[propName]
+      );
     }
   }
 }

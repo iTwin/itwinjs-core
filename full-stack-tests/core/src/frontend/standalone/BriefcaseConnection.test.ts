@@ -5,7 +5,12 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
-import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
+import {
+  BriefcaseConnection,
+  GenericAbortSignal,
+  NativeApp,
+  OnDownloadProgress,
+} from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
@@ -29,9 +34,7 @@ class MockAbortSignal implements GenericAbortSignal {
 }
 
 if (ProcessDetector.isElectronAppFrontend) {
-
   describe("BriefcaseConnection (#integration)", async () => {
-
     beforeEach(async () => {
       await TestUtility.startFrontend();
       await TestUtility.initialize(TestUsers.regular);
@@ -43,18 +46,27 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     it("should report progress when pulling changes", async () => {
       const iTwinId = await TestUtility.getTestITwinId();
-      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.stadium);
+      const iModelId = await TestUtility.queryIModelIdByName(
+        iTwinId,
+        TestUtility.testIModelNames.stadium
+      );
 
       const downloader = await NativeApp.requestDownloadBriefcase(
         iTwinId,
         iModelId,
         { briefcaseId: BriefcaseIdValue.Unassigned },
-        IModelVersion.first(),
+        IModelVersion.first()
       );
       await downloader.downloadPromise;
 
-      const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: downloader.briefcaseId });
-      const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
+      const fileName = await NativeApp.getBriefcaseFileName({
+        iModelId,
+        briefcaseId: downloader.briefcaseId,
+      });
+      const connection = await BriefcaseConnection.openFile({
+        fileName,
+        readonly: true,
+      });
 
       let lastProgressReport = { loaded: 0, total: 0 };
       const assertProgress: OnDownloadProgress = (progress) => {
@@ -64,7 +76,9 @@ if (ProcessDetector.isElectronAppFrontend) {
       };
 
       try {
-        await connection.pullChanges(20, { downloadProgressCallback: assertProgress });
+        await connection.pullChanges(20, {
+          downloadProgressCallback: assertProgress,
+        });
       } finally {
         await connection.close();
         await NativeApp.deleteBriefcase(fileName);
@@ -76,32 +90,46 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     it("should cancel pulling changes after abort signal", async () => {
       const iTwinId = await TestUtility.getTestITwinId();
-      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.stadium);
+      const iModelId = await TestUtility.queryIModelIdByName(
+        iTwinId,
+        TestUtility.testIModelNames.stadium
+      );
 
       const downloader = await NativeApp.requestDownloadBriefcase(
         iTwinId,
         iModelId,
         { briefcaseId: BriefcaseIdValue.Unassigned },
-        IModelVersion.first(),
+        IModelVersion.first()
       );
       await downloader.downloadPromise;
 
-      const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: downloader.briefcaseId });
-      const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
+      const fileName = await NativeApp.getBriefcaseFileName({
+        iModelId,
+        briefcaseId: downloader.briefcaseId,
+      });
+      const connection = await BriefcaseConnection.openFile({
+        fileName,
+        readonly: true,
+      });
 
       const abortSignal = new MockAbortSignal();
       let lastProgressReport = { loaded: 0, total: 0 };
       const downloadProgressCallback: OnDownloadProgress = (progress) => {
         lastProgressReport = progress;
 
-        if (progress.loaded > progress.total / 4)
-          abortSignal.abort();
+        if (progress.loaded > progress.total / 4) abortSignal.abort();
       };
 
-      const pullPromise = connection.pullChanges(50, { downloadProgressCallback, abortSignal, progressInterval: 50 });
+      const pullPromise = connection.pullChanges(50, {
+        downloadProgressCallback,
+        abortSignal,
+        progressInterval: 50,
+      });
 
       try {
-        await expect(pullPromise).to.eventually.be.rejectedWith(/cancelled|aborted/i);
+        await expect(pullPromise).to.eventually.be.rejectedWith(
+          /cancelled|aborted/i
+        );
         // Use following assert when BackendIModelsAccess returns IModelError with ChangeSetStatus.DownloadCancelled.
         // await expect(pullPromise).to.eventually.be.rejected.and.have.property("errorNumber", ChangeSetStatus.DownloadCancelled);
       } finally {

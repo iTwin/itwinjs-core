@@ -8,9 +8,19 @@
 
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
-import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
+import {
+  PlanarClipMaskMode,
+  PlanarClipMaskProps,
+  PlanarClipMaskSettings,
+} from "./PlanarClipMask";
+import {
+  SpatialClassifierProps,
+  SpatialClassifiers,
+} from "./SpatialClassification";
+import {
+  RealityModelDisplayProps,
+  RealityModelDisplaySettings,
+} from "./RealityModelDisplaySettings";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
@@ -63,7 +73,7 @@ export enum RealityDataFormat {
   ThreeDTile = "ThreeDTile",
   /**
    * Orbit Point Cloud (OPC) storage format (RealityDataType.OPC)
-  */
+   */
   OPC = "OPC",
 }
 
@@ -78,8 +88,7 @@ export namespace RealityDataFormat {
    */
   export function fromUrl(tilesetUrl: string): RealityDataFormat {
     let format = RealityDataFormat.ThreeDTile;
-    if (tilesetUrl.includes(".opc"))
-      format = RealityDataFormat.OPC;
+    if (tilesetUrl.includes(".opc")) format = RealityDataFormat.OPC;
     return format;
   }
 }
@@ -93,12 +102,12 @@ export interface RealityDataSourceKey {
   /**
    * The provider that supplies the access to reality data source for displaying the reality model
    * @see [[RealityDataProvider]] for default supported value;
-  */
+   */
   provider: string;
   /**
    * The format used by the provider to store the reality data
    * @see [[RealityDataFormat]] for default supported value;
-  */
+   */
   format: string;
   /** The reality data id that identify a reality data for the provider */
   id: string;
@@ -114,10 +123,20 @@ export namespace RealityDataSourceKey {
     return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey?.iTwinId}`;
   }
   /** Utility function to compare two RealityDataSourceKey, we consider it equal even if itwinId is different */
-  export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
-    if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
+  export function isEqual(
+    key1: RealityDataSourceKey,
+    key2: RealityDataSourceKey
+  ): boolean {
+    if (
+      key1.provider === RealityDataProvider.CesiumIonAsset &&
+      key2.provider === RealityDataProvider.CesiumIonAsset
+    )
       return true; // ignore other properties for CesiumIonAsset, id is hidden
-    if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id)) {
+    if (
+      key1.provider === key2.provider &&
+      key1.format === key2.format &&
+      key1.id === key2.id
+    ) {
       // && (key1?.iTwinId === key2?.iTwinId)) -> ignore iTwinId, consider it is the same reality data
       return true;
     }
@@ -127,7 +146,7 @@ export namespace RealityDataSourceKey {
 
 /** JSON representation of the reality data reference attachment properties.
  * @beta
-*/
+ */
 export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
   sourceKey: RealityDataSourceKey;
@@ -172,22 +191,19 @@ export namespace ContextRealityModelProps {
   export function clone(input: ContextRealityModelProps) {
     // Spread operator is shallow, and includes `undefined` properties and empty strings.
     // We want to make deep copies, omit undefined properties and empty strings, and require tilesetUrl to be defined.
-    const output: ContextRealityModelProps = { tilesetUrl: input.tilesetUrl ?? "" };
+    const output: ContextRealityModelProps = {
+      tilesetUrl: input.tilesetUrl ?? "",
+    };
 
-    if (input.rdSourceKey)
-      output.rdSourceKey = { ...input.rdSourceKey };
+    if (input.rdSourceKey) output.rdSourceKey = { ...input.rdSourceKey };
 
-    if (input.name)
-      output.name = input.name;
+    if (input.name) output.name = input.name;
 
-    if (input.realityDataId)
-      output.realityDataId = input.realityDataId;
+    if (input.realityDataId) output.realityDataId = input.realityDataId;
 
-    if (input.description)
-      output.description = input.description;
+    if (input.description) output.description = input.description;
 
-    if (input.orbitGtBlob)
-      output.orbitGtBlob = { ...input.orbitGtBlob };
+    if (input.orbitGtBlob) output.orbitGtBlob = { ...input.orbitGtBlob };
 
     if (input.appearanceOverrides) {
       output.appearanceOverrides = { ...input.appearanceOverrides };
@@ -198,14 +214,18 @@ export namespace ContextRealityModelProps {
     if (input.displaySettings) {
       output.displaySettings = { ...input.displaySettings };
       if (input.displaySettings.pointCloud)
-        output.displaySettings.pointCloud = { ...output.displaySettings.pointCloud };
+        output.displaySettings.pointCloud = {
+          ...output.displaySettings.pointCloud,
+        };
     }
 
     if (input.planarClipMask)
       output.planarClipMask = { ...input.planarClipMask };
 
     if (input.classifiers)
-      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ...x.flags } }; });
+      output.classifiers = input.classifiers.map((x) => {
+        return { ...x, flags: { ...x.flags } };
+      });
 
     return output;
   }
@@ -243,13 +263,28 @@ export class ContextRealityModel {
   protected _displaySettings: RealityModelDisplaySettings;
   protected _planarClipMask?: PlanarClipMaskSettings;
   /** Event dispatched just before assignment to [[planarClipMaskSettings]]. */
-  public readonly onPlanarClipMaskChanged = new BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>();
+  public readonly onPlanarClipMaskChanged = new BeEvent<
+    (
+      newSettings: PlanarClipMaskSettings | undefined,
+      model: ContextRealityModel
+    ) => void
+  >();
   /** Event dispatched just before assignment to [[appearanceOverrides]]. */
-  public readonly onAppearanceOverridesChanged = new BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>();
+  public readonly onAppearanceOverridesChanged = new BeEvent<
+    (
+      newOverrides: FeatureAppearance | undefined,
+      model: ContextRealityModel
+    ) => void
+  >();
   /** Event dispatched just before assignment to [[displaySettings]].
    * @beta
    */
-  public readonly onDisplaySettingsChanged = new BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>();
+  public readonly onDisplaySettingsChanged = new BeEvent<
+    (
+      newSettings: RealityModelDisplaySettings,
+      model: ContextRealityModel
+    ) => void
+  >();
 
   /** Construct a new context reality model.
    * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
@@ -262,26 +297,34 @@ export class ContextRealityModel {
     this.orbitGtBlob = props.orbitGtBlob;
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
-    this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-    this._displaySettings = RealityModelDisplaySettings.fromJSON(props.displaySettings);
+    this._appearanceOverrides = props.appearanceOverrides
+      ? FeatureAppearance.fromJSON(props.appearanceOverrides)
+      : undefined;
+    this._displaySettings = RealityModelDisplaySettings.fromJSON(
+      props.displaySettings
+    );
 
-    if (props.planarClipMask && props.planarClipMask.mode !== PlanarClipMaskMode.None)
-      this._planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
+    if (
+      props.planarClipMask &&
+      props.planarClipMask.mode !== PlanarClipMaskMode.None
+    )
+      this._planarClipMask = PlanarClipMaskSettings.fromJSON(
+        props.planarClipMask
+      );
 
-    if (props.classifiers)
-      this.classifiers = new SpatialClassifiers(props);
+    if (props.classifiers) this.classifiers = new SpatialClassifiers(props);
   }
 
   /** Optionally describes how the geometry of the reality model can be masked by other models. */
   public get planarClipMaskSettings(): PlanarClipMaskSettings | undefined {
     return this._planarClipMask;
   }
-  public set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined) {
+  public set planarClipMaskSettings(
+    settings: PlanarClipMaskSettings | undefined
+  ) {
     this.onPlanarClipMaskChanged.raiseEvent(settings, this);
-    if (!settings)
-      delete this._props.planarClipMask;
-    else
-      this._props.planarClipMask = settings.toJSON();
+    if (!settings) delete this._props.planarClipMask;
+    else this._props.planarClipMask = settings.toJSON();
 
     this._planarClipMask = settings;
   }
@@ -292,10 +335,8 @@ export class ContextRealityModel {
   }
   public set appearanceOverrides(overrides: FeatureAppearance | undefined) {
     this.onAppearanceOverridesChanged.raiseEvent(overrides, this);
-    if (!overrides)
-      delete this._props.appearanceOverrides;
-    else
-      this._props.appearanceOverrides = overrides.toJSON();
+    if (!overrides) delete this._props.appearanceOverrides;
+    else this._props.appearanceOverrides = overrides.toJSON();
 
     this._appearanceOverrides = overrides;
   }
@@ -343,7 +384,9 @@ export interface ContextRealityModelsArgs {
   /** The object that holds the JSON representation of the list of context reality models. */
   container: ContextRealityModelsContainer;
   /** Optional function used to instantiate each [[ContextRealityModel]] in the list. */
-  createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+  createContextRealityModel?: (
+    props: ContextRealityModelProps
+  ) => ContextRealityModel;
   /** If true, the list will not be populated by the constructor. Instead, the caller is responsible for calling [[ContextRealityModels.populate]] exactly once after construction.
    * This is chiefly intended for use internally by the [DisplayStyleState]($frontend) constructor.
    */
@@ -358,18 +401,40 @@ export interface ContextRealityModelsArgs {
  */
 export class ContextRealityModels {
   private readonly _container: ContextRealityModelsContainer;
-  private readonly _createModel: (props: ContextRealityModelProps) => ContextRealityModel;
+  private readonly _createModel: (
+    props: ContextRealityModelProps
+  ) => ContextRealityModel;
   private readonly _models: ContextRealityModel[] = [];
   /** Event dispatched just before [[ContextRealityModel.planarClipMaskSettings]] is modified for one of the reality models. */
-  public readonly onPlanarClipMaskChanged = new BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  public readonly onPlanarClipMaskChanged = new BeEvent<
+    (
+      model: ContextRealityModel,
+      newSettings: PlanarClipMaskSettings | undefined
+    ) => void
+  >();
   /** Event dispatched just before [[ContextRealityModel.appearanceOverrides]] is modified for one of the reality models. */
-  public readonly onAppearanceOverridesChanged = new BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>();
+  public readonly onAppearanceOverridesChanged = new BeEvent<
+    (
+      model: ContextRealityModel,
+      newOverrides: FeatureAppearance | undefined
+    ) => void
+  >();
   /** Event dispatched just before [[ContextRealityModel.displaySettings]] is modified for one of the reality models.
    * @beta
    */
-  public readonly onDisplaySettingsChanged = new BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>();
+  public readonly onDisplaySettingsChanged = new BeEvent<
+    (
+      model: ContextRealityModel,
+      newSettings: RealityModelDisplaySettings
+    ) => void
+  >();
   /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
-  public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
+  public readonly onChanged = new BeEvent<
+    (
+      previousModel: ContextRealityModel | undefined,
+      newModel: ContextRealityModel | undefined
+    ) => void
+  >();
 
   /** Construct a new list of reality models from its JSON representation. The list will be initialized from `container.contextRealityModels` and that JSON representation
    * will be kept in sync with changes made to the list. The caller should not directly modify `container.contextRealityModels` or its contents as that will cause the list
@@ -377,7 +442,12 @@ export class ContextRealityModels {
    * @param container The object that holds the JSON representation of the list.
    * @param createContextRealityModel Optional function used to instantiate each [[ContextRealityModel]] in the list.
    */
-  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+  public constructor(
+    container: ContextRealityModelsContainer,
+    createContextRealityModel?: (
+      props: ContextRealityModelProps
+    ) => ContextRealityModel
+  );
 
   /** Construct a new list of reality models from its JSON representation. The list will be initialized from `args.container.contextRealityModels` and that JSON representation
    * will be kept in sync with changes made to the list. The caller should not directly modify `container.contextRealityModels` or its contents as that will cause the list
@@ -387,7 +457,12 @@ export class ContextRealityModels {
   public constructor(args: ContextRealityModelsArgs);
 
   /** @internal */
-  public constructor(arg0: ContextRealityModelsContainer | ContextRealityModelsArgs, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+  public constructor(
+    arg0: ContextRealityModelsContainer | ContextRealityModelsArgs,
+    createContextRealityModel?: (
+      props: ContextRealityModelProps
+    ) => ContextRealityModel
+  ) {
     let container: ContextRealityModelsContainer;
     let defer = false;
     if (arg0.container) {
@@ -399,10 +474,10 @@ export class ContextRealityModels {
     }
 
     this._container = container;
-    this._createModel = createContextRealityModel ?? ((props) => new ContextRealityModel(props));
+    this._createModel =
+      createContextRealityModel ?? ((props) => new ContextRealityModel(props));
 
-    if (!defer)
-      this.populate();
+    if (!defer) this.populate();
   }
 
   /** @internal needs to be invoked after DisplayStyleSettings constructor by DisplayStyleState constructor.*/
@@ -411,11 +486,13 @@ export class ContextRealityModels {
    * @public
    */
   public populate(): void {
-    assert(this._models.length === 0, "do not call ContextRealityModels.populate more than once");
+    assert(
+      this._models.length === 0,
+      "do not call ContextRealityModels.populate more than once"
+    );
     const models = this._container.contextRealityModels;
     if (models)
-      for (const model of models)
-        this._models.push(this.createModel(model));
+      for (const model of models) this._models.push(this.createModel(model));
   }
 
   /** The read-only list of reality models. */
@@ -448,8 +525,7 @@ export class ContextRealityModels {
    */
   public delete(model: ContextRealityModel): boolean {
     const index = this._models.indexOf(model);
-    if (-1 === index)
-      return false;
+    if (-1 === index) return false;
 
     assert(undefined !== this._container.contextRealityModels);
     assert(index < this._container.contextRealityModels.length);
@@ -460,8 +536,7 @@ export class ContextRealityModels {
     this._models.splice(index, 1);
     if (this.models.length === 0)
       this._container.contextRealityModels = undefined;
-    else
-      this._container.contextRealityModels.splice(index, 1);
+    else this._container.contextRealityModels.splice(index, 1);
 
     return true;
   }
@@ -484,7 +559,10 @@ export class ContextRealityModels {
    * @throws Error if `toReplace` is not present in the list
    * @note The replacement occupies the same index in the list as `toReplace` did.
    */
-  public replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel {
+  public replace(
+    toReplace: ContextRealityModel,
+    replaceWith: ContextRealityModelProps
+  ): ContextRealityModel {
     const index = this._models.indexOf(toReplace);
     if (-1 === index)
       throw new Error("ContextRealityModel not present in list.");
@@ -510,15 +588,17 @@ export class ContextRealityModels {
    * @returns The updated reality model, identical to `toUpdate` except for properties explicitly supplied by `updateProps`.
    * @throws Error if `toUpdate` is not present in the list.
    */
-  public update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel {
+  public update(
+    toUpdate: ContextRealityModel,
+    updateProps: Partial<ContextRealityModelProps>
+  ): ContextRealityModel {
     const props = {
       ...toUpdate.toJSON(),
       ...updateProps,
     };
 
     // Partial<> makes it possible to pass `undefined` for tilesetUrl...preserve previous URL in that case.
-    if (undefined === props.tilesetUrl)
-      props.tilesetUrl = toUpdate.url;
+    if (undefined === props.tilesetUrl) props.tilesetUrl = toUpdate.url;
 
     return this.replace(toUpdate, props);
   }
@@ -526,32 +606,59 @@ export class ContextRealityModels {
   private createModel(props: ContextRealityModelProps): ContextRealityModel {
     const model = this._createModel(props);
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    model.onPlanarClipMaskChanged.addListener(this.handlePlanarClipMaskChanged, this);
+    model.onPlanarClipMaskChanged.addListener(
+      this.handlePlanarClipMaskChanged,
+      this
+    );
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
+    model.onAppearanceOverridesChanged.addListener(
+      this.handleAppearanceOverridesChanged,
+      this
+    );
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    model.onDisplaySettingsChanged.addListener(this.handleDisplaySettingsChanged, this);
+    model.onDisplaySettingsChanged.addListener(
+      this.handleDisplaySettingsChanged,
+      this
+    );
     return model;
   }
 
   private dropEventListeners(model: ContextRealityModel): void {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    model.onPlanarClipMaskChanged.removeListener(this.handlePlanarClipMaskChanged, this);
+    model.onPlanarClipMaskChanged.removeListener(
+      this.handlePlanarClipMaskChanged,
+      this
+    );
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
+    model.onAppearanceOverridesChanged.removeListener(
+      this.handleAppearanceOverridesChanged,
+      this
+    );
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    model.onDisplaySettingsChanged.removeListener(this.handleDisplaySettingsChanged, this);
+    model.onDisplaySettingsChanged.removeListener(
+      this.handleDisplaySettingsChanged,
+      this
+    );
   }
 
-  private handlePlanarClipMaskChanged(mask: PlanarClipMaskSettings | undefined, model: ContextRealityModel): void {
+  private handlePlanarClipMaskChanged(
+    mask: PlanarClipMaskSettings | undefined,
+    model: ContextRealityModel
+  ): void {
     this.onPlanarClipMaskChanged.raiseEvent(model, mask);
   }
 
-  private handleAppearanceOverridesChanged(app: FeatureAppearance | undefined, model: ContextRealityModel): void {
+  private handleAppearanceOverridesChanged(
+    app: FeatureAppearance | undefined,
+    model: ContextRealityModel
+  ): void {
     this.onAppearanceOverridesChanged.raiseEvent(model, app);
   }
 
-  private handleDisplaySettingsChanged(settings: RealityModelDisplaySettings, model: ContextRealityModel): void {
+  private handleDisplaySettingsChanged(
+    settings: RealityModelDisplaySettings,
+    model: ContextRealityModel
+  ): void {
     this.onDisplaySettingsChanged.raiseEvent(model, settings);
   }
 }

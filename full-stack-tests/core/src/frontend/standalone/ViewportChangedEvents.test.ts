@@ -6,12 +6,34 @@ import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
+  AmbientOcclusion,
+  AnalysisStyle,
+  ClipStyle,
+  ColorDef,
+  FeatureAppearance,
+  ModelClipGroup,
+  ModelClipGroups,
+  MonochromeMode,
+  PlanProjectionSettings,
+  SubCategoryOverride,
+  ThematicDisplay,
+  ViewFlags,
 } from "@itwin/core-common";
 import {
-  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport, ViewState,
+  ChangeFlag,
+  FeatureSymbology,
+  PerModelCategoryVisibility,
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+  StandardViewId,
+  Viewport,
+  ViewState,
 } from "@itwin/core-frontend";
-import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
+import {
+  ViewportChangedHandler,
+  ViewportState,
+} from "../ViewportChangedHandler";
 import { TestUtility } from "../TestUtility";
 
 describe("Viewport changed events", async () => {
@@ -50,18 +72,15 @@ describe("Viewport changed events", async () => {
   });
 
   after(async () => {
-    if (undefined !== testBim)
-      await testBim.close();
+    if (undefined !== testBim) await testBim.close();
 
-    if (undefined !== testImodel)
-      await testImodel.close();
+    if (undefined !== testImodel) await testImodel.close();
 
     await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {
-    if (vp)
-      vp.dispose();
+    if (vp) vp.dispose();
   });
 
   // Make an Id64 for testImodel which has briefcase Id=1
@@ -70,7 +89,7 @@ describe("Viewport changed events", async () => {
   }
 
   it("should be dispatched when always/never-drawn change", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     view.setStandardRotation(StandardViewId.RightIso);
     vp = ScreenViewport.create(viewDiv, view);
 
@@ -83,40 +102,60 @@ describe("Viewport changed events", async () => {
       // Assigning the set always raises an event.
       const idSet = new Set<string>();
       idSet.add("0x123");
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, false));
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
-      mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.setNeverDrawn(idSet));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.setAlwaysDrawn(idSet, false)
+      );
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.setAlwaysDrawn(idSet, true)
+      );
+      mon.expect(ChangeFlag.NeverDrawn, undefined, () =>
+        vp.setNeverDrawn(idSet)
+      );
 
       // Clearing raises event if set was assigned.
       mon.expect(ChangeFlag.NeverDrawn, undefined, () => vp.clearNeverDrawn());
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.clearAlwaysDrawn()
+      );
 
       // Clearing again will not re-raise because already cleared.
       mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
       mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Setting repeatedly to same set raises each time, because we're not going to compare to previous set every time it changes.
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.setAlwaysDrawn(idSet, true)
+      );
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.setAlwaysDrawn(idSet, true)
+      );
 
       // Setting to an empty set, and also setting the 'exclusive' flags - effectively means no elements should draw.
       idSet.clear();
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.setAlwaysDrawn(idSet, true));
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.setAlwaysDrawn(idSet, true)
+      );
       // Raises even though set was already empty, because this resets the 'exclusive' flag.
-      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.AlwaysDrawn, undefined, () =>
+        vp.clearAlwaysDrawn()
+      );
       // Exclusive flag no longer set and set is empty, so no event.
       mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Multiple changes in between frames produce a single event.
       idSet.add("0x123");
-      mon.expect(ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn, undefined, () => {
-        for (let i = 0; i < 5; i++) {
-          vp.setAlwaysDrawn(idSet);
-          vp.clearAlwaysDrawn();
-          vp.setNeverDrawn(idSet);
-          vp.clearNeverDrawn();
+      mon.expect(
+        ChangeFlag.AlwaysDrawn | ChangeFlag.NeverDrawn,
+        undefined,
+        () => {
+          for (let i = 0; i < 5; i++) {
+            vp.setAlwaysDrawn(idSet);
+            vp.clearAlwaysDrawn();
+            vp.setNeverDrawn(idSet);
+            vp.clearNeverDrawn();
+          }
         }
-      });
+      );
 
       // Always/never-drawn unaffected by undo/redo
       vp.saveViewUndo();
@@ -128,22 +167,30 @@ describe("Viewport changed events", async () => {
   });
 
   it("should be dispatched when display style is modified using Viewport APIs", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     view.setStandardRotation(StandardViewId.RightIso);
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if equivalent flags
       let newFlags = vp.viewFlags.copy({});
-      mon.expect(ChangeFlag.None, undefined, () => vp.viewFlags = newFlags);
+      mon.expect(ChangeFlag.None, undefined, () => (vp.viewFlags = newFlags));
 
       // ViewFlags which do not affect symbology overrides
       newFlags = newFlags.with("lighting", !newFlags.lighting);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.RenderPlan,
+        () => (vp.viewFlags = newFlags)
+      );
 
       // ViewFlags which affect symbology overrides
       newFlags = newFlags.with("constructions", !newFlags.constructions);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.RenderPlan,
+        () => (vp.viewFlags = newFlags)
+      );
 
       // Modifying the style's properties directly also produces an event.
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
@@ -153,120 +200,260 @@ describe("Viewport changed events", async () => {
 
       // Modify display style through Viewport API.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-        const newStyle = vp.displayStyle.clone();
-        newStyle.backgroundColor = ColorDef.red;
-        vp.displayStyle = newStyle;
-      });
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => {
+          const newStyle = vp.displayStyle.clone();
+          newStyle.backgroundColor = ColorDef.red;
+          vp.displayStyle = newStyle;
+        }
+      );
 
       // Change ClipStyle
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.clipStyle = ClipStyle.fromJSON({ cutStyle: { appearance: { weight: 12 } } }));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () =>
+          (vp.clipStyle = ClipStyle.fromJSON({
+            cutStyle: { appearance: { weight: 12 } },
+          }))
+      );
 
       // Modify view flags through Viewport's displayStyle property.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-        const newStyle = vp.displayStyle.clone();
-        newStyle.viewFlags = newStyle.viewFlags.with("constructions", !newStyle.viewFlags.constructions);
-        vp.displayStyle = newStyle;
-      });
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => {
+          const newStyle = vp.displayStyle.clone();
+          newStyle.viewFlags = newStyle.viewFlags.with(
+            "constructions",
+            !newStyle.viewFlags.constructions
+          );
+          vp.displayStyle = newStyle;
+        }
+      );
 
       vp.saveViewUndo();
 
       // Override subcategories directly on display style without going through Viewport API => produces event
       const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => vp.displayStyle.overrideSubCategory("0x123", ovr)
+      );
 
       // Override by replacing display style on Viewport
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-        const style = vp.displayStyle.clone();
-        style.overrideSubCategory("0x123", ovr);
-        vp.displayStyle = style;
-      });
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => {
+          const style = vp.displayStyle.clone();
+          style.overrideSubCategory("0x123", ovr);
+          vp.displayStyle = style;
+        }
+      );
 
       // Apply same override via Viewport method. Does not check if override actually differs.
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.ViewedModels | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-        // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
-        vp.overrideSubCategory("0x123", ovr);
-        vp.changeViewedModels(new Set<string>());
-      });
+      mon.expect(
+        ChangeFlag.DisplayStyle |
+          ChangeFlag.ViewedModels |
+          ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => {
+          // Because this is same override as already set, saveViewUndo will not save in undo buffer unless we make some other actual change to the ViewState
+          vp.overrideSubCategory("0x123", ovr);
+          vp.changeViewedModels(new Set<string>());
+        }
+      );
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () =>
+          vp.overrideSubCategory(
+            "0x123",
+            SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })
+          )
+      );
     });
   });
 
   it("should be dispatched when display style is modified directly", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
-      const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
-      const expectChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, func);
-      const expectOverrideChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, func);
+      const expectNoChange = (func: () => void) =>
+        mon.expect(ChangeFlag.None, undefined, func);
+      const expectChange = (func: () => void) =>
+        mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, func);
+      const expectOverrideChange = (func: () => void) =>
+        mon.expect(
+          ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+          ViewportState.RenderPlan,
+          func
+        );
 
-      expectNoChange(() => view.displayStyle = view.displayStyle);
-      expectOverrideChange(() => view.displayStyle = view.displayStyle.clone());
+      expectNoChange(() => (view.displayStyle = view.displayStyle));
+      expectOverrideChange(
+        () => (view.displayStyle = view.displayStyle.clone())
+      );
 
       const style = view.getDisplayStyle3d();
       const settings = style.settings;
 
       let vf = settings.viewFlags.copy({});
-      expectNoChange(() => settings.viewFlags = vf);
+      expectNoChange(() => (settings.viewFlags = vf));
       vf = vf.with("transparency", !vf.transparency);
-      expectChange(() => settings.viewFlags = vf);
+      expectChange(() => (settings.viewFlags = vf));
 
-      expectOverrideChange(() => settings.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr })));
-      expectOverrideChange(() => settings.overrideModelAppearance("0xabc", FeatureAppearance.fromJSON({ weight: 10 })));
+      expectOverrideChange(() =>
+        settings.overrideSubCategory(
+          "0x123",
+          SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr })
+        )
+      );
+      expectOverrideChange(() =>
+        settings.overrideModelAppearance(
+          "0xabc",
+          FeatureAppearance.fromJSON({ weight: 10 })
+        )
+      );
       expectOverrideChange(() => settings.dropModelAppearanceOverride("0xabc"));
 
-      expectChange(() => settings.backgroundColor = ColorDef.red);
-      expectNoChange(() => settings.backgroundColor = ColorDef.red);
+      expectChange(() => (settings.backgroundColor = ColorDef.red));
+      expectNoChange(() => (settings.backgroundColor = ColorDef.red));
 
-      expectChange(() => settings.monochromeColor = ColorDef.green);
-      expectNoChange(() => settings.monochromeColor = ColorDef.green);
-      expectChange(() => settings.monochromeMode = MonochromeMode.Flat);
-      expectNoChange(() => settings.monochromeMode = MonochromeMode.Flat);
+      expectChange(() => (settings.monochromeColor = ColorDef.green));
+      expectNoChange(() => (settings.monochromeColor = ColorDef.green));
+      expectChange(() => (settings.monochromeMode = MonochromeMode.Flat));
+      expectNoChange(() => (settings.monochromeMode = MonochromeMode.Flat));
 
-      expectOverrideChange(() => settings.clipStyle = ClipStyle.fromJSON({ cutStyle: { appearance: { weight: 5 } } }));
+      expectOverrideChange(
+        () =>
+          (settings.clipStyle = ClipStyle.fromJSON({
+            cutStyle: { appearance: { weight: 5 } },
+          }))
+      );
 
-      expectNoChange(() => settings.analysisFraction = settings.analysisFraction);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction, () => settings.analysisFraction = 0.123456);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction | ViewportState.RenderPlan, () => settings.analysisStyle = AnalysisStyle.fromJSON({ displacement: { channelName: "source" } }));
+      expectNoChange(
+        () => (settings.analysisFraction = settings.analysisFraction)
+      );
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.AnalysisFraction,
+        () => (settings.analysisFraction = 0.123456)
+      );
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.AnalysisFraction | ViewportState.RenderPlan,
+        () =>
+          (settings.analysisStyle = AnalysisStyle.fromJSON({
+            displacement: { channelName: "source" },
+          }))
+      );
 
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.timePoint = 43);
-      expectNoChange(() => settings.timePoint = 43);
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint,
+        () => (settings.timePoint = 43)
+      );
+      expectNoChange(() => (settings.timePoint = 43));
 
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint | ViewportState.Scene,
+        () =>
+          (settings.scheduleScriptProps = [
+            { modelId: "0x123", elementTimelines: [] },
+          ])
+      );
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = undefined);
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint | ViewportState.Scene,
+        () => (settings.scheduleScriptProps = undefined)
+      );
       // If assignment to scheduleScriptProps produces no net change, no event.
       // eslint-disable-next-line deprecation/deprecation
-      expectNoChange(() => settings.scheduleScriptProps = undefined);
+      expectNoChange(() => (settings.scheduleScriptProps = undefined));
 
-      expectChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({ transThreshold: 1.0 - settings.hiddenLineSettings.transThreshold }));
-      expectNoChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({}));
+      expectChange(
+        () =>
+          (settings.hiddenLineSettings = settings.hiddenLineSettings.override({
+            transThreshold: 1.0 - settings.hiddenLineSettings.transThreshold,
+          }))
+      );
+      expectNoChange(
+        () =>
+          (settings.hiddenLineSettings = settings.hiddenLineSettings.override(
+            {}
+          ))
+      );
 
-      expectNoChange(() => settings.lights = settings.lights.clone());
-      expectChange(() => settings.lights = settings.lights.clone({ numCels: settings.lights.numCels + 1 }));
-      expectNoChange(() => settings.lights = settings.lights.clone({ numCels: settings.lights.numCels }));
+      expectNoChange(() => (settings.lights = settings.lights.clone()));
+      expectChange(
+        () =>
+          (settings.lights = settings.lights.clone({
+            numCels: settings.lights.numCels + 1,
+          }))
+      );
+      expectNoChange(
+        () =>
+          (settings.lights = settings.lights.clone({
+            numCels: settings.lights.numCels,
+          }))
+      );
 
-      expectNoChange(() => settings.solarShadows = settings.solarShadows.clone({ color: settings.solarShadows.color.toColorDef().toJSON() }));
-      expectChange(() => settings.solarShadows = settings.solarShadows.clone({ color: 123 }));
+      expectNoChange(
+        () =>
+          (settings.solarShadows = settings.solarShadows.clone({
+            color: settings.solarShadows.color.toColorDef().toJSON(),
+          }))
+      );
+      expectChange(
+        () =>
+          (settings.solarShadows = settings.solarShadows.clone({ color: 123 }))
+      );
 
       const thematicProps = settings.thematic.toJSON();
-      expectNoChange(() => settings.thematic = ThematicDisplay.fromJSON(thematicProps));
+      expectNoChange(
+        () => (settings.thematic = ThematicDisplay.fromJSON(thematicProps))
+      );
       thematicProps.range = { low: 123, high: 456 };
-      expectChange(() => settings.thematic = ThematicDisplay.fromJSON(thematicProps));
+      expectChange(
+        () => (settings.thematic = ThematicDisplay.fromJSON(thematicProps))
+      );
 
-      expectChange(() => settings.ambientOcclusionSettings = AmbientOcclusion.Settings.fromJSON({ bias: 42, maxDistance: 24 }));
-      expectChange(() => settings.environment = settings.environment.withDisplay({ ground: !settings.environment.displayGround }));
+      expectChange(
+        () =>
+          (settings.ambientOcclusionSettings =
+            AmbientOcclusion.Settings.fromJSON({ bias: 42, maxDistance: 24 }))
+      );
+      expectChange(
+        () =>
+          (settings.environment = settings.environment.withDisplay({
+            ground: !settings.environment.displayGround,
+          }))
+      );
 
-      expectChange(() => settings.setPlanProjectionSettings("0xabcdef", undefined));
-      expectChange(() => settings.setPlanProjectionSettings("0xfedcba", PlanProjectionSettings.fromJSON({ elevation: 42 })));
+      expectChange(() =>
+        settings.setPlanProjectionSettings("0xabcdef", undefined)
+      );
+      expectChange(() =>
+        settings.setPlanProjectionSettings(
+          "0xfedcba",
+          PlanProjectionSettings.fromJSON({ elevation: 42 })
+        )
+      );
     });
   });
 
@@ -275,66 +462,133 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       const settings = vp.view.displayStyle.settings;
 
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.applyOverrides({ viewflags: { backgroundMap: !settings.viewFlags.backgroundMap } }));
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => settings.applyOverrides({ backgroundColor: 0xabcdef }));
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }));
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () =>
+        settings.applyOverrides({
+          viewflags: { backgroundMap: !settings.viewFlags.backgroundMap },
+        })
+      );
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () =>
+        settings.applyOverrides({ backgroundColor: 0xabcdef })
+      );
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint | ViewportState.Scene,
+        () =>
+          settings.applyOverrides({
+            scheduleScript: [{ modelId: "0x321", elementTimelines: [] }],
+          })
+      );
     });
   });
 
   it("should be dispatched when background map is modified using Viewport APIs", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     view.setStandardRotation(StandardViewId.RightIso);
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
       let vf = vp.viewFlags.with("backgroundMap", !vp.viewFlags.backgroundMap);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => (vp.viewFlags = vf)
+      );
 
       vf = vf.with("backgroundMap", !vf.backgroundMap);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => (vp.viewFlags = vf)
+      );
 
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.backgroundMapSettings = vp.backgroundMapSettings.clone({ groundBias: 123 }));
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeBackgroundMapProps({ groundBias: 456 }));
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () =>
+          (vp.backgroundMapSettings = vp.backgroundMapSettings.clone({
+            groundBias: 123,
+          }))
+      );
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () =>
+        vp.changeBackgroundMapProps({ groundBias: 456 })
+      );
     });
   });
 
   it("should be dispatched when background map is modified directly", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
       const settings = view.displayStyle.settings;
-      const vf = settings.viewFlags.with("backgroundMap", !settings.viewFlags.backgroundMap);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.viewFlags = vf);
-      mon.expect(ChangeFlag.None, undefined, () => settings.viewFlags = vf);
+      const vf = settings.viewFlags.with(
+        "backgroundMap",
+        !settings.viewFlags.backgroundMap
+      );
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => (settings.viewFlags = vf)
+      );
+      mon.expect(ChangeFlag.None, undefined, () => (settings.viewFlags = vf));
 
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.backgroundMap = settings.backgroundMap.clone({ groundBias: 654 }));
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.backgroundMap = settings.backgroundMap.clone({ groundBias: 321 }));
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () =>
+          (settings.backgroundMap = settings.backgroundMap.clone({
+            groundBias: 654,
+          }))
+      );
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () =>
+          (settings.backgroundMap = settings.backgroundMap.clone({
+            groundBias: 321,
+          }))
+      );
     });
   });
 
   it("should invalidate scene when shadows are on", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     view.setStandardRotation(StandardViewId.RightIso);
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = vp.viewFlags.with("shadows", true));
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.RenderPlan,
+        () => (vp.viewFlags = vp.viewFlags.with("shadows", true))
+      );
 
       const idSet = new Set<string>();
       idSet.add("0x321");
-      mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.setAlwaysDrawn(idSet));
-      mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () => vp.clearAlwaysDrawn());
+      mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () =>
+        vp.setAlwaysDrawn(idSet)
+      );
+      mon.expect(ChangeFlag.AlwaysDrawn, ViewportState.Scene, () =>
+        vp.clearAlwaysDrawn()
+      );
       mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       idSet.add("0x123");
-      mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.setNeverDrawn(idSet));
-      mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () =>
+        vp.setNeverDrawn(idSet)
+      );
+      mon.expect(ChangeFlag.NeverDrawn, ViewportState.Scene, () =>
+        vp.clearNeverDrawn()
+      );
       mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
 
-      mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () => vp.setFeatureOverrideProviderChanged());
+      mon.expect(ChangeFlag.FeatureOverrideProvider, ViewportState.Scene, () =>
+        vp.setFeatureOverrideProviderChanged()
+      );
 
-      mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () => vp.changeCategoryDisplay(["0xa", "0xb"], true));
+      mon.expect(ChangeFlag.ViewedCategories, ViewportState.Scene, () =>
+        vp.changeCategoryDisplay(["0xa", "0xb"], true)
+      );
     });
   });
 
@@ -343,28 +597,59 @@ describe("Viewport changed events", async () => {
   }
 
   it("should be dispatched when displayed 2d models change", async () => {
-    vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x20))); // views model 0x19
+    vp = ScreenViewport.create(
+      viewDiv,
+      await testImodel.views.load(id64(0x20))
+    ); // views model 0x19
 
     await ViewportChangedHandler.testAsync(vp, async (mon) => {
       // changeModelDisplay is no-op for 2d views
-      mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false);
-      mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
+      mon.expect(
+        ChangeFlag.None,
+        undefined,
+        () => expect(vp.changeModelDisplay(id64(0x19), false)).to.be.false
+      );
+      mon.expect(
+        ChangeFlag.None,
+        undefined,
+        () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false
+      );
       const viewedModels = new Set<string>();
       viewedModels.add(id64(0x27));
-      mon.expect(ChangeFlag.None, undefined, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
+      mon.expect(
+        ChangeFlag.None,
+        undefined,
+        () => expect(vp.changeViewedModels(viewedModels)).to.be.false
+      );
 
       // Switching to a different 2d view of the same model should not produce model-changed event
       const view20 = await testImodel.views.load(id64(0x20)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view20));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () =>
+        changeView(vp, view20)
+      );
 
       // Switching to a different 2d view of a different model should produce model-changed event
       // Note: new view also has different categories enabled.
       const view35 = await testImodel.views.load(id64(0x35)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view35));
+      mon.expect(
+        ChangeFlag.ViewedModels |
+          ChangeFlag.ViewedCategories |
+          ChangeFlag.DisplayStyle |
+          ChangeFlag.ViewState,
+        ViewportState.Controller,
+        () => changeView(vp, view35)
+      );
 
       // Switch back to previous view.
       // Note: changeView(vp, ) clears undo stack so cannot/needn't test undo/redo here.
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view20.clone()));
+      mon.expect(
+        ChangeFlag.ViewedModels |
+          ChangeFlag.ViewedCategories |
+          ChangeFlag.DisplayStyle |
+          ChangeFlag.ViewState,
+        ViewportState.Controller,
+        () => changeView(vp, view20.clone())
+      );
     });
   });
 
@@ -373,17 +658,25 @@ describe("Viewport changed events", async () => {
 
     await ViewportChangedHandler.testAsync(vp, async (mon) => {
       // adding a model which is already present produces no event
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x1c", true));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vp.changeModelDisplay("0x1c", true)
+      );
 
       // removing a model not present produces no event
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeModelDisplay("0x9876543", false));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vp.changeModelDisplay("0x9876543", false)
+      );
 
       // setting viewed models directly always produces event - we don't check if contents of set exactly match current set
       let selectedModels = (vp.view as SpatialViewState).modelSelector.models;
-      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () =>
+        vp.changeViewedModels(selectedModels)
+      );
       selectedModels = new Set<string>();
       selectedModels.add("0x1c");
-      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () =>
+        vp.changeViewedModels(selectedModels)
+      );
 
       mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => {
         vp.changeModelDisplay("0x1c", false);
@@ -394,20 +687,24 @@ describe("Viewport changed events", async () => {
       // Replacing viewed models with same set [ 0x1f ] produces event
       selectedModels.clear();
       selectedModels.add("0x1f");
-      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () => vp.changeViewedModels(selectedModels));
+      mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, () =>
+        vp.changeViewedModels(selectedModels)
+      );
     });
   });
 
   it("should be dispatched when model selector is modified directly", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
-      const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, func);
-      const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
+      const expectChange = (func: () => void) =>
+        mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, func);
+      const expectNoChange = (func: () => void) =>
+        mon.expect(ChangeFlag.None, undefined, func);
 
-      expectNoChange(() => view.modelSelector = view.modelSelector);
-      expectChange(() => view.modelSelector = view.modelSelector.clone());
+      expectNoChange(() => (view.modelSelector = view.modelSelector));
+      expectChange(() => (view.modelSelector = view.modelSelector.clone()));
 
       const models = view.modelSelector.models;
       expectChange(() => models.add("0xabc"));
@@ -421,19 +718,26 @@ describe("Viewport changed events", async () => {
 
       // We don't check if the input's contents exactly match the current contents.
       const modelIds = new Set<string>(["0x1", "0x2"]);
-      expectChange(() => view.modelSelector.models = modelIds);
-      expectChange(() => view.modelSelector.models = modelIds);
+      expectChange(() => (view.modelSelector.models = modelIds));
+      expectChange(() => (view.modelSelector.models = modelIds));
     });
   });
 
   it("should be dispatched when category selector is modified using Viewport APIs", async () => {
-    vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15))); // view category selector 0x0f
+    vp = ScreenViewport.create(
+      viewDiv,
+      await testImodel.views.load(id64(0x15))
+    ); // view category selector 0x0f
 
     await ViewportChangedHandler.testAsync(vp, async (mon) => {
-      mon.expect(ChangeFlag.ViewedCategories, undefined, () => vp.changeCategoryDisplay(id64(0x01), true));
+      mon.expect(ChangeFlag.ViewedCategories, undefined, () =>
+        vp.changeCategoryDisplay(id64(0x01), true)
+      );
 
       // We're not viewing 0x1a, so this will not produce an event.
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeCategoryDisplay(id64(0x1a), false));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vp.changeCategoryDisplay(id64(0x1a), false)
+      );
 
       // Two changes which produce no net change still produce event - we do not track net changes
       vp.saveViewUndo();
@@ -449,11 +753,21 @@ describe("Viewport changed events", async () => {
 
       // Switching to a different view with same category selector produces no category-changed event
       const view13 = await testImodel.views.load(id64(0x13));
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view13));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view13)
+      );
 
       // Switching to a different view with different category selector produces event
       const view17 = await testImodel.views.load(id64(0x17));
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view17));
+      mon.expect(
+        ChangeFlag.ViewState |
+          ChangeFlag.DisplayStyle |
+          ChangeFlag.ViewedCategories,
+        ViewportState.Controller,
+        () => changeView(vp, view17)
+      );
 
       // Changing category selector, then switching to a view with same categories enabled produces no event.
       mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
@@ -461,19 +775,34 @@ describe("Viewport changed events", async () => {
         vp.changeCategoryDisplay(view13.categorySelector.categories, true);
       });
 
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view13));
+      mon.expect(
+        ChangeFlag.ViewState |
+          ChangeFlag.ViewedCategories |
+          ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view13)
+      );
     });
   });
 
   it("should be dispatched when category selector is modified directly", async () => {
-    vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x15)));
+    vp = ScreenViewport.create(
+      viewDiv,
+      await testImodel.views.load(id64(0x15))
+    );
 
     ViewportChangedHandler.test(vp, (mon) => {
-      const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, undefined, func);
-      const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
+      const expectChange = (func: () => void) =>
+        mon.expect(ChangeFlag.ViewedCategories, undefined, func);
+      const expectNoChange = (func: () => void) =>
+        mon.expect(ChangeFlag.None, undefined, func);
 
-      expectChange(() => vp.view.categorySelector = vp.view.categorySelector.clone());
-      expectNoChange(() => vp.view.categorySelector = vp.view.categorySelector);
+      expectChange(
+        () => (vp.view.categorySelector = vp.view.categorySelector.clone())
+      );
+      expectNoChange(
+        () => (vp.view.categorySelector = vp.view.categorySelector)
+      );
 
       const categories = vp.view.categorySelector.categories;
       expectChange(() => categories.add("0x123"));
@@ -487,8 +816,8 @@ describe("Viewport changed events", async () => {
 
       // We don't check if the input's contents exactly match the current contents.
       const catIds = new Set<string>(["0xa", "0xb"]);
-      expectChange(() => vp.view.categorySelector.categories = catIds);
-      expectChange(() => vp.view.categorySelector.categories = catIds);
+      expectChange(() => (vp.view.categorySelector.categories = catIds));
+      expectChange(() => (vp.view.categorySelector.categories = catIds));
     });
   });
 
@@ -497,59 +826,153 @@ describe("Viewport changed events", async () => {
     const vis = vp.perModelCategoryVisibility;
 
     ViewportChangedHandler.test(vp, (mon) => {
-      expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
+      expect(vis.getOverride("0x1c", "0x1234")).to.equal(
+        PerModelCategoryVisibility.Override.None
+      );
 
       // No net change => no event
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.None));
-      expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride(
+          "0x1c",
+          "0x1234",
+          PerModelCategoryVisibility.Override.None
+        )
+      );
+      expect(vis.getOverride("0x1c", "0x1234")).to.equal(
+        PerModelCategoryVisibility.Override.None
+      );
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Show));
-      expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Show);
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () =>
+        vis.setOverride(
+          "0x1c",
+          "0x1234",
+          PerModelCategoryVisibility.Override.Show
+        )
+      );
+      expect(vis.getOverride("0x1c", "0x1234")).to.equal(
+        PerModelCategoryVisibility.Override.Show
+      );
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride("0x1c", "0x1234", PerModelCategoryVisibility.Override.Hide));
-      expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.Hide);
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () =>
+        vis.setOverride(
+          "0x1c",
+          "0x1234",
+          PerModelCategoryVisibility.Override.Hide
+        )
+      );
+      expect(vis.getOverride("0x1c", "0x1234")).to.equal(
+        PerModelCategoryVisibility.Override.Hide
+      );
 
-      mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides("0x9876"));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.clearOverrides("0x9876")
+      );
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides());
-      expect(vis.getOverride("0x1c", "0x1234")).to.equal(PerModelCategoryVisibility.Override.None);
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () =>
+        vis.clearOverrides()
+      );
+      expect(vis.getOverride("0x1c", "0x1234")).to.equal(
+        PerModelCategoryVisibility.Override.None
+      );
 
       mon.expect(ChangeFlag.None, undefined, () => vis.clearOverrides());
 
       const idSet = new Set<string>();
       idSet.add("0x1234567");
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(new Set<string>(), new Set<string>(), PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(idSet, new Set<string>(), PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(new Set<string>(), idSet, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride(
+          new Set<string>(),
+          new Set<string>(),
+          PerModelCategoryVisibility.Override.Show
+        )
+      );
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride(
+          idSet,
+          new Set<string>(),
+          PerModelCategoryVisibility.Override.Show
+        )
+      );
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride(
+          new Set<string>(),
+          idSet,
+          PerModelCategoryVisibility.Override.Show
+        )
+      );
 
       const idList = ["0x1234567"];
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride([], [], PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(idList, [], PerModelCategoryVisibility.Override.Show));
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride([], idList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride([], [], PerModelCategoryVisibility.Override.Show)
+      );
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride(idList, [], PerModelCategoryVisibility.Override.Show)
+      );
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride([], idList, PerModelCategoryVisibility.Override.Show)
+      );
 
       const modelIdList = ["0x1", "0x2", "0x3"];
       const catIdList = ["0xa", "0xb"];
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () =>
+        vis.setOverride(
+          modelIdList,
+          catIdList,
+          PerModelCategoryVisibility.Override.Show
+        )
+      );
       for (const modelId of modelIdList)
         for (const catId of catIdList)
-          expect(vis.getOverride(modelId, catId)).to.equal(PerModelCategoryVisibility.Override.Show);
+          expect(vis.getOverride(modelId, catId)).to.equal(
+            PerModelCategoryVisibility.Override.Show
+          );
 
       // No net change
-      mon.expect(ChangeFlag.None, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vis.setOverride(
+          modelIdList,
+          catIdList,
+          PerModelCategoryVisibility.Override.Show
+        )
+      );
 
       modelIdList.shift(); // remove "0x1"
       catIdList.shift(); // remove "0xa"
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
-      expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
-      expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.Show);
-      expect(vis.getOverride("0x2", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
-      expect(vis.getOverride("0x2", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
-      expect(vis.getOverride("0x3", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
-      expect(vis.getOverride("0x3", "0xb")).to.equal(PerModelCategoryVisibility.Override.Hide);
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () =>
+        vis.setOverride(
+          modelIdList,
+          catIdList,
+          PerModelCategoryVisibility.Override.Hide
+        )
+      );
+      expect(vis.getOverride("0x1", "0xa")).to.equal(
+        PerModelCategoryVisibility.Override.Show
+      );
+      expect(vis.getOverride("0x1", "0xb")).to.equal(
+        PerModelCategoryVisibility.Override.Show
+      );
+      expect(vis.getOverride("0x2", "0xa")).to.equal(
+        PerModelCategoryVisibility.Override.Show
+      );
+      expect(vis.getOverride("0x2", "0xb")).to.equal(
+        PerModelCategoryVisibility.Override.Hide
+      );
+      expect(vis.getOverride("0x3", "0xa")).to.equal(
+        PerModelCategoryVisibility.Override.Show
+      );
+      expect(vis.getOverride("0x3", "0xb")).to.equal(
+        PerModelCategoryVisibility.Override.Hide
+      );
 
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.clearOverrides(["0x1"]));
-      expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.None);
-      expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.None);
+      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () =>
+        vis.clearOverrides(["0x1"])
+      );
+      expect(vis.getOverride("0x1", "0xa")).to.equal(
+        PerModelCategoryVisibility.Override.None
+      );
+      expect(vis.getOverride("0x1", "0xb")).to.equal(
+        PerModelCategoryVisibility.Override.None
+      );
     });
   });
 
@@ -557,7 +980,10 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, await testBim.views.load("0x34"));
     let overridesAdded = false;
     const provider = {
-      addFeatureOverrides: (_overrides: FeatureSymbology.Overrides, _viewport: Viewport): void => {
+      addFeatureOverrides: (
+        _overrides: FeatureSymbology.Overrides,
+        _viewport: Viewport
+      ): void => {
         expect(overridesAdded).to.be.false;
         overridesAdded = true;
       },
@@ -565,25 +991,30 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, (mon) => {
       // Changing the provider => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.addFeatureOverrideProvider(provider));
+      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () =>
+        vp.addFeatureOverrideProvider(provider)
+      );
       expect(overridesAdded).to.be.true;
       overridesAdded = false;
 
       // Explicitly notifying provider's state has changed => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => vp.setFeatureOverrideProviderChanged());
+      mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () =>
+        vp.setFeatureOverrideProviderChanged()
+      );
       expect(overridesAdded).to.be.true;
       overridesAdded = false;
 
       // Setting provider to same value => no event
-      mon.expect(ChangeFlag.None, undefined, () => vp.addFeatureOverrideProvider(provider));
+      mon.expect(ChangeFlag.None, undefined, () =>
+        vp.addFeatureOverrideProvider(provider)
+      );
       expect(overridesAdded).to.be.false;
 
       // Actually changing the provider => event
       mon.expect(ChangeFlag.FeatureOverrideProvider, undefined, () => {
         const prov = vp.findFeatureOverrideProvider((_) => true);
         expect(prov).not.to.be.undefined;
-        if (prov)
-          vp.dropFeatureOverrideProvider(prov);
+        if (prov) vp.dropFeatureOverrideProvider(prov);
       });
       expect(overridesAdded).to.be.false;
     });
@@ -598,22 +1029,51 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, view2d20.clone());
     ViewportChangedHandler.test(vp, (mon) => {
       // No effective change to view
-      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () =>
+        changeView(vp, view2d20.clone())
+      );
 
       // 2d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view2d2e.clone()));
+      mon.expect(
+        ChangeFlag.ViewState |
+          ChangeFlag.ViewedCategories |
+          ChangeFlag.ViewedModels |
+          ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view2d2e.clone())
+      );
 
       // 2d => 3d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view3d15.clone()));
+      mon.expect(
+        ChangeFlag.ViewState |
+          ChangeFlag.ViewedCategories |
+          ChangeFlag.ViewedModels |
+          ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view3d15.clone())
+      );
 
       // No effective change
-      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () =>
+        changeView(vp, view3d15.clone())
+      );
 
       // 3d => 3d - same model selector, same display style, different category selector
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view3d17.clone()));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.ViewedCategories,
+        ViewportState.Controller,
+        () => changeView(vp, view3d17.clone())
+      );
 
       // 3d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view2d20.clone()));
+      mon.expect(
+        ChangeFlag.ViewState |
+          ChangeFlag.ViewedCategories |
+          ChangeFlag.ViewedModels |
+          ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view2d20.clone())
+      );
 
       // Pass the exact same ViewState reference => no "ViewState changed" event.
       mon.expect(ChangeFlag.None, undefined, () => changeView(vp, vp.view));
@@ -639,27 +1099,49 @@ describe("Viewport changed events", async () => {
   });
 
   it("should be dispatched when modifying ViewState directly", async () => {
-    const view = await testBim.views.load("0x34") as SpatialViewState;
+    const view = (await testBim.views.load("0x34")) as SpatialViewState;
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
-      const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
+      const expectChange = (state: ViewportState, func: () => void) =>
+        mon.expect(ChangeFlag.None, state, func);
 
-      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.fromJSON([{
-        shape: {
-          points: [
-            [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0],
-          ],
-        },
-      }]));
+      expectChange(
+        ViewportState.RenderPlan,
+        () =>
+          (view.details.clipVector = ClipVector.fromJSON([
+            {
+              shape: {
+                points: [
+                  [0, 0, 0],
+                  [1, 0, 0],
+                  [1, 1, 0],
+                  [0, 0, 0],
+                ],
+              },
+            },
+          ]))
+      );
 
-      expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
-      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: () => Transform.createIdentity() });
+      expectChange(
+        ViewportState.Scene,
+        () =>
+          (view.details.modelClipGroups = new ModelClipGroups([
+            ModelClipGroup.fromJSON({ models: ["0x123"] }),
+          ]))
+      );
+      expectChange(
+        ViewportState.Scene,
+        () =>
+          (view.modelDisplayTransformProvider = {
+            getModelDisplayTransform: () => Transform.createIdentity(),
+          })
+      );
     });
   });
 
   it("should be dispatched to two views sharing the same display style", async () => {
-    const v1 = await testBim.views.load("0x34") as SpatialViewState;
+    const v1 = (await testBim.views.load("0x34")) as SpatialViewState;
     const v2 = v1.clone();
     v2.displayStyle = v1.displayStyle;
 
@@ -675,7 +1157,10 @@ describe("Viewport changed events", async () => {
     expect(vp.renderPlanValid).to.be.true;
     expect(vp2.renderPlanValid).to.be.true;
 
-    vp.viewFlags = vp.viewFlags.with("transparency", !vp.viewFlags.transparency);
+    vp.viewFlags = vp.viewFlags.with(
+      "transparency",
+      !vp.viewFlags.transparency
+    );
     expect(vp.renderPlanValid).to.be.false;
     expect(vp2.renderPlanValid).to.be.false;
 
@@ -694,7 +1179,10 @@ describe("Viewport changed events", async () => {
     subcats.onIModelConnectionClose();
 
     // View 0x17 views category 0x07 - expect subcategories already loaded by ViewState.load()
-    vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x17)));
+    vp = ScreenViewport.create(
+      viewDiv,
+      await testImodel.views.load(id64(0x17))
+    );
     expect(vp.view.viewsCategory(id64(0x07))).to.be.true;
     expect(subcats.getSubCategories(id64(0x07))).not.to.be.undefined;
 
@@ -717,8 +1205,7 @@ describe("Viewport changed events", async () => {
         await BeDuration.wait(250);
         let numLoaded = 0;
         for (const catId of Id64.iterable(catIds)) {
-          if (subcats.getSubCategories(catId) !== undefined)
-            ++numLoaded;
+          if (subcats.getSubCategories(catId) !== undefined) ++numLoaded;
         }
 
         if (0 !== numLoaded) {

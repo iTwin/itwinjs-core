@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/map-layers-formats__ Enables additional map-layers formats in iTwin.js
+The **@itwin/map-layers-formats** Enables additional map-layers formats in iTwin.js
 
 ## List of formats
 

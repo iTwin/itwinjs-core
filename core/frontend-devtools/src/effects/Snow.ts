@@ -10,7 +10,15 @@ import { dispose } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
 import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
+  DecorateContext,
+  Decorator,
+  GraphicType,
+  imageElementFromUrl,
+  IModelApp,
+  ParticleCollectionBuilder,
+  ParticleProps,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
@@ -80,12 +88,17 @@ export class SnowDecorator implements Decorator {
   private constructor(viewport: Viewport, texture: RenderTexture | undefined) {
     this._params = { ...defaultSnowParams };
     this.viewport = viewport;
-    this._dimensions = new Point2d(viewport.viewRect.width, viewport.viewRect.height);
+    this._dimensions = new Point2d(
+      viewport.viewRect.width,
+      viewport.viewRect.height
+    );
     this._lastUpdateTime = Date.now();
     this._texture = texture;
 
     // Tell the viewport to re-render the decorations every frame so that the snow particles animate smoothly.
-    const removeOnRender = viewport.onRender.addListener(() => viewport.invalidateDecorations());
+    const removeOnRender = viewport.onRender.addListener(() =>
+      viewport.invalidateDecorations()
+    );
 
     // When the viewport is resized, replace this decorator with a new one to match the new dimensions.
     const removeOnResized = viewport.onResized.addListener(() => {
@@ -97,7 +110,9 @@ export class SnowDecorator implements Decorator {
     });
 
     // When the viewport is destroyed, dispose of this decorator too.
-    const removeOnDispose = viewport.onDisposed.addListener(() => this.dispose());
+    const removeOnDispose = viewport.onDisposed.addListener(() =>
+      this.dispose()
+    );
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
 
     this.dispose = () => {
@@ -117,8 +132,7 @@ export class SnowDecorator implements Decorator {
   }
 
   public decorate(context: DecorateContext): void {
-    if (context.viewport !== this.viewport || !this._texture)
-      return;
+    if (context.viewport !== this.viewport || !this._texture) return;
 
     // Update the particles.
     const now = Date.now();
@@ -134,20 +148,17 @@ export class SnowDecorator implements Decorator {
       size: (this._params.sizeRange.high - this._params.sizeRange.low) / 2,
     });
 
-    for (const particle of this._particles)
-      builder.addParticle(particle);
+    for (const particle of this._particles) builder.addParticle(particle);
 
     const graphic = builder.finish();
-    if (graphic)
-      context.addDecoration(GraphicType.ViewOverlay, graphic);
+    if (graphic) context.addDecoration(GraphicType.ViewOverlay, graphic);
   }
 
   /** Change some of the parameters affecting this decorator. */
   public configure(params: Partial<SnowParams>): void {
     for (const key of Object.keys(params)) {
       const val = (params as any)[key];
-      if (undefined !== val)
-        (this._params as any)[key] = val;
+      if (undefined !== val) (this._params as any)[key] = val;
     }
   }
 
@@ -157,17 +168,32 @@ export class SnowDecorator implements Decorator {
       x: randomInteger(0, this._dimensions.x),
       y: randomizeHeight ? randomInteger(0, this._dimensions.y) : 0,
       z: 0,
-      size: randomInteger(this._params.sizeRange.low, this._params.sizeRange.high),
-      transparency: randomInteger(this._params.transparencyRange.low, this._params.transparencyRange.high),
-      velocity: new Vector2d(randomFloat(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
-        randomFloat(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
+      size: randomInteger(
+        this._params.sizeRange.low,
+        this._params.sizeRange.high
+      ),
+      transparency: randomInteger(
+        this._params.transparencyRange.low,
+        this._params.transparencyRange.high
+      ),
+      velocity: new Vector2d(
+        randomFloat(
+          this._params.velocityRange.low.x,
+          this._params.velocityRange.high.x
+        ),
+        randomFloat(
+          this._params.velocityRange.low.y,
+          this._params.velocityRange.high.y
+        )
+      ),
     };
   }
 
   // Update the positions and velocities of all the particles based on the amount of time that has passed since the last update.
   private updateParticles(elapsedSeconds: number): void {
     // Determine if someone changed the desired number of particles.
-    const particleDiscrepancy = this._params.numParticles - this._particles.length;
+    const particleDiscrepancy =
+      this._params.numParticles - this._particles.length;
     if (particleDiscrepancy > 0) {
       // Birth new particles up to the new maximum.
       for (let i = 0; i < particleDiscrepancy; i++)
@@ -182,8 +208,16 @@ export class SnowDecorator implements Decorator {
     for (let i = 0; i < this._particles.length; i++) {
       // Apply some acceleration to produce random drift.
       const particle = this._particles[i];
-      acceleration.set(randomFloat(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
-        randomFloat(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y));
+      acceleration.set(
+        randomFloat(
+          this._params.accelerationRange.low.x,
+          this._params.accelerationRange.high.x
+        ),
+        randomFloat(
+          this._params.accelerationRange.low.y,
+          this._params.accelerationRange.high.y
+        )
+      );
 
       acceleration.scale(elapsedSeconds, acceleration);
       particle.velocity.plus(acceleration, particle.velocity);
@@ -198,10 +232,8 @@ export class SnowDecorator implements Decorator {
       particle.x += this._params.windVelocity * elapsedSeconds;
 
       // Particles that travel beyond the viewport's left or right edges wrap around to the other side.
-      if (particle.x < 0)
-        particle.x = this._dimensions.x - 1;
-      else if (particle.x >= this._dimensions.x)
-        particle.x = 0;
+      if (particle.x < 0) particle.x = this._dimensions.x - 1;
+      else if (particle.x >= this._dimensions.x) particle.x = 0;
 
       // Particles that travel beyond the viewport's bottom or top edges are replaced by newborn particles.
       if (particle.y < 0 || particle.y >= this._dimensions.y)
@@ -215,17 +247,20 @@ export class SnowDecorator implements Decorator {
    * @param viewport The viewport to which the effect should be applied or removed.
    * @param enable `true` to enable the effect, `false` to disable it, or `undefined` to toggle the current state.
    */
-  public static async toggle(viewport: Viewport, enable?: boolean): Promise<void> {
+  public static async toggle(
+    viewport: Viewport,
+    enable?: boolean
+  ): Promise<void> {
     const decorator = this._decorators.get(viewport);
-    if (undefined === enable)
-      enable = undefined === decorator;
+    if (undefined === enable) enable = undefined === decorator;
 
-    if (undefined !== decorator && !enable)
-      decorator.dispose();
+    if (undefined !== decorator && !enable) decorator.dispose();
     else if (undefined === decorator && enable) {
       // Create a texture to use for the particles.
       // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-      const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_snow.png`);
+      const image = await imageElementFromUrl(
+        `${IModelApp.publicPath}sprites/particle_snow.png`
+      );
       const texture = IModelApp.renderSystem.createTexture({
         ownership: "external",
         image: { source: image, transparency: TextureTransparency.Mixed },
@@ -245,16 +280,14 @@ export class SnowEffect extends Tool {
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      await SnowDecorator.toggle(vp, enable);
+    if (vp) await SnowDecorator.toggle(vp, enable);
 
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      await this.run(enable);
+    if (typeof enable !== "string") await this.run(enable);
 
     return true;
   }

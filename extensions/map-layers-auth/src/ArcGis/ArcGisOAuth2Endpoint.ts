@@ -5,7 +5,10 @@
 import { MapLayerTokenEndpoint } from "@itwin/core-frontend";
 
 /** @internal */
-export enum ArcGisOAuth2EndpointType {Authorize,Token}
+export enum ArcGisOAuth2EndpointType {
+  Authorize,
+  Token,
+}
 
 /** @internal */
 export class ArcGisOAuth2Endpoint implements MapLayerTokenEndpoint {
@@ -34,16 +37,14 @@ export class ArcGisOAuth2Endpoint implements MapLayerTokenEndpoint {
     const urlObj = new URL(this._loginUrl);
 
     const data = {
-      endpointOrigin: new URL(this._url).origin,    // arcGisOAuth2Callback depends on this
-      customData: stateData,                        // caller's data
+      endpointOrigin: new URL(this._url).origin, // arcGisOAuth2Callback depends on this
+      customData: stateData, // caller's data
     };
 
     let stateStr;
     try {
       stateStr = JSON.stringify(data);
-    } catch {
-
-    }
+    } catch {}
     if (stateStr !== undefined) {
       urlObj.searchParams.set("state", stateStr);
     }
@@ -51,6 +52,7 @@ export class ArcGisOAuth2Endpoint implements MapLayerTokenEndpoint {
     return urlObj.toString();
   }
 
-  public get isArcgisOnline() {return this._isArcgisOnline;}
-
+  public get isArcgisOnline() {
+    return this._isArcgisOnline;
+  }
 }

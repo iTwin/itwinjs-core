@@ -6,11 +6,22 @@
  * @module Tiles
  */
 
-import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bentley";
+import {
+  assert,
+  base64StringToUint8Array,
+  IModelStatus,
+} from "@itwin/core-bentley";
 import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
-import { ReadonlyTileUserSet, Tile, TileContent, TileRequestChannel, TileTree, TileUser } from "./internal";
+import {
+  ReadonlyTileUserSet,
+  Tile,
+  TileContent,
+  TileRequestChannel,
+  TileTree,
+  TileUser,
+} from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
  * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
@@ -44,27 +55,31 @@ export class TileRequest {
   }
 
   /** The request's current state. */
-  public get state(): TileRequest.State { return this._state; }
+  public get state(): TileRequest.State {
+    return this._state;
+  }
 
   /** True if the request has been enqueued but not yet dispatched. */
-  public get isQueued() { return TileRequest.State.Queued === this._state; }
+  public get isQueued() {
+    return TileRequest.State.Queued === this._state;
+  }
 
   /** True if the request has been canceled. */
   public get isCanceled(): boolean {
     // If iModel was closed, cancel immediately
-    if (this.tile.iModel.tiles.isDisposed)
-      return true;
+    if (this.tile.iModel.tiles.isDisposed) return true;
 
     // After we've received the raw tile data, always finish processing it - otherwise tile may end up in limbo (and producing tile content should be faster than re-requesting raw data).
-    if (TileRequest.State.Loading === this._state)
-      return false;
+    if (TileRequest.State.Loading === this._state) return false;
 
     // If no user cares about this tile any more, we're canceled.
     return this.users.isEmpty;
   }
 
   /** The tile tree to which the requested [[Tile]] belongs. */
-  public get tree(): TileTree { return this.tile.tree; }
+  public get tree(): TileTree {
+    return this.tile.tree;
+  }
 
   /** Indicate that the specified user is awaiting the result of this request.
    * @internal
@@ -78,15 +93,17 @@ export class TileRequest {
    * @internal
    */
   public async dispatch(onHttpResponse: () => void): Promise<void> {
-    if (this.isCanceled)
-      return;
+    if (this.isCanceled) return;
 
     assert(this._state === TileRequest.State.Queued);
     this._state = TileRequest.State.Dispatched;
     let response;
     let gotResponse = false;
     try {
-      response = await this.channel.requestContent(this.tile, () => this.isCanceled);
+      response = await this.channel.requestContent(
+        this.tile,
+        () => this.isCanceled
+      );
       gotResponse = true;
 
       // Set this now, so our `isCanceled` check can see it.
@@ -106,8 +123,7 @@ export class TileRequest {
     // Notify caller that we have finished http activity.
     onHttpResponse();
 
-    if (!gotResponse || this.isCanceled)
-      return;
+    if (!gotResponse || this.isCanceled) return;
 
     if (undefined === response && this.channel.onNoContent(this)) {
       // Invalidate scene - if tile is re-selected, it will be re-requested - presumably via a different channel.
@@ -133,8 +149,7 @@ export class TileRequest {
   /** Invalidates the scene of each [[TileUser]] interested in this request - typically because the request succeeded, failed, or was canceled. */
   private notify(): void {
     this.users.forEach((user) => {
-      if (user.onRequestStateChanged)
-        user.onRequestStateChanged(this);
+      if (user.onRequestStateChanged) user.onRequestStateChanged(this);
     });
   }
 
@@ -159,15 +174,15 @@ export class TileRequest {
     if (undefined !== response) {
       if (typeof response === "string")
         data = base64StringToUint8Array(response);
-      else if (response instanceof Uint8Array || response instanceof ImageSource)
+      else if (
+        response instanceof Uint8Array ||
+        response instanceof ImageSource
+      )
         data = response;
-      else if (response instanceof ArrayBuffer)
-        data = new Uint8Array(response);
+      else if (response instanceof ArrayBuffer) data = new Uint8Array(response);
       else if (typeof response === "object") {
-        if ("content" in response)
-          content = response.content;
-        else if ("data" in response)
-          data = response;
+        if ("content" in response) content = response.content;
+        else if ("data" in response) data = response;
       }
     }
 
@@ -180,9 +195,12 @@ export class TileRequest {
       const start = Date.now();
       if (!content) {
         assert(undefined !== data);
-        content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
-        if (this.isCanceled)
-          return;
+        content = await this.tile.readContent(
+          data,
+          IModelApp.renderSystem,
+          () => this.isCanceled
+        );
+        if (this.isCanceled) return;
       }
 
       this._state = TileRequest.State.Completed;
@@ -196,13 +214,21 @@ export class TileRequest {
 }
 
 /** @public */
-export namespace TileRequest { // eslint-disable-line no-redeclare
+export namespace TileRequest {
+  // eslint-disable-line no-redeclare
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
    * [[Tile.requestContent]] produces a response of this type; it is then converted to a [[Tile.ResponseData]] from which [[Tile.readContent]]
    * can produce a [[RenderGraphic]].
    * @public
    */
-  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | { content: TileContent } | { data: any } | undefined;
+  export type Response =
+    | Uint8Array
+    | ArrayBuffer
+    | string
+    | ImageSource
+    | { content: TileContent }
+    | { data: any }
+    | undefined;
 
   /** The input to [[Tile.readContent]], to be converted into a [[RenderGraphic]].
    * @public

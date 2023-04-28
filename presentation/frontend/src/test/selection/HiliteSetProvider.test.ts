@@ -7,13 +7,25 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
+import {
+  Content,
+  DEFAULT_KEYS_BATCH_SIZE,
+  Item,
+  KeySet,
+} from "@itwin/presentation-common";
+import {
+  createRandomECInstanceKey,
+  createRandomTransientId,
+  createTestContentDescriptor,
+} from "@itwin/presentation-common/lib/cjs/test";
+import {
+  HiliteSetProvider,
+  Presentation,
+  PresentationManager,
+} from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 describe("HiliteSetProvider", () => {
-
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
 
@@ -28,17 +40,14 @@ describe("HiliteSetProvider", () => {
   });
 
   describe("create", () => {
-
     it("creates a new HiliteSetProvider instance", () => {
       const result = HiliteSetProvider.create({ imodel: imodelMock.object });
       expect(result).to.not.be.undefined;
       expect(result instanceof HiliteSetProvider).to.be.true;
     });
-
   });
 
   describe("getHiliteSet", () => {
-
     let provider: HiliteSetProvider;
 
     beforeEach(() => {
@@ -47,7 +56,9 @@ describe("HiliteSetProvider", () => {
 
     it("memoizes result", async () => {
       // note: listening on private method
-      const spy = sinon.stub(provider as any, "getRecords").returns(Promise.resolve([]));
+      const spy = sinon
+        .stub(provider as any, "getRecords")
+        .returns(Promise.resolve([]));
       const keys = new KeySet();
 
       await provider.getHiliteSet(keys);
@@ -65,9 +76,16 @@ describe("HiliteSetProvider", () => {
     });
 
     it("creates result for transient element keys", async () => {
-      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const transientKey = {
+        className: TRANSIENT_ELEMENT_CLASSNAME,
+        id: createRandomTransientId(),
+      };
 
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.isEmpty))).returns(async () => undefined);
+      presentationManagerMock
+        .setup(async (x) =>
+          x.getContent(moq.It.is((opts) => opts.keys.isEmpty))
+        )
+        .returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));
       expect(result.models).to.be.undefined;
@@ -78,11 +96,18 @@ describe("HiliteSetProvider", () => {
     it("creates result for persistent element keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
+      const resultContent = new Content(
+        createTestContentDescriptor({ fields: [] }),
+        [
+          new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
+        ]
+      );
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => resultContent);
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -93,11 +118,20 @@ describe("HiliteSetProvider", () => {
     it("creates result for model keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true }),
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
+      const resultContent = new Content(
+        createTestContentDescriptor({ fields: [] }),
+        [
+          new Item([resultKey], "", "", undefined, {}, {}, [], {
+            isModel: true,
+          }),
+        ]
+      );
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => resultContent);
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.deep.eq([resultKey.id]);
@@ -108,11 +142,20 @@ describe("HiliteSetProvider", () => {
     it("creates result for subcategory keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
+      const resultContent = new Content(
+        createTestContentDescriptor({ fields: [] }),
+        [
+          new Item([resultKey], "", "", undefined, {}, {}, [], {
+            isSubCategory: true,
+          }),
+        ]
+      );
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => resultContent);
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -123,55 +166,98 @@ describe("HiliteSetProvider", () => {
     it("creates combined result", async () => {
       // the handler asks selection manager for overall selection
       const persistentKey = createRandomECInstanceKey();
-      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const transientKey = {
+        className: TRANSIENT_ELEMENT_CLASSNAME,
+        id: createRandomTransientId(),
+      };
       const resultModelKey = createRandomECInstanceKey();
       const resultSubCategoryKey = createRandomECInstanceKey();
       const resultElementKey = createRandomECInstanceKey();
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultModelKey], "", "", undefined, {}, {}, [], { isModel: true }),
-        new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
-        new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
+      const resultContent = new Content(
+        createTestContentDescriptor({ fields: [] }),
+        [
+          new Item([resultModelKey], "", "", undefined, {}, {}, [], {
+            isModel: true,
+          }),
+          new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], {
+            isSubCategory: true,
+          }),
+          new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
+        ]
+      );
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => resultContent);
+      presentationManagerMock
+        .setup(async (x) => x.getContent(moq.It.isAny()))
+        .returns(async () => undefined);
 
-      const result = await provider.getHiliteSet(new KeySet([transientKey, persistentKey]));
+      const result = await provider.getHiliteSet(
+        new KeySet([transientKey, persistentKey])
+      );
       expect(result.models).to.deep.eq([resultModelKey.id]);
       expect(result.subCategories).to.deep.eq([resultSubCategoryKey.id]);
-      expect(result.elements).to.deep.eq([transientKey.id, resultElementKey.id]);
+      expect(result.elements).to.deep.eq([
+        transientKey.id,
+        resultElementKey.id,
+      ]);
     });
 
     it("requests content in batches when keys count exceeds max", async () => {
       // create a key set of such size that we need 3 content requests
       const inputKeys = new KeySet();
-      for (let i = 0; i < (2 * DEFAULT_KEYS_BATCH_SIZE + 1); ++i)
+      for (let i = 0; i < 2 * DEFAULT_KEYS_BATCH_SIZE + 1; ++i)
         inputKeys.add(createRandomECInstanceKey());
 
       // first request returns content with an element key
       const elementKey = createRandomECInstanceKey();
-      const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => resultContent1);
+      const resultContent1 = new Content(
+        createTestContentDescriptor({ fields: [] }),
+        [
+          new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
+        ]
+      );
+      presentationManagerMock
+        .setup(async (x) =>
+          x.getContent(
+            moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)
+          )
+        )
+        .returns(async () => resultContent1);
 
       // second request returns no content
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => undefined);
+      presentationManagerMock
+        .setup(async (x) =>
+          x.getContent(
+            moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE)
+          )
+        )
+        .returns(async () => undefined);
 
       // third request returns content with subcategory and model keys
       const subCategoryKey = createRandomECInstanceKey();
       const modelKey = createRandomECInstanceKey();
-      const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
-        new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === 1))).returns(async () => resultContent2);
+      const resultContent2 = new Content(
+        createTestContentDescriptor({ fields: [] }),
+        [
+          new Item([subCategoryKey], "", "", undefined, {}, {}, [], {
+            isSubCategory: true,
+          }),
+          new Item([modelKey], "", "", undefined, {}, {}, [], {
+            isModel: true,
+          }),
+        ]
+      );
+      presentationManagerMock
+        .setup(async (x) =>
+          x.getContent(moq.It.is((opts) => opts.keys.size === 1))
+        )
+        .returns(async () => resultContent2);
 
       const result = await provider.getHiliteSet(new KeySet(inputKeys));
       expect(result.models).to.deep.eq([modelKey.id]);
       expect(result.subCategories).to.deep.eq([subCategoryKey.id]);
       expect(result.elements).to.deep.eq([elementKey.id]);
     });
-
   });
-
 });

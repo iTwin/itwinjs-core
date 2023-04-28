@@ -113,7 +113,10 @@ export class AttributeMap {
     ]);
   }
 
-  public static findAttributeMap(techniqueId: TechniqueId | undefined, instanced: boolean): Map<string, AttributeDetails> {
+  public static findAttributeMap(
+    techniqueId: TechniqueId | undefined,
+    instanced: boolean
+  ): Map<string, AttributeDetails> {
     let entry = attributeMap._attrMaps.get(techniqueId);
     if (undefined === entry) {
       entry = attributeMap._attrMaps.get(undefined)!;
@@ -123,8 +126,14 @@ export class AttributeMap {
     return instanced ? entry.instanced : entry.uninstanced;
   }
 
-  public static findAttribute(attributeName: string, techniqueId: TechniqueId | undefined, instanced: boolean): AttributeDetails | undefined {
-    return AttributeMap.findAttributeMap(techniqueId, instanced).get(attributeName);
+  public static findAttribute(
+    attributeName: string,
+    techniqueId: TechniqueId | undefined,
+    instanced: boolean
+  ): AttributeDetails | undefined {
+    return AttributeMap.findAttributeMap(techniqueId, instanced).get(
+      attributeName
+    );
   }
 }
 

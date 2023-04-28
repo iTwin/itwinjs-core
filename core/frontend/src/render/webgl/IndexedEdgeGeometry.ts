@@ -11,7 +11,11 @@ import { RenderMode } from "@itwin/core-common";
 import { EdgeTable, IndexedEdgeParams } from "../primitives/EdgeParams";
 import { RenderMemory } from "../RenderMemory";
 import { TextureHandle } from "./Texture";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
+import {
+  BufferHandle,
+  BufferParameters,
+  BuffersContainer,
+} from "./AttributeBuffers";
 import { WebGLDisposable } from "./Disposable";
 import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
@@ -31,7 +35,11 @@ export class EdgeLUT implements WebGLDisposable {
   public readonly numSegments: number;
   public readonly silhouettePadding: number;
 
-  private constructor(texture: TextureHandle, numSegments: number, silhouettePadding: number) {
+  private constructor(
+    texture: TextureHandle,
+    numSegments: number,
+    silhouettePadding: number
+  ) {
     this.texture = texture;
     this.numSegments = numSegments;
     this.silhouettePadding = silhouettePadding;
@@ -42,8 +50,14 @@ export class EdgeLUT implements WebGLDisposable {
   }
 
   public static create(table: EdgeTable): EdgeLUT | undefined {
-    const texture = TextureHandle.createForData(table.width, table.height, table.data);
-    return texture ? new EdgeLUT(texture, table.numSegments, table.silhouettePadding) : undefined;
+    const texture = TextureHandle.createForData(
+      table.width,
+      table.height,
+      table.data
+    );
+    return texture
+      ? new EdgeLUT(texture, table.numSegments, table.silhouettePadding)
+      : undefined;
   }
 
   public get bytesUsed(): number {
@@ -63,16 +77,39 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
   public readonly edgeLut: EdgeLUT;
 
-  public get lutBuffers() { return this._buffers; }
-  public override get asIndexedEdge() { return this; }
+  public get lutBuffers() {
+    return this._buffers;
+  }
+  public override get asIndexedEdge() {
+    return this;
+  }
 
-  private constructor(mesh: MeshData, indices: BufferHandle, numIndices: number, lut: EdgeLUT) {
+  private constructor(
+    mesh: MeshData,
+    indices: BufferHandle,
+    numIndices: number,
+    lut: EdgeLUT
+  ) {
     super(mesh, numIndices);
     this.edgeLut = lut;
     this._buffers = BuffersContainer.create();
-    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.IndexedEdge, false);
+    const attrPos = AttributeMap.findAttribute(
+      "a_pos",
+      TechniqueId.IndexedEdge,
+      false
+    );
     assert(undefined !== attrPos);
-    this._buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this._buffers.addBuffer(indices, [
+      BufferParameters.create(
+        attrPos.location,
+        3,
+        GL.DataType.UnsignedByte,
+        false,
+        0,
+        0,
+        false
+      ),
+    ]);
     this._indices = indices;
   }
 
@@ -83,13 +120,22 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   }
 
   public get isDisposed(): boolean {
-    return this._buffers.isDisposed && this._indices.isDisposed && this.edgeLut.isDisposed;
+    return (
+      this._buffers.isDisposed &&
+      this._indices.isDisposed &&
+      this.edgeLut.isDisposed
+    );
   }
 
-  public static create(mesh: MeshData, params: IndexedEdgeParams): IndexedEdgeGeometry | undefined {
+  public static create(
+    mesh: MeshData,
+    params: IndexedEdgeParams
+  ): IndexedEdgeGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(params.indices.data);
     const lut = EdgeLUT.create(params.edges);
-    return indexBuffer && lut ? new IndexedEdgeGeometry(mesh, indexBuffer, params.indices.length, lut) : undefined;
+    return indexBuffer && lut
+      ? new IndexedEdgeGeometry(mesh, indexBuffer, params.indices.length, lut)
+      : undefined;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -100,16 +146,35 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   protected _draw(numInstances: number, instances?: BuffersContainer): void {
     const bufs = instances ?? this._buffers;
     bufs.bind();
-    System.instance.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
+    System.instance.drawArrays(
+      GL.PrimitiveType.Triangles,
+      0,
+      this._numIndices,
+      numInstances
+    );
     bufs.unbind();
   }
 
-  protected _wantWoWReversal(): boolean { return true; }
-  protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  protected _wantWoWReversal(): boolean {
+    return true;
+  }
+  protected override _getLineCode(params: ShaderProgramParams): number {
+    return this.computeEdgeLineCode(params);
+  }
 
-  public get techniqueId() { return TechniqueId.IndexedEdge; }
-  public override getPass(target: Target) { return this.computeEdgePass(target); }
-  public get renderOrder() { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
-  public override getColor(target: Target) { return this.computeEdgeColor(target); }
-  public override wantMonochrome(target: Target) { return target.currentViewFlags.renderMode === RenderMode.Wireframe; }
+  public get techniqueId() {
+    return TechniqueId.IndexedEdge;
+  }
+  public override getPass(target: Target) {
+    return this.computeEdgePass(target);
+  }
+  public get renderOrder() {
+    return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge;
+  }
+  public override getColor(target: Target) {
+    return this.computeEdgeColor(target);
+  }
+  public override wantMonochrome(target: Target) {
+    return target.currentViewFlags.renderMode === RenderMode.Wireframe;
+  }
 }

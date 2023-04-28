@@ -10,12 +10,12 @@ This document describes the high-level capabilities of iTwin.js so you can deter
 
 Not all capabilities are at the same maturity level, the key below explains the levels.
 
-| Value | Meaning
-| ----- | -----------
-| ✔️️ | Released (public)
-| 👷| Under active development (alpha / beta)
-| 🎫 | Future (planned)
-| ❌ | Not supported
+| Value | Meaning                                 |
+| ----- | --------------------------------------- |
+| ✔️️   | Released (public)                       |
+| 👷    | Under active development (alpha / beta) |
+| 🎫    | Future (planned)                        |
+| ❌    | Not supported                           |
 
 ## Opening iModels
 
@@ -103,7 +103,7 @@ Control the appearance of geometry displayed in Viewports.
 
 ### View Decorations
 
-Display [application-generated graphics](./frontend/ViewDecorations.md) that *decorate* a Viewport with additional information. Decorations may be updated continuously and can reflect *real-time* status. Decorations may also respond to mouse and touch events.
+Display [application-generated graphics](./frontend/ViewDecorations.md) that _decorate_ a Viewport with additional information. Decorations may be updated continuously and can reflect _real-time_ status. Decorations may also respond to mouse and touch events.
 
 There are 3 types of View Decorations, and they may exist in any combination in a single view:
 
@@ -113,10 +113,10 @@ There are 3 types of View Decorations, and they may exist in any combination in 
 
 ### Markers
 
-Are convenient wrappers around View Decorations that show visible, interactive, indications of locations of interest at a *fixed location in world coordinates*. As the camera moves, Markers follow their location.
+Are convenient wrappers around View Decorations that show visible, interactive, indications of locations of interest at a _fixed location in world coordinates_. As the camera moves, Markers follow their location.
 
-- ✔️️ [Markers](./frontend/markers.md) may contain *shared* or unique content
-- ✔️️ [MarkerSets](./frontend/markers.md#markersets) combine sets of related Markers together, such that ones that would visually overlap instead form a *cluster*
+- ✔️️ [Markers](./frontend/markers.md) may contain _shared_ or unique content
+- ✔️️ [MarkerSets](./frontend/markers.md#markersets) combine sets of related Markers together, such that ones that would visually overlap instead form a _cluster_
 
 ### WebGL Rendering Techniques
 
@@ -131,7 +131,7 @@ Render 2d and 3d content into a Viewport using WebGL.
   - Monochrome
   - Hidden line
 - ✔️️ Visible and hidden edge display
-- ✔️️ Customizable *highlight effect* with silhouettes
+- ✔️️ Customizable _highlight effect_ with silhouettes
 
 ### Tile formats
 
@@ -179,14 +179,14 @@ Default implementations of useful tools:
 Assistants for Tools to find existing geometry and for creating new geometry:
 
 - ✔️️ [AccuSnap](./frontend/primitivetools.md#accusnap) automatically finds elements and locations of interest on elements under the cursor.
-- ✔️️ [Tentative Point](./frontend/primitivetools.md#snapping) performs finds element in response to a *tentative button* press
+- ✔️️ [Tentative Point](./frontend/primitivetools.md#snapping) performs finds element in response to a _tentative button_ press
 - ✔️️ [AccuDraw](./frontend/primitivetools.md#accudraw) defines a work plane to aide entering coordinates
 
 ## Synchronizing data into iModels
 
 Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
-[iModel Connectors](.\imodel-connectors.md) read data from external formats and *connect* it into an iModel. They create ChangeSets that are sent to iModelHub.
+[iModel Connectors](.\imodel-connectors.md) read data from external formats and _connect_ it into an iModel. They create ChangeSets that are sent to iModelHub.
 
 ## User Preferences
 

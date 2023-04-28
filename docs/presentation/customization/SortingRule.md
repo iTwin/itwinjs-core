@@ -17,13 +17,13 @@ instances are first sorted by the highest priority rule and then the lower prior
 
 | Name                                            | Required? | Type                                                                     | Default                        |
 | ----------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------------------------------ |
-| *Filtering*                                     |
+| _Filtering_                                     |
 | [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`                           |
 | [`priority`](#attribute-priority)               | No        | `number`                                                                 | `1000`                         |
 | [`condition`](#attribute-condition)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)           | `""`                           |
 | [`class`](#attribute-class)                     | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) | All classes in current context |
 | [`isPolymorphic`](#attribute-ispolymorphic)     | No        | `boolean`                                                                | `false`                        |
-| *Sorting*                                       |
+| _Sorting_                                       |
 | [`propertyName`](#attribute-propertyname)       | Yes       | `string`                                                                 |                                |
 | [`sortAscending`](#attribute-sortascending)     | No        | `boolean`                                                                | `true`                         |
 
@@ -160,7 +160,7 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 
 | Name                                              | Required? | Type                                                                     | Default                        |
 | ------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------------------------------ |
-| *Filtering*                                       |
+| _Filtering_                                       |
 | [`requiredSchemas`](#attribute-requiredschemas-1) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`                           |
 | [`priority`](#attribute-priority-1)               | No        | `number`                                                                 | `1000`                         |
 | [`condition`](#attribute-condition-1)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)           | `""`                           |

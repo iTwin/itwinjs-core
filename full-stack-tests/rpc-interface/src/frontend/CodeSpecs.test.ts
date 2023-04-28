@@ -16,8 +16,7 @@ describe("Get Code Specs", () => {
   before(async function () {
     testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
   });
 
   const existing = {
@@ -26,8 +25,12 @@ describe("Get Code Specs", () => {
   };
 
   /** verify that given codespec has expected properties */
-  function verifyCodeSpec(codeSpec: CodeSpec, requestedIModel: IModelConnection, requestedName: string, requestedId: string) {
-
+  function verifyCodeSpec(
+    codeSpec: CodeSpec,
+    requestedIModel: IModelConnection,
+    requestedName: string,
+    requestedId: string
+  ) {
     expect(codeSpec).to.exist;
 
     expect(codeSpec.id).to.exist;

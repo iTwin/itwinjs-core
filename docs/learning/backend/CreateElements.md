@@ -2,7 +2,7 @@
 
 Use [IModelDb.Elements.insertElement]($backend) to insert a new element into an IModelDb. This method takes as its input an [ElementProps]($common) or a subclass of it, which defines the class and all required properties of the new element. The pattern is:
 
-``` ts
+```ts
 const elementProps: SomeBisClassProps = {
   classFullName: bisFullClassName
   ... other required props ...
@@ -32,7 +32,7 @@ See [Subject.insert]($backend)
 
 ## GeometricElement3d
 
-``` ts
+```ts
 [[include:Element.createGeometricElement3d.example-code]]
 ```
 
@@ -40,7 +40,7 @@ See [GeometricElement3dProps]($common).
 
 where:
 
-``` ts
+```ts
 [[include:GeometryStreamBuilder.example-code]]
 ```
 

@@ -2,7 +2,7 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": "./lib",
+    "outDir": "./lib"
   },
   "include": ["./build*.ts"]
 }

@@ -18,7 +18,9 @@ describe("RobotWorld", () => {
   it("should run robotworld", async () => {
     await RobotWorldEngine.initialize();
 
-    const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
+    const iModelFile = IModelTestUtils.prepareOutputFile(
+      "should-run-robotworld.bim"
+    );
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
     IModelJsFs.copySync(seedFile, iModelFile);
     const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
@@ -26,7 +28,9 @@ describe("RobotWorld", () => {
 
     try {
       RobotWorldEngine.countRobots(iModel);
-      assert.fail("RobotWorldEngine.countRobots should throw because the schema is not loaded yet");
+      assert.fail(
+        "RobotWorldEngine.countRobots should throw because the schema is not loaded yet"
+      );
     } catch (err) {
       // expect countRobots to fail
     }
@@ -34,9 +38,17 @@ describe("RobotWorld", () => {
     await RobotWorld.importSchema(iModel);
     iModel.saveChanges();
 
-    assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");
+    assert.equal(
+      RobotWorldEngine.countRobots(iModel),
+      0,
+      "no Robots should be found in the empty iModel at first"
+    );
 
-    const modelId: Id64String = PhysicalModel.insert(iModel, IModel.rootSubjectId, "RobotWorld");
+    const modelId: Id64String = PhysicalModel.insert(
+      iModel,
+      IModel.rootSubjectId,
+      "RobotWorld"
+    );
 
     //  Initial placement: Robot1 is not touching any barrier (or other robot)
     //
@@ -48,9 +60,26 @@ describe("RobotWorld", () => {
     //  |                   |
     //  |R1                 V
     //  +-- -- -- -- -- -- --
-    const robot1Id = RobotWorldEngine.insertRobot(iModel, modelId, "r1", Point3d.create(0, 0, 0));
-    const barrier1Id = RobotWorldEngine.insertBarrier(iModel, modelId, Point3d.create(0, 5, 0), Angle.createDegrees(0), 5);
-    const barrier2Id = RobotWorldEngine.insertBarrier(iModel, modelId, Point3d.create(5, 0, 0), Angle.createDegrees(90), 5);
+    const robot1Id = RobotWorldEngine.insertRobot(
+      iModel,
+      modelId,
+      "r1",
+      Point3d.create(0, 0, 0)
+    );
+    const barrier1Id = RobotWorldEngine.insertBarrier(
+      iModel,
+      modelId,
+      Point3d.create(0, 5, 0),
+      Angle.createDegrees(0),
+      5
+    );
+    const barrier2Id = RobotWorldEngine.insertBarrier(
+      iModel,
+      modelId,
+      Point3d.create(5, 0, 0),
+      Angle.createDegrees(90),
+      5
+    );
     iModel.saveChanges();
 
     const barrier1 = iModel.elements.getElement<Barrier>(barrier1Id);
@@ -75,8 +104,14 @@ describe("RobotWorld", () => {
     if (true) {
       RobotWorldEngine.moveRobot(iModel, robot1Id, barrier1.placement.origin);
       iModel.saveChanges();
-      assert.deepEqual(iModel.elements.getElement<Robot>(robot1Id).placement.origin, barrier1.placement.origin);
-      const barriersHit = RobotWorldEngine.queryObstaclesHitByRobot(iModel, robot1Id);
+      assert.deepEqual(
+        iModel.elements.getElement<Robot>(robot1Id).placement.origin,
+        barrier1.placement.origin
+      );
+      const barriersHit = RobotWorldEngine.queryObstaclesHitByRobot(
+        iModel,
+        robot1Id
+      );
       assert.equal(barriersHit.length, 1, "expect a collision");
       assert.deepEqual(barriersHit[0], barrier1.id.toString());
     }

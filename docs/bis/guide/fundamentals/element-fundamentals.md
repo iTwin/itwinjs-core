@@ -4,7 +4,7 @@ A BIS `Element` represents an entity in the real world, e.g. pumps, beams, contr
 
 ## BIS Element Properties
 
-The properties of an element are defined in its [Schema](./schemas-domains.md). Every Element in BIS derives from the `Element` class. This section describes the properties of the Element class, and therefore the properties that *every* Element in an iModel has.
+The properties of an element are defined in its [Schema](./schemas-domains.md). Every Element in BIS derives from the `Element` class. This section describes the properties of the Element class, and therefore the properties that _every_ Element in an iModel has.
 
 ### CodeSpec
 
@@ -20,11 +20,11 @@ See [CodeValue](./codes.md#codevalue-property)
 
 ### FederationGuid
 
-Every BIS `Element` has an optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) called `FederationGuid`. It is really identifying the real-world Entity that the Element represents, not the Element itself. Generally it is intended that FederationGuid are assigned by external systems to *federate* Elements to their external meaning.
+Every BIS `Element` has an optional 128 bit [Globally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) called `FederationGuid`. It is really identifying the real-world Entity that the Element represents, not the Element itself. Generally it is intended that FederationGuid are assigned by external systems to _federate_ Elements to their external meaning.
 
 ### UserLabel
 
-Every BIS `Element` has an optional `UserLabel` property, to provide an *alias* familiar to the user.
+Every BIS `Element` has an optional `UserLabel` property, to provide an _alias_ familiar to the user.
 The UserLabel may serve an alternate “friendlier” name in a GUI, e.g. the Room with `CodeValue`="R-134" might have `UserLabel`=”The Big Kitchen” or `UserLabel`=”John’s Office”.
 There is no uniqueness constraint placed on the `UserLabel`.
 
@@ -32,11 +32,11 @@ With the exception of data conversion programs, the UserLabel is always left for
 
 ### JsonProperties
 
-The `JsonProperties` member holds instance-specific *ad hoc* data on an Element in JSON format. It is a dictionary of key-value pairs, where the key is a *namespace* (see below) and the value is a JSON object. In this manner the `JsonProperties` member can hold any form and complexity of externally-defined (i.e. outside of BIS) data on any element.
+The `JsonProperties` member holds instance-specific _ad hoc_ data on an Element in JSON format. It is a dictionary of key-value pairs, where the key is a _namespace_ (see below) and the value is a JSON object. In this manner the `JsonProperties` member can hold any form and complexity of externally-defined (i.e. outside of BIS) data on any element.
 
-To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for *namespaces*. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters).
+To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for _namespaces_. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters).
 
-> Note: all JSON property names, and therefore namespaces, are *case sensitive*.
+> Note: all JSON property names, and therefore namespaces, are _case sensitive_.
 
 #### The `UserProps` namespace
 
@@ -81,7 +81,7 @@ The largest advantage of JSON properties is that they do not require any schema 
 
 ## Elements and Models
 
-Each Element *lives in* a single Model. That Model *contains* and *owns* the Element. Models cannot be deleted unless all of their Elements are first deleted. Models provide context and scope for their Elements.
+Each Element _lives in_ a single Model. That Model _contains_ and _owns_ the Element. Models cannot be deleted unless all of their Elements are first deleted. Models provide context and scope for their Elements.
 
 Every `Model` sub-models some `Element`, meaning that it models the same subject as the `Element`, but at a finer granularity. This is the basic building block of the [Information Hierarchy](../data-organization/information-hierarchy.md), which is a key principle of BIS and supports modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single [Root Subject](../references/glossary.md#subject-root) for the entire BIS Repository.
 
@@ -89,7 +89,7 @@ There is one exception to the “Every Model sub-models an Element” rule: Ther
 
 ## ElementIds in iModels
 
-When stored in an iModel, Elements also have a unique 64-bit *local* identifier, called an ElementId. ElementId is generated when new Elements are created by storing the BriefcaseId in the high 24 bits, with the next-available sequence number in the lower 40 bits. This allows new Elements to be created in any Briefcase without fear of ElementId collision.
+When stored in an iModel, Elements also have a unique 64-bit _local_ identifier, called an ElementId. ElementId is generated when new Elements are created by storing the BriefcaseId in the high 24 bits, with the next-available sequence number in the lower 40 bits. This allows new Elements to be created in any Briefcase without fear of ElementId collision.
 
 A BriefcaseId is the unique identifier assigned to a Briefcase. A [Briefcase](../../../learning/Glossary.md#Briefcase) is a SQLite database that holds all the information of one version of an iModel in a queryable and editable form.
 
@@ -130,7 +130,7 @@ Brief descriptions for the classes in the 2d branch are:
 Brief descriptions for the classes in the 3d branch are:
 
 - `GeometricElement3d` – An Element that is inherently 3d in nature.
-- `GraphicalElement3d` – A 3d Element that holds graphical information rather than geometry that has business meaning. Examples include text annotations or 3d bar charts. Instances of `GraphicalElement3d` are typically positioned for *whitespace* reasons since they are not tied to real-world 3d space.
+- `GraphicalElement3d` – A 3d Element that holds graphical information rather than geometry that has business meaning. Examples include text annotations or 3d bar charts. Instances of `GraphicalElement3d` are typically positioned for _whitespace_ reasons since they are not tied to real-world 3d space.
 - `SpatialElement` – An Element representing an entity that exists in and is relevant to real-world 3d space.
 - `PhysicalElement` – A SpatialElement representing a real physical entity, i.e. one that has mass.
 - `SpatialLocationElement` – A SpatialElement representing some defined point, curve, surface, or volume in the real world. Spatial locations are not physical, and have no mass. Examples include a property line, a zoning envelope, an alignment, or a gridline.
@@ -139,7 +139,7 @@ Brief descriptions for the classes in the 3d branch are:
 
 <!-- TODO: More needed here... -->
 
-An `InformationContentElement` is an Element that exists to carry and track information.  Information Elements are inherently non-geometric and cannot be graphically displayed, but can contain geometric properties (for definition or specification purposes).
+An `InformationContentElement` is an Element that exists to carry and track information. Information Elements are inherently non-geometric and cannot be graphically displayed, but can contain geometric properties (for definition or specification purposes).
 
 Examples include:
 
@@ -153,7 +153,7 @@ Examples include:
 ![Information Element](../media/information-element.png)
 &nbsp;
 
-See [Information Models and Elements](../other-perspectives/information-models-and-elements.md) for details about  `InformationContentElement` sub-classes in BisCore.
+See [Information Models and Elements](../other-perspectives/information-models-and-elements.md) for details about `InformationContentElement` sub-classes in BisCore.
 
 ### RoleElement
 
@@ -185,7 +185,7 @@ In our virtual world, roles can get “out of sync” with the PhysicalElements,
 
 ## Assemblies
 
-An Element can optionally have a *parent* Element. Parent Elements must be in the same Model as their children. A hierarchy of Elements can be created through these parent-child relationships (note: all the Elements in a hierarchy will reside in the same Model). An Element that is a parent can be considered to *assemble* its children and, collectively, they are termed an *Assembly*. Assemblies can nest. Circular networks of parent-child relationship are not allowed.
+An Element can optionally have a _parent_ Element. Parent Elements must be in the same Model as their children. A hierarchy of Elements can be created through these parent-child relationships (note: all the Elements in a hierarchy will reside in the same Model). An Element that is a parent can be considered to _assemble_ its children and, collectively, they are termed an _Assembly_. Assemblies can nest. Circular networks of parent-child relationship are not allowed.
 
 Assemblies imply ownership and cascading deletes. When a parent Element is deleted, all of its children are deleted as well.
 
@@ -230,11 +230,11 @@ Examples include:
 
 - `PhysicalElementAssemblesElements` – used to indicate that the child Elements are aggregated into the parent Element, whose geometry is entirely an aggregation.
 - `ElementEncapsulatesChildElements` – used when the child Elements represent internal data that is not typically exposed to user or useful outside of the parent Element’s context.
-- `SubjectOwnsSubjects`, `SubjectOwnsPartitionElements` - these relationships are used to constrain the set of Elements that are valid *children* of a `Subject` Element.
+- `SubjectOwnsSubjects`, `SubjectOwnsPartitionElements` - these relationships are used to constrain the set of Elements that are valid _children_ of a `Subject` Element.
 
 ## Groups
 
-While parent-child relationships are of *embedding* strength and imply exclusive ownership, grouping relationships are of *referencing* strength and imply non-exclusive membership.
+While parent-child relationships are of _embedding_ strength and imply exclusive ownership, grouping relationships are of _referencing_ strength and imply non-exclusive membership.
 
 The grouping technique will vary depending on whether grouping a collection of member Elements is:
 
@@ -258,5 +258,6 @@ Element->ElementAspect
 -->
 
 ---
+
 | Next: [Codes](./codes.md)
 |:---

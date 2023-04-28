@@ -50,25 +50,21 @@
   ],
   "json.schemas": [
     {
-      "fileMatch": [
-        "certa.json"
-      ],
+      "fileMatch": ["certa.json"],
       "url": "./tools/certa/certa.schema.json"
-    },
+    }
   ],
   "markdownlint.config": {
     "MD024": {
       "allow_different_nesting": true
-    },
+    }
   },
-  "markdownlint.ignore": [
-    "**/CHANGELOG.md"
-  ],
+  "markdownlint.ignore": ["**/CHANGELOG.md"],
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
-    "typescriptreact",
+    "typescriptreact"
   ],
   "eslint.workingDirectories": [
     {

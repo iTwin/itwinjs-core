@@ -84,10 +84,8 @@ export class XYParitySearchContext {
         this.numHit++;
         return false;
       }
-      if (uCross > 0)
-        this.numRightCrossing++;
-      else
-        this.numLeftCrossing++;
+      if (uCross > 0) this.numRightCrossing++;
+      else this.numLeftCrossing++;
       this.u0 = this.u1;
       this.v0 = this.v1;
       this.u1 = u;
@@ -120,11 +118,9 @@ export class XYParitySearchContext {
     // any along-0 v values that have passed through are on the same side of xTest, so u1 determines crossing
     const q = this.v0 * v;
     if (this.u1 > 0) {
-      if (q < 0)
-        this.numRightCrossing++;
+      if (q < 0) this.numRightCrossing++;
     } else {
-      if (q < 0)
-        this.numLeftCrossing++;
+      if (q < 0) this.numLeftCrossing++;
     }
     this.u0 = this.u1;
     this.v0 = this.v1;
@@ -139,9 +135,8 @@ export class XYParitySearchContext {
    * @return 0 if ON, 1 if IN, -1 if OUT
    */
   public classifyCounts(): number | undefined {
-    if (this.numHit > 0)
-      return 0;
+    if (this.numHit > 0) return 0;
     const parity = this.numLeftCrossing & 0x01;
-    return (parity === 1) ? 1 : -1;
+    return parity === 1 ? 1 : -1;
   }
 }

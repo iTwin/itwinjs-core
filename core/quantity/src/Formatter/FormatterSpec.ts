@@ -6,7 +6,12 @@
  * @module Quantity
  */
 
-import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import {
+  UnitConversionProps,
+  UnitConversionSpec,
+  UnitProps,
+  UnitsProvider,
+} from "../Interfaces";
 import { Format } from "./Format";
 import { Formatter } from "./Formatter";
 
@@ -19,7 +24,7 @@ import { Formatter } from "./Formatter";
  */
 export class FormatterSpec {
   protected _name: string;
-  protected _conversions: UnitConversionSpec[] = [];  // max four entries
+  protected _conversions: UnitConversionSpec[] = []; // max four entries
   protected _format: Format;
   protected _persistenceUnit: UnitProps;
 
@@ -29,31 +34,49 @@ export class FormatterSpec {
    *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format.
    *  @param persistenceUnit The unit the magnitude value is input.
    */
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
+  constructor(
+    name: string,
+    format: Format,
+    conversions?: UnitConversionSpec[],
+    persistenceUnit?: UnitProps
+  ) {
     if (!persistenceUnit) {
       if (format.units) {
         const [props] = format.units[0];
         persistenceUnit = props;
       } else {
-        throw new Error("Formatter Spec needs persistence unit to be specified");
+        throw new Error(
+          "Formatter Spec needs persistence unit to be specified"
+        );
       }
     }
 
     this._name = name;
     this._format = format;
     this._persistenceUnit = persistenceUnit;
-    if (conversions)
-      this._conversions = conversions;
+    if (conversions) this._conversions = conversions;
   }
 
-  public get name(): string { return this._name; }
+  public get name(): string {
+    return this._name;
+  }
   /** Returns an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
-  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  public get format(): Format { return this._format; }
-  public get persistenceUnit(): UnitProps { return this._persistenceUnit; }
+  public get unitConversions(): UnitConversionSpec[] {
+    return this._conversions;
+  }
+  public get format(): Format {
+    return this._format;
+  }
+  public get persistenceUnit(): UnitProps {
+    return this._persistenceUnit;
+  }
 
   /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
-  public static async getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]> {
+  public static async getUnitConversions(
+    format: Format,
+    unitsProvider: UnitsProvider,
+    inputUnit?: UnitProps
+  ): Promise<UnitConversionSpec[]> {
     const conversions: UnitConversionSpec[] = [];
     let persistenceUnit = inputUnit;
     if (!persistenceUnit) {
@@ -61,7 +84,9 @@ export class FormatterSpec {
         const [props] = format.units[0];
         persistenceUnit = props;
       } else {
-        throw new Error("Formatter Spec needs persistence unit to be specified");
+        throw new Error(
+          "Formatter Spec needs persistence unit to be specified"
+        );
       }
     }
 
@@ -70,12 +95,21 @@ export class FormatterSpec {
       for (const unit of format.units) {
         let unitConversion: UnitConversionProps;
         if (convertFromUnit) {
-          unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
+          unitConversion = await unitsProvider.getConversion(
+            convertFromUnit,
+            unit[0]
+          );
         } else {
           unitConversion = { factor: 1.0, offset: 0.0 };
         }
-        const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion, system: unit[0].system }) as UnitConversionSpec;
+        const unitLabel =
+          unit[1] && unit[1]!.length > 0 ? unit[1]! : unit[0].label;
+        const spec = {
+          name: unit[0].name,
+          label: unitLabel,
+          conversion: unitConversion,
+          system: unit[0].system,
+        } as UnitConversionSpec;
 
         conversions.push(spec);
         convertFromUnit = unit[0];
@@ -83,7 +117,12 @@ export class FormatterSpec {
     } else {
       // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
       if (inputUnit) {
-        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, system: inputUnit.system, conversion: { factor: 1.0, offset: 0.0 } };
+        const spec: UnitConversionSpec = {
+          name: inputUnit.name,
+          label: inputUnit.label,
+          system: inputUnit.system,
+          conversion: { factor: 1.0, offset: 0.0 },
+        };
         conversions.push(spec);
       }
     }
@@ -98,8 +137,14 @@ export class FormatterSpec {
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
    */
-  public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
-    const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
+  public static async create(
+    name: string,
+    format: Format,
+    unitsProvider: UnitsProvider,
+    inputUnit?: UnitProps
+  ): Promise<FormatterSpec> {
+    const conversions: UnitConversionSpec[] =
+      await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
     return new FormatterSpec(name, format, conversions, inputUnit);
   }
 

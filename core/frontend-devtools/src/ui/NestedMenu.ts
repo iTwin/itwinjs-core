@@ -32,7 +32,8 @@ export interface NestedMenu {
 /** @alpha */
 export function createNestedMenu(props: NestedMenuProps): NestedMenu {
   const div = document.createElement("div");
-  const body = undefined !== props.body ? props.body : document.createElement("div");
+  const body =
+    undefined !== props.body ? props.body : document.createElement("div");
   const header = document.createElement("div");
 
   div.appendChild(header);
@@ -57,18 +58,15 @@ export function createNestedMenu(props: NestedMenuProps): NestedMenu {
     isExpanded = !isExpanded;
     body.style.display = isExpanded ? "block" : "none";
     toggleMenuButton.button.value = isExpanded ? "-" : "+";
-    if (undefined !== props.handler)
-      props.handler(isExpanded);
+    if (undefined !== props.handler) props.handler(isExpanded);
   };
 
   toggleMenuButton.div.style.cssFloat = "right";
 
   header.appendChild(document.createElement("hr"));
 
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
-  if (undefined !== props.id)
-    div.id = props.id;
+  if (undefined !== props.parent) props.parent.appendChild(div);
+  if (undefined !== props.id) div.id = props.id;
 
   return { body, label, div };
 }

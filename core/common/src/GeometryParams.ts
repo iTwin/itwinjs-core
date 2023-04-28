@@ -126,7 +126,10 @@ export class GeometryParams {
    * by adding a [[GeometryAppearanceProps]] with a SubCategory change to the GeometryStream.
    * @note If a valid SubCategory Id is not supplied, the default SubCategory for the parent Category is used. To be considered valid, [[SubCategory.getCategoryId]] must refer to the specified Category Id.
    */
-  constructor(public categoryId: Id64String, public subCategoryId = Id64.invalid) {
+  constructor(
+    public categoryId: Id64String,
+    public subCategoryId = Id64.invalid
+  ) {
     if (!Id64.isValid(subCategoryId))
       this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
   }
@@ -168,52 +171,46 @@ export class GeometryParams {
 
   /** Compare two [[GeometryParams]] for equivalence, i.e. both values are undefined and inherited from [[SubCategoryAppearance]] or have the same override. */
   public isEquivalent(other: GeometryParams): boolean {
-    if (this === other)
-      return true; // Same pointer
+    if (this === other) return true; // Same pointer
 
-    if (this.categoryId !== other.categoryId)
-      return false;
-    if (this.subCategoryId !== other.subCategoryId)
-      return false;
-    if (this.geometryClass !== other.geometryClass)
-      return false;
+    if (this.categoryId !== other.categoryId) return false;
+    if (this.subCategoryId !== other.subCategoryId) return false;
+    if (this.geometryClass !== other.geometryClass) return false;
 
-    if (this.elmPriority !== other.elmPriority)
-      return false;
-    if (this.elmTransparency !== other.elmTransparency)
-      return false;
-    if (this.fillTransparency !== other.fillTransparency)
-      return false;
+    if (this.elmPriority !== other.elmPriority) return false;
+    if (this.elmTransparency !== other.elmTransparency) return false;
+    if (this.fillTransparency !== other.fillTransparency) return false;
 
     if ((this.lineColor === undefined) !== (other.lineColor === undefined))
       return false;
     if (this.lineColor && !this.lineColor.equals(other.lineColor!))
       return false;
 
-    if (this.weight !== other.weight)
-      return false;
+    if (this.weight !== other.weight) return false;
 
     if ((this.materialId === undefined) !== (other.materialId === undefined))
       return false;
-    if (this.materialId && this.materialId !== other.materialId!)
-      return false;
+    if (this.materialId && this.materialId !== other.materialId!) return false;
 
     if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
       return false;
     if (this.styleInfo && !this.styleInfo.equals(other.styleInfo!))
       return false;
 
-    if (this.fillDisplay !== other.fillDisplay)
-      return false;
+    if (this.fillDisplay !== other.fillDisplay) return false;
 
-    if (this.fillDisplay !== undefined && this.fillDisplay !== FillDisplay.Never) {
+    if (
+      this.fillDisplay !== undefined &&
+      this.fillDisplay !== FillDisplay.Never
+    ) {
       if ((this.gradient === undefined) !== (other.gradient === undefined))
         return false;
-      if (this.gradient && !this.gradient.equals(other.gradient!))
-        return false;
-      if (this.backgroundFill !== other.backgroundFill)
-        return false;
-      if (this.backgroundFill === undefined || this.backgroundFill === BackgroundFill.None) {
+      if (this.gradient && !this.gradient.equals(other.gradient!)) return false;
+      if (this.backgroundFill !== other.backgroundFill) return false;
+      if (
+        this.backgroundFill === undefined ||
+        this.backgroundFill === BackgroundFill.None
+      ) {
         if ((this.fillColor === undefined) !== (other.fillColor === undefined))
           return false;
         if (this.fillColor && !this.fillColor.equals(other.fillColor!))
@@ -223,24 +220,27 @@ export class GeometryParams {
 
     if ((this.pattern === undefined) !== (other.pattern === undefined))
       return false;
-    if (this.pattern && !this.pattern.equals(other.pattern!))
-      return false;
+    if (this.pattern && !this.pattern.equals(other.pattern!)) return false;
 
     return true;
   }
 
   /** Change [[categoryId]] to the supplied id, [[subCategoryId]] to the supplied category's the default subCategory, and optionally clear any [[SubCategoryAppearance]] overrides. */
-  public setCategoryId(categoryId: Id64String, clearAppearanceOverrides = true) {
+  public setCategoryId(
+    categoryId: Id64String,
+    clearAppearanceOverrides = true
+  ) {
     this.categoryId = categoryId;
     this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
-    if (clearAppearanceOverrides)
-      this.resetAppearance();
+    if (clearAppearanceOverrides) this.resetAppearance();
   }
 
   /** Change [[subCategoryId]] to the supplied id and optionally clear any [[SubCategoryAppearance]] overrides. */
-  public setSubCategoryId(subCategoryId: Id64String, clearAppearanceOverrides = true) {
+  public setSubCategoryId(
+    subCategoryId: Id64String,
+    clearAppearanceOverrides = true
+  ) {
     this.subCategoryId = subCategoryId;
-    if (clearAppearanceOverrides)
-      this.resetAppearance();
+    if (clearAppearanceOverrides) this.resetAppearance();
   }
 }

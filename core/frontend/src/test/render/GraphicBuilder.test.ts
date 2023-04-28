@@ -4,10 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
+  Cone,
+  Point3d,
+  PolyfaceBuilder,
+  Range3d,
+  Sphere,
+  StrokeOptions,
+  Transform,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
+import {
+  ColorByName,
+  ColorIndex,
+  EmptyLocalization,
+  FeatureIndex,
+  FillFlags,
+  QParams3d,
+  QPoint3dList,
+  RenderMode,
+} from "@itwin/core-common";
+import {
+  GraphicBuilder,
+  GraphicType,
+  ViewportGraphicBuilderOptions,
+} from "../../render/GraphicBuilder";
 import { IModelApp, IModelAppOptions } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -47,14 +66,27 @@ describe("GraphicBuilder", () => {
 
   type BuilderOpts = Omit<ViewportGraphicBuilderOptions, "viewport" | "type">;
 
-  function makeBuilder(type: GraphicType, options: BuilderOpts): GraphicBuilder {
+  function makeBuilder(
+    type: GraphicType,
+    options: BuilderOpts
+  ): GraphicBuilder {
     return IModelApp.renderSystem.createGraphic({ type, viewport, ...options });
   }
 
-  const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
+  const graphicTypes = [
+    GraphicType.ViewBackground,
+    GraphicType.Scene,
+    GraphicType.WorldDecoration,
+    GraphicType.WorldOverlay,
+    GraphicType.ViewOverlay,
+  ];
 
   describe("generates normals", () => {
-    function expectNormals(type: GraphicType, options: BuilderOpts, expected: boolean): void {
+    function expectNormals(
+      type: GraphicType,
+      options: BuilderOpts,
+      expected: boolean
+    ): void {
       const builder = makeBuilder(type, options);
       expect(builder.wantNormals).to.equal(expected);
     }
@@ -68,7 +100,11 @@ describe("GraphicBuilder", () => {
       expect(viewport.viewFlags.edgesRequired()).to.be.true;
       for (const type of graphicTypes) {
         expectNormals(type, { generateEdges: true }, true);
-        expectNormals(type, { generateEdges: false }, type === GraphicType.Scene);
+        expectNormals(
+          type,
+          { generateEdges: false },
+          type === GraphicType.Scene
+        );
         expectNormals(type, { generateEdges: true, wantNormals: false }, false);
       }
     });
@@ -85,7 +121,11 @@ describe("GraphicBuilder", () => {
   });
 
   describe("generates edges", () => {
-    function expectEdges(type: GraphicType, options: BuilderOpts, expected: boolean): void {
+    function expectEdges(
+      type: GraphicType,
+      options: BuilderOpts,
+      expected: boolean
+    ): void {
       const builder = makeBuilder(type, options);
       expect(builder.wantEdges).to.equal(expected);
     }
@@ -97,12 +137,14 @@ describe("GraphicBuilder", () => {
     });
 
     it("never, if view flags do not require them", () => {
-      const vf = viewport.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false });
+      const vf = viewport.viewFlags.copy({
+        renderMode: RenderMode.SmoothShade,
+        visibleEdges: false,
+      });
       viewport.viewFlags = vf;
       expect(viewport.viewFlags.edgesRequired()).to.be.false;
 
-      for (const type of graphicTypes)
-        expectEdges(type, {}, false);
+      for (const type of graphicTypes) expectEdges(type, {}, false);
     });
 
     it("always if explicitly requested", () => {
@@ -118,10 +160,15 @@ describe("GraphicBuilder", () => {
 
   describe("createTriMesh", () => {
     it("should create a simple mesh graphic", () => {
-      const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
-      const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
-      for (const point of points)
-        qpoints.add(point);
+      const points = [
+        new Point3d(0, 0, 0),
+        new Point3d(10, 0, 0),
+        new Point3d(0, 10, 0),
+      ];
+      const qpoints = new QPoint3dList(
+        QParams3d.fromRange(Range3d.createArray(points))
+      );
+      for (const point of points) qpoints.add(point);
 
       const colors = new ColorIndex();
       colors.initUniform(ColorByName.tan);
@@ -148,22 +195,29 @@ describe("GraphicBuilder", () => {
         IModelApp.renderSystem.createMesh = renderSystemCreateMesh; // eslint-disable-line @typescript-eslint/unbound-method
     });
 
-    function overrideCreateMesh(verifyParams?: (params: MeshParams) => void, verifyGraphic?: (graphic: MeshGraphic) => void): void {
+    function overrideCreateMesh(
+      verifyParams?: (params: MeshParams) => void,
+      verifyGraphic?: (graphic: MeshGraphic) => void
+    ): void {
       if (!renderSystemCreateMesh)
         renderSystemCreateMesh = IModelApp.renderSystem.createMesh; // eslint-disable-line @typescript-eslint/unbound-method
 
       createMeshInvoked = false;
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      IModelApp.renderSystem.createMesh = (params: MeshParams, instances?: InstancedGraphicParams) => {
+      IModelApp.renderSystem.createMesh = (
+        params: MeshParams,
+        instances?: InstancedGraphicParams
+      ) => {
         createMeshInvoked = true;
-        if (verifyParams)
-          verifyParams(params);
+        if (verifyParams) verifyParams(params);
 
-        const graphic = renderSystemCreateMesh.apply(IModelApp.renderSystem, [params, instances]) as MeshGraphic;
+        const graphic = renderSystemCreateMesh.apply(IModelApp.renderSystem, [
+          params,
+          instances,
+        ]) as MeshGraphic;
         expect(graphic).instanceof(MeshGraphic);
-        if (verifyGraphic)
-          verifyGraphic(graphic);
+        if (verifyGraphic) verifyGraphic(graphic);
 
         return graphic;
       };
@@ -174,14 +228,20 @@ describe("GraphicBuilder", () => {
         expect(params.vertices.numRgbaPerVertex).to.equal(5);
       };
       const verifyGraphic = (graphic: MeshGraphic) => {
-        expect(graphic.meshData.type).to.equal(expectNormals ? SurfaceType.Lit : SurfaceType.Unlit);
+        expect(graphic.meshData.type).to.equal(
+          expectNormals ? SurfaceType.Lit : SurfaceType.Unlit
+        );
       };
 
       overrideCreateMesh(verifyParams, verifyGraphic);
     }
 
     function createTriangle(): Point3d[] {
-      return [ new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0) ];
+      return [
+        new Point3d(0, 0, 0),
+        new Point3d(100, 0, 0),
+        new Point3d(0, 100, 0),
+      ];
     }
 
     it("should preserve polyface normals", () => {
@@ -197,7 +257,12 @@ describe("GraphicBuilder", () => {
         const pfBuilder = PolyfaceBuilder.create(options);
         pfBuilder.addTriangleFacet(createTriangle());
 
-        const gfBuilder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals: requestNormals });
+        const gfBuilder = IModelApp.renderSystem.createGraphic({
+          placement: Transform.createIdentity(),
+          type: GraphicType.WorldDecoration,
+          viewport,
+          wantNormals: requestNormals,
+        });
         gfBuilder.addPolyface(pfBuilder.claimPolyface(), false);
         const gf = gfBuilder.finish();
         gf.dispose();
@@ -215,7 +280,12 @@ describe("GraphicBuilder", () => {
         injectNormalsCheck(wantNormals);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals });
+        const builder = IModelApp.renderSystem.createGraphic({
+          placement: Transform.createIdentity(),
+          type: GraphicType.WorldDecoration,
+          viewport,
+          wantNormals,
+        });
         builder.addShape(createTriangle());
         const gf = builder.finish();
         gf.dispose();
@@ -227,7 +297,11 @@ describe("GraphicBuilder", () => {
     });
 
     it("should produce edges", () => {
-      function expectEdges(expected: "silhouette" | "segment" | "both" | "none", addToGraphic: (builder: GraphicBuilder) => void, generateEdges?: boolean): void {
+      function expectEdges(
+        expected: "silhouette" | "segment" | "both" | "none",
+        addToGraphic: (builder: GraphicBuilder) => void,
+        generateEdges?: boolean
+      ): void {
         let expectSilhouettes = false;
         let expectSegments = false;
         switch (expected) {
@@ -246,8 +320,12 @@ describe("GraphicBuilder", () => {
           expect(undefined === params.edges).to.equal("none" === expected);
           expect(params.edges?.polylines).to.be.undefined;
           if (params.edges) {
-            expect(undefined !== params.edges.segments).to.equal(expectSegments);
-            expect(undefined !== params.edges.silhouettes).to.equal(expectSilhouettes);
+            expect(undefined !== params.edges.segments).to.equal(
+              expectSegments
+            );
+            expect(undefined !== params.edges.silhouettes).to.equal(
+              expectSilhouettes
+            );
           }
         };
 
@@ -256,7 +334,12 @@ describe("GraphicBuilder", () => {
         overrideCreateMesh(verifyParams);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.Scene, viewport, generateEdges });
+        const builder = IModelApp.renderSystem.createGraphic({
+          placement: Transform.createIdentity(),
+          type: GraphicType.Scene,
+          viewport,
+          generateEdges,
+        });
         expect(builder.wantEdges).to.equal(generateEdges ?? true);
         addToGraphic(builder);
 
@@ -266,22 +349,41 @@ describe("GraphicBuilder", () => {
       }
 
       expectEdges("silhouette", (builder) => {
-        builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
+        builder.addSolidPrimitive(
+          Sphere.createCenterRadius(new Point3d(0, 0, 0), 1)
+        );
       });
 
       expectEdges("segment", (builder) => {
-        builder.addShape([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 1, 1), new Point3d(0, 0, 0)]);
+        builder.addShape([
+          new Point3d(0, 0, 0),
+          new Point3d(0, 1, 0),
+          new Point3d(0, 1, 1),
+          new Point3d(0, 0, 0),
+        ]);
       });
 
       expectEdges("both", (builder) => {
-        const cone = Cone.createAxisPoints(new Point3d(0, 0, 0), new Point3d(0, 0, 1), 0.5, 0.25, true)!;
+        const cone = Cone.createAxisPoints(
+          new Point3d(0, 0, 0),
+          new Point3d(0, 0, 1),
+          0.5,
+          0.25,
+          true
+        )!;
         expect(cone).not.to.be.undefined;
         builder.addSolidPrimitive(cone);
       });
 
-      expectEdges("none", (builder) => {
-        builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
-      }, false);
+      expectEdges(
+        "none",
+        (builder) => {
+          builder.addSolidPrimitive(
+            Sphere.createCenterRadius(new Point3d(0, 0, 0), 1)
+          );
+        },
+        false
+      );
     }).timeout(20000); // macOS is slow.
   });
 });

@@ -4,7 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { ColorByName, ColorDef, SubCategoryAppearance, SubCategoryOverride } from "../core-common";
+import {
+  ColorByName,
+  ColorDef,
+  SubCategoryAppearance,
+  SubCategoryOverride,
+} from "../core-common";
 
 // spell-checker: disable
 

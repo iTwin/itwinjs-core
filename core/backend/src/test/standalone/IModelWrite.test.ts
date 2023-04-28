@@ -5,28 +5,73 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  AccessToken,
+  DbResult,
+  GuidString,
+  Id64,
+  Id64String,
+} from "@itwin/core-bentley";
+import {
+  Code,
+  ColorDef,
+  GeometricElement2dProps,
+  GeometryStreamProps,
+  IModel,
+  QueryRowFormat,
+  RequestNewBriefcaseProps,
+  SchemaState,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
 import {
-  BriefcaseDb, BriefcaseManager, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, Subject,
+  BriefcaseDb,
+  BriefcaseManager,
+  DefinitionModel,
+  DictionaryModel,
+  DocumentListModel,
+  Drawing,
+  DrawingGraphic,
+  IModelHost,
+  IModelJsFs,
+  SpatialCategory,
+  SqliteStatement,
+  SqliteValue,
+  SqliteValueType,
+  Subject,
 } from "../../core-backend";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 
-export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
+export async function createNewModelAndCategory(
+  rwIModel: BriefcaseDb,
+  parent?: Id64String
+) {
   // Create a new physical model.
-  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
+  const [, modelId] =
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+      rwIModel,
+      IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
+      true,
+      parent
+    );
 
   // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
-  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
+  const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(
+    IModel.dictionaryId
+  );
+  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(
+    dictionary,
+    "ThisTestSpatialCategory"
+  );
+  const category = SpatialCategory.create(
+    rwIModel,
+    IModel.dictionaryId,
+    newCategoryCode.value
+  );
   const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
@@ -47,16 +92,28 @@ describe("IModelWriteTest", () => {
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
 
     testITwinId = HubMock.iTwinId;
-    readWriteTestIModelName = IModelTestUtils.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubWrappers.recreateIModel({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelName: readWriteTestIModelName });
+    readWriteTestIModelName =
+      IModelTestUtils.generateUniqueName("ReadWriteTest");
+    readWriteTestIModelId = await HubWrappers.recreateIModel({
+      accessToken: managerAccessToken,
+      iTwinId: testITwinId,
+      iModelName: readWriteTestIModelName,
+    });
 
     // Purge briefcases that are close to reaching the acquire limit
-    await HubWrappers.purgeAcquiredBriefcasesById(managerAccessToken, readWriteTestIModelId);
+    await HubWrappers.purgeAcquiredBriefcasesById(
+      managerAccessToken,
+      readWriteTestIModelId
+    );
   });
 
   after(async () => {
     try {
-      await HubWrappers.deleteIModel(managerAccessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
+      await HubWrappers.deleteIModel(
+        managerAccessToken,
+        "iModelJsIntegrationTest",
+        readWriteTestIModelName
+      );
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -65,21 +122,47 @@ describe("IModelWriteTest", () => {
   });
 
   it("should handle undo/redo", async () => {
-    const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const adminAccessToken = await HubWrappers.getAccessToken(
+      TestUserType.SuperManager
+    );
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({
+      accessToken: adminAccessToken,
+      iTwinId: testITwinId,
+      iModelName,
+    });
     if (iModelId)
-      await IModelHost.hubAccess.deleteIModel({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({
+        accessToken: adminAccessToken,
+        iTwinId: testITwinId,
+        iModelId,
+      });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({
+      accessToken: adminAccessToken,
+      iTwinId: testITwinId,
+      iModelName,
+      description: "TestSubject",
+    });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelId: rwIModelId });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({
+      accessToken: adminAccessToken,
+      iTwinId: testITwinId,
+      iModelId: rwIModelId,
+    });
 
     // create and insert a new model with code1
-    const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code1, true);
+    const code1 = IModelTestUtils.getUniqueModelCode(
+      rwIModel,
+      "newPhysicalModel1"
+    );
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+      rwIModel,
+      code1,
+      true
+    );
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
     // create a local txn with that change
@@ -98,8 +181,15 @@ describe("IModelWriteTest", () => {
     }
 
     // Create and insert a model with code2
-    const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
-    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code2, true);
+    const code2 = IModelTestUtils.getUniqueModelCode(
+      rwIModel,
+      "newPhysicalModel2"
+    );
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+      rwIModel,
+      code2,
+      true
+    );
     rwIModel.saveChanges("inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
@@ -107,7 +197,10 @@ describe("IModelWriteTest", () => {
 
     // Push the changes to the hub
     const prePushChangeset = rwIModel.changeset;
-    await rwIModel.pushChanges({ accessToken: adminAccessToken, description: "test" });
+    await rwIModel.pushChanges({
+      accessToken: adminAccessToken,
+      description: "test",
+    });
     const postPushChangeset = rwIModel.changeset;
     assert(!!postPushChangeset);
     expect(prePushChangeset !== postPushChangeset);
@@ -122,70 +215,91 @@ describe("IModelWriteTest", () => {
   });
 
   it("Run plain SQL against fixed version connection", async () => {
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({
+      accessToken: managerAccessToken,
+      iTwinId: testITwinId,
+      iModelId: readWriteTestIModelId,
+    });
     try {
-      iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      iModel.withPreparedSqliteStatement(
+        "CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)",
+        (stmt: SqliteStatement) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        }
+      );
 
-      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
-        stmt.bindValue(1, "Dummy 1");
-        stmt.bindValue(2, 100);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      iModel.withPreparedSqliteStatement(
+        "INSERT INTO Test(Name,Code) VALUES(?,?)",
+        (stmt: SqliteStatement) => {
+          stmt.bindValue(1, "Dummy 1");
+          stmt.bindValue(2, 100);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        }
+      );
 
-      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(?,?)", (stmt: SqliteStatement) => {
-        stmt.bindValues(["Dummy 2", 200]);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      iModel.withPreparedSqliteStatement(
+        "INSERT INTO Test(Name,Code) VALUES(?,?)",
+        (stmt: SqliteStatement) => {
+          stmt.bindValues(["Dummy 2", 200]);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        }
+      );
 
-      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
-        stmt.bindValue(":p1", "Dummy 3");
-        stmt.bindValue(":p2", 300);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      iModel.withPreparedSqliteStatement(
+        "INSERT INTO Test(Name,Code) VALUES(:p1,:p2)",
+        (stmt: SqliteStatement) => {
+          stmt.bindValue(":p1", "Dummy 3");
+          stmt.bindValue(":p2", 300);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        }
+      );
 
-      iModel.withPreparedSqliteStatement("INSERT INTO Test(Name,Code) VALUES(:p1,:p2)", (stmt: SqliteStatement) => {
-        stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      iModel.withPreparedSqliteStatement(
+        "INSERT INTO Test(Name,Code) VALUES(:p1,:p2)",
+        (stmt: SqliteStatement) => {
+          stmt.bindValues({ ":p1": "Dummy 4", ":p2": 400 });
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        }
+      );
 
       iModel.saveChanges();
 
-      iModel.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
-        for (let i: number = 1; i <= 4; i++) {
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-          assert.equal(stmt.getColumnCount(), 3);
-          const val0: SqliteValue = stmt.getValue(0);
-          assert.equal(val0.columnName, "Id");
-          assert.equal(val0.type, SqliteValueType.Integer);
-          assert.isFalse(val0.isNull);
-          assert.equal(val0.getInteger(), i);
+      iModel.withPreparedSqliteStatement(
+        "SELECT Id,Name,Code FROM Test ORDER BY Id",
+        (stmt: SqliteStatement) => {
+          for (let i: number = 1; i <= 4; i++) {
+            assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+            assert.equal(stmt.getColumnCount(), 3);
+            const val0: SqliteValue = stmt.getValue(0);
+            assert.equal(val0.columnName, "Id");
+            assert.equal(val0.type, SqliteValueType.Integer);
+            assert.isFalse(val0.isNull);
+            assert.equal(val0.getInteger(), i);
 
-          const val1: SqliteValue = stmt.getValue(1);
-          assert.equal(val1.columnName, "Name");
-          assert.equal(val1.type, SqliteValueType.String);
-          assert.isFalse(val1.isNull);
-          assert.equal(val1.getString(), `Dummy ${i}`);
+            const val1: SqliteValue = stmt.getValue(1);
+            assert.equal(val1.columnName, "Name");
+            assert.equal(val1.type, SqliteValueType.String);
+            assert.isFalse(val1.isNull);
+            assert.equal(val1.getString(), `Dummy ${i}`);
 
-          const val2: SqliteValue = stmt.getValue(2);
-          assert.equal(val2.columnName, "Code");
-          assert.equal(val2.type, SqliteValueType.Integer);
-          assert.isFalse(val2.isNull);
-          assert.equal(val2.getInteger(), i * 100);
+            const val2: SqliteValue = stmt.getValue(2);
+            assert.equal(val2.columnName, "Code");
+            assert.equal(val2.type, SqliteValueType.Integer);
+            assert.isFalse(val2.isNull);
+            assert.equal(val2.getInteger(), i * 100);
 
-          const row: any = stmt.getRow();
-          assert.equal(row.id, i);
-          assert.equal(row.name, `Dummy ${i}`);
-          assert.equal(row.code, i * 100);
+            const row: any = stmt.getRow();
+            assert.equal(row.id, i);
+            assert.equal(row.name, `Dummy ${i}`);
+            assert.equal(row.code, i * 100);
+          }
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         }
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      );
     } finally {
       // delete the briefcase as the test modified it locally.
       let briefcasePath: string | undefined;
-      if (iModel.isOpen)
-        briefcasePath = iModel.pathName;
+      if (iModel.isOpen) briefcasePath = iModel.pathName;
 
       await HubWrappers.closeAndDeleteBriefcaseDb(managerAccessToken, iModel);
       if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath))
@@ -194,40 +308,49 @@ describe("IModelWriteTest", () => {
   });
 
   it("Run plain SQL against readonly connection", async () => {
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
-
-    iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
-      let rowCount = 0;
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        rowCount++;
-        assert.equal(stmt.getColumnCount(), 2);
-        const nameVal: SqliteValue = stmt.getValue(0);
-        assert.equal(nameVal.columnName, "Name");
-        assert.equal(nameVal.type, SqliteValueType.String);
-        assert.isFalse(nameVal.isNull);
-        const name: string = nameVal.getString();
-
-        const versionVal = stmt.getValue(1);
-        assert.equal(versionVal.columnName, "StrData");
-        assert.equal(versionVal.type, SqliteValueType.String);
-        assert.isFalse(versionVal.isNull);
-        const profileVersion: any = JSON.parse(versionVal.getString());
-
-        assert.isTrue(name === "SchemaVersion" || name === "InitialSchemaVersion");
-        if (name === "SchemaVersion") {
-          assert.equal(profileVersion.major, 4);
-          assert.equal(profileVersion.minor, 0);
-          assert.equal(profileVersion.sub1, 0);
-          assert.isAtLeast(profileVersion.sub2, 1);
-        } else if (name === "InitialSchemaVersion") {
-          assert.equal(profileVersion.major, 4);
-          assert.equal(profileVersion.minor, 0);
-          assert.equal(profileVersion.sub1, 0);
-          assert.isAtLeast(profileVersion.sub2, 1);
-        }
-      }
-      assert.equal(rowCount, 2);
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken: managerAccessToken,
+      iTwinId: testITwinId,
+      iModelId: readWriteTestIModelId,
     });
+
+    iModel.withPreparedSqliteStatement(
+      "SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'",
+      (stmt: SqliteStatement) => {
+        let rowCount = 0;
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rowCount++;
+          assert.equal(stmt.getColumnCount(), 2);
+          const nameVal: SqliteValue = stmt.getValue(0);
+          assert.equal(nameVal.columnName, "Name");
+          assert.equal(nameVal.type, SqliteValueType.String);
+          assert.isFalse(nameVal.isNull);
+          const name: string = nameVal.getString();
+
+          const versionVal = stmt.getValue(1);
+          assert.equal(versionVal.columnName, "StrData");
+          assert.equal(versionVal.type, SqliteValueType.String);
+          assert.isFalse(versionVal.isNull);
+          const profileVersion: any = JSON.parse(versionVal.getString());
+
+          assert.isTrue(
+            name === "SchemaVersion" || name === "InitialSchemaVersion"
+          );
+          if (name === "SchemaVersion") {
+            assert.equal(profileVersion.major, 4);
+            assert.equal(profileVersion.minor, 0);
+            assert.equal(profileVersion.sub1, 0);
+            assert.isAtLeast(profileVersion.sub2, 1);
+          } else if (name === "InitialSchemaVersion") {
+            assert.equal(profileVersion.major, 4);
+            assert.equal(profileVersion.minor, 0);
+            assert.equal(profileVersion.sub1, 0);
+            assert.isAtLeast(profileVersion.sub2, 1);
+          }
+        }
+        assert.equal(rowCount, 2);
+      }
+    );
     iModel.close();
   });
 
@@ -241,33 +364,54 @@ describe("IModelWriteTest", () => {
      */
 
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
-    const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const pathname = IModelTestUtils.resolveAssetFile(
+      "CompatibilityTestSeed.bim"
+    );
     const hubName = IModelTestUtils.generateUniqueName("CompatibilityTest");
-    const iModelId = await HubWrappers.pushIModel(managerAccessToken, iTwinId, pathname, hubName, true);
+    const iModelId = await HubWrappers.pushIModel(
+      managerAccessToken,
+      iTwinId,
+      pathname,
+      hubName,
+      true
+    );
 
     // Download two copies of the briefcase - manager and super
     const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
-    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: managerAccessToken, ...args });
-    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: superAccessToken, ...args });
+    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase({
+      accessToken: managerAccessToken,
+      ...args,
+    });
+    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase({
+      accessToken: superAccessToken,
+      ...args,
+    });
 
     /* User "manager" upgrades the briefcase */
 
     // Validate the original state of the BisCore schema in the briefcase
-    let iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
+    let iModel = await BriefcaseDb.open({
+      fileName: managerBriefcaseProps.fileName,
+    });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
     iModel.close();
 
     // Validate that the BisCore schema is recognized as a recommended upgrade
-    let schemaState = BriefcaseDb.validateSchemas(managerBriefcaseProps.fileName, true);
+    let schemaState = BriefcaseDb.validateSchemas(
+      managerBriefcaseProps.fileName,
+      true
+    );
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas
     await BriefcaseDb.upgradeSchemas(managerBriefcaseProps);
 
     // Validate state after upgrade
-    iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
+    iModel = await BriefcaseDb.open({
+      fileName: managerBriefcaseProps.fileName,
+    });
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -278,7 +422,10 @@ describe("IModelWriteTest", () => {
     /* User "super" can get the upgrade "manager" made */
 
     // Validate that the BisCore schema is recognized as a recommended upgrade
-    schemaState = BriefcaseDb.validateSchemas(superBriefcaseProps.fileName, true);
+    schemaState = BriefcaseDb.validateSchemas(
+      superBriefcaseProps.fileName,
+      true
+    );
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // SKIPPED FOR NOW - locking not mocked yet
@@ -292,8 +439,12 @@ describe("IModelWriteTest", () => {
     // assert.strictEqual(result, IModelHubStatus.PullIsRequired);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.open({ fileName: superBriefcaseProps.fileName });
-    (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ accessToken: superAccessToken });
+    const superIModel = await BriefcaseDb.open({
+      fileName: superBriefcaseProps.fileName,
+    });
+    (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({
+      accessToken: superAccessToken,
+    });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
@@ -301,22 +452,41 @@ describe("IModelWriteTest", () => {
     superIModel.close();
 
     // Validate that there are no upgrades required
-    schemaState = BriefcaseDb.validateSchemas(superBriefcaseProps.fileName, true);
+    schemaState = BriefcaseDb.validateSchemas(
+      superBriefcaseProps.fileName,
+      true
+    );
     assert.strictEqual(schemaState, SchemaState.UpToDate);
 
     // Upgrade the schemas - ensure this is a no-op
     await BriefcaseDb.upgradeSchemas(superBriefcaseProps);
-    await IModelHost.hubAccess.deleteIModel({ accessToken: managerAccessToken, iTwinId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({
+      accessToken: managerAccessToken,
+      iTwinId,
+      iModelId,
+    });
   });
 
   it("changeset size and ec schema version change", async () => {
     const adminToken = "super manager token";
     const iTwinId = HubMock.iTwinId;
     const iModelName = IModelTestUtils.generateUniqueName("changeset_size");
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId,
+      iModelName,
+      description: "TestSubject",
+      accessToken: adminToken,
+    });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({
+      iTwinId,
+      iModelId: rwIModelId,
+      accessToken: adminToken,
+    });
+    assert.equal(
+      rwIModel.nativeDb.enableChangesetSizeStats(true),
+      DbResult.BE_SQLITE_OK
+    );
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -330,23 +500,50 @@ describe("IModelWriteTest", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({ description: "push schema changeset", accessToken: adminToken });
+      await rwIModel.pushChanges({
+        description: "push schema changeset",
+        accessToken: adminToken,
+      });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      const changesets = await IModelHost.hubAccess.queryChangesets({
+        iModelId: rwIModelId,
+        accessToken: superAccessToken,
+      });
       assert.equal(changesets.length, 1);
     }
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
-    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    const [, drawingModelId] =
+      IModelTestUtils.createAndInsertDrawingPartitionAndModel(
+        rwIModel,
+        codeProps,
+        true
+      );
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(
+      rwIModel,
+      IModel.dictionaryId,
+      "MyDrawingCategory"
+    );
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({
+          color: ColorDef.fromString("rgb(255,0,0)").toJSON(),
+        })
+      );
 
-    const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+    const insertElements = (
+      imodel: BriefcaseDb,
+      className: string = "Test2dElement",
+      noOfElements: number = 10,
+      userProp: (n: number) => object
+    ) => {
       for (let m = 0; m < noOfElements; ++m) {
         const geomArray: Arc3d[] = [
           Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -380,27 +577,50 @@ describe("IModelWriteTest", () => {
 
     rwIModel.saveChanges("user 1: data");
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
-    await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
+    await rwIModel.pushChanges({
+      description: "schema changeset",
+      accessToken: adminToken,
+    });
     rwIModel.close();
   });
 
   it("clear cache on schema changes", async () => {
-    const adminToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const adminToken = await HubWrappers.getAccessToken(
+      TestUserType.SuperManager
+    );
     const userToken = await HubWrappers.getAccessToken(TestUserType.Super);
     const iTwinId = HubMock.iTwinId;
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = IModelTestUtils.generateUniqueName("SchemaChanges");
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId,
+      iModelName,
+      description: "TestSubject",
+    });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({
+      iTwinId,
+      iModelId: rwIModelId,
+      accessToken: adminToken,
+    });
 
-    const rwIModel2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
+    const rwIModel2 = await HubWrappers.downloadAndOpenBriefcase({
+      iTwinId,
+      iModelId: rwIModelId,
+      accessToken: userToken,
+    });
 
     // enable change tracking
-    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
-    assert.equal(rwIModel2.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(
+      rwIModel.nativeDb.enableChangesetSizeStats(true),
+      DbResult.BE_SQLITE_OK
+    );
+    assert.equal(
+      rwIModel2.nativeDb.enableChangesetSizeStats(true),
+      DbResult.BE_SQLITE_OK
+    );
 
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -416,23 +636,50 @@ describe("IModelWriteTest", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
+      await rwIModel.pushChanges({
+        description: "schema changeset",
+        accessToken: adminToken,
+      });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      const changesets = await IModelHost.hubAccess.queryChangesets({
+        iModelId: rwIModelId,
+        accessToken: superAccessToken,
+      });
       assert.equal(changesets.length, 1);
     }
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
     await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
-    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    const [, drawingModelId] =
+      IModelTestUtils.createAndInsertDrawingPartitionAndModel(
+        rwIModel,
+        codeProps,
+        true
+      );
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(
+      rwIModel,
+      IModel.dictionaryId,
+      "MyDrawingCategory"
+    );
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({
+          color: ColorDef.fromString("rgb(255,0,0)").toJSON(),
+        })
+      );
 
-    const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+    const insertElements = (
+      imodel: BriefcaseDb,
+      className: string = "Test2dElement",
+      noOfElements: number = 10,
+      userProp: (n: number) => object
+    ) => {
       for (let m = 0; m < noOfElements; ++m) {
         const geomArray: Arc3d[] = [
           Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -469,23 +716,36 @@ describe("IModelWriteTest", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({ description: "10 instances of test2dElement", accessToken: adminToken });
+      await rwIModel.pushChanges({
+        description: "10 instances of test2dElement",
+        accessToken: adminToken,
+      });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      const changesets = await IModelHost.hubAccess.queryChangesets({
+        iModelId: rwIModelId,
+        accessToken: superAccessToken,
+      });
       assert.equal(changesets.length, 2);
     }
     let rows: any[] = [];
-    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        rows.push(stmt.getRow());
+    rwIModel.withPreparedStatement(
+      "SELECT * FROM TestDomain.Test2dElement",
+      (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
       }
-    });
+    );
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const queryRow of rwIModel.createQueryReader(
+      "SELECT * FROM TestDomain.Test2dElement",
+      undefined,
+      { rowFormat: QueryRowFormat.UseJsPropertyNames }
+    )) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 10);
@@ -495,15 +755,22 @@ describe("IModelWriteTest", () => {
       // pull and merge changes
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
-      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          rows.push(stmt.getRow());
+      rwIModel2.withPreparedStatement(
+        "SELECT * FROM TestDomain.Test2dElement",
+        (stmt: ECSqlStatement) => {
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rows.push(stmt.getRow());
+          }
         }
-      });
+      );
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of rwIModel2.createQueryReader(
+        "SELECT * FROM TestDomain.Test2dElement",
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames }
+      )) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 10);
@@ -519,11 +786,17 @@ describe("IModelWriteTest", () => {
       if ("push changes") {
         // Push the changes to the hub
         const prePushChangeSetId = rwIModel2.changeset.id;
-        await rwIModel2.pushChanges({ accessToken: userToken, description: "10 instances of test2dElement" });
+        await rwIModel2.pushChanges({
+          accessToken: userToken,
+          description: "10 instances of test2dElement",
+        });
         const postPushChangeSetId = rwIModel2.changeset.id;
         assert(!!postPushChangeSetId);
         expect(prePushChangeSetId !== postPushChangeSetId);
-        const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: userToken });
+        const changesets = await IModelHost.hubAccess.queryChangesets({
+          iModelId: rwIModelId,
+          accessToken: userToken,
+        });
         assert.equal(changesets.length, 3);
       }
     }
@@ -549,25 +822,33 @@ describe("IModelWriteTest", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({ accessToken: adminToken, description: "schema changeset" });
+      await rwIModel.pushChanges({
+        accessToken: adminToken,
+        description: "schema changeset",
+      });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      const changesets = await IModelHost.hubAccess.queryChangesets({
+        iModelId: rwIModelId,
+        accessToken: superAccessToken,
+      });
       assert.equal(changesets.length, 4);
     }
     // create some element and push those changes
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
       return {
-        s: `s-${n}`, v: `v-${n}`,
+        s: `s-${n}`,
+        v: `v-${n}`,
       };
     });
 
     // create some element and push those changes
     insertElements(rwIModel, "Test2dElement2nd", 10, (n: number) => {
       return {
-        t: `t-${n}`, r: `r-${n}`,
+        t: `t-${n}`,
+        r: `r-${n}`,
       };
     });
     assert.equal(6279, rwIModel.nativeDb.getChangesetSize());
@@ -576,24 +857,37 @@ describe("IModelWriteTest", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({ accessToken: adminToken, description: "10 instances of test2dElement" });
+      await rwIModel.pushChanges({
+        accessToken: adminToken,
+        description: "10 instances of test2dElement",
+      });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      const changesets = await IModelHost.hubAccess.queryChangesets({
+        iModelId: rwIModelId,
+        accessToken: superAccessToken,
+      });
       assert.equal(changesets.length, 5);
     }
     rows = [];
-    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        rows.push(stmt.getRow());
+    rwIModel.withPreparedStatement(
+      "SELECT * FROM TestDomain.Test2dElement",
+      (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
       }
-    });
+    );
     assert.equal(rows.length, 30);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const queryRow of rwIModel.createQueryReader(
+      "SELECT * FROM TestDomain.Test2dElement",
+      undefined,
+      { rowFormat: QueryRowFormat.UseJsPropertyNames }
+    )) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 30);
@@ -601,16 +895,23 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
 
     rows = [];
-    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        rows.push(stmt.getRow());
+    rwIModel.withPreparedStatement(
+      "SELECT * FROM TestDomain.Test2dElement2nd",
+      (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
       }
-    });
+    );
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const queryRow of rwIModel.createQueryReader(
+      "SELECT * FROM TestDomain.Test2dElement2nd",
+      undefined,
+      { rowFormat: QueryRowFormat.UseJsPropertyNames }
+    )) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 10);
@@ -623,17 +924,24 @@ describe("IModelWriteTest", () => {
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
       // Following fail without the fix in briefcase manager where we clear statement cache on schema changeset apply
-      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          rows.push(stmt.getRow());
+      rwIModel2.withPreparedStatement(
+        "SELECT * FROM TestDomain.Test2dElement",
+        (stmt: ECSqlStatement) => {
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rows.push(stmt.getRow());
+          }
         }
-      });
+      );
       assert.equal(rows.length, 30);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of rwIModel2.createQueryReader(
+        "SELECT * FROM TestDomain.Test2dElement",
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames }
+      )) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 30);
@@ -654,11 +962,14 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          rows.push(stmt.getRow());
+      rwIModel2.withPreparedStatement(
+        "SELECT * FROM TestDomain.Test2dElement2nd",
+        (stmt: ECSqlStatement) => {
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            rows.push(stmt.getRow());
+          }
         }
-      });
+      );
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
       assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
@@ -677,7 +988,11 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of rwIModel2.createQueryReader(
+        "SELECT * FROM TestDomain.Test2dElement2nd",
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames }
+      )) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 10);
@@ -704,8 +1019,15 @@ describe("IModelWriteTest", () => {
 
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
     const version0 = IModelTestUtils.resolveAssetFile("test.bim");
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId: testITwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: testITwinId, iModelId });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId: testITwinId,
+      iModelName: "subModelCoveredByParentLockTest",
+      version0,
+    });
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({
+      iTwinId: testITwinId,
+      iModelId,
+    });
 
     /*
       Job Subject
@@ -713,8 +1035,15 @@ describe("IModelWriteTest", () => {
     */
 
     await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
-    const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insert();
-    const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
+    const jobSubjectId = IModelTestUtils.createJobSubjectElement(
+      iModel,
+      "JobSubject"
+    ).insert();
+    const definitionModelId = DefinitionModel.insert(
+      iModel,
+      jobSubjectId,
+      "Definition"
+    );
 
     iModel.saveChanges();
     await iModel.pushChanges({ description: "create model" });
@@ -734,11 +1063,25 @@ describe("IModelWriteTest", () => {
     iModel.locks.checkSharedLock(definitionModelId, "", "");
     iModel.locks.checkExclusiveLock(definitionModelId, "", "");
 
-    const spatialCategoryId = SpatialCategory.insert(iModel, definitionModelId, "SpatialCategory", new SubCategoryAppearance()); // throws if we get locking error
-    const drawingCategoryId = DrawingCategory.insert(iModel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    const spatialCategoryId = SpatialCategory.insert(
+      iModel,
+      definitionModelId,
+      "SpatialCategory",
+      new SubCategoryAppearance()
+    ); // throws if we get locking error
+    const drawingCategoryId = DrawingCategory.insert(
+      iModel,
+      definitionModelId,
+      "DrawingCategory",
+      new SubCategoryAppearance()
+    );
 
-    assert.isTrue(iModel.elements.getElement(spatialCategoryId).model === definitionModelId);
-    assert.isTrue(iModel.elements.getElement(drawingCategoryId).model === definitionModelId);
+    assert.isTrue(
+      iModel.elements.getElement(spatialCategoryId).model === definitionModelId
+    );
+    assert.isTrue(
+      iModel.elements.getElement(drawingCategoryId).model === definitionModelId
+    );
 
     iModel.saveChanges();
     await iModel.pushChanges({ description: "insert category" });
@@ -760,20 +1103,47 @@ describe("IModelWriteTest", () => {
     iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
     iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
 
-    const childSubjectId = Subject.insert(iModel, jobSubjectId, "Child Subject");
+    const childSubjectId = Subject.insert(
+      iModel,
+      jobSubjectId,
+      "Child Subject"
+    );
 
-    const documentListModelId = DocumentListModel.insert(iModel, childSubjectId, "Document"); // creates DocumentList and DocumentListModel
+    const documentListModelId = DocumentListModel.insert(
+      iModel,
+      childSubjectId,
+      "Document"
+    ); // creates DocumentList and DocumentListModel
     assert.isTrue(Id64.isValidId64(documentListModelId));
-    const drawingModelId = Drawing.insert(iModel, documentListModelId, "Drawing"); // creates Drawing and DrawingModel
+    const drawingModelId = Drawing.insert(
+      iModel,
+      documentListModelId,
+      "Drawing"
+    ); // creates Drawing and DrawingModel
 
-    assert.isTrue(iModel.elements.getElement(childSubjectId).parent?.id === jobSubjectId);
-    assert.isTrue(iModel.elements.getElement(childSubjectId).model === IModel.repositoryModelId);
-    assert.isTrue(iModel.elements.getElement(documentListModelId).parent?.id === childSubjectId);
-    assert.isTrue(iModel.elements.getElement(documentListModelId).model === IModel.repositoryModelId);
-    assert.isTrue(iModel.elements.getElement(drawingModelId).model === documentListModelId);
+    assert.isTrue(
+      iModel.elements.getElement(childSubjectId).parent?.id === jobSubjectId
+    );
+    assert.isTrue(
+      iModel.elements.getElement(childSubjectId).model ===
+        IModel.repositoryModelId
+    );
+    assert.isTrue(
+      iModel.elements.getElement(documentListModelId).parent?.id ===
+        childSubjectId
+    );
+    assert.isTrue(
+      iModel.elements.getElement(documentListModelId).model ===
+        IModel.repositoryModelId
+    );
+    assert.isTrue(
+      iModel.elements.getElement(drawingModelId).model === documentListModelId
+    );
 
     iModel.saveChanges();
-    await iModel.pushChanges({ description: "insert doc list with nested drawing model" });
+    await iModel.pushChanges({
+      description: "insert doc list with nested drawing model",
+    });
 
     /*
       Verify that even a deeply nested insertion is covered by the exclusive lock on the top-level parent.
@@ -806,14 +1176,18 @@ describe("IModelWriteTest", () => {
       geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
       placement: { origin: Point2d.create(2, 2), angle: 0 },
     };
-    const drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
+    const drawingGraphicId1 =
+      iModel.elements.insertElement(drawingGraphicProps1);
 
-    assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
+    assert.isTrue(
+      iModel.elements.getElement(drawingGraphicId1).model === drawingModelId
+    );
 
     iModel.saveChanges();
-    await iModel.pushChanges({ description: "insert graphic into nested sub-model" });
+    await iModel.pushChanges({
+      description: "insert graphic into nested sub-model",
+    });
 
     iModel.close();
   });
-
 });

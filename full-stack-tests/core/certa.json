@@ -11,13 +11,8 @@
     "frontendDebugging": 9223
   },
   "chromeOptions": {
-    "args": [
-      "--disable-web-security",
-      "--no-sandbox"
-    ],
-    "publicDirs": [
-      "./node_modules/@itwin/hypermodeling-frontend/lib/public/"
-    ]
+    "args": ["--disable-web-security", "--no-sandbox"],
+    "publicDirs": ["./node_modules/@itwin/hypermodeling-frontend/lib/public/"]
   },
   "mochaOptions": {
     "timeout": 240000,

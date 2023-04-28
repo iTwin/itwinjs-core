@@ -9,11 +9,12 @@ import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */
 
-IModelHost.startup().then(async () => {
-  console.log("start ..");
-  for (const directoryTail of [
-    "TaggedGeometryData",
-    /*
+IModelHost.startup()
+  .then(async () => {
+    console.log("start ..");
+    for (const directoryTail of [
+      "TaggedGeometryData",
+      /*
     "AlternatingConvexClipTree",
     "Angle",
     "Arc3d",
@@ -67,29 +68,45 @@ IModelHost.startup().then(async () => {
     "ViewWidget",
     "XYPointBuckets",
     */
-  ]) {
-    console.log(`input from${directoryTail}`);
-    const importer = ImportIMJS.create(path.join("d:", "bfiles", "importIMJS", `${directoryTail}.bim`), "testSubject");
+    ]) {
+      console.log(`input from${directoryTail}`);
+      const importer = ImportIMJS.create(
+        path.join("d:", "bfiles", "importIMJS", `${directoryTail}.bim`),
+        "testSubject"
+      );
 
-    if (!importer) {
-      console.log("Failed to create bim file");
-    } else {
-      const modelGroups = importer.importFilesFromDirectory(path.join("..", "..", "core", "geometry", "src", "test", "output", directoryTail));
-      let numModel = 0;
-      for (const group of modelGroups) {
-        numModel += group.modelNames.length;
-      }
-      console.log({ directoryName: directoryTail, models: numModel });
-      for (const group of modelGroups) {
-        if (group.modelNames.length > 0) {
-          console.log({
-            groupName: group.groupName, numModel: group.modelNames.length,
-            range: Math.floor(0.999999 + group.range.maxAbs()),
-          });
+      if (!importer) {
+        console.log("Failed to create bim file");
+      } else {
+        const modelGroups = importer.importFilesFromDirectory(
+          path.join(
+            "..",
+            "..",
+            "core",
+            "geometry",
+            "src",
+            "test",
+            "output",
+            directoryTail
+          )
+        );
+        let numModel = 0;
+        for (const group of modelGroups) {
+          numModel += group.modelNames.length;
+        }
+        console.log({ directoryName: directoryTail, models: numModel });
+        for (const group of modelGroups) {
+          if (group.modelNames.length > 0) {
+            console.log({
+              groupName: group.groupName,
+              numModel: group.modelNames.length,
+              range: Math.floor(0.999999 + group.range.maxAbs()),
+            });
+          }
         }
       }
     }
-  }
-  await IModelHost.shutdown();
-  console.log("goodbye");
-}).catch(() => { });
+    await IModelHost.shutdown();
+    console.log("goodbye");
+  })
+  .catch(() => {});

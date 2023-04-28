@@ -99,15 +99,15 @@ export interface GltfStringMap<T> {
 /** Iterate the contents of a [[GltfDictionary]].
  * @internal
  */
-export function * gltfDictionaryIterator<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T> {
+export function* gltfDictionaryIterator<T extends GltfChildOfRootProperty>(
+  dict: GltfDictionary<T>
+): Iterable<T> {
   if (Array.isArray(dict)) {
-    for (const elem of dict)
-      yield elem;
+    for (const elem of dict) yield elem;
   } else {
     for (const key of Object.keys(dict)) {
       const value = dict[key];
-      if (undefined !== value)
-        yield value;
+      if (undefined !== value) yield value;
     }
   }
 }
@@ -259,21 +259,23 @@ export type GltfNode = Gltf1Node | Gltf2Node;
 export function getGltfNodeMeshIds(node: GltfNode): GltfId[] {
   if (undefined !== node.meshes)
     return typeof node.meshes === "string" ? [node.meshes] : node.meshes;
-  else if (undefined !== node.mesh)
-    return [node.mesh];
+  else if (undefined !== node.mesh) return [node.mesh];
 
   return [];
 }
 
 /** @internal */
-export function * traverseGltfNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>, traversed: Set<GltfId>): Iterable<GltfNode> {
+export function* traverseGltfNodes(
+  ids: Iterable<GltfId>,
+  nodes: GltfDictionary<GltfNode>,
+  traversed: Set<GltfId>
+): Iterable<GltfNode> {
   for (const id of ids) {
     if (traversed.has(id))
       throw new Error("Cycle detected while traversing glTF nodes");
 
     const node = nodes[id];
-    if (!node)
-      continue;
+    if (!node) continue;
 
     traversed.add(id);
     yield node;
@@ -365,7 +367,7 @@ export interface GltfTexture extends GltfChildOfRootProperty {
  * effectively, unless `wrapS` or `wrapT` is set to ClampToEdge, the sampler will use GltfWrapMode.Repeat.
  * @internal
  */
-export interface GltfSampler extends  GltfChildOfRootProperty {
+export interface GltfSampler extends GltfChildOfRootProperty {
   /** Magnification filter. */
   magFilter?: GltfMagFilter;
   /** Minification filter. */
@@ -444,7 +446,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
      * indicates that the material should be displayed without lighting. The extension adds no additional properties; it is effectively a boolean flag.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_materials_unlit?: { };
+    KHR_materials_unlit?: {};
     /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
      * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
      * Here, it is only used to extract uniform values.
@@ -461,7 +463,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         u_color?: number[];
         // Diffuse texture.
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        u_diffuse?: { index: number, texCoord: number };
+        u_diffuse?: { index: number; texCoord: number };
         [k: string]: unknown | undefined;
       };
     };
@@ -472,7 +474,9 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
 export type GltfMaterial = Gltf1Material | Gltf2Material;
 
 /** @internal */
-export function isGltf1Material(material: GltfMaterial): material is Gltf1Material {
+export function isGltf1Material(
+  material: GltfMaterial
+): material is Gltf1Material {
   const mat1 = material as Gltf1Material;
   return undefined !== mat1.technique || undefined !== mat1.values;
 }
@@ -496,7 +500,13 @@ export interface GltfBufferViewProps extends GltfChildOfRootProperty {
 export interface GltfAccessor extends GltfChildOfRootProperty {
   bufferView?: GltfId;
   byteOffset?: number;
-  componentType?: GltfDataType.SignedByte | GltfDataType.UnsignedByte | GltfDataType.SignedShort | GltfDataType.UnsignedShort | GltfDataType.UInt32 | GltfDataType.Float;
+  componentType?:
+    | GltfDataType.SignedByte
+    | GltfDataType.UnsignedByte
+    | GltfDataType.SignedShort
+    | GltfDataType.UnsignedShort
+    | GltfDataType.UInt32
+    | GltfDataType.Float;
   normalized?: boolean;
   count: number;
   type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4";
@@ -517,8 +527,30 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
 
 /** @internal */
 export namespace GltfStructuralMetadata {
-  export type ClassPropertyType = "SCALAR" | "STRING" | "BOOLEAN" | "ENUM" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
-  export type ClassPropertyComponentType = "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | "FLOAT32" | "FLOAT64" | string;
+  export type ClassPropertyType =
+    | "SCALAR"
+    | "STRING"
+    | "BOOLEAN"
+    | "ENUM"
+    | "VEC2"
+    | "VEC3"
+    | "VEC4"
+    | "MAT2"
+    | "MAT3"
+    | "MAT4"
+    | string;
+  export type ClassPropertyComponentType =
+    | "INT8"
+    | "UINT8"
+    | "INT16"
+    | "UINT16"
+    | "INT32"
+    | "UINT32"
+    | "INT64"
+    | "UINT64"
+    | "FLOAT32"
+    | "FLOAT64"
+    | string;
 
   // Ignoring VECN and MATN types because they complicate offset, scale, min, and max, all of which are otherwise only relevant to SCALAR in which case they're all just numbers.
   export interface ClassProperty extends GltfProperty {
@@ -549,7 +581,16 @@ export namespace GltfStructuralMetadata {
   export interface Enum extends GltfProperty {
     values: EnumValue[];
     // Default: UINT16
-    valueType?: "INT8" | "UINT8" | "INT16" | "UINT16" | "INT32" | "UINT32" | "INT64" | "UINT64" | string;
+    valueType?:
+      | "INT8"
+      | "UINT8"
+      | "INT16"
+      | "UINT16"
+      | "INT32"
+      | "UINT32"
+      | "INT64"
+      | "UINT64"
+      | string;
     name?: string;
     description?: string;
   }
@@ -635,7 +676,7 @@ export interface GltfDocument extends GltfProperty {
     KHR_techniques_webgl?: {
       techniques?: Array<{
         uniforms?: {
-          [key: string]: { type: GltfDataType, value?: any } | undefined;
+          [key: string]: { type: GltfDataType; value?: any } | undefined;
         };
       }>;
     };

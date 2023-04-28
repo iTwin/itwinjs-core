@@ -6,7 +6,12 @@
  * @module WebGL
  */
 
-import { ColorDef, HiddenLine, RenderMode, ViewFlags } from "@itwin/core-common";
+import {
+  ColorDef,
+  HiddenLine,
+  RenderMode,
+  ViewFlags,
+} from "@itwin/core-common";
 import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./LineCode";
@@ -36,8 +41,7 @@ export class EdgeSettings {
 
   public init(hline: HiddenLine.Settings | undefined): void {
     this.clear();
-    if (!hline)
-      return;
+    if (!hline) return;
 
     // The threshold is HiddenLine.Settings is a transparency value. Convert it to an alpha value and clamp to [0..1].
     let threshold = hline.transparencyThreshold;
@@ -50,14 +54,21 @@ export class EdgeSettings {
       this._color.setColorDef(vis.color);
     }
 
-    this._visibleLineCode = (undefined !== vis.pattern ? LineCode.valueFromLinePixels(vis.pattern) : undefined);
+    this._visibleLineCode =
+      undefined !== vis.pattern
+        ? LineCode.valueFromLinePixels(vis.pattern)
+        : undefined;
     this._visibleWeight = vis.width;
 
     // Hidden edge settings default to matching visible edge settings.
     const hid = hline.hidden;
-    this._hiddenLineCode = undefined !== hid.pattern ? LineCode.valueFromLinePixels(hid.pattern) : this._visibleLineCode;
+    this._hiddenLineCode =
+      undefined !== hid.pattern
+        ? LineCode.valueFromLinePixels(hid.pattern)
+        : this._visibleLineCode;
 
-    this._hiddenWeight = undefined !== hid.width ? hid.width : this._visibleWeight;
+    this._hiddenWeight =
+      undefined !== hid.width ? hid.width : this._visibleWeight;
     if (undefined !== this._hiddenWeight && undefined !== this._visibleWeight) {
       // Hidden edges cannot be wider than visible edges.
       this._hiddenWeight = Math.min(this._visibleWeight, this._hiddenWeight);
@@ -66,17 +77,14 @@ export class EdgeSettings {
 
   public computeOvrFlags(pass: RenderPass, vf: ViewFlags): OvrFlags {
     // Edge overrides never apply in wireframe mode
-    if (!this.isOverridden(vf))
-      return OvrFlags.None;
+    if (!this.isOverridden(vf)) return OvrFlags.None;
 
     // Alpha always overridden - transparent edges only supported in wireframe mode.
     let flags = this.getColor(vf) ? OvrFlags.Rgba : OvrFlags.Alpha;
 
-    if (undefined !== this.getLineCode(pass, vf))
-      flags |= OvrFlags.LineCode;
+    if (undefined !== this.getLineCode(pass, vf)) flags |= OvrFlags.LineCode;
 
-    if (undefined !== this.getWeight(pass, vf))
-      flags |= OvrFlags.Weight;
+    if (undefined !== this.getWeight(pass, vf)) flags |= OvrFlags.Weight;
 
     return flags;
   }
@@ -86,21 +94,25 @@ export class EdgeSettings {
   }
 
   public getColor(vf: ViewFlags): FloatRgba | undefined {
-    return this._colorOverridden && this.isOverridden(vf) ? this._color : undefined;
+    return this._colorOverridden && this.isOverridden(vf)
+      ? this._color
+      : undefined;
   }
 
   public getLineCode(pass: RenderPass, vf: ViewFlags): number | undefined {
-    if (!this.isOverridden(vf))
-      return undefined;
+    if (!this.isOverridden(vf)) return undefined;
 
-    return RenderPass.HiddenEdge === pass ? this._hiddenLineCode : this._visibleLineCode;
+    return RenderPass.HiddenEdge === pass
+      ? this._hiddenLineCode
+      : this._visibleLineCode;
   }
 
   public getWeight(pass: RenderPass, vf: ViewFlags): number | undefined {
-    if (!this.isOverridden(vf))
-      return undefined;
+    if (!this.isOverridden(vf)) return undefined;
 
-    return RenderPass.HiddenEdge === pass ? this._hiddenWeight : this._visibleWeight;
+    return RenderPass.HiddenEdge === pass
+      ? this._hiddenWeight
+      : this._visibleWeight;
   }
 
   private clear(): void {

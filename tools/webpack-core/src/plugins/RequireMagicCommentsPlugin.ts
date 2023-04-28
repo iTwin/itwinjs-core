@@ -49,42 +49,63 @@ interface MagicCommentHandlerConfig {
  * Will result in webpack treating `require(/* foo *﻿/"bar")` as if it had been `require("bar?foo")`.
  */
 export class RequireMagicCommentsPlugin {
-  constructor(private _configs: MagicCommentHandlerConfig[]) { }
+  constructor(private _configs: MagicCommentHandlerConfig[]) {}
 
   public apply(compiler: Compiler) {
-    compiler.hooks.normalModuleFactory.tap("RequireMagicCommentsPlugin", (nmf) => {
-      nmf.hooks.parser.for("javascript/auto").tap("RequireMagicCommentsPlugin", (parser: any) => {
-        parser.hooks.call.for("require").tap("RequireMagicCommentsPlugin", this.handleCommonJs(parser, CommonJsRequireDependency, RequireHeaderDependency));
-        parser.hooks.call.for("require.resolve").tap("RequireMagicCommentsPlugin", this.handleCommonJs(parser, RequireResolveDependency, RequireResolveHeaderDependency));
-      });
-    });
+    compiler.hooks.normalModuleFactory.tap(
+      "RequireMagicCommentsPlugin",
+      (nmf) => {
+        nmf.hooks.parser
+          .for("javascript/auto")
+          .tap("RequireMagicCommentsPlugin", (parser: any) => {
+            parser.hooks.call
+              .for("require")
+              .tap(
+                "RequireMagicCommentsPlugin",
+                this.handleCommonJs(
+                  parser,
+                  CommonJsRequireDependency,
+                  RequireHeaderDependency
+                )
+              );
+            parser.hooks.call
+              .for("require.resolve")
+              .tap(
+                "RequireMagicCommentsPlugin",
+                this.handleCommonJs(
+                  parser,
+                  RequireResolveDependency,
+                  RequireResolveHeaderDependency
+                )
+              );
+          });
+      }
+    );
   }
 
   private testComment(comment: string, strOrRegex: string | RegExp) {
-    if (typeof strOrRegex === "string")
-      return comment.trim() === strOrRegex;
+    if (typeof strOrRegex === "string") return comment.trim() === strOrRegex;
 
     return strOrRegex.test(comment);
   }
 
   private handleCommonJs(parser: any, depType: any, headerType: any) {
     return (expr: any): true | void => {
-      if (expr.arguments.length !== 1 || !parser.state.compilation)
-        return;
+      if (expr.arguments.length !== 1 || !parser.state.compilation) return;
 
-      const logger = parser.state.compilation.getLogger("RequireMagicCommentsPlugin");
+      const logger = parser.state.compilation.getLogger(
+        "RequireMagicCommentsPlugin"
+      );
       let param: any;
       let request: any;
       for (const comment of parser.getComments(expr.range)) {
         for (const { test, handler, convertResolve } of this._configs) {
-          if (!this.testComment(comment.value, test))
-            continue;
+          if (!this.testComment(comment.value, test)) continue;
 
           if (!request) {
             // We can only handle string expressions, but don't even bother evaluating until we're sure there's a matching comment.
             param = parser.evaluateExpression(expr.arguments[0]);
-            if (!param.isString())
-              return;
+            if (!param.isString()) return;
 
             request = param.string;
           }
@@ -92,10 +113,21 @@ export class RequireMagicCommentsPlugin {
           if (convertResolve && depType !== CommonJsRequireDependency) {
             depType = CommonJsRequireDependency;
             headerType = RequireHeaderDependency;
-            logger.log(`Converting require.resolve => require for "${param.string}" at ${getSourcePosition(parser.state.current, expr.loc)}`);
+            logger.log(
+              `Converting require.resolve => require for "${
+                param.string
+              }" at ${getSourcePosition(parser.state.current, expr.loc)}`
+            );
           }
           request = handler(request, comment.value);
-          logger.log(`Handler for /*${comment.value}*/ - transformed "${param.string}" => "${request}" at ${getSourcePosition(parser.state.current, expr.loc)}`);
+          logger.log(
+            `Handler for /*${comment.value}*/ - transformed "${
+              param.string
+            }" => "${request}" at ${getSourcePosition(
+              parser.state.current,
+              expr.loc
+            )}`
+          );
         }
       }
 
@@ -135,7 +167,8 @@ export const copyFilesRule = {
   loader: require.resolve("file-loader"),
   options: {
     name: "static/[name].[hash:6].[ext]",
-    postTransformPublicPath: (p: string) => `require("path").resolve(__dirname, ${p})`,
+    postTransformPublicPath: (p: string) =>
+      `require("path").resolve(__dirname, ${p})`,
     esModule: false,
   },
 };

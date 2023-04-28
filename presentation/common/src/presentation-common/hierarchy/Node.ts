@@ -124,9 +124,13 @@ export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
  * @deprecated in 3.x. Use [[PartialNode]].
  */
 // eslint-disable-next-line deprecation/deprecation
-export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
+export type PartialNodeJSON = AllOrNone<
+  Partial<NodeJSON>,
+  "key" | "labelDefinition"
+>;
 
-type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
+type AllOrNone<T, P extends keyof T> = Omit<T, P> &
+  ({ [K in P]?: never } | Required<Pick<T, P>>);
 
 /** @public */
 export namespace Node {
@@ -163,8 +167,7 @@ export namespace Node {
    */
   // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: NodeJSON | string): Node {
-    if (typeof json === "string")
-      return JSON.parse(json, reviver);
+    if (typeof json === "string") return JSON.parse(json, reviver);
     const { labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
@@ -208,8 +211,7 @@ export namespace Node {
    */
   // eslint-disable-next-line deprecation/deprecation
   export function listFromJSON(json: NodeJSON[] | string): Node[] {
-    if (typeof json === "string")
-      return JSON.parse(json, listReviver);
+    if (typeof json === "string") return JSON.parse(json, listReviver);
     // eslint-disable-next-line deprecation/deprecation
     return json.map((m) => fromJSON(m));
   }

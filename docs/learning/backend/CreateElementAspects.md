@@ -4,6 +4,6 @@ Use [IModelDb.Elements.insertAspect]($backend) to insert a new ElementAspect int
 This method takes as its input an [ElementAspectProps]($common) or a subclass of it, which defines the class and all required properties of the new ElementAspect.
 The pattern is:
 
-``` ts
+```ts
 [[include:Elements.insertAspect]]
 ```

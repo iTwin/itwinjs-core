@@ -58,6 +58,6 @@ In some specific cases the algorithm described above might assume we got into an
 }]
 ```
 
-In the above example we have a hierarchy of *Model -> Category -> Element -> Model -> Category -> Element -> ...*. But this is not an infinite hierarchy, because every time the *Model* is different, although *Categories* might be repeated. However, because the *Categories* are repeated, our algorithm thinks this is an infinite hierarchy and breaks it as soon as the second *Category* node is created.
+In the above example we have a hierarchy of _Model -> Category -> Element -> Model -> Category -> Element -> ..._. But this is not an infinite hierarchy, because every time the _Model_ is different, although _Categories_ might be repeated. However, because the _Categories_ are repeated, our algorithm thinks this is an infinite hierarchy and breaks it as soon as the second _Category_ node is created.
 
 To avoid the above problem, there's a `suppressSimilarAncestorsCheck` attribute that can be set on [one of the hierarchy specifications](./ChildNodeRule.md#attribute-specifications). With that attribute applied we allow the node to be repeated in a hierarchy up to 10 times.

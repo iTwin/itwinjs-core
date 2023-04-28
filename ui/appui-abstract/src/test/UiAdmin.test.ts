@@ -13,12 +13,17 @@ import { loggerCategory } from "../appui-abstract/utils/misc";
 import { UiDataProvider } from "../appui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../appui-abstract/properties/StandardTypeNames";
 import { DialogLayoutDataProvider } from "../appui-abstract/dialogs/UiLayoutDataProvider";
-import { DialogItem, DialogPropertySyncItem } from "../appui-abstract/dialogs/DialogItem";
-import { DisplayMessageType, MessagePresenter } from "../appui-abstract/notification/MessagePresenter";
+import {
+  DialogItem,
+  DialogPropertySyncItem,
+} from "../appui-abstract/dialogs/DialogItem";
+import {
+  DisplayMessageType,
+  MessagePresenter,
+} from "../appui-abstract/notification/MessagePresenter";
 import { MessageSeverity } from "../appui-abstract/notification/MessageSeverity";
 
 describe("UiAdmin", () => {
-
   let uiAdmin: UiAdmin;
 
   before(() => {
@@ -35,9 +40,19 @@ describe("UiAdmin", () => {
 
   it("messagePresenter should return set object", () => {
     const mp: MessagePresenter = {
-      displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => { },
-      displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
-      closeInputFieldMessage: (): void => { },
+      displayMessage: (
+        _severity: MessageSeverity,
+        _briefMessage: HTMLElement | string,
+        _detailedMessage?: HTMLElement | string,
+        _messageType?: DisplayMessageType.Toast
+      ): void => {},
+      displayInputFieldMessage: (
+        _inputField: HTMLElement,
+        _severity: MessageSeverity,
+        _briefMessage: HTMLElement | string,
+        _detailedMessage?: HTMLElement | string
+      ): void => {},
+      closeInputFieldMessage: (): void => {},
     };
     UiAdmin.messagePresenter = mp;
     expect(UiAdmin.messagePresenter).to.eq(mp);
@@ -56,40 +71,115 @@ describe("UiAdmin", () => {
 
   it("showContextMenu should return false by default", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      {
+        id: "test",
+        item: {
+          label: "test label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+      },
+      {
+        id: "test2",
+        item: {
+          label: "test label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+      },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-    expect(uiAdmin.showContextMenu(menuItemProps, uiAdmin.createXAndY(150, 250), doc.documentElement)).to.be.false;
+    expect(
+      uiAdmin.showContextMenu(
+        menuItemProps,
+        uiAdmin.createXAndY(150, 250),
+        doc.documentElement
+      )
+    ).to.be.false;
   });
 
   it("showToolbar should return false by default", () => {
     const toolbarProps: AbstractToolbarProps = {
       toolbarId: "test",
       items: [
-        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
-        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
-        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        {
+          id: "tool",
+          itemPriority: 10,
+          label: "tool label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+        {
+          id: "command",
+          itemPriority: 20,
+          label: "command label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+        {
+          id: "command2",
+          itemPriority: 30,
+          label: "command label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
       ],
     };
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     const spySelect = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.showToolbar(toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(
+      uiAdmin.showToolbar(
+        toolbarProps,
+        uiAdmin.createXAndY(150, 250),
+        uiAdmin.createXAndY(8, 8),
+        spySelect,
+        spyCancel,
+        RelativePosition.BottomRight,
+        doc.documentElement
+      )
+    ).to.be.false;
     expect(uiAdmin.hideToolbar()).to.be.false;
   });
 
   it("showMenuButton should return false by default", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      {
+        id: "test",
+        item: {
+          label: "test label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+      },
+      {
+        id: "test2",
+        item: {
+          label: "test label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+      },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-    expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250), doc.documentElement)).to.be.false;
-    expect(uiAdmin.showMenuButton("test", menuItemProps, uiAdmin.createXAndY(150, 250))).to.be.false;
+    expect(
+      uiAdmin.showMenuButton(
+        "test",
+        menuItemProps,
+        uiAdmin.createXAndY(150, 250),
+        doc.documentElement
+      )
+    ).to.be.false;
+    expect(
+      uiAdmin.showMenuButton(
+        "test",
+        menuItemProps,
+        uiAdmin.createXAndY(150, 250)
+      )
+    ).to.be.false;
     expect(uiAdmin.hideMenuButton("test")).to.be.false;
   });
 
@@ -98,8 +188,25 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.showCalculator(100, "icon-placeholder", uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
-    expect(uiAdmin.showCalculator(100, "icon-placeholder", uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(
+      uiAdmin.showCalculator(
+        100,
+        "icon-placeholder",
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel,
+        doc.documentElement
+      )
+    ).to.be.false;
+    expect(
+      uiAdmin.showCalculator(
+        100,
+        "icon-placeholder",
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel
+      )
+    ).to.be.false;
     expect(uiAdmin.hideCalculator()).to.be.false;
   });
 
@@ -108,8 +215,23 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.showAngleEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
-    expect(uiAdmin.showAngleEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(
+      uiAdmin.showAngleEditor(
+        100,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel,
+        doc.documentElement
+      )
+    ).to.be.false;
+    expect(
+      uiAdmin.showAngleEditor(
+        100,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel
+      )
+    ).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -118,8 +240,23 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.showLengthEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
-    expect(uiAdmin.showLengthEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(
+      uiAdmin.showLengthEditor(
+        100,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel,
+        doc.documentElement
+      )
+    ).to.be.false;
+    expect(
+      uiAdmin.showLengthEditor(
+        100,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel
+      )
+    ).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -128,8 +265,23 @@ describe("UiAdmin", () => {
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
-    expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(
+      uiAdmin.showHeightEditor(
+        100,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel,
+        doc.documentElement
+      )
+    ).to.be.false;
+    expect(
+      uiAdmin.showHeightEditor(
+        100,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel
+      )
+    ).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
@@ -137,49 +289,120 @@ describe("UiAdmin", () => {
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
-    const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: StandardTypeNames.Number };
+    const propertyDescription: PropertyDescription = {
+      name: "test",
+      displayLabel: "Test",
+      typename: StandardTypeNames.Number,
+    };
 
-    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
-    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;
+    expect(
+      uiAdmin.showInputEditor(
+        100,
+        propertyDescription,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel,
+        doc.documentElement
+      )
+    ).to.be.false;
+    expect(
+      uiAdmin.showInputEditor(
+        100,
+        propertyDescription,
+        uiAdmin.createXAndY(150, 250),
+        spyCommit,
+        spyCancel
+      )
+    ).to.be.false;
     expect(uiAdmin.hideInputEditor()).to.be.false;
   });
 
   it("showHTMLElement should return false by default", () => {
-    const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
+    const html =
+      '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
     const display = new DOMParser().parseFromString(html, "text/html");
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(
+      uiAdmin.showHTMLElement(
+        display.documentElement,
+        uiAdmin.createXAndY(150, 250),
+        uiAdmin.createXAndY(8, 8),
+        spyCancel,
+        RelativePosition.BottomRight,
+        doc.documentElement
+      )
+    ).to.be.false;
     expect(uiAdmin.hideHTMLElement()).to.be.false;
   });
 
   it("showCard should return false by default", () => {
-    const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
+    const html =
+      '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
     const content = new DOMParser().parseFromString(html, "text/html");
     const toolbarProps: AbstractToolbarProps = {
       toolbarId: "test",
       items: [
-        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
-        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
-        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        {
+          id: "tool",
+          itemPriority: 10,
+          label: "tool label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+        {
+          id: "command",
+          itemPriority: 20,
+          label: "command label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
+        {
+          id: "command2",
+          itemPriority: 30,
+          label: "command label",
+          icon: "icon-placeholder",
+          execute: () => {},
+        },
       ],
     };
     const spySelect = sinon.fake();
     const spyCancel = sinon.fake();
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
-    expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(
+      uiAdmin.showCard(
+        content.documentElement,
+        "Title",
+        toolbarProps,
+        uiAdmin.createXAndY(150, 250),
+        uiAdmin.createXAndY(8, 8),
+        spySelect,
+        spyCancel,
+        RelativePosition.BottomRight,
+        doc.documentElement
+      )
+    ).to.be.false;
     expect(uiAdmin.hideCard()).to.be.false;
   });
 
   it("openToolSettingsPopup should return false by default", () => {
-    class TestUiDataProvider extends UiDataProvider { }
+    class TestUiDataProvider extends UiDataProvider {}
     const uiDataProvider = new TestUiDataProvider();
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     const spyCancel = sinon.fake();
 
-    expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(
+      uiAdmin.openToolSettingsPopup(
+        uiDataProvider,
+        uiAdmin.createXAndY(150, 250),
+        uiAdmin.createXAndY(8, 8),
+        spyCancel,
+        RelativePosition.BottomRight,
+        doc.documentElement
+      )
+    ).to.be.false;
     expect(uiAdmin.closeToolSettingsPopup()).to.be.false;
   });
 
@@ -216,8 +439,9 @@ describe("UiAdmin", () => {
   it("openDialog should return false by default", () => {
     class TestDialogDynamicUiDataProvider extends DialogLayoutDataProvider {
       /** Applies change of a single property - this is the default method used when property editors are dynamically generated. */
-      public override applyUiPropertyChange = (_updatedValue: DialogPropertySyncItem): void => {
-      };
+      public override applyUiPropertyChange = (
+        _updatedValue: DialogPropertySyncItem
+      ): void => {};
 
       /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
       public override supplyDialogItems(): DialogItem[] | undefined {
@@ -225,10 +449,16 @@ describe("UiAdmin", () => {
       }
     }
 
-    expect(uiAdmin.openDialog(new TestDialogDynamicUiDataProvider(), "test-title", true, "test-modal")).to.be.false;
+    expect(
+      uiAdmin.openDialog(
+        new TestDialogDynamicUiDataProvider(),
+        "test-title",
+        true,
+        "test-modal"
+      )
+    ).to.be.false;
     expect(uiAdmin.closeDialog("test-modal")).to.be.false;
   });
-
 });
 
 describe("loggerCategory", () => {

@@ -5,13 +5,28 @@
 declare const window: any;
 declare const global: any;
 
-const isFrontend = (typeof (window) !== "undefined");
-export type CertaBackendCallback = (...args: any[]) => void | null | undefined | number | string | boolean | Promise<void> | Promise<null> | Promise<undefined> | Promise<number> | Promise<string> | Promise<boolean>;
+const isFrontend = typeof window !== "undefined";
+export type CertaBackendCallback = (
+  ...args: any[]
+) =>
+  | void
+  | null
+  | undefined
+  | number
+  | string
+  | boolean
+  | Promise<void>
+  | Promise<null>
+  | Promise<undefined>
+  | Promise<number>
+  | Promise<string>
+  | Promise<boolean>;
 
 /** @internal */
-export function getCallbacksRegisteredOnBackend(): { [name: string]: CertaBackendCallback } {
-  if (isFrontend)
-    throw new Error("This should only be called on the backend!");
+export function getCallbacksRegisteredOnBackend(): {
+  [name: string]: CertaBackendCallback;
+} {
+  if (isFrontend) throw new Error("This should only be called on the backend!");
 
   global._CertaRegisteredCallbacks = global._CertaRegisteredCallbacks || {};
   return global._CertaRegisteredCallbacks;
@@ -26,17 +41,21 @@ export function executeRegisteredCallback(name: string, args: any[]): any {
   return registeredCallbacks[name](...args);
 }
 
-export function registerBackendCallback(name: string, cb: CertaBackendCallback): void {
-  if (isFrontend)
-    throw new Error("This should only be called on the backend!");
+export function registerBackendCallback(
+  name: string,
+  cb: CertaBackendCallback
+): void {
+  if (isFrontend) throw new Error("This should only be called on the backend!");
 
   global._CertaRegisteredCallbacks = global._CertaRegisteredCallbacks || {};
   global._CertaRegisteredCallbacks[name] = cb;
 }
 
-export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
-  if (!isFrontend)
-    return executeRegisteredCallback(name, args);
+export async function executeBackendCallback(
+  name: string,
+  ...args: any[]
+): Promise<any> {
+  if (!isFrontend) return executeRegisteredCallback(name, args);
 
   return window._CertaSendToBackend(name, args);
 }

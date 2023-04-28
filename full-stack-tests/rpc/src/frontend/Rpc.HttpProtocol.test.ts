@@ -3,7 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { RpcOperation, RpcRequest, RpcRequestEvent, ServerError, ServerTimeoutError } from "@itwin/core-common";
+import {
+  RpcOperation,
+  RpcRequest,
+  RpcRequestEvent,
+  ServerError,
+  ServerTimeoutError,
+} from "@itwin/core-common";
 import { TestOp1Params, TestRpcInterface } from "../common/TestRpcInterface";
 
 if (false) {
@@ -15,19 +21,29 @@ if (false) {
       const expectedPendings = 2;
       let pendingsReceived = 0;
 
-      const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => { // eslint-disable-line deprecation/deprecation
-        if (type !== RpcRequestEvent.PendingUpdateReceived || request.operation !== op1) // eslint-disable-line deprecation/deprecation
-          return;
+      const removeListener = RpcRequest.events.addListener(
+        (type: RpcRequestEvent, request: RpcRequest) => {
+          // eslint-disable-line deprecation/deprecation
+          if (
+            type !== RpcRequestEvent.PendingUpdateReceived ||
+            request.operation !== op1
+          )
+            // eslint-disable-line deprecation/deprecation
+            return;
 
-        if ((request as any)[COUNT] === undefined) {
-          (request as any)[COUNT] = 0;
+          if ((request as any)[COUNT] === undefined) {
+            (request as any)[COUNT] = 0;
+          }
+
+          assert.equal((request as any)[COUNT], pendingsReceived);
+          ++pendingsReceived;
+          assert.equal(
+            request.extendedStatus,
+            `Pending Response #${pendingsReceived}`
+          );
+          (request as any)[COUNT] = pendingsReceived;
         }
-
-        assert.equal((request as any)[COUNT], pendingsReceived);
-        ++pendingsReceived;
-        assert.equal(request.extendedStatus, `Pending Response #${pendingsReceived}`);
-        (request as any)[COUNT] = pendingsReceived;
-      });
+      );
 
       op1.policy.retryInterval = () => 1;
 

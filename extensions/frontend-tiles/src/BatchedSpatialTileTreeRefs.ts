@@ -4,10 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
+  AttachToViewportArgs,
+  IModelConnection,
+  SpatialTileTreeReferences,
+  SpatialViewState,
+  TileTreeLoadStatus,
+  TileTreeOwner,
+  TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedTileTreeReference } from "./BatchedTileTreeReference";
-import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
+import {
+  ComputeSpatialTilesetBaseUrl,
+  createFallbackSpatialTileTreeReferences,
+} from "./FrontendTiles";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
@@ -51,7 +60,7 @@ class ProxyTileTreeReference extends TileTreeReference {
       tileTree: undefined,
       loadStatus: TileTreeLoadStatus.NotLoaded,
       load: () => undefined,
-      dispose: () => { },
+      dispose: () => {},
       loadTree: async () => Promise.resolve(undefined),
     };
   }
@@ -75,18 +84,23 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   // Retained if attachToViewport is called while we are still loading; and reset if detachFromViewport is called while loading.
   private _attachArgs?: AttachToViewportArgs;
 
-  public constructor(view: SpatialViewState, getBaseUrl: Promise<URL | undefined>) {
+  public constructor(
+    view: SpatialViewState,
+    getBaseUrl: Promise<URL | undefined>
+  ) {
     this._proxyRef = new ProxyTileTreeReference(view.iModel);
-    getBaseUrl.then((url: URL | undefined) => {
-      if (url) {
-        const ref = BatchedTileTreeReference.create(view, url);
-        this.setTreeRefs(new BatchedSpatialTileTreeReferences(ref));
-      } else {
+    getBaseUrl
+      .then((url: URL | undefined) => {
+        if (url) {
+          const ref = BatchedTileTreeReference.create(view, url);
+          this.setTreeRefs(new BatchedSpatialTileTreeReferences(ref));
+        } else {
+          this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
+        }
+      })
+      .catch(() => {
         this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
-      }
-    }).catch(() => {
-      this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
-    });
+      });
   }
 
   private setTreeRefs(refs: SpatialTileTreeReferences): void {
@@ -103,48 +117,50 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {
-    if (this._impl)
-      this._impl.attachToViewport(args);
-    else
-      this._attachArgs = args;
+    if (this._impl) this._impl.attachToViewport(args);
+    else this._attachArgs = args;
   }
 
   public detachFromViewport(): void {
-    if (this._impl)
-      this._impl.detachFromViewport();
-    else
-      this._attachArgs = undefined;
+    if (this._impl) this._impl.detachFromViewport();
+    else this._attachArgs = undefined;
   }
 
-  public setDeactivated(): void { }
+  public setDeactivated(): void {}
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
     if (this._impl) {
-      for (const ref of this._impl)
-        yield ref;
+      for (const ref of this._impl) yield ref;
     } else {
       yield this._proxyRef;
     }
   }
 }
 
-const iModelToBaseUrl = new Map<IModelConnection, URL | null | Promise<URL | undefined>>();
+const iModelToBaseUrl = new Map<
+  IModelConnection,
+  URL | null | Promise<URL | undefined>
+>();
 
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl): SpatialTileTreeReferences {
+export function createBatchedSpatialTileTreeReferences(
+  view: SpatialViewState,
+  computeBaseUrl: ComputeSpatialTilesetBaseUrl
+): SpatialTileTreeReferences {
   const iModel = view.iModel;
   let entry = iModelToBaseUrl.get(iModel);
   if (undefined === entry) {
     const promise = computeBaseUrl(iModel);
-    iModelToBaseUrl.set(iModel, entry = promise);
+    iModelToBaseUrl.set(iModel, (entry = promise));
     iModel.onClose.addOnce(() => iModelToBaseUrl.delete(iModel));
-    promise.then((url: URL | undefined) => {
-      if (iModelToBaseUrl.has(iModel))
-        iModelToBaseUrl.set(iModel, url ?? null);
-    }).catch(() => {
-      if (iModelToBaseUrl.has(iModel))
-        iModelToBaseUrl.set(iModel, null);
-    });
+    promise
+      .then((url: URL | undefined) => {
+        if (iModelToBaseUrl.has(iModel))
+          iModelToBaseUrl.set(iModel, url ?? null);
+      })
+      .catch(() => {
+        if (iModelToBaseUrl.has(iModel)) iModelToBaseUrl.set(iModel, null);
+      });
   }
 
   if (null === entry) {

@@ -14,9 +14,15 @@ import { Geometry } from "./GeometryPrimitives";
 export class GeometryList {
   private _list: Geometry[] = [];
 
-  public get first(): Geometry | undefined { return this._list[0]; }
-  public get isEmpty(): boolean { return this._list.length === 0; }
-  public get length(): number { return this._list.length; }
+  public get first(): Geometry | undefined {
+    return this._list[0];
+  }
+  public get isEmpty(): boolean {
+    return this._list.length === 0;
+  }
+  public get length(): number {
+    return this._list.length;
+  }
 
   public push(geom: Geometry): number {
     return this._list.push(geom);
@@ -27,7 +33,9 @@ export class GeometryList {
     return this;
   }
 
-  public clear(): void { this._list.length = 0; }
+  public clear(): void {
+    this._list.length = 0;
+  }
 
   public computeRange(): Range3d {
     const range: Range3d = Range3d.createNull();
@@ -36,7 +44,9 @@ export class GeometryList {
     return range;
   }
 
-  public computeQuantizationParams(): QParams3d { return QParams3d.fromRange(this.computeRange()); }
+  public computeQuantizationParams(): QParams3d {
+    return QParams3d.fromRange(this.computeRange());
+  }
 
   public [Symbol.iterator]() {
     return this._list[Symbol.iterator]();

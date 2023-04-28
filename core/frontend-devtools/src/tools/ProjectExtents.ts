@@ -8,7 +8,13 @@
  */
 
 import { AxisAlignedBox3d, ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import {
+  DecorateContext,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  Tool,
+} from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */
@@ -22,7 +28,9 @@ export class ProjectExtentsDecoration {
     this.updateDecorationListener(true);
   }
 
-  protected stop(): void { this.updateDecorationListener(false); }
+  protected stop(): void {
+    this.updateDecorationListener(false);
+  }
 
   protected updateDecorationListener(add: boolean): void {
     if (this._removeDecorationListener) {
@@ -32,7 +40,8 @@ export class ProjectExtentsDecoration {
       }
     } else if (add) {
       if (!this._removeDecorationListener)
-        this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
+        this._removeDecorationListener =
+          IModelApp.viewManager.addDecorator(this);
     }
   }
 
@@ -45,16 +54,26 @@ export class ProjectExtentsDecoration {
 
   public decorate(context: DecorateContext): void {
     const vp = context.viewport;
-    if (!vp.view.isSpatialView())
-      return;
+    if (!vp.view.isSpatialView()) return;
 
-    const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const builderAccVis = context.createGraphicBuilder(
+      GraphicType.WorldDecoration
+    );
+    const builderAccHid = context.createGraphicBuilder(
+      GraphicType.WorldOverlay
+    );
+    const colorAccVis = ColorDef.white.adjustedForContrast(
+      context.viewport.view.backgroundColor
+    );
     const colorAccHid = colorAccVis.withAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
-    builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
+    builderAccHid.setSymbology(
+      colorAccHid,
+      ColorDef.black,
+      1,
+      LinePixels.Code2
+    );
 
     builderAccVis.addRangeBox(this._extents);
     builderAccHid.addRangeBox(this._extents);
@@ -67,12 +86,13 @@ export class ProjectExtentsDecoration {
   public static toggle(imodel: IModelConnection, enabled?: boolean): boolean {
     if (undefined !== enabled) {
       const alreadyEnabled = undefined !== ProjectExtentsDecoration._decorator;
-      if (enabled === alreadyEnabled)
-        return alreadyEnabled;
+      if (enabled === alreadyEnabled) return alreadyEnabled;
     }
 
     if (undefined === ProjectExtentsDecoration._decorator) {
-      ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration(imodel);
+      ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration(
+        imodel
+      );
       return true;
     } else {
       ProjectExtentsDecoration._decorator.stop();
@@ -88,7 +108,10 @@ export class ProjectExtentsDecoration {
  * @returns true if the extents are now ON, false if they are now OFF.
  * @beta
  */
-export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean {
+export function toggleProjectExtents(
+  imodel: IModelConnection,
+  enabled?: boolean
+): boolean {
   return ProjectExtentsDecoration.toggle(imodel, enabled);
 }
 
@@ -102,8 +125,12 @@ export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean
  */
 export class ToggleProjectExtentsTool extends Tool {
   public static override toolId = "ToggleProjectExtents";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -118,8 +145,7 @@ export class ToggleProjectExtentsTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      await this.run(enable);
+    if (typeof enable !== "string") await this.run(enable);
 
     return true;
   }

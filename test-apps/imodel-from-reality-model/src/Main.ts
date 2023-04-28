@@ -21,14 +21,21 @@ const argv = yargs
   .demandOption(["input", "output"])
   .parseSync();
 
-(async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+(async () => {
+  // eslint-disable-line @typescript-eslint/no-floating-promises
   await IModelHost.startup();
   Logger.initializeToConsole();
 
-  const creator = new RealityModelContextIModelCreator(argv.output, argv.input, argv.name as string);
+  const creator = new RealityModelContextIModelCreator(
+    argv.output,
+    argv.input,
+    argv.name as string
+  );
   try {
     await creator.create();
-    process.stdout.write(`IModel: ${argv.output} Created for Reality Model: ${argv.input}`);
+    process.stdout.write(
+      `IModel: ${argv.output} Created for Reality Model: ${argv.input}`
+    );
   } catch (_error) {
     process.stdout.write("Error occurred creating IModel\n");
   }

@@ -12,14 +12,18 @@
  * @beta
  */
 export function parseBoolean(arg: string | undefined): boolean | undefined {
-  if (undefined === arg)
-    return undefined;
+  if (undefined === arg) return undefined;
 
   switch (arg.toLowerCase()) {
-    case "on": return true;
-    case "true": return true;
-    case "off": return false;
-    case "false": return false;
-    default: return undefined;
+    case "on":
+      return true;
+    case "true":
+      return true;
+    case "off":
+      return false;
+    case "false":
+      return false;
+    default:
+      return undefined;
   }
 }

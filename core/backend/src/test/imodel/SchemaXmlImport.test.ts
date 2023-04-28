@@ -19,18 +19,25 @@ describe("Schema XML Import Tests", () => {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
     }
-    const testFileName = IModelTestUtils.prepareOutputFile("SchemaXMLImport", "SchemaXMLImport.bim");
-    imodel = SnapshotDb.createEmpty(testFileName, { rootSubject: { name: "SchemaXMLImportTest" } }); // IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    const testFileName = IModelTestUtils.prepareOutputFile(
+      "SchemaXMLImport",
+      "SchemaXMLImport.bim"
+    );
+    imodel = SnapshotDb.createEmpty(testFileName, {
+      rootSubject: { name: "SchemaXMLImportTest" },
+    }); // IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
   });
 
   after(() => {
-    if (imodel)
-      imodel.close();
+    if (imodel) imodel.close();
   });
 
   it("should import schema XML", async () => {
-    const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
+    const schemaFilePath = path.join(
+      KnownTestLocations.assetsDir,
+      "Test3.ecschema.xml"
+    );
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
     await imodel.importSchemaStrings([schemaString]); // will throw an exception if import fails
@@ -40,5 +47,4 @@ describe("Schema XML Import Tests", () => {
     assert.equal(testDomainClass.baseClasses.length, 1);
     assert.equal(testDomainClass.baseClasses[0], PhysicalElement.classFullName);
   });
-
 });

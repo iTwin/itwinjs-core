@@ -19,7 +19,9 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createClearPickAndColorProgram(context: WebGL2RenderingContext): ShaderProgram {
+export function createClearPickAndColorProgram(
+  context: WebGL2RenderingContext
+): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {

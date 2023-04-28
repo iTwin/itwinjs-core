@@ -26,8 +26,22 @@ export class Reporter {
    * @param info A JSON object for additional details
    * @param date Optional: The date time to associate with the given entry. If not defined, `new Date().toISOString()` is used to provide the current date.
    */
-  public addEntry(testSuite: string, testName: string, valueDescription: string, value: number, info?: any, date?: string) {
-    const entry: Entry = { testSuite, testName, valueDescription, value, date: date ?? new Date().toISOString(), info };
+  public addEntry(
+    testSuite: string,
+    testName: string,
+    valueDescription: string,
+    value: number,
+    info?: any,
+    date?: string
+  ) {
+    const entry: Entry = {
+      testSuite,
+      testName,
+      valueDescription,
+      value,
+      date: date ?? new Date().toISOString(),
+      info,
+    };
     this._entries.push(entry);
   }
 

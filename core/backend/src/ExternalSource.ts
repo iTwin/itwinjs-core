@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -10,12 +9,23 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, EntityReferenceSet, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
+  BisCodeSpec,
+  Code,
+  CodeScopeSpec,
+  EntityReferenceSet,
+  ExternalSourceAttachmentProps,
+  ExternalSourceAttachmentRole,
+  ExternalSourceProps,
+  IModel,
+  RelatedElement,
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
+import {
+  ExternalSourceAttachmentAttachesSource,
+  ExternalSourceIsInRepository,
+} from "./NavigationRelationship";
 
 /** An ExternalSource refers to an 'information container' found in a repository. In some cases, the container is the entire repository.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13
@@ -29,15 +39,20 @@ export class ExternalSource extends InformationReferenceElement {
   /** The version of the iModel Connecter that processed this ExternalSource. */
   public connectorVersion?: string;
   /** @internal */
-  public static override get className(): string { return "ExternalSource"; }
+  public static override get className(): string {
+    return "ExternalSource";
+  }
   /** @internal */
   public constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.repository)
-      this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
+      this.repository = new ExternalSourceIsInRepository(
+        RelatedElement.idFromJson(props.repository)
+      );
   }
   /** @internal */
-  public override toJSON(): ExternalSourceProps { // This override only specializes the return type
+  public override toJSON(): ExternalSourceProps {
+    // This override only specializes the return type
     return super.toJSON() as ExternalSourceProps; // Entity.toJSON takes care of auto-handled properties
   }
   /** The [[CodeSpec]] for ExternalSource elements is not automatically created, so this method ensures that it exists. */
@@ -46,7 +61,10 @@ export class ExternalSource extends InformationReferenceElement {
       const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
     } catch (e) {
-      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
+      return iModelDb.codeSpecs.insert(
+        BisCodeSpec.externalSource,
+        CodeScopeSpec.Type.Repository
+      );
     }
   }
   /** Create a Code for an ExternalSource element given a name that is meant to be unique within the scope of the iModel.
@@ -56,14 +74,19 @@ export class ExternalSource extends InformationReferenceElement {
    */
   public static createCode(iModelDb: IModelDb, codeValue: string): Code {
     const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
-    return new Code({ spec: codeSpec.id, scope: IModel.rootSubjectId, value: codeValue });
+    return new Code({
+      spec: codeSpec.id,
+      scope: IModel.rootSubjectId,
+      value: codeValue,
+    });
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (this.repository)
-      referenceIds.addElement(this.repository.id);
+    if (this.repository) referenceIds.addElement(this.repository.id);
   }
 }
 
@@ -87,30 +110,39 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   /** The scale of the attached [[ExternalSource]] relative to the ExternalSource that attaches it. */
   public scale?: Point3d;
   /** @internal */
-  public static override get className(): string { return "ExternalSourceAttachment"; }
+  public static override get className(): string {
+    return "ExternalSourceAttachment";
+  }
   /** @internal */
   public constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.attaches)
-      this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
+      this.attaches = new ExternalSourceAttachmentAttachesSource(
+        RelatedElement.idFromJson(props.attaches)
+      );
 
     if (props.translation)
       this.translation = Point3d.fromJSON(props.translation);
 
-    if (props.scale)
-      this.scale = Point3d.fromJSON(props.scale);
+    if (props.scale) this.scale = Point3d.fromJSON(props.scale);
   }
   /** @internal */
-  public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type
+  public override toJSON(): ExternalSourceAttachmentProps {
+    // This override only specializes the return type
     return super.toJSON() as ExternalSourceAttachmentProps; // Entity.toJSON takes care of auto-handled properties
   }
   /** The [[CodeSpec]] for ExternalSourceAttachment elements is not automatically created, so this method ensures that it exists. */
   public static ensureCodeSpec(iModelDb: IModelDb): Id64String {
     try {
-      const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
+      const codeSpec = iModelDb.codeSpecs.getByName(
+        BisCodeSpec.externalSourceAttachment
+      );
       return codeSpec.id;
     } catch (e) {
-      return iModelDb.codeSpecs.insert(BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
+      return iModelDb.codeSpecs.insert(
+        BisCodeSpec.externalSourceAttachment,
+        CodeScopeSpec.Type.ParentElement
+      );
     }
   }
   /** Create a Code for an ExternalSourceAttachment element given a name that is meant to be unique within the scope of its parent [[ExternalSource]].
@@ -119,9 +151,19 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
    * @param codeValue The ExternalSourceAttachment name
    * @see [[ensureCodeSpec]]
    */
-  public static createCode(iModelDb: IModelDb, scopeElementId: Id64String, codeValue: string): Code {
-    const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
-    return new Code({ spec: codeSpec.id, scope: scopeElementId, value: codeValue });
+  public static createCode(
+    iModelDb: IModelDb,
+    scopeElementId: Id64String,
+    codeValue: string
+  ): Code {
+    const codeSpec = iModelDb.codeSpecs.getByName(
+      BisCodeSpec.externalSourceAttachment
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeElementId,
+      value: codeValue,
+    });
   }
 }
 
@@ -131,7 +173,9 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
  */
 export class ExternalSourceGroup extends ExternalSource {
   /** @internal */
-  public static override get className(): string { return "ExternalSourceGroup"; }
+  public static override get className(): string {
+    return "ExternalSourceGroup";
+  }
   /** @internal */
   public constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
@@ -146,14 +190,16 @@ export class SynchronizationConfigLink extends UrlLink {
   /** Date/Time of last successful run of this synchronization configuration */
   public lastSuccessfulRun?: string;
   /** @internal */
-  public static override get className(): string { return "SynchronizationConfigLink"; }
+  public static override get className(): string {
+    return "SynchronizationConfigLink";
+  }
   /** @internal */
   public constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb) {
     super(props, iModel);
   }
   /** @internal */
-  public override toJSON(): SynchronizationConfigLinkProps { // This override only specializes the return type
+  public override toJSON(): SynchronizationConfigLinkProps {
+    // This override only specializes the return type
     return super.toJSON() as SynchronizationConfigLinkProps; // Entity.toJSON takes care of auto-handled properties
   }
 }
-

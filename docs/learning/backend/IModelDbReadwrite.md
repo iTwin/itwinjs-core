@@ -15,4 +15,3 @@ Use [IModelDb.saveChanges]($backend) to commit changes locally. [BriefcaseDb.txn
 Use [BriefcaseDb.pushChanges]($backend) to push local changes to iModelHub as a changeset, so that others can see them. After a changeset is pushed to iModelHub, it becomes part of the iModel's permanent timeline. This method automatically [pulls and merges](./IModelDbSync.md) new ChangeSets from iModelHub.
 
 > Only a single application can push to iModelHub at a time. IModelDb.pushChanges automatically retries push on appropriate failures. However, it is possible that all retry attempts fail, if there are a lot of other applications pushing at the same time. In that case, push should be attempted again later.
-

@@ -15,7 +15,11 @@ import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
 /** @internal */
 export interface FormDataCommon {
-  append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
+  append(
+    name: string,
+    value: string | Blob | BackendBuffer,
+    fileName?: string
+  ): void;
 }
 
 /** @internal */
@@ -40,12 +44,17 @@ export class RpcMultipart {
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
-  public static async parseRequest(req: HttpServerRequest): Promise<RpcSerializedValue> {
+  public static async parseRequest(
+    req: HttpServerRequest
+  ): Promise<RpcSerializedValue> {
     return this.platform.parseRequest(req);
   }
 
   /** @internal */
-  public static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue) {
+  public static writeValueToForm(
+    form: FormDataCommon,
+    value: RpcSerializedValue
+  ) {
     form.append("objects", value.objects);
 
     for (let i = 0; i !== value.data.length; ++i) {
@@ -61,9 +70,15 @@ export class RpcMultipart {
     async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
       throw new IModelError(BentleyStatus.ERROR, "Not bound.");
     },
-    appendToForm(i: number, form: FormDataCommon, value: RpcSerializedValue): void {
-      form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
+    appendToForm(
+      i: number,
+      form: FormDataCommon,
+      value: RpcSerializedValue
+    ): void {
+      form.append(
+        `data-${i}`,
+        new Blob([value.data[i]], { type: "application/octet-stream" })
+      );
     },
   };
 }
-

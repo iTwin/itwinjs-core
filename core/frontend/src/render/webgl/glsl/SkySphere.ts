@@ -12,7 +12,12 @@ import { AttributeMap } from "../AttributeMap";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderType, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderComponent,
+  ProgramBuilder,
+  ShaderType,
+  VariableType,
+} from "../ShaderBuilder";
 import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
@@ -92,7 +97,11 @@ const scratchVec3 = new Vector3d();
 const scratchPoint3 = new Point3d();
 
 /** @internal */
-function modulateColor(colorIn: Float32Array, t: number, colorOut: Float32Array): void {
+function modulateColor(
+  colorIn: Float32Array,
+  t: number,
+  colorOut: Float32Array
+): void {
   const b = 1.0 - t;
   colorOut[0] = colorIn[0] * b;
   colorOut[1] = colorIn[1] * b;
@@ -125,10 +134,13 @@ function addGradientUniforms(builder: ProgramBuilder): void {
       const geom = params.geometry as SkySphereViewportQuadGeometry;
       const plan = params.target.plan;
       if (plan.backgroundMapOn && plan.isGlobeMode3D) {
-        modulateColor(geom.zenithColor, plan.globalViewTransition, scratch3Floats);
+        modulateColor(
+          geom.zenithColor,
+          plan.globalViewTransition,
+          scratch3Floats
+        );
         uniform.setUniform3fv(scratch3Floats);
-      } else
-        uniform.setUniform3fv(geom.zenithColor);
+      } else uniform.setUniform3fv(geom.zenithColor);
     });
   });
   builder.frag.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
@@ -138,8 +150,7 @@ function addGradientUniforms(builder: ProgramBuilder): void {
       if (plan.backgroundMapOn && plan.isGlobeMode3D) {
         modulateColor(geom.skyColor, plan.globalViewTransition, scratch3Floats);
         uniform.setUniform3fv(scratch3Floats);
-      } else
-        uniform.setUniform3fv(geom.skyColor);
+      } else uniform.setUniform3fv(geom.skyColor);
     });
   });
   builder.frag.addUniform("u_groundColor", VariableType.Vec3, (shader) => {
@@ -148,13 +159,13 @@ function addGradientUniforms(builder: ProgramBuilder): void {
       const plan = params.target.plan;
       if (plan.backgroundMapOn) {
         let clr = geom.skyColor;
-        if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+        if (-1 === geom.typeAndExponents[0])
+          // 2-color gradient
           clr = geom.zenithColor;
         if (plan.isGlobeMode3D) {
           modulateColor(clr, plan.globalViewTransition, scratch3Floats);
           uniform.setUniform3fv(scratch3Floats);
-        } else
-          uniform.setUniform3fv(clr);
+        } else uniform.setUniform3fv(clr);
       } else {
         uniform.setUniform3fv(geom.groundColor);
       }
@@ -166,13 +177,13 @@ function addGradientUniforms(builder: ProgramBuilder): void {
       const plan = params.target.plan;
       if (plan.backgroundMapOn) {
         let clr = geom.skyColor;
-        if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+        if (-1 === geom.typeAndExponents[0])
+          // 2-color gradient
           clr = geom.nadirColor;
         if (plan.isGlobeMode3D) {
           modulateColor(clr, plan.globalViewTransition, scratch3Floats);
           uniform.setUniform3fv(scratch3Floats);
-        } else
-          uniform.setUniform3fv(clr);
+        } else uniform.setUniform3fv(clr);
       } else {
         uniform.setUniform3fv(geom.nadirColor);
       }
@@ -186,9 +197,15 @@ function addTextureUniforms(builder: ProgramBuilder): void {
     shader.addGraphicUniform("s_skyTxtr", (uniform, params) => {
       const geom = params.geometry as SkySphereViewportQuadGeometry;
       if (undefined !== geom.skyTexture)
-        (geom.skyTexture as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+        (geom.skyTexture as Texture).texture.bindSampler(
+          uniform,
+          TextureUnit.Zero
+        );
       else
-        System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
+        System.instance.ensureSamplerBound(
+          uniform,
+          TextureUnit.FeatureSymbology
+        );
     });
   });
   builder.frag.addUniform("u_zOffset", VariableType.Float, (shader) => {
@@ -206,14 +223,24 @@ function addTextureUniforms(builder: ProgramBuilder): void {
 }
 
 /** @internal */
-export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlags): ProgramBuilder {
-  const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
+export function createSkySphereBuilder(
+  isGradient: boolean,
+  flags: TechniqueFlags
+): ProgramBuilder {
+  const attrMap = AttributeMap.findAttributeMap(
+    isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture,
+    false
+  );
   const builder = createViewportQuadBuilder(false, attrMap);
   const vert = builder.vert;
   const frag = builder.frag;
 
   vert.addFunction(computeEyeSpace);
-  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
+  builder.addInlineComputedVarying(
+    "v_eyeSpace",
+    VariableType.Vec3,
+    "v_eyeSpace = computeEyeSpace(rawPosition);"
+  );
 
   vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
     prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
@@ -229,7 +256,10 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   if (flags.enableAtmosphere) {
-    frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorAtmosphere);
+    frag.set(
+      FragmentShaderComponent.ComputeBaseColor,
+      computeSkySphereColorAtmosphere
+    );
     addAtmosphericScatteringEffect(builder, true, true);
     return builder;
   }
@@ -237,26 +267,52 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
   builder.vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
     shader.addGraphicUniform("u_worldEye", (uniform, params) => {
       const frustum = params.target.planFrustum;
-      if (FrustumUniformType.Perspective === params.target.uniforms.frustum.type) {
+      if (
+        FrustumUniformType.Perspective === params.target.uniforms.frustum.type
+      ) {
         // compute eye point from frustum.
         const farLowerLeft = frustum.getCorner(Npc.LeftBottomRear);
         const nearLowerLeft = frustum.getCorner(Npc.LeftBottomFront);
         const scale = 1.0 / (1.0 - params.target.planFraction);
-        const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratchVec3);
-        const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, scratchPoint3);
+        const zVec = Vector3d.createStartEnd(
+          farLowerLeft,
+          nearLowerLeft,
+          scratchVec3
+        );
+        const cameraPosition = fromSumOf(
+          farLowerLeft,
+          zVec,
+          scale,
+          scratchPoint3
+        );
         scratch3Floats[0] = cameraPosition.x;
         scratch3Floats[1] = cameraPosition.y;
         scratch3Floats[2] = cameraPosition.z;
         uniform.setUniform3fv(scratch3Floats);
       } else {
-        const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront), scratchVec3);
+        const delta = Vector3d.createStartEnd(
+          frustum.getCorner(Npc.LeftBottomRear),
+          frustum.getCorner(Npc.LeftBottomFront),
+          scratchVec3
+        );
         const pseudoCameraHalfAngle = 22.5;
-        const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
-        const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
+        const diagonal = frustum
+          .getCorner(Npc.LeftBottomRear)
+          .distance(frustum.getCorner(Npc.RightTopRear));
+        const focalLength =
+          diagonal /
+          (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
         let zScale = focalLength / delta.magnitude();
-        if (zScale < 1.000001)
-          zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
-        const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale, scratchPoint3);
+        if (zScale < 1.000001) zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
+        const worldEye = Point3d.createAdd3Scaled(
+          frustum.getCorner(Npc.LeftBottomRear),
+          0.5,
+          frustum.getCorner(Npc.RightTopRear),
+          0.5,
+          delta,
+          zScale,
+          scratchPoint3
+        );
         scratch3Floats[0] = worldEye.x;
         scratch3Floats[1] = worldEye.y;
         scratch3Floats[2] = worldEye.z;
@@ -267,13 +323,34 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
 
   if (isGradient) {
     addGradientUniforms(builder);
-    builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
-    builder.addFunctionComputedVarying("v_gradientValue", VariableType.Vec4, "computeGradientValue", computeGradientValue);
-    frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorGradient);
+    builder.addGlobal(
+      "horizonSize",
+      VariableType.Float,
+      ShaderType.Both,
+      "0.0015",
+      true
+    );
+    builder.addFunctionComputedVarying(
+      "v_gradientValue",
+      VariableType.Vec4,
+      "computeGradientValue",
+      computeGradientValue
+    );
+    frag.set(
+      FragmentShaderComponent.ComputeBaseColor,
+      computeSkySphereColorGradient
+    );
   } else {
     addTextureUniforms(builder);
-    builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
-    frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorTexture);
+    builder.addInlineComputedVarying(
+      "v_eyeToVert",
+      VariableType.Vec3,
+      computeEyeToVert
+    );
+    frag.set(
+      FragmentShaderComponent.ComputeBaseColor,
+      computeSkySphereColorTexture
+    );
   }
 
   return builder;

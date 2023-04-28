@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef, RenderMode } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-frontend";
+import {
+  IModelConnection,
+  SnapshotConnection,
+  ViewRect,
+} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
@@ -34,7 +38,11 @@ describe("Wait for scene completion", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade });
+      vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: false,
+        lighting: false,
+        renderMode: RenderMode.SmoothShade,
+      });
 
       vp.invalidateScene();
       await vp.waitForSceneCompletion();

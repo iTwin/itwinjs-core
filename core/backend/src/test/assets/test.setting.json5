@@ -1,163 +1,145 @@
 {
-    "$schema": "./TestSettings.schema.json", // non-standard - supported by VSCode only
-    "editor/renderWhitespace": "selection",
-    "editor/enableFiletypes": [
-        "c",
-        "cpp",
-        "csharp",
-        "go",
-        "html",
-        "javascript",
-        "javascriptreact",
-        "latex",
-        "markdown",
-        "php",
-        "plaintext",
-        "python",
-        "text",
-        "typescript",
-        "typescriptreact",
-        "xml",
-        "yml"
-    ],
-    "myApp/categories": [
-        "cat 2",
-        "vital2"
-    ],
-    "cloud/accounts": [
-        {
-            "name": "gcs/data",
-            "accessName": "devstoreaccount1",
-            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
-        },
-        {
-            "name": "other/data",
-            "accessName": "devstoreaccount1",
-            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
-        }
-    ],
-    "cloud/containers": [
-        {
-            "name": "gcs/container",
-            "containerId": "gcs",
-            "accountName": "gcs/data"
-        },
-        {
-            "name": "fonts/public",
-            "containerId": "fonts",
-            "accountName": ""
-        }
-    ],
-    "workspace/databases": [
-        {
-            "name": "gcs/base",
-            "dbName": "base",
-            "containerName": "gcs/container",
-            "version": "^1"
-        },
-        {
-            "name": "gcs/entire-world",
-            "dbName": "entireEarth",
-            "containerName": "gcs/container",
-            "version": "^1"
-        },
-        {
-            "name": "fonts/public-fonts",
-            "dbName": "fonts",
-            "version": "^1",
-            "containerName": "fonts/public"
-        },
-        {
-            "name": "fonts/more-fonts",
-            "dbName": "fonts2",
-            "version": "^1",
-            "containerName": "fonts/public"
-        }
-    ],
-    "workspace/fontDbs": [
-        "fonts/public-fonts",
-        "fonts/more-fonts"
-    ],
-    "editor/tokenColorCustomizations": {
-        "Default High Contrast": {
-            "comments": "#FF0000"
-        },
-        "Visual Studio Light": {
-            "types": "#9c3569",
-            "variables": "#7e5007",
-            "textMateRules": [
-                {
-                    "scope": [
-                        "constant",
-                        "constant.language",
-                        "support.constant"
-                    ],
-                    "settings": {
-                        "foreground": "#d16c6c",
-                        "fontStyle": "bold"
-                    }
-                },
-                {
-                    "scope": [
-                        "comment"
-                    ],
-                    "settings": {
-                        "foreground": "#7c7b7b",
-                        "fontStyle": "italic"
-                    }
-                },
-                {
-                    "scope": [
-                        "variable.language"
-                    ],
-                    "settings": {
-                        "foreground": "#9c7325"
-                    }
-                },
-                {
-                    "scope": [
-                        "entity.name.class",
-                        "entity.name.section",
-                        "entity.name.selector",
-                        "entity.name.tag",
-                        "entity.name.type",
-                        "entity.other",
-                        "entity"
-                    ],
-                    "settings": {
-                        "foreground": "#0857be"
-                    }
-                },
-                {
-                    "scope": [
-                        "keyword.control",
-                        "keyword.operator.arithmetic",
-                        "keyword.operator.assignment",
-                        "keyword.operator.logical",
-                        "keyword.operator.new",
-                        "keyword.operator",
-                        "keyword.other",
-                        "keyword"
-                    ],
-                    "settings": {
-                        "foreground": "#068135",
-                        "fontStyle": "bold"
-                    }
-                },
-                {
-                    "scope": [
-                        "storage",
-                        "storage.type",
-                        "storage.modifier"
-                    ],
-                    "settings": {
-                        "foreground": "#723a3a",
-                        "fontStyle": "bold"
-                    }
-                }
-            ]
-        }
+  $schema: "./TestSettings.schema.json", // non-standard - supported by VSCode only
+  "editor/renderWhitespace": "selection",
+  "editor/enableFiletypes": [
+    "c",
+    "cpp",
+    "csharp",
+    "go",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "latex",
+    "markdown",
+    "php",
+    "plaintext",
+    "python",
+    "text",
+    "typescript",
+    "typescriptreact",
+    "xml",
+    "yml",
+  ],
+  "myApp/categories": ["cat 2", "vital2"],
+  "cloud/accounts": [
+    {
+      name: "gcs/data",
+      accessName: "devstoreaccount1",
+      storageType: "azure?emulator=127.0.0.1:10000&sas=1",
     },
-    "app1/colorTheme": "Light Theme",
-    "app1/tree/blah": true
+    {
+      name: "other/data",
+      accessName: "devstoreaccount1",
+      storageType: "azure?emulator=127.0.0.1:10000&sas=1",
+    },
+  ],
+  "cloud/containers": [
+    {
+      name: "gcs/container",
+      containerId: "gcs",
+      accountName: "gcs/data",
+    },
+    {
+      name: "fonts/public",
+      containerId: "fonts",
+      accountName: "",
+    },
+  ],
+  "workspace/databases": [
+    {
+      name: "gcs/base",
+      dbName: "base",
+      containerName: "gcs/container",
+      version: "^1",
+    },
+    {
+      name: "gcs/entire-world",
+      dbName: "entireEarth",
+      containerName: "gcs/container",
+      version: "^1",
+    },
+    {
+      name: "fonts/public-fonts",
+      dbName: "fonts",
+      version: "^1",
+      containerName: "fonts/public",
+    },
+    {
+      name: "fonts/more-fonts",
+      dbName: "fonts2",
+      version: "^1",
+      containerName: "fonts/public",
+    },
+  ],
+  "workspace/fontDbs": ["fonts/public-fonts", "fonts/more-fonts"],
+  "editor/tokenColorCustomizations": {
+    "Default High Contrast": {
+      comments: "#FF0000",
+    },
+    "Visual Studio Light": {
+      types: "#9c3569",
+      variables: "#7e5007",
+      textMateRules: [
+        {
+          scope: ["constant", "constant.language", "support.constant"],
+          settings: {
+            foreground: "#d16c6c",
+            fontStyle: "bold",
+          },
+        },
+        {
+          scope: ["comment"],
+          settings: {
+            foreground: "#7c7b7b",
+            fontStyle: "italic",
+          },
+        },
+        {
+          scope: ["variable.language"],
+          settings: {
+            foreground: "#9c7325",
+          },
+        },
+        {
+          scope: [
+            "entity.name.class",
+            "entity.name.section",
+            "entity.name.selector",
+            "entity.name.tag",
+            "entity.name.type",
+            "entity.other",
+            "entity",
+          ],
+          settings: {
+            foreground: "#0857be",
+          },
+        },
+        {
+          scope: [
+            "keyword.control",
+            "keyword.operator.arithmetic",
+            "keyword.operator.assignment",
+            "keyword.operator.logical",
+            "keyword.operator.new",
+            "keyword.operator",
+            "keyword.other",
+            "keyword",
+          ],
+          settings: {
+            foreground: "#068135",
+            fontStyle: "bold",
+          },
+        },
+        {
+          scope: ["storage", "storage.type", "storage.modifier"],
+          settings: {
+            foreground: "#723a3a",
+            fontStyle: "bold",
+          },
+        },
+      ],
+    },
+  },
+  "app1/colorTheme": "Light Theme",
+  "app1/tree/blah": true,
 }

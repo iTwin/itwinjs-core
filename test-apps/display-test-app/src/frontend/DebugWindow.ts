@@ -31,9 +31,12 @@ export class DebugWindow extends Window {
     this._windowId = `debugPanel-${viewport.viewportId}`;
     this.isPinned = true;
 
-    this._dispose = IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
-      this.container.style.display = args.current === viewport ? "flex" : "none";
-    });
+    this._dispose = IModelApp.viewManager.onSelectedViewportChanged.addListener(
+      (args) => {
+        this.container.style.display =
+          args.current === viewport ? "flex" : "none";
+      }
+    );
   }
 
   public dispose(): void {
@@ -42,14 +45,16 @@ export class DebugWindow extends Window {
     this._dispose();
   }
 
-  public override get isResizable() { return false; }
-  public get windowId() { return this._windowId; }
+  public override get isResizable() {
+    return false;
+  }
+  public get windowId() {
+    return this._windowId;
+  }
 
   public toggle(): void {
-    if (this._isOpen)
-      this.hide();
-    else
-      this.show();
+    if (this._isOpen) this.hide();
+    else this.show();
   }
 
   public show(): void {

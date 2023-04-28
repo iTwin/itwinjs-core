@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-common__ package contains classes for working with iModels that can be used in both the frontend and backend.
+The **@itwin/core-common** package contains classes for working with iModels that can be used in both the frontend and backend.
 
 ## Documentation
 

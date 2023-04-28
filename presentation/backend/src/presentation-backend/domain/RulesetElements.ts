@@ -18,7 +18,9 @@ export class Ruleset extends DefinitionElement {
   /**
    * Name of the `Ruleset` element class.
    */
-  public static override get className(): string { return "Ruleset"; }
+  public static override get className(): string {
+    return "Ruleset";
+  }
 
   /**
    * Generates a unique code for a ruleset
@@ -26,10 +28,13 @@ export class Ruleset extends DefinitionElement {
    * @param modelId ID of a the model this ruleset should be created in
    * @param ruleset The ruleset code is being created for
    */
-  public static createRulesetCode(iModelDb: IModelDb, modelId: Id64String, ruleset: PresentationRuleset) {
+  public static createRulesetCode(
+    iModelDb: IModelDb,
+    modelId: Id64String,
+    ruleset: PresentationRuleset
+  ) {
     let codeValue = ruleset.id;
-    if (ruleset.version)
-      codeValue += `@${normalizeVersion(ruleset.version)}`;
+    if (ruleset.version) codeValue += `@${normalizeVersion(ruleset.version)}`;
 
     return new Code({
       spec: iModelDb.codeSpecs.getByName(PresentationRules.CodeSpec.Ruleset).id,

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 #root {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .simpleicon {
-  position:relative;
+  position: relative;
   background-color: #f0f0f0;
   border-color: gray;
   border-style: solid;
@@ -17,7 +17,7 @@
   margin: 3px;
   width: 35px;
   height: 35px;
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .app-surface {
@@ -103,8 +103,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-left:2.5px;
-  padding-right:2.5px;
+  padding-left: 2.5px;
+  padding-right: 2.5px;
   height: 25px;
   background-color: #a0a0a0;
   cursor: move;
@@ -161,10 +161,11 @@
 .floating-window-header-close:hover {
   opacity: 1;
 }
-.floating-window-header-close:before, .floating-window-header-close:after {
+.floating-window-header-close:before,
+.floating-window-header-close:after {
   position: absolute;
   left: 9px;
-  content: ' ';
+  content: " ";
   height: 24px;
   width: 2px;
   background-color: #333;
@@ -183,8 +184,8 @@
 .topdiv {
   display: flex;
   align-items: center;
-  padding-left:2.5px;
-  padding-right:2.5px;
+  padding-left: 2.5px;
+  padding-right: 2.5px;
   height: 50px;
 }
 
@@ -199,7 +200,7 @@
 }
 
 .popup-toolbar-button {
-  position:relative;
+  position: relative;
   background-color: #f0f0f0;
   border-color: gray;
   border-style: solid;
@@ -209,7 +210,7 @@
   margin-top: 3px;
   width: 35px;
   height: 35px;
-  cursor:pointer;
+  cursor: pointer;
   vertical-align: middle;
 }
 
@@ -252,65 +253,69 @@
 }
 
 .bim-spinner-container {
-  position:absolute;
-  z-index:9999999;
-  height:100%;
-  width:100%;
-  background-color:rgba(255, 255, 255, 0.5);
-  top:0;
-  left:0;
+  position: absolute;
+  z-index: 9999999;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  top: 0;
+  left: 0;
 }
 
 .bim-spinner {
-  position:absolute;
-  display:block;
-  top:calc(50% - 45px);
-  left:calc(50% - 45px);
+  position: absolute;
+  display: block;
+  top: calc(50% - 45px);
+  left: calc(50% - 45px);
   width: 90px;
-  height:90px;
+  height: 90px;
   border: 5px solid #f3f3f3; /* Light grey */
-  border-top: 5px solid  #008be1; /* Blue */
+  border-top: 5px solid #008be1; /* Blue */
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .tile-load-spinner {
   position: relative;
-  float:right;
-  margin:10px;
+  float: right;
+  margin: 10px;
   width: 33px;
-  height:33px;
+  height: 33px;
   border: 5px solid #f3f3f3; /* Light grey */
-  border-top: 5px solid  #008be1; /* Blue */
+  border-top: 5px solid #008be1; /* Blue */
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .viewList {
   padding: 12px;
   margin: 5px;
-  cursor:pointer;
-  min-width:200px;
-  max-width:300px;
+  cursor: pointer;
+  min-width: 200px;
+  max-width: 300px;
 }
 
 @font-face {
-  font-family: 'Display-Test-App-Icons';
-  src: url('Fonts/Display-Test-App-Icons.ttf') format('truetype');
+  font-family: "Display-Test-App-Icons";
+  src: url("Fonts/Display-Test-App-Icons.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 .toolMenu {
-  position:absolute;
+  position: absolute;
   background-color: #f0f0f0;
-  display:none;
-  width:210px;
+  display: none;
+  width: 210px;
   padding-left: 3px;
   padding-top: 3px;
   z-index: 999;
@@ -322,10 +327,10 @@
 }
 
 .scrollingToolMenu {
-  position:absolute;
+  position: absolute;
   background-color: #f0f0f0;
-  display:none;
-  width:220px;
+  display: none;
+  width: 220px;
   padding: 3px;
   z-index: 999;
   top: 45px;
@@ -333,16 +338,16 @@
   border-color: gray;
   border-style: solid;
   border-width: 1px;
-  float:right;
+  float: right;
   overflow-y: auto;
   height: 400px;
 }
 
 .debugPanel {
-  position:absolute;
+  position: absolute;
   background-color: #f0f0f0;
-  display:block;
-  width:480px;
+  display: block;
+  width: 480px;
   padding: 3px;
   z-index: 999;
   top: 45px;
@@ -359,7 +364,8 @@
 .tooltip {
   background: rgb(255, 252, 216);
   color: black;
-  font-family:  'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial,
+    sans-serif;
   font-size: 0.8em;
   font-weight: normal;
   line-height: 110%;
@@ -391,7 +397,8 @@
 }
 
 .notification-messageboxtext {
-  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
   font-size: 0.9em;
   font-weight: normal;
   text-decoration: none;
@@ -400,7 +407,8 @@
 }
 
 .notification-messageboxbutton {
-  font-family:  'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
   font-size: 0.9em;
   font-weight: normal;
   text-decoration: none;
@@ -411,19 +419,21 @@
 }
 
 .slider {
-  width:200px;
-  display:inline;
+  width: 200px;
+  display: inline;
 }
 
-#standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {
-  float:left;
+#standardRotationMenu .simpleicon,
+#animationMenu .simpleicon,
+#debugToolsMenu .simpleicon {
+  float: left;
 }
 #animationSlider {
-  width:250px;
-  display:block;
+  width: 250px;
+  display: block;
 }
 #animationState {
-  text-align:right;
+  text-align: right;
 }
 #renderModeToggle {
   width: 100%;

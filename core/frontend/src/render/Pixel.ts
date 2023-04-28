@@ -7,7 +7,12 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
+import {
+  BatchType,
+  Feature,
+  GeometryClass,
+  ModelFeature,
+} from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
@@ -35,7 +40,9 @@ export namespace Pixel {
     public readonly tileId?: string;
     /** @internal */
     public get isClassifier(): boolean {
-      return undefined !== this.batchType && BatchType.Primary !== this.batchType;
+      return (
+        undefined !== this.batchType && BatchType.Primary !== this.batchType
+      );
     }
 
     /** @internal */
@@ -49,7 +56,11 @@ export namespace Pixel {
       tileId?: string;
     }) {
       if (args?.feature)
-        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
+        this.feature = new Feature(
+          args.feature.elementId,
+          args.feature.subCategoryId,
+          args.feature.geometryClass
+        );
 
       this.modelId = args?.feature?.modelId;
       this.distanceFraction = args?.distanceFraction ?? -1;

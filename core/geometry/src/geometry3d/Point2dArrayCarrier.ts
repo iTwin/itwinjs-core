@@ -17,7 +17,7 @@ import { XAndY } from "./XYZProps";
  * * The actual array may be replaced by the user as needed.
  * * When replaced, there is no cached data to be updated.
  * @public
-*/
+ */
 export class Point2dArrayCarrier extends IndexedXYCollection {
   /** reference to array being queried. */
   public data: Point2d[];
@@ -37,7 +37,10 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public override getPoint2dAtCheckedPointIndex(index: number, result?: Point2d): Point2d | undefined {
+  public override getPoint2dAtCheckedPointIndex(
+    index: number,
+    result?: Point2d
+  ): Point2d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Point2d.create(source.x, source.y, result);
@@ -50,7 +53,10 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
    */
-  public override getVector2dAtCheckedVectorIndex(index: number, result?: Vector2d): Vector2d | undefined {
+  public override getVector2dAtCheckedVectorIndex(
+    index: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     if (this.isValidIndex(index)) {
       const source = this.data[index];
       return Vector2d.create(source.x, source.y, result);
@@ -64,9 +70,17 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public override vectorIndexIndex(indexA: number, indexB: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorIndexIndex(
+    indexA: number,
+    indexB: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector2d.createStartEnd(this.data[indexA], this.data[indexB], result);
+      return Vector2d.createStartEnd(
+        this.data[indexA],
+        this.data[indexB],
+        result
+      );
     return undefined;
   }
   /**
@@ -76,7 +90,11 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds
    */
-  public override vectorXAndYIndex(origin: XAndY, indexB: number, result?: Vector2d): Vector2d | undefined {
+  public override vectorXAndYIndex(
+    origin: XAndY,
+    indexB: number,
+    result?: Vector2d
+  ): Vector2d | undefined {
     if (this.isValidIndex(indexB))
       return Vector2d.createStartEnd(origin, this.data[indexB], result);
     return undefined;
@@ -90,9 +108,17 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns undefined if either index is out of bounds
    */
-  public override crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined {
+  public override crossProductXAndYIndexIndex(
+    origin: XAndY,
+    indexA: number,
+    indexB: number
+  ): number | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return XY.crossProductToPoints(origin, this.data[indexA], this.data[indexB]);
+      return XY.crossProductToPoints(
+        origin,
+        this.data[indexA],
+        this.data[indexB]
+      );
     return undefined;
   }
   /**
@@ -103,9 +129,21 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
    * @param result caller-allocated vector.
    * @returns return true if indexA, indexB both valid
    */
-  public override crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number): number | undefined {
-    if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return XY.crossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB]);
+  public override crossProductIndexIndexIndex(
+    originIndex: number,
+    indexA: number,
+    indexB: number
+  ): number | undefined {
+    if (
+      this.isValidIndex(originIndex) &&
+      this.isValidIndex(indexA) &&
+      this.isValidIndex(indexB)
+    )
+      return XY.crossProductToPoints(
+        this.data[originIndex],
+        this.data[indexA],
+        this.data[indexB]
+      );
     return undefined;
   }
   /** Read-only property for number of XYZ in the collection. */

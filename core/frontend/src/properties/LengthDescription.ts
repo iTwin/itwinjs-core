@@ -19,15 +19,27 @@ export class LengthDescription extends FormattedQuantityDescription {
     const defaultName = "length";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      iconSpec,
+      displayLabel
+        ? displayLabel
+        : IModelApp.localization.getLocalizedString(
+            "iModelJs:Properties.Length"
+          ),
+      iconSpec
     );
   }
 
-  public get formatterQuantityType(): QuantityType { return QuantityType.Length; }
-  public get quantityType(): string { return "Length"; }
+  public get formatterQuantityType(): QuantityType {
+    return QuantityType.Length;
+  }
+  public get quantityType(): string {
+    return "Length";
+  }
 
-  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"); }
+  public get parseError(): string {
+    return IModelApp.localization.getLocalizedString(
+      "iModelJs:Properties.UnableToParseLength"
+    );
+  }
 }
 
 /**
@@ -39,15 +51,27 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
     const defaultName = "surveyLength";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      iconSpec,
+      displayLabel
+        ? displayLabel
+        : IModelApp.localization.getLocalizedString(
+            "iModelJs:Properties.Length"
+          ),
+      iconSpec
     );
   }
 
-  public get formatterQuantityType(): QuantityType { return QuantityType.LengthSurvey; }
-  public get quantityType(): string { return "LengthSurvey"; }
+  public get formatterQuantityType(): QuantityType {
+    return QuantityType.LengthSurvey;
+  }
+  public get quantityType(): string {
+    return "LengthSurvey";
+  }
 
-  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"); }
+  public get parseError(): string {
+    return IModelApp.localization.getLocalizedString(
+      "iModelJs:Properties.UnableToParseLength"
+    );
+  }
 }
 
 /**
@@ -55,18 +79,29 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
  * @beta
  */
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
-
   constructor(name?: string, displayLabel?: string, iconSpec?: string) {
     const defaultName = "engineeringLength";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      iconSpec,
+      displayLabel
+        ? displayLabel
+        : IModelApp.localization.getLocalizedString(
+            "iModelJs:Properties.Length"
+          ),
+      iconSpec
     );
   }
 
-  public get formatterQuantityType(): QuantityType { return QuantityType.LengthEngineering; }
-  public get quantityType(): string { return "LengthEngineering"; }
+  public get formatterQuantityType(): QuantityType {
+    return QuantityType.LengthEngineering;
+  }
+  public get quantityType(): string {
+    return "LengthEngineering";
+  }
 
-  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"); }
+  public get parseError(): string {
+    return IModelApp.localization.getLocalizedString(
+      "iModelJs:Properties.UnableToParseLength"
+    );
+  }
 }

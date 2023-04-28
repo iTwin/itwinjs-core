@@ -6,7 +6,7 @@
 
 `PhysicalModel`s and `PhysicalElement`s are used to model the physical world, as it exists currently, as it existed in the past, or as it is expected to exist in the future.
 
-Any object in the real world is modeled as a `PhysicalElement` a maximum of once within a BIS repository. The various disciplines that work together on infrastructure can *not* each have their own `PhysicalElement` for the same real-world object. Modeling the physical world is a cooperative, coordinated effort.
+Any object in the real world is modeled as a `PhysicalElement` a maximum of once within a BIS repository. The various disciplines that work together on infrastructure can _not_ each have their own `PhysicalElement` for the same real-world object. Modeling the physical world is a cooperative, coordinated effort.
 
 In BIS, the following classes are central in modeling the physical world:
 
@@ -24,7 +24,7 @@ It is usually easy to determine which objects should be modeled by a PhysicalEle
 2. Can the object be touched?
 3. Are the spatial and location characteristics of the object important in constructing, operating or maintaining infrastructure?
 
-For example, a paper contract has mass and can be touched, but its spatial and location characteristics are not important for infrastructure purposes, so it should *not* be modeled with a PhysicalElement.
+For example, a paper contract has mass and can be touched, but its spatial and location characteristics are not important for infrastructure purposes, so it should _not_ be modeled with a PhysicalElement.
 
 Examples of entities that are modeled with PhysicalElements are:
 
@@ -62,7 +62,7 @@ See [Model Fundamentals](../fundamentals/model-fundamentals.md) for more informa
 
 PhysicalElements that mixin ISubModeledElement can have associated PhysicalModels as sub-Models. The sub-Model models the same real world physical entity as the ISubModeledElement, but at a finer granularity. For example, a SewerSystem PhysicalElement might be sub-modeled by a PhysicalModel that contains Pipe PhysicalElements that model the individual pipes in the sewer system.
 
-See  [Element Fundamentals](../fundamentals/element-fundamentals.md#elements-and-models) for more information on sub-modeling.
+See [Element Fundamentals](../fundamentals/element-fundamentals.md#elements-and-models) for more information on sub-modeling.
 
 ### Top of the World - PhysicalPartition
 
@@ -72,7 +72,7 @@ At the top of the PhysicalElement-PhysicalModel tree is a PhysicalPartition Elem
 
 As an alternate modeling technique PhysicalElement can have child Elements instead of sub-Models. Elements with child Elements are essentially aggregates. For example, a SteelConnection might be an aggregate of Bolts, Plates and Welds.
 
-See  [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on aggregates and child Elements.
+See [Element Fundamentals](../fundamentals/element-fundamentals.md) for more information on aggregates and child Elements.
 
 ## Physical Backbone
 
@@ -90,5 +90,6 @@ As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), there are ma
 -->
 
 ---
+
 | Next: [Physical Materials](./physical-materials.md)
 |:---

@@ -54,7 +54,7 @@ export interface ChangedElements {
   modelIds?: Id64String[];
   /** Property accessor strings of properties that changed, if any, for each changed element
    * This may be undefined if the agent that did the processing job did not export properties
-  */
+   */
   properties?: string[][];
   /** Before state checksums of the property value
    * Useful to determine if property values have changed

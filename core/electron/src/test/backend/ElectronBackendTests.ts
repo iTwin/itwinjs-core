@@ -19,6 +19,4 @@ export interface TestSuite {
   }[];
 }
 
-export const testSuites: TestSuite[] = [
-  electronHostTestSuite,
-];
+export const testSuites: TestSuite[] = [electronHostTestSuite];

@@ -4,17 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @internal */
 export class ArcGisUrl {
-
   // Extract the sub-url up to '/rest/'
   public static extractRestBaseUrl(url: URL): URL | undefined {
     const urlStr = url.toString();
     const searchStr = "/rest/";
     const restPos = urlStr.indexOf(searchStr);
-    return (restPos === -1 ? undefined : new URL(urlStr.substring(0, restPos + searchStr.length)));
-
+    return restPos === -1
+      ? undefined
+      : new URL(urlStr.substring(0, restPos + searchStr.length));
   }
 
-  public static async getRestUrlFromGenerateTokenUrl(url: URL): Promise<URL | undefined> {
+  public static async getRestUrlFromGenerateTokenUrl(
+    url: URL
+  ): Promise<URL | undefined> {
     const restUrl = ArcGisUrl.extractRestBaseUrl(url);
     if (restUrl === undefined) {
       return undefined;
@@ -27,9 +29,7 @@ export class ArcGisUrl {
     let json;
     try {
       json = await ArcGisUrl.fetchJson(infoUrl);
-    } catch {
-
-    }
+    } catch {}
 
     const tokenServicesUrl = json?.authInfo?.tokenServicesUrl;
     if (tokenServicesUrl === undefined) {
@@ -43,8 +43,7 @@ export class ArcGisUrl {
     try {
       const response = await fetch(url.toString(), { method: "GET" });
       json = await response.json();
-    } catch {
-    }
+    } catch {}
     return json;
   }
 }

@@ -1,4 +1,4 @@
 ---
-title: 'Registration Dashboard'
-layout: 'registrationDashboard.html'
+title: "Registration Dashboard"
+layout: "registrationDashboard.html"
 ---

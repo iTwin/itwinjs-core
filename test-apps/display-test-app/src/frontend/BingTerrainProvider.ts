@@ -7,8 +7,18 @@ import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
-  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTileProjection, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
-  RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
+  BingElevationProvider,
+  GeographicTilingScheme,
+  IModelApp,
+  MapTileProjection,
+  ReadMeshArgs,
+  RealityMeshParams,
+  RealityMeshParamsBuilder,
+  RealityMeshParamsBuilderOptions,
+  RequestMeshDataArgs,
+  TerrainMeshProvider,
+  TerrainMeshProviderOptions,
+  TerrainProvider,
 } from "@itwin/core-frontend";
 
 // The number of elevation values per row/column within each tile.
@@ -45,8 +55,12 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   /** Return elevation values in a 16x16 grid. */
-  public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
-    const latLongRange = args.tile.quadId.getLatLongRangeDegrees(this.tilingScheme);
+  public override async requestMeshData(
+    args: RequestMeshDataArgs
+  ): Promise<number[] | undefined> {
+    const latLongRange = args.tile.quadId.getLatLongRangeDegrees(
+      this.tilingScheme
+    );
 
     // Latitudes outside the range [-85, 85] produce HTTP 400 per the Bing API docs - clamp to that range.
     latLongRange.low.y = Math.max(-85, latLongRange.low.y);
@@ -63,7 +77,9 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   /** Produce a 3d terrain mesh from the elevation values obtained by `requestMeshData`. */
-  public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
+  public override async readMesh(
+    args: ReadMeshArgs
+  ): Promise<RealityMeshParams | undefined> {
     const heights = args.data as number[];
     assert(heights.length === size * size);
 
@@ -118,8 +134,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       }
     }
 
-    if (this._wantNormals)
-      this.addNormals(builder, initialVertexCapacity);
+    if (this._wantNormals) this.addNormals(builder, initialVertexCapacity);
 
     // Define the triangles for each quad.
     for (let row = 0; row < sizeM1; row++) {
@@ -141,9 +156,15 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
     assert(builder.positions.length === options.initialVertexCapacity);
     assert(builder.uvs.length === options.initialVertexCapacity);
-    assert(undefined === builder.normals || builder.normals.capacity === options.initialVertexCapacity);
+    assert(
+      undefined === builder.normals ||
+        builder.normals.capacity === options.initialVertexCapacity
+    );
     assert(builder.positions.length === builder.uvs.length);
-    assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
+    assert(
+      undefined === builder.normals ||
+        builder.normals.length === builder.positions.length
+    );
     assert(builder.indices.capacity === options.initialIndexCapacity);
 
     // Extract the completed 3d mesh.
@@ -151,7 +172,10 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   // Compute a normal vector for each vertex.
-  private addNormals(builder: RealityMeshParamsBuilder, numVertices: number): void {
+  private addNormals(
+    builder: RealityMeshParamsBuilder,
+    numVertices: number
+  ): void {
     const scratchP0 = new Point3d();
     const scratchP1 = new Point3d();
     const scratchP2 = new Point3d();
@@ -162,8 +186,24 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     // p0: The position of the vertex whose normal vector is being computed.
     // r1, c1: The (x, y) offset of the second triangle vertex, relative to p0 - either 0, -1, or 1.
     // r2, c2: The (x, y) offset of the third triangle vertex, relative to p0 - either 0, -1, or 1.
-    const addNormal = (sum: Vector3d, p0: Point3d, r1: number, c1: number, r2: number, c2: number): void => {
-      if (r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= size || c1 >= size || r2 >= size || c2 >= size) {
+    const addNormal = (
+      sum: Vector3d,
+      p0: Point3d,
+      r1: number,
+      c1: number,
+      r2: number,
+      c2: number
+    ): void => {
+      if (
+        r1 < 0 ||
+        c1 < 0 ||
+        r2 < 0 ||
+        c2 < 0 ||
+        r1 >= size ||
+        c1 >= size ||
+        r2 >= size ||
+        c2 >= size
+      ) {
         // At least one of the adjacent points is outside the boundaries of the tile. We have no elevation data for points outside the tile.
         // Note: to properly compute normals for vertices on the edges of the tile, requestMeshData would need to request additional elevations
         // for points adjacent to the tile. For simplicity, we simply ignore their contribution to the vertex normal.
@@ -175,7 +215,12 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       const p2 = builder.positions.unquantize(r2 * size + c2, scratchP2);
 
       // Compute the normalized vector perpendicular to the triangle.
-      const faceNormal = Vector3d.createCrossProductToPoints(p0, p1, p2, scratchFaceNormal);
+      const faceNormal = Vector3d.createCrossProductToPoints(
+        p0,
+        p1,
+        p2,
+        scratchFaceNormal
+      );
       faceNormal.normalizeInPlace();
 
       // Add this triangle's normal vector to the vertex normal.
@@ -194,14 +239,14 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
         const p0 = builder.positions.unquantize(row * size + col, scratchP0);
         // This could be made more efficient with a loop that retains the output of the previous iteration,
         // but less readable.
-        addNormal(vertexNormal, p0, row+0, col+1, row+1, col+1);
-        addNormal(vertexNormal, p0, row+1, col+1, row+1, col+0);
-        addNormal(vertexNormal, p0, row+1, col+0, row+1, col-1);
-        addNormal(vertexNormal, p0, row+1, col-1, row+0, col-1);
-        addNormal(vertexNormal, p0, row+0, col-1, row-1, col-1);
-        addNormal(vertexNormal, p0, row-1, col-1, row-1, col+0);
-        addNormal(vertexNormal, p0, row-1, col+0, row-1, col+1);
-        addNormal(vertexNormal, p0, row-1, col+1, row+0, col+1);
+        addNormal(vertexNormal, p0, row + 0, col + 1, row + 1, col + 1);
+        addNormal(vertexNormal, p0, row + 1, col + 1, row + 1, col + 0);
+        addNormal(vertexNormal, p0, row + 1, col + 0, row + 1, col - 1);
+        addNormal(vertexNormal, p0, row + 1, col - 1, row + 0, col - 1);
+        addNormal(vertexNormal, p0, row + 0, col - 1, row - 1, col - 1);
+        addNormal(vertexNormal, p0, row - 1, col - 1, row - 1, col + 0);
+        addNormal(vertexNormal, p0, row - 1, col + 0, row - 1, col + 1);
+        addNormal(vertexNormal, p0, row - 1, col + 1, row + 0, col + 1);
 
         vertexNormal.normalizeInPlace();
         builder.normals.push(OctEncodedNormal.encode(vertexNormal));
@@ -212,7 +257,12 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   // Generate "skirts" around the edge of the mesh, hanging straight down from the existing triangles.
   // Note: if we angled the skirts outward slightly, they would do a better job of hiding seams, particularly when
   // looking directly down at the map.
-  private addSkirts(builder: RealityMeshParamsBuilder, heights: number[], skirtHeight: number, projection: MapTileProjection): void {
+  private addSkirts(
+    builder: RealityMeshParamsBuilder,
+    heights: number[],
+    skirtHeight: number,
+    projection: MapTileProjection
+  ): void {
     // The normal vector for the skirt vertices does not matter - use a zero vector.
     const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
     const uv = new Point2d();
@@ -223,27 +273,55 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       // top row
       let height = heights[sizeM1 * size + c];
       const u = c * delta;
-      projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
+      projection.getPoint(
+        u,
+        1,
+        (height - skirtHeight) * this._exaggeration,
+        position
+      );
       uv.set(u, 1);
       const topIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       // bottom row
       height = heights[c];
-      projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
+      projection.getPoint(
+        u,
+        0,
+        (height - skirtHeight) * this._exaggeration,
+        position
+      );
       uv.set(u, 0);
-      const bottomIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+      const bottomIndex = builder.addUnquantizedVertex(
+        position,
+        uv,
+        skirtNormal
+      );
 
       // left side
       height = heights[(sizeM1 - c) * size];
-      projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+      projection.getPoint(
+        0,
+        1 - u,
+        (height - skirtHeight) * this._exaggeration,
+        position
+      );
       uv.set(0, 1 - u);
       const leftIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       // right side
       height = heights[(sizeM1 - c) * size + sizeM1];
-      projection.getPoint(1, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+      projection.getPoint(
+        1,
+        1 - u,
+        (height - skirtHeight) * this._exaggeration,
+        position
+      );
       uv.set(1, 1 - u);
-      const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+      const rightIndex = builder.addUnquantizedVertex(
+        position,
+        uv,
+        skirtNormal
+      );
 
       if (c === sizeM1) {
         // We have added all 16 vertices and all 15 quads along each edge
@@ -266,7 +344,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
       // right side
       const right = c * size + sizeM1;
-      builder.addTriangle(right, right +size, rightIndex + 4);
+      builder.addTriangle(right, right + size, rightIndex + 4);
       builder.addTriangle(right, rightIndex + 4, rightIndex);
     }
   }
@@ -282,7 +360,9 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
     // Our provider.
     const provider: TerrainProvider = {
-      createTerrainMeshProvider: async (options: TerrainMeshProviderOptions) => {
+      createTerrainMeshProvider: async (
+        options: TerrainMeshProviderOptions
+      ) => {
         return Promise.resolve(new BingTerrainMeshProvider(options));
       },
     };

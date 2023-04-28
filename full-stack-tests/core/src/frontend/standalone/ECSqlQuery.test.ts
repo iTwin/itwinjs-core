@@ -8,14 +8,27 @@ import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+function skipIf(
+  cond: () => boolean,
+  skipMsg: string,
+  title: string,
+  callback: Mocha.AsyncFunc | Mocha.Func
+): Mocha.Test {
   if (cond()) {
     return it.skip(`${title} [${skipMsg}]`, callback);
   }
   return it(title, callback);
 }
-function skipIfWeb(title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
-  return skipIf(() => ProcessDetector.isBrowserProcess, "skipping for browser", title, callback);
+function skipIfWeb(
+  title: string,
+  callback: Mocha.AsyncFunc | Mocha.Func
+): Mocha.Test {
+  return skipIf(
+    () => ProcessDetector.isBrowserProcess,
+    "skipping for browser",
+    title,
+    callback
+  );
 }
 
 describe("ECSql Query", () => {
@@ -29,8 +42,12 @@ describe("ECSql Query", () => {
     await TestUtility.startFrontend();
     imodel1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel3 = await SnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel4 = await SnapshotConnection.openFile("GetSetAutoHandledArrayProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await SnapshotConnection.openFile(
+      "GetSetAutoHandledStructProperties.bim"
+    ); // relative path resolved by BackendTestAssetResolver
+    imodel4 = await SnapshotConnection.openFile(
+      "GetSetAutoHandledArrayProperties.bim"
+    ); // relative path resolved by BackendTestAssetResolver
     imodel5 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -50,7 +67,11 @@ describe("ECSql Query", () => {
     const cb = async () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
-          for await (const _row of imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { restartToken: "tag" })) {
+          for await (const _row of imodel1.createQueryReader(
+            "SELECT * FROM BisCore.element",
+            undefined,
+            { restartToken: "tag" }
+          )) {
             rowCount++;
           }
           successful++;
@@ -79,7 +100,11 @@ describe("ECSql Query", () => {
   });
 
   it("concurrent query use primary connection", async () => {
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
+    const reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element",
+      undefined,
+      { usePrimaryConn: true }
+    );
     let props = await reader.getMetaData();
     assert.equal(props.length, 11);
     let rows = 0;
@@ -103,13 +128,21 @@ describe("ECSql Query", () => {
     assert.equal(props.length, 11);
   });
   it("concurrent query quota", async () => {
-    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
+    let reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element",
+      undefined,
+      { limit: { count: 4 } }
+    );
     let rows = 0;
     while (await reader.step()) {
       rows++;
     }
     assert.equal(rows, 4);
-    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
+    reader = imodel1.createQueryReader(
+      "SELECT * FROM BisCore.element",
+      undefined,
+      { limit: { offset: 4, count: 4 } }
+    );
     rows = 0;
     while (await reader.step()) {
       rows++;
@@ -120,7 +153,7 @@ describe("ECSql Query", () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
       const nPages = Math.ceil(nRowPerPage);
-      const nRowOnLastPage = nRowCount - (Math.floor(nRowPerPage) * pageSize);
+      const nRowOnLastPage = nRowCount - Math.floor(nRowPerPage) * pageSize;
       const pages = new Array(nPages).fill(pageSize);
       if (nRowPerPage) {
         pages[nPages - 1] = nRowOnLastPage;
@@ -129,7 +162,8 @@ describe("ECSql Query", () => {
     };
 
     const pageSize = 5;
-    const query = "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
+    const query =
+      "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element";
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
@@ -149,7 +183,11 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray();
+        const result = await db
+          .createQueryReader(query, undefined, {
+            limit: { count: pageSize, offset: k * pageSize },
+          })
+          .toArray();
         assert.equal(result.length, rowPerPage[k]);
       }
     }
@@ -157,7 +195,9 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of db.createQueryReader(query, undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })) {
         const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
@@ -175,19 +215,31 @@ describe("ECSql Query", () => {
   });
 
   it("Query with Abbreviated Blobs", async function () {
-    const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
-    const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
+    const query1 =
+      "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
+    const query2 =
+      "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
     let row1: any;
     let row2: any;
     let row3: any;
-    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const row of imodel2.createQueryReader(query1, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    }))
       row1 = row.toRow();
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
+    for await (const row of imodel2.createQueryReader(
+      query2,
+      QueryBinder.from([row1.id]),
+      { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }
+    ))
       row2 = row.toRow();
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
+    for await (const row of imodel2.createQueryReader(
+      query2,
+      QueryBinder.from([row1.id]),
+      { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }
+    ))
       row3 = row.toRow();
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);

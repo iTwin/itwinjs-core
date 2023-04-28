@@ -31,7 +31,12 @@ export class MapCartoRectangle extends Range2d {
    * @note If `north` is less than `south`, they will be swapped.
    * @see [[fromRadians]], [[fromDegrees]], [[createZero]], and [[createMaximum]] to construct a new rectangle.
    */
-  protected constructor(west: number, south: number, east: number, north: number) {
+  protected constructor(
+    west: number,
+    south: number,
+    east: number,
+    north: number
+  ) {
     super(west, Math.min(south, north), east, Math.max(south, north));
   }
 
@@ -42,7 +47,12 @@ export class MapCartoRectangle extends Range2d {
 
   /** Create a rectangle encompassing all points on the surface of the Earth. */
   public static createMaximum(): MapCartoRectangle {
-    return new MapCartoRectangle(-Angle.piRadians, -Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians);
+    return new MapCartoRectangle(
+      -Angle.piRadians,
+      -Angle.piOver2Radians,
+      Angle.piRadians,
+      Angle.piOver2Radians
+    );
   }
 
   /** Create a new rectangle with angles specified in radians.
@@ -53,7 +63,13 @@ export class MapCartoRectangle extends Range2d {
    * @param result An optional preallocated rectangle to hold the result.
    * @note If `north` is less than `south`, they will be swapped.
    */
-  public static fromRadians(west: number, south: number, east: number, north: number, result?: MapCartoRectangle): MapCartoRectangle {
+  public static fromRadians(
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    result?: MapCartoRectangle
+  ): MapCartoRectangle {
     result = result ?? MapCartoRectangle.createZero();
     result.setRadians(west, south, east, north);
     return result;
@@ -67,37 +83,75 @@ export class MapCartoRectangle extends Range2d {
    * @param result An optional preallocated rectangle to hold the result.
    * @note If `north` is less than `south`, they will be swapped.
    */
-  public static fromDegrees(west: number, south: number, east: number, north: number, result?: MapCartoRectangle): MapCartoRectangle {
+  public static fromDegrees(
+    west: number,
+    south: number,
+    east: number,
+    north: number,
+    result?: MapCartoRectangle
+  ): MapCartoRectangle {
     const mult = Angle.radiansPerDegree;
-    return MapCartoRectangle.fromRadians(west * mult, south * mult, east * mult, north * mult, result);
+    return MapCartoRectangle.fromRadians(
+      west * mult,
+      south * mult,
+      east * mult,
+      north * mult,
+      result
+    );
   }
 
   /** The western longitude in radians. */
-  public get west() { return this.low.x; }
-  public set west(x: number) { this.low.x = x; }
+  public get west() {
+    return this.low.x;
+  }
+  public set west(x: number) {
+    this.low.x = x;
+  }
 
   /** The southern latitude in radians. */
-  public get south() { return this.low.y; }
-  public set south(y: number) { this.low.y = y; }
+  public get south() {
+    return this.low.y;
+  }
+  public set south(y: number) {
+    this.low.y = y;
+  }
 
   /** The eastern longitude in radians. */
-  public get east() { return this.high.x; }
-  public set east(x: number) { this.high.x = x; }
+  public get east() {
+    return this.high.x;
+  }
+  public set east(x: number) {
+    this.high.x = x;
+  }
 
   /** The northern latitude in radians. */
-  public get north() { return this.high.y; }
-  public set north(y: number) { this.high.y = y; }
+  public get north() {
+    return this.high.y;
+  }
+  public set north(y: number) {
+    this.high.y = y;
+  }
 
   /** A non-localized string representation of this rectangle, for debugging purposes. */
   public get latLongString() {
-    return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${this.high.y * Angle.degreesPerRadian} Longitude: ${this.low.x * Angle.degreesPerRadian} - ${this.high.x * Angle.degreesPerRadian}`;
+    return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${
+      this.high.y * Angle.degreesPerRadian
+    } Longitude: ${this.low.x * Angle.degreesPerRadian} - ${
+      this.high.x * Angle.degreesPerRadian
+    }`;
   }
 
   /** A pair of [[Cartographic]]s representing the same area as this rectangle. */
   public get globalLocationArea(): GlobalLocationArea {
     return {
-      southwest: Cartographic.fromRadians({longitude: this.west, latitude: this.south}),
-      northeast: Cartographic.fromRadians({longitude: this.east, latitude: this.north}),
+      southwest: Cartographic.fromRadians({
+        longitude: this.west,
+        latitude: this.south,
+      }),
+      northeast: Cartographic.fromRadians({
+        longitude: this.east,
+        latitude: this.north,
+      }),
     };
   }
 
@@ -141,11 +195,14 @@ export class MapCartoRectangle extends Range2d {
    * @returns the center of this rectangle.
    */
   public getCenter(result?: Cartographic): Cartographic {
-    return Cartographic.fromRadians({
-      longitude: (this.west + this.east) / 2,
-      latitude: (this.north + this.south) / 2,
-      height: 0,
-    }, result);
+    return Cartographic.fromRadians(
+      {
+        longitude: (this.west + this.east) / 2,
+        latitude: (this.north + this.south) / 2,
+        height: 0,
+      },
+      result
+    );
   }
 
   /** Computes fractional coordinates of the specified position within this rectangle's area.
@@ -158,10 +215,18 @@ export class MapCartoRectangle extends Range2d {
 
   /** @internal */
   public getTileFractionRange(tilingScheme: MapTilingScheme) {
-    scratchMercatorFractionRange.low.x = tilingScheme.longitudeToXFraction(this.low.x);
-    scratchMercatorFractionRange.high.x = tilingScheme.longitudeToXFraction(this.high.x);
-    scratchMercatorFractionRange.low.y = tilingScheme.latitudeToYFraction(this.low.y);
-    scratchMercatorFractionRange.high.y = tilingScheme.latitudeToYFraction(this.high.y);
+    scratchMercatorFractionRange.low.x = tilingScheme.longitudeToXFraction(
+      this.low.x
+    );
+    scratchMercatorFractionRange.high.x = tilingScheme.longitudeToXFraction(
+      this.high.x
+    );
+    scratchMercatorFractionRange.low.y = tilingScheme.latitudeToYFraction(
+      this.low.y
+    );
+    scratchMercatorFractionRange.high.y = tilingScheme.latitudeToYFraction(
+      this.high.y
+    );
 
     return scratchMercatorFractionRange;
   }

@@ -43,7 +43,9 @@ export namespace HiddenLine {
   /** Describes the symbology with which edges should be drawn. */
   export class Style {
     /** @internal */
-    public get ovrColor(): boolean { return undefined !== this.color; }
+    public get ovrColor(): boolean {
+      return undefined !== this.color;
+    }
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
     public readonly color?: ColorDef;
     /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
@@ -55,8 +57,7 @@ export namespace HiddenLine {
 
     private constructor(json?: StyleProps, hidden?: true) {
       if (JsonUtils.isEmptyObjectOrUndefined(json)) {
-        if (hidden)
-          this.pattern = LinePixels.HiddenLine;
+        if (hidden) this.pattern = LinePixels.HiddenLine;
 
         return;
       }
@@ -66,9 +67,11 @@ export namespace HiddenLine {
         this.color = ColorDef.fromJSON(json.color);
 
       if (undefined !== json.pattern) {
-        const pattern = JsonUtils.asInt(json.pattern, hidden ? LinePixels.HiddenLine : LinePixels.Invalid);
-        if (LinePixels.Invalid !== pattern)
-          this.pattern = pattern;
+        const pattern = JsonUtils.asInt(
+          json.pattern,
+          hidden ? LinePixels.HiddenLine : LinePixels.Invalid
+        );
+        if (LinePixels.Invalid !== pattern) this.pattern = pattern;
       } else if (hidden) {
         this.pattern = LinePixels.HiddenLine;
       }
@@ -86,18 +89,20 @@ export namespace HiddenLine {
     public static readonly defaultHidden = new Style({}, true);
 
     public static fromJSON(json?: StyleProps, hidden?: true): Style {
-      if (undefined !== json)
-        return new Style(json, hidden);
+      if (undefined !== json) return new Style(json, hidden);
 
       return hidden ? this.defaultHidden : this.defaultVisible;
     }
 
     /** Create a Style equivalent to this one but with the specified color override. */
     public overrideColor(color: ColorDef | undefined): Style {
-      if (undefined === this.color && undefined === color)
-        return this;
+      if (undefined === this.color && undefined === color) return this;
 
-      if (undefined !== this.color && undefined !== color && this.color.equals(color))
+      if (
+        undefined !== this.color &&
+        undefined !== color &&
+        this.color.equals(color)
+      )
         return this;
 
       return Style.fromJSON({
@@ -110,8 +115,7 @@ export namespace HiddenLine {
 
     /** Create a Style equivalent to this one but with the specified pattern override. */
     public overridePattern(pattern: LinePixels | undefined): Style {
-      if (pattern === this.pattern)
-        return this;
+      if (pattern === this.pattern) return this;
 
       return Style.fromJSON({
         color: this.color?.toJSON(),
@@ -123,8 +127,7 @@ export namespace HiddenLine {
 
     /** Create a Style equivalent to this one but with the specified width override. */
     public overrideWidth(width: number | undefined): Style {
-      if (width === this.width)
-        return this;
+      if (width === this.width) return this;
 
       return Style.fromJSON({
         color: this.color?.toJSON(),
@@ -136,12 +139,14 @@ export namespace HiddenLine {
 
     /** Returns true if this Style is equivalent to the supplied Style. */
     public equals(other: Style): boolean {
-      if (this === other)
-        return true;
-      else if (this.ovrColor !== other.ovrColor || this.pattern !== other.pattern || this.width !== other.width)
+      if (this === other) return true;
+      else if (
+        this.ovrColor !== other.ovrColor ||
+        this.pattern !== other.pattern ||
+        this.width !== other.width
+      )
         return false;
-      else
-        return undefined === this.color || this.color.equals(other.color!);
+      else return undefined === this.color || this.color.equals(other.color!);
     }
 
     public toJSON(): StyleProps {
@@ -180,19 +185,18 @@ export namespace HiddenLine {
     public readonly transparencyThreshold: number;
 
     /** An alias for [[transparencyThreshold]]. */
-    public get transThreshold(): number { return this.transparencyThreshold; }
+    public get transThreshold(): number {
+      return this.transparencyThreshold;
+    }
 
     /** The default display settings. */
     public static defaults = new Settings({});
 
     /** Create a DisplaySettings from its JSON representation. */
     public static fromJSON(json?: SettingsProps): Settings {
-      if (JsonUtils.isEmptyObjectOrUndefined(json))
-        return this.defaults;
-      else if (json instanceof Settings)
-        return json;
-      else
-        return new Settings(json!);
+      if (JsonUtils.isEmptyObjectOrUndefined(json)) return this.defaults;
+      else if (json instanceof Settings) return json;
+      else return new Settings(json!);
     }
 
     public toJSON(): SettingsProps {
@@ -213,17 +217,21 @@ export namespace HiddenLine {
       return Settings.fromJSON({
         visible: undefined !== visible ? visible : this.visible.toJSON(),
         hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
-        transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
+        transThreshold:
+          undefined !== transparencyThreshold
+            ? transparencyThreshold
+            : this.transparencyThreshold,
       });
     }
 
     public equals(other: Settings): boolean {
-      if (this === other)
-        return true;
+      if (this === other) return true;
 
-      return this.visible.equals(other.visible)
-        && this.hidden.equals(other.hidden)
-        && this.transparencyThreshold === other.transparencyThreshold;
+      return (
+        this.visible.equals(other.visible) &&
+        this.hidden.equals(other.hidden) &&
+        this.transparencyThreshold === other.transparencyThreshold
+      );
     }
 
     public get matchesDefaults(): boolean {

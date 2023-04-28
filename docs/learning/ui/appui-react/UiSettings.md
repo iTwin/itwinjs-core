@@ -44,11 +44,11 @@ The `FrameworkVersion` component defines the version context that is accessible 
 
 ### Quantity Formatting Settings
 
-  The [QuantityFormatSettingsPage]($appui-react) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
+The [QuantityFormatSettingsPage]($appui-react) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
 
 ### User Interface Settings
 
-  The [UiSettingsPage]($appui-react) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
+The [UiSettingsPage]($appui-react) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
 
 ### Settings stage
 
@@ -62,15 +62,19 @@ The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a
 export function AppBackstageComposerComponent() {
   const [backstageItems] = React.useState(() => {
     return [
-      BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"),
-      IModelApp.i18n.translate("SampleApp:backstage.iModelStage"), `svg:${stageIconSvg}`),
-      SettingsModalFrontstage.getBackstageActionItem (100, 20),
+      BackstageItemUtilities.createStageLauncher(
+        ViewsFrontstage.stageId,
+        100,
+        10,
+        IModelApp.i18n.translate("SampleApp:backstage.viewIModel"),
+        IModelApp.i18n.translate("SampleApp:backstage.iModelStage"),
+        `svg:${stageIconSvg}`
+      ),
+      SettingsModalFrontstage.getBackstageActionItem(100, 20),
     ];
   });
 
-  return (
-    <BackstageComposer items={backstageItems} />
-  );
+  return <BackstageComposer items={backstageItems} />;
 }
 ```
 

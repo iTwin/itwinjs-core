@@ -5,7 +5,14 @@
 import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import {
+  ColorDef,
+  EmptyLocalization,
+  Feature,
+  FeatureAppearance,
+  FeatureTable,
+  PackedFeatureTable,
+} from "@itwin/core-common";
 import { ViewRect } from "../../../ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -17,7 +24,9 @@ import { OvrFlags } from "../../../render/webgl/RenderFlags";
 import { testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  before(async () =>
+    IModelApp.startup({ localization: new EmptyLocalization() })
+  );
   after(async () => IModelApp.shutdown());
 
   function makeTarget(): Target {
@@ -30,14 +39,21 @@ describe("FeatureOverrides", () => {
   function makeBranch(ovrs?: FeatureSymbology.Overrides): Branch {
     const branch = new GraphicBranch();
     branch.symbologyOverrides = ovrs;
-    const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity);
+    const graphic = IModelApp.renderSystem.createGraphicBranch(
+      branch,
+      Transform.identity
+    );
     expect(graphic).instanceOf(Branch);
     return graphic as Branch;
   }
 
   function createBatch(featureTable: FeatureTable): Batch {
     const graphic = IModelApp.renderSystem.createGraphicList([]);
-    const batch = IModelApp.renderSystem.createBatch(graphic, PackedFeatureTable.pack(featureTable), Range3d.createNull());
+    const batch = IModelApp.renderSystem.createBatch(
+      graphic,
+      PackedFeatureTable.pack(featureTable),
+      Range3d.createNull()
+    );
     expect(batch).instanceOf(Batch);
     return batch as Batch;
   }
@@ -48,8 +64,12 @@ describe("FeatureOverrides", () => {
     return createBatch(featureTable);
   }
 
-  function makeOverrides(source?: FeatureSymbology.Source): FeatureSymbology.Overrides {
-    return source ? FeatureSymbology.Overrides.withSource(source) : new FeatureSymbology.Overrides();
+  function makeOverrides(
+    source?: FeatureSymbology.Source
+  ): FeatureSymbology.Overrides {
+    return source
+      ? FeatureSymbology.Overrides.withSource(source)
+      : new FeatureSymbology.Overrides();
   }
 
   function makeSource(): FeatureSymbology.Source {
@@ -74,7 +94,8 @@ describe("FeatureOverrides", () => {
     t1.pushBatch(ba1);
     expect(ba1.perTargetData.data.length).to.equal(1);
     expect(ba1.perTargetData.data[0].featureOverrides.size).to.equal(1);
-    expect(ba1.perTargetData.data[0].featureOverrides.get(undefined)).not.to.be.undefined;
+    expect(ba1.perTargetData.data[0].featureOverrides.get(undefined)).not.to.be
+      .undefined;
     t1.popBatch();
     t1.popBranch();
 
@@ -92,7 +113,8 @@ describe("FeatureOverrides", () => {
     t1.pushBatch(ba1);
     expect(ba1.perTargetData.data.length).to.equal(1);
     expect(ba1.perTargetData.data[0].featureOverrides.size).to.equal(2);
-    expect(ba1.perTargetData.data[0].featureOverrides.get(s1)).not.to.be.undefined;
+    expect(ba1.perTargetData.data[0].featureOverrides.get(s1)).not.to.be
+      .undefined;
     t1.popBatch();
     t1.popBranch();
 
@@ -118,8 +140,10 @@ describe("FeatureOverrides", () => {
     t2.pushBranch(br5);
     t2.pushBatch(ba1);
     expect(ba1.perTargetData.data.length).to.equal(2);
-    expect(ba1.perTargetData.data[1].featureOverrides.get(s1)).not.to.be.undefined;
-    expect(ba1.perTargetData.data[1].featureOverrides.get(s2)).not.to.be.undefined;
+    expect(ba1.perTargetData.data[1].featureOverrides.get(s1)).not.to.be
+      .undefined;
+    expect(ba1.perTargetData.data[1].featureOverrides.get(s2)).not.to.be
+      .undefined;
     expect(ba1.perTargetData.data[1].featureOverrides.size).to.equal(2);
     t2.popBatch();
     t2.popBranch();
@@ -132,14 +156,13 @@ describe("FeatureOverrides", () => {
     }
 
     function reset(overrides: Overrides[]): void {
-      for (const ovr of overrides)
-        ovr.updated = false;
+      for (const ovr of overrides) ovr.updated = false;
     }
 
     function hook(overrides: Overrides[]): void {
       reset(overrides);
       for (const ovr of overrides)
-        ovr.buildLookupTable = () => ovr.updated = true;
+        ovr.buildLookupTable = () => (ovr.updated = true);
     }
 
     const target = makeTarget();
@@ -168,11 +191,15 @@ describe("FeatureOverrides", () => {
 
     update();
 
-    const ovrs = Array.from(batch.perTargetData.data[0].featureOverrides.values()) as unknown as Overrides[];
+    const ovrs = Array.from(
+      batch.perTargetData.data[0].featureOverrides.values()
+    ) as unknown as Overrides[];
     hook(ovrs);
 
     expect(ovrs.length).to.equal(3);
-    expect(Array.from(batch.perTargetData.data[0].featureOverrides.keys())).to.deep.equal([undefined, s1, s2]);
+    expect(
+      Array.from(batch.perTargetData.data[0].featureOverrides.keys())
+    ).to.deep.equal([undefined, s1, s2]);
 
     expect(ovrs.some((x) => x.updated)).to.be.false;
 
@@ -278,7 +305,11 @@ describe("FeatureOverrides", () => {
     const e21: ElemId = "0xe21";
     const e22: ElemId = "0xe22";
 
-    function createFeatureTable(modelId: string, elem1: string, elem2: string): FeatureTable {
+    function createFeatureTable(
+      modelId: string,
+      elem1: string,
+      elem2: string
+    ): FeatureTable {
       const featureTable = new FeatureTable(100, modelId);
       featureTable.insertWithIndex(new Feature(elem1, s1), 0);
       featureTable.insertWithIndex(new Feature(elem2, s2), 1);
@@ -297,8 +328,14 @@ describe("FeatureOverrides", () => {
           addFeatureOverrides: (ovrs) => {
             ovrs.ignoreSubCategory = true;
             if (withSymbOvrs) {
-              ovrs.override({ modelId: m1, appearance: FeatureAppearance.fromRgba(ColorDef.blue) });
-              ovrs.override({ subCategoryId: s2, appearance: FeatureAppearance.fromJSON({ weight: 5 }) });
+              ovrs.override({
+                modelId: m1,
+                appearance: FeatureAppearance.fromRgba(ColorDef.blue),
+              });
+              ovrs.override({
+                subCategoryId: s2,
+                appearance: FeatureAppearance.fromJSON({ weight: 5 }),
+              });
             }
           },
         });
@@ -312,8 +349,15 @@ describe("FeatureOverrides", () => {
           context.scene.background.push(b2);
         };
 
-        function test(expectedHilitedElements: ElemId | ElemId[], setup: () => void): void {
-          function expectHilited(batch: Batch, featureIndex: 0 | 1, expectToBeHilited: boolean): void {
+        function test(
+          expectedHilitedElements: ElemId | ElemId[],
+          setup: () => void
+        ): void {
+          function expectHilited(
+            batch: Batch,
+            featureIndex: 0 | 1,
+            expectToBeHilited: boolean
+          ): void {
             const ptd = batch.perTargetData.data[0];
             if (!ptd) {
               expect(expectToBeHilited).to.be.false;
@@ -329,7 +373,9 @@ describe("FeatureOverrides", () => {
             expect(data.length).to.equal(2 * numBytesPerFeature);
 
             const tex = new Texture2DDataUpdater(data);
-            const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
+            const flags = tex.getOvrFlagsAtIndex(
+              featureIndex * numBytesPerFeature
+            );
             const isHilited = 0 !== (flags & OvrFlags.Hilited);
             expect(isHilited).to.equal(expectToBeHilited);
           }
@@ -340,7 +386,13 @@ describe("FeatureOverrides", () => {
           expect(target.hilites).to.equal(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).to.equal(1);
 
-          const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
+          const expected = new Set<string>(
+            expectedHilitedElements
+              ? typeof expectedHilitedElements === "string"
+                ? [expectedHilitedElements]
+                : expectedHilitedElements
+              : []
+          );
           if (expected.size > 0) {
             expect(b1.perTargetData.data.length).to.equal(1);
             expect(b2.perTargetData.data.length).to.equal(1);
@@ -359,8 +411,7 @@ describe("FeatureOverrides", () => {
             h.modelSubCategoryMode = "union";
           });
 
-          if (withSymbOvrs)
-            vp.setFeatureOverrideProviderChanged();
+          if (withSymbOvrs) vp.setFeatureOverrideProviderChanged();
         }
 
         reset();
@@ -393,8 +444,8 @@ describe("FeatureOverrides", () => {
           h.subcategories.addId(s2);
         });
 
-        test(e22, () => h.modelSubCategoryMode = "intersection");
-        test([e12, e21, e22], () => h.modelSubCategoryMode = "union");
+        test(e22, () => (h.modelSubCategoryMode = "intersection"));
+        test([e12, e21, e22], () => (h.modelSubCategoryMode = "union"));
 
         reset();
         test([], () => {

@@ -32,14 +32,20 @@ export class BingElevationProvider {
       bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
 
     this._heightRangeRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
+      "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}".replace(
+        "{BingMapsAPIKey}",
+        bingKey
+      );
     this._seaLevelOffsetRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
+      "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace(
+        "{BingMapsAPIKey}",
+        bingKey
+      );
     this._heightListRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
+      "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace(
+        "{BingMapsAPIKey}",
+        bingKey
+      );
   }
 
   /** Return the height (altitude) at a given cartographic location.
@@ -47,13 +53,11 @@ export class BingElevationProvider {
    * @public
    */
   public async getHeight(carto: Cartographic, geodetic = true) {
-    if (undefined === carto)
-      return 0.0;
+    if (undefined === carto) return 0.0;
 
-    const requestUrl =
-      this._heightListRequestTemplate
-        .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
-        .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestUrl = this._heightListRequestTemplate
+      .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
+      .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
 
     try {
       const tileResponseBody = await request(requestUrl, "json");
@@ -69,7 +73,10 @@ export class BingElevationProvider {
    */
   public async getHeights(range: Range2d): Promise<number[] | undefined> {
     const boundingBox = `${range.low.y},${range.low.x},${range.high.y},${range.high.x}`;
-    const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
+    const requestUrl = this._heightRangeRequestTemplate.replace(
+      "{boundingBox}",
+      boundingBox
+    );
 
     try {
       const tileResponseBody = await request(requestUrl, "json");
@@ -80,12 +87,17 @@ export class BingElevationProvider {
   }
 
   /** @internal */
-  public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
+  public async getGeodeticToSeaLevelOffset(
+    point: Point3d,
+    iModel: IModelConnection
+  ): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
-    if (carto === undefined)
-      return 0.0;
+    if (carto === undefined) return 0.0;
 
-    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);
+    const requestUrl = this._seaLevelOffsetRequestTemplate.replace(
+      "{points}",
+      `${carto.latitudeDegrees},${carto.longitudeDegrees}`
+    );
     try {
       const tileResponseBody = await request(requestUrl, "json");
       return tileResponseBody.resourceSets[0].resources[0].offsets[0];
@@ -98,8 +110,15 @@ export class BingElevationProvider {
    *
    * @public
    */
-  public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
-    return this.getHeight(iModel.spatialToCartographicFromEcef(point), geodetic);
+  public async getHeightValue(
+    point: Point3d,
+    iModel: IModelConnection,
+    geodetic = true
+  ): Promise<number> {
+    return this.getHeight(
+      iModel.spatialToCartographicFromEcef(point),
+      geodetic
+    );
   }
 
   /** Get the height (altitude) range for a given iModel project extents. The height values are  geodetic (WGS84 ellipsoid).
@@ -131,12 +150,10 @@ export class BingElevationProvider {
     }
 
     const heights = await this.getHeights(latLongRange);
-    if (!heights || !heights.length)
-      return 0;
+    if (!heights || !heights.length) return 0;
 
     let total = 0.0;
-    for (const height of heights)
-      total += height;
+    for (const height of heights) total += height;
 
     return total / heights.length;
   }

@@ -6,7 +6,7 @@ Tools have two options for populating the Tool Settings widget. The tool can reg
 
 ## Default ToolSettings Provider
 
-Any Tool derived from Interactive tool can implement the method `supplyToolSettingsProperties` to supply an array of `DialogItem` objects that define the property definitions and its position with a grid layout. The DefaultToolSettings provider will then automatically generate a type editor for the type of data required and show that editor in the row and column specified.  Unless suppressed via an `EditorParams`, a label will be generated using the `displayLabel` for the property and shown in the column to the left of the editor.
+Any Tool derived from Interactive tool can implement the method `supplyToolSettingsProperties` to supply an array of `DialogItem` objects that define the property definitions and its position with a grid layout. The DefaultToolSettings provider will then automatically generate a type editor for the type of data required and show that editor in the row and column specified. Unless suppressed via an `EditorParams`, a label will be generated using the `displayLabel` for the property and shown in the column to the left of the editor.
 
 ### Example of Tool Defining properties to be shown in Tool Setting Zone
 
@@ -87,7 +87,10 @@ export class ToolWithSettings extends PrimitiveTool {
   private _useLengthProperty: DialogProperty<boolean> | undefined;
   public get useLengthProperty() {
     if (!this._useLengthProperty)
-      this._useLengthProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useLength"), false);
+      this._useLengthProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildLockPropertyDescription("useLength"),
+        false
+      );
     return this._useLengthProperty;
   }
 
@@ -95,10 +98,14 @@ export class ToolWithSettings extends PrimitiveTool {
   private _lengthProperty: DialogProperty<number> | undefined;
   public get lengthProperty() {
     if (!this._lengthProperty)
-      this._lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5, undefined, !this.useLengthProperty.value);
+      this._lengthProperty = new DialogProperty<number>(
+        new LengthDescription("length"),
+        1.5,
+        undefined,
+        !this.useLengthProperty.value
+      );
     return this._lengthProperty;
   }
-
 
   /** Used to supply DefaultToolSettingProvider with a list of properties used to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -108,18 +115,32 @@ export class ToolWithSettings extends PrimitiveTool {
     ]);
 
     const toolSettings = new Array<DialogItem>();
-    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
-    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }, lengthLock));
+    const lengthLock = this.useLengthProperty.toDialogItem({
+      rowPriority: 1,
+      columnIndex: 0,
+    });
+    toolSettings.push(
+      this.lengthProperty.toDialogItem(
+        { rowPriority: 2, columnIndex: 2 },
+        lengthLock
+      )
+    );
     return toolSettings;
   }
 
   /** Override to return the property that is disabled/enabled if the supplied property is a lock property. */
-  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
-    return (property === this.useLengthProperty ? this.lengthProperty : undefined);
+  protected override getToolSettingPropertyLocked(
+    property: DialogProperty<any>
+  ): DialogProperty<any> | undefined {
+    return property === this.useLengthProperty
+      ? this.lengthProperty
+      : undefined;
   }
 
   /** Used to allow Tool to react to ToolSettings changes in UI */
-  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+  public override async applyToolSettingPropertyChange(
+    updatedValue: DialogPropertySyncItem
+  ): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
 }

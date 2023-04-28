@@ -12,7 +12,10 @@ import { SchemaItemType } from "../ECObjects";
  * @internal
  */
 export class UnitConversion {
-  constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) {}
+  constructor(
+    public readonly factor: number = 1.0,
+    public readonly offset: number = 0.0
+  ) {}
 
   /**
    * Converts x using UnitConversion
@@ -62,8 +65,7 @@ export class UnitConversion {
   public raise(power: number): UnitConversion {
     if (almostEqual(power, 1.0))
       return new UnitConversion(this.factor, this.offset);
-    else if (almostEqual(power, 0.0))
-      return new UnitConversion(1.0, 0.0);
+    else if (almostEqual(power, 0.0)) return new UnitConversion(1.0, 0.0);
 
     if (almostEqual(this.offset, 0.0))
       return new UnitConversion(this.factor ** power, 0.0);
@@ -80,7 +82,10 @@ export class UnitConversion {
    */
   public static from(unit: Unit | Constant): UnitConversion {
     if (unit.schemaItemType === SchemaItemType.Unit)
-      return new UnitConversion(unit.denominator / unit.numerator, -unit.offset);
+      return new UnitConversion(
+        unit.denominator / unit.numerator,
+        -unit.offset
+      );
 
     return new UnitConversion(unit.denominator / unit.numerator, 0.0);
   }

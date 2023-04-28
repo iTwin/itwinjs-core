@@ -5,19 +5,33 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
+import {
+  Cartographic,
+  ImageMapLayerSettings,
+  ImageSource,
+  IModelStatus,
+  ServerError,
+} from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisErrorCode,
+  ArcGISImageryProvider,
+  ArcGISTileMap,
   ArcGisUtilities,
-  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
-  MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
+  ImageryMapTile,
+  ImageryMapTileTree,
+  MapCartoRectangle,
+  MapFeatureInfoRecord,
+  MapLayerFeatureInfo,
+  MapLayerImageryProviderStatus,
+  MapSubLayerFeatureInfo,
+  QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { Logger } from "@itwin/core-bentley";
 
-const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
+const loggerCategory = "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
@@ -28,54 +42,71 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   private _tileMapSupported = false;
   private _mapSupported = false;
   private _tilesOnly = false;
-  private _tileMap: ArcGISTileMap|undefined;
+  private _tileMap: ArcGISTileMap | undefined;
 
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
-    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
+    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(
+      settings.formatId
+    );
   }
 
-  protected override get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
+  protected override get _filterByCartoRange() {
+    return false;
+  } // Can't trust footprint ranges (USGS Hydro)
 
-  public override get minimumZoomLevel() { return Math.max(super.minimumZoomLevel, this._minDepthFromLod); }
-  public override get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
+  public override get minimumZoomLevel() {
+    return Math.max(super.minimumZoomLevel, this._minDepthFromLod);
+  }
+  public override get maximumZoomLevel() {
+    return this._maxDepthFromLod > 0
+      ? this._maxDepthFromLod
+      : super.maximumZoomLevel;
+  }
 
   public uintToString(uintArray: any) {
     return Buffer.from(uintArray).toJSON();
-
   }
 
   private async fetchTile(row: number, column: number, zoomLevel: number) {
     const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
-    if (tileUrl.length === 0)
-      return undefined;
+    if (tileUrl.length === 0) return undefined;
     return this.fetch(new URL(tileUrl), { method: "GET" });
   }
 
-  public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    if ((this.status === MapLayerImageryProviderStatus.RequireAuth)) {
+  public override async loadTile(
+    row: number,
+    column: number,
+    zoomLevel: number
+  ): Promise<ImageSource | undefined> {
+    if (this.status === MapLayerImageryProviderStatus.RequireAuth) {
       return undefined;
     }
 
     try {
       const tileResponse = await this.fetchTile(row, column, zoomLevel);
-      if (tileResponse === undefined)
-        return undefined;
+      if (tileResponse === undefined) return undefined;
 
       if (!this._hasSuccessfullyFetchedTile) {
         this._hasSuccessfullyFetchedTile = true;
       }
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
-      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
+      Logger.logError(
+        loggerCategory,
+        `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`
+      );
       return undefined;
     }
   }
 
-  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+  protected override _generateChildIds(
+    tile: ImageryMapTile,
+    resolveChildren: (childIds: QuadId[]) => void
+  ) {
     const childIds = this.getPotentialChildIds(tile);
-    if (tile.quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
+    if (tile.quadId.level < Math.max(1, this.minimumZoomLevel - 1)) {
       resolveChildren(childIds);
       return;
     }
@@ -85,42 +116,52 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       this._tileMap.getChildrenAvailability(childIds).then((availability) => {
         const availableChildIds = new Array<QuadId>();
         for (let i = 0; i < availability.length; i++)
-          if (availability[i])
-            availableChildIds.push(childIds[i]);
+          if (availability[i]) availableChildIds.push(childIds[i]);
 
-        resolveChildren (availableChildIds);
+        resolveChildren(availableChildIds);
       });
     } else if (this._usesCachedTiles && this.cartoRange) {
       // Filter children by range
       const availableChildIds = new Array<QuadId>();
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < childIds.length; i++) {
-        const childExtent = this.getEPSG4326Extent(childIds[i].row, childIds[i].column, childIds[i].level);
+        const childExtent = this.getEPSG4326Extent(
+          childIds[i].row,
+          childIds[i].column,
+          childIds[i].level
+        );
 
-        const childRange = MapCartoRectangle.fromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
+        const childRange = MapCartoRectangle.fromDegrees(
+          childExtent.longitudeLeft,
+          childExtent.latitudeBottom,
+          childExtent.longitudeRight,
+          childExtent.latitudeTop
+        );
         if (childRange.intersectsRange(this.cartoRange)) {
           availableChildIds.push(childIds[i]);
         }
       }
-      resolveChildren (availableChildIds);
+      resolveChildren(availableChildIds);
     } else {
-      resolveChildren (childIds);   // Resolve all children
+      resolveChildren(childIds); // Resolve all children
     }
   }
 
   public override async initialize(): Promise<void> {
-
     const metadata = await this.getServiceJson();
 
     if (metadata?.content === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
     const json = metadata.content;
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+    if (
+      json?.error?.code === ArcGisErrorCode.TokenRequired ||
+      json?.error?.code === ArcGisErrorCode.InvalidToken
+    ) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
-        return;  // By returning (i.e not throwing), we ensure the tileTree get created and current provider is preserved to report status.
+        return; // By returning (i.e not throwing), we ensure the tileTree get created and current provider is preserved to report status.
       }
     }
 
@@ -135,8 +176,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       this._tilesOnly = capabilities.includes("TilesOnly");
     }
 
-    if (json.copyrightText)
-      this._copyrightText = json.copyrightText;
+    if (json.copyrightText) this._copyrightText = json.copyrightText;
 
     this._usesCachedTiles = !!json.tileInfo;
 
@@ -146,36 +186,61 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         if (this._mapSupported && !this._tilesOnly) {
           this._usesCachedTiles = false;
         } else {
-          throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
+          throw new ServerError(
+            IModelStatus.ValidationFailed,
+            "Invalid coordinate system"
+          );
         }
       }
     }
 
     if (this._usesCachedTiles) {
       // Read max LOD
-      if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
-        for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
+      if (
+        json.maxScale !== undefined &&
+        json.maxScale !== 0 &&
+        Array.isArray(json.tileInfo.lods)
+      ) {
+        for (
           ;
+          this._maxDepthFromLod < json.tileInfo.lods.length &&
+          json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale;
+          this._maxDepthFromLod++
+        );
       }
 
       // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
       if (this._tileMapSupported) {
-        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
+        this._tileMap = new ArcGISTileMap(
+          this._settings.url,
+          this._settings,
+          json.tileInfo?.lods?.length,
+          this._accessClient
+        );
       }
     }
 
     // Read range using fullextent from service metadata
     if (json.fullExtent) {
-      if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
+      if (
+        json.fullExtent.spatialReference.latestWkid === 3857 ||
+        json.fullExtent.spatialReference.wkid === 102100
+      ) {
         const range3857 = Range2d.createFrom({
-          low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
-          high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
+          low: { x: json.fullExtent.xmin, y: json.fullExtent.ymin },
+          high: { x: json.fullExtent.xmax, y: json.fullExtent.ymax },
+        });
 
         const west = this.getEPSG4326Lon(range3857.xLow);
         const south = this.getEPSG4326Lat(range3857.yLow);
         const east = this.getEPSG4326Lon(range3857.xHigh);
         const north = this.getEPSG4326Lat(range3857.yHigh);
-        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
+        this.cartoRange = MapCartoRectangle.fromDegrees(
+          west,
+          south,
+          east,
+          north
+        );
       }
     }
 
@@ -188,7 +253,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     } else if (json.minScale) {
       // Read min LOD using minScale
       const minScale = json.minScale;
-      if (json.tileInfo?.lods !== undefined && Array.isArray(json.tileInfo.lods)) {
+      if (
+        json.tileInfo?.lods !== undefined &&
+        Array.isArray(json.tileInfo.lods)
+      ) {
         for (const lod of json.tileInfo.lods) {
           if (lod.scale < minScale) {
             this._minDepthFromLod = lod.level;
@@ -197,43 +265,70 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         }
       }
     }
-
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
+      cards.appendChild(
+        IModelApp.makeLogoCard({
+          heading: "ArcGIS",
+          notice: this._copyrightText,
+        })
+      );
     }
   }
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
   // tolerance is in pixels
-  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number): Promise<any>   {
-    const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
+  private async getIdentifyData(
+    quadId: QuadId,
+    carto: Cartographic,
+    tolerance: number
+  ): Promise<any> {
+    const bboxString = this.getEPSG3857ExtentString(
+      quadId.row,
+      quadId.column,
+      quadId.level
+    );
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const tmpUrl = `${
+      this._settings.url
+    }/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${
+      this.tileSize
+    },${this.tileSize},96&layers=${this.getLayerString(
+      "visible"
+    )}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
     const urlObj = new URL(tmpUrl);
 
-    const response = await this.fetch(urlObj, { method: "GET" } );
+    const response = await this.fetch(urlObj, { method: "GET" });
     return response.json();
   }
 
   // Makes an identify request to ESRI MapService server, and return it as a list of formatted strings
-  public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+  public override async getToolTip(
+    strings: string[],
+    quadId: QuadId,
+    carto: Cartographic,
+    tree: ImageryMapTileTree
+  ): Promise<void> {
     await super.getToolTip(strings, quadId, carto, tree);
 
-    if (!this._querySupported)
-      return;
+    if (!this._querySupported) return;
 
     const stringSet = new Set<string>();
     const json = await this.getIdentifyData(quadId, carto, 1);
 
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
-        if (result.attributes !== undefined && result.attributes[result.displayFieldName] !== undefined) {
-          const thisString = `${result.displayFieldName}: ${result.attributes[result.displayFieldName]}`;
+        if (
+          result.attributes !== undefined &&
+          result.attributes[result.displayFieldName] !== undefined
+        ) {
+          const thisString = `${result.displayFieldName}: ${
+            result.attributes[result.displayFieldName]
+          }`;
           if (!stringSet.has(thisString)) {
             strings.push(thisString);
             stringSet.add(thisString);
@@ -244,28 +339,41 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
-    if (!this._querySupported)
-      return;
+  public override async getFeatureInfo(
+    featureInfos: MapLayerFeatureInfo[],
+    quadId: QuadId,
+    carto: Cartographic,
+    _tree: ImageryMapTileTree
+  ): Promise<void> {
+    if (!this._querySupported) return;
 
-    const json = await this.getIdentifyData(quadId, carto,5 );
+    const json = await this.getIdentifyData(quadId, carto, 5);
     if (json && Array.isArray(json.results)) {
-      const layerInfo: MapLayerFeatureInfo = {layerName: this._settings.name};
+      const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name };
 
       for (const result of json.results) {
-
         const subLayerInfo: MapSubLayerFeatureInfo = {
           subLayerName: result.layerName ?? "",
           displayFieldName: result.displayFieldName,
-          records : [],
+          records: [],
         };
         for (const [key, value] of Object.entries(result.attributes)) {
           // Convert everything to string for now
           const strValue = String(value);
-          subLayerInfo.records?.push(new MapFeatureInfoRecord (
-            {valueFormat:PropertyValueFormat.Primitive, value:strValue, displayValue: strValue},
-            {name: key, displayLabel: key, typename:StandardTypeNames.String}
-          ));
+          subLayerInfo.records?.push(
+            new MapFeatureInfoRecord(
+              {
+                valueFormat: PropertyValueFormat.Primitive,
+                value: strValue,
+                displayValue: strValue,
+              },
+              {
+                name: key,
+                displayLabel: key,
+                typename: StandardTypeNames.String,
+              }
+            )
+          );
         }
 
         if (layerInfo.info === undefined) {
@@ -275,7 +383,6 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         if (!(layerInfo.info instanceof HTMLElement)) {
           layerInfo.info.push(subLayerInfo);
         }
-
       }
 
       featureInfos.push(layerInfo);
@@ -293,13 +400,27 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // construct the Url from the desired Tile
-  public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
+  public async constructUrl(
+    row: number,
+    column: number,
+    zoomLevel: number
+  ): Promise<string> {
     let tmpUrl;
     if (this._usesCachedTiles) {
       tmpUrl = `${this._settings.url}/tile/${zoomLevel}/${row}/${column} `;
     } else {
-      const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
-      tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
+      const bboxString = `${this.getEPSG3857ExtentString(
+        row,
+        column,
+        zoomLevel
+      )}&bboxSR=3857`;
+      tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${
+        this.tileSize
+      },${
+        this.tileSize
+      }&layers=${this.getLayerString()}&format=png&transparent=${
+        this.transparentBackgroundString
+      }&f=image&sr=3857&imagesr=3857`;
     }
     return tmpUrl;
   }

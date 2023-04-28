@@ -1,10 +1,10 @@
 # Categories
 
-A `Category` is a property of a `GeometricElement` that *categorizes* its geometry. That is, every GeometricElement is *in* one and only one Category.
+A `Category` is a property of a `GeometricElement` that _categorizes_ its geometry. That is, every GeometricElement is _in_ one and only one Category.
 
 The visibility (on/off) of a category may be controlled per-view.
 
-Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT.
+Categories are similar to _levels_ in DGN, _layers_ in DWG, and _categories_ in RVT.
 
 ## Category Classes
 
@@ -15,7 +15,7 @@ There are three Category classes, with this hierarchy:
     - `DrawingCategory` (concrete & sealed)
     - `SpatialCategory` (concrete & sealed)
 
-`DrawingCategory` is used for classifying `GeometricElement2d` elements via the  `GeometricElement2dIsInCategory` (concrete & sealed) relationship. `GeometricElement2dIsInCategory` relates each `GeometricElement2d` with exactly 1 `DrawingCategory`.
+`DrawingCategory` is used for classifying `GeometricElement2d` elements via the `GeometricElement2dIsInCategory` (concrete & sealed) relationship. `GeometricElement2dIsInCategory` relates each `GeometricElement2d` with exactly 1 `DrawingCategory`.
 
 `SpatialCategory` is used for classifying `GeometricElement3d` elements via the `GeometricElement3dIsInCategory` (concrete & sealed) relationship. `GeometricElement3dIsInCategory` relates each `GeometricElement3d` with exactly 1 `SpatialCategory`.
 
@@ -23,15 +23,15 @@ Note that Categories are not relevant for Elements that are not subclasses of Ge
 
 ## SubCategories
 
-A `SubCategory` is a *subdivision* of a `Category`. SubCategories allow GeometricElements to have multiple pieces of Geometry that can be independently visible and styled (color, linesStyle, transparency, etc.)
+A `SubCategory` is a _subdivision_ of a `Category`. SubCategories allow GeometricElements to have multiple pieces of Geometry that can be independently visible and styled (color, linesStyle, transparency, etc.)
 
-> It is important to understand that a `SubCategory` is **not** a `Category` (i.e. Categories do *not* nest.) GeometricElements are always related to a Category, not a SubCategory. That is, it makes no sense to say a `GeometricElement` is "on" a `SubCategory`.
+> It is important to understand that a `SubCategory` is **not** a `Category` (i.e. Categories do _not_ nest.) GeometricElements are always related to a Category, not a SubCategory. That is, it makes no sense to say a `GeometricElement` is "on" a `SubCategory`.
 
-A `SubCategory` always subdivides a single `Category`. This relationship is defined by the `CategoryOwnsSubCategories` relationship. Every Category has one SubCategory called the *default* SubCategory.
+A `SubCategory` always subdivides a single `Category`. This relationship is defined by the `CategoryOwnsSubCategories` relationship. Every Category has one SubCategory called the _default_ SubCategory.
 
 An example of a Category is "Window". The "Window" Category might contain SubCategories "Pane", "Mullion" and "Hardware". If the Window Category is displayed, the Pane SubCategory may be displayed while the Mullion SubCategory may be turned off.
 
-**Note:** If a GeometricElement's Category is off, the element is not displayed, period. SubCategory is only relevant when the Category of the element *is* displayed.
+**Note:** If a GeometricElement's Category is off, the element is not displayed, period. SubCategory is only relevant when the Category of the element _is_ displayed.
 
 ## Category Rank
 
@@ -67,7 +67,7 @@ The `CodeScope` of a `SubCategory` is always its parent `Category`. That is, Sub
 
 ## SubCategory References in GeometryStreams
 
-Every `GeometricElement2d` and `GeometricElement3d` has a `Category`. They also have a `GeometryStream` property that defines the geometry of the `Element`. Within that GeometryStream, 0..N references can be made to SubCategoryIds *of the element's Category* to control the visibility and style of
+Every `GeometricElement2d` and `GeometricElement3d` has a `Category`. They also have a `GeometryStream` property that defines the geometry of the `Element`. Within that GeometryStream, 0..N references can be made to SubCategoryIds _of the element's Category_ to control the visibility and style of
 entries within the GeometryStream. Any reference to a SubCategoryId that is not a SubCategory of the element's Category is rejected.
 
 ## Domain Standardization of SpatialCategories
@@ -76,8 +76,8 @@ Every Domain should provide standard Categories for the GeometricElements that i
 
 Every `SpatialElement` subclass does **not** need its own `SpatialCategory`. Two common SpatialCategory patterns are:
 
-   1. A SpatialCategory is used for a class and all its descendent classes.
-   2. A SpatialCategory is used for a set of unrelated classes that have some conceptual similarity but do not fit rule 1.
+1.  A SpatialCategory is used for a class and all its descendent classes.
+2.  A SpatialCategory is used for a set of unrelated classes that have some conceptual similarity but do not fit rule 1.
 
 <!-- TODO: Clarify how/where the Domain authors document the Categories. -->
 
@@ -94,5 +94,6 @@ Each iModel Connector job should create a `DefinitionModel` for its Categories. 
 iModel Connectors should respect and use the standard SpatialCategories defined by the Domains.
 
 ---
+
 | Next: [Information Hierarchy](../data-organization/information-hierarchy.md)
 |:---

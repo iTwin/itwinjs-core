@@ -6,17 +6,54 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
-  Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
+  Id64,
+  Id64Array,
+  Id64String,
+  IModelStatus,
+  JsonUtils,
+} from "@itwin/core-bentley";
+import {
+  Angle,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  StandardViewIndex,
+  Transform,
+  Vector3d,
+  YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
-  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  AuxCoordSystem2dProps,
+  AuxCoordSystem3dProps,
+  AuxCoordSystemProps,
+  BisCodeSpec,
+  Camera,
+  CategorySelectorProps,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ConcreteEntityTypes,
+  EntityReferenceSet,
+  IModelError,
+  LightLocationProps,
+  ModelSelectorProps,
+  RelatedElement,
+  SpatialViewDefinitionProps,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewDefinition3dProps,
+  ViewDefinitionProps,
+  ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
-import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import {
+  DefinitionElement,
+  GraphicalElement2d,
+  SpatialLocationElement,
+} from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
@@ -28,7 +65,9 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  */
 export class ModelSelector extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "ModelSelector"; }
+  public static override get className(): string {
+    return "ModelSelector";
+  }
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: Id64String[];
@@ -46,9 +85,13 @@ export class ModelSelector extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
-    this.models.forEach((modelId: Id64String) => referenceIds.addModel(modelId));
+    this.models.forEach((modelId: Id64String) =>
+      referenceIds.addModel(modelId)
+    );
   }
 
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -56,9 +99,19 @@ export class ModelSelector extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
    * @param codeValue The ModelSelector name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.modelSelector
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 
   /**
@@ -70,7 +123,12 @@ export class ModelSelector extends DefinitionElement {
    * @returns The newly constructed ModelSelector element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    models: Id64Array
+  ): ModelSelector {
     const modelSelectorProps: ModelSelectorProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -89,8 +147,18 @@ export class ModelSelector extends DefinitionElement {
    * @returns The Id of the newly inserted ModelSelector element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
-    const modelSelector = this.create(iModelDb, definitionModelId, name, models);
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    models: Id64Array
+  ): Id64String {
+    const modelSelector = this.create(
+      iModelDb,
+      definitionModelId,
+      name,
+      models
+    );
     return iModelDb.elements.insertElement(modelSelector.toJSON());
   }
 }
@@ -102,7 +170,9 @@ export class ModelSelector extends DefinitionElement {
  */
 export class CategorySelector extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "CategorySelector"; }
+  public static override get className(): string {
+    return "CategorySelector";
+  }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
   /** @internal */
@@ -119,9 +189,13 @@ export class CategorySelector extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
-    this.categories.forEach((categoryId: Id64String) => referenceIds.addElement(categoryId));
+    this.categories.forEach((categoryId: Id64String) =>
+      referenceIds.addElement(categoryId)
+    );
   }
 
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -129,9 +203,19 @@ export class CategorySelector extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel that contains the CategorySelector and provides the scope for its name.
    * @param codeValue The CategorySelector name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.categorySelector
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 
   /**
@@ -143,7 +227,12 @@ export class CategorySelector extends DefinitionElement {
    * @returns The newly constructed CategorySelector element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    categories: Id64Array
+  ): CategorySelector {
     const categorySelectorProps: CategorySelectorProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
@@ -163,8 +252,18 @@ export class CategorySelector extends DefinitionElement {
    * @returns The Id of the newly inserted CategorySelector element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
-    const categorySelector = this.create(iModelDb, definitionModelId, name, categories);
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    categories: Id64Array
+  ): Id64String {
+    const categorySelector = this.create(
+      iModelDb,
+      definitionModelId,
+      name,
+      categories
+    );
     return iModelDb.elements.insertElement(categorySelector.toJSON());
   }
 }
@@ -185,7 +284,9 @@ export class CategorySelector extends DefinitionElement {
  */
 export abstract class ViewDefinition extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "ViewDefinition"; }
+  public static override get className(): string {
+    return "ViewDefinition";
+  }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
   public categorySelectorId: Id64String;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
@@ -197,7 +298,10 @@ export abstract class ViewDefinition extends DefinitionElement {
 
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
     if (!Id64.isValid(this.categorySelectorId))
-      throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
+      throw new IModelError(
+        IModelStatus.BadArg,
+        `categorySelectorId is invalid`
+      );
 
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
     if (!Id64.isValid(this.displayStyleId))
@@ -213,7 +317,9 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.categorySelectorId);
     referenceIds.addElement(this.displayStyleId);
@@ -224,39 +330,68 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> =
+    [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
   /** @alpha */
-  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+  public static override readonly requiredReferenceKeyTypeMap: Record<
+    string,
+    ConcreteEntityTypes
+  > = {
     ...super.requiredReferenceKeyTypeMap,
     categorySelectorId: ConcreteEntityTypes.Element,
     displayStyleId: ConcreteEntityTypes.Element,
   };
 
   /** @internal */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
+  protected static override onCloned(
+    context: IModelElementCloneContext,
+    sourceElementProps: ViewDefinitionProps,
+    targetElementProps: ViewDefinitionProps
+  ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
-    if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
-      const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
+    if (
+      context.isBetweenIModels &&
+      targetElementProps.jsonProperties &&
+      targetElementProps.jsonProperties.viewDetails
+    ) {
+      const acsId: Id64String = Id64.fromJSON(
+        targetElementProps.jsonProperties.viewDetails.acs
+      );
       if (Id64.isValidId64(acsId)) {
-        targetElementProps.jsonProperties.viewDetails.acs = context.findTargetElementId(acsId);
+        targetElementProps.jsonProperties.viewDetails.acs =
+          context.findTargetElementId(acsId);
       }
     }
   }
 
   /** Type guard for `instanceof ViewDefinition3d`  */
-  public isView3d(): this is ViewDefinition3d { return this instanceof ViewDefinition3d; }
+  public isView3d(): this is ViewDefinition3d {
+    return this instanceof ViewDefinition3d;
+  }
   /** Type guard for 'instanceof ViewDefinition2d` */
-  public isView2d(): this is ViewDefinition2d { return this instanceof ViewDefinition2d; }
+  public isView2d(): this is ViewDefinition2d {
+    return this instanceof ViewDefinition2d;
+  }
   /** Type guard for `instanceof SpatialViewDefinition` */
-  public isSpatialView(): this is SpatialViewDefinition { return this instanceof SpatialViewDefinition; }
+  public isSpatialView(): this is SpatialViewDefinition {
+    return this instanceof SpatialViewDefinition;
+  }
   /** Type guard for 'instanceof DrawingViewDefinition' */
-  public isDrawingView(): this is DrawingViewDefinition { return this instanceof DrawingViewDefinition; }
+  public isDrawingView(): this is DrawingViewDefinition {
+    return this instanceof DrawingViewDefinition;
+  }
 
   /** Load this view's DisplayStyle from the IModelDb. */
-  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement<DisplayStyle>(this.displayStyleId); }
+  public loadDisplayStyle(): DisplayStyle {
+    return this.iModel.elements.getElement<DisplayStyle>(this.displayStyleId);
+  }
 
   /** Load this view's CategorySelector from the IModelDb. */
-  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
+  public loadCategorySelector(): CategorySelector {
+    return this.iModel.elements.getElement<CategorySelector>(
+      this.categorySelectorId
+    );
+  }
 
   /** Provides access to optional detail settings for this view. */
   public abstract get details(): ViewDetails;
@@ -278,9 +413,19 @@ export abstract class ViewDefinition extends DefinitionElement {
    * @param scopeModelId The Id of the DefinitionModel to contain the ViewDefinition and provides the scope for its name.
    * @param codeValue The ViewDefinition name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.viewDefinition);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.viewDefinition
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 }
 
@@ -290,7 +435,9 @@ export abstract class ViewDefinition extends DefinitionElement {
 export abstract class ViewDefinition3d extends ViewDefinition {
   private readonly _details: ViewDetails3d;
   /** @internal */
-  public static override get className(): string { return "ViewDefinition3d"; }
+  public static override get className(): string {
+    return "ViewDefinition3d";
+  }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
   public cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
@@ -325,10 +472,14 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   }
 
   /** Provides access to optional detail settings for this view. */
-  public get details(): ViewDetails3d { return this._details; }
+  public get details(): ViewDetails3d {
+    return this._details;
+  }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
-  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId); }
+  public loadDisplayStyle3d(): DisplayStyle3d {
+    return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId);
+  }
 }
 
 /** Defines a view of one or more SpatialModels.
@@ -345,7 +496,9 @@ export abstract class ViewDefinition3d extends ViewDefinition {
  */
 export class SpatialViewDefinition extends ViewDefinition3d {
   /** @internal */
-  public static override get className(): string { return "SpatialViewDefinition"; }
+  public static override get className(): string {
+    return "SpatialViewDefinition";
+  }
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
 
@@ -358,8 +511,14 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** Construct a SpatialViewDefinition from its JSON representation. */
-  public static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb) {
-    return new SpatialViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  public static fromJSON(
+    props: Omit<SpatialViewDefinitionProps, "classFullName">,
+    iModel: IModelDb
+  ) {
+    return new SpatialViewDefinition(
+      { ...props, classFullName: this.classFullName },
+      iModel
+    );
   }
 
   /** Convert this view to its JSON representation. */
@@ -370,22 +529,30 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.modelSelectorId);
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> =
+    [...super.requiredReferenceKeys, "modelSelectorId"];
 
   /** @alpha */
-  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+  public static override readonly requiredReferenceKeyTypeMap: Record<
+    string,
+    ConcreteEntityTypes
+  > = {
     ...super.requiredReferenceKeyTypeMap,
     modelSelectorId: ConcreteEntityTypes.Element,
   };
 
   /** Load this view's ModelSelector from the IModelDb. */
-  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
+  public loadModelSelector(): ModelSelector {
+    return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId);
+  }
   /**
    * Create a SpatialViewDefinition with the camera turned on.
    * @param iModelDb The iModel
@@ -400,14 +567,29 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @returns The newly constructed SpatialViewDefinition element
    * @throws [[IModelError]] if there is a problem creating the view
    */
-  public static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): SpatialViewDefinition {
+  public static createWithCamera(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    modelSelectorId: Id64String,
+    categorySelectorId: Id64String,
+    displayStyleId: Id64String,
+    range: Range3d,
+    standardView = StandardViewIndex.Iso,
+    cameraAngle = Angle.piOver2Radians
+  ): SpatialViewDefinition {
     const rotation = Matrix3d.createStandardWorldToView(standardView);
     const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(
+      undefined,
+      rotation
+    );
     const rotatedRange = rotationTransform.multiplyRange(range);
-    const cameraDistance = 2 * (rotatedRange.diagonal().magnitudeXY() / 2.0) / Math.tan(cameraAngle / 2.0);
-    const cameraLocation = rotatedRange.diagonalFractionToPoint(.5);    // Start at center.
-    cameraLocation.z += cameraDistance;                                 // Back up by camera distance.
+    const cameraDistance =
+      (2 * (rotatedRange.diagonal().magnitudeXY() / 2.0)) /
+      Math.tan(cameraAngle / 2.0);
+    const cameraLocation = rotatedRange.diagonalFractionToPoint(0.5); // Start at center.
+    cameraLocation.z += cameraDistance; // Back up by camera distance.
     rotation.multiplyTransposeVectorInPlace(cameraLocation);
 
     const viewDefinitionProps: SpatialViewDefinitionProps = {
@@ -417,11 +599,19 @@ export class SpatialViewDefinition extends ViewDefinition3d {
       modelSelectorId,
       categorySelectorId,
       displayStyleId,
-      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+      origin: rotation.multiplyTransposeXYZ(
+        rotatedRange.low.x,
+        rotatedRange.low.y,
+        rotatedRange.low.z
+      ),
       extents: rotatedRange.diagonal(),
       angles,
       cameraOn: true,
-      camera: { lens: { radians: cameraAngle }, focusDist: cameraDistance, eye: cameraLocation },
+      camera: {
+        lens: { radians: cameraAngle },
+        focusDist: cameraDistance,
+        eye: cameraLocation,
+      },
     };
 
     return new SpatialViewDefinition(viewDefinitionProps, iModelDb);
@@ -432,8 +622,28 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    * @returns The Id of the newly inserted SpatialViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
-    const viewDefinition = this.createWithCamera(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
+  public static insertWithCamera(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    modelSelectorId: Id64String,
+    categorySelectorId: Id64String,
+    displayStyleId: Id64String,
+    range: Range3d,
+    standardView = StandardViewIndex.Iso,
+    cameraAngle = Angle.piOver2Radians
+  ): Id64String {
+    const viewDefinition = this.createWithCamera(
+      iModelDb,
+      definitionModelId,
+      name,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      standardView,
+      cameraAngle
+    );
     return iModelDb.elements.insertElement(viewDefinition.toJSON());
   }
 }
@@ -444,8 +654,12 @@ export class SpatialViewDefinition extends ViewDefinition3d {
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   /** @internal */
-  public static override get className(): string { return "OrthographicViewDefinition"; }
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
+  public static override get className(): string {
+    return "OrthographicViewDefinition";
+  }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
   /**
    * Create an OrthographicViewDefinition
    * @param iModelDb The iModel
@@ -459,10 +673,22 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @returns The newly constructed OrthographicViewDefinition element
    * @throws [[IModelError]] if there is a problem creating the view
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): OrthographicViewDefinition {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    modelSelectorId: Id64String,
+    categorySelectorId: Id64String,
+    displayStyleId: Id64String,
+    range: Range3d,
+    standardView = StandardViewIndex.Iso
+  ): OrthographicViewDefinition {
     const rotation = Matrix3d.createStandardWorldToView(standardView);
     const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(
+      undefined,
+      rotation
+    );
     const rotatedRange = rotationTransform.multiplyRange(range);
     const viewDefinitionProps: SpatialViewDefinitionProps = {
       classFullName: this.classFullName,
@@ -471,7 +697,11 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
       modelSelectorId,
       categorySelectorId,
       displayStyleId,
-      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+      origin: rotation.multiplyTransposeXYZ(
+        rotatedRange.low.x,
+        rotatedRange.low.y,
+        rotatedRange.low.z
+      ),
       extents: rotatedRange.diagonal(),
       angles,
       cameraOn: false,
@@ -493,17 +723,44 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    * @returns The Id of the newly inserted OrthographicViewDefinition element
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
-    const viewDefinition = this.create(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    modelSelectorId: Id64String,
+    categorySelectorId: Id64String,
+    displayStyleId: Id64String,
+    range: Range3d,
+    standardView = StandardViewIndex.Iso
+  ): Id64String {
+    const viewDefinition = this.create(
+      iModelDb,
+      definitionModelId,
+      name,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      standardView
+    );
     return iModelDb.elements.insertElement(viewDefinition.toJSON());
   }
 
   /** Set a new viewed range without changing the rotation or any other properties. */
   public setRange(range: Range3d): void {
     const rotation = this.angles.toMatrix3d();
-    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(
+      undefined,
+      rotation
+    );
     const rotatedRange = rotationTransform.multiplyRange(range);
-    this.origin = Point3d.createFrom(rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z));
+    this.origin = Point3d.createFrom(
+      rotation.multiplyTransposeXYZ(
+        rotatedRange.low.x,
+        rotatedRange.low.y,
+        rotatedRange.low.z
+      )
+    );
     this.extents = rotatedRange.diagonal();
   }
 }
@@ -515,7 +772,9 @@ export class ViewDefinition2d extends ViewDefinition {
   private readonly _details: ViewDetails;
 
   /** @internal */
-  public static override get className(): string { return "ViewDefinition2d"; }
+  public static override get className(): string {
+    return "ViewDefinition2d";
+  }
   /** The Id of the Model displayed by this view. */
   public baseModelId: Id64String;
   /** The lower-left corner of this view in Model coordinates. */
@@ -546,16 +805,22 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.baseModelId);
   }
 
   /** Provides access to optional detail settings for this view. */
-  public get details(): ViewDetails { return this._details; }
+  public get details(): ViewDetails {
+    return this._details;
+  }
 
   /** Load this view's DisplayStyle2d from the IModelDb. */
-  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
+  public loadDisplayStyle2d(): DisplayStyle2d {
+    return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId);
+  }
 }
 
 /** Defines a view of a [[DrawingModel]].
@@ -563,7 +828,9 @@ export class ViewDefinition2d extends ViewDefinition {
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
   /** @internal */
-  public static override get className(): string { return "DrawingViewDefinition"; }
+  public static override get className(): string {
+    return "DrawingViewDefinition";
+  }
   /** @internal */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -579,7 +846,15 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @param range Defines the view origin and extents
    * @throws [[IModelError]] if there is a problem creating the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    baseModelId: Id64String,
+    categorySelectorId: Id64String,
+    displayStyleId: Id64String,
+    range: Range2d
+  ): DrawingViewDefinition {
     const viewDefinitionProps: ViewDefinition2dProps = {
       classFullName: this.classFullName,
       model: definitionModelId,
@@ -595,8 +870,14 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 
   /** Construct a DrawingViewDefinition from its JSON representation. */
-  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb) {
-    return new DrawingViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  public static fromJSON(
+    props: Omit<ViewDefinition2dProps, "classFullName">,
+    iModel: IModelDb
+  ) {
+    return new DrawingViewDefinition(
+      { ...props, classFullName: this.classFullName },
+      iModel
+    );
   }
 
   /** Insert a DrawingViewDefinition
@@ -609,8 +890,24 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    * @param range Defines the view origin and extents
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
-    const viewDefinition = this.create(iModelDb, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    baseModelId: Id64String,
+    categorySelectorId: Id64String,
+    displayStyleId: Id64String,
+    range: Range2d
+  ): Id64String {
+    const viewDefinition = this.create(
+      iModelDb,
+      definitionModelId,
+      name,
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      range
+    );
     return iModelDb.elements.insertElement(viewDefinition.toJSON());
   }
 }
@@ -620,7 +917,9 @@ export class DrawingViewDefinition extends ViewDefinition2d {
  */
 export class SheetViewDefinition extends ViewDefinition2d {
   /** @internal */
-  public static override get className(): string { return "SheetViewDefinition"; }
+  public static override get className(): string {
+    return "SheetViewDefinition";
+  }
 }
 
 /** A ViewDefinition used to display a 2d template model.
@@ -628,7 +927,9 @@ export class SheetViewDefinition extends ViewDefinition2d {
  */
 export class TemplateViewDefinition2d extends ViewDefinition2d {
   /** @internal */
-  public static override get className(): string { return "TemplateViewDefinition2d"; }
+  public static override get className(): string {
+    return "TemplateViewDefinition2d";
+  }
 }
 
 /** A ViewDefinition used to display a 3d template model.
@@ -636,7 +937,9 @@ export class TemplateViewDefinition2d extends ViewDefinition2d {
  */
 export class TemplateViewDefinition3d extends ViewDefinition3d {
   /** @internal */
-  public static override get className(): string { return "TemplateViewDefinition3d"; }
+  public static override get className(): string {
+    return "TemplateViewDefinition3d";
+  }
 }
 
 /** An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
@@ -645,10 +948,14 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
  */
 export abstract class AuxCoordSystem extends DefinitionElement {
   /** @internal */
-  public static override get className(): string { return "AuxCoordSystem"; }
+  public static override get className(): string {
+    return "AuxCoordSystem";
+  }
   public type!: number;
   public description?: string;
-  public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: AuxCoordSystemProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }
 
 /** A 2d auxiliary coordinate system.
@@ -656,19 +963,33 @@ export abstract class AuxCoordSystem extends DefinitionElement {
  */
 export class AuxCoordSystem2d extends AuxCoordSystem {
   /** @internal */
-  public static override get className(): string { return "AuxCoordSystem2d"; }
+  public static override get className(): string {
+    return "AuxCoordSystem2d";
+  }
   public origin?: Point2d;
   public angle!: number;
-  public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   /** Create a Code for a AuxCoordSystem2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem2d element and provides the scope for its name.
    * @param codeValue The AuxCoordSystem2d name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem2d);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.auxCoordSystem2d
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 }
 
@@ -677,21 +998,35 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
  */
 export class AuxCoordSystem3d extends AuxCoordSystem {
   /** @internal */
-  public static override get className(): string { return "AuxCoordSystem3d"; }
+  public static override get className(): string {
+    return "AuxCoordSystem3d";
+  }
   public origin?: Point3d;
   public yaw!: number;
   public pitch!: number;
   public roll!: number;
-  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   /** Create a Code for a AuxCoordSystem3d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem3d element and provides the scope for its name.
    * @param codeValue The AuxCoordSystem3d name
    */
-  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem3d);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.auxCoordSystem3d
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 }
 
@@ -700,15 +1035,27 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
   /** @internal */
-  public static override get className(): string { return "AuxCoordSystemSpatial"; }
+  public static override get className(): string {
+    return "AuxCoordSystemSpatial";
+  }
   /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
    * @param codeValue The AuxCoordSystemSpatial name
    */
-  public static override createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystemSpatial);
-    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  public static override createCode(
+    iModel: IModelDb,
+    scopeModelId: CodeScopeProps,
+    codeValue: string
+  ): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(
+      BisCodeSpec.auxCoordSystemSpatial
+    );
+    return new Code({
+      spec: codeSpec.id,
+      scope: scopeModelId,
+      value: codeValue,
+    });
   }
 }
 
@@ -717,7 +1064,9 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  */
 export class ViewAttachment extends GraphicalElement2d {
   /** @internal */
-  public static override get className(): string { return "ViewAttachment"; }
+  public static override get className(): string {
+    return "ViewAttachment";
+  }
   public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
@@ -725,7 +1074,9 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.view.id);
   }
@@ -736,9 +1087,13 @@ export class ViewAttachment extends GraphicalElement2d {
  */
 export class LightLocation extends SpatialLocationElement {
   /** @internal */
-  public static override get className(): string { return "LightLocation"; }
+  public static override get className(): string {
+    return "LightLocation";
+  }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
   /** @internal */
-  constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
+  constructor(props: LightLocationProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }

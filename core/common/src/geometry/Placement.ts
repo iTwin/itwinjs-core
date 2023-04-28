@@ -8,7 +8,17 @@
 
 import { IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, Vector3d, YawPitchRollAngles,
+  Angle,
+  Constant,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  Range3dProps,
+  Transform,
+  Vector3d,
+  YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
@@ -55,18 +65,32 @@ export type Placement = Placement2d | Placement3d;
  * @public
  */
 export class Placement3d implements Placement3dProps {
-  public constructor(public origin: Point3d, public angles: YawPitchRollAngles, public bbox: ElementAlignedBox3d) { }
+  public constructor(
+    public origin: Point3d,
+    public angles: YawPitchRollAngles,
+    public bbox: ElementAlignedBox3d
+  ) {}
   /** Get the rotation from local coordinates of this placement to world coordinates. */
-  public get rotation(): Matrix3d { return this.angles.toMatrix3d(); }
+  public get rotation(): Matrix3d {
+    return this.angles.toMatrix3d();
+  }
   /** Get the transform from local coordinates of this placement to world coordinates. */
-  public get transform(): Transform { return Transform.createOriginAndMatrix(this.origin, this.rotation); }
+  public get transform(): Transform {
+    return Transform.createOriginAndMatrix(this.origin, this.rotation);
+  }
   /** determine if this is 3d placement */
-  public get is3d(): boolean { return true; }
+  public get is3d(): boolean {
+    return true;
+  }
 
   /** Create a new Placement3d from a Placement3dProps. */
   public static fromJSON(json?: Placement3dProps): Placement3d {
     const props: any = json ? json : {};
-    return new Placement3d(Point3d.fromJSON(props.origin), YawPitchRollAngles.fromJSON(props.angles), Range3d.fromJSON<ElementAlignedBox3d>(props.bbox));
+    return new Placement3d(
+      Point3d.fromJSON(props.origin),
+      YawPitchRollAngles.fromJSON(props.angles),
+      Range3d.fromJSON<ElementAlignedBox3d>(props.bbox)
+    );
   }
 
   /** Get the 8 corners, in world coordinates, of this placement. */
@@ -84,13 +108,18 @@ export class Placement3d implements Placement3dProps {
   }
 
   /** Determine whether this Placement3d is valid. */
-  public get isValid(): boolean { return !this.bbox.isNull && Math.max(this.origin.maxAbs(), this.bbox.maxAbs()) < Constant.circumferenceOfEarth; }
+  public get isValid(): boolean {
+    return (
+      !this.bbox.isNull &&
+      Math.max(this.origin.maxAbs(), this.bbox.maxAbs()) <
+        Constant.circumferenceOfEarth
+    );
+  }
 
   /** Calculate the axis-aligned bounding box for this placement. */
   public calculateRange(): AxisAlignedBox3d {
     const range = new Range3d();
-    if (!this.isValid)
-      return range;
+    if (!this.isValid) return range;
 
     this.transform.multiplyRange(this.bbox, range);
 
@@ -117,18 +146,35 @@ export class Placement3d implements Placement3dProps {
  * @public
  */
 export class Placement2d implements Placement2dProps {
-  public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
+  public constructor(
+    public origin: Point2d,
+    public angle: Angle,
+    public bbox: ElementAlignedBox2d
+  ) {}
   /** Get the rotation from local coordinates of this placement to world coordinates. */
-  public get rotation(): Matrix3d { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  public get rotation(): Matrix3d {
+    return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!;
+  }
   /** Get the transform from local coordinates of this placement to world coordinates. */
-  public get transform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), this.rotation); }
+  public get transform(): Transform {
+    return Transform.createOriginAndMatrix(
+      Point3d.createFrom(this.origin),
+      this.rotation
+    );
+  }
   /** Create a new Placement2d from a Placement2dProps. */
   public static fromJSON(json?: Placement2dProps): Placement2d {
     const props: any = json ? json : {};
-    return new Placement2d(Point2d.fromJSON(props.origin), Angle.fromJSON(props.angle), Range2d.fromJSON(props.bbox));
+    return new Placement2d(
+      Point2d.fromJSON(props.origin),
+      Angle.fromJSON(props.angle),
+      Range2d.fromJSON(props.bbox)
+    );
   }
   /** determine if this is 3d placement */
-  public get is3d(): boolean { return false; }
+  public get is3d(): boolean {
+    return false;
+  }
 
   /** Get the 8 corners, in world coordinates, of this placement. */
   public getWorldCorners(out?: Frustum): Frustum {
@@ -138,7 +184,13 @@ export class Placement2d implements Placement2dProps {
   }
 
   /** Determine whether this Placement2d is valid. */
-  public get isValid(): boolean { return !this.bbox.isNull && Math.max(this.origin.maxAbs(), this.bbox.maxAbs()) < Constant.circumferenceOfEarth; }
+  public get isValid(): boolean {
+    return (
+      !this.bbox.isNull &&
+      Math.max(this.origin.maxAbs(), this.bbox.maxAbs()) <
+        Constant.circumferenceOfEarth
+    );
+  }
 
   /** Set the contents of this Placement2d from another Placement2d */
   public setFrom(other: Placement2d) {
@@ -150,14 +202,13 @@ export class Placement2d implements Placement2dProps {
   /** Calculate the axis-aligned bounding box for this placement. */
   public calculateRange(): AxisAlignedBox3d {
     const range = new Range3d();
-    if (!this.isValid)
-      return range;
+    if (!this.isValid) return range;
 
     this.transform.multiplyRange(Range3d.createRange2d(this.bbox, 0), range);
 
     // low and high are not allowed to be equal
     range.ensureMinLengths();
-    range.low.z = - 1.0;  // is the 2dFrustumDepth, which === 1 meter
+    range.low.z = -1.0; // is the 2dFrustumDepth, which === 1 meter
     range.high.z = 1.0;
     return range;
   }
@@ -168,7 +219,11 @@ export class Placement2d implements Placement2dProps {
   public multiplyTransform(other: Transform): void {
     const transform = other.multiplyTransformTransform(this.transform);
     const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
-    if ((undefined === angles) || !angles.pitch.isAlmostZero || !angles.roll.isAlmostZero)
+    if (
+      undefined === angles ||
+      !angles.pitch.isAlmostZero ||
+      !angles.roll.isAlmostZero
+    )
       throw new IModelError(IModelStatus.BadRequest, "Invalid Transform");
 
     this.angle = angles.yaw;

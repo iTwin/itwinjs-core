@@ -5,13 +5,34 @@
 
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
-  PrimaryTileTreeId, RenderSchedule,
+  Box,
+  Point3d,
+  Range3d,
+  Vector3d,
+  YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import {
+  BatchType,
+  Code,
+  ColorDef,
+  defaultTileOptions,
+  GeometryStreamBuilder,
+  IModel,
+  iModelTileTreeIdToString,
+  PhysicalElementProps,
+  PrimaryTileTreeId,
+  RenderSchedule,
 } from "@itwin/core-common";
 import {
-  GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
+  GenericSchema,
+  IModelDb,
+  PhysicalModel,
+  PhysicalObject,
+  PhysicalPartition,
+  RenderTimeline,
+  SnapshotDb,
+  SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -48,7 +69,11 @@ function insertPhysicalModel(db: IModelDb): Id64String {
     classFullName: PhysicalPartition.classFullName,
     model: IModel.repositoryModelId,
     parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-    code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
+    code: PhysicalPartition.createCode(
+      db,
+      IModel.rootSubjectId,
+      `PhysicalPartition_${++uniqueId}`
+    ),
   };
 
   const partitionId = db.elements.insertElement(partitionProps);
@@ -79,7 +104,9 @@ describe("tile tree", () => {
   let spatialElementId: string;
   let renderTimelineId: string;
 
-  function makeScript(buildTimeline: (timeline: RenderSchedule.ElementTimelineBuilder) => void): RenderSchedule.ScriptProps {
+  function makeScript(
+    buildTimeline: (timeline: RenderSchedule.ElementTimelineBuilder) => void
+  ): RenderSchedule.ScriptProps {
     const scriptBuilder = new RenderSchedule.ScriptBuilder();
     const modelBuilder = scriptBuilder.addModelTimeline(modelId);
     const elemBuilder = modelBuilder.addElementTimeline(spatialElementId);
@@ -96,14 +123,34 @@ describe("tile tree", () => {
       guid: Guid.createValue(),
     };
 
-    const name = `Test_${(++uniqueId)}.bim`;
-    db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
+    const name = `Test_${++uniqueId}.bim`;
+    db = SnapshotDb.createEmpty(
+      IModelTestUtils.prepareOutputFile("TileTree", name),
+      props
+    );
     modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
     const geomBuilder = new GeometryStreamBuilder();
-    geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
-    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false });
+    geomBuilder.appendGeometry(
+      Box.createDgnBox(
+        Point3d.createZero(),
+        Vector3d.unitX(),
+        Vector3d.unitY(),
+        new Point3d(0, 0, 2),
+        2,
+        2,
+        2,
+        2,
+        true
+      )!
+    );
+    const category = SpatialCategory.insert(
+      db,
+      IModel.dictionaryId,
+      "kittycat",
+      { color: ColorDef.white.toJSON(), transp: 0, invisible: false }
+    );
     const elemProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
@@ -120,12 +167,15 @@ describe("tile tree", () => {
     spatialElementId = db.elements.insertElement(elemProps);
 
     const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
-    const renderTimeline = RenderTimeline.fromJSON({
-      script: JSON.stringify(script),
-      classFullName: RenderTimeline.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-    }, db);
+    const renderTimeline = RenderTimeline.fromJSON(
+      {
+        script: JSON.stringify(script),
+        classFullName: RenderTimeline.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+      },
+      db
+    );
     renderTimelineId = db.elements.insertElement(renderTimeline.toJSON());
     expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
@@ -242,7 +292,10 @@ describe("tile tree", () => {
     const options = { ...defaultTileOptions };
     options.useProjectExtents = false;
 
-    const loadTree = async () => db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
+    const loadTree = async () =>
+      db.tiles.requestTileTreeProps(
+        iModelTileTreeIdToString(modelId, treeId, options)
+      );
 
     let tree = await loadTree();
     expect(tree.contentIdQualifier).to.be.undefined;
@@ -262,7 +315,9 @@ describe("tile tree", () => {
 
     options.useProjectExtents = true;
     tree = await loadTree();
-    expect(tree.contentIdQualifier).to.equal(`${scriptChecksum}${extentsChecksum}`);
+    expect(tree.contentIdQualifier).to.equal(
+      `${scriptChecksum}${extentsChecksum}`
+    );
   });
 
   it("should update checksum after purge when schedule script contents change", async () => {
@@ -275,21 +330,30 @@ describe("tile tree", () => {
     const options = { ...defaultTileOptions };
     options.useProjectExtents = false;
 
-    const tree1 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
+    const tree1 = await db.tiles.requestTileTreeProps(
+      iModelTileTreeIdToString(modelId, treeId, options)
+    );
     const checksum1 = tree1.contentIdQualifier!;
     expect(checksum1.length).least(1);
 
-    const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
+    const renderTimeline =
+      db.elements.getElement<RenderTimeline>(renderTimelineId);
     const props = renderTimeline.toJSON();
-    props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
+    props.script = JSON.stringify(
+      makeScript((timeline) => timeline.addVisibility(4321, 0.25))
+    );
     db.elements.updateElement(props);
 
-    const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
+    const tree2 = await db.tiles.requestTileTreeProps(
+      iModelTileTreeIdToString(modelId, treeId, options)
+    );
     expect(tree2).not.to.equal(tree1);
     expect(tree2).to.deep.equal(tree1);
 
     db.nativeDb.purgeTileTrees(undefined);
-    const tree3 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
+    const tree3 = await db.tiles.requestTileTreeProps(
+      iModelTileTreeIdToString(modelId, treeId, options)
+    );
     expect(tree3).not.to.equal(tree2);
     expect(tree3).not.to.equal(tree1);
     expect(tree3.contentIdQualifier).not.to.equal(tree1.contentIdQualifier);

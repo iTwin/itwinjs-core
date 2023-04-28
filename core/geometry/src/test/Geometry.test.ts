@@ -13,7 +13,9 @@ describe("Geometry.isAlmostEqualOptional", () => {
     const tolerance = 0.1;
     const undefinedNumber = undefined;
     assert.isTrue(!Geometry.isAlmostEqualOptional(number1, number2, tolerance));
-    assert.isTrue(!Geometry.isAlmostEqualOptional(number1, undefinedNumber, tolerance));
+    assert.isTrue(
+      !Geometry.isAlmostEqualOptional(number1, undefinedNumber, tolerance)
+    );
   });
 });
 
@@ -45,7 +47,10 @@ describe("Geometry.solveTrigForm", () => {
     const constCoff = 1;
     const cosCoff = 0;
     const sinCoff = 0;
-    assert.equal(Geometry.solveTrigForm(constCoff, cosCoff, sinCoff), undefined);
+    assert.equal(
+      Geometry.solveTrigForm(constCoff, cosCoff, sinCoff),
+      undefined
+    );
   });
 });
 
@@ -57,11 +62,25 @@ describe("Geometry.inverseInterpolate", () => {
     const f1: number = 20;
     let fTarget: number = f0;
     const defaultResult: number = -1;
-    let interpolatedNumber = Geometry.inverseInterpolate(x0, f0, x1, f1, fTarget, defaultResult);
+    let interpolatedNumber = Geometry.inverseInterpolate(
+      x0,
+      f0,
+      x1,
+      f1,
+      fTarget,
+      defaultResult
+    );
     assert.equal(interpolatedNumber, x0);
     assert.notEqual(interpolatedNumber, defaultResult);
     fTarget = f1;
-    interpolatedNumber = Geometry.inverseInterpolate(x0, f0, x1, f1, fTarget, defaultResult);
+    interpolatedNumber = Geometry.inverseInterpolate(
+      x0,
+      f0,
+      x1,
+      f1,
+      fTarget,
+      defaultResult
+    );
     assert.equal(interpolatedNumber, x1);
     assert.notEqual(interpolatedNumber, defaultResult);
   });
@@ -79,7 +98,13 @@ describe("Geometry.almostEqualArrays", () => {
   it("Geometry.almostEqualArrays", () => {
     const arr1: number[] = [];
     const arr2: number[] = [];
-    assert.isTrue(Geometry.almostEqualArrays<number>(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(
+      Geometry.almostEqualArrays<number>(
+        arr1,
+        arr2,
+        Geometry.isAlmostEqualNumber
+      )
+    );
   });
 });
 
@@ -87,13 +112,27 @@ describe("Geometry.almostEqualNumberArrays", () => {
   it("Geometry.almostEqualNumberArrays", () => {
     let arr1: number[] = [];
     let arr2: number[] = [];
-    assert.isTrue(Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(
+      Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber)
+    );
     arr1 = [1];
     arr2 = [1, 2];
-    assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(
+      !Geometry.almostEqualNumberArrays(
+        arr1,
+        arr2,
+        Geometry.isAlmostEqualNumber
+      )
+    );
     arr1 = [1];
     arr2 = [2];
-    assert.isTrue(!Geometry.almostEqualNumberArrays(arr1, arr2, Geometry.isAlmostEqualNumber));
+    assert.isTrue(
+      !Geometry.almostEqualNumberArrays(
+        arr1,
+        arr2,
+        Geometry.isAlmostEqualNumber
+      )
+    );
   });
 });
 

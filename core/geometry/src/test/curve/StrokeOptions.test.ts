@@ -13,7 +13,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("StrokeOptions", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -26,9 +25,16 @@ describe("StrokeOptions", () => {
     const center = Point3d.create(0, 0, 0);
     for (const arcRadians of [Math.PI * 2, 1.0, 2.5]) {
       for (const radius of [1, 2, 3, 5, 10]) {
-        const arc = Arc3d.createXY(center, radius, AngleSweep.createStartSweepRadians(startRadians, arcRadians));
+        const arc = Arc3d.createXY(
+          center,
+          radius,
+          AngleSweep.createStartSweepRadians(startRadians, arcRadians)
+        );
         strokeOptions.maxEdgeLength = maxEdgeLength;
-        const numEdge1 = strokeOptions.applyTolerancesToArc(radius, arc.sweep.sweepRadians);
+        const numEdge1 = strokeOptions.applyTolerancesToArc(
+          radius,
+          arc.sweep.sweepRadians
+        );
         // counts from arg and options should match ...
         const point0 = arc.fractionToPoint(0.0);
         const point1 = arc.fractionToPoint(1.0 / numEdge1);

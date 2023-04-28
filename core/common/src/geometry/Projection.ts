@@ -17,56 +17,56 @@ import { Geometry } from "@itwin/core-geometry";
  *  @extensions
  */
 export type ProjectionMethod =
-  "None" |
-  "TransverseMercator" |
-  "SouthOrientedTransverseMercator" |
-  "TransverseMercatorWisconsin" |
-  "TransverseMercatorMinnesota" |
-  "TransverseMercatorAffine" |
-  "MercatorStandardParallel" |
-  "Mercator" |
-  "UniversalTransverseMercator" |
-  "LambertConformalConicTwoParallels" |
-  "LambertConformalConicBelgium" |
-  "LambertConformalConicAffine" |
-  "LambertConformalConicWisconsin" |
-  "LambertConformalConicMinnesota" |
-  "LambertConformalConicMichigan" |
-  "LambertConformalConicOneParallel" |
-  "AlbersEqualArea" |
-  "NewZealandNationalGrid" |
-  "ObliqueMercator1" |
-  "ObliqueMercator2" |
-  "TransverseMercatorOSTN97" |
-  "TransverseMercatorOSTN02" |
-  "TransverseMercatorOSTN15" |
-  "Krovak" |
-  "KrovakModified" |
-  "ObliqueCylindricalSwiss" |
-  "TransverseMercatorDenmarkSystem34" |
-  "TransverseMercatorDenmarkSystem3499" |
-  "TransverseMercatorDenmarkSystem3401" |
-  "Cassini" |
-  "Sinusoidal" |
-  "VanDerGrinten" |
-  "Bonne" |
-  "Mollweide" |
-  "EckertIV" |
-  "EckertVI" |
-  "GoodeHomolosine" |
-  "Robinson" |
-  "PlateCarree" |
-  "MillerCylindrical" |
-  "WinkelTripel" |
-  "AzimuthalEqualArea" |
-  "ObliqueStereographic" |
-  "RectifiedSkewOrthomorphicCentered" |
-  "RectifiedSkewOrthomorphicOrigin" |
-  "ObliqueCylindricalHungary" |
-  "Orthographic" |
-  "AmericanPolyconic" |
-  "LambertEquidistantAzimuthal" |
-  "ObliqueMercatorMinnesota";
+  | "None"
+  | "TransverseMercator"
+  | "SouthOrientedTransverseMercator"
+  | "TransverseMercatorWisconsin"
+  | "TransverseMercatorMinnesota"
+  | "TransverseMercatorAffine"
+  | "MercatorStandardParallel"
+  | "Mercator"
+  | "UniversalTransverseMercator"
+  | "LambertConformalConicTwoParallels"
+  | "LambertConformalConicBelgium"
+  | "LambertConformalConicAffine"
+  | "LambertConformalConicWisconsin"
+  | "LambertConformalConicMinnesota"
+  | "LambertConformalConicMichigan"
+  | "LambertConformalConicOneParallel"
+  | "AlbersEqualArea"
+  | "NewZealandNationalGrid"
+  | "ObliqueMercator1"
+  | "ObliqueMercator2"
+  | "TransverseMercatorOSTN97"
+  | "TransverseMercatorOSTN02"
+  | "TransverseMercatorOSTN15"
+  | "Krovak"
+  | "KrovakModified"
+  | "ObliqueCylindricalSwiss"
+  | "TransverseMercatorDenmarkSystem34"
+  | "TransverseMercatorDenmarkSystem3499"
+  | "TransverseMercatorDenmarkSystem3401"
+  | "Cassini"
+  | "Sinusoidal"
+  | "VanDerGrinten"
+  | "Bonne"
+  | "Mollweide"
+  | "EckertIV"
+  | "EckertVI"
+  | "GoodeHomolosine"
+  | "Robinson"
+  | "PlateCarree"
+  | "MillerCylindrical"
+  | "WinkelTripel"
+  | "AzimuthalEqualArea"
+  | "ObliqueStereographic"
+  | "RectifiedSkewOrthomorphicCentered"
+  | "RectifiedSkewOrthomorphicOrigin"
+  | "ObliqueCylindricalHungary"
+  | "Orthographic"
+  | "AmericanPolyconic"
+  | "LambertEquidistantAzimuthal"
+  | "ObliqueMercatorMinnesota";
 
 /** The equations are:
  *  X1 = a1*X + a2*Y + TranslationX
@@ -130,18 +130,29 @@ export class AffineTransform implements AffineTransformProps {
   /** Creates a JSON from the Affine Transform definition
    * @public */
   public toJSON(): AffineTransformProps {
-    return { translationX: this.translationX, a1: this.a1, a2: this.a2, translationY: this.translationY, b1: this.b1, b2: this.b2 };
+    return {
+      translationX: this.translationX,
+      a1: this.a1,
+      a2: this.a2,
+      translationY: this.translationY,
+      b1: this.b1,
+      b2: this.b2,
+    };
   }
 
   /** Compares two Affine Transforms. It applies a minuscule tolerance for number compares
    *  @public */
   public equals(other: AffineTransform): boolean {
-    return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
-      Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
+    return (
+      Math.abs(this.translationX - other.translationX) <
+        Geometry.smallMetricDistance &&
+      Math.abs(this.translationY - other.translationY) <
+        Geometry.smallMetricDistance &&
       Math.abs(this.a1 - other.a1) < Geometry.smallFraction &&
       Math.abs(this.b1 - other.b1) < Geometry.smallFraction &&
       Math.abs(this.a2 - other.a2) < Geometry.smallFraction &&
-      Math.abs(this.b2 - other.b2) < Geometry.smallFraction);
+      Math.abs(this.b2 - other.b2) < Geometry.smallFraction
+    );
   }
 }
 
@@ -305,7 +316,9 @@ export class Projection implements ProjectionProps {
       this.scaleFactor = _data.scaleFactor;
       this.elevationAboveGeoid = _data.elevationAboveGeoid;
       this.geoidSeparation = _data.geoidSeparation;
-      this.affine = _data.affine ? AffineTransform.fromJSON(_data.affine) : undefined;
+      this.affine = _data.affine
+        ? AffineTransform.fromJSON(_data.affine)
+        : undefined;
       this.standardParallel = _data.standardParallel;
       this.standardParallel1 = _data.standardParallel1;
       this.standardParallel2 = _data.standardParallel2;
@@ -361,41 +374,115 @@ export class Projection implements ProjectionProps {
    * but a minuscule tolerance is applied to number compares.
    *  @public */
   public equals(other: Projection): boolean {
-    if (this.method !== other.method ||
+    if (
+      this.method !== other.method ||
       this.zoneNumber !== other.zoneNumber ||
       this.hemisphere !== other.hemisphere ||
-      this.danishSystem34Region !== other.danishSystem34Region)
+      this.danishSystem34Region !== other.danishSystem34Region
+    )
       return false;
 
     // Note that even though falseEasting, falseNorthing, elevationAboveGeoid and geoidSeparation are expressed
     // in the units of the projection which can be foot or US survey foot, they are still within the same order
     // of size that Geometry.smallMetricDistance can be used effectively.
-    if (!Geometry.isAlmostEqualOptional(this.falseEasting, other.falseEasting, Geometry.smallMetricDistance) ||
-      !Geometry.isAlmostEqualOptional(this.falseNorthing, other.falseNorthing, Geometry.smallMetricDistance) ||
-      !Geometry.isAlmostEqualOptional(this.centralMeridian, other.centralMeridian, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.latitudeOfOrigin, other.latitudeOfOrigin, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.longitudeOfOrigin, other.longitudeOfOrigin, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.scaleFactor, other.scaleFactor, Geometry.smallFraction) ||
-      !Geometry.isAlmostEqualOptional(this.elevationAboveGeoid, other.elevationAboveGeoid, Geometry.smallMetricDistance) ||
-      !Geometry.isAlmostEqualOptional(this.geoidSeparation, other.geoidSeparation, Geometry.smallMetricDistance) ||
-      !Geometry.isAlmostEqualOptional(this.standardParallel, other.standardParallel, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.standardParallel1, other.standardParallel1, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.standardParallel2, other.standardParallel2, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.centralPointLongitude, other.centralPointLongitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.centralPointLatitude, other.centralPointLatitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.point1Longitude, other.point1Longitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.point1Latitude, other.point1Latitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.point2Longitude, other.point2Longitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.point2Latitude, other.point2Latitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.azimuth, other.azimuth, Geometry.smallAngleDegrees))
+    if (
+      !Geometry.isAlmostEqualOptional(
+        this.falseEasting,
+        other.falseEasting,
+        Geometry.smallMetricDistance
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.falseNorthing,
+        other.falseNorthing,
+        Geometry.smallMetricDistance
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.centralMeridian,
+        other.centralMeridian,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.latitudeOfOrigin,
+        other.latitudeOfOrigin,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.longitudeOfOrigin,
+        other.longitudeOfOrigin,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.scaleFactor,
+        other.scaleFactor,
+        Geometry.smallFraction
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.elevationAboveGeoid,
+        other.elevationAboveGeoid,
+        Geometry.smallMetricDistance
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.geoidSeparation,
+        other.geoidSeparation,
+        Geometry.smallMetricDistance
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.standardParallel,
+        other.standardParallel,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.standardParallel1,
+        other.standardParallel1,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.standardParallel2,
+        other.standardParallel2,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.centralPointLongitude,
+        other.centralPointLongitude,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.centralPointLatitude,
+        other.centralPointLatitude,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.point1Longitude,
+        other.point1Longitude,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.point1Latitude,
+        other.point1Latitude,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.point2Longitude,
+        other.point2Longitude,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.point2Latitude,
+        other.point2Latitude,
+        Geometry.smallAngleDegrees
+      ) ||
+      !Geometry.isAlmostEqualOptional(
+        this.azimuth,
+        other.azimuth,
+        Geometry.smallAngleDegrees
+      )
+    )
       return false;
 
     if (this.affine && other.affine) {
-      if (!this.affine.equals(other.affine))
-        return false;
+      if (!this.affine.equals(other.affine)) return false;
     } else {
-      if (this.affine || other.affine)
-        return false;
+      if (this.affine || other.affine) return false;
     }
     return true;
   }
@@ -419,9 +506,11 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
   /** Latitude value in degrees. Must be between -90 and +90 included */
   private _latitude!: number;
   /** Returns or sets the latitude in degrees. When setting the provided number must be between or equal from -90 to 90. */
-  public get latitude() { return this._latitude; }
+  public get latitude() {
+    return this._latitude;
+  }
   public set latitude(newLatitude: number) {
-    if ((newLatitude <= 90.0) && (newLatitude >= -90.0))
+    if (newLatitude <= 90.0 && newLatitude >= -90.0)
       this._latitude = newLatitude;
   }
   /** Longitude value in degrees */
@@ -450,8 +539,9 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
   /** Compares two Carto2DDegrees object. It applies a minuscule tolerance to compares.
    *  @public */
   public equals(other: Carto2DDegrees): boolean {
-    return (Math.abs(this.latitude - other.latitude) < Geometry.smallAngleDegrees &&
-      Math.abs(this.longitude - other.longitude) < Geometry.smallAngleDegrees);
+    return (
+      Math.abs(this.latitude - other.latitude) < Geometry.smallAngleDegrees &&
+      Math.abs(this.longitude - other.longitude) < Geometry.smallAngleDegrees
+    );
   }
 }
-

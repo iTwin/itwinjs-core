@@ -9,7 +9,12 @@
 import { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
 import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import {
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariableType,
+  VertexShaderComponent,
+} from "../ShaderBuilder";
 import { assignFragColor } from "./Fragment";
 
 const computePosition = `
@@ -30,8 +35,12 @@ const computeBaseColorWithShift = `
 `;
 
 /** @internal */
-export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectBuilderParams): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
+export function createScreenSpaceEffectProgramBuilder(
+  params: ScreenSpaceEffectBuilderParams
+): ProgramBuilder {
+  const builder = new ProgramBuilder(
+    AttributeMap.findAttributeMap(undefined, false)
+  );
 
   if (params.textureCoordFromPosition)
     builder.vert.addFunction(textureCoordFromPosition);
@@ -40,12 +49,16 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
   if (params.source.sampleSourcePixel)
-    builder.frag.addFunction("vec4 sampleSourcePixel()", params.source.sampleSourcePixel);
+    builder.frag.addFunction(
+      "vec4 sampleSourcePixel()",
+      params.source.sampleSourcePixel
+    );
 
   builder.frag.addFunction(params.source.fragment);
   builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_diffuse", (uniform, progParams) => {
-      const texture = progParams.target.compositor.screenSpaceEffectFbo.getColor(0);
+      const texture =
+        progParams.target.compositor.screenSpaceEffectFbo.getColor(0);
       texture.bindSampler(uniform, TextureUnit.Zero);
     });
   });
@@ -53,9 +66,15 @@ export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectB
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   if (!params.source.sampleSourcePixel) {
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+    builder.frag.set(
+      FragmentShaderComponent.ComputeBaseColor,
+      computeBaseColor
+    );
   } else {
-    builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorWithShift);
+    builder.frag.set(
+      FragmentShaderComponent.ComputeBaseColor,
+      computeBaseColorWithShift
+    );
     builder.frag.addUniform("u_readingPixels", VariableType.Boolean, (prog) => {
       prog.addProgramUniform("u_readingPixels", (uniform, progParams) => {
         uniform.setUniform1i(progParams.target.isReadPixelsInProgress ? 1 : 0);

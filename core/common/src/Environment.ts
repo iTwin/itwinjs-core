@@ -80,11 +80,19 @@ export class Environment {
   }
 
   /** Create a copy of this environment, changing the `displayGround`, `displaySky` and/or `displayAtmosphere` flags. */
-  public withDisplay(display: { sky?: boolean, ground?: boolean, atmosphere?: boolean }): Environment {
+  public withDisplay(display: {
+    sky?: boolean;
+    ground?: boolean;
+    atmosphere?: boolean;
+  }): Environment {
     const displaySky = display.sky ?? this.displaySky;
     const displayGround = display.ground ?? this.displayGround;
     const displayAtmosphere = display.atmosphere ?? this.displayAtmosphere;
-    if (displaySky === this.displaySky && displayGround === this.displayGround && displayAtmosphere === this.displayAtmosphere)
+    if (
+      displaySky === this.displaySky &&
+      displayGround === this.displayGround &&
+      displayAtmosphere === this.displayAtmosphere
+    )
       return this;
 
     return Environment.create({
@@ -106,8 +114,7 @@ export class Environment {
 
   /** Create from JSON representation. */
   public static fromJSON(props?: EnvironmentProps): Environment {
-    if (!props)
-      return this.defaults;
+    if (!props) return this.defaults;
 
     return new this({
       displaySky: props?.sky?.display,
@@ -115,7 +122,9 @@ export class Environment {
       displayAtmosphere: props?.atmosphere?.display,
       sky: props?.sky ? SkyBox.fromJSON(props.sky) : undefined,
       ground: props?.ground ? GroundPlane.fromJSON(props.ground) : undefined,
-      atmosphere: props?.atmosphere ? Atmosphere.Settings.fromJSON(props.atmosphere) : undefined,
+      atmosphere: props?.atmosphere
+        ? Atmosphere.Settings.fromJSON(props.atmosphere)
+        : undefined,
     });
   }
 
@@ -123,8 +132,7 @@ export class Environment {
    * Any properties of `changedProps` explicitly set to `undefined` will be reset to their default values.
    */
   public clone(changedProps?: Partial<EnvironmentProperties>): Environment {
-    if (!changedProps)
-      return this;
+    if (!changedProps) return this;
 
     return Environment.create({ ...this, ...changedProps });
   }

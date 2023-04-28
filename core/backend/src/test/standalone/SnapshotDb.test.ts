@@ -6,7 +6,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
-import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
+import {
+  CheckpointManager,
+  V2CheckpointManager,
+} from "../../CheckpointManager";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
@@ -39,8 +42,8 @@ describe("SnapshotDb.refreshContainerSas", () => {
     getIModelId: () => iModelId,
     getITwinId: () => iTwinId,
     getCurrentChangeset: () => changeset,
-    setIModelDb: () => { },
-    closeIModel: () => { },
+    setIModelDb: () => {},
+    closeIModel: () => {},
   };
 
   it("should refresh V2 checkpoint sasToken", async () => {
@@ -51,20 +54,32 @@ describe("SnapshotDb.refreshContainerSas", () => {
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: cloudContainer } as any;
     });
-    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    const queryStub = sinon
+      .stub(IModelHost.hubAccess, "queryV2Checkpoint")
+      .callsFake(async () => mockCheckpointV2);
 
-    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
+    const openDgnDbStub = sinon
+      .stub(SnapshotDb, "openDgnDb")
+      .returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
-    const checkpoint = await SnapshotDb.openCheckpointV2({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
-    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
+    const checkpoint = await SnapshotDb.openCheckpointV2({
+      accessToken: userAccessToken,
+      iTwinId,
+      iModelId,
+      changeset,
+      reattachSafetySeconds: 60,
+    });
+    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(
+      mockCheckpointV2.sasToken
+    );
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
-    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
-    const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
+    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => {});
+    const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => {});
 
     clock.setSystemTime(Date.parse("2021-01-01T00:58:10Z")); // within safety period
     void expect(checkpoint.refreshContainerSas("")).to.be.fulfilled;
@@ -95,7 +110,9 @@ describe("SnapshotDb.refreshContainerSas", () => {
     mockCheckpointV2.sasToken = makeToken("2021-01-01T03:00:10Z"); // an expiry within safety interval should cause error log
     await checkpoint.refreshContainerSas("");
     expect(errorLogStub.callCount).equal(1);
-    expect(errorLogStub.args[0][1]).include("timestamp that expires before safety interval");
+    expect(errorLogStub.args[0][1]).include(
+      "timestamp that expires before safety interval"
+    );
 
     queryStub.resetHistory();
     errorLogStub.resetHistory();
@@ -116,7 +133,11 @@ describe("SnapshotDb.refreshContainerSas", () => {
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
-    const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
+    const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", {
+      iTwinId: "fakeITwinId",
+      iModelId: "fake1",
+      changeset,
+    });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.refreshContainerSas("");
     expect(nowStub.called).to.be.false;

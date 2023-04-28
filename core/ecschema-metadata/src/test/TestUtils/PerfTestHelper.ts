@@ -6,10 +6,11 @@
 import * as Benchmark from "benchmark";
 
 /* eslint-disable no-console */
-export async function comparePerformance(...funcs: Array<() => Promise<any>>): Promise<void> {
+export async function comparePerformance(
+  ...funcs: Array<() => Promise<any>>
+): Promise<void> {
   const suite = new Benchmark.Suite();
   return new Promise((resolve) => {
-
     funcs.forEach((testFunc, i) => {
       suite.add(testFunc.name || String.fromCharCode(65 + i), {
         defer: true,

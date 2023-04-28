@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-    - 'release/*'
+      - "release/*"
 
 jobs:
   finalize:

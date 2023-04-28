@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Compilation, Compiler, ExternalModule, Module, WebpackError } from "webpack";
+import {
+  Compilation,
+  Compiler,
+  ExternalModule,
+  Module,
+  WebpackError,
+} from "webpack";
 import { getAppRelativePath } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
@@ -21,46 +27,72 @@ export class CopyExternalsPlugin {
   private _logger: WebpackLogger | undefined;
 
   public apply(compiler: Compiler) {
-    compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: Compilation) => {
-      this._logger = compilation.getLogger("CopyExternalsPlugin");
-      compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: Module) => {
-        if (currentModule instanceof ExternalModule) {
-          this._promises.push(this.handleModule(currentModule, compiler.outputPath, compilation));
-        }
-      });
-    });
+    compiler.hooks.compilation.tap(
+      "CopyExternalsPlugin",
+      (compilation: Compilation) => {
+        this._logger = compilation.getLogger("CopyExternalsPlugin");
+        compilation.hooks.buildModule.tap(
+          "CopyExternalsPlugin",
+          (currentModule: Module) => {
+            if (currentModule instanceof ExternalModule) {
+              this._promises.push(
+                this.handleModule(
+                  currentModule,
+                  compiler.outputPath,
+                  compilation
+                )
+              );
+            }
+          }
+        );
+      }
+    );
 
     compiler.hooks.afterEmit.tapPromise("CopyExternalsPlugin", async () => {
       await Promise.all(this._promises);
     });
   }
 
-  public async handleModule(currentModule: ExternalModule, outputDir: string, compilation: Compilation) {
+  public async handleModule(
+    currentModule: ExternalModule,
+    outputDir: string,
+    compilation: Compilation
+  ) {
     const pkgName = this.pathToPackageName(currentModule.userRequest);
-    if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
+    if (
+      pkgName === "electron" ||
+      builtinModules.includes(pkgName) ||
+      this._copiedPackages.has(pkgName)
+    )
       return;
 
     let packageJsonPath = "";
     try {
-      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [compilation.moduleGraph.getIssuer(currentModule)?.context ?? ""] });
+      packageJsonPath = require.resolve(`${pkgName}/package.json`, {
+        paths: [
+          compilation.moduleGraph.getIssuer(currentModule)?.context ?? "",
+        ],
+      });
     } catch (error) {
       // Always _log_ missing externals as a warning and add it as a compilation warning.
       const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
       this._logger?.warn(warning);
       // TODO: only warn if a required dependency, Module.reasons was removed in webpack@5, figure out how to determine what kind of dep it is
-      compilation.warnings.push(new WebpackError(`${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`));
+      compilation.warnings.push(
+        new WebpackError(
+          `${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`
+        )
+      );
       return;
     }
 
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
-    if (!packageJsonPath)
-      return;
+    if (!packageJsonPath) return;
 
     this._copiedPackages.add(pkgName);
 
     const packageJson = require(packageJsonPath);
-    if (!packageJson.dependencies && !packageJson.optionalDependencies)
-      return;
+    if (!packageJson.dependencies && !packageJson.optionalDependencies) return;
 
     // Grab external package's dependencies and all of its dependencies and so on recursively
     const depsFromRecursion = await resolveRecurse({
@@ -69,25 +101,45 @@ export class CopyExternalsPlugin {
     await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);
   }
   // TODO: Optimize recursion, too many awaits.
-  private async recurseDependencies(dependencies: Dependency[], outputDir: string) {
-    if (dependencies.length === 0)
-      return;
+  private async recurseDependencies(
+    dependencies: Dependency[],
+    outputDir: string
+  ) {
+    if (dependencies.length === 0) return;
     for (const dep of dependencies) {
-      if (this._copiedPackages.has(dep.name))
-        continue;
-      await this.copyPackage(dep.name, outputDir, path.dirname(`${dep.path}/package.json`)); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
+      if (this._copiedPackages.has(dep.name)) continue;
+      await this.copyPackage(
+        dep.name,
+        outputDir,
+        path.dirname(`${dep.path}/package.json`)
+      ); // add package.json to end so that path.dirname in copyPackage gets proper directory instead of the dir above it.
       this._copiedPackages.add(dep.name);
       await this.recurseDependencies(dep.dependencies, outputDir);
     }
   }
 
-  private async copyPackage(pkgName: string, outDir: string, pathToPackage: string) {
-    this._logger?.log(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
-    await fs.copy(pathToPackage, path.resolve(outDir, "node_modules", pkgName), { dereference: true });
+  private async copyPackage(
+    pkgName: string,
+    outDir: string,
+    pathToPackage: string
+  ) {
+    this._logger?.log(
+      `Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(
+        path.resolve(outDir, "node_modules")
+      )}`
+    );
+    await fs.copy(
+      pathToPackage,
+      path.resolve(outDir, "node_modules", pkgName),
+      { dereference: true }
+    );
   }
 
   private pathToPackageName(p: string) {
-    const parts = p.replace(/^.*node_modules[\\\/]/, "").replace(externalPrefix, "").split(/[\\\/]/);
-    return (parts[0].startsWith("@")) ? `${parts[0]}/${parts[1]}` : parts[0];
+    const parts = p
+      .replace(/^.*node_modules[\\\/]/, "")
+      .replace(externalPrefix, "")
+      .split(/[\\\/]/);
+    return parts[0].startsWith("@") ? `${parts[0]}/${parts[1]}` : parts[0];
   }
 }

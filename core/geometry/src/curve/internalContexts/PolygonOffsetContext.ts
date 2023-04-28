@@ -14,7 +14,10 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Arc3d } from "../Arc3d";
 import { CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
+import {
+  CurveCurveApproachType,
+  CurveLocationDetailPair,
+} from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
@@ -61,7 +64,12 @@ export class JointOptions {
    * * leftOffsetDistance is required
    * * minArcDegrees and maxChamferDegrees are optional.
    */
-  constructor(leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 90, preserveEllipticalArcs = false) {
+  constructor(
+    leftOffsetDistance: number,
+    minArcDegrees = 180,
+    maxChamferDegrees = 90,
+    preserveEllipticalArcs = false
+  ) {
     this.leftOffsetDistance = leftOffsetDistance;
     this.minArcDegrees = minArcDegrees;
     this.maxChamferTurnDegrees = maxChamferDegrees;
@@ -70,7 +78,12 @@ export class JointOptions {
 
   /** Return a deep clone. */
   public clone(): JointOptions {
-    return new JointOptions(this.leftOffsetDistance, this.minArcDegrees, this.maxChamferTurnDegrees, this.preserveEllipticalArcs);
+    return new JointOptions(
+      this.leftOffsetDistance,
+      this.minArcDegrees,
+      this.maxChamferTurnDegrees,
+      this.preserveEllipticalArcs
+    );
   }
 
   /** Copy values of input options */
@@ -87,7 +100,9 @@ export class JointOptions {
    * * If leftOffsetDistanceOrOptions is a JointOptions, return it unchanged.
    * @param leftOffsetDistanceOrOptions
    */
-  public static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions {
+  public static create(
+    leftOffsetDistanceOrOptions: number | JointOptions
+  ): JointOptions {
     if (leftOffsetDistanceOrOptions instanceof JointOptions)
       return leftOffsetDistanceOrOptions;
     // if (Number.isFinite(leftOffsetDistanceOrOptions))
@@ -101,8 +116,7 @@ export class JointOptions {
   public numChamferPoints(theta: Angle): number {
     const degrees = Math.abs(theta.degrees);
     const stepDegrees = Geometry.clamp(this.maxChamferTurnDegrees, 10, 120);
-    if (degrees <= stepDegrees)
-      return 1;
+    if (degrees <= stepDegrees) return 1;
     return Math.ceil(degrees / stepDegrees);
   }
 }
@@ -118,31 +132,57 @@ export class OffsetOptions {
   public strokeOptions: StrokeOptions;
 
   /** Options that are provided are captured. */
-  constructor(offsetDistanceOrOptions: number | JointOptions, strokeOptions?: StrokeOptions) {
+  constructor(
+    offsetDistanceOrOptions: number | JointOptions,
+    strokeOptions?: StrokeOptions
+  ) {
     this.jointOptions = JointOptions.create(offsetDistanceOrOptions);
-    this.strokeOptions = (strokeOptions !== undefined) ? strokeOptions : StrokeOptions.createForCurves();
+    this.strokeOptions =
+      strokeOptions !== undefined
+        ? strokeOptions
+        : StrokeOptions.createForCurves();
   }
 
-  public get minArcDegrees(): number { return this.jointOptions.minArcDegrees; }
-  public set minArcDegrees(value: number) { this.jointOptions.minArcDegrees = value; }
-  public get maxChamferTurnDegrees(): number { return this.jointOptions.maxChamferTurnDegrees; }
-  public set maxChamferTurnDegrees(value: number) { this.jointOptions.maxChamferTurnDegrees = value; }
-  public get leftOffsetDistance(): number { return this.jointOptions.leftOffsetDistance; }
-  public set leftOffsetDistance(value: number) { this.jointOptions.leftOffsetDistance = value; }
-  public get preserveEllipticalArcs(): boolean { return this.jointOptions.preserveEllipticalArcs; }
-  public set preserveEllipticalArcs(value: boolean) { this.jointOptions.preserveEllipticalArcs = value; }
+  public get minArcDegrees(): number {
+    return this.jointOptions.minArcDegrees;
+  }
+  public set minArcDegrees(value: number) {
+    this.jointOptions.minArcDegrees = value;
+  }
+  public get maxChamferTurnDegrees(): number {
+    return this.jointOptions.maxChamferTurnDegrees;
+  }
+  public set maxChamferTurnDegrees(value: number) {
+    this.jointOptions.maxChamferTurnDegrees = value;
+  }
+  public get leftOffsetDistance(): number {
+    return this.jointOptions.leftOffsetDistance;
+  }
+  public set leftOffsetDistance(value: number) {
+    this.jointOptions.leftOffsetDistance = value;
+  }
+  public get preserveEllipticalArcs(): boolean {
+    return this.jointOptions.preserveEllipticalArcs;
+  }
+  public set preserveEllipticalArcs(value: boolean) {
+    this.jointOptions.preserveEllipticalArcs = value;
+  }
 
   /** Convert variant input into OffsetOptions.
    * * If a JointOptions is provided, it is captured.
    * * If an OffsetOptions is provided, a reference to it is returned. */
-  public static create(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): OffsetOptions {
+  public static create(
+    offsetDistanceOrOptions: number | JointOptions | OffsetOptions
+  ): OffsetOptions {
     if (offsetDistanceOrOptions instanceof OffsetOptions)
       return offsetDistanceOrOptions;
     return new OffsetOptions(offsetDistanceOrOptions);
   }
 
   /** Convert variant input into offset distance */
-  public static getOffsetDistance(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): number {
+  public static getOffsetDistance(
+    offsetDistanceOrOptions: number | JointOptions | OffsetOptions
+  ): number {
     if (typeof offsetDistanceOrOptions === "number")
       return offsetDistanceOrOptions;
     return offsetDistanceOrOptions.leftOffsetDistance;
@@ -150,7 +190,10 @@ export class OffsetOptions {
 
   /** Return a deep clone. */
   public clone(): OffsetOptions {
-    return new OffsetOptions(this.jointOptions.clone(), this.strokeOptions.clone());
+    return new OffsetOptions(
+      this.jointOptions.clone(),
+      this.strokeOptions.clone()
+    );
   }
 }
 
@@ -178,31 +221,54 @@ class Joint {
   /** pointer to previous joint */
   public previousJoint?: Joint;
   // capture references to all data . . .
-  public constructor(curve0: CurvePrimitive | undefined, curve1: CurvePrimitive | undefined, swingPoint: Point3d | undefined) {
+  public constructor(
+    curve0: CurvePrimitive | undefined,
+    curve1: CurvePrimitive | undefined,
+    swingPoint: Point3d | undefined
+  ) {
     this.curve0 = curve0;
     this.curve1 = curve1;
     this.swingPoint = swingPoint;
     this.flexure = JointMode.Unknown;
   }
   /** try to construct an arc transition from ray0 to ray1 with given center. */
-  public static constructArc(ray0: Ray3d, center: Point3d | undefined, ray1: Ray3d): Arc3d | undefined {
-    if (center !== undefined && Geometry.isSameCoordinate(ray0.origin.distance(center), ray1.origin.distance(center))) {
+  public static constructArc(
+    ray0: Ray3d,
+    center: Point3d | undefined,
+    ray1: Ray3d
+  ): Arc3d | undefined {
+    if (
+      center !== undefined &&
+      Geometry.isSameCoordinate(
+        ray0.origin.distance(center),
+        ray1.origin.distance(center)
+      )
+    ) {
       const angle = ray0.direction.angleToXY(ray1.direction);
       const vector0 = Vector3d.createStartEnd(center, ray0.origin);
       const vector90 = vector0.rotate90CCWXY();
-      return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, angle.radians));
+      return Arc3d.create(
+        center,
+        vector0,
+        vector90,
+        AngleSweep.createStartEndRadians(0.0, angle.radians)
+      );
     }
     return undefined;
   }
   /** Extract a json object of {curve0:data, fraction0:data, curve1:data, fraction1:data} */
   public shallowExtract(): any {
-    return { curve0: this.curve0, curve1: this.curve1, fraction0: this.fraction0, fraction1: this.fraction1 };
+    return {
+      curve0: this.curve0,
+      curve1: this.curve1,
+      fraction0: this.fraction0,
+      fraction1: this.fraction1,
+    };
   }
   /** Establish the nextJoint and previousJoint links from joint0 to joint1. */
   public static link(joint0: Joint, joint1: Joint | undefined) {
     joint0.nextJoint = joint1;
-    if (joint1)
-      joint1.previousJoint = joint0;
+    if (joint1) joint1.previousJoint = joint0;
     if (joint0.curve1 && joint1 && !joint1.curve0)
       joint1.curve0 = joint0.curve1;
     else if (!joint0.curve1 && joint1 && joint1.curve0)
@@ -227,36 +293,44 @@ class Joint {
   private static addPoint(destination: LineString3d, point: Point3d) {
     if (destination.packedPoints.length > 0) {
       const pointA = destination.endPoint();
-      if (!pointA.isAlmostEqual(point))
-        destination.packedPoints.push(point);
+      if (!pointA.isAlmostEqual(point)) destination.packedPoints.push(point);
     }
   }
 
-  public static collectStrokesFromChain(start: Joint, destination: LineString3d, maxTest: number = 100) {
-    let numOut = -2 * maxTest;    // allow extra things to happen
-    Joint.visitJointsOnChain(start, (joint: Joint) => {
-      this.addStrokes(destination, joint.jointCurve);
+  public static collectStrokesFromChain(
+    start: Joint,
+    destination: LineString3d,
+    maxTest: number = 100
+  ) {
+    let numOut = -2 * maxTest; // allow extra things to happen
+    Joint.visitJointsOnChain(
+      start,
+      (joint: Joint) => {
+        this.addStrokes(destination, joint.jointCurve);
 
-      if (joint.curve1 && joint.fraction1 !== undefined) {
-        const fA = joint.fraction1;
-        const fB = joint.nextJointFraction0(1.0);
-        let curve1;
-        if (fA === 0.0 && fB === 1.0)
-          curve1 = joint.curve1.clone();
-        else if (fA < fB)
-          curve1 = joint.curve1.clonePartialCurve(fA, fB);
-        if (curve1) {
-          if (!joint.jointCurve) {
-            this.addPoint(destination, curve1.startPoint());
+        if (joint.curve1 && joint.fraction1 !== undefined) {
+          const fA = joint.fraction1;
+          const fB = joint.nextJointFraction0(1.0);
+          let curve1;
+          if (fA === 0.0 && fB === 1.0) curve1 = joint.curve1.clone();
+          else if (fA < fB) curve1 = joint.curve1.clonePartialCurve(fA, fB);
+          if (curve1) {
+            if (!joint.jointCurve) {
+              this.addPoint(destination, curve1.startPoint());
+            }
           }
+          this.addStrokes(destination, curve1);
         }
-        this.addStrokes(destination, curve1);
-      }
-      return numOut++ < maxTest;
-    }, maxTest);
+        return numOut++ < maxTest;
+      },
+      maxTest
+    );
   }
 
-  private static collectPrimitive(destination: CurvePrimitive[], primitive?: CurvePrimitive) {
+  private static collectPrimitive(
+    destination: CurvePrimitive[],
+    primitive?: CurvePrimitive
+  ) {
     if (primitive) {
       if (destination.length > 0) {
         const pointA = destination[destination.length - 1].endPoint();
@@ -282,37 +356,56 @@ class Joint {
         const curvePoint = joint.curve1.startPoint();
         const jointPoint1 = ls.endPoint();
         if (!curvePoint.isAlmostEqual(jointPoint1))
-          ls.packedPoints.setAtCheckedPointIndex(ls.packedPoints.length - 1, curvePoint);
+          ls.packedPoints.setAtCheckedPointIndex(
+            ls.packedPoints.length - 1,
+            curvePoint
+          );
       }
     }
   }
 
-  public static collectCurvesFromChain(start: Joint | undefined, destination: CurvePrimitive[], maxTest: number = 100) {
-    if (start === undefined)
-      return;
-    let numOut = -2 * maxTest;    // allow extra things to happen
-    Joint.visitJointsOnChain(start, (joint: Joint) => {
-      this.adjustJointToPrimitives(joint);
-      this.collectPrimitive(destination, joint.jointCurve);
+  public static collectCurvesFromChain(
+    start: Joint | undefined,
+    destination: CurvePrimitive[],
+    maxTest: number = 100
+  ) {
+    if (start === undefined) return;
+    let numOut = -2 * maxTest; // allow extra things to happen
+    Joint.visitJointsOnChain(
+      start,
+      (joint: Joint) => {
+        this.adjustJointToPrimitives(joint);
+        this.collectPrimitive(destination, joint.jointCurve);
 
-      if (joint.curve1 && joint.fraction1 !== undefined) {
-        const fA = joint.fraction1;
-        const fB = joint.nextJointFraction0(1.0);
-        let curve1;
-        if (fA === 0.0 && fB === 1.0)
-          curve1 = joint.curve1.clone();
-        else if (fA < fB)
-          curve1 = joint.curve1.clonePartialCurve(fA, fB);
-        this.collectPrimitive(destination, curve1);
-      }
-      return numOut++ < maxTest;
-    }, maxTest);
+        if (joint.curve1 && joint.fraction1 !== undefined) {
+          const fA = joint.fraction1;
+          const fB = joint.nextJointFraction0(1.0);
+          let curve1;
+          if (fA === 0.0 && fB === 1.0) curve1 = joint.curve1.clone();
+          else if (fA < fB) curve1 = joint.curve1.clonePartialCurve(fA, fB);
+          this.collectPrimitive(destination, curve1);
+        }
+        return numOut++ < maxTest;
+      },
+      maxTest
+    );
   }
 
   /** Execute `joint.annotateJointMode()` at all joints on the chain. */
-  public static annotateChain(start: Joint | undefined, options: JointOptions, maxTest: number = 100) {
+  public static annotateChain(
+    start: Joint | undefined,
+    options: JointOptions,
+    maxTest: number = 100
+  ) {
     if (start)
-      Joint.visitJointsOnChain(start, (joint: Joint) => { joint.annotateJointMode(options); return true; }, maxTest);
+      Joint.visitJointsOnChain(
+        start,
+        (joint: Joint) => {
+          joint.annotateJointMode(options);
+          return true;
+        },
+        maxTest
+      );
   }
 
   /**
@@ -321,17 +414,19 @@ class Joint {
    * @param start first (and, for cyclic chain, final) Joint
    * @param callback function to call with each Joint as a single parameter.
    */
-  public static visitJointsOnChain(start: Joint, callback: (joint: Joint) => boolean, maxTest: number = 100): boolean {
+  public static visitJointsOnChain(
+    start: Joint,
+    callback: (joint: Joint) => boolean,
+    maxTest: number = 100
+  ): boolean {
     let joint: Joint | undefined = start;
     if (joint) {
       let numTest = 0;
       while (joint !== undefined) {
-        if (numTest++ >= maxTest + 5)
-          return true;
+        if (numTest++ >= maxTest + 5) return true;
         if (!callback(joint)) return false;
         joint = joint.nextJoint;
-        if (joint === start)
-          break;
+        if (joint === start) break;
       }
     }
     return true;
@@ -344,13 +439,22 @@ class Joint {
       const ray1 = this.curve1.fractionToPointAndDerivative(0.0);
       const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1);
       if (intersection.approachType === CurveCurveApproachType.Intersection) {
-        if (intersection.detailA.fraction >= 0.0 && intersection.detailB.fraction <= 0.0) {
+        if (
+          intersection.detailA.fraction >= 0.0 &&
+          intersection.detailB.fraction <= 0.0
+        ) {
           this.fraction0 = 1.0;
           this.fraction1 = 0.0;
           this.flexure = JointMode.Extend;
-          const theta = ray0.getDirectionRef().angleToXY(ray1.getDirectionRef());
+          const theta = ray0
+            .getDirectionRef()
+            .angleToXY(ray1.getDirectionRef());
           if (options.needArc(theta)) {
-            const arc = Joint.constructArc(ray0, (this.curve0 as any).baseCurveEnd, ray1);
+            const arc = Joint.constructArc(
+              ray0,
+              (this.curve0 as any).baseCurveEnd,
+              ray1
+            );
             if (arc) {
               this.jointCurve = arc;
               return;
@@ -358,7 +462,11 @@ class Joint {
           }
           const numChamferPoints = options.numChamferPoints(theta);
           if (numChamferPoints <= 1) {
-            this.jointCurve = LineString3d.create(ray0.origin, intersection.detailA.point, ray1.origin);
+            this.jointCurve = LineString3d.create(
+              ray0.origin,
+              intersection.detailA.point,
+              ray1.origin
+            );
             return;
           }
           if (numChamferPoints > 1) {
@@ -366,16 +474,25 @@ class Joint {
             const radians0 = theta.radians;
             const numHalfStep = 2.0 * numChamferPoints;
             const halfStepRadians = radians0 / numHalfStep;
-            const arc = Joint.constructArc(ray0, (this.curve0 as any).baseCurveEnd, ray1);
+            const arc = Joint.constructArc(
+              ray0,
+              (this.curve0 as any).baseCurveEnd,
+              ray1
+            );
             if (arc !== undefined) {
               const radialFraction = 1 / Math.cos(halfStepRadians);
               const jointCurve = LineString3d.create();
               this.jointCurve = jointCurve;
-              jointCurve.addPoint(ray0.origin);   // possibly extend segment or line string
+              jointCurve.addPoint(ray0.origin); // possibly extend segment or line string
 
               for (let i = 0; i < numChamferPoints; i++) {
                 const arcFraction = (1 + 2 * i) / numHalfStep;
-                jointCurve.addPoint(arc.fractionAndRadialFractionToPoint(arcFraction, radialFraction));
+                jointCurve.addPoint(
+                  arc.fractionAndRadialFractionToPoint(
+                    arcFraction,
+                    radialFraction
+                  )
+                );
               }
               jointCurve.addPoint(ray1.origin); // possibly extend segment or line string.
               return;
@@ -385,18 +502,27 @@ class Joint {
       }
       // desperation appears ...
       this.flexure = JointMode.Gap;
-      this.jointCurve = LineSegment3d.create(this.curve0.fractionToPoint(1.0), this.curve1.fractionToPoint(0.0));
+      this.jointCurve = LineSegment3d.create(
+        this.curve0.fractionToPoint(1.0),
+        this.curve1.fractionToPoint(0.0)
+      );
       this.fraction0 = 1.0;
       this.fraction1 = 0.0;
     }
   }
 
   // Select the index at which summed fraction difference is smallest.
-  private selectIntersectionIndexByFraction(fractionA: number, fractionB: number, intersections: CurveLocationDetailPair[]): number {
+  private selectIntersectionIndexByFraction(
+    fractionA: number,
+    fractionB: number,
+    intersections: CurveLocationDetailPair[]
+  ): number {
     let index = -1;
     let aMin = Number.MAX_VALUE;
     for (let i = 0; i < intersections.length; i++) {
-      const a = Math.abs(intersections[i].detailA.fraction - fractionA) + Math.abs(intersections[i].detailB.fraction - fractionB);
+      const a =
+        Math.abs(intersections[i].detailA.fraction - fractionA) +
+        Math.abs(intersections[i].detailB.fraction - fractionB);
       if (a < aMin) {
         aMin = a;
         index = i;
@@ -425,7 +551,10 @@ class Joint {
         this.fraction0 = 1.0;
         this.fraction1 = 0.0;
         this.flexure = JointMode.Trim;
-      } else if (this.curve0 instanceof LineSegment3d && this.curve1 instanceof LineSegment3d) {
+      } else if (
+        this.curve0 instanceof LineSegment3d &&
+        this.curve1 instanceof LineSegment3d
+      ) {
         const ray0 = this.curve0.fractionToPointAndDerivative(0.0); // And we know that is full length ray !
         const ray1 = this.curve1.fractionToPointAndDerivative(0.0); // ditto
         const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1);
@@ -438,14 +567,27 @@ class Joint {
             this.flexure = JointMode.Trim;
           } else if (this.fraction0 > 1.0 && this.fraction1 > 1.0) {
             this.flexure = JointMode.Gap;
-            this.jointCurve = LineSegment3d.create(this.curve0.fractionToPoint(1.0), this.curve1.fractionToPoint(0.0));
+            this.jointCurve = LineSegment3d.create(
+              this.curve0.fractionToPoint(1.0),
+              this.curve1.fractionToPoint(0.0)
+            );
             this.fraction0 = 1.0;
             this.fraction1 = 0.0;
           }
         }
-      } else { // generic pair of curves ...
-        const intersections = CurveCurve.intersectionXYPairs(this.curve0, false, this.curve1, false);
-        const intersectionIndex = this.selectIntersectionIndexByFraction(1.0, 0.0, intersections);
+      } else {
+        // generic pair of curves ...
+        const intersections = CurveCurve.intersectionXYPairs(
+          this.curve0,
+          false,
+          this.curve1,
+          false
+        );
+        const intersectionIndex = this.selectIntersectionIndexByFraction(
+          1.0,
+          0.0,
+          intersections
+        );
         if (intersectionIndex >= 0) {
           this.flexure = JointMode.Trim;
           this.fraction0 = intersections[intersectionIndex].detailA.fraction;
@@ -461,7 +603,11 @@ class Joint {
    * * If trim fractions indicate the primitive must disappear, replace the joint pair by a new joint pointing at surrounding primitives
    * @param start
    */
-  public static removeDegeneratePrimitives(start: Joint, options: JointOptions, maxTest: number): { newStart: Joint, numJointRemoved: number } {
+  public static removeDegeneratePrimitives(
+    start: Joint,
+    options: JointOptions,
+    maxTest: number
+  ): { newStart: Joint; numJointRemoved: number } {
     /*
     if (Checker.noisy.PolygonOffset)
       GeometryCoreTestIO.consoleLog("\nENTER removeDegenerates");
@@ -473,12 +619,14 @@ class Joint {
     if (jointA) {
       while (jointA !== undefined && numTest++ < maxTest) {
         const jointB = jointA.nextJoint;
-        if (jointA
-          && jointB
-          && jointA.previousJoint
-          && jointB.nextJoint
-          && jointA.fraction1 !== undefined
-          && jointB.fraction0 !== undefined) {
+        if (
+          jointA &&
+          jointB &&
+          jointA.previousJoint &&
+          jointB.nextJoint &&
+          jointA.fraction1 !== undefined &&
+          jointB.fraction0 !== undefined
+        ) {
           const f0 = jointA.fraction1;
           const f1 = jointB.fraction0;
           const g0 = jointB.fraction1;
@@ -493,11 +641,16 @@ class Joint {
             }
           */
           const eliminateF = f0 >= f1 || f0 > 1.0;
-          const eliminateG = (g0 !== undefined && g0 > 1.0)
-            || (g0 !== undefined && g1 !== undefined && g0 >= g1);
+          const eliminateG =
+            (g0 !== undefined && g0 > 1.0) ||
+            (g0 !== undefined && g1 !== undefined && g0 >= g1);
           if (eliminateF && eliminateG) {
             const jointC = jointB.nextJoint;
-            const newJoint: Joint = new Joint(jointA.curve0, jointC.curve1, undefined);
+            const newJoint: Joint = new Joint(
+              jointA.curve0,
+              jointC.curve1,
+              undefined
+            );
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointC.nextJoint);
             newJoint.annotateJointMode(options);
@@ -511,7 +664,11 @@ class Joint {
             }
             */
           } else if (eliminateF) {
-            const newJoint: Joint = new Joint(jointA.curve0, jointB.curve1, undefined);
+            const newJoint: Joint = new Joint(
+              jointA.curve0,
+              jointB.curve1,
+              undefined
+            );
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointB.nextJoint);
             newJoint.annotateJointMode(options);
@@ -524,8 +681,7 @@ class Joint {
             }
           */
             numRemoved++;
-            if (jointA === start)
-              start = newJoint;
+            if (jointA === start) start = newJoint;
             jointA = newJoint;
             if (numRemoved >= maxRemove) {
               /*
@@ -537,8 +693,7 @@ class Joint {
           }
         }
         jointA = jointA.nextJoint;
-        if (jointA === start)
-          break;
+        if (jointA === start) break;
       }
     }
     return { newStart: start, numJointRemoved: numRemoved };
@@ -550,22 +705,30 @@ class Joint {
  */
 export class PolygonWireOffsetContext {
   /** construct a context. */
-  public constructor() {
-  }
+  public constructor() {}
   private static _unitAlong = Vector3d.create();
   private static _unitPerp = Vector3d.create();
   private static _offsetA = Point3d.create();
   private static _offsetB = Point3d.create();
 
   // Construct a single offset from base points
-  private static createOffsetSegment(basePointA: Point3d, basePointB: Point3d, distance: number): CurvePrimitive | undefined {
+  private static createOffsetSegment(
+    basePointA: Point3d,
+    basePointB: Point3d,
+    distance: number
+  ): CurvePrimitive | undefined {
     Vector3d.createStartEnd(basePointA, basePointB, this._unitAlong);
     if (this._unitAlong.normalizeInPlace()) {
       this._unitAlong.rotate90CCWXY(this._unitPerp);
       const segment = LineSegment3d.create(
         basePointA.plusScaled(this._unitPerp, distance, this._offsetA),
-        basePointB.plusScaled(this._unitPerp, distance, this._offsetB));
-      CurveChainWireOffsetContext.applyBasePoints(segment, basePointA.clone(), basePointB.clone());
+        basePointB.plusScaled(this._unitPerp, distance, this._offsetB)
+      );
+      CurveChainWireOffsetContext.applyBasePoints(
+        segment,
+        basePointA.clone(),
+        basePointB.clone()
+      );
       return segment;
     }
     return undefined;
@@ -578,32 +741,46 @@ export class PolygonWireOffsetContext {
    * @param wrap
    * @param offsetDistance
    */
-  public constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
+  public constructPolygonWireXYOffset(
+    points: Point3d[],
+    wrap: boolean,
+    leftOffsetDistanceOrOptions: number | JointOptions
+  ): CurveCollection | undefined {
     const options = JointOptions.create(leftOffsetDistanceOrOptions);
     const numPoints = points.length;
-    let fragment0 = PolygonWireOffsetContext.createOffsetSegment(points[0], points[1], options.leftOffsetDistance);
+    let fragment0 = PolygonWireOffsetContext.createOffsetSegment(
+      points[0],
+      points[1],
+      options.leftOffsetDistance
+    );
     let joint0 = new Joint(undefined, fragment0, points[0]);
     let newJoint;
     let previousJoint = joint0;
     for (let i = 1; i + 1 < numPoints; i++) {
-      const fragment1 = PolygonWireOffsetContext.createOffsetSegment(points[i], points[i + 1], options.leftOffsetDistance);
+      const fragment1 = PolygonWireOffsetContext.createOffsetSegment(
+        points[i],
+        points[i + 1],
+        options.leftOffsetDistance
+      );
       newJoint = new Joint(fragment0, fragment1, points[i]);
       Joint.link(previousJoint, newJoint);
       previousJoint = newJoint;
       fragment0 = fragment1;
     }
-    if (wrap)
-      Joint.link(previousJoint, joint0);
+    if (wrap) Joint.link(previousJoint, joint0);
     else {
       newJoint = new Joint(fragment0, undefined, points[numPoints - 1]);
       Joint.link(previousJoint, newJoint);
     }
     Joint.annotateChain(joint0, options, numPoints);
-    for (let pass = 0; pass++ < 5;) {
-      const state = Joint.removeDegeneratePrimitives(joint0, options, numPoints);
+    for (let pass = 0; pass++ < 5; ) {
+      const state = Joint.removeDegeneratePrimitives(
+        joint0,
+        options,
+        numPoints
+      );
       joint0 = state.newStart;
-      if (state.numJointRemoved === 0)
-        break;
+      if (state.numJointRemoved === 0) break;
       /*
       if (Checker.noisy.PolygonOffset) {
         GeometryCoreTestIO.consoleLog("  POST REMOVE DEGENERATES  " + state.numJointRemoved);
@@ -619,8 +796,7 @@ export class PolygonWireOffsetContext {
     if (n > 1) {
       if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
         return Loop.create(chain);
-      else
-        return Path.create(chain);
+      else return Path.create(chain);
     }
     return undefined;
   }
@@ -632,8 +808,7 @@ export class PolygonWireOffsetContext {
  */
 export class CurveChainWireOffsetContext {
   /** construct a context. */
-  public constructor() {
-  }
+  public constructor() {}
   /**
    * Annotate a CurvePrimitive with properties `baseCurveStart` and `baseCurveEnd`.
    * * return cp
@@ -641,12 +816,14 @@ export class CurveChainWireOffsetContext {
    * @param startPoint optional start point
    * @param endPoint optional end point
    */
-  public static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined {
+  public static applyBasePoints(
+    cp: CurvePrimitive | undefined,
+    startPoint: Point3d | undefined,
+    endPoint: Point3d | undefined
+  ): CurvePrimitive | undefined {
     if (cp !== undefined) {
-      if (startPoint !== undefined)
-        (cp as any).baseCurveStart = startPoint;
-      if (endPoint !== undefined)
-        (cp as any).baseCurveEnd = endPoint;
+      if (startPoint !== undefined) (cp as any).baseCurveStart = startPoint;
+      if (endPoint !== undefined) (cp as any).baseCurveEnd = endPoint;
     }
     return cp;
   }
@@ -658,17 +835,22 @@ export class CurveChainWireOffsetContext {
    * @param g primitive to offset
    * @param offsetDistanceOrOptions offset distance (positive to left of g), or options object
    */
-  public static createSingleOffsetPrimitiveXY(g: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public static createSingleOffsetPrimitiveXY(
+    g: CurvePrimitive,
+    offsetDistanceOrOptions: number | OffsetOptions
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     const offset = g.constructOffsetXY(offsetDistanceOrOptions);
-    if (offset === undefined)
-      return undefined;
+    if (offset === undefined) return undefined;
     // decorate each offset with its base curve's endpoints
     if (Array.isArray(offset)) {
       const basePrims = g.collectCurvePrimitives(undefined, true, true);
-      if (basePrims.length !== offset.length)
-        return undefined; // unexpected aggregate curve type!
+      if (basePrims.length !== offset.length) return undefined; // unexpected aggregate curve type!
       for (let i = 0; i < basePrims.length; ++i)
-        this.applyBasePoints(offset[i], basePrims[i].startPoint(), basePrims[i].endPoint());
+        this.applyBasePoints(
+          offset[i],
+          basePrims[i].startPoint(),
+          basePrims[i].endPoint()
+        );
       return offset;
     }
     return this.applyBasePoints(offset, g.startPoint(), g.endPoint());
@@ -688,21 +870,25 @@ export class CurveChainWireOffsetContext {
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined {
+  public static constructCurveXYOffset(
+    curves: Path | Loop,
+    offsetDistanceOrOptions: number | JointOptions | OffsetOptions
+  ): CurveCollection | undefined {
     const wrap = curves instanceof Loop;
     const offsetOptions = OffsetOptions.create(offsetDistanceOrOptions);
     const simpleOffsets: CurvePrimitive[] = [];
     // setup pass: get simple offsets of each primitive
     for (const c of curves.children) {
-      const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, offsetOptions);
+      const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(
+        c,
+        offsetOptions
+      );
       if (c1 === undefined) {
         // bad .. maybe arc to inside?
-      } else if (c1 instanceof CurvePrimitive)
-        simpleOffsets.push(c1);
+      } else if (c1 instanceof CurvePrimitive) simpleOffsets.push(c1);
       else if (Array.isArray(c1)) {
         for (const c2 of c1) {
-          if (c2 instanceof CurvePrimitive)
-            simpleOffsets.push(c2);
+          if (c2 instanceof CurvePrimitive) simpleOffsets.push(c2);
         }
       }
     }
@@ -712,12 +898,13 @@ export class CurveChainWireOffsetContext {
     let joint0;
     for (const fragment1 of simpleOffsets) {
       if (fragment1) {
-        newJoint = new Joint(fragment0, fragment1, fragment1.fractionToPoint(0.0));
-        if (newJoint !== undefined)
-          if (joint0 === undefined)
-            joint0 = newJoint;
-        if (previousJoint)
-          Joint.link(previousJoint, newJoint);
+        newJoint = new Joint(
+          fragment0,
+          fragment1,
+          fragment1.fractionToPoint(0.0)
+        );
+        if (newJoint !== undefined) if (joint0 === undefined) joint0 = newJoint;
+        if (previousJoint) Joint.link(previousJoint, newJoint);
         previousJoint = newJoint;
         fragment0 = fragment1;
       }

@@ -5,7 +5,13 @@
 
 import { Transform } from "@itwin/core-geometry";
 import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, readGltfGraphics, RenderGraphic, Tool,
+  DecorateContext,
+  GraphicBranch,
+  GraphicType,
+  IModelApp,
+  readGltfGraphics,
+  RenderGraphic,
+  Tool,
 } from "@itwin/core-frontend";
 
 class GltfDecoration {
@@ -13,7 +19,11 @@ class GltfDecoration {
   private readonly _tooltip: string;
   private readonly _pickableId?: string;
 
-  public constructor(graphic: RenderGraphic, tooltip: string | undefined, pickableId?: string) {
+  public constructor(
+    graphic: RenderGraphic,
+    tooltip: string | undefined,
+    pickableId?: string
+  ) {
     this._graphic = graphic;
     this._tooltip = tooltip ?? "glTF model";
     this._pickableId = pickableId;
@@ -40,8 +50,12 @@ class GltfDecoration {
  */
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async parseAndRun(...args: string[]) {
     return this.run(args[0]);
@@ -69,13 +83,11 @@ export class GltfDecorationTool extends Tool {
 
   public override async run(url?: string) {
     const iModel = IModelApp.viewManager.selectedView?.iModel;
-    if (!iModel)
-      return false;
+    if (!iModel) return false;
 
     try {
       const buffer = await this.queryAsset(url);
-      if (!buffer)
-        return false;
+      if (!buffer) return false;
 
       // Convert the glTF into a RenderGraphic.
       const id = iModel.transientIds.getNext();
@@ -90,13 +102,14 @@ export class GltfDecorationTool extends Tool {
         },
       });
 
-      if (!graphic)
-        return false;
+      if (!graphic) return false;
 
       // Transform the graphic to the center of the project extents.
       const branch = new GraphicBranch();
       branch.add(graphic);
-      const transform = Transform.createTranslation(iModel.projectExtents.center);
+      const transform = Transform.createTranslation(
+        iModel.projectExtents.center
+      );
       graphic = IModelApp.renderSystem.createGraphicBranch(branch, transform);
 
       // Take ownership of the graphic so it is not disposed of until we're finished with it.

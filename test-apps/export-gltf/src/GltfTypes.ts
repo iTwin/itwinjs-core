@@ -77,7 +77,7 @@ interface GltfMaterial {
 interface GltfMaterialPbrMetallicRoughness {
   baseColorTexture?: GltfBaseColorTexture;
   baseColorFactor: number[];
-  metallicFactor: 0;  // Completely diffuse for now
+  metallicFactor: 0; // Completely diffuse for now
   roughnessFactor: 1;
 }
 

@@ -12,8 +12,8 @@ describe("ViewDetails", () => {
       private _clipChanged = false;
 
       public constructor(clip?: ClipVectorProps) {
-        super(clip ? { viewDetails: { clip } } : { });
-        this.onClipVectorChanged.addListener(() => this._clipChanged = true);
+        super(clip ? { viewDetails: { clip } } : {});
+        this.onClipVectorChanged.addListener(() => (this._clipChanged = true));
       }
 
       public get storedClip(): ClipVector | undefined {
@@ -31,13 +31,18 @@ describe("ViewDetails", () => {
       }
     }
 
-    const clipProps: ClipVectorProps = [{
-      shape: {
-        points: [
-          [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0],
-        ],
+    const clipProps: ClipVectorProps = [
+      {
+        shape: {
+          points: [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 0, 0],
+          ],
+        },
       },
-    }];
+    ];
 
     it("should keep in sync with JSON", () => {
       let details = new TestDetails();

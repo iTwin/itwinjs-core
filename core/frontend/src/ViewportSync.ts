@@ -46,21 +46,21 @@ export type SynchronizeViewports = (source: Viewport, target: Viewport) => void;
  * @public
  * @extensions
  */
-export function connectViewports(viewports: Iterable<Viewport>, sync: (changedViewport: Viewport) => SynchronizeViewports): () => void {
+export function connectViewports(
+  viewports: Iterable<Viewport>,
+  sync: (changedViewport: Viewport) => SynchronizeViewports
+): () => void {
   const disconnect: VoidFunction[] = [];
 
   let echo = false;
   const synchronize = (source: Viewport) => {
-    if (echo)
-      return;
+    if (echo) return;
 
     // Ignore onViewChanged events resulting from synchronization.
     echo = true;
     try {
       const doSync = sync(source);
-      for (const vp of viewports)
-        if (vp !== source)
-          doSync(source, vp);
+      for (const vp of viewports) if (vp !== source) doSync(source, vp);
     } finally {
       echo = false;
     }
@@ -68,18 +68,15 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (changedVi
 
   let firstViewport: Viewport | undefined;
   for (const vp of viewports) {
-    if (!firstViewport)
-      firstViewport = vp;
+    if (!firstViewport) firstViewport = vp;
 
     disconnect.push(vp.onViewChanged.addListener(() => synchronize(vp)));
   }
 
-  if (firstViewport)
-    synchronize(firstViewport);
+  if (firstViewport) synchronize(firstViewport);
 
   return () => {
-    for (const f of disconnect)
-      f();
+    for (const f of disconnect) f();
 
     disconnect.length = 0;
   };
@@ -91,8 +88,11 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (changedVi
  * @public
  * @extensions
  */
-export function synchronizeViewportViews(source: Viewport): SynchronizeViewports {
-  return (_source, target) => target.applyViewState(source.view.clone(target.iModel));
+export function synchronizeViewportViews(
+  source: Viewport
+): SynchronizeViewports {
+  return (_source, target) =>
+    target.applyViewState(source.view.clone(target.iModel));
 }
 
 /** A function that returns a [[SynchronizeViewports]] function that synchronizes the viewed volumes of each viewport.
@@ -100,7 +100,9 @@ export function synchronizeViewportViews(source: Viewport): SynchronizeViewports
  * @public
  * @extensions
  */
-export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewports {
+export function synchronizeViewportFrusta(
+  source: Viewport
+): SynchronizeViewports {
   const pose = source.view.savePose();
   return (_source, target) => {
     const view = target.view.applyPose(pose);
@@ -114,8 +116,12 @@ export function synchronizeViewportFrusta(source: Viewport): SynchronizeViewport
  * @public
  * @extensions
  */
-export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void {
-  return connectViewports(viewports, (source) => synchronizeViewportFrusta(source));
+export function connectViewportFrusta(
+  viewports: Iterable<Viewport>
+): () => void {
+  return connectViewports(viewports, (source) =>
+    synchronizeViewportFrusta(source)
+  );
 }
 
 /** Form a connection between two or more [[Viewport]]s such that every aspect of the viewports are kept in sync. For example, if the set of models
@@ -125,8 +131,12 @@ export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void
  * @public
  * @extensions
  */
-export function connectViewportViews(viewports: Iterable<Viewport>): () => void {
-  return connectViewports(viewports, (source) => synchronizeViewportViews(source));
+export function connectViewportViews(
+  viewports: Iterable<Viewport>
+): () => void {
+  return connectViewports(viewports, (source) =>
+    synchronizeViewportViews(source)
+  );
 }
 
 /** Forms a bidirectional connection between two [[Viewport]]s such that the [[ViewState]]s of each are synchronized with one another.
@@ -172,7 +182,12 @@ export class TwoWayViewportSync {
 
     this.connectViewports(viewport1, viewport2);
 
-    this._disconnect.push(connectViewports([viewport1, viewport2], () => (source, target) => this.syncViewports(source, target)));
+    this._disconnect.push(
+      connectViewports(
+        [viewport1, viewport2],
+        () => (source, target) => this.syncViewports(source, target)
+      )
+    );
   }
 
   /** Remove the connection between the two views. */
@@ -199,7 +214,10 @@ export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
   }
 
   /** @internal override */
-  protected override connectViewports(source: Viewport, target: Viewport): void {
+  protected override connectViewports(
+    source: Viewport,
+    target: Viewport
+  ): void {
     this.syncViewports(source, target);
   }
 }

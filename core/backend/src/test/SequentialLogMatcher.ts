@@ -2,7 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogFunction, Logger, LoggingMetaData, LogLevel } from "@itwin/core-bentley";
+import {
+  LogFunction,
+  Logger,
+  LoggingMetaData,
+  LogLevel,
+} from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
 
 /**
@@ -17,8 +22,7 @@ export class SequentialLogMatcher extends Logger {
   private _originalLogTrace: LogFunction | undefined;
 
   private allow(level: LogLevel, category: string, message: string): boolean {
-    if (this._rules.length === 0)
-      return true;
+    if (this._rules.length === 0) return true;
 
     const rule = this._rules[0];
     if (rule.test(level, category, message)) {
@@ -35,22 +39,38 @@ export class SequentialLogMatcher extends Logger {
     this._originalLogInfo = Logger._logInfo;
     this._originalLogTrace = Logger._logTrace;
 
-    Logger._logError = (category: string, message: string, metaData: LoggingMetaData) => {
+    Logger._logError = (
+      category: string,
+      message: string,
+      metaData: LoggingMetaData
+    ) => {
       if (this.allow(LogLevel.Error, category, message))
         this._originalLogError?.(category, message, metaData);
     };
 
-    Logger._logWarning = (category: string, message: string, metaData: LoggingMetaData) => {
+    Logger._logWarning = (
+      category: string,
+      message: string,
+      metaData: LoggingMetaData
+    ) => {
       if (this.allow(LogLevel.Warning, category, message))
         this._originalLogWarning?.(category, message, metaData);
     };
 
-    Logger._logInfo = (category: string, message: string, metaData: LoggingMetaData) => {
+    Logger._logInfo = (
+      category: string,
+      message: string,
+      metaData: LoggingMetaData
+    ) => {
       if (this.allow(LogLevel.Info, category, message))
         this._originalLogInfo?.(category, message, metaData);
     };
 
-    Logger._logTrace = (category: string, message: string, metaData: LoggingMetaData) => {
+    Logger._logTrace = (
+      category: string,
+      message: string,
+      metaData: LoggingMetaData
+    ) => {
       if (this.allow(LogLevel.Trace, category, message))
         this._originalLogTrace?.(category, message, metaData);
     };
@@ -73,7 +93,9 @@ export class SequentialLogMatcher extends Logger {
     Logger._logTrace = this._originalLogTrace;
     return rc;
   }
-  public get length(): number { return this._rules.length; }
+  public get length(): number {
+    return this._rules.length;
+  }
 }
 
 export class LogMatchRule {
@@ -83,26 +105,21 @@ export class LogMatchRule {
   private _metaDataCheck?: (data: any) => boolean;
   public test(level: LogLevel, category: string, message: string): boolean {
     if (this._level) {
-      if (this._level !== level)
-        return false;
+      if (this._level !== level) return false;
     }
 
     if (this._category) {
       if (this._category instanceof RegExp) {
-        if (!this._category.test(category))
-          return false;
+        if (!this._category.test(category)) return false;
       } else {
-        if (this._category !== category)
-          return false;
+        if (this._category !== category) return false;
       }
     }
     if (this._message) {
       if (this._message instanceof RegExp) {
-        if (!this._message.test(message))
-          return false;
+        if (!this._message.test(message)) return false;
       } else {
-        if (this._message !== message)
-          return false;
+        if (this._message !== message) return false;
       }
     }
     return true;

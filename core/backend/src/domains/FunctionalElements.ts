@@ -8,13 +8,25 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import {
-  FunctionalElementProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps,
+  FunctionalElementProps,
+  IModel,
+  InformationPartitionElementProps,
+  ModelProps,
+  RelatedElement,
+  TypeDefinitionElementProps,
 } from "@itwin/core-common";
-import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
+import {
+  InformationPartitionElement,
+  RoleElement,
+  TypeDefinitionElement,
+} from "../Element";
 import { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
-import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";
+import {
+  DrawingGraphicRepresentsElement,
+  ElementRefersToElements,
+} from "../Relationship";
 
 /** A FunctionalPartition element is a key part of the iModel information hierarchy and is always parented
  * to a Subject and broken down by a FunctionalModel.
@@ -22,9 +34,14 @@ import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Rel
  */
 export class FunctionalPartition extends InformationPartitionElement {
   /** @internal */
-  public static override get className(): string { return "FunctionalPartition"; }
+  public static override get className(): string {
+    return "FunctionalPartition";
+  }
   /** @internal */
-  public constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
+  public constructor(
+    props: InformationPartitionElementProps,
+    iModel: IModelDb
+  ) {
     super(props, iModel);
   }
 }
@@ -34,7 +51,9 @@ export class FunctionalPartition extends InformationPartitionElement {
  */
 export class FunctionalModel extends RoleModel {
   /** @internal */
-  public static override get className(): string { return "FunctionalModel"; }
+  public static override get className(): string {
+    return "FunctionalModel";
+  }
   public constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -45,7 +64,11 @@ export class FunctionalModel extends RoleModel {
    * @returns The Id of the newly inserted FunctionalPartition and FunctionalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentSubjectId: Id64String,
+    name: string
+  ): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: FunctionalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -65,7 +88,9 @@ export class FunctionalModel extends RoleModel {
  */
 export abstract class FunctionalElement extends RoleElement {
   /** @internal */
-  public static override get className(): string { return "FunctionalElement"; }
+  public static override get className(): string {
+    return "FunctionalElement";
+  }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -77,7 +102,9 @@ export abstract class FunctionalElement extends RoleElement {
  */
 export abstract class FunctionalBreakdownElement extends FunctionalElement {
   /** @internal */
-  public static override get className(): string { return "FunctionalBreakdownElement"; }
+  public static override get className(): string {
+    return "FunctionalBreakdownElement";
+  }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -87,7 +114,9 @@ export abstract class FunctionalBreakdownElement extends FunctionalElement {
 /** @public */
 export class FunctionalComposite extends FunctionalBreakdownElement {
   /** @internal */
-  public static override get className(): string { return "FunctionalComposite"; }
+  public static override get className(): string {
+    return "FunctionalComposite";
+  }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -99,7 +128,9 @@ export class FunctionalComposite extends FunctionalBreakdownElement {
  */
 export abstract class FunctionalComponentElement extends FunctionalElement {
   /** @internal */
-  public static override get className(): string { return "FunctionalComponentElement"; }
+  public static override get className(): string {
+    return "FunctionalComponentElement";
+  }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -111,7 +142,9 @@ export abstract class FunctionalComponentElement extends FunctionalElement {
  */
 export abstract class FunctionalType extends TypeDefinitionElement {
   /** @internal */
-  public static override get className(): string { return "FunctionalType"; }
+  public static override get className(): string {
+    return "FunctionalType";
+  }
   /** @internal */
   public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
@@ -123,9 +156,14 @@ export abstract class FunctionalType extends TypeDefinitionElement {
  */
 export class FunctionalElementIsOfType extends RelatedElement {
   /** @internal */
-  public static get className(): string { return "FunctionalElementIsOfType"; }
+  public static get className(): string {
+    return "FunctionalElementIsOfType";
+  }
   public static classFullName = "Functional:FunctionalElementIsOfType";
-  public constructor(id: Id64String, relClassName: string = FunctionalElementIsOfType.classFullName) {
+  public constructor(
+    id: Id64String,
+    relClassName: string = FunctionalElementIsOfType.classFullName
+  ) {
     super({ id, relClassName });
   }
 }
@@ -135,7 +173,9 @@ export class FunctionalElementIsOfType extends RelatedElement {
  */
 export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
   /** @internal */
-  public static override get className(): string { return "PhysicalElementFulfillsFunction"; }
+  public static override get className(): string {
+    return "PhysicalElementFulfillsFunction";
+  }
 }
 
 /** Relates a [[DrawingGraphic]] to the [[FunctionalElement]] that it represents
@@ -143,5 +183,7 @@ export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
  */
 export class DrawingGraphicRepresentsFunctionalElement extends DrawingGraphicRepresentsElement {
   /** @internal */
-  public static override get className(): string { return "DrawingGraphicRepresentsFunctionalElement"; }
+  public static override get className(): string {
+    return "DrawingGraphicRepresentsFunctionalElement";
+  }
 }

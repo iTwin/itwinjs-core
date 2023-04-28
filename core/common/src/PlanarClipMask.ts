@@ -6,7 +6,11 @@
  * @module DisplayStyles
  */
 
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import {
+  CompressedId64Set,
+  Id64String,
+  OrderedId64Iterable,
+} from "@itwin/core-bentley";
 
 /** The different modes by which a [[PlanarClipMaskSettings]] collects the geometry used to mask a model.
  * @public
@@ -177,42 +181,82 @@ export class PlanarClipMaskSettings {
 
   /** Create a new [[PlanarClipMaskSettings]] object from its JSON representation. */
   public static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings {
-    if (!json || undefined === json.mode)
-      return this.defaults;
+    if (!json || undefined === json.mode) return this.defaults;
 
-    return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority, json.invert);
+    return new PlanarClipMaskSettings(
+      json.mode,
+      json.transparency,
+      json.modelIds,
+      json.subCategoryOrElementIds,
+      json.priority,
+      json.invert
+    );
   }
 
   /** Create a new PlanarClipMaskSettings. */
-  public static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings {
-    const modelIds = args.modelIds ? CompressedId64Set.sortAndCompress(args.modelIds) : undefined;
+  public static create(
+    args:
+      | ModelPlanarClipMaskArgs
+      | ElementPlanarClipMaskArgs
+      | SubCategoryPlanarClipMaskArgs
+      | PriorityPlanarClipMaskArgs
+  ): PlanarClipMaskSettings {
+    const modelIds = args.modelIds
+      ? CompressedId64Set.sortAndCompress(args.modelIds)
+      : undefined;
     if (undefined !== args.priority)
-      return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, args.transparency, undefined, undefined, args.priority, args.invert);
+      return new PlanarClipMaskSettings(
+        PlanarClipMaskMode.Priority,
+        args.transparency,
+        undefined,
+        undefined,
+        args.priority,
+        args.invert
+      );
     else if (undefined !== args.subCategoryIds)
-      return new PlanarClipMaskSettings(PlanarClipMaskMode.IncludeSubCategories, args.transparency, modelIds, CompressedId64Set.sortAndCompress(args.subCategoryIds), undefined, args.invert);
+      return new PlanarClipMaskSettings(
+        PlanarClipMaskMode.IncludeSubCategories,
+        args.transparency,
+        modelIds,
+        CompressedId64Set.sortAndCompress(args.subCategoryIds),
+        undefined,
+        args.invert
+      );
     else if (undefined !== args.elementIds)
-      return new PlanarClipMaskSettings(args.exclude ? PlanarClipMaskMode.ExcludeElements : PlanarClipMaskMode.IncludeElements, args.transparency, modelIds, CompressedId64Set.sortAndCompress(args.elementIds), undefined, args.invert);
+      return new PlanarClipMaskSettings(
+        args.exclude
+          ? PlanarClipMaskMode.ExcludeElements
+          : PlanarClipMaskMode.IncludeElements,
+        args.transparency,
+        modelIds,
+        CompressedId64Set.sortAndCompress(args.elementIds),
+        undefined,
+        args.invert
+      );
     else
-      return new PlanarClipMaskSettings(PlanarClipMaskMode.Models, args.transparency, modelIds, undefined, undefined, args.invert);
+      return new PlanarClipMaskSettings(
+        PlanarClipMaskMode.Models,
+        args.transparency,
+        modelIds,
+        undefined,
+        undefined,
+        args.invert
+      );
   }
 
   /** Create JSON object representing this [[PlanarClipMaskSettings]] */
   public toJSON(): PlanarClipMaskProps {
     const props: PlanarClipMaskProps = { mode: this.mode };
-    if (undefined !== this._modelIds)
-      props.modelIds = this._modelIds;
+    if (undefined !== this._modelIds) props.modelIds = this._modelIds;
 
     if (undefined !== this._subCategoryOrElementIds)
       props.subCategoryOrElementIds = this._subCategoryOrElementIds;
 
-    if (undefined !== this.priority)
-      props.priority = this.priority;
+    if (undefined !== this.priority) props.priority = this.priority;
 
-    if (undefined !== this.transparency)
-      props.transparency = this.transparency;
+    if (undefined !== this.transparency) props.transparency = this.transparency;
 
-    if (this.invert)
-      props.invert = true;
+    if (this.invert) props.invert = true;
 
     return props;
   }
@@ -223,12 +267,14 @@ export class PlanarClipMaskSettings {
   }
 
   public equals(other: PlanarClipMaskSettings): boolean {
-    return this.mode === other.mode &&
+    return (
+      this.mode === other.mode &&
       this.priority === other.priority &&
       this.transparency === other.transparency &&
       this.invert === other.invert &&
       this._modelIds === other._modelIds &&
-      this._subCategoryOrElementIds === other._subCategoryOrElementIds;
+      this._subCategoryOrElementIds === other._subCategoryOrElementIds
+    );
   }
 
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
@@ -236,8 +282,7 @@ export class PlanarClipMaskSettings {
    * @returns A PlanarClipMaskSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
    */
   public clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings {
-    if (undefined === changedProps)
-      return this;
+    if (undefined === changedProps) return this;
 
     return PlanarClipMaskSettings.fromJSON({
       ...this.toJSON(),
@@ -245,19 +290,30 @@ export class PlanarClipMaskSettings {
     });
   }
 
-  private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number, invert?: boolean) {
+  private constructor(
+    mode: PlanarClipMaskMode,
+    transparency?: number,
+    modelIds?: CompressedId64Set,
+    subCategoryOrElementIds?: CompressedId64Set,
+    priority?: number,
+    invert?: boolean
+  ) {
     this.mode = mode;
     this._modelIds = modelIds;
     this._subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
     this.invert = true === invert;
-    this.transparency = undefined !== transparency ? Math.max(0, Math.min(1, transparency)) : undefined;
+    this.transparency =
+      undefined !== transparency
+        ? Math.max(0, Math.min(1, transparency))
+        : undefined;
 
-    if (modelIds)
-      this.modelIds = CompressedId64Set.iterable(modelIds);
+    if (modelIds) this.modelIds = CompressedId64Set.iterable(modelIds);
 
     if (subCategoryOrElementIds)
-      this.subCategoryOrElementIds = CompressedId64Set.iterable(subCategoryOrElementIds);
+      this.subCategoryOrElementIds = CompressedId64Set.iterable(
+        subCategoryOrElementIds
+      );
   }
 
   /** A default PlanarClipMask which masks nothing. */

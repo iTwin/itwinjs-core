@@ -6,25 +6,39 @@
  * @module RpcInterface
  */
 
-import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
+import {
+  IModelConnectionProps,
+  IModelRpcProps,
+  SnapshotOpenOptions,
+} from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcOperation } from "./core/RpcOperation";
 import { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
-const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefined", key: req.parameters[0] });
+const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({
+  iModelId: "undefined",
+  key: req.parameters[0],
+});
 
 /** The RPC interface for working with *snapshot* iModels.
  * This interface is intended for desktop and mobile products. Web products are discouraged from registering this interface.
  * @internal
  */
-export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class SnapshotIModelRpcInterface extends RpcInterface {
+  // eslint-disable-line deprecation/deprecation
   /** Returns the SnapshotIModelRpcInterface client instance for the frontend. */
-  public static getClient(): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface); }
+  public static getClient(): SnapshotIModelRpcInterface {
+    return RpcManager.getClientForInterface(SnapshotIModelRpcInterface);
+  }
 
   /** Returns the SnapshotIModelRpcInterface client instance for a custom RPC routing configuration. */
-  public static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface, token); }
+  public static getClientForRouting(
+    token: RpcRoutingToken
+  ): SnapshotIModelRpcInterface {
+    return RpcManager.getClientForInterface(SnapshotIModelRpcInterface, token);
+  }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SnapshotIModelRpcInterface";
@@ -38,10 +52,22 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslin
   ===========================================================================================*/
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openFile(
+    _filePath: string,
+    _opts?: SnapshotOpenOptions
+  ): Promise<IModelConnectionProps> {
+    return this.forward(arguments);
+  }
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openRemote(
+    _key: string,
+    _opts?: SnapshotOpenOptions
+  ): Promise<IModelConnectionProps> {
+    return this.forward(arguments);
+  }
 
-  public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> {
+    return this.forward(arguments);
+  }
 }

@@ -3,8 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
-import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import {
+  ColorDef,
+  FeatureAppearance,
+  RenderMode,
+  ViewFlags,
+  WhiteOnWhiteReversalSettings,
+} from "@itwin/core-common";
+import {
+  DecorateContext,
+  FeatureSymbology,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  SnapshotConnection,
+  Viewport,
+} from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
@@ -22,15 +36,21 @@ describe("White-on-white reversal", async () => {
     await TestUtility.shutdownFrontend();
   });
 
-  async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => ViewFlags | undefined, cleanup?: (vp: Viewport) => void): Promise<void> {
+  async function test(
+    expectedColors: Color[],
+    setup: (vp: Viewport, vf: ViewFlags) => ViewFlags | undefined,
+    cleanup?: (vp: Viewport) => void
+  ): Promise<void> {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.copy({ renderMode: RenderMode.Wireframe, acsTriad: false });
+      const vf = vp.viewFlags.copy({
+        renderMode: RenderMode.Wireframe,
+        acsTriad: false,
+      });
       const newVf = setup(vp, vf);
       vp.viewFlags = newVf ?? vf;
 
       await vp.waitForAllTilesToRender();
-      if (undefined !== cleanup)
-        cleanup(vp);
+      if (undefined !== cleanup) cleanup(vp);
 
       const colors = vp.readUniqueColors();
       expect(colors.length).to.equal(expectedColors.length);
@@ -52,7 +72,8 @@ describe("White-on-white reversal", async () => {
   });
 
   function ignoreBackground(vp: Viewport): void {
-    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
+    vp.displayStyle.settings.whiteOnWhiteReversal =
+      WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
   }
 
   it("should apply to non-white background if background color is ignored", async () => {
@@ -85,7 +106,10 @@ describe("White-on-white reversal", async () => {
 
   it("should not apply if geometry is not white", async () => {
     class ColorOverride {
-      public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
+      public addFeatureOverrides(
+        ovrs: FeatureSymbology.Overrides,
+        _viewport: Viewport
+      ): void {
         ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.blue));
       }
     }
@@ -110,7 +134,9 @@ describe("White-on-white reversal", async () => {
         const vp = context.viewport;
         const rect = vp.viewRect;
 
-        const viewOverlay = context.createGraphicBuilder(GraphicType.ViewOverlay);
+        const viewOverlay = context.createGraphicBuilder(
+          GraphicType.ViewOverlay
+        );
         viewOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
         viewOverlay.addLineString([
           new Point3d(0, rect.height / 2, 0),
@@ -136,7 +162,9 @@ describe("White-on-white reversal", async () => {
         ]);
         context.addDecorationFromBuilder(viewBG);
 
-        const worldOverlay = context.createGraphicBuilder(GraphicType.WorldOverlay);
+        const worldOverlay = context.createGraphicBuilder(
+          GraphicType.WorldOverlay
+        );
         worldOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
         worldOverlay.addLineString([
           vp.npcToWorld({ x: 0, y: 0, z: 0.5 }),
@@ -171,13 +199,17 @@ describe("White-on-white reversal", async () => {
     const yellow = Color.fromRgba(255, 255, 0, 255);
     const green = Color.fromRgba(0, 255, 0, 255);
 
-    await test([white, red, blue, green, yellow], (vp, _vf) => {
-      IModelApp.viewManager.addDecorator(decorator);
-      vp.changeViewedModels([]);
-      vp.displayStyle.backgroundColor = ColorDef.white;
-      return undefined;
-    }, (_vp) => {
-      IModelApp.viewManager.dropDecorator(decorator);
-    });
+    await test(
+      [white, red, blue, green, yellow],
+      (vp, _vf) => {
+        IModelApp.viewManager.addDecorator(decorator);
+        vp.changeViewedModels([]);
+        vp.displayStyle.backgroundColor = ColorDef.white;
+        return undefined;
+      },
+      (_vp) => {
+        IModelApp.viewManager.dropDecorator(decorator);
+      }
+    );
   });
 });

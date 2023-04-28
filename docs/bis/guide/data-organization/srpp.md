@@ -18,5 +18,6 @@ In the physical perspective, responsibilities are generally assigned according t
 The SRPP essentially defines a workflow-driven constraint on the organization of `Element`s into Models. Within that constraint, there is a high degree of flexibility regarding the `Element`/`Model` organization. Generally, the organization of `Element`s and `Model`s that are the responsibility of a single party should be driven by anticipated user workflows, keeping in mind the practical ramifications of `Model`s, described in [Model Fundamentals](../fundamentals/model-fundamentals.md).
 
 ---
+
 | Next: [Organizing Models and Elements](./organizing-models-and-elements.md)
 |:---

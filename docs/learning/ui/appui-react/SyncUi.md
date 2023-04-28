@@ -4,7 +4,7 @@
 
 ## SyncUi Dispatcher
 
-The [SyncUiEventDispatcher]($appui-react) is called to dispatch syncEventIds to register listeners.  The caller can choose to dispatch the syncEventId immediately ([SyncUiEventDispatcher.dispatchImmediateSyncUiEvent]($appui-react)) or the default way ([SyncUiEventDispatcher.dispatchSyncUiEvent]($appui-react)), which uses a timer. Usually, the timer version is preferable so multiple refreshes of the same component can be avoided. Dispatching with the timer will attempt to wait until no new syncEventIds have been dispatched before calling the registered listeners.
+The [SyncUiEventDispatcher]($appui-react) is called to dispatch syncEventIds to register listeners. The caller can choose to dispatch the syncEventId immediately ([SyncUiEventDispatcher.dispatchImmediateSyncUiEvent]($appui-react)) or the default way ([SyncUiEventDispatcher.dispatchSyncUiEvent]($appui-react)), which uses a timer. Usually, the timer version is preferable so multiple refreshes of the same component can be avoided. Dispatching with the timer will attempt to wait until no new syncEventIds have been dispatched before calling the registered listeners.
 
 ## Sync EventId
 
@@ -12,7 +12,7 @@ A SyncEventId is just a unique string that represents an action that may require
 
 ## SyncUi Listener
 
-A listener may be registered by adding a listener to [SyncUiEventDispatcher.onSyncUiEvent]($appui-react). This listener will be called with a Set of SyncEventId strings each time the SyncUiDispatcher has events to dispatch.  The listener must determine if they are interested in any of the dispatched event Ids. This is commonly done by calling `mySyncIds.some((value: string): boolean => args.eventIds.has(value));` where `mySyncIds` is any array of one or more strings that specify the event ids of interest. Many of the ConfigurableUi components provided in the UiFramework package allow an array of SyncUIEvent Ids to be defined. These components also typically contain the definition of a `stateFunc` which is run when an eventId of interest is encountered. These 'state' functions generate a new state for the component and if the new state is different from the current state the component is refreshed.
+A listener may be registered by adding a listener to [SyncUiEventDispatcher.onSyncUiEvent]($appui-react). This listener will be called with a Set of SyncEventId strings each time the SyncUiDispatcher has events to dispatch. The listener must determine if they are interested in any of the dispatched event Ids. This is commonly done by calling `mySyncIds.some((value: string): boolean => args.eventIds.has(value));` where `mySyncIds` is any array of one or more strings that specify the event ids of interest. Many of the ConfigurableUi components provided in the UiFramework package allow an array of SyncUIEvent Ids to be defined. These components also typically contain the definition of a `stateFunc` which is run when an eventId of interest is encountered. These 'state' functions generate a new state for the component and if the new state is different from the current state the component is refreshed.
 
 ## Redux and SyncUi
 

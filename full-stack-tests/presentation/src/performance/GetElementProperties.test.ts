@@ -30,15 +30,20 @@ describe("#performance Element properties loading", () => {
   });
 
   it("load properties using 'getElementProperties'", async function () {
-    const startTime = (new Date()).getTime();
+    const startTime = new Date().getTime();
     let propertiesCount = 0;
-    const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel });
+    const { total, iterator } =
+      await Presentation.getManager().getElementProperties({ imodel });
     process.stdout.write(`Loading properties for ${total} elements.`);
     for await (const items of iterator()) {
       propertiesCount += items.length;
       process.stdout.write(".");
     }
-    process.stdout.write(`\nLoaded ${propertiesCount} elements properties in ${(new Date()).getTime() - startTime} ms`);
+    process.stdout.write(
+      `\nLoaded ${propertiesCount} elements properties in ${
+        new Date().getTime() - startTime
+      } ms`
+    );
   });
 
   it("load properties using ECSQL", async function () {
@@ -47,12 +52,14 @@ describe("#performance Element properties loading", () => {
     let propertiesCount = 0;
     for await (const _properties of getElementsPropertiesECSQL(imodel)) {
       propertiesCount++;
-      if (propertiesCount % 1000 === 0)
-        process.stdout.write(".");
+      if (propertiesCount % 1000 === 0) process.stdout.write(".");
     }
-    process.stdout.write(`\nLoaded ${propertiesCount} elements properties in ${(new Date()).getTime() - startTime} ms`);
+    process.stdout.write(
+      `\nLoaded ${propertiesCount} elements properties in ${
+        new Date().getTime() - startTime
+      } ms`
+    );
   });
-
 });
 
 async function* getElementsPropertiesECSQL(db: IModelDb) {
@@ -62,30 +69,69 @@ async function* getElementsPropertiesECSQL(db: IModelDb) {
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = el.ECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id`;
 
-  for await (const row of db.createQueryReader(query, undefined, { abbreviateBlobs: true, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+  for await (const row of db.createQueryReader(query, undefined, {
+    abbreviateBlobs: true,
+    rowFormat: QueryRowFormat.UseJsPropertyNames,
+  })) {
     const properties = loadElementProperties(db, row.className, row.id);
     expect(properties.id).to.be.eq(row.id);
     yield properties;
   }
 }
 
-function loadElementProperties(db: IModelDb, className: string, elementId: string) {
+function loadElementProperties(
+  db: IModelDb,
+  className: string,
+  elementId: string
+) {
   const elementProperties = loadProperties(db, className, [elementId], true);
   return {
     ...elementProperties[0],
-    ...(loadRelatedProperties(db, () => queryGeometricElement3dTypeDefinitions(db, elementId), true)),
-    ...(loadRelatedProperties(db, () => queryGeometricElement2dTypeDefinitions(db, elementId), true)),
-    ...(loadRelatedProperties(db, () => queryElementLinks(db, elementId), false)),
-    ...(loadRelatedProperties(db, () => queryGroupElementLinks(db, elementId), false)),
-    ...(loadRelatedProperties(db, () => queryModelLinks(db, elementId), false)),
-    ...(loadRelatedProperties(db, () => queryDrawingGraphicElements(db, elementId), false)),
-    ...(loadRelatedProperties(db, () => queryGraphicalElement3dElements(db, elementId), false)),
-    ...(loadRelatedProperties(db, () => queryExternalSourceRepositories(db, elementId), false)),
-    ...(loadRelatedProperties(db, () => queryExternalSourceGroupRepositories(db, elementId), false)),
+    ...loadRelatedProperties(
+      db,
+      () => queryGeometricElement3dTypeDefinitions(db, elementId),
+      true
+    ),
+    ...loadRelatedProperties(
+      db,
+      () => queryGeometricElement2dTypeDefinitions(db, elementId),
+      true
+    ),
+    ...loadRelatedProperties(db, () => queryElementLinks(db, elementId), false),
+    ...loadRelatedProperties(
+      db,
+      () => queryGroupElementLinks(db, elementId),
+      false
+    ),
+    ...loadRelatedProperties(db, () => queryModelLinks(db, elementId), false),
+    ...loadRelatedProperties(
+      db,
+      () => queryDrawingGraphicElements(db, elementId),
+      false
+    ),
+    ...loadRelatedProperties(
+      db,
+      () => queryGraphicalElement3dElements(db, elementId),
+      false
+    ),
+    ...loadRelatedProperties(
+      db,
+      () => queryExternalSourceRepositories(db, elementId),
+      false
+    ),
+    ...loadRelatedProperties(
+      db,
+      () => queryExternalSourceGroupRepositories(db, elementId),
+      false
+    ),
   };
 }
 
-function loadRelatedProperties(db: IModelDb, idsGetter: () => Map<string, string[]>, loadAspects: boolean) {
+function loadRelatedProperties(
+  db: IModelDb,
+  idsGetter: () => Map<string, string[]>,
+  loadAspects: boolean
+) {
   const idsByClass = idsGetter();
   const properties: any = {};
   for (const entry of idsByClass) {
@@ -94,7 +140,12 @@ function loadRelatedProperties(db: IModelDb, idsGetter: () => Map<string, string
   return properties;
 }
 
-function loadProperties(db: IModelDb, className: string, ids: string[], loadAspects: boolean) {
+function loadProperties(
+  db: IModelDb,
+  className: string,
+  ids: string[],
+  loadAspects: boolean
+) {
   const query = `
     SELECT *
     FROM ${className}
@@ -107,8 +158,20 @@ function loadProperties(db: IModelDb, className: string, ids: string[], loadAspe
       const row = stmt.getRow();
       properties.push({
         ...collectProperties(row),
-        ...(loadAspects ? loadRelatedProperties(db, () => queryUniqueAspects(db, row.Id), false) : {}),
-        ...(loadAspects ? loadRelatedProperties(db, () => queryMultiAspects(db, row.Id), false) : {}),
+        ...(loadAspects
+          ? loadRelatedProperties(
+              db,
+              () => queryUniqueAspects(db, row.Id),
+              false
+            )
+          : {}),
+        ...(loadAspects
+          ? loadRelatedProperties(
+              db,
+              () => queryMultiAspects(db, row.Id),
+              false
+            )
+          : {}),
       });
     }
     return properties;
@@ -135,7 +198,10 @@ function queryUniqueAspects(db: IModelDb, elementId: string) {
   return queryRelatedClasses(db, query, { id: elementId });
 }
 
-function queryGeometricElement3dTypeDefinitions(db: IModelDb, elementId: string) {
+function queryGeometricElement3dTypeDefinitions(
+  db: IModelDb,
+  elementId: string
+) {
   const query = `
     SELECT relType.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.GeometricElement3dHasTypeDefinition relType
@@ -145,7 +211,10 @@ function queryGeometricElement3dTypeDefinitions(db: IModelDb, elementId: string)
   return queryRelatedClasses(db, query, { id: elementId });
 }
 
-function queryGeometricElement2dTypeDefinitions(db: IModelDb, elementId: string) {
+function queryGeometricElement2dTypeDefinitions(
+  db: IModelDb,
+  elementId: string
+) {
   const query = `
     SELECT relType.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.GeometricElement2dHasTypeDefinition relType
@@ -251,12 +320,15 @@ function queryRelatedClasses(db: IModelDb, query: string, bindings: object) {
   });
 }
 
-const excludedProperties = new Set<string>(["element", "jsonProperties", "geometryStream"]);
+const excludedProperties = new Set<string>([
+  "element",
+  "jsonProperties",
+  "geometryStream",
+]);
 function collectProperties(row: any) {
   const element: any = {};
   for (const prop in row) {
-    if (excludedProperties.has(prop))
-      continue;
+    if (excludedProperties.has(prop)) continue;
     element[prop] = row[prop];
   }
   return element;

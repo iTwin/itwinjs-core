@@ -6,9 +6,28 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
-import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
+import {
+  assert,
+  DbResult,
+  GuidString,
+  Id64String,
+  IDisposable,
+  StatusCodeWithMessage,
+} from "@itwin/core-bentley";
+import {
+  LowAndHighXYZ,
+  Range3d,
+  XAndY,
+  XYAndZ,
+  XYZ,
+} from "@itwin/core-geometry";
+import {
+  ECJsNames,
+  ECSqlValueType,
+  IModelError,
+  NavigationBindingValue,
+  NavigationValue,
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
@@ -24,7 +43,7 @@ import { IModelHost } from "./IModelHost";
  * @public
  */
 export class ECSqlInsertResult {
-  public constructor(public status: DbResult, public id?: Id64String) { }
+  public constructor(public status: DbResult, public id?: Id64String) {}
 }
 
 /** Executes ECSQL statements.
@@ -55,10 +74,14 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
 
-  public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public get sql() {
+    return this._sql!;
+  } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Check if this statement has been prepared successfully or not */
-  public get isPrepared(): boolean { return !!this._stmt; }
+  public get isPrepared(): boolean {
+    return !!this._stmt;
+  }
 
   /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
@@ -68,7 +91,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * The error.message property will provide details.
    * @internal
    */
-  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = true): void {
+  public prepare(
+    db: IModelJsNative.DgnDb | IModelJsNative.ECDb,
+    ecsql: string,
+    logErrors = true
+  ): void {
     const stat = this.tryPrepare(db, ecsql, logErrors);
     if (stat.status !== DbResult.BE_SQLITE_OK) {
       throw new IModelError(stat.status, stat.message);
@@ -82,9 +109,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @returns A [StatusCodeWithMessage]($bentley) object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
    * @internal
    */
-  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): StatusCodeWithMessage<DbResult> {
-    if (this.isPrepared)
-      throw new Error("ECSqlStatement is already prepared");
+  public tryPrepare(
+    db: IModelJsNative.DgnDb | IModelJsNative.ECDb,
+    ecsql: string,
+    logErrors = false
+  ): StatusCodeWithMessage<DbResult> {
+    if (this.isPrepared) throw new Error("ECSqlStatement is already prepared");
     this._sql = ecsql;
     this._stmt = new IModelHost.platform.ECSqlStatement();
     return this._stmt.prepare(db, ecsql, logErrors);
@@ -120,99 +150,142 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * iTwin.js types to be used for the different ECSQL parameter types.
    * @param parameter Index (1-based) or name of the parameter
    */
-  public bindValue(parameter: number | string, val: any): void { this.getBinder(parameter).bind(val); }
+  public bindValue(parameter: number | string, val: any): void {
+    this.getBinder(parameter).bind(val);
+  }
 
   /** Binds null to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    */
-  public bindNull(parameter: number | string): void { this.getBinder(parameter).bindNull(); }
+  public bindNull(parameter: number | string): void {
+    this.getBinder(parameter).bindNull();
+  }
 
   /** Binds a BLOB value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param BLOB value as either a Uint8Array, ArrayBuffer or a Base64 string
    */
-  public bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void { this.getBinder(parameter).bindBlob(blob); }
+  public bindBlob(
+    parameter: number | string,
+    blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer
+  ): void {
+    this.getBinder(parameter).bindBlob(blob);
+  }
 
   /** Binds a boolean value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Boolean value
    */
-  public bindBoolean(parameter: number | string, val: boolean): void { this.getBinder(parameter).bindBoolean(val); }
+  public bindBoolean(parameter: number | string, val: boolean): void {
+    this.getBinder(parameter).bindBoolean(val);
+  }
 
   /** Binds a DateTime value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param isoDateTimeString DateTime value as ISO8601 string
    */
-  public bindDateTime(parameter: number | string, isoDateTimeString: string): void { this.getBinder(parameter).bindDateTime(isoDateTimeString); }
+  public bindDateTime(
+    parameter: number | string,
+    isoDateTimeString: string
+  ): void {
+    this.getBinder(parameter).bindDateTime(isoDateTimeString);
+  }
 
   /** Binds a double value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Double value
    */
-  public bindDouble(parameter: number | string, val: number): void { this.getBinder(parameter).bindDouble(val); }
+  public bindDouble(parameter: number | string, val: number): void {
+    this.getBinder(parameter).bindDouble(val);
+  }
 
   /** Binds an GUID value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val GUID value
    */
-  public bindGuid(parameter: number | string, val: GuidString): void { this.getBinder(parameter).bindGuid(val); }
+  public bindGuid(parameter: number | string, val: GuidString): void {
+    this.getBinder(parameter).bindGuid(val);
+  }
 
   /** Binds an Id value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64String): void { this.getBinder(parameter).bindId(val); }
+  public bindId(parameter: number | string, val: Id64String): void {
+    this.getBinder(parameter).bindId(val);
+  }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Integer value as number, decimal string or hexadecimal string.
    */
-  public bindInteger(parameter: number | string, val: number | string): void { this.getBinder(parameter).bindInteger(val); }
+  public bindInteger(parameter: number | string, val: number | string): void {
+    this.getBinder(parameter).bindInteger(val);
+  }
 
   /** Binds an Point2d value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Point2d value
    */
-  public bindPoint2d(parameter: number | string, val: XAndY): void { this.getBinder(parameter).bindPoint2d(val); }
+  public bindPoint2d(parameter: number | string, val: XAndY): void {
+    this.getBinder(parameter).bindPoint2d(val);
+  }
 
   /** Binds an Point3d value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Point3d value
    */
-  public bindPoint3d(parameter: number | string, val: XYAndZ): void { this.getBinder(parameter).bindPoint3d(val); }
+  public bindPoint3d(parameter: number | string, val: XYAndZ): void {
+    this.getBinder(parameter).bindPoint3d(val);
+  }
 
   /** Binds a Range3d as a blob to the specified ECSQL parameter
    * @param parameter Index(1-based) or name of the parameter
    * @param val Range3d value
    */
-  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.getBinder(parameter).bindRange3d(val); }
+  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void {
+    this.getBinder(parameter).bindRange3d(val);
+  }
 
   /** Binds an string to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val String value
    */
-  public bindString(parameter: number | string, val: string): void { this.getBinder(parameter).bindString(val); }
+  public bindString(parameter: number | string, val: string): void {
+    this.getBinder(parameter).bindString(val);
+  }
 
   /** Binds a navigation property value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Navigation property value
    */
-  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void { this.getBinder(parameter).bindNavigation(val); }
+  public bindNavigation(
+    parameter: number | string,
+    val: NavigationBindingValue
+  ): void {
+    this.getBinder(parameter).bindNavigation(val);
+  }
 
   /** Binds a struct property value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
    * (of one of the supported types)
    */
-  public bindStruct(parameter: number | string, val: object): void { this.getBinder(parameter).bindStruct(val); }
+  public bindStruct(parameter: number | string, val: object): void {
+    this.getBinder(parameter).bindStruct(val);
+  }
 
   /** Binds an array value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Array value. The array value is an array of values of the supported types
    */
-  public bindArray(parameter: number | string, val: any[]): void { this.getBinder(parameter).bindArray(val); }
+  public bindArray(parameter: number | string, val: any[]): void {
+    this.getBinder(parameter).bindArray(val);
+  }
 
-  public bindIdSet(parameter: number | string, val: Id64String[]): void { this.getBinder(parameter).bindIdSet(val); }
+  public bindIdSet(parameter: number | string, val: Id64String[]): void {
+    this.getBinder(parameter).bindIdSet(val);
+  }
   /**
    * Gets a binder to bind a value for an ECSQL parameter
    * > This is the most low-level API to bind a value to a specific parameter. Alternatively you can use the ECSqlStatement.bindXX methods
@@ -240,8 +313,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       for (let i = 0; i < values.length; i++) {
         const paramIndex: number = i + 1;
         const paramValue: any = values[i];
-        if (paramValue === undefined || paramValue === null)
-          continue;
+        if (paramValue === undefined || paramValue === null) continue;
 
         this.bindValue(paramIndex, paramValue);
       }
@@ -251,8 +323,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (const entry of Object.entries(values)) {
       const paramName: string = entry[0];
       const paramValue: any = entry[1];
-      if (paramValue === undefined || paramValue === null)
-        continue;
+      if (paramValue === undefined || paramValue === null) continue;
 
       this.bindValue(paramName, paramValue);
     }
@@ -284,7 +355,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
    */
-  public step(): DbResult { return this._stmt!.step(); } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public step(): DbResult {
+    return this._stmt!.step();
+  } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** @internal added this back in for testing purposes */
   public async stepAsync(): Promise<DbResult> {
@@ -303,7 +376,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    */
   public stepForInsert(): ECSqlInsertResult {
     assert(undefined !== this._stmt);
-    const r: { status: DbResult, id: string } = this._stmt.stepForInsert();
+    const r: { status: DbResult; id: string } = this._stmt.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
       return new ECSqlInsertResult(r.status, r.id);
 
@@ -311,7 +384,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
-  public getColumnCount(): number { return this._stmt!.getColumnCount(); } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public getColumnCount(): number {
+    return this._stmt!.getColumnCount();
+  } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
@@ -327,22 +402,35 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     for (let i = 0; i < colCount; i++) {
       const ecsqlValue = this.getValue(i);
       if (!ecsqlValue.isNull) {
-        const propName: string = ECSqlStatement.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
+        const propName: string = ECSqlStatement.determineResultRowPropertyName(
+          duplicatePropNames,
+          ecsqlValue
+        );
         const val: any = ecsqlValue.value;
-        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
+        Object.defineProperty(row, propName, {
+          enumerable: true,
+          configurable: true,
+          writable: true,
+          value: val,
+        });
       }
     }
     return row;
   }
 
-  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
+  private static determineResultRowPropertyName(
+    duplicatePropNames: Map<string, number>,
+    ecsqlValue: ECSqlValue
+  ): string {
     const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
-    let jsName: string = ECJsNames.toJsName(colInfo.getAccessString(), colInfo.isSystemProperty());
+    let jsName: string = ECJsNames.toJsName(
+      colInfo.getAccessString(),
+      colInfo.isSystemProperty()
+    );
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
     let suffix: number | undefined = duplicatePropNames.get(jsName);
-    if (suffix === undefined)
-      duplicatePropNames.set(jsName, 0);
+    if (suffix === undefined) duplicatePropNames.set(jsName, 0);
     else {
       suffix++;
       duplicatePropNames.set(jsName, suffix);
@@ -372,7 +460,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** The iterator that will step through the results of this statement. */
-  public [Symbol.iterator](): IterableIterator<any> { return this; }
+  public [Symbol.iterator](): IterableIterator<any> {
+    return this;
+  }
 
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of ECSQL column in query result (0-based)
@@ -398,7 +488,9 @@ export class ECSqlBinder {
   private _binder: IModelJsNative.ECSqlBinder;
 
   /** @internal */
-  public constructor(binder: IModelJsNative.ECSqlBinder) { this._binder = binder; }
+  public constructor(binder: IModelJsNative.ECSqlBinder) {
+    this._binder = binder;
+  }
 
   /** Binds the specified value to the ECSQL parameter.
    * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
@@ -419,7 +511,9 @@ export class ECSqlBinder {
   /** Binds a BLOB value to the ECSQL parameter.
    * @param BLOB value as either a UInt8Array, ArrayBuffer or a Base64 string
    */
-  public bindBlob(blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void {
+  public bindBlob(
+    blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer
+  ): void {
     const stat: DbResult = this._binder.bindBlob(blob);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding blob");
@@ -501,7 +595,9 @@ export class ECSqlBinder {
    * @param val Range3d value
    */
   public bindRange3d(val: LowAndHighXYZ): void {
-    const stat: DbResult = this._binder.bindBlob(Range3d.toFloat64Array(val).buffer);
+    const stat: DbResult = this._binder.bindBlob(
+      Range3d.toFloat64Array(val).buffer
+    );
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding Range3d");
   }
@@ -519,7 +615,11 @@ export class ECSqlBinder {
    * @param val Navigation property value
    */
   public bindNavigation(val: NavigationBindingValue): void {
-    const stat: DbResult = this._binder.bindNavigation(val.id, val.relClassName, val.relClassTableSpace);
+    const stat: DbResult = this._binder.bindNavigation(
+      val.id,
+      val.relClassName,
+      val.relClassTableSpace
+    );
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding navigation property");
   }
@@ -528,14 +628,18 @@ export class ECSqlBinder {
    * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
    * (of one of the supported types)
    */
-  public bindStruct(val: object): void { ECSqlBindingHelper.bindStruct(this, val); }
+  public bindStruct(val: object): void {
+    ECSqlBindingHelper.bindStruct(this, val);
+  }
 
   /** Gets the binder for the specified member of a struct parameter
    *
    * > This is the most low-level way to bind struct parameters with most flexibility. A simpler alternative is
    * > to just call [ECSqlBinder.bindStruct]($backend).
    */
-  public bindMember(memberName: string): ECSqlBinder { return new ECSqlBinder(this._binder.bindMember(memberName)); }
+  public bindMember(memberName: string): ECSqlBinder {
+    return new ECSqlBinder(this._binder.bindMember(memberName));
+  }
 
   /** Binds a set of Id strings to the ECSQL parameter.
    * @param val array of Id values. If passed as string they must be the hexadecimal representation of the Ids.
@@ -549,14 +653,18 @@ export class ECSqlBinder {
   /** Binds an array value to the ECSQL parameter.
    * @param val Array value. The array value is an array of values of the supported types
    */
-  public bindArray(val: any[]): void { ECSqlBindingHelper.bindArray(this, val); }
+  public bindArray(val: any[]): void {
+    ECSqlBindingHelper.bindArray(this, val);
+  }
 
   /** Adds a new array element to the array parameter and returns the binder for the new array element
    *
    * > This is the most low-level way to bind array parameters with most flexibility. A simpler alternative is
    * > to just call [ECSqlBinder.bindArray]($backend).
    */
-  public addArrayElement(): ECSqlBinder { return new ECSqlBinder(this._binder.addArrayElement()); }
+  public addArrayElement(): ECSqlBinder {
+    return new ECSqlBinder(this._binder.addArrayElement());
+  }
 }
 
 /** Represents the value of an ECEnumeration.
@@ -587,42 +695,74 @@ export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
 
   /** @internal */
-  public constructor(val: IModelJsNative.ECSqlValue) { this._val = val; }
+  public constructor(val: IModelJsNative.ECSqlValue) {
+    this._val = val;
+  }
 
   /** Get information about the query result's column this value refers to. */
-  public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
+  public get columnInfo(): ECSqlColumnInfo {
+    return this._val.getColumnInfo() as ECSqlColumnInfo;
+  }
 
   /** Get the value of this ECSQL value */
-  public get value(): any { return ECSqlValueHelper.getValue(this); }
+  public get value(): any {
+    return ECSqlValueHelper.getValue(this);
+  }
 
   /** Indicates whether the value is NULL or not. */
-  public get isNull(): boolean { return this._val.isNull(); }
+  public get isNull(): boolean {
+    return this._val.isNull();
+  }
   /** Get the value as BLOB */
-  public getBlob(): Uint8Array { return this._val.getBlob(); }
+  public getBlob(): Uint8Array {
+    return this._val.getBlob();
+  }
   /** Get the value as a boolean value */
-  public getBoolean(): boolean { return this._val.getBoolean(); }
+  public getBoolean(): boolean {
+    return this._val.getBoolean();
+  }
   /** Get the value as a DateTime value (formatted as ISO8601 string) */
-  public getDateTime(): string { return this._val.getDateTime(); }
+  public getDateTime(): string {
+    return this._val.getDateTime();
+  }
   /** Get the value as a double value */
-  public getDouble(): number { return this._val.getDouble(); }
+  public getDouble(): number {
+    return this._val.getDouble();
+  }
   /** Get the value as a IGeometry value (as ECJSON IGeometry) */
-  public getGeometry(): any { return JSON.parse(this._val.getGeometry()); }
+  public getGeometry(): any {
+    return JSON.parse(this._val.getGeometry());
+  }
   /** Get the value as a GUID (formatted as GUID string).
    *  See [GuidString]($core-bentley)
    */
-  public getGuid(): GuidString { return this._val.getGuid(); }
+  public getGuid(): GuidString {
+    return this._val.getGuid();
+  }
   /** Get the value as a Id (formatted as hexadecimal string). */
-  public getId(): Id64String { return this._val.getId(); }
+  public getId(): Id64String {
+    return this._val.getId();
+  }
   /** Get the ClassId value formatted as fully qualified class name. */
-  public getClassNameForClassId(): string { return this._val.getClassNameForClassId(); }
+  public getClassNameForClassId(): string {
+    return this._val.getClassNameForClassId();
+  }
   /** Get the value as a integer value */
-  public getInteger(): number { return this._val.getInt64(); }
+  public getInteger(): number {
+    return this._val.getInt64();
+  }
   /** Get the value as a string value */
-  public getString(): string { return this._val.getString(); }
+  public getString(): string {
+    return this._val.getString();
+  }
   /** Get the value as [XAndY]($core-geometry) */
-  public getXAndY(): XAndY { return this._val.getPoint2d(); }
+  public getXAndY(): XAndY {
+    return this._val.getPoint2d();
+  }
   /** Get the value as [XYAndZ]($core-geometry) */
-  public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
+  public getXYAndZ(): XYAndZ {
+    return this._val.getPoint3d();
+  }
   /** Get the value as ECEnumeration value
    *  Note: This method is optional. Using [[ECSqlValue.getInteger]] for integral enums and
    *  [[ECSqlValue.getString]] for string enums respectively are the usual way to get
@@ -636,22 +776,34 @@ export class ECSqlValue {
    *  @return ECEnumeration value(s) or undefined if the ECSqlValue does not represent an ECEnumeration.
    *  or is not a strict match of an ECEnumerator or a combination of them.
    */
-  public getEnum(): ECEnumValue[] | undefined { return this._val.getEnum(); }
+  public getEnum(): ECEnumValue[] | undefined {
+    return this._val.getEnum();
+  }
 
   /** Get the value as [NavigationValue]($common) */
-  public getNavigation(): NavigationValue { return this._val.getNavigation(); }
+  public getNavigation(): NavigationValue {
+    return this._val.getNavigation();
+  }
 
   /** Get an iterator for iterating the struct members of this struct value. */
-  public getStructIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getStructIterator()); }
+  public getStructIterator(): ECSqlValueIterator {
+    return new ECSqlValueIterator(this._val.getStructIterator());
+  }
 
   /** Get this struct value's content as object literal */
-  public getStruct(): any { return ECSqlValueHelper.getStruct(this); }
+  public getStruct(): any {
+    return ECSqlValueHelper.getStruct(this);
+  }
 
   /** Get an iterator for iterating the array elements of this array value. */
-  public getArrayIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getArrayIterator()); }
+  public getArrayIterator(): ECSqlValueIterator {
+    return new ECSqlValueIterator(this._val.getArrayIterator());
+  }
 
   /** Get this array value as JavaScript array */
-  public getArray(): any[] { return ECSqlValueHelper.getArray(this); }
+  public getArray(): any[] {
+    return ECSqlValueHelper.getArray(this);
+  }
 }
 
 /** Iterator over members of a struct [ECSqlValue]($backend) or the elements of an array [ECSqlValue]($backend).
@@ -662,7 +814,9 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
 
   /** @internal */
-  public constructor(it: IModelJsNative.ECSqlValueIterator) { this._it = it; }
+  public constructor(it: IModelJsNative.ECSqlValueIterator) {
+    this._it = it;
+  }
 
   public next(): IteratorResult<ECSqlValue> {
     if (this._it.moveNext())
@@ -671,7 +825,9 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     return { done: true, value: undefined };
   }
 
-  public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
+  public [Symbol.iterator](): IterableIterator<ECSqlValue> {
+    return this;
+  }
 }
 
 /** Information about an ECSQL column in an ECSQL query result.
@@ -730,7 +886,6 @@ export interface ECSqlColumnInfo {
 }
 
 class ECSqlBindingHelper {
-
   /** Binds the specified value to the specified binder
    * @param binder Parameter Binder to bind to
    * @param val Value to be bound. (See [iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
@@ -738,15 +893,14 @@ class ECSqlBindingHelper {
    */
   public static bindValue(binder: ECSqlBinder, val: any): void {
     // returns false if val is no primitive and returns true if it is primitive and a binding call was done
-    if (ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val))
-      return;
+    if (ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val)) return;
 
     if (Array.isArray(val)) {
       ECSqlBindingHelper.bindArray(binder, val);
       return;
     }
 
-    if (typeof (val) === "object") {
+    if (typeof val === "object") {
       ECSqlBindingHelper.bindStruct(binder, val);
       return;
     }
@@ -762,7 +916,10 @@ class ECSqlBindingHelper {
    */
   public static bindPrimitive(binder: ECSqlBinder, val: any): void {
     if (!ECSqlBindingHelper.tryBindPrimitiveTypes(binder, val))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Binding value is of an unsupported primitive type: ${val}`);
+      throw new IModelError(
+        DbResult.BE_SQLITE_ERROR,
+        `Binding value is of an unsupported primitive type: ${val}`
+      );
   }
 
   /** Binds the specified object to the specified struct binder
@@ -808,21 +965,19 @@ class ECSqlBindingHelper {
       return true;
     }
 
-    if (typeof (val) === "number") {
-      if (Number.isInteger(val))
-        binder.bindInteger(val);
-      else
-        binder.bindDouble(val);
+    if (typeof val === "number") {
+      if (Number.isInteger(val)) binder.bindInteger(val);
+      else binder.bindDouble(val);
 
       return true;
     }
 
-    if (typeof (val) === "boolean") {
+    if (typeof val === "boolean") {
       binder.bindBoolean(val);
       return true;
     }
 
-    if (typeof (val) === "string") {
+    if (typeof val === "string") {
       binder.bindString(val);
       return true;
     }
@@ -858,8 +1013,7 @@ class ECSqlBindingHelper {
 
 class ECSqlValueHelper {
   public static getValue(ecsqlValue: ECSqlValue): any {
-    if (ecsqlValue.isNull)
-      return undefined;
+    if (ecsqlValue.isNull) return undefined;
 
     const dataType: ECSqlValueType = ecsqlValue.columnInfo.getType();
     switch (dataType) {
@@ -879,19 +1033,24 @@ class ECSqlValueHelper {
   }
 
   public static getStruct(ecsqlValue: ECSqlValue): any {
-    if (ecsqlValue.isNull)
-      return undefined;
+    if (ecsqlValue.isNull) return undefined;
 
     const structVal = {};
     const it = ecsqlValue.getStructIterator();
     try {
       for (const memberECSqlVal of it) {
-        if (memberECSqlVal.isNull)
-          continue;
+        if (memberECSqlVal.isNull) continue;
 
-        const memberName: string = ECJsNames.toJsName(memberECSqlVal.columnInfo.getPropertyName());
+        const memberName: string = ECJsNames.toJsName(
+          memberECSqlVal.columnInfo.getPropertyName()
+        );
         const memberVal = ECSqlValueHelper.getValue(memberECSqlVal);
-        Object.defineProperty(structVal, memberName, { enumerable: true, configurable: true, writable: true, value: memberVal });
+        Object.defineProperty(structVal, memberName, {
+          enumerable: true,
+          configurable: true,
+          writable: true,
+          value: memberVal,
+        });
       }
     } finally {
     }
@@ -913,8 +1072,7 @@ class ECSqlValueHelper {
   }
 
   private static getPrimitiveValue(ecsqlValue: ECSqlValue): any {
-    if (ecsqlValue.isNull)
-      return undefined;
+    if (ecsqlValue.isNull) return undefined;
 
     const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
     switch (colInfo.getType()) {
@@ -931,7 +1089,10 @@ class ECSqlValueHelper {
       case ECSqlValueType.Guid:
         return ecsqlValue.getGuid();
       case ECSqlValueType.Id: {
-        if (colInfo.isSystemProperty() && colInfo.getPropertyName().endsWith("ECClassId"))
+        if (
+          colInfo.isSystemProperty() &&
+          colInfo.getPropertyName().endsWith("ECClassId")
+        )
           return ecsqlValue.getClassNameForClassId();
 
         return ecsqlValue.getId();
@@ -946,31 +1107,61 @@ class ECSqlValueHelper {
       case ECSqlValueType.String:
         return ecsqlValue.getString();
       default:
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${ecsqlValue.columnInfo.getType()} of the ECSQL Value`);
+        throw new IModelError(
+          DbResult.BE_SQLITE_ERROR,
+          `Unsupported type ${ecsqlValue.columnInfo.getType()} of the ECSQL Value`
+        );
     }
   }
 
-  public static queryClassName(ecdb: ECDb, classId: Id64String, tableSpace?: string): string {
-    if (!tableSpace)
-      tableSpace = "main";
+  public static queryClassName(
+    ecdb: ECDb,
+    classId: Id64String,
+    tableSpace?: string
+  ): string {
+    if (!tableSpace) tableSpace = "main";
 
-    return ecdb.withPreparedStatement(`SELECT s.Name, c.Name FROM [${tableSpace}].meta.ECSchemaDef s, JOIN [${tableSpace}].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?`,
+    return ecdb.withPreparedStatement(
+      `SELECT s.Name, c.Name FROM [${tableSpace}].meta.ECSchemaDef s, JOIN [${tableSpace}].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?`,
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `No class found with ECClassId ${classId} in table space ${tableSpace}.`);
+          throw new IModelError(
+            DbResult.BE_SQLITE_ERROR,
+            `No class found with ECClassId ${classId} in table space ${tableSpace}.`
+          );
 
-        return `${stmt.getValue(0).getString()}.${stmt.getValue(1).getString()}`;
-      });
+        return `${stmt.getValue(0).getString()}.${stmt
+          .getValue(1)
+          .getString()}`;
+      }
+    );
   }
 }
 
 class ECSqlTypeHelper {
-  public static isBlob(val: any): val is Uint8Array { return val instanceof Uint8Array; }
+  public static isBlob(val: any): val is Uint8Array {
+    return val instanceof Uint8Array;
+  }
 
-  public static isXAndY(val: any): val is XAndY { return XYZ.isXAndY(val); }
-  public static isXYAndZ(val: any): val is XYAndZ { return XYZ.isXYAndZ(val); }
-  public static isLowAndHighXYZ(arg: any): arg is LowAndHighXYZ { return arg.low !== undefined && ECSqlTypeHelper.isXYAndZ(arg.low) && arg.high !== undefined && ECSqlTypeHelper.isXYAndZ(arg.high); }
+  public static isXAndY(val: any): val is XAndY {
+    return XYZ.isXAndY(val);
+  }
+  public static isXYAndZ(val: any): val is XYAndZ {
+    return XYZ.isXYAndZ(val);
+  }
+  public static isLowAndHighXYZ(arg: any): arg is LowAndHighXYZ {
+    return (
+      arg.low !== undefined &&
+      ECSqlTypeHelper.isXYAndZ(arg.low) &&
+      arg.high !== undefined &&
+      ECSqlTypeHelper.isXYAndZ(arg.high)
+    );
+  }
 
-  public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && typeof (val.id) === "string"; }
+  public static isNavigationBindingValue(
+    val: any
+  ): val is NavigationBindingValue {
+    return val.id !== undefined && typeof val.id === "string";
+  }
 }

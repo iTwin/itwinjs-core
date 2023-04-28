@@ -29,23 +29,32 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   public readonly geometryCategory = "pointCollection";
 
   /** Test if `other` is a PointString3d */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof PointString3d; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof PointString3d;
+  }
   private _points: Point3d[];
   /** return a clone of the points array. */
-  public get points(): Point3d[] { return this._points; }
+  public get points(): Point3d[] {
+    return this._points;
+  }
   private constructor() {
     super();
     this._points = [];
   }
   /** Clone and apply a transform. */
-  public cloneTransformed(transform: Transform): PointString3d {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): PointString3d {
+    // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
   }
   private static flattenArray(arr: any): any {
     return arr.reduce((flat: any, toFlatten: any) => {
-      return flat.concat(Array.isArray(toFlatten) ? PointString3d.flattenArray(toFlatten) : toFlatten);
+      return flat.concat(
+        Array.isArray(toFlatten)
+          ? PointString3d.flattenArray(toFlatten)
+          : toFlatten
+      );
     }, []);
   }
   /** Create a PointString3d from points. */
@@ -59,8 +68,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   public addPoints(...points: any[]) {
     const toAdd: any[] = PointString3d.flattenArray(points);
     for (const p of toAdd) {
-      if (p instanceof Point3d)
-        this._points.push(p);
+      if (p instanceof Point3d) this._points.push(p);
     }
   }
   /** Add a single point to the PointString3d */
@@ -86,7 +94,9 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   public static createFloat64Array(xyzData: Float64Array): PointString3d {
     const ps = new PointString3d();
     for (let i = 0; i + 3 <= xyzData.length; i += 3)
-      ps._points.push(Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2]));
+      ps._points.push(
+        Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2])
+      );
     return ps;
   }
   /** Return a deep clone. */
@@ -100,8 +110,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     this._points.length = 0;
     if (Array.isArray(json)) {
       let xyz;
-      for (xyz of json)
-        this._points.push(Point3d.fromJSON(xyz));
+      for (xyz of json) this._points.push(Point3d.fromJSON(xyz));
     }
   }
   /**
@@ -115,18 +124,25 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   /** Create a PointString3d from a json array, e.g. `[[1,2,3], [4,2,2]]` */
   public static fromJSON(json?: any): PointString3d {
-    const ps = new PointString3d(); ps.setFromJSON(json); return ps;
+    const ps = new PointString3d();
+    ps.setFromJSON(json);
+    return ps;
   }
   /** Access a single point by index. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
     if (i >= 0 && i < this._points.length) {
-      if (result) { result.setFrom(this._points[i]); return result; }
+      if (result) {
+        result.setFrom(this._points[i]);
+        return result;
+      }
       return this._points[i].clone();
     }
     return undefined;
   }
   /** Return the number of points. */
-  public numPoints(): number { return this._points.length; }
+  public numPoints(): number {
+    return this._points.length;
+  }
 
   /** Reverse the point order */
   public reverseInPlace(): void {
@@ -148,7 +164,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     return true;
   }
   /** Return the index and coordinates of the closest point to spacePoint. */
-  public closestPoint(spacePoint: Point3d): { index: number, xyz: Point3d } {
+  public closestPoint(spacePoint: Point3d): { index: number; xyz: Point3d } {
     const result = { index: -1, xyz: Point3d.create() };
     const index = Point3dArray.closestPointIndex(this._points, spacePoint);
     if (index >= 0) {
@@ -159,7 +175,11 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   /** Return true if all points are in the given plane. */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
-    return Point3dArray.isCloseToPlane(this._points, plane, Geometry.smallMetricDistance);
+    return Point3dArray.isCloseToPlane(
+      this._points,
+      plane,
+      Geometry.smallMetricDistance
+    );
   }
   /** Extend a range to include the points in this PointString3d. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
@@ -167,15 +187,15 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   }
   /** Return true if corresponding points are almost equal. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
-    if (!(other instanceof PointString3d))
-      return false;
+    if (!(other instanceof PointString3d)) return false;
     return Point3dArray.isAlmostEqual(this._points, other._points);
   }
   /** Reduce to empty set of points. */
-  public clear() { this._points.length = 0; }
+  public clear() {
+    this._points.length = 0;
+  }
   /** Second step of double dispatch:  call `handler.handlePointString(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handlePointString3d(this);
   }
-
 }

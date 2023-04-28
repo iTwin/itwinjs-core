@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/presentation-common__ package contains types and classes for working with
+The **@itwin/presentation-common** package contains types and classes for working with
 iModel presentation data. The package can be used in both the frontend and backend.
 
 ## Documentation

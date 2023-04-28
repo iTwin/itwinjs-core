@@ -33,19 +33,26 @@ export class ImageBuffer {
   public readonly width: number;
 
   /** Return the number of bytes allocated for each pixel. */
-  public get numBytesPerPixel(): number { return ImageBuffer.getNumBytesPerPixel(this.format); }
+  public get numBytesPerPixel(): number {
+    return ImageBuffer.getNumBytesPerPixel(this.format);
+  }
 
   /** Determine the number of bytes allocated to a single pixel for the specified format. */
   public static getNumBytesPerPixel(format: ImageBufferFormat): number {
     switch (format) {
-      case ImageBufferFormat.Alpha: return 1;
-      case ImageBufferFormat.Rgb: return 3;
-      default: return 4;
+      case ImageBufferFormat.Alpha:
+        return 1;
+      case ImageBufferFormat.Rgb:
+        return 3;
+      default:
+        return 4;
     }
   }
 
   /** Get the height of this image in pixels. */
-  public get height(): number { return ImageBuffer.computeHeight(this.data, this.format, this.width); }
+  public get height(): number {
+    return ImageBuffer.computeHeight(this.data, this.format, this.width);
+  }
 
   /** Create a new ImageBuffer.
    * @note The ImageBuffer takes ownership of the input Uint8Array.
@@ -55,26 +62,49 @@ export class ImageBuffer {
    * @returns A new ImageBuffer.
    * @throws Error if the length of the Uint8Array is not appropriate for the specified width and format.
    */
-  public static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer {
+  public static create(
+    data: Uint8Array,
+    format: ImageBufferFormat,
+    width: number
+  ): ImageBuffer {
     if (!this.isValidData(data, format, width))
-      throw new Error("The number of bytes supplied for ImageBuffer do not match its width and format.");
+      throw new Error(
+        "The number of bytes supplied for ImageBuffer do not match its width and format."
+      );
 
     return new ImageBuffer(data, format, width);
   }
 
   /** @internal */
-  protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
+  protected static isValidData(
+    data: Uint8Array,
+    format: ImageBufferFormat,
+    width: number
+  ): boolean {
     const height = this.computeHeight(data, format, width);
-    return width > 0 && height > 0 && Math.floor(width) === width && Math.floor(height) === height;
+    return (
+      width > 0 &&
+      height > 0 &&
+      Math.floor(width) === width &&
+      Math.floor(height) === height
+    );
   }
 
   /** @internal */
-  protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
+  protected static computeHeight(
+    data: Uint8Array,
+    format: ImageBufferFormat,
+    width: number
+  ): number {
     return data.length / (width * this.getNumBytesPerPixel(format));
   }
 
   /** @internal */
-  protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
+  protected constructor(
+    data: Uint8Array,
+    format: ImageBufferFormat,
+    width: number
+  ) {
     this.data = data;
     this.format = format;
     this.width = width;
@@ -95,8 +125,7 @@ export function isPowerOfTwo(num: number): boolean {
  */
 export function nextHighestPowerOfTwo(num: number): number {
   --num;
-  for (let i = 1; i < 32; i <<= 1)
-    num = num | num >> i;
+  for (let i = 1; i < 32; i <<= 1) num = num | (num >> i);
 
   return num + 1;
 }

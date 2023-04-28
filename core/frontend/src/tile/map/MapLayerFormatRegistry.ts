@@ -7,10 +7,23 @@
  */
 
 import { assert, Logger } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import {
+  ImageMapLayerSettings,
+  MapLayerKey,
+  MapLayerSettings,
+  MapSubLayerProps,
+} from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import {
+  ImageryMapLayerTreeReference,
+  internalMapLayerImageryFormats,
+  MapLayerAccessClient,
+  MapLayerAuthenticationInfo,
+  MapLayerImageryProvider,
+  MapLayerSourceStatus,
+  MapLayerTileTreeReference,
+} from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
 /** Class representing a map-layer format.
@@ -25,24 +38,40 @@ export class MapLayerFormat {
   public static formatId: string;
 
   /** Register the current format in the [[MapLayerFormatRegistry]].
-  */
-  public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
+   */
+  public static register() {
+    IModelApp.mapLayerFormatRegistry.register(this);
+  }
 
   /** Allow a source of a specific to be validated before being attached as a map-layer.
-  */
-  public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+   */
+  public static async validateSource(
+    _url: string,
+    _userName?: string,
+    _password?: string,
+    _ignoreCache?: boolean
+  ): Promise<MapLayerSourceValidation> {
+    return { status: MapLayerSourceStatus.Valid };
+  }
 
   /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
    * @internal
-  */
-  public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
+   */
+  public static createImageryProvider(
+    _settings: MapLayerSettings
+  ): MapLayerImageryProvider | undefined {
+    assert(false);
+  }
 
   /** @internal */
-  public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
+  public static createMapLayerTree(
+    _layerSettings: MapLayerSettings,
+    _layerIndex: number,
+    _iModel: IModelConnection
+  ): MapLayerTileTreeReference | undefined {
     assert(false);
     return undefined;
   }
-
 }
 
 /** The type of a map layer format.
@@ -97,17 +126,21 @@ export class MapLayerFormatRegistry {
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
 
-  public isRegistered(formatId: string) { return this._formats.get(formatId) !== undefined; }
+  public isRegistered(formatId: string) {
+    return this._formats.get(formatId) !== undefined;
+  }
 
   public register(formatClass: MapLayerFormatType) {
-    if (formatClass.formatId.length === 0)
-      return; // must be an abstract class, ignore it
+    if (formatClass.formatId.length === 0) return; // must be an abstract class, ignore it
 
     this._formats.set(formatClass.formatId, { type: formatClass });
   }
 
   /** @beta */
-  public setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean {
+  public setAccessClient(
+    formatId: string,
+    accessClient: MapLayerAccessClient
+  ): boolean {
     const entry = this._formats.get(formatId);
     if (entry !== undefined) {
       entry.accessClient = accessClient;
@@ -118,8 +151,7 @@ export class MapLayerFormatRegistry {
 
   /** @beta */
   public getAccessClient(formatId: string): MapLayerAccessClient | undefined {
-    if (formatId.length === 0)
-      return undefined;
+    if (formatId.length === 0) return undefined;
 
     return this._formats.get(formatId)?.accessClient;
   }
@@ -129,33 +161,59 @@ export class MapLayerFormatRegistry {
   }
 
   /** @internal */
-  public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
+  public createImageryMapLayerTree(
+    layerSettings: ImageMapLayerSettings,
+    layerIndex: number,
+    iModel: IModelConnection
+  ): ImageryMapLayerTreeReference | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (format === undefined) {
-      Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
+      Logger.logError(
+        loggerCategory,
+        `Could not find format '${layerSettings.formatId}' in registry`
+      );
       return undefined;
     }
-    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
+    return format.createMapLayerTree(
+      layerSettings,
+      layerIndex,
+      iModel
+    ) as ImageryMapLayerTreeReference;
   }
 
   /** Returns a [[MapLayerImageryProvider]] based on the provided [[ImageMapLayerSettings]] object.
    * @internal
    */
-  public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
+  public createImageryProvider(
+    layerSettings: ImageMapLayerSettings
+  ): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (this._configOptions[layerSettings.formatId] !== undefined) {
       const keyValuePair = this._configOptions[layerSettings.formatId]!;
-      const key: MapLayerKey = { key: keyValuePair.key, value: keyValuePair.value };
+      const key: MapLayerKey = {
+        key: keyValuePair.key,
+        value: keyValuePair.value,
+      };
       layerSettings = layerSettings.clone({ accessKey: key });
     }
-    return (format === undefined) ? undefined : format.createImageryProvider(layerSettings);
+    return format === undefined
+      ? undefined
+      : format.createImageryProvider(layerSettings);
   }
 
-  public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+  public async validateSource(
+    formatId: string,
+    url: string,
+    userName?: string,
+    password?: string,
+    ignoreCache?: boolean
+  ): Promise<MapLayerSourceValidation> {
     const entry = this._formats.get(formatId);
     const format = entry?.type;
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, userName, password, ignoreCache);
+    return format === undefined
+      ? { status: MapLayerSourceStatus.InvalidFormat }
+      : format.validateSource(url, userName, password, ignoreCache);
   }
 }

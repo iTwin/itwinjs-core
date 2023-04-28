@@ -22,9 +22,13 @@ export class FacetFaceData {
   private _paramDistanceRange: Range2d;
   private _paramRange: Range2d;
   /** (property accessor) Return a reference to the distance-scaled parameter range. */
-  public get paramDistanceRange(): Range2d { return this._paramDistanceRange; }
+  public get paramDistanceRange(): Range2d {
+    return this._paramDistanceRange;
+  }
   /** (property accessor) Return a reference to the parameter range. */
-  public get paramRange(): Range2d { return this._paramRange; }
+  public get paramRange(): Range2d {
+    return this._paramRange;
+  }
   private constructor(distanceRange: Range2d, paramRange: Range2d) {
     this._paramDistanceRange = distanceRange;
     this._paramRange = paramRange;
@@ -40,7 +44,10 @@ export class FacetFaceData {
       this._paramRange.clone(result._paramRange);
       return result;
     }
-    return new FacetFaceData(this._paramDistanceRange.clone(), this._paramRange.clone());
+    return new FacetFaceData(
+      this._paramDistanceRange.clone(),
+      this._paramRange.clone()
+    );
   }
   /** Restore this FacetFaceData to its null constructor state. */
   public setNull() {
@@ -48,21 +55,43 @@ export class FacetFaceData {
     this._paramRange.setNull();
   }
   /** Return distance-based parameter from stored parameter value. */
-  public convertParamXYToDistance(x: number, y: number, result?: Point2d): Point2d {
+  public convertParamXYToDistance(
+    x: number,
+    y: number,
+    result?: Point2d
+  ): Point2d {
     result = result ? result : Point2d.create();
     const paramDelta = this._paramRange.high.minus(this._paramRange.low);
-    result.x = (0 === paramDelta.x) ? x : (this._paramDistanceRange.low.x + (x - this._paramRange.low.x)
-      * (this._paramDistanceRange.high.x - this._paramDistanceRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? y : (this.paramDistanceRange.low.y + (y - this._paramRange.low.y)
-      * (this._paramDistanceRange.high.y - this._paramDistanceRange.low.y) / paramDelta.y);
+    result.x =
+      0 === paramDelta.x
+        ? x
+        : this._paramDistanceRange.low.x +
+          ((x - this._paramRange.low.x) *
+            (this._paramDistanceRange.high.x -
+              this._paramDistanceRange.low.x)) /
+            paramDelta.x;
+    result.y =
+      0.0 === paramDelta.y
+        ? y
+        : this.paramDistanceRange.low.y +
+          ((y - this._paramRange.low.y) *
+            (this._paramDistanceRange.high.y -
+              this._paramDistanceRange.low.y)) /
+            paramDelta.y;
     return result;
   }
   /** Return normalized (0-1) parameter from stored parameter value. */
-  public convertParamXYToNormalized(x: number, y: number, result?: Point2d): Point2d {
+  public convertParamXYToNormalized(
+    x: number,
+    y: number,
+    result?: Point2d
+  ): Point2d {
     result = result ? result : Point2d.create();
     const paramDelta = this._paramRange.high.minus(this._paramRange.low);
-    result.x = (0.0 === paramDelta.x) ? x : ((x - this._paramRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? y : ((y - this._paramRange.low.y) / paramDelta.y);
+    result.x =
+      0.0 === paramDelta.x ? x : (x - this._paramRange.low.x) / paramDelta.x;
+    result.y =
+      0.0 === paramDelta.y ? y : (y - this._paramRange.low.y) / paramDelta.y;
     return result;
   }
   /** Return distance-based parameter from stored parameter value. */
@@ -85,7 +114,11 @@ export class FacetFaceData {
    * Takes the polyface itself, the first and last indexes of the facets to be included in the face.
    * Returns true on success, false otherwise.
    */
-  public setParamDistanceRangeFromNewFaceData(polyface: IndexedPolyface, facetStart: number, facetEnd: number): boolean {
+  public setParamDistanceRangeFromNewFaceData(
+    polyface: IndexedPolyface,
+    facetStart: number,
+    facetEnd: number
+  ): boolean {
     const dSTotal = Point2d.create();
     const dSSquaredTotal = Point2d.create();
     this.setNull();
@@ -99,8 +132,7 @@ export class FacetFaceData {
       const trianglePointIndexes: number[] = [];
       const visitorParams = visitor.param;
       const triangleParamIndexes: number[] = [];
-      if (!visitorParams)
-        return false;
+      if (!visitorParams) return false;
       visitorParams.extendRange(this._paramRange);
       const dUV0 = Vector2d.create();
       const dUV1 = Vector2d.create();
@@ -108,10 +140,30 @@ export class FacetFaceData {
         trianglePointIndexes[2] = k;
         triangleParamIndexes[2] = k;
         if (k > 1) {
-          visitorParams.vectorIndexIndex(triangleParamIndexes[1], triangleParamIndexes[0], dUV0);
-          visitorParams.vectorIndexIndex(triangleParamIndexes[1], triangleParamIndexes[2], dUV1);
-          const delta0 = visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1]));
-          const delta1 = visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAtUncheckedPointIndex(trianglePointIndexes[2]));
+          visitorParams.vectorIndexIndex(
+            triangleParamIndexes[1],
+            triangleParamIndexes[0],
+            dUV0
+          );
+          visitorParams.vectorIndexIndex(
+            triangleParamIndexes[1],
+            triangleParamIndexes[2],
+            dUV1
+          );
+          const delta0 = visitorPoints
+            .getPoint3dAtUncheckedPointIndex(trianglePointIndexes[0])
+            .minus(
+              visitorPoints.getPoint3dAtUncheckedPointIndex(
+                trianglePointIndexes[1]
+              )
+            );
+          const delta1 = visitorPoints
+            .getPoint3dAtUncheckedPointIndex(trianglePointIndexes[1])
+            .minus(
+              visitorPoints.getPoint3dAtUncheckedPointIndex(
+                trianglePointIndexes[2]
+              )
+            );
           const uvCross = Math.abs(dUV0.x * dUV1.y - dUV1.x * dUV0.y);
           if (uvCross) {
             const dwDu = Point3d.createFrom(delta0);
@@ -120,7 +172,10 @@ export class FacetFaceData {
             const dwDv = Point3d.createFrom(delta1);
             dwDv.scaleInPlace(dUV0.x);
             dwDv.addScaledInPlace(delta0, -dUV1.x);
-            const dS = Point2d.create(dwDu.magnitude() / uvCross, dwDv.magnitude() / uvCross);
+            const dS = Point2d.create(
+              dwDu.magnitude() / uvCross,
+              dwDv.magnitude() / uvCross
+            );
             dSTotal.x += dS.x;
             dSTotal.y += dS.y;
             dSSquaredTotal.x += dS.x * dS.x;
@@ -133,13 +188,24 @@ export class FacetFaceData {
         trianglePointIndexes[0] = trianglePointIndexes[1];
         trianglePointIndexes[1] = trianglePointIndexes[2];
       }
-    } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < facetEnd);
+    } while (
+      visitor.moveToNextFacet() &&
+      visitor.currentReadIndex() < facetEnd
+    );
     if (aveTotal !== 0) {
       const dS = Point2d.create(dSTotal.x / aveTotal, dSTotal.y / aveTotal);
-      const standardDeviation = Point2d.create(Math.sqrt(Math.abs((dSSquaredTotal.x / aveTotal) - dS.x * dS.x)), Math.sqrt(Math.abs((dSSquaredTotal.y / aveTotal) - dS.y * dS.y)));
+      const standardDeviation = Point2d.create(
+        Math.sqrt(Math.abs(dSSquaredTotal.x / aveTotal - dS.x * dS.x)),
+        Math.sqrt(Math.abs(dSSquaredTotal.y / aveTotal - dS.y * dS.y))
+      );
       // TR# 268980 - Add standard deviation to match QV....
       this._paramDistanceRange.low.set(0, 0);
-      this._paramDistanceRange.high.set((dS.x + standardDeviation.x) * (this._paramRange.high.x - this._paramRange.low.x), (dS.y + standardDeviation.y) * (this._paramRange.high.y - this._paramRange.low.y));
+      this._paramDistanceRange.high.set(
+        (dS.x + standardDeviation.x) *
+          (this._paramRange.high.x - this._paramRange.low.x),
+        (dS.y + standardDeviation.y) *
+          (this._paramRange.high.y - this._paramRange.low.y)
+      );
     }
     return true;
   }

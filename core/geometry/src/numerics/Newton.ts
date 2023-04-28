@@ -44,7 +44,8 @@ export abstract class AbstractNewtonIterator {
   protected constructor(
     stepSizeTolerance: number = 1.0e-11,
     successiveConvergenceTarget: number = 2,
-    maxIterations: number = 15) {
+    maxIterations: number = 15
+  ) {
     this._stepSizeTolerance = stepSizeTolerance;
     this._successiveConvergenceTarget = successiveConvergenceTarget;
     this._maxIterations = maxIterations;
@@ -83,8 +84,10 @@ export abstract class AbstractNewtonIterator {
     this._numAccepted = 0;
     this.numIterations = 0;
     while (this.numIterations++ < this._maxIterations && this.computeStep()) {
-      if (this.testConvergence(this.currentStepSize())
-        && this.applyCurrentStep(true)) {
+      if (
+        this.testConvergence(this.currentStepSize()) &&
+        this.applyCurrentStep(true)
+      ) {
         return true;
       }
       this.applyCurrentStep(false);
@@ -123,17 +126,29 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
     this.setTarget(0);
   }
   /** Set the independent variable */
-  public setX(x: number): boolean { this._currentX = x; return true; }
+  public setX(x: number): boolean {
+    this._currentX = x;
+    return true;
+  }
   /** Get the independent variable */
-  public getX(): number { return this._currentX; }
+  public getX(): number {
+    return this._currentX;
+  }
   /** Set the target function value */
-  public setTarget(y: number) { this._target = y; }
+  public setTarget(y: number) {
+    this._target = y;
+  }
   /** move the current X by the just-computed step */
-  public applyCurrentStep(): boolean { return this.setX(this._currentX - this._currentStep); }
+  public applyCurrentStep(): boolean {
+    return this.setX(this._currentX - this._currentStep);
+  }
   /** Compute the univariate newton step. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
-      const dx = Geometry.conditionalDivideFraction(this._func.currentF - this._target, this._func.currentdFdX);
+      const dx = Geometry.conditionalDivideFraction(
+        this._func.currentF - this._target,
+        this._func.currentdFdX
+      );
       if (dx !== undefined) {
         this._currentStep = dx;
         return true;
@@ -180,18 +195,28 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
     this.derivativeH = 1.0e-8;
   }
   /** Set the x (independent, iterated) value */
-  public setX(x: number): boolean { this._currentX = x; return true; }
+  public setX(x: number): boolean {
+    this._currentX = x;
+    return true;
+  }
   /** Get the independent variable */
-  public getX(): number { return this._currentX; }
+  public getX(): number {
+    return this._currentX;
+  }
   /** move the current X by the just-computed step */
-  public applyCurrentStep(): boolean { return this.setX(this._currentX - this._currentStep); }
+  public applyCurrentStep(): boolean {
+    return this.setX(this._currentX - this._currentStep);
+  }
   /** Univariate newton step computed with APPROXIMATE derivative. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
       const fA = this._func.currentF;
       if (this._func.evaluate(this._currentX + this.derivativeH)) {
         const fB = this._func.currentF;
-        const dx = Geometry.conditionalDivideFraction(fA, (fB - fA) / this.derivativeH);
+        const dx = Geometry.conditionalDivideFraction(
+          fA,
+          (fB - fA) / this.derivativeH
+        );
         if (dx !== undefined) {
           this._currentStep = dx;
           return true;
@@ -242,23 +267,42 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     this._currentUV = Point2d.createZero();
   }
   /** Set the current uv coordinates for current iteration */
-  public setUV(x: number, y: number): boolean { this._currentUV.set(x, y); return true; }
+  public setUV(x: number, y: number): boolean {
+    this._currentUV.set(x, y);
+    return true;
+  }
   /** Get the current u coordinate */
-  public getU(): number { return this._currentUV.x; }
+  public getU(): number {
+    return this._currentUV.x;
+  }
   /** Get the current v coordinate */
-  public getV(): number { return this._currentUV.y; }
+  public getV(): number {
+    return this._currentUV.y;
+  }
   /** Move the currentUV coordinate by currentStep. */
-  public applyCurrentStep(): boolean { return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y); }
+  public applyCurrentStep(): boolean {
+    return this.setUV(
+      this._currentUV.x - this._currentStep.x,
+      this._currentUV.y - this._currentStep.y
+    );
+  }
   /** Evaluate the functions and derivatives at this._currentUV
    * Invert the jacobian and compute the this._currentStep.
    */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentUV.x, this._currentUV.y)) {
       const fA = this._func.currentF;
-      if (SmallSystem.linearSystem2d(
-        fA.vectorU.x, fA.vectorV.x,
-        fA.vectorU.y, fA.vectorV.y,
-        fA.origin.x, fA.origin.y, this._currentStep))
+      if (
+        SmallSystem.linearSystem2d(
+          fA.vectorU.x,
+          fA.vectorV.x,
+          fA.vectorU.y,
+          fA.vectorV.y,
+          fA.origin.x,
+          fA.origin.y,
+          this._currentStep
+        )
+      )
         return true;
     }
     return false;
@@ -269,7 +313,8 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   public currentStepSize(): number {
     return Geometry.maxAbsXY(
       this._currentStep.x / (1.0 + Math.abs(this._currentUV.x)),
-      this._currentStep.y / (1.0 + Math.abs(this._currentUV.y)));
+      this._currentStep.y / (1.0 + Math.abs(this._currentUV.y))
+    );
   }
 }
 /**
@@ -284,7 +329,12 @@ export class SimpleNewton {
    *    normally moves to full machine precision.
    * * This is an open-loop newton -- it just runs, and returns undefined if anything bad happens.
    */
-  public static runNewton1D(x: number, func: (x: number) => number | undefined, derivative: (x: number) => number | undefined, absoluteTolerance: number = 1.0e-15): number | undefined {
+  public static runNewton1D(
+    x: number,
+    func: (x: number) => number | undefined,
+    derivative: (x: number) => number | undefined,
+    absoluteTolerance: number = 1.0e-15
+  ): number | undefined {
     let numConverged = 0;
     let tolerance: number;
     const relTol = 1.0e-11;
@@ -293,13 +343,13 @@ export class SimpleNewton {
       const df = derivative(x);
       if (f !== undefined && df !== undefined) {
         const dx = Geometry.conditionalDivideCoordinate(f, df);
-        if (dx === undefined)
-          return undefined;
+        if (dx === undefined) return undefined;
         x -= dx;
         tolerance = absoluteTolerance + Math.abs(x) * relTol;
         if (Math.abs(dx) < tolerance) {
           numConverged++;
-          if (dx === 0.0 || numConverged > 1)   // bypass convergence count on true 0 dx !
+          if (dx === 0.0 || numConverged > 1)
+            // bypass convergence count on true 0 dx !
             return x;
         } else {
           numConverged = 0;

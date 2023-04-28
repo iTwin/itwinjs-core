@@ -1,16 +1,24 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const fs = require("fs");
 const path = require("path");
 const root = process.cwd();
-const ecDiagnosticsDir = path.resolve(root, "lib", "cjs", "Validation", "ECRules");
+const ecDiagnosticsDir = path.resolve(
+  root,
+  "lib",
+  "cjs",
+  "Validation",
+  "ECRules"
+);
 const ecDiagnostics = require(ecDiagnosticsDir);
 
 function printErrorAndFail(errorMessage) {
-  console.log(`Build failed creating localization file ECSchemaEditing.json: ${errorMessage}`);
+  console.log(
+    `Build failed creating localization file ECSchemaEditing.json: ${errorMessage}`
+  );
   throw new Error();
 }
 
@@ -27,15 +35,20 @@ function createLocalization() {
 
   const json = {
     Diagnostics: {
-      ...jsonEntries
-    }
-  }
+      ...jsonEntries,
+    },
+  };
 
-  fs.writeFile(path.resolve(localesDir, "ECSchemaEditing.json"), JSON.stringify(json, undefined, 2), "utf8", function (err) {
-    if (err) {
-      printErrorAndFail(err);
+  fs.writeFile(
+    path.resolve(localesDir, "ECSchemaEditing.json"),
+    JSON.stringify(json, undefined, 2),
+    "utf8",
+    function (err) {
+      if (err) {
+        printErrorAndFail(err);
+      }
     }
-  });
+  );
 
   console.log("ECSchemaEditing localization successful.");
 }

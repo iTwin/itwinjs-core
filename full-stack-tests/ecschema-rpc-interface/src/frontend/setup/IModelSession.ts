@@ -5,13 +5,16 @@
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import {
+  Project as ITwin,
+  ProjectsAccessClient,
+  ProjectsSearchableProperty,
+} from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { AccessToken } from "@itwin/core-bentley";
 import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 
 export class IModelSession {
-
   public iTwinId: string;
   public iModelId: string;
   public changesetId?: string;
@@ -24,7 +27,10 @@ export class IModelSession {
     this.changesetId = changesetId;
   }
 
-  public static async create(accessToken: AccessToken, iModelData: IModelData): Promise<IModelSession> {
+  public static async create(
+    accessToken: AccessToken,
+    iModelData: IModelData
+  ): Promise<IModelSession> {
     let iTwinId;
     let imodelId;
 
@@ -40,16 +46,25 @@ export class IModelSession {
       });
 
       if (iTwinList.length === 0)
-        throw new Error(`ITwin ${iModelData.iTwinName} was not found for the user.`);
+        throw new Error(
+          `ITwin ${iModelData.iTwinName} was not found for the user.`
+        );
       else if (iTwinList.length > 1)
-        throw new Error(`Multiple iTwins named ${iModelData.iTwinName} were found for the user.`);
+        throw new Error(
+          `Multiple iTwins named ${iModelData.iTwinName} were found for the user.`
+        );
 
       iTwinId = iTwinList[0].id;
-    } else
-      iTwinId = iModelData.iTwinId!;
+    } else iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+      const imodelClient = new IModelsClient({
+        api: {
+          baseUrl: `https://${
+            process.env.IMJS_URL_PREFIX ?? ""
+          }api.bentley.com/imodels`,
+        },
+      });
       const iModels = imodelClient.iModels.getRepresentationList({
         authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
         urlParams: {
@@ -62,11 +77,14 @@ export class IModelSession {
         break;
       }
       if (!imodelId)
-        throw new Error(`The iModel ${iModelData.name} does not exist in iTwin ${iTwinId}.`);
-    } else
-      imodelId = iModelData.id!;
+        throw new Error(
+          `The iModel ${iModelData.name} does not exist in iTwin ${iTwinId}.`
+        );
+    } else imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${imodelId}, iTwinId:${iTwinId}, changesetId:${iModelData.changesetId} }`); // eslint-disable-line no-console
+    console.log(
+      `Using iModel { name:${iModelData.name}, id:${imodelId}, iTwinId:${iTwinId}, changesetId:${iModelData.changesetId} }`
+    ); // eslint-disable-line no-console
 
     return new IModelSession(imodelId, iTwinId, iModelData.changesetId);
   }
@@ -79,7 +97,10 @@ export class IModelSession {
     try {
       // eslint-disable-next-line no-console
       console.log(`Environment: ${process.env.IMJS_URL_PREFIX}`);
-      this._iModel = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
+      this._iModel = await CheckpointConnection.openRemote(
+        this.iTwinId,
+        this.iModelId
+      );
       expect(this._iModel).to.exist;
     } catch (e: any) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

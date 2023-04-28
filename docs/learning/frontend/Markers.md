@@ -1,4 +1,3 @@
-
 # Markers
 
 ![markerset sample](./markers_sample.png "Example showing a set of Markers")
@@ -11,7 +10,7 @@ Markers can display 3 optional parts:
 - Canvas decorations that are drawn on top scene using CanvasRenderingContext2D calls
 - HTML decorations that are HTMLElements on top of the view
 
-Markers are often used to show locations in physical space where records from an external data source are located. They provide a way for applications to show additional information from the external source as the cursor hovers over them, and  actions to be performed when they are clicked.
+Markers are often used to show locations in physical space where records from an external data source are located. They provide a way for applications to show additional information from the external source as the cursor hovers over them, and actions to be performed when they are clicked.
 
 Sometimes Markers are used to show the location of elements within an iModel that are of interest. In that case the location of the Marker can be established from the origin, center, or perhaps other points derived from the element's properties.
 

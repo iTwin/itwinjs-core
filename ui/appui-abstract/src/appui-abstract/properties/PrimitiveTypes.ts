@@ -34,9 +34,12 @@ export namespace Primitives {
   export type Numeric = Float | Int;
 
   /** Point2d type (contains an x and a y coordinate) */
-  export type Point2d = string[] | number[] | { x: number, y: number };
+  export type Point2d = string[] | number[] | { x: number; y: number };
   /** Point3d type (contains x,y,and z coordinates) */
-  export type Point3d = string[] | number[] | { x: number, y: number, z: number };
+  export type Point3d =
+    | string[]
+    | number[]
+    | { x: number; y: number; z: number };
 
   /** Point type (can be a 2d or 3d point) */
   export type Point = Point2d | Point3d;
@@ -60,5 +63,14 @@ export namespace Primitives {
   }
 
   /** Raw value */
-  export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
+  export type Value =
+    | Text
+    | String
+    | ShortDate
+    | Boolean
+    | Numeric
+    | Enum
+    | Point
+    | Composite
+    | InstanceKey;
 }

@@ -18,4 +18,3 @@ export interface ResolveOptions {
   relative?: string; // Path to the file that path should be resolved relative to.
   filter?: (pkg: any) => boolean; // Determine whether or not to resolve a dependency.
 }
-

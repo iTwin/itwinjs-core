@@ -7,14 +7,24 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
+import {
+  BackgroundMapProvider,
+  BackgroundMapProviderProps,
+  BackgroundMapType,
+} from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** The current set of supported map layer formats.
  * In order to be displayed, a corresponding format must have been registered in the [MapLayerFormatRegistry]($frontend)
  * @public
  */
-export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
+export type ImageryMapLayerFormatId =
+  | "ArcGIS"
+  | "BingMaps"
+  | "MapboxImagery"
+  | "TileURL"
+  | "WMS"
+  | "WMTS";
 
 /** @public */
 export type SubLayerId = string | number;
@@ -56,49 +66,65 @@ export class MapSubLayerSettings {
   /** sublayer parent. */
   public readonly parent?: SubLayerId;
 
-  constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]) {
+  constructor(
+    name: string,
+    title?: string,
+    visible?: boolean,
+    id?: SubLayerId,
+    parent?: SubLayerId,
+    children?: SubLayerId[]
+  ) {
     this.name = name;
     this.title = title;
     this.visible = visible !== undefined && visible;
-    this.id = (id === undefined) ? this.name : id;
+    this.id = id === undefined ? this.name : id;
     this.parent = parent;
     this.children = children;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings {
-    return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
+    return new MapSubLayerSettings(
+      json.name,
+      json.title,
+      json.visible,
+      json.id === json.name ? undefined : json.id,
+      json.parent,
+      json.children
+    );
   }
 
   public toJSON(): MapSubLayerProps {
     const props: MapSubLayerProps = { name: this.name, visible: this.visible };
 
-    if (undefined !== this.id && this.id !== this.name)
-      props.id = this.id;
+    if (undefined !== this.id && this.id !== this.name) props.id = this.id;
 
-    if (undefined !== this.title)
-      props.title = this.title;
+    if (undefined !== this.title) props.title = this.title;
 
-    if (this.children)
-      props.children = [...this.children];
+    if (this.children) props.children = [...this.children];
 
-    if (undefined !== this.parent)
-      props.parent = this.parent;
+    if (undefined !== this.parent) props.parent = this.parent;
 
     return props;
   }
 
   /** Creating a copy of this MapSubLayer, optionally modifying some if its properties */
   public clone(changedProps: Partial<MapSubLayerProps>): MapSubLayerSettings {
-    if (undefined === changedProps)
-      return this;
+    if (undefined === changedProps) return this;
 
     const props = {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
       id: undefined !== changedProps.id ? changedProps.id : this.id,
-      visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
-      parent: undefined !== changedProps.parent ? changedProps.parent : this.parent,
-      children: undefined !== changedProps.children ? changedProps.children.slice() : this.children?.slice(),
+      visible:
+        undefined !== changedProps.visible
+          ? changedProps.visible
+          : this.visible,
+      parent:
+        undefined !== changedProps.parent ? changedProps.parent : this.parent,
+      children:
+        undefined !== changedProps.children
+          ? changedProps.children.slice()
+          : this.children?.slice(),
       title: undefined !== changedProps.title ? changedProps.title : this.title,
     };
     return MapSubLayerSettings.fromJSON(props)!;
@@ -110,16 +136,24 @@ export class MapSubLayerSettings {
   }
 
   /** return true if this sublayer is named. */
-  public get isNamed(): boolean { return this.name.length > 0; }
+  public get isNamed(): boolean {
+    return this.name.length > 0;
+  }
 
   /** return true if this sublayer is a leaf (has no children) */
-  public get isLeaf(): boolean { return this.children === undefined || this.children.length === 0; }
+  public get isLeaf(): boolean {
+    return this.children === undefined || this.children.length === 0;
+  }
 
   /** return true if this sublayer is an unnamed group */
-  public get isUnnamedGroup(): boolean { return !this.isLeaf && !this.isNamed; }
+  public get isUnnamedGroup(): boolean {
+    return !this.isLeaf && !this.isNamed;
+  }
 
   /** return a string representing this sublayer id (converting to string if underlying id is number) */
-  public get idString(): string { return (typeof this.id === "number") ? this.id.toString(10) : this.id; }
+  public get idString(): string {
+    return typeof this.id === "number" ? this.id.toString(10) : this.id;
+  }
 }
 
 /** JSON representation of properties common to both [[ImageMapLayerProps]] and [[ModelMapLayerProps]].
@@ -215,7 +249,12 @@ export abstract class MapLayerSettings {
   public abstract toJSON(): MapLayerProps;
 
   /** @internal */
-  protected constructor(name: string, visible = true, transparency: number = 0, transparentBackground = true) {
+  protected constructor(
+    name: string,
+    visible = true,
+    transparency: number = 0,
+    transparentBackground = true
+  ) {
     this.name = name;
     this.visible = visible;
     this.transparentBackground = transparentBackground;
@@ -224,7 +263,9 @@ export abstract class MapLayerSettings {
 
   /** Create a map layer settings from its JSON representation. */
   public static fromJSON(props: MapLayerProps): MapLayerSettings {
-    return undefined !== props.modelId ? ModelMapLayerSettings.fromJSON(props) : ImageMapLayerSettings.fromJSON(props);
+    return undefined !== props.modelId
+      ? ModelMapLayerSettings.fromJSON(props)
+      : ImageMapLayerSettings.fromJSON(props);
   }
 
   /** @internal */
@@ -234,8 +275,7 @@ export abstract class MapLayerSettings {
       visible: this.visible,
     };
 
-    if (0 !== this.transparency)
-      props.transparency = this.transparency;
+    if (0 !== this.transparency) props.transparency = this.transparency;
 
     if (this.transparentBackground === false)
       props.transparentBackground = this.transparentBackground;
@@ -244,18 +284,34 @@ export abstract class MapLayerSettings {
   }
 
   /** @internal */
-  protected cloneProps(changedProps: Partial<MapLayerProps>): CommonMapLayerProps {
+  protected cloneProps(
+    changedProps: Partial<MapLayerProps>
+  ): CommonMapLayerProps {
     return {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
-      visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
-      transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
-      transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
+      visible:
+        undefined !== changedProps.visible
+          ? changedProps.visible
+          : this.visible,
+      transparency:
+        undefined !== changedProps.transparency
+          ? changedProps.transparency
+          : this.transparency,
+      transparentBackground:
+        undefined !== changedProps.transparentBackground
+          ? changedProps.transparentBackground
+          : this.transparentBackground,
     };
   }
 
   /** @internal */
   public displayMatches(other: MapLayerSettings): boolean {
-    return this.name === other.name && this.visible === other.visible && this.transparency === other.transparency && this.transparentBackground === other.transparentBackground;
+    return (
+      this.name === other.name &&
+      this.visible === other.visible &&
+      this.transparency === other.transparency &&
+      this.transparentBackground === other.transparentBackground
+    );
   }
 
   /** Return a unique string identifying the layers source... The URL for image layer or modelID for model layer  */
@@ -281,7 +337,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public password?: string;
   public accessKey?: MapLayerKey;
   public readonly subLayers: MapSubLayerSettings[];
-  public override get source(): string { return this.url; }
+  public override get source(): string {
+    return this.url;
+  }
 
   /** @internal */
   protected constructor(props: ImageMapLayerProps) {
@@ -292,17 +350,17 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.url = props.url;
     this.accessKey = props.accessKey;
     this.subLayers = [];
-    if (!props.subLayers)
-      return;
+    if (!props.subLayers) return;
 
     for (const subLayerProps of props.subLayers) {
       const subLayer = MapSubLayerSettings.fromJSON(subLayerProps);
-      if (subLayer)
-        this.subLayers.push(subLayer);
+      if (subLayer) this.subLayers.push(subLayer);
     }
   }
 
-  public static override fromJSON(props: ImageMapLayerProps): ImageMapLayerSettings {
+  public static override fromJSON(
+    props: ImageMapLayerProps
+  ): ImageMapLayerSettings {
     return new this(props);
   }
 
@@ -322,7 +380,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
-  public clone(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerSettings {
+  public clone(
+    changedProps: Partial<ImageMapLayerProps>
+  ): ImageMapLayerSettings {
     const clone = ImageMapLayerSettings.fromJSON(this.cloneProps(changedProps));
 
     // Clone members not part of MapLayerProps
@@ -334,7 +394,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   }
 
   /** @internal */
-  protected override cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps {
+  protected override cloneProps(
+    changedProps: Partial<ImageMapLayerProps>
+  ): ImageMapLayerProps {
     const props = super.cloneProps(changedProps) as ImageMapLayerProps;
 
     props.formatId = changedProps.formatId ?? this.formatId;
@@ -347,71 +409,80 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
   /** @internal */
   public override displayMatches(other: MapLayerSettings): boolean {
-    if (! (other instanceof ImageMapLayerSettings) || !super.displayMatches(other))
+    if (
+      !(other instanceof ImageMapLayerSettings) ||
+      !super.displayMatches(other)
+    )
       return false;
 
-    if (this.userName !== other.userName || this.password !== other.password || this.subLayers.length !== other.subLayers.length) {
+    if (
+      this.userName !== other.userName ||
+      this.password !== other.password ||
+      this.subLayers.length !== other.subLayers.length
+    ) {
       return false;
     }
 
     for (let i = 0; i < this.subLayers.length; i++)
-      if (!this.subLayers[i].displayMatches(other.subLayers[i]))
-        return false;
+      if (!this.subLayers[i].displayMatches(other.subLayers[i])) return false;
 
     return true;
   }
 
   /** Return a sublayer matching id -- or undefined if not found */
   public subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined {
-    return id === undefined ? undefined : this.subLayers.find((subLayer) => subLayer.id === id);
+    return id === undefined
+      ? undefined
+      : this.subLayers.find((subLayer) => subLayer.id === id);
   }
 
   private hasInvisibleAncestors(subLayer?: MapSubLayerSettings): boolean {
-    if (!subLayer || !subLayer.parent)
-      return false;
+    if (!subLayer || !subLayer.parent) return false;
 
     const parent = this.subLayerById(subLayer.parent);
-    if (!parent)
-      return false;
+    if (!parent) return false;
 
     // Visibility of named group has no impact on the visibility of children (only unnamed group does)
     // i.e For WMS, its should be possible to request a child layer when its parent is not visible (if the parent is also named)
-    return (!parent.visible && !parent.isNamed) || this.hasInvisibleAncestors(parent);
+    return (
+      (!parent.visible && !parent.isNamed) || this.hasInvisibleAncestors(parent)
+    );
   }
 
   /** Return true if sublayer is visible -- testing ancestors for visibility if they exist. */
   public isSubLayerVisible(subLayer: MapSubLayerSettings): boolean {
-    if (!subLayer.visible)
-      return false;
+    if (!subLayer.visible) return false;
 
     return !this.hasInvisibleAncestors(subLayer);
   }
 
   /** Return true if all sublayers are invisible. */
   public get allSubLayersInvisible(): boolean {
-    if (this.subLayers.length === 0)
-      return false;
+    if (this.subLayers.length === 0) return false;
 
-    return this.subLayers.every((subLayer) => (subLayer.isUnnamedGroup || !this.isSubLayerVisible(subLayer)));
+    return this.subLayers.every(
+      (subLayer) => subLayer.isUnnamedGroup || !this.isSubLayerVisible(subLayer)
+    );
   }
 
   /** Return the children for a sublayer */
-  public getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined {
-    if (!subLayer.children)
-      return undefined;
+  public getSubLayerChildren(
+    subLayer: MapSubLayerSettings
+  ): MapSubLayerSettings[] | undefined {
+    if (!subLayer.children) return undefined;
 
     const children = new Array<MapSubLayerSettings>();
     subLayer.children.forEach((childId) => {
       const child = this.subLayerById(childId);
-      if (child !== undefined)
-        children.push(child);
+      if (child !== undefined) children.push(child);
     });
 
     return children;
   }
 
   /** @internal */
-  protected static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
+  protected static mapTypeName(type: BackgroundMapType) {
+    // TBD.. Localization.
     switch (type) {
       case BackgroundMapType.Aerial:
         return "Aerial Imagery";
@@ -438,19 +509,37 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
   public readonly modelId: Id64String;
-  public override get source(): string { return this.modelId; }
+  public override get source(): string {
+    return this.modelId;
+  }
 
   /** @internal */
-  protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true) {
+  protected constructor(
+    modelId: Id64String,
+    name: string,
+    visible = true,
+    transparency: number = 0,
+    transparentBackground = true
+  ) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
-    const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground);
+  public static override fromJSON(
+    json: ModelMapLayerProps
+  ): ModelMapLayerSettings {
+    const transparentBackground =
+      json.transparentBackground === undefined
+        ? true
+        : json.transparentBackground;
+    return new this(
+      json.modelId,
+      json.name,
+      json.visible,
+      json.transparency,
+      transparentBackground
+    );
   }
 
   /** return JSON representation of this MapLayerSettings object */
@@ -464,12 +553,16 @@ export class ModelMapLayerSettings extends MapLayerSettings {
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
-  public clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings {
+  public clone(
+    changedProps: Partial<ModelMapLayerProps>
+  ): ModelMapLayerSettings {
     return ModelMapLayerSettings.fromJSON(this.cloneProps(changedProps));
   }
 
   /** @internal */
-  protected override cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps {
+  protected override cloneProps(
+    changedProps: Partial<ModelMapLayerProps>
+  ): ModelMapLayerProps {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
     props.modelId = changedProps.modelId ?? this.modelId;
     return props;
@@ -477,7 +570,10 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 
   /** @internal */
   public override displayMatches(other: MapLayerSettings): boolean {
-    if (!(other instanceof ModelMapLayerSettings) || !super.displayMatches(other))
+    if (
+      !(other instanceof ModelMapLayerSettings) ||
+      !super.displayMatches(other)
+    )
       return false;
 
     return this.modelId === other.modelId;
@@ -508,14 +604,18 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
   private _provider?: BackgroundMapProvider;
 
   /** The provider from which this base layer was configured, if any. */
-  public get provider(): BackgroundMapProvider | undefined { return this._provider; }
+  public get provider(): BackgroundMapProvider | undefined {
+    return this._provider;
+  }
 
   /** Create a base layer from its JSON representation.
    * TODO: This, MapLayerSettings.fromJSON, and MapSubLayerSettings.fromJSON should never return undefined.
    * That means they should not accept undefined for props and should define props such that it fully describes the
    * layer - e.g., url and name must be defined.
    */
-  public static override fromJSON(props: BaseMapLayerProps): BaseMapLayerSettings {
+  public static override fromJSON(
+    props: BaseMapLayerProps
+  ): BaseMapLayerSettings {
     const settings = super.fromJSON(props);
     assert(settings instanceof BaseMapLayerSettings);
     if (props.provider)
@@ -527,37 +627,40 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
   /** Convert this layer to its JSON representation. */
   public override toJSON(): BaseMapLayerProps {
     const props = super.toJSON() as BaseMapLayerProps;
-    if (this.provider)
-      props.provider = this.provider.toJSON();
+    if (this.provider) props.provider = this.provider.toJSON();
 
     return props;
   }
 
   /** @internal */
-  public override cloneProps(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerProps {
+  public override cloneProps(
+    changedProps: Partial<BaseMapLayerProps>
+  ): BaseMapLayerProps {
     const props = super.cloneProps(changedProps) as BaseMapLayerProps;
 
-    if (changedProps.provider)
-      props.provider = changedProps.provider;
-    else if (this.provider)
-      props.provider = this.provider.toJSON();
+    if (changedProps.provider) props.provider = changedProps.provider;
+    else if (this.provider) props.provider = this.provider.toJSON();
 
     return props;
   }
 
   /** Create a copy of this layer. */
-  public override clone(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerSettings {
+  public override clone(
+    changedProps: Partial<BaseMapLayerProps>
+  ): BaseMapLayerSettings {
     const prevUrl = this.url;
     const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
 
-    if (this.provider && prevUrl !== this.url)
-      clone._provider = undefined;
+    if (this.provider && prevUrl !== this.url) clone._provider = undefined;
 
     return clone;
   }
 
   /** Create a base layer from a BackgroundMapProvider. */
-  public static fromProvider(provider: BackgroundMapProvider, options?: { invisible?: boolean, transparency?: number }): BaseMapLayerSettings {
+  public static fromProvider(
+    provider: BackgroundMapProvider,
+    options?: { invisible?: boolean; transparency?: number }
+  ): BaseMapLayerSettings {
     let formatId: string, url: string, name: string;
     switch (provider.name) {
       case "BingProvider":
@@ -593,7 +696,8 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
             url = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/";
             break;
           case BackgroundMapType.Hybrid:
-            url = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/";
+            url =
+              "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/";
             break;
         }
 
@@ -617,12 +721,21 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
   }
 
   /** @internal */
-  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BaseMapLayerSettings {
-    return this.fromProvider(BackgroundMapProvider.fromBackgroundMapProps(props));
+  public static fromBackgroundMapProps(
+    props: DeprecatedBackgroundMapProps
+  ): BaseMapLayerSettings {
+    return this.fromProvider(
+      BackgroundMapProvider.fromBackgroundMapProps(props)
+    );
   }
 
   /** @alpha */
-  public cloneWithProvider(provider: BackgroundMapProvider): BaseMapLayerSettings {
-    return BaseMapLayerSettings.fromProvider(provider, { invisible: !this.visible, transparency: this.transparency });
+  public cloneWithProvider(
+    provider: BackgroundMapProvider
+  ): BaseMapLayerSettings {
+    return BaseMapLayerSettings.fromProvider(provider, {
+      invisible: !this.visible,
+      transparency: this.transparency,
+    });
   }
 }

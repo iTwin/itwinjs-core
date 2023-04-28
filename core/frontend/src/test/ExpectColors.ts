@@ -11,7 +11,11 @@ import { ViewRect } from "../ViewRect";
 /** A viewport-color-checking function for tests. Tests for the presence of a list of expected colors in the entire viewport or specified ViewRect.
  * @internal
  */
-export function expectColors(viewport: ScreenViewport, expected: ColorDef[], rect?: ViewRect): void {
+export function expectColors(
+  viewport: ScreenViewport,
+  expected: ColorDef[],
+  rect?: ViewRect
+): void {
   viewport.renderFrame();
   const buf = viewport.readImageBuffer({ rect })!;
   expect(buf).not.to.be.undefined;
@@ -27,22 +31,27 @@ export function expectColors(viewport: ScreenViewport, expected: ColorDef[], rec
   }
 
   const expectedTbgr = expected.map((x) => x.tbgr.toString(16)).sort();
-  const actualTbgr = Array.from(actualColors).map((x) => x.tbgr.toString(16)).sort();
+  const actualTbgr = Array.from(actualColors)
+    .map((x) => x.tbgr.toString(16))
+    .sort();
   expect(actualTbgr).to.deep.equal(expectedTbgr);
 }
 
 /** A viewport-color-checking function for tests. Tests for the presence of a list of any unexpected colors in the entire viewport or specified ViewRect. If any of the colors are found, this function expects them not to be found and will fail the test.
  * @internal
  */
-export function expectNotTheseColors(viewport: ScreenViewport, expected: ColorDef[], rect?: ViewRect): void {
+export function expectNotTheseColors(
+  viewport: ScreenViewport,
+  expected: ColorDef[],
+  rect?: ViewRect
+): void {
   viewport.renderFrame();
   const buf = viewport.readImageBuffer({ rect })!;
   expect(buf).not.to.be.undefined;
 
   const u32 = new Uint32Array(buf.data.buffer);
   const values = new Set<number>();
-  for (const rgba of u32)
-    values.add(rgba);
+  for (const rgba of u32) values.add(rgba);
 
   expect(values.size).to.equal(expected.length);
 

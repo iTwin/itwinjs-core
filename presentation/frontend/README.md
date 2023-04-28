@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/presentation-frontend__ package contains the frontend (specific to running in a
+The **@itwin/presentation-frontend** package contains the frontend (specific to running in a
 web browser) types and classes for querying presentation data from iModels.
 
 ## Documentation

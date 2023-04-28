@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
+The **@itwin/core-quantity** package contains classes for quantity formatting and parsing.
 
 ## Documentation
 

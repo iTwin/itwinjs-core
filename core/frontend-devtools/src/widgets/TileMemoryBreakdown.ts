@@ -6,7 +6,12 @@
  * @module Widgets
  */
 
-import { IModelApp, IModelConnection, RenderMemory, Tile } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  IModelConnection,
+  RenderMemory,
+  Tile,
+} from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { formatMemory } from "./MemoryTracker";
 
@@ -43,9 +48,7 @@ class TileMemoryTracer {
     for (const vp of IModelApp.viewManager) {
       imodels.add(vp.iModel);
       const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-      if (tiles)
-        for (const tile of tiles)
-          selectedTiles.add(tile);
+      if (tiles) for (const tile of tiles) selectedTiles.add(tile);
     }
 
     for (const selected of selectedTiles)
@@ -59,13 +62,18 @@ class TileMemoryTracer {
     for (const imodel of imodels) {
       imodel.tiles.forEachTreeOwner((owner) => {
         const tree = owner.tileTree;
-        if (tree)
-          this.processOrphan(tree.rootTile);
+        if (tree) this.processOrphan(tree.rootTile);
       });
     }
 
-    this.counters[TileMemorySelector.Total].numTiles = this.counters.reduce((accum, counter) => accum + counter.numTiles, 0);
-    this.counters[TileMemorySelector.Total].bytesUsed = this.counters.reduce((accum, counter) => accum + counter.bytesUsed, 0);
+    this.counters[TileMemorySelector.Total].numTiles = this.counters.reduce(
+      (accum, counter) => accum + counter.numTiles,
+      0
+    );
+    this.counters[TileMemorySelector.Total].bytesUsed = this.counters.reduce(
+      (accum, counter) => accum + counter.bytesUsed,
+      0
+    );
   }
 
   private reset(): void {
@@ -96,8 +104,7 @@ class TileMemoryTracer {
   }
 
   private processChildren(children: Tile[] | undefined): void {
-    if (!children)
-      return;
+    if (!children) return;
 
     for (const child of children) {
       if (!this._processedTiles.has(child)) {
@@ -112,13 +119,17 @@ class TileMemoryTracer {
       this.add(tile, TileMemorySelector.Orphaned);
 
     const children = tile.children;
-    if (children)
-      for (const child of children)
-        this.processOrphan(child);
+    if (children) for (const child of children) this.processOrphan(child);
   }
 }
 
-const statsLabels = ["Selected", "Ancestors", "Descendants", "Orphaned", "Total"];
+const statsLabels = [
+  "Selected",
+  "Ancestors",
+  "Descendants",
+  "Orphaned",
+  "Total",
+];
 
 function format(count: number, label: string, bytesUsed: number): string {
   return `${count} ${label}: ${formatMemory(bytesUsed)}`;
@@ -154,7 +165,7 @@ export class TileMemoryBreakdown {
       handler: (_cb) => this.toggle(),
     });
 
-    parent.appendChild(this._div = document.createElement("div"));
+    parent.appendChild((this._div = document.createElement("div")));
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
 
@@ -214,7 +225,11 @@ export class TileMemoryBreakdown {
     this._tracer.update();
     for (let i = 0; i < this._statsElements.length; i++) {
       const counter = this._tracer.counters[i];
-      this._statsElements[i].innerText = format(counter.numTiles, statsLabels[i], counter.bytesUsed);
+      this._statsElements[i].innerText = format(
+        counter.numTiles,
+        statsLabels[i],
+        counter.bytesUsed
+      );
     }
 
     let numUnselected = 0;
@@ -231,8 +246,20 @@ export class TileMemoryBreakdown {
       selectedBytes += selected.bytesUsed;
     }
 
-    this._totalsElements[0].innerText = format(numSelected, "Selected", selectedBytes);
-    this._totalsElements[1].innerText = format(numUnselected, "Unselected", unselectedBytes);
-    this._totalsElements[2].innerText = format(numSelected + numUnselected, "Total", IModelApp.tileAdmin.totalTileContentBytes);
+    this._totalsElements[0].innerText = format(
+      numSelected,
+      "Selected",
+      selectedBytes
+    );
+    this._totalsElements[1].innerText = format(
+      numUnselected,
+      "Unselected",
+      unselectedBytes
+    );
+    this._totalsElements[2].innerText = format(
+      numSelected + numUnselected,
+      "Total",
+      IModelApp.tileAdmin.totalTileContentBytes
+    );
   }
 }

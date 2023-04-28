@@ -115,5 +115,7 @@ export interface DefaultGroupingPropertiesContainer {
  * @public
  */
 export type ChildNodeSpecification =
-  CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification |
-  RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
+  | CustomNodeSpecification
+  | InstanceNodesOfSpecificClassesSpecification
+  | RelatedInstanceNodesSpecification
+  | CustomQueryInstanceNodesSpecification;

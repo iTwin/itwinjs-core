@@ -1,12 +1,12 @@
 # Briefcases
 
-[Briefcases](../Glossary.md#briefcase) are local copies of iModel that users can *acquire* to work with the iModel. Users can make changes to their copy of iModel and then [*push*](../Glossary.md#briefcase) them as a single [Changeset](../Glossary.md#changeset) file into iModelHub.
+[Briefcases](../Glossary.md#briefcase) are local copies of iModel that users can _acquire_ to work with the iModel. Users can make changes to their copy of iModel and then [_push_](../Glossary.md#briefcase) them as a single [Changeset](../Glossary.md#changeset) file into iModelHub.
 
 ## Changesets
 
 ![Briefcase synchronization](./sync.gif)
 
-Briefcases synchronize their changes through changesets. Changesets form a linear [timeline](./index.md#the-timeline-of-changes-to-an-imodel) of iModel changes. To do this, changesets have to be in a strict order and must be *based on* a single parent changeSet.
+Briefcases synchronize their changes through changesets. Changesets form a linear [timeline](./index.md#the-timeline-of-changes-to-an-imodel) of iModel changes. To do this, changesets have to be in a strict order and must be _based on_ a single parent changeSet.
 
 ### ChangesetId
 

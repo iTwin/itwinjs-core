@@ -6,8 +6,19 @@
  * @module Views
  */
 
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@itwin/core-geometry";
+import {
+  assert,
+  BeEvent,
+  Id64,
+  Id64String,
+  JsonUtils,
+} from "@itwin/core-bentley";
+import {
+  ClipVector,
+  ClipVectorProps,
+  Geometry,
+  XAndY,
+} from "@itwin/core-geometry";
 import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
 /** Properties of a [[ViewDefinitionProps]] stored as JSON.
@@ -73,12 +84,13 @@ export class ViewDetails {
   private _clipVector?: ClipVector;
 
   /** Event raised just before assignment to the [[clipVector]] property. */
-  public readonly onClipVectorChanged = new BeEvent<(newClip: ClipVector | undefined) => void>();
+  public readonly onClipVectorChanged = new BeEvent<
+    (newClip: ClipVector | undefined) => void
+  >();
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetailsProps }) {
-    if (!jsonProperties.viewDetails)
-      jsonProperties.viewDetails = {};
+    if (!jsonProperties.viewDetails) jsonProperties.viewDetails = {};
 
     this._json = jsonProperties.viewDetails;
   }
@@ -109,7 +121,8 @@ export class ViewDetails {
     return JsonUtils.asInt(this._json.gridOrient, GridOrientationType.WorldXY);
   }
   public set gridOrientation(orientation: GridOrientationType) {
-    this._json.gridOrient = GridOrientationType.WorldXY === orientation ? undefined : orientation;
+    this._json.gridOrient =
+      GridOrientationType.WorldXY === orientation ? undefined : orientation;
   }
 
   /** The number of grids per ref for the view. */
@@ -137,22 +150,23 @@ export class ViewDetails {
   public get clipVector(): ClipVector | undefined {
     if (undefined === this._clipVector) {
       const clip = this._json.clip;
-      this._clipVector = (undefined !== clip ? ClipVector.fromJSON(clip) : ClipVector.createEmpty());
+      this._clipVector =
+        undefined !== clip
+          ? ClipVector.fromJSON(clip)
+          : ClipVector.createEmpty();
     }
 
     return this._clipVector.isValid ? this._clipVector : undefined;
   }
   public set clipVector(clip: ClipVector | undefined) {
     const curClip = this.clipVector;
-    if (curClip === clip)
-      return;
+    if (curClip === clip) return;
 
     if (!curClip) {
       assert(undefined !== clip);
 
       // An empty clip is equivalent to no clip.
-      if (!clip.isValid)
-        return;
+      if (!clip.isValid) return;
     }
 
     clip = clip ?? ClipVector.createEmpty();
@@ -160,10 +174,8 @@ export class ViewDetails {
     this.onClipVectorChanged.raiseEvent(clip.isValid ? clip : undefined);
 
     this._clipVector = clip;
-    if (clip.isValid)
-      this._json.clip = clip.toJSON();
-    else
-      delete this._json.clip;
+    if (clip.isValid) this._json.clip = clip.toJSON();
+    else delete this._json.clip;
   }
 
   /** Returns the internal JSON representation. This is *not* a copy.
@@ -186,7 +198,9 @@ export class ViewDetails3d extends ViewDetails {
   }
 
   /** Event raised when just before assignment to the [[modelClipGroups]] property. */
-  public readonly onModelClipGroupsChanged = new BeEvent<(newGroups: ModelClipGroups) => void>();
+  public readonly onModelClipGroupsChanged = new BeEvent<
+    (newGroups: ModelClipGroups) => void
+  >();
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetails3dProps }) {
@@ -208,7 +222,9 @@ export class ViewDetails3d extends ViewDetails {
    */
   public get modelClipGroups(): ModelClipGroups {
     if (!this._modelClipGroups)
-      this._modelClipGroups = ModelClipGroups.fromJSON(this._json3d.modelClipGroups);
+      this._modelClipGroups = ModelClipGroups.fromJSON(
+        this._json3d.modelClipGroups
+      );
 
     return this._modelClipGroups;
   }

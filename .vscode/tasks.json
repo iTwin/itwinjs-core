@@ -20,9 +20,7 @@
       "type": "npm",
       "script": "build",
       "path": "core/ecschema-metadata/",
-      "problemMatcher": [
-        "$tsc-watch"
-      ],
+      "problemMatcher": ["$tsc-watch"],
       "group": "build",
       "isBackground": true
     }

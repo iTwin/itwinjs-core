@@ -26,12 +26,28 @@ export { Mixin } from "./Metadata/Mixin";
 export * from "./Metadata/OverrideFormat";
 export { Phenomenon } from "./Metadata/Phenomenon";
 export {
-  Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
-  StructArrayProperty, EnumerationArrayProperty, NavigationProperty, AnyArrayProperty, AnyEnumerationProperty,
-  AnyPrimitiveProperty, AnyProperty, AnyStructProperty, ArrayProperty, PrimitiveOrEnumPropertyBase,
+  Property,
+  PrimitiveProperty,
+  PrimitiveArrayProperty,
+  EnumerationProperty,
+  StructProperty,
+  StructArrayProperty,
+  EnumerationArrayProperty,
+  NavigationProperty,
+  AnyArrayProperty,
+  AnyEnumerationProperty,
+  AnyPrimitiveProperty,
+  AnyProperty,
+  AnyStructProperty,
+  ArrayProperty,
+  PrimitiveOrEnumPropertyBase,
 } from "./Metadata/Property";
 export { PropertyCategory } from "./Metadata/PropertyCategory";
-export { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "./Metadata/RelationshipClass";
+export {
+  RelationshipClass,
+  RelationshipConstraint,
+  RelationshipMultiplicity,
+} from "./Metadata/RelationshipClass";
 export { Schema } from "./Metadata/Schema";
 export * from "./Metadata/SchemaItem";
 export { Unit } from "./Metadata/Unit";
@@ -45,7 +61,10 @@ export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
-export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
+export {
+  CustomAttribute,
+  CustomAttributeContainerProps,
+} from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
 
 /** @docs-package-description

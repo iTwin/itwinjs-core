@@ -9,7 +9,9 @@ import { CharCode } from "./charCode";
  * @internal
  */
 export function convertSimple2RegExpPattern(pattern: string): string {
-  return pattern.replace(/[\-\\\{\}\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, "\\$&").replace(/[\*]/g, ".*");
+  return pattern
+    .replace(/[\-\\\{\}\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, "\\$&")
+    .replace(/[\*]/g, ".*");
 }
 
 /**
@@ -60,7 +62,10 @@ function doEqualsIgnoreCase(a: string, b: string, stopAt = a.length): boolean {
       }
     } else {
       // Any other char code
-      if (String.fromCharCode(codeA).toLowerCase() !== String.fromCharCode(codeB).toLowerCase()) {
+      if (
+        String.fromCharCode(codeA).toLowerCase() !==
+        String.fromCharCode(codeB).toLowerCase()
+      ) {
         return false;
       }
     }

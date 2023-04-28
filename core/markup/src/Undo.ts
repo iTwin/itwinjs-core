@@ -15,7 +15,7 @@ abstract class UndoAction {
   public cmdId: number = 0;
   public abstract reverse(): void;
   public abstract reinstate(): void;
-  constructor(public cmdName: string) { }
+  constructor(public cmdName: string) {}
 }
 
 /** created when a new element is added to the markup
@@ -30,7 +30,9 @@ class AddAction extends UndoAction {
     assert(this._parent !== undefined);
     this._index = _elem.position();
   }
-  public reinstate() { this._parent.add(this._elem, this._index); }
+  public reinstate() {
+    this._parent.add(this._elem, this._index);
+  }
   public reverse() {
     MarkupApp.markup!.selected.drop(this._elem);
     this._elem.remove();
@@ -49,7 +51,9 @@ class DeleteAction extends UndoAction {
     assert(this._parent !== undefined);
     this._index = _elem.position();
   }
-  public reverse() { this._parent.add(this._elem, this._index); }
+  public reverse() {
+    this._parent.add(this._elem, this._index);
+  }
   public reinstate() {
     MarkupApp.markup!.selected.drop(this._elem);
     this._elem.remove();
@@ -63,7 +67,12 @@ class RepositionAction extends UndoAction {
   private _newParent: MarkupElement;
   private _newIndex: number;
 
-  constructor(cmdName: string, private _elem: MarkupElement, private _oldIndex: number, private _oldParent: MarkupElement) {
+  constructor(
+    cmdName: string,
+    private _elem: MarkupElement,
+    private _oldIndex: number,
+    private _oldParent: MarkupElement
+  ) {
     super(cmdName);
     this._newParent = _elem.parent() as MarkupElement;
     assert(this._newParent !== undefined);
@@ -75,8 +84,7 @@ class RepositionAction extends UndoAction {
 
   public reverse() {
     this._oldParent.add(this._elem, this._oldIndex);
-    if (this._elem.inSelection)
-      MarkupApp.markup!.selected.drop(this._elem);
+    if (this._elem.inSelection) MarkupApp.markup!.selected.drop(this._elem);
   }
 }
 
@@ -84,7 +92,11 @@ class RepositionAction extends UndoAction {
  * @internal
  */
 class ModifyAction extends UndoAction {
-  constructor(cmdName: string, private _newElem: MarkupElement, private _oldElement: MarkupElement) {
+  constructor(
+    cmdName: string,
+    private _newElem: MarkupElement,
+    private _oldElement: MarkupElement
+  ) {
     super(cmdName);
     assert(_newElem !== undefined && _oldElement !== undefined);
     MarkupApp.markup!.selected.replace(_oldElement, _newElem);
@@ -118,10 +130,11 @@ export class UndoManager {
   }
 
   /** @internal */
-  public get size() { return this._stack.length; }
+  public get size() {
+    return this._stack.length;
+  }
   private startCommand() {
-    if (0 === this._grouped)
-      ++this._currentCmd;
+    if (0 === this._grouped) ++this._currentCmd;
   }
 
   private startGroup() {
@@ -129,7 +142,9 @@ export class UndoManager {
     ++this._grouped;
   }
 
-  private endGroup() { --this._grouped; }
+  private endGroup() {
+    --this._grouped;
+  }
 
   /** Perform a series of changes to markup elements that should all be reversed as a single operation.
    * @param fn the function that performs the changes to the elements. It must call the onXXX methods of this class to store
@@ -144,39 +159,69 @@ export class UndoManager {
   }
 
   /** call this from within a [[performOperation]] function *after* an element has been added to a markup */
-  public onAdded(elem: MarkupElement) { this.addAction(new AddAction(this._cmdName, elem)); }
+  public onAdded(elem: MarkupElement) {
+    this.addAction(new AddAction(this._cmdName, elem));
+  }
   /** call this from within a [[performOperation]] function *before* an element is about to be deleted from a markup */
-  public onDelete(elem: MarkupElement) { this.addAction(new DeleteAction(this._cmdName, elem)); }
+  public onDelete(elem: MarkupElement) {
+    this.addAction(new DeleteAction(this._cmdName, elem));
+  }
   /** call this from within a [[performOperation]] function *after* an element has been moved in display order in a markup */
-  public onRepositioned(elem: MarkupElement, oldIndex: number, oldParent: MarkupElement) { this.addAction(new RepositionAction(this._cmdName, elem, oldIndex, oldParent)); }
+  public onRepositioned(
+    elem: MarkupElement,
+    oldIndex: number,
+    oldParent: MarkupElement
+  ) {
+    this.addAction(
+      new RepositionAction(this._cmdName, elem, oldIndex, oldParent)
+    );
+  }
   /** call this from within a [[performOperation]] function *after* an element has been modified in a markup */
-  public onModified(newElem: MarkupElement, oldElem: MarkupElement) { this.addAction(new ModifyAction(this._cmdName, newElem, oldElem)); }
+  public onModified(newElem: MarkupElement, oldElem: MarkupElement) {
+    this.addAction(new ModifyAction(this._cmdName, newElem, oldElem));
+  }
 
   /** determine whether there are any un-reversed operations */
-  public get undoPossible() { return this._currentPos > 0; }
+  public get undoPossible() {
+    return this._currentPos > 0;
+  }
   /** determine whether there are any reversed operations */
-  public get redoPossible() { return this._currentPos < this.size; }
+  public get redoPossible() {
+    return this._currentPos < this.size;
+  }
   /** the name of the operation that can be undone (or undefined) */
-  public get undoString() { return this.undoPossible ? this._stack[this._currentPos - 1].cmdName : undefined; }
+  public get undoString() {
+    return this.undoPossible
+      ? this._stack[this._currentPos - 1].cmdName
+      : undefined;
+  }
   /** the name of the operation that can be redone (or undefined) */
-  public get redoString() { return this.redoPossible ? this._stack[this._currentPos].cmdName : undefined; }
+  public get redoString() {
+    return this.redoPossible
+      ? this._stack[this._currentPos].cmdName
+      : undefined;
+  }
 
   /** reverse the most recent operation, if any */
   public doUndo() {
-    if (this._currentPos === 0)
-      return; // no operations have been performed
+    if (this._currentPos === 0) return; // no operations have been performed
 
     const cmdId = this._stack[this._currentPos - 1].cmdId;
-    while (this._currentPos > 0 && cmdId === this._stack[this._currentPos - 1].cmdId)
+    while (
+      this._currentPos > 0 &&
+      cmdId === this._stack[this._currentPos - 1].cmdId
+    )
       this._stack[--this._currentPos].reverse();
   }
   /** reinstate the most recently reversed operation, if any */
   public doRedo() {
-    if (this._currentPos === this.size)
-      return; // no operations have been reversed.
+    if (this._currentPos === this.size) return; // no operations have been reversed.
 
     const cmdId = this._stack[this._currentPos].cmdId;
-    while (this._currentPos < this.size && cmdId === this._stack[this._currentPos].cmdId)
+    while (
+      this._currentPos < this.size &&
+      cmdId === this._stack[this._currentPos].cmdId
+    )
       this._stack[this._currentPos++].reinstate();
   }
 }

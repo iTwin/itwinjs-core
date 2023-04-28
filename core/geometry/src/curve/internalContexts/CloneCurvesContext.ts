@@ -24,32 +24,39 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     this._transform = transform;
     this._result = undefined;
   }
-  public static clone(target: CurveCollection, transform?: Transform): CurveCollection | undefined {
+  public static clone(
+    target: CurveCollection,
+    transform?: Transform
+  ): CurveCollection | undefined {
     const context = new CloneCurvesContext(transform);
     target.announceToCurveProcessor(context);
     return context._result;
   }
   public override enter(c: CurveCollection) {
-    if (c instanceof CurveCollection)
-      super.enter(c.cloneEmptyPeer());
+    if (c instanceof CurveCollection) super.enter(c.cloneEmptyPeer());
   }
   public override leave(): CurveCollection | undefined {
     const result = super.leave();
     if (result) {
-      if (this._stack.length === 0) // this should only happen once !!!
+      if (this._stack.length === 0)
+        // this should only happen once !!!
         this._result = result;
-      else // push this result to top of stack.
-        this._stack[this._stack.length - 1].tryAddChild(result);
+      // push this result to top of stack.
+      else this._stack[this._stack.length - 1].tryAddChild(result);
     }
     return result;
   }
   // specialized clone methods override this (and allow announceCurvePrimitive to insert to parent)
-  protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
-    if (this._transform)
-      return primitive.cloneTransformed(this._transform);
+  protected doClone(
+    primitive: CurvePrimitive
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
+    if (this._transform) return primitive.cloneTransformed(this._transform);
     return primitive.clone();
   }
-  public override announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
+  public override announceCurvePrimitive(
+    primitive: CurvePrimitive,
+    _indexInParent: number
+  ): void {
     const c = this.doClone(primitive);
     if (c !== undefined && this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];

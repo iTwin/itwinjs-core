@@ -9,9 +9,7 @@
     "skipLibCheck": true,
     "composite": true
   },
-  "include": [
-    "./**/*.ts"
-  ],
+  "include": ["./**/*.ts"],
   "references": [
     {
       "path": "../"

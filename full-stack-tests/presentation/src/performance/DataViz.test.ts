@@ -4,12 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable no-console */
 import { expect } from "chai";
-import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin/core-bentley";
+import {
+  assert,
+  Guid,
+  Id64String,
+  OrderedId64Iterable,
+  StopWatch,
+} from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
-  ChildNodeSpecificationTypes, ClassInfo, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, Field, FieldDescriptor, InstanceKey,
-  KeySet, NodeKey, PropertiesField, PropertiesFieldDescriptor, PropertyInfo, RelationshipDirection, Ruleset, RuleTypes, StrippedRelationshipPath,
+  ChildNodeSpecificationTypes,
+  ClassInfo,
+  ContentSpecificationTypes,
+  DefaultContentDisplayTypes,
+  Descriptor,
+  Field,
+  FieldDescriptor,
+  InstanceKey,
+  KeySet,
+  NodeKey,
+  PropertiesField,
+  PropertiesFieldDescriptor,
+  PropertyInfo,
+  RelationshipDirection,
+  Ruleset,
+  RuleTypes,
+  StrippedRelationshipPath,
   Value,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -39,24 +60,31 @@ describe("#performance DataViz requests", () => {
 
   before(async () => {
     await initialize();
-    iModel = await SnapshotConnection.openFile(`assets/datasets/${iModelFileName}`);
+    iModel = await SnapshotConnection.openFile(
+      `assets/datasets/${iModelFileName}`
+    );
     classHierarchy = await ECClassHierarchy.create(iModel);
     descriptor = (await Presentation.presentation.getContentDescriptor({
       imodel: iModel,
       rulesetOrId: {
         id: `BIG`,
-        rules: [{
-          ruleType: RuleTypes.Content,
-          specifications: [{
-            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-            classes: {
-              schemaName: "BisCore",
-              classNames: ["GeometricElement"],
-              arePolymorphic: true,
-            },
-            handlePropertiesPolymorphically: true,
-          }],
-        }],
+        rules: [
+          {
+            ruleType: RuleTypes.Content,
+            specifications: [
+              {
+                specType:
+                  ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: {
+                  schemaName: "BisCore",
+                  classNames: ["GeometricElement"],
+                  arePolymorphic: true,
+                },
+                handlePropertiesPolymorphically: true,
+              },
+            ],
+          },
+        ],
       },
       displayType: DefaultContentDisplayTypes.PropertyPane,
       keys: new KeySet(),
@@ -69,22 +97,36 @@ describe("#performance DataViz requests", () => {
   });
 
   testedPropertyLabels.forEach((filteredFieldLabel) => {
-
     describe(`Property: "${filteredFieldLabel}"`, () => {
       let filteredFields: PropertiesField[];
 
       before(async () => {
         // There may be multiple fields with the same label. E.g. a direct field and several fields from related instances
-        filteredFields = getFieldsByLabel(descriptor.fields, filteredFieldLabel) as PropertiesField[];
+        filteredFields = getFieldsByLabel(
+          descriptor.fields,
+          filteredFieldLabel
+        ) as PropertiesField[];
         console.log(`Using ${filteredFields.length} fields for filtering`);
       });
 
       it("gets distinct values", async () => {
-        const { requestsCount: currentRequestsCount, requestsTime: currentRequestsTime, distinctValues: currentDistinctValues } = await getDistinctValuesCurrent();
-        console.log(`Current implementation took ${currentRequestsTime} s. with ${currentRequestsCount} requests.`);
+        const {
+          requestsCount: currentRequestsCount,
+          requestsTime: currentRequestsTime,
+          distinctValues: currentDistinctValues,
+        } = await getDistinctValuesCurrent();
+        console.log(
+          `Current implementation took ${currentRequestsTime} s. with ${currentRequestsCount} requests.`
+        );
 
-        const { requestsCount: suggestedRequestsCount, requestsTime: suggestedRequestsTime, distinctValues: suggestedDistinctValues } = await getDistinctValuesSuggested();
-        console.log(`Suggested implementation took ${suggestedRequestsTime} s. with ${suggestedRequestsCount} requests.`);
+        const {
+          requestsCount: suggestedRequestsCount,
+          requestsTime: suggestedRequestsTime,
+          distinctValues: suggestedDistinctValues,
+        } = await getDistinctValuesSuggested();
+        console.log(
+          `Suggested implementation took ${suggestedRequestsTime} s. with ${suggestedRequestsCount} requests.`
+        );
 
         console.log(`Total distinct values: ${suggestedDistinctValues.size}`);
 
@@ -110,18 +152,25 @@ describe("#performance DataViz requests", () => {
         for (const filteredField of filteredFields) {
           // for every property in the properties field, run a query to get a list of classes
           const classes: ECClassInfo[] = [];
-          for (const { property: filteredProperty } of filteredField.properties) {
+          for (const {
+            property: filteredProperty,
+          } of filteredField.properties) {
             if (filteredField.parent) {
               const { rootField } = getRootField(filteredField);
               assert(rootField.isNestedContentField());
-              classes.push(await classHierarchy.getClassInfoById(rootField.contentClassInfo.id));
+              classes.push(
+                await classHierarchy.getClassInfoById(
+                  rootField.contentClassInfo.id
+                )
+              );
             } else {
               // this simulates DR's behavior:
               // 1. find all subclasses of property class that have instances
               // 2. take all their base classes up until the bis.GeometricElement
               // I don't understand the purpose of the second step, because the rulesets are set up to select non-polymorphically
               // and using any class that has no instances is just a waste of time.
-              const [schemaName, className] = filteredProperty.classInfo.name.split(":");
+              const [schemaName, className] =
+                filteredProperty.classInfo.name.split(":");
               const classesQuery = `
               select hh.SourceECInstanceId as classId
               from meta.classhasallbaseclasses hh
@@ -134,50 +183,70 @@ describe("#performance DataViz requests", () => {
                   where h.sourceecinstanceid in (select ECClassId from BisCore.GeometricElement)
                 )
             `;
-              for await (const { classId } of iModel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+              for await (const { classId } of iModel.createQueryReader(
+                classesQuery,
+                undefined,
+                { rowFormat: QueryRowFormat.UseJsPropertyNames }
+              )) {
                 classes.push(await classHierarchy.getClassInfoById(classId));
               }
             }
           }
 
           // create a ruleset for every class we found
-          const rulesets = classes.map((classInfo): Ruleset => ({
-            id: `DataViz/${classInfo.schemaName}/${classInfo.name}/${filteredField.label}`,
-            rules: [{
-              ruleType: RuleTypes.Content,
-              specifications: [{
-                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-                classes: {
-                  schemaName: classInfo.schemaName,
-                  classNames: [classInfo.name],
-                  arePolymorphic: false,
+          const rulesets = classes.map(
+            (classInfo): Ruleset => ({
+              id: `DataViz/${classInfo.schemaName}/${classInfo.name}/${filteredField.label}`,
+              rules: [
+                {
+                  ruleType: RuleTypes.Content,
+                  specifications: [
+                    {
+                      specType:
+                        ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                      classes: {
+                        schemaName: classInfo.schemaName,
+                        classNames: [classInfo.name],
+                        arePolymorphic: false,
+                      },
+                    },
+                  ],
                 },
-              }],
-            }],
-          }));
+              ],
+            })
+          );
 
           // make a `getPagedDistinctValues` request for every ruleset and merge the values into a single map
-          await Promise.all(rulesets.map(async (ruleset) => {
-            ++requestsCount;
-            const fieldDescriptor = filteredField.getFieldDescriptor();
-            if (FieldDescriptor.isProperties(fieldDescriptor)) {
-              // we select related fields as direct ones, so need to clear the relationship path
-              fieldDescriptor.pathFromSelectToPropertyClass = [];
-            }
-            const res = await Presentation.presentation.getPagedDistinctValues({
-              imodel: iModel,
-              rulesetOrId: ruleset,
-              descriptor: {},
-              keys: new KeySet(),
-              fieldDescriptor,
-            });
-            res.items.map((dv) => {
-              const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
-              pushValues(distinctValues, displayValue, dv.groupedRawValues);
-            });
-          }));
+          await Promise.all(
+            rulesets.map(async (ruleset) => {
+              ++requestsCount;
+              const fieldDescriptor = filteredField.getFieldDescriptor();
+              if (FieldDescriptor.isProperties(fieldDescriptor)) {
+                // we select related fields as direct ones, so need to clear the relationship path
+                fieldDescriptor.pathFromSelectToPropertyClass = [];
+              }
+              const res =
+                await Presentation.presentation.getPagedDistinctValues({
+                  imodel: iModel,
+                  rulesetOrId: ruleset,
+                  descriptor: {},
+                  keys: new KeySet(),
+                  fieldDescriptor,
+                });
+              res.items.map((dv) => {
+                const displayValue = dv.displayValue
+                  ? dv.displayValue.toString()
+                  : "";
+                pushValues(distinctValues, displayValue, dv.groupedRawValues);
+              });
+            })
+          );
         }
-        return { requestsCount, requestsTime: timer.currentSeconds, distinctValues };
+        return {
+          requestsCount,
+          requestsTime: timer.currentSeconds,
+          distinctValues,
+        };
       }
 
       /**
@@ -198,26 +267,37 @@ describe("#performance DataViz requests", () => {
             const path = rootField.pathToPrimaryClass;
             classIds.add(path[path.length - 1].targetClassInfo.id);
           } else if (rootField.isPropertiesField()) {
-            rootField.properties.forEach((p) => classIds.add(p.property.classInfo.id));
+            rootField.properties.forEach((p) =>
+              classIds.add(p.property.classInfo.id)
+            );
           }
         }
         // get all root class infos
-        const classes = await Promise.all([...classIds].map(async (classId) => classHierarchy.getClassInfoById(classId)));
+        const classes = await Promise.all(
+          [...classIds].map(async (classId) =>
+            classHierarchy.getClassInfoById(classId)
+          )
+        );
 
         // create a ruleset that covers all root classes
         const ruleset: Ruleset = {
           id: `DataViz/DistinctValues/${Guid.createValue()}`,
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: classes.map((classInfo) => ({
-                schemaName: classInfo.schemaName,
-                classNames: [classInfo.name],
-                arePolymorphic: true,
-              })),
-            }],
-          }],
+          rules: [
+            {
+              ruleType: RuleTypes.Content,
+              specifications: [
+                {
+                  specType:
+                    ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                  classes: classes.map((classInfo) => ({
+                    schemaName: classInfo.schemaName,
+                    classNames: [classInfo.name],
+                    arePolymorphic: true,
+                  })),
+                },
+              ],
+            },
+          ],
         };
 
         let requestsCount = 0;
@@ -234,34 +314,65 @@ describe("#performance DataViz requests", () => {
             fieldDescriptor: filteredField.getFieldDescriptor(),
           });
           res.items.map((dv) => {
-            const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
+            const displayValue = dv.displayValue
+              ? dv.displayValue.toString()
+              : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
           });
           ++requestsCount;
         }
 
-        return { requestsCount, requestsTime: timer.currentSeconds, distinctValues };
+        return {
+          requestsCount,
+          requestsTime: timer.currentSeconds,
+          distinctValues,
+        };
       }
 
       it("get grouped element IDs", async () => {
         // this is needed as input for the tasks we test
         const { distinctValues } = await getDistinctValuesSuggested();
 
-        const { requestsCount: currentRequestsCount, requestsTime: currentRequestsTime, entries: currentEntries } = await getGroupedElementIdsCurrent(distinctValues);
-        console.log(`Current implementation took ${currentRequestsTime} s. with ${currentRequestsCount.elementIds} requests for direct element IDs and ${currentRequestsCount.childElementIds} for child element IDs.`);
+        const {
+          requestsCount: currentRequestsCount,
+          requestsTime: currentRequestsTime,
+          entries: currentEntries,
+        } = await getGroupedElementIdsCurrent(distinctValues);
+        console.log(
+          `Current implementation took ${currentRequestsTime} s. with ${currentRequestsCount.elementIds} requests for direct element IDs and ${currentRequestsCount.childElementIds} for child element IDs.`
+        );
 
-        const { requestsCount: suggestedRequestsCount, requestsTime: suggestedRequestsTime, entries: suggestedEntries } = await getGroupedElementIdsSuggested(distinctValues);
-        console.log(`Suggested implementation took ${suggestedRequestsTime} s. with ${suggestedRequestsCount.elementIds} requests for direct element IDs and ${suggestedRequestsCount.childElementIds} for child element IDs.`);
+        const {
+          requestsCount: suggestedRequestsCount,
+          requestsTime: suggestedRequestsTime,
+          entries: suggestedEntries,
+        } = await getGroupedElementIdsSuggested(distinctValues);
+        console.log(
+          `Suggested implementation took ${suggestedRequestsTime} s. with ${suggestedRequestsCount.elementIds} requests for direct element IDs and ${suggestedRequestsCount.childElementIds} for child element IDs.`
+        );
 
-        const totals = [...suggestedEntries.values()].reduce<{ e: number, c: number }>((t, curr) => ({ e: t.e + curr.elementIds.length, c: t.c + curr.childIds.length }), { e: 0, c: 0 });
-        console.log(`Total ${suggestedEntries.size} distinct values with ${totals.e} elements and ${totals.c} child elements.`);
+        const totals = [...suggestedEntries.values()].reduce<{
+          e: number;
+          c: number;
+        }>(
+          (t, curr) => ({
+            e: t.e + curr.elementIds.length,
+            c: t.c + curr.childIds.length,
+          }),
+          { e: 0, c: 0 }
+        );
+        console.log(
+          `Total ${suggestedEntries.size} distinct values with ${totals.e} elements and ${totals.c} child elements.`
+        );
 
         // ensure both approaches produce the same result
         expect(suggestedEntries.size).to.eq(currentEntries.size);
         for (const [label, ids] of suggestedEntries) {
           const currentEntry = currentEntries.get(label);
           expect(currentEntry).to.not.be.undefined;
-          expect(ids.elementIds.sort()).to.deep.eq(currentEntry!.elementIds.sort());
+          expect(ids.elementIds.sort()).to.deep.eq(
+            currentEntry!.elementIds.sort()
+          );
           expect(ids.childIds.sort()).to.deep.eq(currentEntry!.childIds.sort());
         }
 
@@ -284,40 +395,81 @@ describe("#performance DataViz requests", () => {
        * The multiplier `3` is used because hierarchy depth is `2` (at least 2 requests are needed to get the hierarchy) plus every hierarchy
        * containing nodes gets a `getChildNodeIds` request.
        */
-      async function getGroupedElementIdsCurrent(distinctValues: Map<string, Set<Value>>) {
+      async function getGroupedElementIdsCurrent(
+        distinctValues: Map<string, Set<Value>>
+      ) {
         // creating rulesets for each distinct value is not included in the measured time as DR does that when
         // getting distinct values
         const distinctValueRulesets = new Map<string, Set<Ruleset>>();
-        const createWhereClause = (propertyClassAlias: string, filteredProperty: PropertyInfo, values: Value[]) => {
+        const createWhereClause = (
+          propertyClassAlias: string,
+          filteredProperty: PropertyInfo,
+          values: Value[]
+        ) => {
           return values.reduce((filter, rawValue) => {
-            if (filter !== "")
-              filter += " OR ";
+            if (filter !== "") filter += " OR ";
             filter += `${propertyClassAlias}.${filteredProperty.name}`;
             if (rawValue === undefined || rawValue === null)
               filter += " IS NULL";
             else
-              filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue}'` : rawValue}`;
+              filter += ` = ${
+                filteredProperty.type.toLowerCase() === "string"
+                  ? `'${rawValue}'`
+                  : rawValue
+              }`;
             return filter;
           }, "");
         };
         // every field is handled separately
         for (const filteredField of filteredFields) {
           // find and group all classes that have instances with each individual distinct value
-          const displayValueEntries = new Map<string, Set<{ contentClassId: Id64String, pathFromContentToPropertyClass: StrippedRelationshipPath, filteredProperty: PropertyInfo, rawValues: Value[] }>>();
-          const readEntries = async (queryBase: string, propertyClassAlias: string, filteredProperty: PropertyInfo, pathFromContentToPropertyClass: StrippedRelationshipPath) => {
+          const displayValueEntries = new Map<
+            string,
+            Set<{
+              contentClassId: Id64String;
+              pathFromContentToPropertyClass: StrippedRelationshipPath;
+              filteredProperty: PropertyInfo;
+              rawValues: Value[];
+            }>
+          >();
+          const readEntries = async (
+            queryBase: string,
+            propertyClassAlias: string,
+            filteredProperty: PropertyInfo,
+            pathFromContentToPropertyClass: StrippedRelationshipPath
+          ) => {
             for (const distinctValuesEntry of distinctValues) {
               const [displayValue, rawValues] = distinctValuesEntry;
-              const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
-              for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-                pushValues(displayValueEntries, displayValue, [{ contentClassId: classId, pathFromContentToPropertyClass, filteredProperty, rawValues: [...rawValues] }]);
+              const filteredClassesQuery = `${queryBase}${createWhereClause(
+                propertyClassAlias,
+                filteredProperty,
+                [...rawValues]
+              )}`;
+              for await (const { classId } of iModel.createQueryReader(
+                filteredClassesQuery,
+                undefined,
+                { rowFormat: QueryRowFormat.UseJsPropertyNames }
+              )) {
+                pushValues(displayValueEntries, displayValue, [
+                  {
+                    contentClassId: classId,
+                    pathFromContentToPropertyClass,
+                    filteredProperty,
+                    rawValues: [...rawValues],
+                  },
+                ]);
               }
             }
           };
           // create a different query based on whether the filtered field is root or related field
-          const { rootField, pathFromRootToPropertiesField } = getRootField(filteredField);
+          const { rootField, pathFromRootToPropertiesField } =
+            getRootField(filteredField);
           if (rootField.isPropertiesField()) {
-            for (const { property: filteredProperty } of filteredField.properties) {
-              const [schemaName, className] = filteredProperty.classInfo.name.split(":");
+            for (const {
+              property: filteredProperty,
+            } of filteredField.properties) {
+              const [schemaName, className] =
+                filteredProperty.classInfo.name.split(":");
               const classesQueryBase = `
                 select DISTINCT e.ECClassId classId
                 from ${schemaName}.${className} e
@@ -327,7 +479,10 @@ describe("#performance DataViz requests", () => {
             }
           } else if (rootField.isNestedContentField()) {
             const filteredProperty = filteredField.properties[0].property;
-            const contentClass = rootField.pathToPrimaryClass[rootField.pathToPrimaryClass.length - 1].targetClassInfo;
+            const contentClass =
+              rootField.pathToPrimaryClass[
+                rootField.pathToPrimaryClass.length - 1
+              ].targetClassInfo;
             const [schemaName, className] = contentClass.name.split(":");
             let classesQueryBase = `
               select DISTINCT e.ECClassId classId
@@ -336,58 +491,115 @@ describe("#performance DataViz requests", () => {
             let propertyClassAlias = "e";
             pathFromRootToPropertiesField.forEach((step, i) => {
               classesQueryBase += `
-                join ${step.relationshipName.replace(":", ".")} r${i} on r${i}.sourceecinstanceid = ${i === 0 ? "e" : `c${i - 1}`}.ecinstanceid
-                join ${step.targetClassName.replace(":", ".")} c${i} on c${i}.ecinstanceid = r${i}.targetecinstanceid
+                join ${step.relationshipName.replace(
+                  ":",
+                  "."
+                )} r${i} on r${i}.sourceecinstanceid = ${
+                i === 0 ? "e" : `c${i - 1}`
+              }.ecinstanceid
+                join ${step.targetClassName.replace(
+                  ":",
+                  "."
+                )} c${i} on c${i}.ecinstanceid = r${i}.targetecinstanceid
               `;
               propertyClassAlias = `c${i}`;
             });
             classesQueryBase += " where ";
-            await readEntries(classesQueryBase, propertyClassAlias, filteredProperty, pathFromRootToPropertiesField);
+            await readEntries(
+              classesQueryBase,
+              propertyClassAlias,
+              filteredProperty,
+              pathFromRootToPropertiesField
+            );
           }
 
           // Create ruleset for each distinct values entry. Each entry has rulesets for every class that contains the property.
           for (const [displayValue, entries] of displayValueEntries) {
             const rulesets: Ruleset[] = [];
-            for (const { contentClassId, pathFromContentToPropertyClass, filteredProperty, rawValues } of entries) {
-              const contentClassInfo = await classHierarchy.getClassInfoById(contentClassId);
-              const propertyClassAlias = pathFromContentToPropertyClass.length === 0 ? "this" : "related";
+            for (const {
+              contentClassId,
+              pathFromContentToPropertyClass,
+              filteredProperty,
+              rawValues,
+            } of entries) {
+              const contentClassInfo = await classHierarchy.getClassInfoById(
+                contentClassId
+              );
+              const propertyClassAlias =
+                pathFromContentToPropertyClass.length === 0
+                  ? "this"
+                  : "related";
               rulesets.push({
                 id: `DataVizLegend/${contentClassInfo.schemaName}:${contentClassInfo.name}/${filteredProperty.name}=${displayValue}`,
-                rules: [{
-                  ruleType: RuleTypes.RootNodes,
-                  specifications: [{
-                    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                    classes: { schemaName: contentClassInfo.schemaName, classNames: [contentClassInfo.name], arePolymorphic: false },
-                    relatedInstances: pathFromContentToPropertyClass.length > 0 ? [{
-                      relationshipPath: pathFromContentToPropertyClass.map((step) => {
-                        const [relationshipSchemaName, relationshipClassName] = step.relationshipName.split(":");
-                        const [targetSchemaName, targetClassName] = step.targetClassName.split(":");
-                        return {
-                          relationship: { schemaName: relationshipSchemaName, className: relationshipClassName },
-                          direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
-                          targetClass: { schemaName: targetSchemaName, className: targetClassName },
-                        };
-                      }),
-                      isRequired: true,
-                      alias: propertyClassAlias,
-                    }] : [],
-                    instanceFilter: rawValues.reduce<string>((filter, rawValue) => {
-                      if (filter !== "")
-                        filter += " OR ";
-                      filter += `${propertyClassAlias}.${filteredProperty.name} = `;
-                      if (rawValue === undefined || rawValue === null)
-                        filter += "NULL";
-                      else if (filteredProperty.type.toLowerCase() === "string")
-                        filter += `'${rawValue}'`;
-                      else
-                        filter += rawValue;
-                      return filter;
-                    }, ""),
-                    groupByClass: true,
-                    groupByLabel: false,
-                    doNotSort: true,
-                  }],
-                }],
+                rules: [
+                  {
+                    ruleType: RuleTypes.RootNodes,
+                    specifications: [
+                      {
+                        specType:
+                          ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                        classes: {
+                          schemaName: contentClassInfo.schemaName,
+                          classNames: [contentClassInfo.name],
+                          arePolymorphic: false,
+                        },
+                        relatedInstances:
+                          pathFromContentToPropertyClass.length > 0
+                            ? [
+                                {
+                                  relationshipPath:
+                                    pathFromContentToPropertyClass.map(
+                                      (step) => {
+                                        const [
+                                          relationshipSchemaName,
+                                          relationshipClassName,
+                                        ] = step.relationshipName.split(":");
+                                        const [
+                                          targetSchemaName,
+                                          targetClassName,
+                                        ] = step.targetClassName.split(":");
+                                        return {
+                                          relationship: {
+                                            schemaName: relationshipSchemaName,
+                                            className: relationshipClassName,
+                                          },
+                                          direction: step.isForwardRelationship
+                                            ? RelationshipDirection.Forward
+                                            : RelationshipDirection.Backward,
+                                          targetClass: {
+                                            schemaName: targetSchemaName,
+                                            className: targetClassName,
+                                          },
+                                        };
+                                      }
+                                    ),
+                                  isRequired: true,
+                                  alias: propertyClassAlias,
+                                },
+                              ]
+                            : [],
+                        instanceFilter: rawValues.reduce<string>(
+                          (filter, rawValue) => {
+                            if (filter !== "") filter += " OR ";
+                            filter += `${propertyClassAlias}.${filteredProperty.name} = `;
+                            if (rawValue === undefined || rawValue === null)
+                              filter += "NULL";
+                            else if (
+                              filteredProperty.type.toLowerCase() === "string"
+                            )
+                              filter += `'${rawValue}'`;
+                            else filter += rawValue;
+                            return filter;
+                          },
+                          ""
+                        ),
+                        groupByClass: true,
+                        groupByLabel: false,
+                        doNotSort: true,
+                      },
+                    ],
+                  },
+                ],
               });
             }
             pushValues(distinctValueRulesets, displayValue, rulesets);
@@ -403,46 +615,62 @@ describe("#performance DataViz requests", () => {
           elementIds: 0,
           childElementIds: 0,
         };
-        const idEntries = new Map<string, { elementIds: Id64String[], childIds: Id64String[] }>();
-        async function loadHierarchy(ruleset: Ruleset, parentKey?: NodeKey): Promise<InstanceKey[]> {
+        const idEntries = new Map<
+          string,
+          { elementIds: Id64String[]; childIds: Id64String[] }
+        >();
+        async function loadHierarchy(
+          ruleset: Ruleset,
+          parentKey?: NodeKey
+        ): Promise<InstanceKey[]> {
           ++requestsCount.elementIds;
           const nodes = await Presentation.presentation.getNodes({
             imodel: iModel,
             rulesetOrId: ruleset,
             parentKey,
           });
-          const keysPerNode = await Promise.all(nodes.map(async (node) => {
-            const keys: InstanceKey[] = [];
-            const key = node.key;
-            if (NodeKey.isInstancesNodeKey(key)) {
-              keys.push(...key.instanceKeys);
-            }
-            if (node.hasChildren)
-              keys.push(...await loadHierarchy(ruleset, key));
-            return keys;
-          }));
+          const keysPerNode = await Promise.all(
+            nodes.map(async (node) => {
+              const keys: InstanceKey[] = [];
+              const key = node.key;
+              if (NodeKey.isInstancesNodeKey(key)) {
+                keys.push(...key.instanceKeys);
+              }
+              if (node.hasChildren)
+                keys.push(...(await loadHierarchy(ruleset, key)));
+              return keys;
+            })
+          );
           return keysPerNode.reduce((keys, curr) => [...keys, ...curr], []);
         }
-        await Promise.all([...distinctValueRulesets].map(async (entry) => {
-          const [label, rulesets] = entry;
-          await Promise.all([...rulesets].map(async (ruleset) => {
-            const elementKeys = await loadHierarchy(ruleset, undefined);
-            const elementIds = elementKeys.map((k) => k.id);
-            let childIds: Id64String[] = [];
-            if (elementKeys.length > 0) {
-              ++requestsCount.childElementIds;
-              childIds = await loadChildElementIds(iModel, elementIds);
-            }
-            const target = idEntries.get(label);
-            if (target) {
-              target.elementIds.push(...elementIds);
-              target.childIds.push(...childIds);
-            } else {
-              idEntries.set(label, { elementIds, childIds });
-            }
-          }));
-        }));
-        return { requestsCount, requestsTime: timer.currentSeconds, entries: idEntries };
+        await Promise.all(
+          [...distinctValueRulesets].map(async (entry) => {
+            const [label, rulesets] = entry;
+            await Promise.all(
+              [...rulesets].map(async (ruleset) => {
+                const elementKeys = await loadHierarchy(ruleset, undefined);
+                const elementIds = elementKeys.map((k) => k.id);
+                let childIds: Id64String[] = [];
+                if (elementKeys.length > 0) {
+                  ++requestsCount.childElementIds;
+                  childIds = await loadChildElementIds(iModel, elementIds);
+                }
+                const target = idEntries.get(label);
+                if (target) {
+                  target.elementIds.push(...elementIds);
+                  target.childIds.push(...childIds);
+                } else {
+                  idEntries.set(label, { elementIds, childIds });
+                }
+              })
+            );
+          })
+        );
+        return {
+          requestsCount,
+          requestsTime: timer.currentSeconds,
+          entries: idEntries,
+        };
       }
 
       /**
@@ -456,7 +684,9 @@ describe("#performance DataViz requests", () => {
        *
        * The amount of requests made is: `{number of unique filtered field classes} + {number of distinct values}`.
        */
-      async function getGroupedElementIdsSuggested(distinctValues: Map<string, Set<Value>>) {
+      async function getGroupedElementIdsSuggested(
+        distinctValues: Map<string, Set<Value>>
+      ) {
         const requestsCount = {
           elementIds: 0,
           childElementIds: 0,
@@ -464,16 +694,32 @@ describe("#performance DataViz requests", () => {
         const timer = new StopWatch("", true);
 
         // group filtered fields by their root content classes
-        const selectClasses = new Map<Id64String, { class: ClassInfo, fields: Array<{ rootField: Field, filteredField: Field, stack: Field[] }> }>();
+        const selectClasses = new Map<
+          Id64String,
+          {
+            class: ClassInfo;
+            fields: Array<{
+              rootField: Field;
+              filteredField: Field;
+              stack: Field[];
+            }>;
+          }
+        >();
         for (const filteredField of filteredFields) {
           const { rootField, stack } = getRootField(filteredField);
           if (rootField.isNestedContentField()) {
-            const targetClassInfo = rootField.pathToPrimaryClass[rootField.pathToPrimaryClass.length - 1].targetClassInfo;
+            const targetClassInfo =
+              rootField.pathToPrimaryClass[
+                rootField.pathToPrimaryClass.length - 1
+              ].targetClassInfo;
             const entry = selectClasses.get(targetClassInfo.id);
             if (entry) {
               entry.fields.push({ filteredField, rootField, stack });
             } else {
-              selectClasses.set(targetClassInfo.id, { class: targetClassInfo, fields: [{ filteredField, rootField, stack }] });
+              selectClasses.set(targetClassInfo.id, {
+                class: targetClassInfo,
+                fields: [{ filteredField, rootField, stack }],
+              });
             }
           } else if (rootField.isPropertiesField()) {
             rootField.properties.forEach((p) => {
@@ -482,7 +728,10 @@ describe("#performance DataViz requests", () => {
               if (entry) {
                 entry.fields.push({ filteredField, rootField, stack });
               } else {
-                selectClasses.set(propertyClass.id, { class: propertyClass, fields: [{ filteredField, rootField, stack }] });
+                selectClasses.set(propertyClass.id, {
+                  class: propertyClass,
+                  fields: [{ filteredField, rootField, stack }],
+                });
               }
             });
           }
@@ -496,17 +745,22 @@ describe("#performance DataViz requests", () => {
           const [schemaName, className] = selectClass.name.split(":");
           const ruleset: Ruleset = {
             id: `DataVizLegend/Elements/${selectClass.name}`,
-            rules: [{
-              ruleType: RuleTypes.Content,
-              specifications: [{
-                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-                classes: {
-                  schemaName,
-                  classNames: [className],
-                  arePolymorphic: true,
-                },
-              }],
-            }],
+            rules: [
+              {
+                ruleType: RuleTypes.Content,
+                specifications: [
+                  {
+                    specType:
+                      ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                    classes: {
+                      schemaName,
+                      classNames: [className],
+                      arePolymorphic: true,
+                    },
+                  },
+                ],
+              },
+            ],
           };
 
           // retrieve the content with just the filtered properties
@@ -516,7 +770,9 @@ describe("#performance DataViz requests", () => {
             descriptor: {
               fieldsSelector: {
                 type: "include",
-                fields: classFields.map((classField) => classField.filteredField.getFieldDescriptor()),
+                fields: classFields.map((classField) =>
+                  classField.filteredField.getFieldDescriptor()
+                ),
               },
             },
             keys: new KeySet(),
@@ -531,7 +787,11 @@ describe("#performance DataViz requests", () => {
               let displayValues = item.displayValues;
               for (let i = 0; i < fieldsStack.length - 1; ++i) {
                 const nestedContent = rawValues[fieldsStack[i].name];
-                if (nestedContent === undefined || Value.isNestedContent(nestedContent) && nestedContent.length === 0) {
+                if (
+                  nestedContent === undefined ||
+                  (Value.isNestedContent(nestedContent) &&
+                    nestedContent.length === 0)
+                ) {
                   containsValue = false;
                   break;
                 }
@@ -539,49 +799,63 @@ describe("#performance DataViz requests", () => {
                 rawValues = nestedContent[0]!.values;
                 displayValues = nestedContent[0]!.displayValues;
               }
-              if (!containsValue)
-                continue;
-              if (!displayValues.hasOwnProperty(filteredField.name))
-                continue;
+              if (!containsValue) continue;
+              if (!displayValues.hasOwnProperty(filteredField.name)) continue;
 
-              const displayValue = (displayValues[filteredField.name] ?? "").toString();
+              const displayValue = (
+                displayValues[filteredField.name] ?? ""
+              ).toString();
               assert(distinctValues.has(displayValue));
-              pushValues(elementEntries, displayValue, item.primaryKeys.map((k) => k.id));
+              pushValues(
+                elementEntries,
+                displayValue,
+                item.primaryKeys.map((k) => k.id)
+              );
             }
           }
         }
 
         // Similar to the "current" approach, we need to recursively get child element IDs. But in this case
         // we request them per display value entry rather than per every unique class for the entry.
-        const entries = new Map<string, { elementIds: Id64String[], childIds: Id64String[] }>();
-        await Promise.all([...elementEntries].map(async (entry) => {
-          const [displayValue, elementIds] = entry;
-          let childIds: Id64String[] = [];
-          if (elementIds.size > 0) {
-            ++requestsCount.childElementIds;
-            childIds = await loadChildElementIds(iModel, [...elementIds]);
-          }
-          entries.set(displayValue, { elementIds: [...elementIds], childIds });
-        }));
+        const entries = new Map<
+          string,
+          { elementIds: Id64String[]; childIds: Id64String[] }
+        >();
+        await Promise.all(
+          [...elementEntries].map(async (entry) => {
+            const [displayValue, elementIds] = entry;
+            let childIds: Id64String[] = [];
+            if (elementIds.size > 0) {
+              ++requestsCount.childElementIds;
+              childIds = await loadChildElementIds(iModel, [...elementIds]);
+            }
+            entries.set(displayValue, {
+              elementIds: [...elementIds],
+              childIds,
+            });
+          })
+        );
 
         return { requestsCount, requestsTime: timer.currentSeconds, entries };
       }
-
     });
-
   });
-
 });
 
-function pushValues<TValue>(target: Map<string, Set<TValue>>, key: string, values: TValue[]) {
+function pushValues<TValue>(
+  target: Map<string, Set<TValue>>,
+  key: string,
+  values: TValue[]
+) {
   const entry = target.get(key);
-  if (entry)
-    values.forEach((v) => entry.add(v));
-  else
-    target.set(key, new Set(values));
+  if (entry) values.forEach((v) => entry.add(v));
+  else target.set(key, new Set(values));
 }
 
-async function loadChildElementIds(iModel: IModelConnection, parentIds: Id64String[]) {
+async function loadChildElementIds(
+  iModel: IModelConnection,
+  parentIds: Id64String[]
+) {
   const childIds: Id64String[] = [];
   const childElementIdsQuery = `
     with recursive children(id) as (
@@ -591,7 +865,10 @@ async function loadChildElementIds(iModel: IModelConnection, parentIds: Id64Stri
     )
     select * from children
   `;
-  for await (const row of iModel.createQueryReader(childElementIdsQuery, (new QueryBinder()).bindIdSet(1, OrderedId64Iterable.sortArray(parentIds))))
+  for await (const row of iModel.createQueryReader(
+    childElementIdsQuery,
+    new QueryBinder().bindIdSet(1, OrderedId64Iterable.sortArray(parentIds))
+  ))
     childIds.push(row[0]);
   return childIds;
 }
@@ -606,12 +883,19 @@ function getRootField(field: PropertiesField) {
   stack.reverse();
   return {
     rootField,
-    pathFromRootToPropertiesField: (field.getFieldDescriptor() as PropertiesFieldDescriptor).pathFromSelectToPropertyClass,
+    pathFromRootToPropertiesField: (
+      field.getFieldDescriptor() as PropertiesFieldDescriptor
+    ).pathFromSelectToPropertyClass,
     stack,
   };
 }
 
-function detectIntersections(distinctValueElementIds: Map<string, { elementIds: Id64String[], childIds: Id64String[] }>) {
+function detectIntersections(
+  distinctValueElementIds: Map<
+    string,
+    { elementIds: Id64String[]; childIds: Id64String[] }
+  >
+) {
   const arr = [...distinctValueElementIds];
   for (let i = 0; i < arr.length; ++i) {
     for (let j = i + 1; j < arr.length; ++j) {
@@ -619,7 +903,9 @@ function detectIntersections(distinctValueElementIds: Map<string, { elementIds: 
       const [rhsDistinctValue, rhsIds] = arr[j];
       const commonIds = intersectIds(lhsIds.elementIds, rhsIds.elementIds);
       if (commonIds.length > 0) {
-        console.warn(`Detected IDs intersection between "${lhsDistinctValue}" and "${rhsDistinctValue}": ${commonIds.toString()}`);
+        console.warn(
+          `Detected IDs intersection between "${lhsDistinctValue}" and "${rhsDistinctValue}": ${commonIds.toString()}`
+        );
       }
     }
   }

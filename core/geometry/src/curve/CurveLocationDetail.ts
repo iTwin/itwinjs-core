@@ -46,7 +46,10 @@ export enum CurveSearchStatus {
  * @param source optional source
  * @param result optional result
  */
-function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | undefined): Vector3d | undefined {
+function optionalVectorUpdate(
+  source: Vector3d | undefined,
+  result: Vector3d | undefined
+): Vector3d | undefined {
   if (source) {
     return source.clone(result);
   }
@@ -87,7 +90,7 @@ export class CurveLocationDetail {
   /** (optional) second point, e.g. end of interval of coincident curves */
   public point1?: Point3d;
   /** A context-specific additional point */
-  public pointQ: Point3d;  // extra point for use in computations
+  public pointQ: Point3d; // extra point for use in computations
 
   public constructor() {
     this.pointQ = Point3d.createZero();
@@ -112,9 +115,11 @@ export class CurveLocationDetail {
 
   /** test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
   public get isIsolated(): boolean {
-    return this.intervalRole === undefined
-      || this.intervalRole === CurveIntervalRole.isolated
-      || this.intervalRole === CurveIntervalRole.isolatedAtVertex;
+    return (
+      this.intervalRole === undefined ||
+      this.intervalRole === CurveIntervalRole.isolated ||
+      this.intervalRole === CurveIntervalRole.isolatedAtVertex
+    );
   }
 
   /** return the fraction delta. (0 if no fraction1) */
@@ -149,15 +154,17 @@ export class CurveLocationDetail {
    * * point and vector members are cloned.
    */
   public clone(result?: CurveLocationDetail): CurveLocationDetail {
-    if (result === this)
-      return result;
+    if (result === this) return result;
     result = result ? result : new CurveLocationDetail();
     result.curve = this.curve;
     result.fraction = this.fraction;
     result.fraction1 = this.fraction1;
     result.point1 = this.point1;
     result.point.setFromPoint3d(this.point);
-    result.vectorInCurveLocationDetail = optionalVectorUpdate(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
+    result.vectorInCurveLocationDetail = optionalVectorUpdate(
+      this.vectorInCurveLocationDetail,
+      result.vectorInCurveLocationDetail
+    );
     result.a = this.a;
     result.curveSearchStatus = this.curveSearchStatus;
     return result;
@@ -172,10 +179,18 @@ export class CurveLocationDetail {
    * @param vector (optional) vector to install.
    * @param a (optional) numeric value to install.
    */
-  public setFP(fraction: number, point: Point3d, vector?: Vector3d, a: number = 0.0) {
+  public setFP(
+    fraction: number,
+    point: Point3d,
+    vector?: Vector3d,
+    a: number = 0.0
+  ) {
     this.fraction = fraction;
     this.point.setFrom(point);
-    this.vectorInCurveLocationDetail = optionalVectorUpdate(vector, this.vectorInCurveLocationDetail);
+    this.vectorInCurveLocationDetail = optionalVectorUpdate(
+      vector,
+      this.vectorInCurveLocationDetail
+    );
     this.a = a;
   }
 
@@ -192,7 +207,9 @@ export class CurveLocationDetail {
   }
   /** Set the CurvePrimitive pointer, leaving all other properties untouched.
    */
-  public setCurve(curve: CurvePrimitive) { this.curve = curve; }
+  public setCurve(curve: CurvePrimitive) {
+    this.curve = curve;
+  }
 
   /** record the distance from the CurveLocationDetail's point to the parameter point. */
   public setDistanceTo(point: Point3d) {
@@ -203,7 +220,8 @@ export class CurveLocationDetail {
    */
   public static create(
     curve?: CurvePrimitive,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     return result;
@@ -215,7 +233,8 @@ export class CurveLocationDetail {
     curve: CurvePrimitive | undefined,
     fraction: number,
     point: Point3d,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
@@ -228,7 +247,12 @@ export class CurveLocationDetail {
   /**
    * Create a new detail with only ray, fraction, and point.
    */
-  public static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail {
+  public static createRayFractionPoint(
+    ray: Ray3d,
+    fraction: number,
+    point: Point3d,
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.fraction = fraction;
     result.ray = ray;
@@ -244,7 +268,8 @@ export class CurveLocationDetail {
     point: Point3d,
     distance: number,
     status: CurveSearchStatus,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
@@ -263,13 +288,14 @@ export class CurveLocationDetail {
     startFraction: number,
     endFraction: number,
     requestedSignedDistance: number,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     let a = requestedSignedDistance;
     let status = CurveSearchStatus.success;
     if (!allowExtension && !Geometry.isIn01(endFraction)) {
       // cap the movement at the endpoint
       if (endFraction < 0.0) {
-        a = - curve.curveLengthBetweenFractions(startFraction, 0.0);
+        a = -curve.curveLengthBetweenFractions(startFraction, 0.0);
         endFraction = 0.0;
         status = CurveSearchStatus.stoppedAtBoundary;
       } else if (endFraction > 1.0) {
@@ -293,7 +319,8 @@ export class CurveLocationDetail {
   public static createCurveEvaluatedFraction(
     curve: CurvePrimitive,
     fraction: number,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
@@ -308,7 +335,8 @@ export class CurveLocationDetail {
   public static createCurveEvaluatedFractionPointAndDerivative(
     curve: CurvePrimitive,
     fraction: number,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
@@ -326,7 +354,8 @@ export class CurveLocationDetail {
     curve: CurvePrimitive,
     fraction0: number,
     fraction1: number,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction0;
@@ -346,7 +375,8 @@ export class CurveLocationDetail {
     fraction: number,
     point: Point3d,
     a: number,
-    result?: CurveLocationDetail): CurveLocationDetail {
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
     result.fraction = fraction;
@@ -368,10 +398,16 @@ export class CurveLocationDetail {
     curve: CurvePrimitive,
     fraction: number,
     point: Point3d,
-    a: number): boolean {
-    if (this.a < a)
-      return false;
-    CurveLocationDetail.createCurveFractionPointDistance(curve, fraction, point, a, this);
+    a: number
+  ): boolean {
+    if (this.a < a) return false;
+    CurveLocationDetail.createCurveFractionPointDistance(
+      curve,
+      fraction,
+      point,
+      a,
+      this
+    );
     return true;
   }
   /**
@@ -380,20 +416,26 @@ export class CurveLocationDetail {
    */
   public swapFractionsAndPoints() {
     if (this.fraction1 !== undefined) {
-      const f = this.fraction; this.fraction = this.fraction1; this.fraction1 = f;
+      const f = this.fraction;
+      this.fraction = this.fraction1;
+      this.fraction1 = f;
     }
     if (this.point1 !== undefined) {
-      const p = this.point; this.point = this.point1; this.point1 = p;
+      const p = this.point;
+      this.point = this.point1;
+      this.point1 = p;
     }
   }
   /**
    * * return the fraction where f falls between fraction and fraction1.
    * * ASSUME fraction1 defined
    */
-  public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
+  public inverseInterpolateFraction(
+    f: number,
+    defaultFraction: number = 0
+  ): number {
     const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
-    if (a === undefined)
-      return defaultFraction;
+    if (a === undefined) return defaultFraction;
     return a;
   }
   /**
@@ -401,10 +443,12 @@ export class CurveLocationDetail {
    * @param detailA first candidate
    * @param detailB second candidate
    */
-  public static chooseSmallerA(detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined): CurveLocationDetail | undefined {
+  public static chooseSmallerA(
+    detailA: CurveLocationDetail | undefined,
+    detailB: CurveLocationDetail | undefined
+  ): CurveLocationDetail | undefined {
     if (detailA) {
-      if (!detailB)
-        return detailA;
+      if (!detailB) return detailA;
       return detailA.a <= detailB.a ? detailA : detailB;
     }
     return detailB;
@@ -436,13 +480,20 @@ export class CurveLocationDetailPair {
    */
   public approachType?: CurveCurveApproachType;
 
-  public constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail) {
+  public constructor(
+    detailA?: CurveLocationDetail,
+    detailB?: CurveLocationDetail
+  ) {
     this.detailA = detailA ? detailA : new CurveLocationDetail();
     this.detailB = detailB ? detailB : new CurveLocationDetail();
   }
 
   /** Create a curve detail pair using references to two CurveLocationDetails */
-  public static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair {
+  public static createCapture(
+    detailA: CurveLocationDetail,
+    detailB: CurveLocationDetail,
+    result?: CurveLocationDetailPair
+  ): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     result.detailA = detailA;
     result.detailB = detailB;
@@ -451,14 +502,16 @@ export class CurveLocationDetailPair {
   /** Create a curve detail pair using references to two CurveLocationDetails.
    * * optionally install in reversed positions
    */
-  public static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail,
+  public static createCaptureOptionalReverse(
+    detailA: CurveLocationDetail,
+    detailB: CurveLocationDetail,
     reversed: boolean,
-    result?: CurveLocationDetailPair): CurveLocationDetailPair {
+    result?: CurveLocationDetailPair
+  ): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     if (reversed) {
       result.detailA = detailA;
       result.detailB = detailB;
-
     } else {
       result.detailA = detailA;
       result.detailB = detailB;

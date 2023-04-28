@@ -25,8 +25,7 @@ export function createToolButton(props: ToolButtonProps) {
   const div = IModelApp.makeHTMLElement("div", { className: "simpleicon" });
 
   div.addEventListener("click", (ev: Event) => props.click(ev));
-  if (undefined !== props.tooltip)
-    div.title = props.tooltip;
+  if (undefined !== props.tooltip) div.title = props.tooltip;
 
   div.appendChild(icon);
   return div;
@@ -41,8 +40,7 @@ export interface ImageButtonProps {
 export function createImageButton(props: ImageButtonProps) {
   const img = IModelApp.makeHTMLElement("img", { className: "simpleicon" });
   img.src = props.src;
-  if (undefined !== props.tooltip)
-    img.title = props.tooltip;
+  if (undefined !== props.tooltip) img.title = props.tooltip;
   img.addEventListener("click", (ev: Event) => props.click(ev));
   return img;
 }
@@ -50,17 +48,18 @@ export function createImageButton(props: ImageButtonProps) {
 export abstract class ToolBarDropDown {
   protected _isPinned: boolean = false;
 
-  public get onViewChanged(): Promise<void> | undefined { return undefined; }
+  public get onViewChanged(): Promise<void> | undefined {
+    return undefined;
+  }
 
   protected abstract _open(): void;
   protected abstract _close(): void;
-  public dispose(): void { }
+  public dispose(): void {}
 
   public abstract get isOpen(): boolean;
 
   public open(): void {
-    if (!this.isOpen)
-      this._open();
+    if (!this.isOpen) this._open();
   }
 
   public close(): boolean {
@@ -76,7 +75,9 @@ export abstract class ToolBarDropDown {
   }
 }
 
-export type CreateToolBarDropDown = (parent: HTMLElement) => Promise<ToolBarDropDown>;
+export type CreateToolBarDropDown = (
+  parent: HTMLElement
+) => Promise<ToolBarDropDown>;
 
 export interface ToolBarDropDownProps {
   iconUnicode: string;
@@ -91,8 +92,15 @@ class DropDown {
   public dropDown?: ToolBarDropDown;
   public readonly only3d: boolean;
 
-  public constructor(toolBar: ToolBar, index: number, props: ToolBarDropDownProps) {
-    this.element = IModelApp.makeHTMLElement("div", { parent: toolBar.element, className: "simpleicon" });
+  public constructor(
+    toolBar: ToolBar,
+    index: number,
+    props: ToolBarDropDownProps
+  ) {
+    this.element = IModelApp.makeHTMLElement("div", {
+      parent: toolBar.element,
+      className: "simpleicon",
+    });
     this._createDropDown = props.createDropDown;
     this.only3d = true === props.only3d;
 
@@ -101,8 +109,7 @@ class DropDown {
       toolBar.toggle(index); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
-    if (undefined !== props.tooltip)
-      this.element.title = props.tooltip;
+    if (undefined !== props.tooltip) this.element.title = props.tooltip;
 
     this.element.appendChild(icon);
   }
@@ -129,8 +136,7 @@ export class ToolBar {
   }
 
   public dispose(): void {
-    for (const dd of this._dropDowns)
-      dd.dispose();
+    for (const dd of this._dropDowns) dd.dispose();
 
     this._dropDowns.length = 0;
     this._currentlyOpen.clear();
@@ -151,30 +157,25 @@ export class ToolBar {
       assert(item.dropDown.isOpen);
 
       const closeSuccess = item.dropDown.close();
-      if (closeSuccess)
-        this._currentlyOpen.delete(currentlyOpen);
+      if (closeSuccess) this._currentlyOpen.delete(currentlyOpen);
     }
   }
 
   public async open(index: number): Promise<void> {
-    if (this._currentlyOpen.has(index))
-      return;
+    if (this._currentlyOpen.has(index)) return;
 
     this.close();
     const item = this._dropDowns[index];
     if (undefined === item.dropDown)
       item.dropDown = await item.createDropDown();
-    else
-      item.dropDown.open();
+    else item.dropDown.open();
 
     this._currentlyOpen.add(index);
   }
 
   public async toggle(index: number): Promise<void> {
-    if (this._currentlyOpen.has(index))
-      this.close();
-    else
-      await this.open(index);
+    if (this._currentlyOpen.has(index)) this.close();
+    else await this.open(index);
   }
 
   public async onViewChanged(vp: Viewport): Promise<void> {
@@ -187,8 +188,7 @@ export class ToolBar {
 
       if (undefined !== item.dropDown) {
         const promise = item.dropDown.onViewChanged;
-        if (undefined !== promise)
-          promises.push(promise);
+        if (undefined !== promise) promises.push(promise);
       }
     }
 

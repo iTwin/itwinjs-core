@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-This sample shows how to create an empty *snapshot* iModel that views an orbitGt point cloud.
+This sample shows how to create an empty _snapshot_ iModel that views an orbitGt point cloud.
 This sample has no user interface and only has backend dependencies.
 
 ## Documentation

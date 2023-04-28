@@ -15,13 +15,16 @@ import { ISelectionProvider } from "./ISelectionProvider";
  * An interface for selection change listeners.
  * @public
  */
-export declare type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void;
+export declare type SelectionChangesListener = (
+  args: SelectionChangeEventArgs,
+  provider: ISelectionProvider
+) => void;
 
 /**
  * An event broadcasted on selection changes
  * @public
  */
-export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
+export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {}
 
 /**
  * The type of selection change

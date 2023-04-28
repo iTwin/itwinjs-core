@@ -8,7 +8,10 @@ import { expect } from "chai";
 import { IDisposable } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
-import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
+import {
+  GraphicBranch,
+  GraphicBranchOptions,
+} from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 
@@ -41,13 +44,21 @@ class System extends MockRender.System {
     return ret;
   }
 
-  public override createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) {
+  public override createGraphicBranch(
+    branch: GraphicBranch,
+    transform: Transform,
+    options?: GraphicBranchOptions
+  ) {
     const ret = super.createGraphicBranch(branch, transform, options);
     addIsDisposed(ret);
     return ret;
   }
 
-  public override createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d) {
+  public override createBatch(
+    graphic: RenderGraphic,
+    features: RenderFeatureTable,
+    range: ElementAlignedBox3d
+  ) {
     const ret = super.createBatch(graphic, features, range);
     addIsDisposed(ret);
     return ret;

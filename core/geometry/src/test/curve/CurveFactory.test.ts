@@ -43,7 +43,8 @@ describe("CurveFactory", () => {
       Point3d.create(8, 3),
       Point3d.create(13, 5),
       Point3d.create(12, 8),
-      Point3d.create(5, 8)];
+      Point3d.create(5, 8),
+    ];
 
     const points2 = [
       Point3d.create(1, 1),
@@ -54,24 +55,38 @@ describe("CurveFactory", () => {
       Point3d.create(-1, 1),
       Point3d.create(-1, 8),
       Point3d.create(4, 12),
-      Point3d.create(8, 14)];
+      Point3d.create(8, 14),
+    ];
     let x0 = 0.0;
     const xStep = 30;
     const yStep = 20;
     for (const points of [points0, points1, points2]) {
       for (const allowBackup of [true, false]) {
         let y0 = 0.0;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(points), x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          LineString3d.create(points),
+          x0,
+          y0
+        );
         for (const radius of [0.5, 1.0, 2.0, 4.0, 6.0]) {
           y0 += yStep;
-          const path = CurveFactory.createFilletsInLineString(points, radius, allowBackup);
+          const path = CurveFactory.createFilletsInLineString(
+            points,
+            radius,
+            allowBackup
+          );
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
         }
         x0 += xStep;
       }
       x0 += xStep;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsOnLineString");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "CurveFactory",
+      "FilletsOnLineString"
+    );
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -96,32 +111,86 @@ describe("CurveFactory", () => {
     const xStep = 3.0;
     const yStep = 3.0;
     for (const arcA0 of [
-      Arc3d.createXYZXYZXYZ(0, 0, 0, 2, 0, 0, 0, 2, 0, AngleSweep.createStartEndDegrees(0, 90)),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0, 0), Point3d.create(1.5, 1, 0), Point3d.create(1, 2, 0)) as Arc3d,
-      Arc3d.createXYZXYZXYZ(0, 0, 0, 2, 0, 0, 0.5, 1, 0, AngleSweep.createStartEndDegrees(-10, 50))]) {
+      Arc3d.createXYZXYZXYZ(
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        2,
+        0,
+        AngleSweep.createStartEndDegrees(0, 90)
+      ),
+      Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(1, 0, 0),
+        Point3d.create(1.5, 1, 0),
+        Point3d.create(1, 2, 0)
+      ) as Arc3d,
+      Arc3d.createXYZXYZXYZ(
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0.5,
+        1,
+        0,
+        AngleSweep.createStartEndDegrees(-10, 50)
+      ),
+    ]) {
       for (const reverse of [false, true]) {
         const arcA = arcA0.clone();
-        if (reverse)
-          arcA.sweep.reverseInPlace();
-        for (const segment of [Segment1d.create(1, 1.5), Segment1d.create(1.1, 1.5), Segment1d.create(1, 0.5)]) {
+        if (reverse) arcA.sweep.reverseInPlace();
+        for (const segment of [
+          Segment1d.create(1, 1.5),
+          Segment1d.create(1.1, 1.5),
+          Segment1d.create(1, 0.5),
+        ]) {
           let y0 = 0.0;
           for (const rotationAngleB of [0.0, 25.0]) {
             const arcA1 = arcA.clone();
             const arcA2 = arcA.clone();
-            const arcB1 = arcA.cloneInRotatedBasis(Angle.createDegrees(rotationAngleB));
-            arcB1.sweep = AngleSweep.createStartEnd(arcB1.sweep.fractionToAngle(segment.x0), arcB1.sweep.fractionToAngle(segment.x1));
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA1, arcB1], x0, y0);
+            const arcB1 = arcA.cloneInRotatedBasis(
+              Angle.createDegrees(rotationAngleB)
+            );
+            arcB1.sweep = AngleSweep.createStartEnd(
+              arcB1.sweep.fractionToAngle(segment.x0),
+              arcB1.sweep.fractionToAngle(segment.x1)
+            );
+            GeometryCoreTestIO.captureCloneGeometry(
+              allGeometry,
+              [arcA1, arcB1],
+              x0,
+              y0
+            );
             markArcData(allGeometry, arcA1, 0.9, 0.05, x0, y0);
             markArcData(allGeometry, arcB1, 0.9, 0.05, x0, y0);
             const append1 = CurveFactory.appendToArcInPlace(arcA1, arcB1, true);
             if (append1) {
               markArcData(allGeometry, arcA1, 1.1, 0.05, x0, y0 + yStep);
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcA1, x0, y0 + yStep);
+              GeometryCoreTestIO.captureCloneGeometry(
+                allGeometry,
+                arcA1,
+                x0,
+                y0 + yStep
+              );
             }
-            const append2 = CurveFactory.appendToArcInPlace(arcA2, arcB1, false);
+            const append2 = CurveFactory.appendToArcInPlace(
+              arcA2,
+              arcB1,
+              false
+            );
             if (append2) {
               markArcData(allGeometry, arcA2, 1.1, 0.05, x0, y0 + 2 * yStep);
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcA1, x0, y0 + 2 * yStep);
+              GeometryCoreTestIO.captureCloneGeometry(
+                allGeometry,
+                arcA1,
+                x0,
+                y0 + 2 * yStep
+              );
             }
             y0 += 4 * yStep;
           }
@@ -132,14 +201,25 @@ describe("CurveFactory", () => {
       x0 += 3.0 * xStep;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "appendToArcInPlace");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "CurveFactory",
+      "appendToArcInPlace"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
   it("FilletsInLinestring", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 5, 1), Point3d.create(4, 5, 1), Point3d.create(6, 2, 1), Point3d.create(6, 5, 1)];
+    const points = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(2, 0, 0),
+      Point3d.create(2, 5, 1),
+      Point3d.create(4, 5, 1),
+      Point3d.create(6, 2, 1),
+      Point3d.create(6, 5, 1),
+    ];
     const lineString0 = LineString3d.create(points);
     points.reverse();
     const lineString1 = LineString3d.create(points);
@@ -149,10 +229,18 @@ describe("CurveFactory", () => {
     for (const filletRadius of [0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
       let y0 = 0.0;
       for (const lineString of [lineString0, lineString1]) {
-        const chain0 = CurveFactory.createFilletsInLineString(lineString, filletRadius, false)!;
+        const chain0 = CurveFactory.createFilletsInLineString(
+          lineString,
+          filletRadius,
+          false
+        )!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
         y0 += 8.0;
-        const chain1 = CurveFactory.createFilletsInLineString(lineString, filletRadius, true)!;
+        const chain1 = CurveFactory.createFilletsInLineString(
+          lineString,
+          filletRadius,
+          true
+        )!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1, x0, y0);
         y0 += 20.0;
       }
@@ -160,9 +248,17 @@ describe("CurveFactory", () => {
     }
 
     const radii = [0, 2, 1, 0.8, 0.6, 0.4];
-    const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, true)!;
+    const chain2 = CurveFactory.createFilletsInLineString(
+      lineString0,
+      radii,
+      true
+    )!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, 0.0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineString");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "CurveFactory",
+      "FilletsInLineString"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -175,16 +271,33 @@ describe("CurveFactory", () => {
  * @param x0
  * @param y0
  */
-function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: number, tickFraction: number, x0: number, y0: number) {
+function markArcData(
+  allGeometry: GeometryQuery[],
+  arc: Arc3d,
+  radialFraction: number,
+  tickFraction: number,
+  x0: number,
+  y0: number
+) {
   const arc1 = arc.clone();
   const center = arc.center;
   const start = arc.startPoint();
   const point0 = arc.angleToPointAndDerivative(Angle.createDegrees(0));
   const point90 = arc.angleToPointAndDerivative(Angle.createDegrees(90));
   arc1.matrixRef.scaleColumnsInPlace(radialFraction, radialFraction, 1.0);
-  GeometryCoreTestIO.captureGeometry(allGeometry, [arc1,
-    LineSegment3d.create(center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start)),
-    LineString3d.create(point0.origin, center, point90.origin)], x0, y0);
+  GeometryCoreTestIO.captureGeometry(
+    allGeometry,
+    [
+      arc1,
+      LineSegment3d.create(
+        center.interpolate(radialFraction, start),
+        center.interpolate(radialFraction + tickFraction, start)
+      ),
+      LineString3d.create(point0.origin, center, point90.origin),
+    ],
+    x0,
+    y0
+  );
 }
 const ppePathInputDirector = "./src/test/testInputs/pipeConnections/";
 describe("PipeConnections", () => {
@@ -197,10 +310,13 @@ describe("PipeConnections", () => {
     let z0 = 0;
     const dx = 400.0;
     const dy = 600.0;
-    const pipeRadius = 0.20;
-    const bendRadius = 0.50;
+    const pipeRadius = 0.2;
+    const bendRadius = 0.5;
     for (const filename of ["pipeLinesApril2020"]) {
-      const stringData = fs.readFileSync(`${ppePathInputDirector}${filename}.imjs`, "utf8");
+      const stringData = fs.readFileSync(
+        `${ppePathInputDirector}${filename}.imjs`,
+        "utf8"
+      );
       if (stringData) {
         const jsonData = JSON.parse(stringData);
         const fragments = IModelJson.Reader.parse(jsonData);
@@ -215,10 +331,26 @@ describe("PipeConnections", () => {
                   z0 = -refPoint.z;
                 }
               }
-              const chain0 = CurveFactory.createFilletsInLineString(g, bendRadius, false)!;
+              const chain0 = CurveFactory.createFilletsInLineString(
+                g,
+                bendRadius,
+                false
+              )!;
               const pipe0 = CurveFactory.createPipeSegments(chain0, pipeRadius);
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0 + dx, y0 + dy, z0);
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, pipe0, x0, y0, z0);
+              GeometryCoreTestIO.captureCloneGeometry(
+                allGeometry,
+                chain0,
+                x0 + dx,
+                y0 + dy,
+                z0
+              );
+              GeometryCoreTestIO.captureCloneGeometry(
+                allGeometry,
+                pipe0,
+                x0,
+                y0,
+                z0
+              );
             }
           }
         }
@@ -242,49 +374,75 @@ describe("PipeConnections", () => {
 
     for (const numPoints of [8, 20, 40]) {
       const path = new Point3dArrayCarrier(
-        Sample.createPointSineWave(undefined, numPoints, 10.0 / numPoints,
-          5.0, AngleSweep.createStartEndDegrees(0, 520),
-          3.0, AngleSweep.createStartEndDegrees(0, 100)));
+        Sample.createPointSineWave(
+          undefined,
+          numPoints,
+          10.0 / numPoints,
+          5.0,
+          AngleSweep.createStartEndDegrees(0, 520),
+          3.0,
+          AngleSweep.createStartEndDegrees(0, 100)
+        )
+      );
       allPaths.push(path);
     }
 
     const bsplines = Sample.createBsplineCurves(false);
-    for (const b of bsplines)
-      allPaths.push(b);
+    for (const b of bsplines) allPaths.push(b);
 
     const helices = Sample.createBsplineCurveHelices(3, 6, 3, 7);
-    for (const h of helices)
-      allPaths.push(h);
+    for (const h of helices) allPaths.push(h);
 
     for (const path of allPaths) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
       const isPoints = path instanceof Point3dArrayCarrier;
-      const isLinear = isPoints || ((path instanceof BSplineCurve3d) && (path.order === 2));
+      const isLinear =
+        isPoints || (path instanceof BSplineCurve3d && path.order === 2);
       // create elliptical cross section perpendicular to path start
       const startPoint = Point3d.create();
       const startTangent = Vector3d.create();
       if (isPoints) {
         path.front(startPoint);
-        startPoint.unitVectorTo(path.getPoint3dAtUncheckedPointIndex(1), startTangent);
+        startPoint.unitVectorTo(
+          path.getPoint3dAtUncheckedPointIndex(1),
+          startTangent
+        );
       } else {
         const startRay = path.fractionToPointAndUnitTangent(0.0);
         startPoint.setFrom(startRay.origin);
         startTangent.setFrom(startRay.direction);
       }
-      const startFrame = Matrix3d.createRotationAroundVector(startTangent, v0Angle)!.multiplyMatrixMatrix(Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY));
+      const startFrame = Matrix3d.createRotationAroundVector(
+        startTangent,
+        v0Angle
+      )!.multiplyMatrixMatrix(
+        Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY)
+      );
       const v0 = startFrame.columnX().scaleToLength(radius)!;
       const v90 = startFrame.columnY().scaleToLength(radius * minorFraction)!;
 
-      for (const angleTol of [Angle.createDegrees(22), Angle.createDegrees(15), Angle.createDegrees(5)]) {
-        for (const sectionData of [radius,
+      for (const angleTol of [
+        Angle.createDegrees(22),
+        Angle.createDegrees(15),
+        Angle.createDegrees(5),
+      ]) {
+        for (const sectionData of [
+          radius,
           { x: radius, y: radius * minorFraction },
-          Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]) {
+          Arc3d.create(startPoint, v0, v90, AngleSweep.create360()),
+        ]) {
           y0 += 10.0;
           const builder = PolyfaceBuilder.create();
           builder.options.angleTol = angleTol;
           builder.addMiteredPipes(path, sectionData);
           const mesh = builder.claimPolyface();
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, z0);
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            mesh,
+            x0,
+            y0,
+            z0
+          );
         }
         y0 = 0;
         z0 += 10;
@@ -293,7 +451,11 @@ describe("PipeConnections", () => {
       x0 += 10;
       y0 = z0 = 0;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredPipeSections");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "CurveFactory",
+      "createMiteredPipeSections"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -303,20 +465,71 @@ describe("PipeConnections", () => {
     const pointA = Point3d.create(0.5, 0.2, 0.4);
     let x0 = 0;
 
-    for (const tangentA of [Vector3d.create(1, 0, 0), Vector3d.create(-2, 3, 6), Vector3d.create(-1, -2, -5)]) {
+    for (const tangentA of [
+      Vector3d.create(1, 0, 0),
+      Vector3d.create(-2, 3, 6),
+      Vector3d.create(-1, -2, -5),
+    ]) {
       let y0 = 0.0;
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pointA, 0.1, x0, y0);
-      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointA.plus(tangentA)), x0, y0);
-      for (const pointB of [pointA.plus(Vector3d.create(3, 2, 0)), Point3d.create(0, 5, 2), Point3d.create(-2, -1, 5)]) {
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointA.plus(tangentA)), x0, y0);
-        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pointB, 0.1, x0, y0);
-        const arc = CurveFactory.createArcPointTangentPoint(pointA, tangentA, pointB);
-        ck.testDefined(arc, "Expect arc Point Tangent Point", pointA, tangentA, pointB);
+      GeometryCoreTestIO.createAndCaptureXYCircle(
+        allGeometry,
+        pointA,
+        0.1,
+        x0,
+        y0
+      );
+      GeometryCoreTestIO.captureGeometry(
+        allGeometry,
+        LineSegment3d.create(pointA, pointA.plus(tangentA)),
+        x0,
+        y0
+      );
+      for (const pointB of [
+        pointA.plus(Vector3d.create(3, 2, 0)),
+        Point3d.create(0, 5, 2),
+        Point3d.create(-2, -1, 5),
+      ]) {
+        GeometryCoreTestIO.captureGeometry(
+          allGeometry,
+          LineSegment3d.create(pointA, pointA.plus(tangentA)),
+          x0,
+          y0
+        );
+        GeometryCoreTestIO.createAndCaptureXYCircle(
+          allGeometry,
+          pointB,
+          0.1,
+          x0,
+          y0
+        );
+        const arc = CurveFactory.createArcPointTangentPoint(
+          pointA,
+          tangentA,
+          pointB
+        );
+        ck.testDefined(
+          arc,
+          "Expect arc Point Tangent Point",
+          pointA,
+          tangentA,
+          pointB
+        );
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
         if (arc) {
           const point90 = arc.radiansToPointAndDerivative(0.5 * Math.PI);
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point90.origin, 0.05, x0, y0);
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create([pointA, arc.center, point90.origin]), x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(
+            allGeometry,
+            point90.origin,
+            0.05,
+            x0,
+            y0
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineString3d.create([pointA, arc.center, point90.origin]),
+            x0,
+            y0
+          );
           ck.testPoint3d(pointA, arc.startPoint(), "arc start");
           ck.testPoint3d(pointB, arc.endPoint(), "arc end");
           const tangentRay = arc.fractionToPointAndDerivative(0.0);
@@ -326,7 +539,11 @@ describe("PipeConnections", () => {
       }
       x0 += 20.0;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createArcPointTangentPoint");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "CurveFactory",
+      "createArcPointTangentPoint"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
   it("createRectangleXY", () => {
@@ -337,8 +554,22 @@ describe("PipeConnections", () => {
     const x1 = 6;
     const y1 = 7;
     const radiusA = 3.0;
-    const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
-    const rectangleB1 = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, undefined);
+    const rectangleA = CurveFactory.createRectangleXY(
+      x0,
+      y0,
+      x1,
+      y1,
+      0,
+      radiusA
+    );
+    const rectangleB1 = CurveFactory.createRectangleXY(
+      x0,
+      y0,
+      x1,
+      y1,
+      0,
+      undefined
+    );
     const rectangleB0 = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, 0.0);
     ck.testType(rectangleA, Loop);
     ck.testType(rectangleB0, Loop);
@@ -349,9 +580,21 @@ describe("PipeConnections", () => {
       let xOut = 0.0;
       for (const xB of [6, -6]) {
         for (const radiusD of radii) {
-          const rectangleD = CurveFactory.createRectangleXY(0, 0, xB, yB, 0, radiusD);
+          const rectangleD = CurveFactory.createRectangleXY(
+            0,
+            0,
+            xB,
+            yB,
+            0,
+            radiusD
+          );
           ck.testType(rectangleD, Loop, "CurveFactory always returns a loop");
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleD, xOut, yOut);
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry,
+            rectangleD,
+            xOut,
+            yOut
+          );
           xOut += 10.0;
         }
         xOut += 20.0;
@@ -359,8 +602,11 @@ describe("PipeConnections", () => {
       yOut += 20;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createRectangleXY");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "CurveFactory",
+      "createRectangleXY"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

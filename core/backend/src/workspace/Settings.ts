@@ -40,13 +40,21 @@ export type DictionaryName = string;
  * value is returned.
  * @beta
  */
-export type SettingResolver<T> = (val: T, dict: DictionaryName, priority: SettingsPriority) => T | undefined;
+export type SettingResolver<T> = (
+  val: T,
+  dict: DictionaryName,
+  priority: SettingsPriority
+) => T | undefined;
 
 /** An entry in the array returned by [[Settings.inspectSetting]]
  * @beta
  *
  */
-export interface SettingInspector<T> { value: T, dictionary: DictionaryName, priority: number }
+export interface SettingInspector<T> {
+  value: T;
+  dictionary: DictionaryName;
+  priority: number;
+}
 
 /** An object with string-named members (as opposed to an array object).
  * @beta
@@ -65,7 +73,7 @@ export type SettingDictionary = SettingObject;
 /**
  * Values for SettingsPriority determine the sort order for Settings. Higher values take precedence over lower values.
  * @beta
-*/
+ */
 export enum SettingsPriority {
   /** values supplied default-settings files */
   defaults = 100,
@@ -108,7 +116,11 @@ export interface Settings {
    * @param settingsJson the JSON5 stringified string to be parsed.
    * @note If the SettingDictionary was previously added, the new content overrides the old content.
    */
-  addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+  addJson(
+    dictionaryName: DictionaryName,
+    priority: SettingsPriority,
+    settingsJson: string
+  ): void;
 
   /** Add a SettingDictionary object.
    * @param dictionaryName the name of the SettingDictionary
@@ -116,7 +128,11 @@ export interface Settings {
    * @param settings the SettingDictionary object to be added.
    * @note If the SettingDictionary was previously added, the new content overrides the old content.
    */
-  addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
+  addDictionary(
+    dictionaryName: DictionaryName,
+    priority: SettingsPriority,
+    settings: SettingDictionary
+  ): void;
 
   /** Remove a SettingDictionary by name. */
   dropDictionary(dictionaryName: DictionaryName): void;
@@ -128,8 +144,16 @@ export interface Settings {
    * @param defaultValue value returned if settingName is not present in any SettingDictionary or resolver never returned a value.
    * @returns the resolved setting value.
    */
-  resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue: T): T;
-  resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+  resolveSetting<T extends SettingType>(
+    settingName: SettingName,
+    resolver: SettingResolver<T>,
+    defaultValue: T
+  ): T;
+  resolveSetting<T extends SettingType>(
+    settingName: SettingName,
+    resolver: SettingResolver<T>,
+    defaultValue?: T
+  ): T | undefined;
 
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting
@@ -139,55 +163,70 @@ export interface Settings {
    * You must always type check the result. Use the non-generic "get" methods (e.g. [[getString]]) if you only want the value
    * if its type is correct.
    */
-  getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
+  getSetting<T extends SettingType>(
+    settingName: SettingName,
+    defaultValue?: T
+  ): T | undefined;
 
   /** Get a string setting by SettingName.
    * @param settingName The name of the setting
    * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not a string.
    */
   getString(settingName: SettingName, defaultValue: string): string;
-  getString(settingName: SettingName, defaultValue?: string): string | undefined;
+  getString(
+    settingName: SettingName,
+    defaultValue?: string
+  ): string | undefined;
 
   /** Get a boolean setting by SettingName.
-  * @param settingName The name of the setting
-  * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not a boolean.
-  */
+   * @param settingName The name of the setting
+   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not a boolean.
+   */
   getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
-  getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
+  getBoolean(
+    settingName: SettingName,
+    defaultValue?: boolean
+  ): boolean | undefined;
 
   /** Get a number setting by SettingName.
-  * @param settingName The name of the setting
-  * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not a number.
-  */
+   * @param settingName The name of the setting
+   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not a number.
+   */
   getNumber(settingName: SettingName, defaultValue: number): number;
   getNumber(settingName: SettingName): number | undefined;
 
   /** Get an object setting by SettingName.
-  * @param settingName The name of the setting
-  * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an object.
-  */
+   * @param settingName The name of the setting
+   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an object.
+   */
   getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
   getObject<T extends object>(settingName: SettingName): T | undefined;
 
   /** Get an array setting by SettingName.
-  * @param settingName The name of the setting
-  * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an array.
-  */
-  getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
-  getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
+   * @param settingName The name of the setting
+   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an array.
+   */
+  getArray<T extends SettingType>(
+    settingName: SettingName,
+    defaultValue: Array<T>
+  ): Array<T>;
+  getArray<T extends SettingType>(
+    settingName: SettingName
+  ): Array<T> | undefined;
 
   /** Get an array of [[SettingInspector] objects, sorted in priority order, for all Settings that match a SettingName.
    * @note this method is mainly for debugging and diagnostics.
    */
-  inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+  inspectSetting<T extends SettingType>(
+    name: SettingName
+  ): SettingInspector<T>[];
 }
 
 /** @internal */
 function deepClone<T extends SettingType>(obj: any): T {
-  if (!obj || typeof obj !== "object")
-    return obj;
+  if (!obj || typeof obj !== "object") return obj;
 
-  const result = Array.isArray(obj) ? [] : {} as any;
+  const result = Array.isArray(obj) ? [] : ({} as any);
   Object.keys(obj).forEach((key: string) => {
     const val = obj[key];
     if (val && typeof val === "object") {
@@ -200,8 +239,14 @@ function deepClone<T extends SettingType>(obj: any): T {
 }
 
 class SettingsDictionary {
-  public constructor(public readonly name: string, public readonly priority: SettingsPriority, public readonly settings: SettingDictionary) { }
-  public getSetting<T extends SettingType>(settingName: string): SettingType | undefined {
+  public constructor(
+    public readonly name: string,
+    public readonly priority: SettingsPriority,
+    public readonly settings: SettingDictionary
+  ) {}
+  public getSetting<T extends SettingType>(
+    settingName: string
+  ): SettingType | undefined {
     return this.settings[settingName] as T | undefined;
   }
 }
@@ -212,8 +257,8 @@ class SettingsDictionary {
  */
 export class BaseSettings implements Settings {
   private _dictionaries: SettingsDictionary[] = [];
-  protected verifyPriority(_priority: SettingsPriority) { }
-  public close() { }
+  protected verifyPriority(_priority: SettingsPriority) {}
+  public close() {}
   public readonly onSettingsChanged = new BeEvent<() => void>();
 
   public addFile(fileName: LocalFileName, priority: SettingsPriority) {
@@ -228,11 +273,19 @@ export class BaseSettings implements Settings {
     }
   }
 
-  public addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string) {
+  public addJson(
+    dictionaryName: string,
+    priority: SettingsPriority,
+    settingsJson: string
+  ) {
     this.addDictionary(dictionaryName, priority, parse(settingsJson));
   }
 
-  public addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary) {
+  public addDictionary(
+    dictionaryName: string,
+    priority: SettingsPriority,
+    settings: SettingDictionary
+  ) {
     this.verifyPriority(priority);
     this.dropDictionary(dictionaryName, false); // make sure we don't have the same dictionary twice
     const file = new SettingsDictionary(dictionaryName, priority, settings);
@@ -253,32 +306,41 @@ export class BaseSettings implements Settings {
     for (let i = 0; i < this._dictionaries.length; ++i) {
       if (this._dictionaries[i].name === dictionaryName) {
         this._dictionaries.splice(i, 1);
-        if (raiseEvent)
-          this.onSettingsChanged.raiseEvent();
+        if (raiseEvent) this.onSettingsChanged.raiseEvent();
         return true;
       }
     }
     return false;
   }
 
-  public resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined {
+  public resolveSetting<T extends SettingType>(
+    name: SettingName,
+    resolver: SettingResolver<T>,
+    defaultValue?: T
+  ): T | undefined {
     for (const dict of this._dictionaries) {
       const val = dict.getSetting(name) as T | undefined;
       const resolved = val && resolver(val, dict.name, dict.priority);
-      if (undefined !== resolved)
-        return resolved;
+      if (undefined !== resolved) return resolved;
     }
     return defaultValue;
   }
 
-  public getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined {
-    return this.resolveSetting(name, (val) => deepClone<T>(val)) ?? defaultValue;
+  public getSetting<T extends SettingType>(
+    name: SettingName,
+    defaultValue?: T
+  ): T | undefined {
+    return (
+      this.resolveSetting(name, (val) => deepClone<T>(val)) ?? defaultValue
+    );
   }
 
   /** for debugging. Returns an array of all values for a setting, sorted by priority.
    * @note values are not cloned. Do not modify objects or arrays.
    */
-  public inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[] {
+  public inspectSetting<T extends SettingType>(
+    name: SettingName
+  ): SettingInspector<T>[] {
     const all: SettingInspector<T>[] = [];
     this.resolveSetting<T>(name, (value, dictionary, priority) => {
       all.push({ value, dictionary, priority });
@@ -290,31 +352,51 @@ export class BaseSettings implements Settings {
 
   public getString(name: SettingName, defaultValue: string): string;
   public getString(name: SettingName): string | undefined;
-  public getString(name: SettingName, defaultValue?: string): string | undefined {
+  public getString(
+    name: SettingName,
+    defaultValue?: string
+  ): string | undefined {
     const out = this.getSetting<string>(name);
     return typeof out === "string" ? out : defaultValue;
   }
   public getBoolean(name: SettingName, defaultValue: boolean): boolean;
   public getBoolean(name: SettingName): boolean | undefined;
-  public getBoolean(name: SettingName, defaultValue?: boolean): boolean | undefined {
+  public getBoolean(
+    name: SettingName,
+    defaultValue?: boolean
+  ): boolean | undefined {
     const out = this.getSetting<boolean>(name);
     return typeof out === "boolean" ? out : defaultValue;
   }
   public getNumber(name: SettingName, defaultValue: number): number;
   public getNumber(name: SettingName): number | undefined;
-  public getNumber(name: SettingName, defaultValue?: number): number | undefined {
+  public getNumber(
+    name: SettingName,
+    defaultValue?: number
+  ): number | undefined {
     const out = this.getSetting<number>(name);
     return typeof out === "number" ? out : defaultValue;
   }
   public getObject<T extends object>(name: SettingName, defaultValue: T): T;
   public getObject<T extends object>(name: SettingName): T | undefined;
-  public getObject<T extends object>(name: SettingName, defaultValue?: T): T | undefined {
+  public getObject<T extends object>(
+    name: SettingName,
+    defaultValue?: T
+  ): T | undefined {
     const out = this.getSetting<SettingObject>(name);
-    return typeof out === "object" ? out as T : defaultValue;
+    return typeof out === "object" ? (out as T) : defaultValue;
   }
-  public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
-  public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
-  public getArray<T extends SettingType>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
+  public getArray<T extends SettingType>(
+    name: SettingName,
+    defaultValue: Array<T>
+  ): Array<T>;
+  public getArray<T extends SettingType>(
+    name: SettingName
+  ): Array<T> | undefined;
+  public getArray<T extends SettingType>(
+    name: SettingName,
+    defaultValue?: Array<T>
+  ): Array<T> | undefined {
     const out = this.getSetting<Array<T>>(name);
     return Array.isArray(out) ? out : defaultValue;
   }

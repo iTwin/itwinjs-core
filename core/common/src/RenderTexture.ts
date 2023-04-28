@@ -26,9 +26,15 @@ export abstract class RenderTexture implements IDisposable {
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
 
-  public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
-  public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
-  public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
+  public get isTileSection(): boolean {
+    return RenderTexture.Type.TileSection === this.type;
+  }
+  public get isGlyph(): boolean {
+    return RenderTexture.Type.Glyph === this.type;
+  }
+  public get isSkyBox(): boolean {
+    return RenderTexture.Type.SkyBox === this.type;
+  }
   public abstract get bytesUsed(): number;
 
   protected constructor(type: RenderTexture.Type) {
@@ -44,7 +50,8 @@ export abstract class RenderTexture implements IDisposable {
 }
 
 /** @public */
-export namespace RenderTexture { // eslint-disable-line no-redeclare
+export namespace RenderTexture {
+  // eslint-disable-line no-redeclare
   /** The types of [[RenderTexture]]s that can be created by a [RenderSystem]($frontend). */
   export enum Type {
     /** An image applied to a surface, with support for mip-mapping and repetition. */
@@ -77,14 +84,24 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
      */
     public readonly isOwned: boolean;
 
-    public constructor(key?: string, type: RenderTexture.Type = RenderTexture.Type.Normal, isOwned: boolean = false) {
+    public constructor(
+      key?: string,
+      type: RenderTexture.Type = RenderTexture.Type.Normal,
+      isOwned: boolean = false
+    ) {
       this.key = key;
       this.type = type;
       this.isOwned = isOwned;
     }
 
-    public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
-    public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
-    public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
+    public get isTileSection(): boolean {
+      return RenderTexture.Type.TileSection === this.type;
+    }
+    public get isGlyph(): boolean {
+      return RenderTexture.Type.Glyph === this.type;
+    }
+    public get isSkyBox(): boolean {
+      return RenderTexture.Type.SkyBox === this.type;
+    }
   }
 }

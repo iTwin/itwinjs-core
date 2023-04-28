@@ -3,16 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
-import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
 import {
-  AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+  Matrix3d,
+  Point3d,
+  Range3d,
+  StandardViewIndex,
+  Transform,
+  Vector3d,
+} from "@itwin/core-geometry";
+import {
+  CategorySelector,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  OrthographicViewDefinition,
+} from "@itwin/core-backend";
+import {
+  AxisAlignedBox3d,
+  Cartographic,
+  IModel,
+  PersistentBackgroundMapProps,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  ViewFlags,
 } from "@itwin/core-common";
 
 class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
-    if (undefined === boundingVolume)
-      return undefined;
+  public static rangeFromBoundingVolume(
+    boundingVolume: any
+  ): Range3d | undefined {
+    if (undefined === boundingVolume) return undefined;
     if (Array.isArray(boundingVolume.box)) {
       const box: number[] = boundingVolume.box;
       const center = Point3d.create(box[0], box[1], box[2]);
@@ -23,7 +43,16 @@ class RealityModelTileUtils {
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
-            corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+            corners.push(
+              center.plus3Scaled(
+                ux,
+                j ? -1.0 : 1.0,
+                uy,
+                k ? -1.0 : 1.0,
+                uz,
+                l ? -1.0 : 1.0
+              )
+            );
           }
         }
       }
@@ -32,32 +61,72 @@ class RealityModelTileUtils {
       const sphere: number[] = boundingVolume.sphere;
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
       const radius = sphere[3];
-      return Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
+      return Range3d.createXYZXYZ(
+        center.x - radius,
+        center.y - radius,
+        center.z - radius,
+        center.x + radius,
+        center.y + radius,
+        center.z + radius
+      );
     }
     return undefined;
   }
 
-  public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
-    const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
-    return minToleranceRatio * range.diagonal().magnitude() / geometricError;
+  public static maximumSizeFromGeometricTolerance(
+    range: Range3d,
+    geometricError: number
+  ): number {
+    const minToleranceRatio = 0.5; // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+    return (minToleranceRatio * range.diagonal().magnitude()) / geometricError;
   }
-  public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
-    return (jTrans === undefined) ? undefined : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
+  public static transformFromJson(
+    jTrans: number[] | undefined
+  ): Transform | undefined {
+    return jTrans === undefined
+      ? undefined
+      : Transform.createOriginAndMatrix(
+          Point3d.create(jTrans[12], jTrans[13], jTrans[14]),
+          Matrix3d.createRowValues(
+            jTrans[0],
+            jTrans[4],
+            jTrans[8],
+            jTrans[1],
+            jTrans[5],
+            jTrans[9],
+            jTrans[2],
+            jTrans[6],
+            jTrans[10]
+          )
+        );
   }
   public static rangeFromJson(json: any): AxisAlignedBox3d {
     if (undefined !== json.root.boundingVolume.region) {
       const region = JsonUtils.asArray(json.root.boundingVolume.region);
       if (undefined === region)
-        throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-      const ecefLow = (Cartographic.fromRadians({ longitude: region[0], latitude: region[1], height: region[4] })).toEcef();
-      const ecefHigh = (Cartographic.fromRadians({ longitude: region[2], latitude: region[3], height: region[5] })).toEcef();
+        throw new TypeError(
+          "Unable to determine GeoLocation - no root Transform or Region on root."
+        );
+      const ecefLow = Cartographic.fromRadians({
+        longitude: region[0],
+        latitude: region[1],
+        height: region[4],
+      }).toEcef();
+      const ecefHigh = Cartographic.fromRadians({
+        longitude: region[2],
+        latitude: region[3],
+        height: region[5],
+      }).toEcef();
       return Range3d.create(ecefLow, ecefHigh);
     }
 
-    let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
-    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
-    if (undefined === rootTransform)
-      rootTransform = Transform.createIdentity();
+    let rootTransform = RealityModelTileUtils.transformFromJson(
+      json.root.transform
+    );
+    const range = RealityModelTileUtils.rangeFromBoundingVolume(
+      json.root.boundingVolume
+    )!;
+    if (undefined === rootTransform) rootTransform = Transform.createIdentity();
 
     return rootTransform.multiplyRange(range);
   }
@@ -91,17 +160,42 @@ function parseDisplayMode(defaultDisplay: number, option?: string) {
   }
 }
 
-export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: PersistentBackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
+export async function insertClassifiedRealityModel(
+  url: string,
+  classifierModelId: Id64String,
+  classifierCategoryId: Id64String,
+  iModelDb: IModelDb,
+  viewFlags: ViewFlags,
+  isPlanar: boolean,
+  backgroundMap?: PersistentBackgroundMapProps,
+  inputName?: string,
+  inside?: string,
+  outside?: string
+): Promise<void> {
   const name = inputName ? inputName : url;
   const classificationFlags = {
-    inside: parseDisplayMode(SpatialClassifierInsideDisplay.ElementColor, inside),
+    inside: parseDisplayMode(
+      SpatialClassifierInsideDisplay.ElementColor,
+      inside
+    ),
     outside: parseDisplayMode(SpatialClassifierOutsideDisplay.Dimmed, outside),
     isVolumeClassifier: !isPlanar,
   };
 
-  const classifier = { modelId: classifierModelId, name, flags: classificationFlags, isActive: true, expand: 1.0 };
+  const classifier = {
+    modelId: classifierModelId,
+    name,
+    flags: classificationFlags,
+    isActive: true,
+    expand: 1.0,
+  };
   const realityModel = { tilesetUrl: url, name, classifiers: [classifier] };
-  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
+  const displayStyleId = DisplayStyle3d.insert(
+    iModelDb,
+    IModel.dictionaryId,
+    name,
+    { viewFlags, backgroundMap, contextRealityModels: [realityModel] }
+  );
 
   const projectExtents = Range3d.createFrom(iModelDb.projectExtents);
   let range;
@@ -117,7 +211,26 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
   projectExtents.high.z = Math.max(range.high.z, projectExtents.high.z);
   iModelDb.updateProjectExtents(projectExtents);
 
-  const modelSelectorId: Id64String = ModelSelector.insert(iModelDb, IModel.dictionaryId, name, []);
-  const categorySelectorId: Id64String = CategorySelector.insert(iModelDb, IModel.dictionaryId, name, [classifierCategoryId]);
-  OrthographicViewDefinition.insert(iModelDb, IModel.dictionaryId, name, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+  const modelSelectorId: Id64String = ModelSelector.insert(
+    iModelDb,
+    IModel.dictionaryId,
+    name,
+    []
+  );
+  const categorySelectorId: Id64String = CategorySelector.insert(
+    iModelDb,
+    IModel.dictionaryId,
+    name,
+    [classifierCategoryId]
+  );
+  OrthographicViewDefinition.insert(
+    iModelDb,
+    IModel.dictionaryId,
+    name,
+    modelSelectorId,
+    categorySelectorId,
+    displayStyleId,
+    range,
+    StandardViewIndex.Iso
+  );
 }

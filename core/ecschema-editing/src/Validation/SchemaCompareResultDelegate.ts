@@ -6,10 +6,28 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, AnyProperty, Constant, CustomAttribute,
-  CustomAttributeClass, CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity,
-  Mixin, OverrideFormat, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraint,
-  Schema, SchemaItem, Unit,
+import {
+  AnyClass,
+  AnyEnumerator,
+  AnyProperty,
+  Constant,
+  CustomAttribute,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  OverrideFormat,
+  Phenomenon,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  Unit,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaChanges } from "./SchemaChanges";
@@ -30,12 +48,15 @@ export class SchemaCompareResultDelegate {
    * Initializes a new SchemaCompareResultDelegate instance.
    * @param reporters The [[ISchemaCompareReporter]] objects to use to report schema differences.
    */
-  constructor(schemaA: Schema, schemaB: Schema, ...reporters: ISchemaCompareReporter[]) {
+  constructor(
+    schemaA: Schema,
+    schemaB: Schema,
+    ...reporters: ISchemaCompareReporter[]
+  ) {
     this._schemaChangeReporters = reporters;
     const keyMismatch = !schemaA.schemaKey.matches(schemaB.schemaKey);
     this._schemaAChanges = new SchemaChanges(schemaA);
-    if (keyMismatch)
-      this._schemaBChanges = new SchemaChanges(schemaB);
+    if (keyMismatch) this._schemaBChanges = new SchemaChanges(schemaB);
   }
 
   public get schemaChangeReporters(): ISchemaCompareReporter[] {
@@ -48,7 +69,9 @@ export class SchemaCompareResultDelegate {
   public compareComplete() {
     this.schemaChangeReporters.forEach((r) => r.report(this._schemaAChanges));
     if (this._schemaBChanges)
-      this.schemaChangeReporters.forEach((r) => r.report(this._schemaBChanges!));
+      this.schemaChangeReporters.forEach((r) =>
+        r.report(this._schemaBChanges!)
+      );
   }
 
   /**
@@ -58,8 +81,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Schema.
    * @param valueB The value from the second Schema.
    */
-  public async reportSchemaDelta(schemaA: Schema, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaDelta(schemaA, [propertyName, valueA, valueB]);
+  public async reportSchemaDelta(
+    schemaA: Schema,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaDelta(schemaA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -68,8 +101,14 @@ export class SchemaCompareResultDelegate {
    * @param schemaA The first Schema supplied for comparison.
    * @param referenceSchema The missing schema reference.
    */
-  public async reportSchemaReferenceMissing(schemaA: Schema, referenceSchema: Schema, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaReferenceMissing(schemaA, [referenceSchema]);
+  public async reportSchemaReferenceMissing(
+    schemaA: Schema,
+    referenceSchema: Schema,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaReferenceMissing(schemaA, [
+      referenceSchema,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -78,8 +117,18 @@ export class SchemaCompareResultDelegate {
    * @param schemaA The first Schema supplied for comparison.
    * @param referenceSchema The missing schema reference.
    */
-  public async reportSchemaReferenceDelta(schemaA: Schema, referenceSchema: Schema, versionA: string, versionB: string, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schemaA, [referenceSchema, versionA, versionB]);
+  public async reportSchemaReferenceDelta(
+    schemaA: Schema,
+    referenceSchema: Schema,
+    versionA: string,
+    versionB: string,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaReferenceDelta(schemaA, [
+      referenceSchema,
+      versionA,
+      versionB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -87,8 +136,14 @@ export class SchemaCompareResultDelegate {
    * Reports that a given SchemaItem could not be found in the second Schema.
    * @param schemaItemA The SchemaItem from the first Schema.
    */
-  public async reportSchemaItemMissing(schemaItemA: SchemaItem, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaItemMissing(schemaItemA, []);
+  public async reportSchemaItemMissing(
+    schemaItemA: SchemaItem,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaItemMissing(
+      schemaItemA,
+      []
+    );
     await this.reportDiagnostic(diag);
   }
 
@@ -99,8 +154,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first SchemaItem.
    * @param valueB The value from the second SchemaItem.
    */
-  public async reportSchemaItemDelta(schemaItemA: SchemaItem, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.SchemaItemDelta(schemaItemA, [propertyName, valueA, valueB]);
+  public async reportSchemaItemDelta(
+    schemaItemA: SchemaItem,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.SchemaItemDelta(schemaItemA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -111,8 +176,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first ECClass.
    * @param valueB The value from the second ECClass.
    */
-  public async reportClassDelta(classA: AnyClass, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.ClassDelta(classA, [propertyName, valueA, valueB]);
+  public async reportClassDelta(
+    classA: AnyClass,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.ClassDelta(classA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -122,8 +197,16 @@ export class SchemaCompareResultDelegate {
    * @param baseClassA The base class of the first ECClass.
    * @param baseClassB The base class of the second ECClass.
    */
-  public async reportBaseClassDelta(classA: AnyClass, baseClassA: AnyClass | undefined, baseClassB: AnyClass | undefined, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.BaseClassDelta(classA, [baseClassA, baseClassB]);
+  public async reportBaseClassDelta(
+    classA: AnyClass,
+    baseClassA: AnyClass | undefined,
+    baseClassB: AnyClass | undefined,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.BaseClassDelta(classA, [
+      baseClassA,
+      baseClassB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -134,8 +217,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first ECProperty.
    * @param valueB The value from the second ECProperty.
    */
-  public async reportPropertyDelta(propertyA: AnyProperty, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PropertyDelta(propertyA, [propertyName, valueA, valueB]);
+  public async reportPropertyDelta(
+    propertyA: AnyProperty,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.PropertyDelta(propertyA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -143,7 +236,10 @@ export class SchemaCompareResultDelegate {
    * Reports that an ECProperty found in the first ECClass could not be found in the second.
    * @param propertyA The ECProperty supplied for comparison.
    */
-  public async reportPropertyMissing(propertyA: AnyProperty, _compareDirection: SchemaCompareDirection): Promise<void> {
+  public async reportPropertyMissing(
+    propertyA: AnyProperty,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
     const diag = new SchemaCompareDiagnostics.PropertyMissing(propertyA, []);
     await this.reportDiagnostic(diag);
   }
@@ -153,8 +249,14 @@ export class SchemaCompareResultDelegate {
    * @param entityClassA The first EntityClass that is missing the Mixin.
    * @param mixinA The Mixin from the first EntityClass.
    */
-  public async reportEntityMixinMissing(entityClassA: EntityClass, mixinA: Mixin, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EntityMixinMissing(entityClassA, [mixinA]);
+  public async reportEntityMixinMissing(
+    entityClassA: EntityClass,
+    mixinA: Mixin,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.EntityMixinMissing(entityClassA, [
+      mixinA,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -165,8 +267,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Mixin.
    * @param valueB The value from the second Mixin.
    */
-  public async reportMixinDelta(mixinA: Mixin, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.MixinDelta(mixinA, [propertyName, valueA, valueB]);
+  public async reportMixinDelta(
+    mixinA: Mixin,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.MixinDelta(mixinA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -177,8 +289,17 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first RelationshipClass.
    * @param valueB The value from the second RelationshipClass.
    */
-  public async reportRelationshipClassDelta(relationshipClassA: RelationshipClass, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.RelationshipDelta(relationshipClassA, [propertyName, valueA, valueB]);
+  public async reportRelationshipClassDelta(
+    relationshipClassA: RelationshipClass,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.RelationshipDelta(
+      relationshipClassA,
+      [propertyName, valueA, valueB]
+    );
     await this.reportDiagnostic(diag);
   }
 
@@ -189,8 +310,17 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first RelationshipConstraint.
    * @param valueB The value from the second RelationshipConstraint.
    */
-  public async reportRelationshipConstraintDelta(constraintA: RelationshipConstraint, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.RelationshipConstraintDelta(constraintA, [propertyName, valueA, valueB]);
+  public async reportRelationshipConstraintDelta(
+    constraintA: RelationshipConstraint,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.RelationshipConstraintDelta(
+      constraintA,
+      [propertyName, valueA, valueB]
+    );
     await this.reportDiagnostic(diag);
   }
 
@@ -199,8 +329,16 @@ export class SchemaCompareResultDelegate {
    * @param constraintA The first RelationshipConstraint that is missing the class constraint.
    * @param constraintClass The constraint ECClass from the first RelationshipConstraint.
    */
-  public async reportRelationshipConstraintClassMissing(constraintA: RelationshipConstraint, constraintClass: EntityClass | Mixin | RelationshipClass, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.RelationshipConstraintClassMissing(constraintA, [constraintClass]);
+  public async reportRelationshipConstraintClassMissing(
+    constraintA: RelationshipConstraint,
+    constraintClass: EntityClass | Mixin | RelationshipClass,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag =
+      new SchemaCompareDiagnostics.RelationshipConstraintClassMissing(
+        constraintA,
+        [constraintClass]
+      );
     await this.reportDiagnostic(diag);
   }
 
@@ -211,8 +349,17 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first CustomAttributeClass.
    * @param valueB The value from the second CustomAttributeClass.
    */
-  public async reportCustomAttributeClassDelta(customAttributeA: CustomAttributeClass, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.CustomAttributeClassDelta(customAttributeA, [propertyName, valueA, valueB]);
+  public async reportCustomAttributeClassDelta(
+    customAttributeA: CustomAttributeClass,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.CustomAttributeClassDelta(
+      customAttributeA,
+      [propertyName, valueA, valueB]
+    );
     await this.reportDiagnostic(diag);
   }
 
@@ -221,8 +368,16 @@ export class SchemaCompareResultDelegate {
    * @param customAttributeContainerA The first CustomAttribute container that is missing the CustomAttribute instance.
    * @param customAttribute The CustomAttribute missing.
    */
-  public async reportCustomAttributeInstanceClassMissing(customAttributeContainerA: CustomAttributeContainerProps, customAttribute: CustomAttribute, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.CustomAttributeInstanceClassMissing(customAttributeContainerA, [customAttribute]);
+  public async reportCustomAttributeInstanceClassMissing(
+    customAttributeContainerA: CustomAttributeContainerProps,
+    customAttribute: CustomAttribute,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag =
+      new SchemaCompareDiagnostics.CustomAttributeInstanceClassMissing(
+        customAttributeContainerA,
+        [customAttribute]
+      );
     await this.reportDiagnostic(diag);
   }
 
@@ -233,8 +388,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Enumeration.
    * @param valueB The value from the second Enumeration.
    */
-  public async reportEnumerationDelta(enumerationA: Enumeration, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EnumerationDelta(enumerationA, [propertyName, valueA, valueB]);
+  public async reportEnumerationDelta(
+    enumerationA: Enumeration,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.EnumerationDelta(enumerationA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -243,8 +408,14 @@ export class SchemaCompareResultDelegate {
    * @param enumerationA The first Enumeration that is missing the enumerator.
    * @param enumerator The enumerator missing from the second schema.
    */
-  public async reportEnumeratorMissing(enumerationA: Enumeration, enumerator: AnyEnumerator, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EnumeratorMissing(enumerationA, [enumerator]);
+  public async reportEnumeratorMissing(
+    enumerationA: Enumeration,
+    enumerator: AnyEnumerator,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.EnumeratorMissing(enumerationA, [
+      enumerator,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -256,8 +427,20 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first enumerator.
    * @param valueB The value from the second enumerator.
    */
-  public async reportEnumeratorDelta(enumerationA: Enumeration, enumerator: AnyEnumerator, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.EnumeratorDelta(enumerationA, [enumerator, propertyName, valueA, valueB]);
+  public async reportEnumeratorDelta(
+    enumerationA: Enumeration,
+    enumerator: AnyEnumerator,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.EnumeratorDelta(enumerationA, [
+      enumerator,
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -268,8 +451,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first KindOfQuantity.
    * @param valueB The value from the second KindOfQuantity.
    */
-  public async reportKoqDelta(koqA: KindOfQuantity, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.KoqDelta(koqA, [propertyName, valueA, valueB]);
+  public async reportKoqDelta(
+    koqA: KindOfQuantity,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.KoqDelta(koqA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -278,8 +471,14 @@ export class SchemaCompareResultDelegate {
    * @param koqA The first KindOfQuantity that is missing the presentation unit.
    * @param unit The Format or OverrideFormat presentation unit missing from the second schema.
    */
-  public async reportPresentationUnitMissing(koqA: KindOfQuantity, unit: Format | OverrideFormat, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PresentationUnitMissing(koqA, [unit]);
+  public async reportPresentationUnitMissing(
+    koqA: KindOfQuantity,
+    unit: Format | OverrideFormat,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.PresentationUnitMissing(koqA, [
+      unit,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -290,8 +489,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first PropertyCategory.
    * @param valueB The value from the second PropertyCategory.
    */
-  public async reportPropertyCategoryDelta(categoryA: PropertyCategory, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PropertyCategoryDelta(categoryA, [propertyName, valueA, valueB]);
+  public async reportPropertyCategoryDelta(
+    categoryA: PropertyCategory,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.PropertyCategoryDelta(categoryA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -302,8 +511,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Format.
    * @param valueB The value from the second Format.
    */
-  public async reportFormatDelta(formatA: Format, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.FormatDelta(formatA, [propertyName, valueA, valueB]);
+  public async reportFormatDelta(
+    formatA: Format,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.FormatDelta(formatA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -312,8 +531,14 @@ export class SchemaCompareResultDelegate {
    * @param formatA The first Format that is missing the unit.
    * @param unit The Unit or InvertedUnit missing from the second schema.
    */
-  public async reportFormatUnitMissing(formatA: Format, unit: Unit | InvertedUnit, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.FormatUnitMissing(formatA, [unit]);
+  public async reportFormatUnitMissing(
+    formatA: Format,
+    unit: Unit | InvertedUnit,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.FormatUnitMissing(formatA, [
+      unit,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -324,8 +549,18 @@ export class SchemaCompareResultDelegate {
    * @param labelA The value from the first label.
    * @param labelB The value from the second label.
    */
-  public async reportUnitLabelOverrideDelta(formatA: Format, unit: Unit | InvertedUnit, labelA: string | undefined, labelB: string | undefined, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.UnitLabelOverrideDelta(formatA, [unit, labelA, labelB]);
+  public async reportUnitLabelOverrideDelta(
+    formatA: Format,
+    unit: Unit | InvertedUnit,
+    labelA: string | undefined,
+    labelB: string | undefined,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.UnitLabelOverrideDelta(formatA, [
+      unit,
+      labelA,
+      labelB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -336,8 +571,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Unit.
    * @param valueB The value from the second Unit.
    */
-  public async reportUnitDelta(unitA: Unit, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.UnitDelta(unitA, [propertyName, valueA, valueB]);
+  public async reportUnitDelta(
+    unitA: Unit,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.UnitDelta(unitA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -348,8 +593,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first InvertedUnit.
    * @param valueB The value from the second InvertedUnit.
    */
-  public async reportInvertedUnitDelta(invertedUnitA: InvertedUnit, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.InvertedUnitDelta(invertedUnitA, [propertyName, valueA, valueB]);
+  public async reportInvertedUnitDelta(
+    invertedUnitA: InvertedUnit,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.InvertedUnitDelta(invertedUnitA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -360,8 +615,18 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Phenomenon.
    * @param valueB The value from the second Phenomenon.
    */
-  public async reportPhenomenonDelta(phenomenonA: Phenomenon, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.PhenomenonDelta(phenomenonA, [propertyName, valueA, valueB]);
+  public async reportPhenomenonDelta(
+    phenomenonA: Phenomenon,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.PhenomenonDelta(phenomenonA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
@@ -372,13 +637,26 @@ export class SchemaCompareResultDelegate {
    * @param valueA The value from the first Constant.
    * @param valueB The value from the second Constant.
    */
-  public async reportConstantDelta(constantA: Constant, propertyName: string, valueA: any, valueB: any, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.ConstantDelta(constantA, [propertyName, valueA, valueB]);
+  public async reportConstantDelta(
+    constantA: Constant,
+    propertyName: string,
+    valueA: any,
+    valueB: any,
+    _compareDirection: SchemaCompareDirection
+  ): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.ConstantDelta(constantA, [
+      propertyName,
+      valueA,
+      valueB,
+    ]);
     await this.reportDiagnostic(diag);
   }
 
   private async reportDiagnostic(diagnostic: AnyDiagnostic): Promise<void> {
-    if (!this._schemaBChanges || this._schemaAChanges.schema === diagnostic.schema) {
+    if (
+      !this._schemaBChanges ||
+      this._schemaAChanges.schema === diagnostic.schema
+    ) {
       this._schemaAChanges.addDiagnostic(diagnostic);
       return;
     }

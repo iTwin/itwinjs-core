@@ -7,4 +7,3 @@ The following domains are considered part of the [Discipline-Physical layer](../
 ### [BuildingPhysical](../BuildingPhysical.ecschema.md)
 
 ### [BuildingSpatial](../BuildingSpatial.ecschema.md)
-

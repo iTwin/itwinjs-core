@@ -18,10 +18,12 @@ The [common packages](../common/index.md) will also be required. Please also not
 These packages provide the following functions to support backend operations:
 
 - Administration
+
   - [IModelHost](./IModelHost.md)
   - [Initialize Logging](../common/Logging.md)
 
 - IModelDb
+
   - [Open an IModelDb](./IModelDb.md)
   - [Synchronizing with iModelHub](./IModelDbSync.md)
   - [Writing to an IModelDb](./IModelDbReadwrite.md)
@@ -29,9 +31,11 @@ These packages provide the following functions to support backend operations:
   - [Fonts](./Fonts.md)
 
 - Working with Schemas and Elements in TypeScript
+
   - [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
 
 - Loading and Creating Elements, ElementAspects, and Models
+
   - [Access Elements](./AccessElements.md)
   - [Create Elements](./CreateElements.md)
   - [Access ElementAspects](./AccessElementAspects.md)
@@ -40,12 +44,14 @@ These packages provide the following functions to support backend operations:
   - [Create Models](./CreateModels.md)
 
 - ECSQL
+
   - [What is ECSQL?](../ECSQL.md)
   - [Executing ECSQL statements](./ExecutingECSQL.md)
   - [Code Examples](./ECSQLCodeExamples.md)
   - [Frequently used ECSQL queries](./ECSQL-queries.md)
 
 - Dealing with Codes
+
   - [Reserve Codes](./ReserveCodes.md)
 
 - Change Summary

@@ -6,7 +6,13 @@
 import { assert } from "@itwin/core-bentley";
 import { IModelJson, Path } from "@itwin/core-geometry";
 import { ColorDef, ViewDetails } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import {
+  DecorateContext,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  Tool,
+} from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class AspectRatioSkewDecorator {
@@ -21,18 +27,20 @@ class AspectRatioSkewDecorator {
     const h = iModel.projectExtents.high;
     const c = iModel.projectExtents.center;
     const json = {
-      path: [{
-        bcurve: {
-          closed: false,
-          knots: [0, 0, 0, 1, 1, 1],
-          order: 3,
-          points: [
-            [l.x, l.y, c.z],
-            [c.x, h.y, c.z],
-            [h.x, c.y, c.z],
-          ],
+      path: [
+        {
+          bcurve: {
+            closed: false,
+            knots: [0, 0, 0, 1, 1, 1],
+            order: 3,
+            points: [
+              [l.x, l.y, c.z],
+              [c.x, h.y, c.z],
+              [h.x, c.y, c.z],
+            ],
+          },
         },
-      }],
+      ],
     };
 
     const path = IModelJson.Reader.parse(json);
@@ -44,22 +52,30 @@ class AspectRatioSkewDecorator {
   }
 
   public decorate(context: DecorateContext): void {
-    if (!context.viewport.view.isSpatialView())
-      return;
+    if (!context.viewport.view.isSpatialView()) return;
 
-    const builder = context.createGraphic({ type: GraphicType.WorldDecoration, applyAspectRatioSkew: this._applyAspectRatioSkew });
+    const builder = context.createGraphic({
+      type: GraphicType.WorldDecoration,
+      applyAspectRatioSkew: this._applyAspectRatioSkew,
+    });
     builder.setSymbology(ColorDef.white, ColorDef.white, 3);
     builder.addPath(this._path);
     context.addDecorationFromBuilder(builder);
   }
 
-  public static toggle(iModel: IModelConnection, applyAspectRatioSkew: boolean): void {
+  public static toggle(
+    iModel: IModelConnection,
+    applyAspectRatioSkew: boolean
+  ): void {
     const dec = this._instance;
     if (dec) {
       IModelApp.viewManager.dropDecorator(dec);
       this._instance = undefined;
     } else {
-      this._instance = new AspectRatioSkewDecorator(iModel, applyAspectRatioSkew);
+      this._instance = new AspectRatioSkewDecorator(
+        iModel,
+        applyAspectRatioSkew
+      );
       IModelApp.viewManager.addDecorator(this._instance);
     }
   }
@@ -74,8 +90,12 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
   private _applyAspectRatioSkew = true;
 
   public static override toolId = "ToggleAspectRatioSkewDecorator";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(): Promise<boolean> {
     const iModel = IModelApp.viewManager.selectedView?.iModel;

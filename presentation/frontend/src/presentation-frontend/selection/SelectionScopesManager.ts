@@ -8,7 +8,13 @@
 
 import { Id64Arg } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import {
+  DEFAULT_KEYS_BATCH_SIZE,
+  KeySet,
+  RpcRequestsHandler,
+  SelectionScope,
+  SelectionScopeProps,
+} from "@itwin/presentation-common";
 
 /**
  * Properties for creating [[SelectionScopesManager]].
@@ -29,32 +35,50 @@ export interface SelectionScopesManagerProps {
  * @public
  */
 export class SelectionScopesManager {
-
   private _rpcRequestsHandler: RpcRequestsHandler;
   private _getLocale: () => string | undefined;
-  private _activeScope: SelectionScopeProps | SelectionScope | string | undefined;
+  private _activeScope:
+    | SelectionScopeProps
+    | SelectionScope
+    | string
+    | undefined;
 
   public constructor(props: SelectionScopesManagerProps) {
     this._rpcRequestsHandler = props.rpcRequestsHandler;
-    this._getLocale = props.localeProvider ? props.localeProvider : (() => undefined);
+    this._getLocale = props.localeProvider
+      ? props.localeProvider
+      : () => undefined;
   }
 
   /** Get active locale */
-  public get activeLocale() { return this._getLocale(); }
+  public get activeLocale() {
+    return this._getLocale();
+  }
 
   /** The active selection scope or its id */
-  public get activeScope() { return this._activeScope; }
-  public set activeScope(scope: SelectionScopeProps | SelectionScope | string | undefined) { this._activeScope = scope; }
+  public get activeScope() {
+    return this._activeScope;
+  }
+  public set activeScope(
+    scope: SelectionScopeProps | SelectionScope | string | undefined
+  ) {
+    this._activeScope = scope;
+  }
 
   /**
    * Get available selection scopes.
    * @param imodel The iModel to get selection scopes for
    * @param locale Optional locale to use when localizing scopes' label and description
    */
-  public async getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]> {
-    if (!locale)
-      locale = this._getLocale();
-    return this._rpcRequestsHandler.getSelectionScopes({ imodel: imodel.getRpcProps(), locale });
+  public async getSelectionScopes(
+    imodel: IModelConnection,
+    locale?: string
+  ): Promise<SelectionScope[]> {
+    if (!locale) locale = this._getLocale();
+    return this._rpcRequestsHandler.getSelectionScopes({
+      imodel: imodel.getRpcProps(),
+      locale,
+    });
   }
 
   /**
@@ -62,14 +86,16 @@ export class SelectionScopesManager {
    * @param ids Element IDs to compute selection for
    * @param scope Selection scope to apply
    */
-  public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string): Promise<KeySet> {
+  public async computeSelection(
+    imodel: IModelConnection,
+    ids: Id64Arg,
+    scope: SelectionScopeProps | SelectionScope | string
+  ): Promise<KeySet> {
     const scopeProps = createSelectionScopeProps(scope);
 
     // convert ids input to array
-    if (typeof ids === "string")
-      ids = [ids];
-    else if (ids instanceof Set)
-      ids = [...ids];
+    if (typeof ids === "string") ids = [ids];
+    else if (ids instanceof Set) ids = [...ids];
 
     // compute selection in batches to avoid HTTP 413
     const keys = new KeySet();
@@ -78,11 +104,25 @@ export class SelectionScopesManager {
     const batchKeyPromises = [];
     for (let batchIndex = 0; batchIndex < batchesCount; ++batchIndex) {
       const batchStart = batchSize * batchIndex;
-      const batchEnd = (batchStart + batchSize > ids.length) ? ids.length : (batchStart + batchSize);
-      const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
-      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps(), elementIds: batchIds, scope: scopeProps }));
+      const batchEnd =
+        batchStart + batchSize > ids.length
+          ? ids.length
+          : batchStart + batchSize;
+      const batchIds =
+        0 === batchIndex && ids.length <= batchEnd
+          ? ids
+          : ids.slice(batchStart, batchEnd);
+      batchKeyPromises.push(
+        this._rpcRequestsHandler.computeSelection({
+          imodel: imodel.getRpcProps(),
+          elementIds: batchIds,
+          scope: scopeProps,
+        })
+      );
     }
-    const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
+    const batchKeys = (await Promise.all(batchKeyPromises)).map(
+      KeySet.fromJSON
+    );
     batchKeys.forEach((bk) => keys.add(bk));
     return keys;
   }
@@ -94,11 +134,11 @@ export class SelectionScopesManager {
  *
  * @public
  */
-export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
-  if (!scope)
-    return { id: "element" };
-  if (typeof scope === "string")
-    return { id: scope };
+export function createSelectionScopeProps(
+  scope: SelectionScopeProps | SelectionScope | string | undefined
+): SelectionScopeProps {
+  if (!scope) return { id: "element" };
+  if (typeof scope === "string") return { id: scope };
   return scope;
 }
 

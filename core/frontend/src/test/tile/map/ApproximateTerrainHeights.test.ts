@@ -22,7 +22,11 @@ describe("ApproximateTerrainHeights", () => {
 
     testPairs.forEach((pair) => {
       const quadId = pair.id;
-      const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
+      const rectangle = tilingScheme.tileXYToRectangle(
+        quadId.column,
+        quadId.row,
+        quadId.level
+      );
       const heightRange = terrainHeights.getMinimumMaximumHeights(rectangle);
       expect(heightRange.isAlmostEqual(pair.range)).to.be.true;
     });

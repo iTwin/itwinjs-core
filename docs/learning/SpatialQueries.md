@@ -24,18 +24,18 @@ SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE (rt.ECInstanceId MATCH
 
 The caller would bind the `bbox` parameter in this example to an [iModel_bbox](./GeometrySqlFuncs.md#iModel_bbox) value. For example:
 
-``` ts
+```ts
 [[include:ECSqlStatement.spatialQuery]]
 ```
 
 This example shows how to find all elements with ranges that (may) overlap the range of some seed element. Note how the bbox parameter is bound to the range of the seed element. The additional test in the WHERE filters out the seed element, so that only other overlapping elements are found.
 
-Often, a spatial query will combine a test on the spatial index with additional filtering criteria in the WHERE clause. As noted in the [SQLite docs](https://sqlite.org/rtree.html), "An R*Tree index does not normally provide the exact answer but merely reduces the set of potential answers from millions to dozens." The additional filtering criteria are used to refine the answer after the spatial filter has narrowed the possibilities. For example, to select only elements in the specified range that are also in a specified Category:
+Often, a spatial query will combine a test on the spatial index with additional filtering criteria in the WHERE clause. As noted in the [SQLite docs](https://sqlite.org/rtree.html), "An R\*Tree index does not normally provide the exact answer but merely reduces the set of potential answers from millions to dozens." The additional filtering criteria are used to refine the answer after the spatial filter has narrowed the possibilities. For example, to select only elements in the specified range that are also in a specified Category:
 
 ```sql
 SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt, BisCore.SpatialElement el WHERE (rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox)) AND (el.ECInstanceId=rt.ECInstanceId) AND (el.Category = :categoryId)
 ```
 
-*Tip:* The OR operator should not be used in a WHERE clause that contains a spatial index MATCH.
+_Tip:_ The OR operator should not be used in a WHERE clause that contains a spatial index MATCH.
 
 The [ECSQL built-in geometry functions](./GeometrySqlFuncs.md) are sometimes used along with spatial queries as additional WHERE criteria.

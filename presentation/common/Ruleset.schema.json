@@ -19,10 +19,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "label",
-        "value"
-      ],
+      "required": ["label", "value"],
       "type": "object"
     },
     "CheckBoxRule": {
@@ -40,10 +37,7 @@
         },
         "isEnabled": {
           "description": "Indicates whether check box is enabled or disabled.",
-          "type": [
-            "string",
-            "boolean"
-          ]
+          "type": ["string", "boolean"]
         },
         "onlyIfNotHandled": {
           "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
@@ -67,9 +61,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CheckBox"
-          ],
+          "enum": ["CheckBox"],
           "type": "string"
         },
         "useInversedPropertyValue": {
@@ -77,9 +69,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "ChildNodeRule": {
@@ -114,9 +104,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ChildNodes"
-          ],
+          "enum": ["ChildNodes"],
           "type": "string"
         },
         "specifications": {
@@ -138,9 +126,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "ChildNodeSpecification": {
@@ -174,15 +160,11 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Class"
-          ],
+          "enum": ["Class"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "ContentInstancesOfSpecificClassesSpecification": {
@@ -280,16 +262,11 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentInstancesOfSpecificClasses"
-          ],
+          "enum": ["ContentInstancesOfSpecificClasses"],
           "type": "string"
         }
       },
-      "required": [
-        "classes",
-        "specType"
-      ],
+      "required": ["classes", "specType"],
       "type": "object"
     },
     "ContentModifier": {
@@ -349,15 +326,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentModifier"
-          ],
+          "enum": ["ContentModifier"],
           "type": "string"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "ContentRelatedInstancesSpecification": {
@@ -425,16 +398,11 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentRelatedInstances"
-          ],
+          "enum": ["ContentRelatedInstances"],
           "type": "string"
         }
       },
-      "required": [
-        "relationshipPaths",
-        "specType"
-      ],
+      "required": ["relationshipPaths", "specType"],
       "type": "object"
     },
     "ContentRule": {
@@ -462,9 +430,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Content"
-          ],
+          "enum": ["Content"],
           "type": "string"
         },
         "specifications": {
@@ -475,10 +441,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "ruleType",
-        "specifications"
-      ],
+      "required": ["ruleType", "specifications"],
       "type": "object"
     },
     "ContentSpecification": {
@@ -509,11 +472,7 @@
         },
         "hasChildren": {
           "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
+          "enum": ["Always", "Never", "Unknown"],
           "type": "string"
         },
         "hideExpression": {
@@ -556,9 +515,7 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CustomNode"
-          ],
+          "enum": ["CustomNode"],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -570,11 +527,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "label",
-        "specType",
-        "type"
-      ],
+      "required": ["label", "specType", "type"],
       "type": "object"
     },
     "CustomQueryInstanceNodesSpecification": {
@@ -595,11 +548,7 @@
         },
         "hasChildren": {
           "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
+          "enum": ["Always", "Never", "Unknown"],
           "type": "string"
         },
         "hideExpression": {
@@ -641,9 +590,7 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "CustomQueryInstanceNodes"
-          ],
+          "enum": ["CustomQueryInstanceNodes"],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -651,9 +598,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "CustomRendererSpecification": {
@@ -665,9 +610,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "rendererName"
-      ],
+      "required": ["rendererName"],
       "type": "object"
     },
     "CustomizationRule": {
@@ -726,9 +669,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "DefaultPropertyCategoryOverride"
-          ],
+          "enum": ["DefaultPropertyCategoryOverride"],
           "type": "string"
         },
         "specification": {
@@ -736,10 +677,7 @@
           "description": "Specification for the custom property category."
         }
       },
-      "required": [
-        "ruleType",
-        "specification"
-      ],
+      "required": ["ruleType", "specification"],
       "type": "object"
     },
     "DisabledSortingRule": {
@@ -775,15 +713,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "DisabledSorting"
-          ],
+          "enum": ["DisabledSorting"],
           "type": "string"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "ECPropertyValueQuerySpecification": {
@@ -800,17 +734,11 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ECPropertyValue"
-          ],
+          "enum": ["ECPropertyValue"],
           "type": "string"
         }
       },
-      "required": [
-        "class",
-        "parentPropertyName",
-        "specType"
-      ],
+      "required": ["class", "parentPropertyName", "specType"],
       "type": "object"
     },
     "ExtendedDataRule": {
@@ -845,16 +773,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ExtendedData"
-          ],
+          "enum": ["ExtendedData"],
           "type": "string"
         }
       },
-      "required": [
-        "items",
-        "ruleType"
-      ],
+      "required": ["items", "ruleType"],
       "type": "object"
     },
     "GroupingRule": {
@@ -893,17 +816,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Grouping"
-          ],
+          "enum": ["Grouping"],
           "type": "string"
         }
       },
-      "required": [
-        "class",
-        "groups",
-        "ruleType"
-      ],
+      "required": ["class", "groups", "ruleType"],
       "type": "object"
     },
     "GroupingSpecification": {
@@ -930,16 +847,11 @@
         },
         "type": {
           "description": "Type of the identifier",
-          "enum": [
-            "Id"
-          ],
+          "enum": ["Id"],
           "type": "string"
         }
       },
-      "required": [
-        "categoryId",
-        "type"
-      ],
+      "required": ["categoryId", "type"],
       "type": "object"
     },
     "ImageIdOverride": {
@@ -973,16 +885,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "ImageIdOverride"
-          ],
+          "enum": ["ImageIdOverride"],
           "type": "string"
         }
       },
-      "required": [
-        "imageIdExpression",
-        "ruleType"
-      ],
+      "required": ["imageIdExpression", "ruleType"],
       "type": "object"
     },
     "InstanceLabelOverride": {
@@ -1010,9 +917,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "InstanceLabelOverride"
-          ],
+          "enum": ["InstanceLabelOverride"],
           "type": "string"
         },
         "values": {
@@ -1023,11 +928,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "class",
-        "ruleType",
-        "values"
-      ],
+      "required": ["class", "ruleType", "values"],
       "type": "object"
     },
     "InstanceLabelOverrideBriefcaseIdSpecification": {
@@ -1036,15 +937,11 @@
       "properties": {
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "BriefcaseId"
-          ],
+          "enum": ["BriefcaseId"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "InstanceLabelOverrideClassLabelSpecification": {
@@ -1053,15 +950,11 @@
       "properties": {
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "ClassLabel"
-          ],
+          "enum": ["ClassLabel"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "InstanceLabelOverrideClassNameSpecification": {
@@ -1074,15 +967,11 @@
         },
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "ClassName"
-          ],
+          "enum": ["ClassName"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "InstanceLabelOverrideCompositeValueSpecification": {
@@ -1101,9 +990,7 @@
                 "$ref": "#/definitions/InstanceLabelOverrideValueSpecification"
               }
             },
-            "required": [
-              "spec"
-            ],
+            "required": ["spec"],
             "type": "object"
           },
           "type": "array"
@@ -1114,16 +1001,11 @@
         },
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "Composite"
-          ],
+          "enum": ["Composite"],
           "type": "string"
         }
       },
-      "required": [
-        "parts",
-        "specType"
-      ],
+      "required": ["parts", "specType"],
       "type": "object"
     },
     "InstanceLabelOverrideLocalIdSpecification": {
@@ -1132,15 +1014,11 @@
       "properties": {
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "LocalId"
-          ],
+          "enum": ["LocalId"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "InstanceLabelOverridePropertyValueSpecification": {
@@ -1167,16 +1045,11 @@
         },
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "Property"
-          ],
+          "enum": ["Property"],
           "type": "string"
         }
       },
-      "required": [
-        "propertyName",
-        "specType"
-      ],
+      "required": ["propertyName", "specType"],
       "type": "object"
     },
     "InstanceLabelOverrideRelatedInstanceLabelSpecification": {
@@ -1189,16 +1062,11 @@
         },
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "RelatedInstanceLabel"
-          ],
+          "enum": ["RelatedInstanceLabel"],
           "type": "string"
         }
       },
-      "required": [
-        "pathToRelatedInstance",
-        "specType"
-      ],
+      "required": ["pathToRelatedInstance", "specType"],
       "type": "object"
     },
     "InstanceLabelOverrideStringValueSpecification": {
@@ -1207,9 +1075,7 @@
       "properties": {
         "specType": {
           "description": "Type of the specification",
-          "enum": [
-            "String"
-          ],
+          "enum": ["String"],
           "type": "string"
         },
         "value": {
@@ -1217,10 +1083,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "specType",
-        "value"
-      ],
+      "required": ["specType", "value"],
       "type": "object"
     },
     "InstanceLabelOverrideValueSpecification": {
@@ -1303,11 +1166,7 @@
         },
         "hasChildren": {
           "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
+          "enum": ["Always", "Never", "Unknown"],
           "type": "string"
         },
         "hideExpression": {
@@ -1346,9 +1205,7 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "InstanceNodesOfSpecificClasses"
-          ],
+          "enum": ["InstanceNodesOfSpecificClasses"],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -1356,10 +1213,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "classes",
-        "specType"
-      ],
+      "required": ["classes", "specType"],
       "type": "object"
     },
     "LabelOverride": {
@@ -1398,15 +1252,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "LabelOverride"
-          ],
+          "enum": ["LabelOverride"],
           "type": "string"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "MultiSchemaClassesSpecification": {
@@ -1430,10 +1280,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "classNames",
-        "schemaName"
-      ],
+      "required": ["classNames", "schemaName"],
       "type": "object"
     },
     "NoCategoryIdentifier": {
@@ -1442,15 +1289,11 @@
       "properties": {
         "type": {
           "description": "Type of the identifier",
-          "enum": [
-            "None"
-          ],
+          "enum": ["None"],
           "type": "string"
         }
       },
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "type": "object"
     },
     "NodeArtifactsRule": {
@@ -1485,16 +1328,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "NodeArtifacts"
-          ],
+          "enum": ["NodeArtifacts"],
           "type": "string"
         }
       },
-      "required": [
-        "items",
-        "ruleType"
-      ],
+      "required": ["items", "ruleType"],
       "type": "object"
     },
     "ParentCategoryIdentifier": {
@@ -1503,15 +1341,11 @@
       "properties": {
         "type": {
           "description": "Type of the identifier",
-          "enum": [
-            "DefaultParent"
-          ],
+          "enum": ["DefaultParent"],
           "type": "string"
         }
       },
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "type": "object"
     },
     "PropertyCategorySpecification": {
@@ -1563,10 +1397,7 @@
           "description": "Custom category renderer specification that allows\nassigning a custom category renderer to be used in UI. This specification is used to set up\n`CategoryDescription.renderer` for this category and it's up to the UI component to\nmake sure appropriate renderer is used to render the category."
         }
       },
-      "required": [
-        "id",
-        "label"
-      ],
+      "required": ["id", "label"],
       "type": "object"
     },
     "PropertyEditorJsonParameters": {
@@ -1578,16 +1409,11 @@
         },
         "paramsType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Json"
-          ],
+          "enum": ["Json"],
           "type": "string"
         }
       },
-      "required": [
-        "json",
-        "paramsType"
-      ],
+      "required": ["json", "paramsType"],
       "type": "object"
     },
     "PropertyEditorMultilineParameters": {
@@ -1601,15 +1427,11 @@
         },
         "paramsType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Multiline"
-          ],
+          "enum": ["Multiline"],
           "type": "string"
         }
       },
-      "required": [
-        "paramsType"
-      ],
+      "required": ["paramsType"],
       "type": "object"
     },
     "PropertyEditorParameters": {
@@ -1643,15 +1465,11 @@
         },
         "paramsType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Range"
-          ],
+          "enum": ["Range"],
           "type": "string"
         }
       },
-      "required": [
-        "paramsType"
-      ],
+      "required": ["paramsType"],
       "type": "object"
     },
     "PropertyEditorSliderParameters": {
@@ -1677,17 +1495,11 @@
         },
         "paramsType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Slider"
-          ],
+          "enum": ["Slider"],
           "type": "string"
         }
       },
-      "required": [
-        "max",
-        "min",
-        "paramsType"
-      ],
+      "required": ["max", "min", "paramsType"],
       "type": "object"
     },
     "PropertyEditorSpecification": {
@@ -1706,9 +1518,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "editorName"
-      ],
+      "required": ["editorName"],
       "type": "object"
     },
     "PropertyGroup": {
@@ -1726,10 +1536,7 @@
         "groupingValue": {
           "deprecated": "in 3.x. Display value should always be used for grouping.",
           "description": "Specifies whether instances should be grouped using property's display or raw value.",
-          "enum": [
-            "DisplayLabel",
-            "PropertyValue"
-          ],
+          "enum": ["DisplayLabel", "PropertyValue"],
           "type": "string"
         },
         "imageId": {
@@ -1752,24 +1559,16 @@
         "sortingValue": {
           "deprecated": "in 3.x. Property grouping nodes should always be sorted by display label.",
           "description": "Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result\nis the same, unless a label override rule is used to change node's display label.",
-          "enum": [
-            "DisplayLabel",
-            "PropertyValue"
-          ],
+          "enum": ["DisplayLabel", "PropertyValue"],
           "type": "string"
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "Property"
-          ],
+          "enum": ["Property"],
           "type": "string"
         }
       },
-      "required": [
-        "propertyName",
-        "specType"
-      ],
+      "required": ["propertyName", "specType"],
       "type": "object"
     },
     "PropertyRangeGroupSpecification": {
@@ -1797,10 +1596,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "fromValue",
-        "toValue"
-      ],
+      "required": ["fromValue", "toValue"],
       "type": "object"
     },
     "PropertySortingRule": {
@@ -1841,9 +1637,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "PropertySorting"
-          ],
+          "enum": ["PropertySorting"],
           "type": "string"
         },
         "sortAscending": {
@@ -1851,10 +1645,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "propertyName",
-        "ruleType"
-      ],
+      "required": ["propertyName", "ruleType"],
       "type": "object"
     },
     "PropertySpecification": {
@@ -1888,10 +1679,7 @@
         },
         "isDisplayed": {
           "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n  If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
-          "type": [
-            "string",
-            "boolean"
-          ]
+          "type": ["string", "boolean"]
         },
         "isReadOnly": {
           "description": "This attribute controls whether the property field is read-only. If the attribute value is not set, the field is\nread-only when at least one of the properties is read-only.",
@@ -1918,9 +1706,7 @@
           "description": "Custom property renderer specification that allows assigning a\ncustom value renderer to be used in UI. The specification is used to set up `Field.renderer` for\nthis property and it's up to the UI component to make sure appropriate renderer is used to render the property."
         }
       },
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "type": "object"
     },
     "QuerySpecification": {
@@ -1952,11 +1738,7 @@
         },
         "hasChildren": {
           "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
+          "enum": ["Always", "Never", "Unknown"],
           "type": "string"
         },
         "hideExpression": {
@@ -2002,9 +1784,7 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "RelatedInstanceNodes"
-          ],
+          "enum": ["RelatedInstanceNodes"],
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
@@ -2012,10 +1792,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "relationshipPaths",
-        "specType"
-      ],
+      "required": ["relationshipPaths", "specType"],
       "type": "object"
     },
     "RelatedInstanceSpecification": {
@@ -2036,10 +1813,7 @@
           "description": "Specifies a chain of relationship path specifications\nthat forms a path from the primary instance to the related instances."
         }
       },
-      "required": [
-        "alias",
-        "relationshipPath"
-      ],
+      "required": ["alias", "relationshipPath"],
       "type": "object"
     },
     "RelatedPropertiesSpecification": {
@@ -2085,10 +1859,7 @@
               "type": "array"
             },
             {
-              "enum": [
-                "*",
-                "_none_"
-              ],
+              "enum": ["*", "_none_"],
               "type": "string"
             }
           ],
@@ -2100,10 +1871,7 @@
         },
         "relationshipMeaning": {
           "description": "The attribute describes what the related properties mean to the primary instance\nwhose properties are displayed.",
-          "enum": [
-            "RelatedInstance",
-            "SameInstance"
-          ],
+          "enum": ["RelatedInstance", "SameInstance"],
           "type": "string"
         },
         "relationshipProperties": {
@@ -2122,10 +1890,7 @@
               "type": "array"
             },
             {
-              "enum": [
-                "*",
-                "_none_"
-              ],
+              "enum": ["*", "_none_"],
               "type": "string"
             }
           ],
@@ -2136,9 +1901,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "propertiesSource"
-      ],
+      "required": ["propertiesSource"],
       "type": "object"
     },
     "RelationshipPathSpecification": {
@@ -2161,10 +1924,7 @@
       "properties": {
         "direction": {
           "description": "This attribute specifies the direction in which the `relationship` should be followed.",
-          "enum": [
-            "Backward",
-            "Forward"
-          ],
+          "enum": ["Backward", "Forward"],
           "type": "string"
         },
         "relationship": {
@@ -2176,10 +1936,7 @@
           "description": "This attribute may be used to specialize the target of the relationship."
         }
       },
-      "required": [
-        "direction",
-        "relationship"
-      ],
+      "required": ["direction", "relationship"],
       "type": "object"
     },
     "RepeatableRelationshipPathSpecification": {
@@ -2203,9 +1960,7 @@
         "count": {
           "anyOf": [
             {
-              "enum": [
-                "*"
-              ],
+              "enum": ["*"],
               "type": "string"
             },
             {
@@ -2216,10 +1971,7 @@
         },
         "direction": {
           "description": "This attribute specifies the direction in which the `relationship` should be followed.",
-          "enum": [
-            "Backward",
-            "Forward"
-          ],
+          "enum": ["Backward", "Forward"],
           "type": "string"
         },
         "relationship": {
@@ -2231,10 +1983,7 @@
           "description": "This attribute may be used to specialize the target of the relationship."
         }
       },
-      "required": [
-        "direction",
-        "relationship"
-      ],
+      "required": ["direction", "relationship"],
       "type": "object"
     },
     "RequiredSchemaSpecification": {
@@ -2256,9 +2005,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "type": "object"
     },
     "RootCategoryIdentifier": {
@@ -2267,15 +2014,11 @@
       "properties": {
         "type": {
           "description": "Type of the identifier",
-          "enum": [
-            "Root"
-          ],
+          "enum": ["Root"],
           "type": "string"
         }
       },
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "type": "object"
     },
     "RootNodeRule": {
@@ -2314,9 +2057,7 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "RootNodes"
-          ],
+          "enum": ["RootNodes"],
           "type": "string"
         },
         "specifications": {
@@ -2338,9 +2079,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "Rule": {
@@ -2399,23 +2138,16 @@
       "properties": {
         "applicationStage": {
           "description": "Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first\ngrouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:\n\n- `\"Query\"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen\n  as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.\n\n- `\"PostProcess\"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will\n  produce the expected result in all cases.",
-          "enum": [
-            "PostProcess",
-            "Query"
-          ],
+          "enum": ["PostProcess", "Query"],
           "type": "string"
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "SameLabelInstance"
-          ],
+          "enum": ["SameLabelInstance"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "SelectedNodeInstancesSpecification": {
@@ -2488,15 +2220,11 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "SelectedNodeInstances"
-          ],
+          "enum": ["SelectedNodeInstances"],
           "type": "string"
         }
       },
-      "required": [
-        "specType"
-      ],
+      "required": ["specType"],
       "type": "object"
     },
     "SingleSchemaClassSpecification": {
@@ -2514,10 +2242,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "className",
-        "schemaName"
-      ],
+      "required": ["className", "schemaName"],
       "type": "object"
     },
     "StringQuerySpecification": {
@@ -2534,17 +2259,11 @@
         },
         "specType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "String"
-          ],
+          "enum": ["String"],
           "type": "string"
         }
       },
-      "required": [
-        "class",
-        "query",
-        "specType"
-      ],
+      "required": ["class", "query", "specType"],
       "type": "object"
     },
     "StyleOverride": {
@@ -2585,15 +2304,11 @@
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
-          "enum": [
-            "StyleOverride"
-          ],
+          "enum": ["StyleOverride"],
           "type": "string"
         }
       },
-      "required": [
-        "ruleType"
-      ],
+      "required": ["ruleType"],
       "type": "object"
     },
     "SubCondition": {
@@ -2637,9 +2352,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "supplementationPurpose"
-      ],
+      "required": ["supplementationPurpose"],
       "type": "object"
     },
     "Variable": {
@@ -2660,19 +2373,11 @@
         },
         "type": {
           "description": "Defines value type. Defaults to `VariableValueType.YesNo`.",
-          "enum": [
-            "IntValue",
-            "ShowHide",
-            "StringValue",
-            "YesNo"
-          ],
+          "enum": ["IntValue", "ShowHide", "StringValue", "YesNo"],
           "type": "string"
         }
       },
-      "required": [
-        "id",
-        "label"
-      ],
+      "required": ["id", "label"],
       "type": "object"
     },
     "VariablesGroup": {
@@ -2698,10 +2403,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "label",
-        "vars"
-      ],
+      "required": ["label", "vars"],
       "type": "object"
     }
   },
@@ -2743,9 +2445,6 @@
       "type": "string"
     }
   },
-  "required": [
-    "id",
-    "rules"
-  ],
+  "required": ["id", "rules"],
   "type": "object"
 }

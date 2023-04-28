@@ -5,6 +5,7 @@
 <div id="guide-list">
 
 #### Introduction
+
 - [Overview](./guide/intro/overview.md)
 - [Federated Digital Twins](./guide/intro/federated-digital-twins.md)
 - [Modeling with BIS](./guide/intro/modeling-with-bis.md)
@@ -12,6 +13,7 @@
 - [Fabric of the Universe](./guide/intro/fabric-of-the-universe.md)
 
 #### Fundamentals
+
 - [Element Fundamentals](./guide/fundamentals/element-fundamentals.md)
 - [Codes](./guide/fundamentals/codes.md)
 - [ElementAspect Fundamentals](./guide/fundamentals/elementaspect-fundamentals.md)
@@ -24,6 +26,7 @@
 - [Categories](./guide/fundamentals/categories.md)
 
 #### Data Organization
+
 - [Information Hierarchy](./guide/data-organization/information-hierarchy.md)
 - [Modeling Perspectives](./guide/data-organization/modeling-perspectives.md)
 - [Top of the World](./guide/data-organization/top-of-the-world.md)
@@ -34,6 +37,7 @@
 - [Organizing Definition Elements](./guide/data-organization/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
+
 - [3D Guidance](./guide/physical-perspective/3d-guidance.md)
 - [PhysicalModel Hierarchy](./guide/physical-perspective/physical-hierarchy-organization.md)
 - [Physical Models and Elements](./guide/physical-perspective/physical-models-and-elements.md)
@@ -41,11 +45,13 @@
 - [Quantity Takeoffs: Guidelines](./guide/physical-perspective/qto-guidelines.md)
 
 #### Other Modeling Perspectives
+
 - [Functional Models and Elements](./guide/other-perspectives/functional-models-and-elements.md)
 - [Analysis Models and Elements](./guide/other-perspectives/analysis-models-and-elements.md)
 - [Information Models and Elements](./guide/other-perspectives/information-models-and-elements.md)
 
 #### Schema Evolution
+
 - [Schema Customization](./guide/schema-evolution/schema-customization.md)
 - [Data Evolution Across Time](./guide/schema-evolution/data-evolution-across-time.md)
 - [Schema Versioning](./guide/schema-evolution/schema-versioning-and-generations.md)
@@ -61,11 +67,13 @@
 - [Relationship “Strengths”](./guide/naming-guidelines/standard-relationship-strengths-names.md)
 
 #### Other topics
+
 - [BIS Schema Units](./guide/other-topics/units.md)
 - [BIS Schema KindOfQuantities](./guide/other-topics/kindOfQuantities.md)
 - [BIS Schema Validation](./guide/other-topics/bis-schema-validation.md)
 
 #### References
+
 - [BIS Glossary](./guide/references/glossary.md)
 - [Class-diagram Conventions](./guide/references/class-diagram-conventions.md)
 - [Instance-diagram Conventions](./guide/references/instance-diagram-conventions.md)
@@ -75,6 +83,7 @@
 &nbsp;
 
 ### Domain Schemas
+
 - [Overview](./domains/index.md)
 - [Core domains](./domains/core-domains.md)
 - [Common domains](./domains/common-domains.md)

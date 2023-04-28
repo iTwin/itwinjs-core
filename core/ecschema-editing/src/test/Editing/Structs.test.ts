@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import {
+  SchemaContext,
+  SchemaItemKey,
+  SchemaKey,
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Structs tests", () => {
@@ -20,7 +24,9 @@ describe("Structs tests", () => {
 
   it("should create a new struct Class", async () => {
     const structResult = await testEditor.structs.create(testKey, "testStruct");
-    expect(testEditor.schemaContext.getSchemaItemSync(structResult.itemKey!)?.name).to.eql("testStruct");
+    expect(
+      testEditor.schemaContext.getSchemaItemSync(structResult.itemKey!)?.name
+    ).to.eql("testStruct");
   });
 
   it("should delete a struct class", async () => {
@@ -32,7 +38,8 @@ describe("Structs tests", () => {
     const delRes = await testEditor.structs.delete(key);
     expect(delRes.itemKey).to.eql(structResult.itemKey);
 
-    expect(testEditor.schemaContext.getSchemaItemSync(structResult.itemKey!)).to.be.undefined;
+    expect(testEditor.schemaContext.getSchemaItemSync(structResult.itemKey!)).to
+      .be.undefined;
   });
 
   it("should not be able to delete a struct class if it is not in schema", async () => {

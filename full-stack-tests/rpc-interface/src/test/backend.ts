@@ -17,8 +17,7 @@ import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -38,13 +37,22 @@ const settings = new Settings(process.env);
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    api: {
+      baseUrl: `https://${
+        process.env.IMJS_URL_PREFIX ?? ""
+      }api.bentley.com/imodels`,
+    },
+  });
   const hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup({ hubAccess });
 
   PresentationBackend.initialize();
 
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, getRpcInterfaces(settings));
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl(
+    { info: { title: "full-stack-test", version: "v1.0" } },
+    getRpcInterfaces(settings)
+  );
 
   // create a basic express web server
   const port = 5011;

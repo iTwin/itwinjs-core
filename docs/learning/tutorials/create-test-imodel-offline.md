@@ -24,6 +24,7 @@ The iTwin Snapshot will download and extract the needed connectors, run the conn
 Next, follow the ["Developing a desktop viewer"](./develop-desktop-viewer.md) tutorial to view the snapshot.
 
 ---
+
 <style>
     a#getting-started---explore-imodel {
         display: none;

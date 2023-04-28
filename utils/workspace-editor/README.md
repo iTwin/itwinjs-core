@@ -2,15 +2,15 @@
 
 **WorkspaceEditor** is a command line utility for creating and editing `WorkspaceResources` in iTwin `WorkspaceDb`s, and for uploading, downloading, and editing `WorkspaceDb`s in cloud `WorkspaceContainer`s.
 
-An iTwin `WorkspaceDb` may hold many `WorkSpaceResources`, each with a `WorkspaceResource.Name` and type. `WorkspaceEditor` adds, updates, deletes, and extracts *local files* into/from a `WorkspaceDb`.
+An iTwin `WorkspaceDb` may hold many `WorkSpaceResources`, each with a `WorkspaceResource.Name` and type. `WorkspaceEditor` adds, updates, deletes, and extracts _local files_ into/from a `WorkspaceDb`.
 
 ## Workspace Resource Types
 
 There are 3 `WorkspaceResourceType`s that may be accessed by `@itwin-backend` applications at runtime via the `WorkspaceDb` api:
 
- 1. `string` accessed via the `getString` method
- 2. `blob`  binary data accessed via the `getBlob` method
- 3. `file`  extracted to a local file via the `getFile` method
+1.  `string` accessed via the `getString` method
+2.  `blob` binary data accessed via the `getBlob` method
+3.  `file` extracted to a local file via the `getFile` method
 
 Several `WorkspaceEditor` commands require a `--type` argument to specify which `WorkspaceResourceType` to use.
 
@@ -18,7 +18,7 @@ Several `WorkspaceEditor` commands require a `--type` argument to specify which 
 
 `WorkspaceDb`s may be either local files or from cloud `WorkspaceContainers`. When creating new `WorkspaceDb`s, it is sometimes useful to just work with a local file until all resources have been imported, before uploading the WorkspaceDb to the cloud container.
 
-`WorkspaceDb`s are located by iTwin.js inside a `WorkspaceContainer` subdirectory within the `WorkspaceContainerDir` directory. `WorkspaceContainerDir` is specified as a directory name in the `workspace.containerDir` member on the `configuration` argument of  `IModelHost.startup`. The default value is `%localappdata%/iTwin/Workspace`.
+`WorkspaceDb`s are located by iTwin.js inside a `WorkspaceContainer` subdirectory within the `WorkspaceContainerDir` directory. `WorkspaceContainerDir` is specified as a directory name in the `workspace.containerDir` member on the `configuration` argument of `IModelHost.startup`. The default value is `%localappdata%/iTwin/Workspace`.
 
 WorkspaceEditor will normally create and edit `WorkspaceDb`s in the default directory, but if you wish to use a different directory, supply the `--directory` option to specify a different `WorkspaceContainerDir` location.
 
@@ -49,7 +49,7 @@ myConfig.json:
 }
 ```
 
-> config files *must* have a `.json` extension.
+> config files _must_ have a `.json` extension.
 
 ## WORKSPACE_EDITOR_xxx Environment Variables
 
@@ -67,7 +67,7 @@ To specify camelCase options, separate the words with an underbar, e.g.:
 set WORKSPACE_EDITOR_ACCESS_TOKEN=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
 ```
 
-> `WORKSPACE_EDITOR_` environment variable names are *case sensitive* and must be ALL CAPS
+> `WORKSPACE_EDITOR_` environment variable names are _case sensitive_ and must be ALL CAPS
 
 ## WorkspaceEditor Commands
 
@@ -136,7 +136,7 @@ Add one or more local files as resources into a `WorkspaceDb`.
 `--root` specifies a root directory when adding multiple files. The parts of the path after the root are saved in the resource name (see example below.)
 `--type` specifies the type of resource(s) to add. Required
 
-> Note: `--rscName`  is only applicable when adding a single file.
+> Note: `--rscName` is only applicable when adding a single file.
 
 Examples:
 
@@ -453,7 +453,7 @@ Example:
 deleted WorkspaceDb [proj3dt:2.0.0] from container [5d385232-a2ec-4f31-b74b-8201c027848d]
 ```
 
-This command is not normally used, since older versions of `WorkspaceDb`s may be used by existing or archived projects. It should *only* be used when it can be known that the `WorkspaceDb` is no longer needed for any purpose. Otherwise, leaving old versions in the cloud has very little downside.
+This command is not normally used, since older versions of `WorkspaceDb`s may be used by existing or archived projects. It should _only_ be used when it can be known that the `WorkspaceDb` is no longer needed for any purpose. Otherwise, leaving old versions in the cloud has very little downside.
 
 > `dbName` must include a version number.
 
@@ -463,7 +463,7 @@ Delete currently unused blocks from a cloud `WorkspaceContainer`. This is only n
 
 ## @ scripts
 
-It is sometimes necessary to run WorkspaceEditor in *batch mode*, for example during pipeline jobs. If the first argument to WorkspaceEditor begins with an "@", the rest of the argument is a file name from which WorkspaceEditor commands are executed in sequence.
+It is sometimes necessary to run WorkspaceEditor in _batch mode_, for example during pipeline jobs. If the first argument to WorkspaceEditor begins with an "@", the rest of the argument is a file name from which WorkspaceEditor commands are executed in sequence.
 
 The second argument can specify the config file for the script.
 
@@ -548,6 +548,7 @@ initializeWorkspace --noPrompt # don't prompt for yes/no
 importDb project proj112\proj # import WorkspaceDb from local directory into cloud container.
 queryDbs # so we can tell it worked
 ```
+
 run `createCloud.txt` as an @ script using `cloud.json` for config:
 
 ```sh
@@ -557,4 +558,4 @@ Vacuuming r:\workspaces\proj112\proj.itwin-workspace ... done
 import r:\workspaces\proj112\proj.itwin-workspace, container=5d385232-a2ec-4f31-b74b-8201c027848d, dbName=project:1.0.0 : complete, 0.047 seconds
 WorkspaceDbs in container [5d385232-a2ec-4f31-b74b-8201c027848d]
  "project:1.0.0", size=4M, 0M downloaded (0%)
- ```
+```

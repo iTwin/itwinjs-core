@@ -8,4 +8,3 @@ Wiremesh applied to a reality model:
 
 Wiremesh applied to a plant model:
 ![Wiremesh plant model](../../changehistory/assets/wiremesh-plant.jpg)
-

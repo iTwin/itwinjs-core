@@ -1,4 +1,3 @@
-
 # Third-Party Code
 
 This library potentially incorporates work from the following third-party code:

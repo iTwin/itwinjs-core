@@ -8,20 +8,20 @@ This specification creates content for all instances of specific ECClasses.
 
 | Name                                                                            | Required? | Type                                                                                                            | Default |
 | ------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------- | ------- |
-| *Filtering*                                                                     |
+| _Filtering_                                                                     |
 | [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) |         |
 | [`excludedClasses`](#attribute-excludedclasses)                                 | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) | `[]`    |
 | [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                       | `false` |
 | [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                              | `""`    |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | `boolean`                                                                                                       | `false` |
-| *Ordering*                                                                      |
+| _Ordering_                                                                      |
 | [`priority`](#attribute-priority)                                               | No        | `number`                                                                                                        | `1000`  |
-| *Content Modifiers*                                                             |
+| _Content Modifiers_                                                             |
 | [`relatedProperties`](#attribute-relatedproperties)                             | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)                                       | `[]`    |
 | [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md)                                 | `[]`    |
 | [`propertyCategories`](#attribute-propertycategories)                           | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)                                         | `[]`    |
 | [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | [`PropertySpecification[]`](./PropertySpecification.md)                                                         | `[]`    |
-| *Misc.*                                                                         |
+| _Misc._                                                                         |
 | [`relatedInstances`](#attribute-relatedinstances)                               | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)                                          | `[]`    |
 
 ### Attribute: `classes`

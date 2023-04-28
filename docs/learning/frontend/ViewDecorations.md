@@ -1,22 +1,22 @@
 # View Decorations
 
-A View Decoration shows application-generated graphics in a [ScreenViewport]($frontend) *in addition to* the persistent (i.e. *scene*) geometry displayed by the Viewport itself. In contrast to the graphics from the persistent geometry (e.g. the Models), View Decorations must be re-evaluated *every time* a frame is rendered. In this sense, they *decorate* the frame with graphics that are only valid for a single frame.
+A View Decoration shows application-generated graphics in a [ScreenViewport]($frontend) _in addition to_ the persistent (i.e. _scene_) geometry displayed by the Viewport itself. In contrast to the graphics from the persistent geometry (e.g. the Models), View Decorations must be re-evaluated _every time_ a frame is rendered. In this sense, they _decorate_ the frame with graphics that are only valid for a single frame.
 
 ## View Decorators
 
-The process of creating View Decorations starts by adding an object that implements the [Decorator]($frontend) interface to the `ViewManager` via the [ViewManager.addDecorator]($frontend) method. The most important part of the `Decorate` interface is the [Decorator.decorate]($frontend) method, which is called every time iTwin.js renders a frame *for any ScreenViewport*. The argument to the `decorate` method is a [DecorateContext]($frontend) that supplies information about the ScreenViewport being rendered, as well as methods to create and save decoration graphics. The [DecorateContext.viewport]($frontend) member holds the target viewport. If you wish to decorate only a single viewport, you must test this member against your intended viewport.
+The process of creating View Decorations starts by adding an object that implements the [Decorator]($frontend) interface to the `ViewManager` via the [ViewManager.addDecorator]($frontend) method. The most important part of the `Decorate` interface is the [Decorator.decorate]($frontend) method, which is called every time iTwin.js renders a frame _for any ScreenViewport_. The argument to the `decorate` method is a [DecorateContext]($frontend) that supplies information about the ScreenViewport being rendered, as well as methods to create and save decoration graphics. The [DecorateContext.viewport]($frontend) member holds the target viewport. If you wish to decorate only a single viewport, you must test this member against your intended viewport.
 
-The job of the `decorate` method is to supply the graphics (the *Decorations*) for a single frame of a single ScreenViewport.
+The job of the `decorate` method is to supply the graphics (the _Decorations_) for a single frame of a single ScreenViewport.
 
 A `Decorator` remains active until you call [ViewManager.dropDecorator]($frontend) (Note: ViewManager.addDecorator returns a method that calls this for you if you wish to use it.)
 
-A [InteractiveTool]($frontend) can also show decorations and does *not* need to call the [ViewManager.addDecorator]($frontend) method to add itself. [InteractiveTool.decorate]($frontend) is called for the *active* tool to add its decorations, [InteractiveTool.decorate]($frontend) is not called when the tool is paused by another tool such as a [ViewTool]($frontend). To show decorations while paused, a tool can implement [InteractiveTool.decorateSuspended]($frontend).
+A [InteractiveTool]($frontend) can also show decorations and does _not_ need to call the [ViewManager.addDecorator]($frontend) method to add itself. [InteractiveTool.decorate]($frontend) is called for the _active_ tool to add its decorations, [InteractiveTool.decorate]($frontend) is not called when the tool is paused by another tool such as a [ViewTool]($frontend). To show decorations while paused, a tool can implement [InteractiveTool.decorateSuspended]($frontend).
 
 To learn how to optimize when your decorations are invalidated by using cached decorations, see the [section on cached decorations](#cached-decorations).
 
 ## Categories of View Decorations
 
-Sometimes decorations are meant to *intersperse* with the scene geometry, and sometimes they are meant to display atop of it. For this reason, there are 3 broad categories of View Decorations:
+Sometimes decorations are meant to _intersperse_ with the scene geometry, and sometimes they are meant to display atop of it. For this reason, there are 3 broad categories of View Decorations:
 
 - View Graphic Decorations - are drawn using iTwin.js render primitives into the WebGL context.
 - Canvas Decoration - are drawn onto the 2d canvas using [CanvasRenderingContext2D](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D). Canvas decorations are always on top of View Graphic Decorations
@@ -57,12 +57,12 @@ The following example illustrates creating a view graphic decoration from a [glT
 
 #### Pickable View Graphic Decorations
 
-View Graphic Decorations are drawn into or atop the scene. To make your View Graphic Decorations *pickable* (i.e. allow the user to click on them to perform an action, or to give feedback when the cursor hovers over them), you must:
+View Graphic Decorations are drawn into or atop the scene. To make your View Graphic Decorations _pickable_ (i.e. allow the user to click on them to perform an action, or to give feedback when the cursor hovers over them), you must:
 
 - Obtain a `TransientId` by calling [IModelConnection.transientIds]($frontend).next
 - Supply that TransientId as the 3rd argument to [DecorateContext.createGraphicBuilder]($frontend)
 - Implement [Decorator.testDecorationHit]($frontend) to return `true` when the supplied Id matches your decoration's Id.
-- Implement [Decorator.getDecorationToolTip]($frontend) and/or   [Decorator.onDecorationButtonEvent]($frontend) to supply a tooltip and perform an action when your decoration is clicked.
+- Implement [Decorator.getDecorationToolTip]($frontend) and/or [Decorator.onDecorationButtonEvent]($frontend) to supply a tooltip and perform an action when your decoration is clicked.
 
 The following example illustrates creating a pickable view graphic decoration in order to supply a tooltip message when under the cursor:
 
@@ -96,7 +96,7 @@ To make your CanvasDecorations pickable, implement [CanvasDecoration.pick]($fron
 If you return true from your `CanvasDecoration.pick` method, you can implement:
 
 - [CanvasDecoration.onMouseEnter]($frontend) - the mouse has entered your decoration
-- [CanvasDecoration.onMouseLeave]($frontend) -  the mouse has left your decoration
+- [CanvasDecoration.onMouseLeave]($frontend) - the mouse has left your decoration
 - [CanvasDecoration.onMouseMove]($frontend) - the mouse has moved inside your decoration
 - [CanvasDecoration.onMouseButton]($frontend) - a mouse button went up or down inside your decoration
 - [CanvasDecoration.onWheel]($frontend) - the wheel was rolled over your decoration

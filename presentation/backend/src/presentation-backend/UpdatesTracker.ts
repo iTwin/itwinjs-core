@@ -33,10 +33,15 @@ export class UpdatesTracker implements IDisposable {
 
   private constructor(props: UpdatesTrackerProps) {
     this._getNativePlatform = props.nativePlatformGetter;
-    this._intervalHandle = setInterval(this.onInterval.bind(this), props.pollInterval);
+    this._intervalHandle = setInterval(
+      this.onInterval.bind(this),
+      props.pollInterval
+    );
   }
 
-  public static create(props: UpdatesTrackerProps) { return new UpdatesTracker(props); }
+  public static create(props: UpdatesTrackerProps) {
+    return new UpdatesTracker(props);
+  }
 
   public dispose() {
     clearInterval(this._intervalHandle);
@@ -45,24 +50,24 @@ export class UpdatesTracker implements IDisposable {
   private onInterval() {
     const response = this._getNativePlatform().getUpdateInfo();
     const info = parseUpdateInfo(response.result);
-    if (info)
-      IpcHost.send(PresentationIpcEvents.Update, info);
+    if (info) IpcHost.send(PresentationIpcEvents.Update, info);
   }
 }
 
 const parseUpdateInfo = (info: UpdateInfo | undefined) => {
-  if (info === undefined)
-    return undefined;
+  if (info === undefined) return undefined;
 
   const parsedInfo: UpdateInfo = {};
   for (const fileName in info) {
     // istanbul ignore if
-    if (!info.hasOwnProperty(fileName))
-      continue;
+    if (!info.hasOwnProperty(fileName)) continue;
 
     const imodelDb = IModelDb.findByFilename(fileName);
     if (!imodelDb) {
-      Logger.logError(PresentationBackendLoggerCategory.PresentationManager, `Update records IModelDb not found with path ${fileName}`);
+      Logger.logError(
+        PresentationBackendLoggerCategory.PresentationManager,
+        `Update records IModelDb not found with path ${fileName}`
+      );
       continue;
     }
 

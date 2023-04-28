@@ -7,7 +7,11 @@
  */
 
 import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "../ECObjects";
+import {
+  SchemaItemType,
+  schemaItemTypeToString,
+  schemaItemTypeToXmlString,
+} from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
@@ -30,11 +34,23 @@ export abstract class SchemaItem {
     this.schema = schema;
   }
 
-  public get name() { return this.key.name; }
-  public get fullName() { return this.key.schemaKey ? `${this.key.schemaName}.${this.name}` : this.name; }
-  public get key() { return this._key; }
-  public get label() { return this._label; }
-  public get description() { return this._description; }
+  public get name() {
+    return this.key.name;
+  }
+  public get fullName() {
+    return this.key.schemaKey
+      ? `${this.key.schemaName}.${this.name}`
+      : this.name;
+  }
+  public get key() {
+    return this._key;
+  }
+  public get label() {
+    return this._label;
+  }
+  public get description() {
+    return this._description;
+  }
 
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**
@@ -42,20 +58,22 @@ export abstract class SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false) {
+  public toJSON(
+    standalone: boolean = false,
+    includeSchemaVersion: boolean = false
+  ) {
     const itemJson: { [value: string]: any } = {};
     if (standalone) {
       itemJson.$schema = SCHEMAURL3_2; // $schema is required
       itemJson.schema = this.schema.name;
       itemJson.name = this.name; // name is required
-      if (includeSchemaVersion) // check flag to see if we should output version
+      if (includeSchemaVersion)
+        // check flag to see if we should output version
         itemJson.schemaVersion = this.key.schemaKey.version.toString();
     }
     itemJson.schemaItemType = schemaItemTypeToString(this.schemaItemType);
-    if (undefined !== this.label)
-      itemJson.label = this.label;
-    if (undefined !== this.description)
-      itemJson.description = this.description;
+    if (undefined !== this.label) itemJson.label = this.label;
+    if (undefined !== this.description) itemJson.description = this.description;
 
     return itemJson as SchemaItemProps;
   }
@@ -82,13 +100,25 @@ export abstract class SchemaItem {
     this._description = schemaItemProps.description;
 
     if (undefined !== schemaItemProps.schema) {
-      if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`);
+      if (
+        schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase()
+      )
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`
+        );
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
-      if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+      if (
+        this.key.schemaKey.version.compare(
+          ECVersion.fromString(schemaItemProps.schemaVersion)
+        )
+      )
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`
+        );
     }
   }
 
@@ -99,13 +129,25 @@ export abstract class SchemaItem {
     this._description = schemaItemProps.description;
 
     if (undefined !== schemaItemProps.schema) {
-      if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`);
+      if (
+        schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase()
+      )
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`
+        );
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
-      if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+      if (
+        this.key.schemaKey.version.compare(
+          ECVersion.fromString(schemaItemProps.schemaVersion)
+        )
+      )
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`
+        );
     }
   }
 
@@ -116,11 +158,13 @@ export abstract class SchemaItem {
    * @returns A tuple of the parsed Schema name and Schema Item name.  If the full name does not contain a '.' or ':', the second string in the tuple will returned the exact string pass in.
    */
   public static parseFullName(fullName: string): [string, string] {
-    const matches = /^([a-zA-Z_]+[a-zA-Z0-9_]*(\.\d+\.\d+\.\d+)?)[.:]([a-zA-Z_]+[a-zA-Z0-9_]*)$/.exec(fullName);
+    const matches =
+      /^([a-zA-Z_]+[a-zA-Z0-9_]*(\.\d+\.\d+\.\d+)?)[.:]([a-zA-Z_]+[a-zA-Z0-9_]*)$/.exec(
+        fullName
+      );
 
     // The first match will be the full string match, the second three will be the three groups
-    if (matches === null || matches.length !== 4)
-      return ["", fullName];
+    if (matches === null || matches.length !== 4) return ["", fullName];
 
     return [matches[1], matches[3]];
   }
@@ -130,22 +174,30 @@ export abstract class SchemaItem {
    * @param thisSchemaItem The first SchemaItem.
    * @param thatSchemaItemOrKey The second SchemaItem or SchemaItemKey.
    */
-  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey): boolean {
-    if (!thatSchemaItemOrKey)
-      return true;
+  public static equalByKey(
+    thisSchemaItem: SchemaItem,
+    thatSchemaItemOrKey?: SchemaItem | SchemaItemKey
+  ): boolean {
+    if (!thatSchemaItemOrKey) return true;
 
-    const key = SchemaItem.isSchemaItem(thatSchemaItemOrKey) ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
+    const key = SchemaItem.isSchemaItem(thatSchemaItemOrKey)
+      ? thatSchemaItemOrKey.key
+      : thatSchemaItemOrKey;
     return thisSchemaItem.key.matches(key);
   }
 
   /**
-  * @internal
-  */
+   * @internal
+   */
   public static isSchemaItem(object: any): object is SchemaItem {
     const schemaItem = object as SchemaItem;
 
-    return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
-             && schemaItem.schemaItemType !== undefined;
+    return (
+      schemaItem !== undefined &&
+      schemaItem.key !== undefined &&
+      schemaItem.schema !== undefined &&
+      schemaItem.schemaItemType !== undefined
+    );
   }
 
   /**

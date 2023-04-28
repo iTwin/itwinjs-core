@@ -14,12 +14,7 @@
     }
   },
   "chromeOptions": {
-    "args": [
-      "--disable-web-security",
-      "--no-sandbox"
-    ],
-    "publicDirs": [
-      "src/test/public"
-    ]
+    "args": ["--disable-web-security", "--no-sandbox"],
+    "publicDirs": ["src/test/public"]
   }
 }

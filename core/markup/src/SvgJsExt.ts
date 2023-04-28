@@ -7,7 +7,18 @@
  */
 
 import { Transform } from "@itwin/core-geometry";
-import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
+import {
+  Box,
+  extend,
+  G,
+  Element as MarkupElement,
+  Matrix,
+  nodeOrNew,
+  Rect,
+  register,
+  Svg,
+  Text,
+} from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
 // cspell:ignore lmultiply matrixify dmove
@@ -50,7 +61,13 @@ declare module "@svgdotjs/svg.js" {
     /** turn off flash color */
     unFlash(): void;
     /** reposition and resize this element */
-    markupStretch(x: number, y: number, w: number, h: number, mtx: Matrix): void;
+    markupStretch(
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      mtx: Matrix
+    ): void;
     /** return true if this element is a child of the supplied Svg. */
     isChildOf(svg: Svg): boolean;
     /** return selectable element or the outermost group containing this element if it's a child of the supplied Svg. */
@@ -81,8 +98,7 @@ declare module "@svgdotjs/svg.js" {
   interface Container {
     foreignObject(width: number, height: number): ForeignObject;
   }
-  class ForeignObject extends Container {
-  }
+  class ForeignObject extends Container {}
 }
 
 const OLDCOLOR = "Color";
@@ -92,7 +108,10 @@ extend(MarkupElement, {
   forElementsOfGroup(fn: (child: MarkupElement) => void): void {
     const me = this as MarkupElement;
     if (me instanceof G)
-      me.each((i, children) => { const child = children[i]; if (child instanceof MarkupElement) fn(child); }, false);
+      me.each((i, children) => {
+        const child = children[i];
+        if (child instanceof MarkupElement) fn(child);
+      }, false);
   },
   cloneMarkup(): MarkupElement {
     const me = this as MarkupElement;
@@ -107,28 +126,57 @@ extend(MarkupElement, {
     let oldColor = me.data(OLDCOLOR) as MarkupColor | undefined;
     if (undefined === oldColor) {
       const css = window.getComputedStyle(me.node);
-      const colorOrNone = (c: string | null) => (c && c !== "none") ? c : "none";
-      oldColor = { fill: colorOrNone(css.fill), stroke: colorOrNone(css.stroke) };
+      const colorOrNone = (c: string | null) =>
+        c && c !== "none" ? c : "none";
+      oldColor = {
+        fill: colorOrNone(css.fill),
+        stroke: colorOrNone(css.stroke),
+      };
       me.data(OLDCOLOR, oldColor);
     }
-    const toColor = (val: string | null) => (!val || val === "none") ? "none" : color;
+    const toColor = (val: string | null) =>
+      !val || val === "none" ? "none" : color;
     me.css({ fill: toColor(oldColor.fill), stroke: toColor(oldColor.stroke) });
   },
   resetColor() {
     const me = this as MarkupElement;
     const oldColor = me.data(OLDCOLOR) as MarkupColor;
-    if (undefined !== oldColor)
-      me.css(oldColor).data(OLDCOLOR, null); // change to old color and remove data object
+    if (undefined !== oldColor) me.css(oldColor).data(OLDCOLOR, null); // change to old color and remove data object
     me.forElementsOfGroup((child) => child.resetColor());
   },
-  hilite() { const me = this as MarkupElement; if (!me.inSelection) { me.overrideColor(MarkupApp.props.hilite.color); me.inSelection = true; } },
-  unHilite() { const me = this as MarkupElement; if (me.inSelection) { me.resetColor(); me.inSelection = undefined; } },
-  flash() { const me = this as MarkupElement; if (!me.inSelection) me.overrideColor(MarkupApp.props.hilite.flash); },
-  unFlash() { const me = this as MarkupElement; if (!me.inSelection) me.resetColor(); },
-  markupStretch(w: number, h: number, x: number, y: number, _mtx: Matrix) { const me = this as MarkupElement; me.size(w, h).move(x, y); },
+  hilite() {
+    const me = this as MarkupElement;
+    if (!me.inSelection) {
+      me.overrideColor(MarkupApp.props.hilite.color);
+      me.inSelection = true;
+    }
+  },
+  unHilite() {
+    const me = this as MarkupElement;
+    if (me.inSelection) {
+      me.resetColor();
+      me.inSelection = undefined;
+    }
+  },
+  flash() {
+    const me = this as MarkupElement;
+    if (!me.inSelection) me.overrideColor(MarkupApp.props.hilite.flash);
+  },
+  unFlash() {
+    const me = this as MarkupElement;
+    if (!me.inSelection) me.resetColor();
+  },
+  markupStretch(w: number, h: number, x: number, y: number, _mtx: Matrix) {
+    const me = this as MarkupElement;
+    me.size(w, h).move(x, y);
+  },
   isChildOf(svg: Svg) {
     const parent = (this as MarkupElement).parent();
-    return (parent === svg) ? true : (parent instanceof MarkupElement) ? parent.isChildOf(svg) : false;
+    return parent === svg
+      ? true
+      : parent instanceof MarkupElement
+      ? parent.isChildOf(svg)
+      : false;
   },
   getChildOrGroupOf(svg: G): MarkupElement | undefined {
     const me = this as MarkupElement;
@@ -145,22 +193,35 @@ extend(MarkupElement, {
   getNpcToVp(): Matrix {
     const me = this as MarkupElement;
     const bb = me.bbox();
-    return new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(me.matrixify());
+    return new Matrix()
+      .scaleO(bb.w, bb.h)
+      .translateO(bb.x, bb.y)
+      .lmultiplyO(me.matrixify());
   },
   getOutline(expand?: number): Rect {
     const me = this as MarkupElement;
     const box = me.bbox();
     if (expand === undefined) expand = 0;
-    return new Rect().move(box.x - expand, box.y - expand).size(box.w + (expand * 2), box.h + (expand * 2)).transform(me.matrixify());
+    return new Rect()
+      .move(box.x - expand, box.y - expand)
+      .size(box.w + expand * 2, box.h + expand * 2)
+      .transform(me.matrixify());
   },
 });
 
 extend(G, {
-  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as G).attr("transform", mtx); },
+  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) {
+    (this as G).attr("transform", mtx);
+  },
 });
 extend(Text, {
-  getFontSize(): number { const me = this as Text; return parseFloat(window.getComputedStyle(me.node).fontSize); },
-  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as Text).attr("transform", mtx); },
+  getFontSize(): number {
+    const me = this as Text;
+    return parseFloat(window.getComputedStyle(me.node).fontSize);
+  },
+  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) {
+    (this as Text).attr("transform", mtx);
+  },
   getMarkup() {
     const node = (this as Text).node;
     let text = "";
@@ -176,8 +237,7 @@ extend(Text, {
     spacing = spacing ? spacing : 1;
     const me = this as Text;
     me.clear();
-    if (val === "")
-      return;
+    if (val === "") return;
     const lines = val.split("\n");
     me.plain(lines[0]);
     const x = me.attr("x");
@@ -215,7 +275,20 @@ extend(Text, {
 extend(Matrix, {
   toIModelTransform() {
     const m = this as Matrix;
-    return Transform.createRowValues(m.a, m.c, 0, m.e, m.b, m.d, 0, m.f, 0, 0, 1, 0);
+    return Transform.createRowValues(
+      m.a,
+      m.c,
+      0,
+      m.e,
+      m.b,
+      m.d,
+      0,
+      m.f,
+      0,
+      0,
+      1,
+      0
+    );
   },
   fromIModelTransform(t: Transform) {
     const m = this as Matrix;
@@ -235,18 +308,31 @@ extend(Matrix, {
  * @internal
  */
 export class Title extends MarkupElement {
-  constructor(node: any) { super(nodeOrNew("title", node)); }
-  public override scale() { return this; }
-  public override size() { return this; }
-  public override move() { return this; }
-  public override dmove() { return this; }
-  public override bbox() { return new Box(); }
-  public override screenCTM() { return new Matrix(); }
-
+  constructor(node: any) {
+    super(nodeOrNew("title", node));
+  }
+  public override scale() {
+    return this;
+  }
+  public override size() {
+    return this;
+  }
+  public override move() {
+    return this;
+  }
+  public override dmove() {
+    return this;
+  }
+  public override bbox() {
+    return new Box();
+  }
+  public override screenCTM() {
+    return new Matrix();
+  }
 }
 register(Title, "Title");
 
 /** only for tests
  *  @internal
  */
-export function initSvgExt() { }
+export function initSvgExt() {}

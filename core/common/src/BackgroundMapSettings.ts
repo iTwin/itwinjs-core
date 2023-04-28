@@ -6,7 +6,10 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
+import {
+  BackgroundMapProvider,
+  BackgroundMapType,
+} from "./BackgroundMapProvider";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
@@ -83,15 +86,18 @@ export interface DeprecatedBackgroundMapProps {
  * @public
  * @extensions
  */
-export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
+export type PersistentBackgroundMapProps = Omit<
+  BackgroundMapProps,
+  keyof DeprecatedBackgroundMapProps
+> &
+  DeprecatedBackgroundMapProps;
 
 function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
   return GlobeMode.Plane === mode ? mode : GlobeMode.Ellipsoid;
 }
 
 function normalizeTransparency(trans?: number | false): number | false {
-  if ("number" === typeof trans)
-    return Math.min(1, Math.max(0, trans));
+  if ("number" === typeof trans) return Math.min(1, Math.max(0, trans));
 
   return false;
 }
@@ -129,16 +135,19 @@ export class BackgroundMapSettings {
     // Handle legacy TerrainProps.nonLocatable:
     // - If TerrainProps.nonLocatable=true and terrain is on, terrain is not locatable.
     // - Otherwise, use BackgroundMapProps.nonLocatable.
-    if (this.applyTerrain && this.terrainSettings.nonLocatable)
-      return false;
+    if (this.applyTerrain && this.terrainSettings.nonLocatable) return false;
 
     return this._locatable;
   }
 
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
-  public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
+  public get transparencyOverride(): number | undefined {
+    return false !== this.transparency ? this.transparency : undefined;
+  }
 
-  private constructor(props: BackgroundMapProps | PersistentBackgroundMapProps) {
+  private constructor(
+    props: BackgroundMapProps | PersistentBackgroundMapProps
+  ) {
     this.groundBias = props.groundBias ?? 0;
     this.transparency = normalizeTransparency(props.transparency);
     this.useDepthBuffer = props.useDepthBuffer ?? false;
@@ -153,7 +162,9 @@ export class BackgroundMapSettings {
   /** Create settings from their persistent representation. In general, this method should only be used when reading the settings directly from
    * the iModel - otherwise, prefer [[fromJSON]].
    */
-  public static fromPersistentJSON(json?: PersistentBackgroundMapProps): BackgroundMapSettings {
+  public static fromPersistentJSON(
+    json?: PersistentBackgroundMapProps
+  ): BackgroundMapSettings {
     return new this(json ?? {});
   }
 
@@ -169,18 +180,13 @@ export class BackgroundMapSettings {
    */
   public toJSON(): BackgroundMapProps {
     const props: BackgroundMapProps = {};
-    if (0 !== this.groundBias)
-      props.groundBias = this.groundBias;
-    if (this.applyTerrain)
-      props.applyTerrain = true;
-    if (false !== this.transparency)
-      props.transparency = this.transparency;
+    if (0 !== this.groundBias) props.groundBias = this.groundBias;
+    if (this.applyTerrain) props.applyTerrain = true;
+    if (false !== this.transparency) props.transparency = this.transparency;
     if (GlobeMode.Ellipsoid !== this.globeMode)
       props.globeMode = this.globeMode;
-    if (this.useDepthBuffer)
-      props.useDepthBuffer = true;
-    if (!this._locatable)
-      props.nonLocatable = true;
+    if (this.useDepthBuffer) props.useDepthBuffer = true;
+    if (!this._locatable) props.nonLocatable = true;
 
     const terrainSettings = this.terrainSettings.toJSON();
     for (const prop of Object.values(terrainSettings)) {
@@ -223,10 +229,18 @@ export class BackgroundMapSettings {
 
   /** Returns true if these settings are equivalent to `other`. */
   public equals(other: BackgroundMapSettings): boolean {
-    return this.groundBias === other.groundBias && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency
-      && this.globeMode === other.globeMode && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain
-      && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask)
-      && this._provider.name === other._provider.name && this._provider.type === other._provider.type;
+    return (
+      this.groundBias === other.groundBias &&
+      this.useDepthBuffer === other.useDepthBuffer &&
+      this.transparency === other.transparency &&
+      this.globeMode === other.globeMode &&
+      this._locatable === other._locatable &&
+      this.applyTerrain === other.applyTerrain &&
+      this.terrainSettings.equals(other.terrainSettings) &&
+      this.planarClipMask.equals(other.planarClipMask) &&
+      this._provider.name === other._provider.name &&
+      this._provider.type === other._provider.type
+    );
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -234,8 +248,7 @@ export class BackgroundMapSettings {
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
   public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
-    if (undefined === changedProps)
-      return this;
+    if (undefined === changedProps) return this;
 
     const props = {
       groundBias: changedProps.groundBias ?? this.groundBias,
@@ -244,8 +257,12 @@ export class BackgroundMapSettings {
       globeMode: changedProps.globeMode ?? this.globeMode,
       nonLocatable: changedProps.nonLocatable ?? !this._locatable,
       applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
-      terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
-      planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
+      terrainSettings: changedProps.terrainSettings
+        ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON()
+        : this.terrainSettings.toJSON(),
+      planarClipMask: changedProps.planarClipMask
+        ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON()
+        : this.planarClipMask.toJSON(),
       providerName: this._provider.name,
       providerData: { mapType: this._provider.type },
     };

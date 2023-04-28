@@ -12,10 +12,10 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # It runs every 15 minutes
-    - cron:  '*/15 * * * *'
+    - cron: "*/15 * * * *"
   push:
     paths:
-    - '.github/workflows/**'
+      - ".github/workflows/**"
 
 env:
   token: ${{ secrets.GITHUBTOKEN }}

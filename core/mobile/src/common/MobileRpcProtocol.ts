@@ -8,7 +8,15 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import {
-  IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
+  IModelError,
+  IpcWebSocket,
+  RpcEndpoint,
+  RpcProtocol,
+  RpcPushChannel,
+  RpcPushConnection,
+  RpcRequest,
+  RpcRequestFulfillment,
+  RpcSerializedValue,
   SerializedRpcRequest,
 } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
@@ -35,7 +43,7 @@ export interface MobileRpcGateway {
  * @internal
  */
 export class MobileRpcProtocol extends RpcProtocol {
-  public socket: WebSocket = (undefined as any);
+  public socket: WebSocket = undefined as any;
   public requests: Map<string, MobileRpcRequest> = new Map();
   private _pending: MobileRpcChunks[] = [];
   private _capacity: number = Number.MAX_SAFE_INTEGER;
@@ -48,16 +56,22 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _port: number = 0;
   private _transport?: MobilePushTransport;
   private _ipc: MobileIpcTransport;
-  public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public static obtainInterop(): MobileRpcGateway {
+    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  }
 
-  public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
+  public static async encodeRequest(
+    request: MobileRpcRequest
+  ): Promise<MobileRpcChunks> {
     const serialized = await request.protocol.serialize(request);
     const data = serialized.parameters.data;
     serialized.parameters.data = data.map((v) => v.byteLength) as any[];
     return [JSON.stringify(serialized), ...data];
   }
 
-  public static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks {
+  public static encodeResponse(
+    fulfillment: RpcRequestFulfillment
+  ): MobileRpcChunks {
     const data = fulfillment.result.data;
     fulfillment.result.data = data.map((v) => v.byteLength) as any[];
     const raw = fulfillment.rawResult;
@@ -81,11 +95,17 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private initializeFrontend() {
-    if (typeof (WebSocket) === "undefined") {
-      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on frontend require websocket to work");
+    if (typeof WebSocket === "undefined") {
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "MobileRpcProtocol on frontend require websocket to work"
+      );
     }
     if (!MobileRpcConfiguration.args.port) {
-      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol require 'port' parameter");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "MobileRpcProtocol require 'port' parameter"
+      );
     }
 
     this._port = MobileRpcConfiguration.args.port;
@@ -93,7 +113,10 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     (window as any)._imodeljs_rpc_reconnect = (port: number) => {
       this.socket.close();
-      window.location.hash = window.location.hash.replace(`port=${this._port}`, `port=${port}`);
+      window.location.hash = window.location.hash.replace(
+        `port=${this._port}`,
+        `port=${port}`
+      );
       this._port = port;
       this.connect(port, true);
     };
@@ -157,7 +180,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     this.requests.clear();
     this._capacity = Number.MAX_SAFE_INTEGER;
 
-    if (typeof (this._sendInterval) !== "undefined") {
+    if (typeof this._sendInterval !== "undefined") {
       window.clearInterval(this._sendInterval);
       this._sendInterval = undefined;
     }
@@ -174,7 +197,7 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     this.trySend();
 
-    if (this._pending.length && typeof (this._sendInterval) === "undefined") {
+    if (this._pending.length && typeof this._sendInterval === "undefined") {
       this._sendInterval = window.setInterval(this._sendIntervalHandler, 0);
     }
   }
@@ -192,14 +215,14 @@ export class MobileRpcProtocol extends RpcProtocol {
       }
     }
 
-    if (!this._pending.length && typeof (this._sendInterval) !== "undefined") {
+    if (!this._pending.length && typeof this._sendInterval !== "undefined") {
       window.clearInterval(this._sendInterval);
       this._sendInterval = undefined;
     }
   }
 
   private handleMessageFromBackend(data: string | ArrayBuffer) {
-    if (typeof (data) === "string") {
+    if (typeof data === "string") {
       this.handleStringFromBackend(data);
     } else {
       this.handleBinaryFromBackend(data);
@@ -208,7 +231,10 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   private handleStringFromBackend(data: string) {
     if (this._partialFulfillment) {
-      throw new IModelError(BentleyStatus.ERROR, "Invalid state (already receiving response).");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "Invalid state (already receiving response)."
+      );
     }
 
     const response = JSON.parse(data) as RpcRequestFulfillment;
@@ -222,7 +248,10 @@ export class MobileRpcProtocol extends RpcProtocol {
   private handleBinaryFromBackend(data: ArrayBuffer) {
     const fulfillment = this._partialFulfillment;
     if (!fulfillment) {
-      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no response received).");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "Invalid state (no response received)."
+      );
     }
 
     this._partialData.push(new Uint8Array(data));
@@ -234,7 +263,10 @@ export class MobileRpcProtocol extends RpcProtocol {
   private notifyResponse() {
     const response = this._partialFulfillment;
     if (!response) {
-      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no response exists).");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "Invalid state (no response exists)."
+      );
     }
 
     ++this._capacity;
@@ -265,16 +297,24 @@ export class MobileRpcProtocol extends RpcProtocol {
   private initializeBackend() {
     const mobilegateway = MobileRpcProtocol.obtainInterop();
     if (mobilegateway === undefined || mobilegateway == null) {
-      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on backend require native bridge to be setup");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "MobileRpcProtocol on backend require native bridge to be setup"
+      );
     }
 
-    mobilegateway.handler = (payload, connectionId) => this.handleMessageFromFrontend(payload, connectionId);
-    RpcPushConnection.for = (channel, client) => new MobilePushConnection(channel, client, this);
+    mobilegateway.handler = (payload, connectionId) =>
+      this.handleMessageFromFrontend(payload, connectionId);
+    RpcPushConnection.for = (channel, client) =>
+      new MobilePushConnection(channel, client, this);
     RpcPushChannel.enabled = true;
   }
 
-  private handleMessageFromFrontend(data: string | ArrayBuffer, connectionId: number) {
-    if (typeof (data) === "string") {
+  private handleMessageFromFrontend(
+    data: string | ArrayBuffer,
+    connectionId: number
+  ) {
+    if (typeof data === "string") {
       this.handleStringFromFrontend(data, connectionId);
     } else {
       this.handleBinaryFromFrontend(data, connectionId);
@@ -283,7 +323,10 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   private handleStringFromFrontend(data: string, connection: number) {
     if (this._partialRequest) {
-      throw new IModelError(BentleyStatus.ERROR, "Invalid state (already receiving request).");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "Invalid state (already receiving request)."
+      );
     }
 
     const request = JSON.parse(data) as SerializedRpcRequest;
@@ -297,7 +340,10 @@ export class MobileRpcProtocol extends RpcProtocol {
   private handleBinaryFromFrontend(data: ArrayBuffer, connection: number) {
     const request = this._partialRequest;
     if (!request) {
-      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no request received).");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "Invalid state (no request received)."
+      );
     }
 
     this._partialData.push(new Uint8Array(data));
@@ -309,7 +355,10 @@ export class MobileRpcProtocol extends RpcProtocol {
   private async notifyRequest(connection: number) {
     const request = this._partialRequest;
     if (!request) {
-      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no request exists).");
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        "Invalid state (no request exists)."
+      );
     }
 
     this.consumePartialData(request.parameters);
@@ -336,10 +385,16 @@ export class MobileRpcProtocol extends RpcProtocol {
     const mobilegateway = MobileRpcProtocol.obtainInterop();
 
     for (const chunk of message) {
-      if (typeof (chunk) === "string") {
-        mobilegateway.sendString(chunk, connection || mobilegateway.connectionId);
+      if (typeof chunk === "string") {
+        mobilegateway.sendString(
+          chunk,
+          connection || mobilegateway.connectionId
+        );
       } else {
-        mobilegateway.sendBinary(chunk, connection || mobilegateway.connectionId);
+        mobilegateway.sendBinary(
+          chunk,
+          connection || mobilegateway.connectionId
+        );
       }
     }
   }

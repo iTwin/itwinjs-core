@@ -63,6 +63,7 @@ Designing BIS schemas backwards (i.e. understanding concepts needed for Operatio
 Taking Road & Rail disciplines as a example, the following figure depicts how they can be divided into various BIS domains.
 
 <!-- TODO: Update diagram to include Spatial Composition schemas -->
+
 ![Example](../media/road-rail-schemas.png)
 
 At the lowest layer - Core - the BisCore schema is the most generic domain which lays out the framework and foundation for all other BIS domains. Other Core layer schemas depicted in the figure above include PhysicalMaterials, Functional, Analytical and Generic.
@@ -76,5 +77,6 @@ Other domains in Road & Rail disciplines that focus on other modeling perspectiv
 Lastly, several application schemas, including iModel Connector schemas, can be built on top of all these Road & Rail domains. These Civil applications may focus on specific assets and lifecycle phases in the Road & Rail disciplines. However, BIS ECSchemas referenced by them are expected to be useful across the entire lifecycle of assets in the Road & Rail disciplines.
 
 ---
+
 | Next: [Information Hierarchy](../data-organization/information-hierarchy.md)
 |:---

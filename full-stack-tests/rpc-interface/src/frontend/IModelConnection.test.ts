@@ -4,12 +4,36 @@
 *--------------------------------------------------------------------------------------------*/
 import { Buffer } from "buffer";
 import * as chai from "chai";
-import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
+  AccessToken,
+  BentleyStatus,
+  CompressedId64Set,
+  Id64,
+  Id64Set,
+} from "@itwin/core-bentley";
+import {
+  Matrix4d,
+  Point3d,
+  XYZProps,
+  YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import {
+  EcefLocation,
+  GeoCoordStatus,
+  IModelReadRpcInterface,
+  IModelVersion,
+  MassPropertiesOperation,
+  MassPropertiesPerCandidateRequestProps,
+  MassPropertiesRequestProps,
+  ModelQueryParams,
 } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
+import {
+  CheckpointConnection,
+  IModelApp,
+  IModelConnection,
+  SpatialModelState,
+  ViewState,
+} from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
@@ -30,18 +54,22 @@ describe("IModel Connection", () => {
   before(async function () {
     testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     accessToken = testContext.adminUserAccessToken;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
+      accessToken
+    );
   });
 
   it("should successfully open an IModelConnection for read", async () => {
     const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId);
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId
+    );
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -67,18 +95,31 @@ describe.skip("IModel Connection with client credentials", () => {
     testContext = await TestContext.instance();
 
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
-    if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
+    if (
+      !testContext.settings.clientConfiguration ||
+      !testContext.settings.runiModelReadRpcTests
+    )
       this.skip();
     accessToken = testContext.clientAccessToken!;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
+      accessToken
+    );
   });
 
   it("should successfully open an IModelConnection for read", async () => {
     const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
+    const changeSetId = (
+      await testContext.iModelWithChangesets!.getConnection()
+    ).changeset.id;
 
-    const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
+    const iModel = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId,
+      undefined === changeSetId
+        ? IModelVersion.latest()
+        : IModelVersion.asOfChangeSet(changeSetId)
+    );
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -103,17 +144,25 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
     accessToken = testContext.adminUserAccessToken;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
+      accessToken
+    );
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   it("queryEntityIds should work as expected", async () => {
-    const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
+    const ids = await iModel.elements.queryIds({
+      limit: 10,
+      from: "BisCore:Subject",
+    });
     expect(ids).to.exist;
   });
 
   it("getToolTipMessage should work as expected", async () => {
-    const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
+    const ids: Id64Set = await iModel.elements.queryIds({
+      limit: 10,
+      from: "BisCore:Subject",
+    });
     const id = ids.values().next().value;
 
     const tooltip = await iModel.getToolTipMessage(id); // "0x338"
@@ -128,14 +177,23 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   });
 
   it("getGeometrySummary should work as expected", async () => {
-    const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
+    const ids: Id64Set = await iModel.elements.queryIds({
+      limit: 10,
+      from: "BisCore:Subject",
+    });
     const id = ids.values().next().value;
-    const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcProps(), { elementIds: [id], options: {} });
+    const result = await IModelReadRpcInterface.getClient().getGeometrySummary(
+      iModel.getRpcProps(),
+      { elementIds: [id], options: {} }
+    );
     expect(result).to.not.be.undefined;
   });
 
   it("requestSnap should work as expected", async () => {
-    const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
+    const ids: Id64Set = await iModel.elements.queryIds({
+      limit: 10,
+      from: "BisCore:PhysicalElement",
+    });
     const id = ids.values().next().value;
 
     const worldToView = Matrix4d.createIdentity();
@@ -150,7 +208,11 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   });
 
   it("queryModelProps should work as expected", async () => {
-    const modelQueryParams: ModelQueryParams = { limit: 10, from: SpatialModelState.classFullName, wantPrivate: false };
+    const modelQueryParams: ModelQueryParams = {
+      limit: 10,
+      from: SpatialModelState.classFullName,
+      wantPrivate: false,
+    };
     const curModelProps = await iModel.models.queryProps(modelQueryParams);
 
     expect(curModelProps).to.not.be.undefined;
@@ -158,7 +220,11 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   });
 
   it("getModelProps should work as expected", async () => {
-    const modelQueryParams: ModelQueryParams = { limit: 10, from: SpatialModelState.classFullName, wantPrivate: false };
+    const modelQueryParams: ModelQueryParams = {
+      limit: 10,
+      from: SpatialModelState.classFullName,
+      wantPrivate: false,
+    };
     const curModelProps = await iModel.models.queryProps(modelQueryParams);
     const modelId = curModelProps[0].id!.toString();
 
@@ -174,7 +240,10 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   });
 
   it("getViewThumbnail should work as expected", async () => {
-    const modelQueryParams: ModelQueryParams = { limit: 10, from: ViewState.classFullName };
+    const modelQueryParams: ModelQueryParams = {
+      limit: 10,
+      from: ViewState.classFullName,
+    };
     const modelProps = await iModel.views.queryProps(modelQueryParams);
     const viewId = modelProps[0].id!.toString();
     const result = await iModel.views.getThumbnail(viewId);
@@ -189,7 +258,11 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     for (let iLatitude = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude = 0; iLongitude < 10; iLongitude++) {
-        geoPointList.push({ x: (132.600 + 0.02 * iLongitude), y: (34.350 + 0.02 * iLatitude), z: 0.0 });
+        geoPointList.push({
+          x: 132.6 + 0.02 * iLongitude,
+          y: 34.35 + 0.02 * iLatitude,
+          z: 0.0,
+        });
       }
     }
 
@@ -197,7 +270,8 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     for (let iGeoPoint = 1; iGeoPoint < geoPointList.length; iGeoPoint += 2)
       testPoints.push(geoPointList[iGeoPoint]);
 
-    const wgs84Response = await wgs84Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
+    const wgs84Response =
+      await wgs84Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
     expect(wgs84Response.fromCache === 0).to.be.true;
@@ -207,14 +281,18 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
       expect(GeoCoordStatus.Success === result.s);
     }
 
-    const nad27Response = await nad27Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
+    const nad27Response =
+      await nad27Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
     expect(nad27Response.fromCache).eq(0);
   });
 
   it("getGeoCoordinatesFromIModelCoordinates should work as expected", async () => {
-    const ecefProps = new EcefLocation({ orientation: YawPitchRollAngles.createDegrees(0, 0, 0), origin: Point3d.create(0, 0, 0) });
+    const ecefProps = new EcefLocation({
+      orientation: YawPitchRollAngles.createDegrees(0, 0, 0),
+      origin: Point3d.create(0, 0, 0),
+    });
     iModel.setEcefLocation(ecefProps);
 
     await iModel.spatialToCartographic({ x: 6378.137, y: 0, z: 0 });
@@ -262,7 +340,10 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   */
 
   it("queryModelRanges should work as expected", async () => {
-    const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
+    const modelProps = await iModel.models.queryProps({
+      limit: 10,
+      from: "BisCore.SpatialModel",
+    });
     const modelId = modelProps[0].id!.toString();
 
     let idSet: Id64Set = Id64.toIdSet(modelId);
@@ -278,20 +359,26 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     ranges = await iModel.models.queryModelRanges(idSet);
     expect(ranges).to.not.be.undefined;
     expect(ranges.length).to.be.gte(1);
-
   });
 
   it("queryModelRanges should properly handle models that aren't geometric", async () => {
     // the below clause is created specifically for the test iModel, if that iModel were to be changed and it contained models that were geometricModels
     // but not PhysicalModels then the test may fail.
     let ranges;
-    let modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.Model", where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'" });
+    let modelProps = await iModel.models.queryProps({
+      limit: 10,
+      from: "BisCore.Model",
+      where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'",
+    });
     let idSet: Id64Set = new Set<string>();
     for (const modelProp of modelProps) {
       idSet.add(modelProp.id!.toString());
     }
-    if (idSet.size === 1) { // queryModelRanges throws error if idSet size is 1 AND the id in the set returns some error for querying its extents
-      await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(Error);
+    if (idSet.size === 1) {
+      // queryModelRanges throws error if idSet size is 1 AND the id in the set returns some error for querying its extents
+      await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(
+        Error
+      );
     } else {
       ranges = await iModel.models.queryModelRanges(idSet);
       expect(ranges).to.not.be.undefined;
@@ -299,9 +386,14 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     }
     const dictModelId = await iModel.models.getDictionaryModel();
     idSet = Id64.toIdSet(dictModelId);
-    await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(Error);
+    await expect(iModel.models.queryModelRanges(idSet)).to.be.rejectedWith(
+      Error
+    );
 
-    modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
+    modelProps = await iModel.models.queryProps({
+      limit: 10,
+      from: "BisCore.SpatialModel",
+    });
     idSet.add(modelProps[0].id!.toString());
     ranges = await iModel.models.queryModelRanges(idSet);
     expect(ranges).to.not.be.undefined;
@@ -312,11 +404,20 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
       operation: MassPropertiesOperation.AccumulateVolumes,
     };
 
-    const result = await IModelReadRpcInterface.getClient().getMassProperties(iModel.getRpcProps(), requestProps);
+    const result = await IModelReadRpcInterface.getClient().getMassProperties(
+      iModel.getRpcProps(),
+      requestProps
+    );
     expect(result).to.not.be.null;
   });
   it("getMassPropertiesPerCandidate should be able to process multiple elements", async () => {
-    const candidates = [...await iModel.elements.queryIds({ from: "BisCore.GeometricElement3d", limit: 2, where: "GeometryStream IS NOT NULL" })];
+    const candidates = [
+      ...(await iModel.elements.queryIds({
+        from: "BisCore.GeometricElement3d",
+        limit: 2,
+        where: "GeometryStream IS NOT NULL",
+      })),
+    ];
     expect(candidates.length).to.be.equal(2);
 
     const requestProps: MassPropertiesPerCandidateRequestProps = {
@@ -324,7 +425,11 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
       candidates: CompressedId64Set.compressIds(candidates),
     };
 
-    const result = await IModelReadRpcInterface.getClient().getMassPropertiesPerCandidate(iModel.getRpcProps(), requestProps);
+    const result =
+      await IModelReadRpcInterface.getClient().getMassPropertiesPerCandidate(
+        iModel.getRpcProps(),
+        requestProps
+      );
     expect(result).to.not.be.null;
     expect(result.length).to.be.equal(2);
     const candidate1Result = result.find((r) => r.candidate === candidates[0]);
@@ -334,17 +439,31 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(candidate1Result?.status).to.be.equal(BentleyStatus.SUCCESS);
     expect(candidate2Result?.status).to.be.equal(BentleyStatus.SUCCESS);
 
-    const expectedCandidate1Result = await IModelReadRpcInterface.getClient().getMassProperties(
-      iModel.getRpcProps(),
-      { operation: MassPropertiesOperation.AccumulateVolumes, candidates: [candidates[0]] },
-    );
-    const expectedCandidate2Result = await IModelReadRpcInterface.getClient().getMassProperties(
-      iModel.getRpcProps(),
-      { operation: MassPropertiesOperation.AccumulateVolumes, candidates: [candidates[1]] },
-    );
+    const expectedCandidate1Result =
+      await IModelReadRpcInterface.getClient().getMassProperties(
+        iModel.getRpcProps(),
+        {
+          operation: MassPropertiesOperation.AccumulateVolumes,
+          candidates: [candidates[0]],
+        }
+      );
+    const expectedCandidate2Result =
+      await IModelReadRpcInterface.getClient().getMassProperties(
+        iModel.getRpcProps(),
+        {
+          operation: MassPropertiesOperation.AccumulateVolumes,
+          candidates: [candidates[1]],
+        }
+      );
 
-    expect(candidate1Result).to.deep.eq({ ...expectedCandidate1Result, candidate: candidates[0] });
-    expect(candidate2Result).to.deep.eq({ ...expectedCandidate2Result, candidate: candidates[1] });
+    expect(candidate1Result).to.deep.eq({
+      ...expectedCandidate1Result,
+      candidate: candidates[0],
+    });
+    expect(candidate2Result).to.deep.eq({
+      ...expectedCandidate2Result,
+      candidate: candidates[1],
+    });
   });
 });
 
@@ -357,18 +476,22 @@ describe("Snapping", () => {
   before(async function () {
     testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
     accessToken = testContext.adminUserAccessToken;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(
+      accessToken
+    );
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   it("should be able to request a snap", async () => {
-    const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
+    const ids = await iModel.elements.queryIds({
+      limit: 10,
+      from: "BisCore:PhysicalElement",
+    });
     const id = ids.values().next().value;
 
     const worldToView = Matrix4d.createIdentity();
@@ -379,12 +502,19 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    const snap = await IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
+    const snap = await IModelReadRpcInterface.getClient().requestSnap(
+      iModel.getRpcProps(),
+      id,
+      snapProps
+    );
     expect(snap.status).to.not.be.undefined;
   });
 
   it("should be able to cancel a snap", async () => {
-    const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
+    const ids = await iModel.elements.queryIds({
+      limit: 10,
+      from: "BisCore:PhysicalElement",
+    });
     const id = ids.values().next().value;
 
     const worldToView = Matrix4d.createIdentity();
@@ -396,9 +526,16 @@ describe("Snapping", () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    const promise = IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
+    const promise = IModelReadRpcInterface.getClient().requestSnap(
+      iModel.getRpcProps(),
+      id,
+      snapProps
+    );
     try {
-      await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
+      await IModelReadRpcInterface.getClient().cancelSnap(
+        iModel.getRpcProps(),
+        id
+      );
       const snap = await promise;
 
       // This is what we expect if the snap is completed before the cancellation is processed.

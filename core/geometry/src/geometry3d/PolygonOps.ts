@@ -7,13 +7,21 @@
  * @module CartesianGeometry
  */
 import { assert } from "@itwin/core-bentley";
-import { AxisOrder, Geometry, PlaneAltitudeEvaluator, PolygonLocation } from "../Geometry";
+import {
+  AxisOrder,
+  Geometry,
+  PlaneAltitudeEvaluator,
+  PolygonLocation,
+} from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { FrameBuilder } from "./FrameBuilder";
 import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import {
+  IndexedReadWriteXYZCollection,
+  IndexedXYZCollection,
+} from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d, Vector2d } from "./Point2dVector2d";
@@ -65,10 +73,8 @@ export class PolygonLocationDetail {
    * @param result optional pre-allocated object to fill and return
    */
   public static create(result?: PolygonLocationDetail): PolygonLocationDetail {
-    if (undefined === result)
-      result = new PolygonLocationDetail();
-    else
-      result.invalidate();
+    if (undefined === result) result = new PolygonLocationDetail();
+    else result.invalidate();
     return result;
   }
 
@@ -91,9 +97,13 @@ export class PolygonLocationDetail {
 
   /** Whether this instance specifies a location inside or on the polygon. */
   public get isInsideOrOn(): boolean {
-    return this.code === PolygonLocation.InsidePolygon ||
-      this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
-      this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
+    return (
+      this.code === PolygonLocation.InsidePolygon ||
+      this.code === PolygonLocation.OnPolygonVertex ||
+      this.code === PolygonLocation.OnPolygonEdgeInterior ||
+      this.code === PolygonLocation.InsidePolygonProjectsToVertex ||
+      this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior
+    );
   }
 }
 
@@ -140,9 +150,8 @@ export class CutLoop {
       this.sortCoordinate0 = a;
       this.sortCoordinate1 = a + this.sortDelta;
     } else {
-      this.sortCoordinate0 = a + this.sortDelta;    // and sortDelta is negative !!!
+      this.sortCoordinate0 = a + this.sortDelta; // and sortDelta is negative !!!
       this.sortCoordinate1 = a;
-
     }
   }
   /** Return
@@ -151,10 +160,12 @@ export class CutLoop {
    * * -1 if other sort limits are strictly contained in opposite direction.
    */
   public containsSortLimits(other: CutLoop): number {
-    if (other.sortCoordinate0 >= this.sortCoordinate1
-      || other.sortCoordinate0 <= this.sortCoordinate0
-      || other.sortCoordinate1 <= this.sortCoordinate0
-      || other.sortCoordinate1 >= this.sortCoordinate1)
+    if (
+      other.sortCoordinate0 >= this.sortCoordinate1 ||
+      other.sortCoordinate0 <= this.sortCoordinate0 ||
+      other.sortCoordinate1 <= this.sortCoordinate0 ||
+      other.sortCoordinate1 >= this.sortCoordinate1
+    )
       return 0;
     return this.sortDelta * other.sortDelta > 0 ? 1 : -1;
   }
@@ -176,12 +187,15 @@ export class CutLoop {
   /** Return first point coordinates.
    * * For type checking, assume array is not empty.
    */
-  public front(result?: Point3d): Point3d { return this.xyz.front(result)!; }
+  public front(result?: Point3d): Point3d {
+    return this.xyz.front(result)!;
+  }
   /** Return last point coordinates.
    * * For type checking, assume array is not empty.
    */
-  public back(result?: Point3d): Point3d { return this.xyz.back(result)!; }
-
+  public back(result?: Point3d): Point3d {
+    return this.xyz.back(result)!;
+  }
 }
 /**
  * Context to hold an array of input loops and apply sort logic.
@@ -204,7 +218,11 @@ export class CutLoopMergeContext {
   /**
    *  * Search all start and end points for the one most distant from point0.
    */
-  private mostDistantPoint(point0: Point3d, workPoint: Point3d, resultPoint: Point3d) {
+  private mostDistantPoint(
+    point0: Point3d,
+    workPoint: Point3d,
+    resultPoint: Point3d
+  ) {
     let dMax = -1.0;
     resultPoint.setZero();
     let d;
@@ -239,10 +257,8 @@ export class CutLoopMergeContext {
       this.mostDistantPoint(point1, workPoint, point0);
       const sortRay = Ray3d.createStartEnd(point0, point1);
       sortRay.direction.normalizeInPlace();
-      for (const loop of this.inputLoops)
-        loop.setSortCoordinates(sortRay);
+      for (const loop of this.inputLoops) loop.setSortCoordinates(sortRay);
       this.inputLoops.sort(CutLoop.sortFunction);
-
     }
   }
   /**
@@ -259,14 +275,13 @@ export class CutLoopMergeContext {
       candidate.isNotch = false;
       // candidate must be either (a) absorbed in to of stack or (b) pushed onto stack.
       // If pushed, must have indication of natch state.
-      for (; stack.length > 0;) {
+      for (; stack.length > 0; ) {
         const topOfStack = stack[stack.length - 1];
         const containment = topOfStack.containsSortLimits(candidate);
         if (containment === 0) {
-          if (!topOfStack.isNotch)
-            outputs.push(topOfStack);
+          if (!topOfStack.isNotch) outputs.push(topOfStack);
           stack.pop();
-          continue;   // a larger topOfStack may have appeared !
+          continue; // a larger topOfStack may have appeared !
           candidate.isNotch = false;
         } else if (containment === 1) {
           candidate.isNotch = false;
@@ -281,8 +296,7 @@ export class CutLoopMergeContext {
     }
     // Anything on stack must be complete ...
     for (const p of stack) {
-      if (!p.isNotch)
-        outputs.push(p);
+      if (!p.isNotch) outputs.push(p);
     }
   }
 }
@@ -327,7 +341,10 @@ export class PolygonOps {
    * * If the upVector is near-zero length, a simple z vector is used.
    * @returns sum of triangle areas.
    */
-  public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
+  public static sumTriangleAreasPerpendicularToUpVector(
+    points: Point3d[] | GrowableXYZArray,
+    upVector: Vector3d
+  ): number {
     let scale = upVector.magnitude();
     if (scale < Geometry.smallMetricDistance) {
       upVector = Vector3d.create(0, 0, 1);
@@ -348,14 +365,14 @@ export class PolygonOps {
           vector0.setFrom(vector1);
         }
       }
-      return s * 0.5 / scale;
+      return (s * 0.5) / scale;
     }
     const crossVector = Vector3d.create();
     for (let i = 2; i < n; i++) {
       points.crossProductIndexIndexIndex(0, i - 1, i, crossVector);
       s += crossVector.dotProduct(upVector);
     }
-    return s * 0.5 / scale;
+    return (s * 0.5) / scale;
   }
 
   /** Sum areas of triangles from points[0] to each far edge.
@@ -384,15 +401,45 @@ export class PolygonOps {
   /** These values are the integrated area moment products [xx,xy,xz, x]
    * for a right triangle in the first quadrant at the origin -- (0,0),(1,0),(0,1)
    */
-  private static readonly _triangleMomentWeights = Matrix4d.createRowValues(2.0 / 24.0, 1.0 / 24.0, 0, 4.0 / 24.0, 1.0 / 24.0, 2.0 / 24.0, 0, 4.0 / 24.0, 0, 0, 0, 0, 4.0 / 24.0, 4.0 / 24.0, 0, 12.0 / 24.0);
+  private static readonly _triangleMomentWeights = Matrix4d.createRowValues(
+    2.0 / 24.0,
+    1.0 / 24.0,
+    0,
+    4.0 / 24.0,
+    1.0 / 24.0,
+    2.0 / 24.0,
+    0,
+    4.0 / 24.0,
+    0,
+    0,
+    0,
+    0,
+    4.0 / 24.0,
+    4.0 / 24.0,
+    0,
+    12.0 / 24.0
+  );
   /** These values are the integrated volume moment products [xx,xy,xz, x, yx,yy,yz,y, zx,zy,zz,z,x,y,z,1]
    * for a tetrahedron in the first quadrant at the origin -- (0,00),(1,0,0),(0,1,0),(0,0,1)
    */
   private static readonly _tetrahedralMomentWeights = Matrix4d.createRowValues(
-    1.0 / 60.0, 1.0 / 120, 1.0 / 120, 1.0 / 24.0,
-    1.0 / 120, 1.0 / 60.0, 1.0 / 120, 1.0 / 24.0,
-    1.0 / 120, 1.0 / 120, 1.0 / 60.0, 1.0 / 24.0,
-    1.0 / 24.0, 1.0 / 24.0, 1.0 / 24.0, 1.0 / 6.0);
+    1.0 / 60.0,
+    1.0 / 120,
+    1.0 / 120,
+    1.0 / 24.0,
+    1.0 / 120,
+    1.0 / 60.0,
+    1.0 / 120,
+    1.0 / 24.0,
+    1.0 / 120,
+    1.0 / 120,
+    1.0 / 60.0,
+    1.0 / 24.0,
+    1.0 / 24.0,
+    1.0 / 24.0,
+    1.0 / 24.0,
+    1.0 / 6.0
+  );
   // statics for shared reuse.
   // many methods use these.
   // only use them in "leaf" methods that are certain not to call other users . . .
@@ -405,11 +452,12 @@ export class PolygonOps {
   private static _matrixB = Matrix4d.createIdentity();
   private static _matrixC = Matrix4d.createIdentity();
   /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
-  public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
-    if (!result)
-      result = new Vector3d();
-    else
-      result.setZero();
+  public static areaNormalGo(
+    points: IndexedXYZCollection,
+    result?: Vector3d
+  ): Vector3d | undefined {
+    if (!result) result = new Vector3d();
+    else result.setZero();
     const n = points.length;
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
@@ -425,8 +473,7 @@ export class PolygonOps {
   }
   /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
-    if (!result)
-      result = Vector3d.create();
+    if (!result) result = Vector3d.create();
     PolygonOps.areaNormalGo(new Point3dArrayCarrier(points), result);
     return result;
   }
@@ -462,8 +509,7 @@ export class PolygonOps {
   /** Sum the areaXY () values for multiple polygons */
   public static sumAreaXY(polygons: Point3d[][]): number {
     let s = 0.0;
-    for (const p of polygons)
-      s += this.areaXY(p);
+    for (const p of polygons) s += this.areaXY(p);
     return s;
   }
   /**
@@ -473,7 +519,9 @@ export class PolygonOps {
    * * 'a' member is the area.
    * @param points
    */
-  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+  public static centroidAreaNormal(
+    points: IndexedXYZCollection | Point3d[]
+  ): Ray3d | undefined {
     if (Array.isArray(points)) {
       const carrier = new Point3dArrayCarrier(points);
       return this.centroidAreaNormal(carrier);
@@ -487,12 +535,10 @@ export class PolygonOps {
       points.accumulateScaledXYZ(2, 1.0, centroid);
       centroid.scaleInPlace(1.0 / 3.0);
       const result = Ray3d.createCapture(centroid, normal);
-      if (result.tryNormalizeInPlaceWithAreaWeight(a))
-        return result;
+      if (result.tryNormalizeInPlaceWithAreaWeight(a)) return result;
       return undefined;
     }
     if (n >= 3) {
-
       const areaNormal = Vector3d.createZero();
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
@@ -512,7 +558,7 @@ export class PolygonOps {
       for (let i = 2; i < n; i++) {
         points.vectorXYAndZIndex(origin, i, vector1);
         cross = vector0.crossProduct(vector1, cross);
-        signedTriangleArea = areaNormal.dotProduct(cross);    // well, actually twice the area.
+        signedTriangleArea = areaNormal.dotProduct(cross); // well, actually twice the area.
         normalSum.addInPlace(cross); // this grows to twice the area
         const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
@@ -521,7 +567,10 @@ export class PolygonOps {
       const area = 0.5 * normalSum.magnitude();
       const inverseArea = Geometry.conditionalDivideFraction(1, area);
       if (inverseArea !== undefined) {
-        const result = Ray3d.createCapture(origin.plusScaled(centroidSum, inverseArea), normalSum);
+        const result = Ray3d.createCapture(
+          origin.plusScaled(centroidSum, inverseArea),
+          normalSum
+        );
         result.tryNormalizeInPlaceWithAreaWeight(area);
         return result;
       }
@@ -534,11 +583,13 @@ export class PolygonOps {
    * * Return (in caller-allocated centroid) the centroid of the xy polygon.
    * * Return (as function value)  the area
    */
-  public static centroidAndAreaXY(points: Point2d[], centroid: Point2d): number | undefined {
+  public static centroidAndAreaXY(
+    points: Point2d[],
+    centroid: Point2d
+  ): number | undefined {
     let area = 0.0;
     centroid.set(0, 0);
-    if (points.length < 3)
-      return undefined;
+    if (points.length < 3) return undefined;
     const origin = points[0];
     let vectorSum = Vector2d.create(0, 0); // == sum ((U+V)/3) * (U CROSS V)/2 -- but leave out divisions
     let areaSum = 0.0; // == sum (U CROSS V) / 2 -- but leave out divisions
@@ -564,11 +615,19 @@ export class PolygonOps {
    * @param result caller-allocated result vector.
    * @return true if and only if result has unit length
    */
-  public static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean {
+  public static unitNormal(
+    points: IndexedXYZCollection,
+    result: Vector3d
+  ): boolean {
     result.setZero();
     let n = points.length;
-    if (n > 1 && points.getPoint3dAtUncheckedPointIndex(0).isExactEqual(points.getPoint3dAtUncheckedPointIndex(n - 1)))
-      --n;  // ignore closure point
+    if (
+      n > 1 &&
+      points
+        .getPoint3dAtUncheckedPointIndex(0)
+        .isExactEqual(points.getPoint3dAtUncheckedPointIndex(n - 1))
+    )
+      --n; // ignore closure point
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
       return result.normalizeInPlace();
@@ -595,8 +654,18 @@ export class PolygonOps {
    * @param origin origin for global accumulation.
    * @param moments 4x4 matrix where products are accumulated.
    */
-  public static addSecondMomentAreaProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
-    this.addSecondMomentTransformedProducts(PolygonOps._triangleMomentWeights, points, origin, 2, moments);
+  public static addSecondMomentAreaProducts(
+    points: IndexedXYZCollection,
+    origin: Point3d,
+    moments: Matrix4d
+  ) {
+    this.addSecondMomentTransformedProducts(
+      PolygonOps._triangleMomentWeights,
+      points,
+      origin,
+      2,
+      moments
+    );
   }
 
   /** Accumulate to the matrix of volume products of a polygon with respect to an origin.
@@ -606,17 +675,31 @@ export class PolygonOps {
    * @param origin origin for tetrahedra
    * @param moments 4x4 matrix where products are accumulated.
    */
-  public static addSecondMomentVolumeProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
-    this.addSecondMomentTransformedProducts(PolygonOps._tetrahedralMomentWeights, points, origin, 3, moments);
+  public static addSecondMomentVolumeProducts(
+    points: IndexedXYZCollection,
+    origin: Point3d,
+    moments: Matrix4d
+  ) {
+    this.addSecondMomentTransformedProducts(
+      PolygonOps._tetrahedralMomentWeights,
+      points,
+      origin,
+      3,
+      moments
+    );
   }
   /** Return the matrix of area products of a polygon with respect to an origin.
    * The polygon is assumed to be planar and non-self-intersecting.
    * * `frameType===2` has xy vectors in the plane of the polygon, plus a unit normal z. (Used for area integrals)
    * * `frameType===3` has vectors from origin to 3 points in the triangle. (Used for volume integrals)
    */
-  private static addSecondMomentTransformedProducts(firstQuadrantMoments: Matrix4d, points: IndexedXYZCollection, origin: Point3d,
+  private static addSecondMomentTransformedProducts(
+    firstQuadrantMoments: Matrix4d,
+    points: IndexedXYZCollection,
+    origin: Point3d,
     frameType: 2 | 3,
-    moments: Matrix4d) {
+    moments: Matrix4d
+  ) {
     const unitNormal = PolygonOps._normal;
     if (PolygonOps.unitNormal(points, unitNormal)) {
       // The direction of the normal makes the various detJ values positive or negative so that non-convex polygons
@@ -627,7 +710,11 @@ export class PolygonOps {
       const placement = PolygonOps._matrixA;
       const matrixAB = PolygonOps._matrixB;
       const matrixABC = PolygonOps._matrixC;
-      const vectorOrigin = points.vectorXYAndZIndex(origin, 0, PolygonOps._vectorOrigin)!;
+      const vectorOrigin = points.vectorXYAndZIndex(
+        origin,
+        0,
+        PolygonOps._vectorOrigin
+      )!;
       const numPoints = points.length;
       let detJ = 0;
       for (let i2 = 2; i2 < numPoints; i2++) {
@@ -635,7 +722,12 @@ export class PolygonOps {
           points.vectorIndexIndex(0, i2 - 1, vector01);
           points.vectorIndexIndex(0, i2, vector02);
           detJ = unitNormal.tripleProduct(vector01, vector02);
-          placement.setOriginAndVectors(vectorOrigin, vector01, vector02, unitNormal);
+          placement.setOriginAndVectors(
+            vectorOrigin,
+            vector01,
+            vector02,
+            unitNormal
+          );
           placement.multiplyMatrixMatrix(firstQuadrantMoments, matrixAB);
           matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
           moments.addScaledInPlace(matrixABC, detJ);
@@ -658,26 +750,41 @@ export class PolygonOps {
    * * Beware that a polygon which turns through more than a full turn can cross itself and close, but is not convex.
    * @returns 1 if all turns are to the left, -1 if all to the right, and 0 if there are any zero or reverse turns
    */
-  public static testXYPolygonTurningDirections(points: Point2d[] | Point3d[]): number {
+  public static testXYPolygonTurningDirections(
+    points: Point2d[] | Point3d[]
+  ): number {
     // Reduce count by trailing duplicates; leaves iLast at final index
     let numPoint = points.length;
     let iLast = numPoint - 1;
-    while (iLast > 1 && points[iLast].x === points[0].x && points[iLast].y === points[0].y) {
+    while (
+      iLast > 1 &&
+      points[iLast].x === points[0].x &&
+      points[iLast].y === points[0].y
+    ) {
       numPoint = iLast--;
     }
     if (numPoint > 2) {
-      let vector0 = Point2d.create(points[iLast].x - points[iLast - 1].x, points[iLast].y - points[iLast - 1].y);
-      const vector1 = Point2d.create(points[0].x - points[iLast].x, points[0].y - points[iLast].y);
+      let vector0 = Point2d.create(
+        points[iLast].x - points[iLast - 1].x,
+        points[iLast].y - points[iLast - 1].y
+      );
+      const vector1 = Point2d.create(
+        points[0].x - points[iLast].x,
+        points[0].y - points[iLast].y
+      );
       const baseArea = vector0.x * vector1.y - vector0.y * vector1.x;
       // In a convex polygon, all successive-vector cross products will
       // have the same sign as the base area, hence all products will be
       // positive.
       for (let i1 = 1; i1 < numPoint; i1++) {
         vector0 = vector1.clone();
-        Point2d.create(points[i1].x - points[i1 - 1].x, points[i1].y - points[i1 - 1].y, vector1);
+        Point2d.create(
+          points[i1].x - points[i1 - 1].x,
+          points[i1].y - points[i1 - 1].y,
+          vector1
+        );
         const currArea = vector0.x * vector1.y - vector0.y * vector1.x;
-        if (currArea * baseArea <= 0.0)
-          return 0;
+        if (currArea * baseArea <= 0.0) return 0;
       }
       // Fall out with all signs same as base area
       return baseArea > 0.0 ? 1 : -1;
@@ -693,26 +800,39 @@ export class PolygonOps {
     if (!(polygon instanceof IndexedXYZCollection))
       return this.isConvex(new Point3dArrayCarrier(polygon));
     let n = polygon.length;
-    if (n > 1 && polygon.getPoint3dAtUncheckedPointIndex(0).isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1)))
-      --n;  // ignore closure point
+    if (
+      n > 1 &&
+      polygon
+        .getPoint3dAtUncheckedPointIndex(0)
+        .isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1))
+    )
+      --n; // ignore closure point
     const normal = Vector3d.create();
-    if (!this.unitNormal(polygon, normal))
-      return false;
+    if (!this.unitNormal(polygon, normal)) return false;
     let positiveArea = 0.0;
     let negativeArea = 0.0;
     const vecA = this._vector0;
-    let vecB = Vector3d.createStartEnd(polygon.getPoint3dAtUncheckedPointIndex(n - 1), polygon.getPoint3dAtUncheckedPointIndex(0), this._vector1);
+    let vecB = Vector3d.createStartEnd(
+      polygon.getPoint3dAtUncheckedPointIndex(n - 1),
+      polygon.getPoint3dAtUncheckedPointIndex(0),
+      this._vector1
+    );
     for (let i = 1; i <= n; i++) {
       // check turn through vertices i-1,i,i+1
       vecA.setFromVector3d(vecB);
-      vecB = Vector3d.createStartEnd(polygon.getPoint3dAtUncheckedPointIndex(i - 1), polygon.getPoint3dAtUncheckedPointIndex(i % n), vecB);
+      vecB = Vector3d.createStartEnd(
+        polygon.getPoint3dAtUncheckedPointIndex(i - 1),
+        polygon.getPoint3dAtUncheckedPointIndex(i % n),
+        vecB
+      );
       const signedArea = normal.tripleProduct(vecA, vecB);
-      if (signedArea >= 0.0)
-        positiveArea += signedArea;
-      else
-        negativeArea += signedArea;
+      if (signedArea >= 0.0) positiveArea += signedArea;
+      else negativeArea += signedArea;
     }
-    return Math.abs(negativeArea) < Geometry.smallMetricDistanceSquared * positiveArea;
+    return (
+      Math.abs(negativeArea) <
+      Geometry.smallMetricDistanceSquared * positiveArea
+    );
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a polygon.
@@ -721,7 +841,11 @@ export class PolygonOps {
    * @param y y coordinate
    * @param points array of xy coordinates.
    */
-  public static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined {
+  public static classifyPointInPolygon(
+    x: number,
+    y: number,
+    points: XAndY[]
+  ): number | undefined {
     const context = new XYParitySearchContext(x, y);
     let i0 = 0;
     const n = points.length;
@@ -730,19 +854,23 @@ export class PolygonOps {
     // walk to an acceptable start index ...
     for (i0 = 0; i0 < n; i0++) {
       i1 = i0 + 1;
-      if (i1 >= n)
-        i1 = 0;
-      if (context.tryStartEdge(points[i0].x, points[i0].y, points[i1].x, points[i1].y)) {
+      if (i1 >= n) i1 = 0;
+      if (
+        context.tryStartEdge(
+          points[i0].x,
+          points[i0].y,
+          points[i1].x,
+          points[i1].y
+        )
+      ) {
         iLast = i1;
         break;
       }
     }
-    if (iLast < 0)
-      return undefined;
+    if (iLast < 0) return undefined;
     for (let i = 1; i <= n; i++) {
       i1 = iLast + i;
-      if (i1 >= n)
-        i1 -= n;
+      if (i1 >= n) i1 -= n;
       if (!context.advance(points[i1].x, points[i1].y))
         return context.classifyCounts();
     }
@@ -755,7 +883,11 @@ export class PolygonOps {
    * @param y y coordinate
    * @param points array of xy coordinates.
    */
-  public static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined {
+  public static classifyPointInPolygonXY(
+    x: number,
+    y: number,
+    points: IndexedXYZCollection
+  ): number | undefined {
     const context = new XYParitySearchContext(x, y);
     let i0 = 0;
     const n = points.length;
@@ -764,20 +896,29 @@ export class PolygonOps {
     // walk to an acceptable start index ...
     for (i0 = 0; i0 < n; i0++) {
       i1 = i0 + 1;
-      if (i1 >= n)
-        i1 = 0;
-      if (context.tryStartEdge(points.getXAtUncheckedPointIndex(i0), points.getYAtUncheckedPointIndex(i0), points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1))) {
+      if (i1 >= n) i1 = 0;
+      if (
+        context.tryStartEdge(
+          points.getXAtUncheckedPointIndex(i0),
+          points.getYAtUncheckedPointIndex(i0),
+          points.getXAtUncheckedPointIndex(i1),
+          points.getYAtUncheckedPointIndex(i1)
+        )
+      ) {
         iLast = i1;
         break;
       }
     }
-    if (iLast < 0)
-      return undefined;
+    if (iLast < 0) return undefined;
     for (let i = 1; i <= n; i++) {
       i1 = iLast + i;
-      if (i1 >= n)
-        i1 -= n;
-      if (!context.advance(points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1)))
+      if (i1 >= n) i1 -= n;
+      if (
+        !context.advance(
+          points.getXAtUncheckedPointIndex(i1),
+          points.getYAtUncheckedPointIndex(i1)
+        )
+      )
         return context.classifyCounts();
     }
     return context.classifyCounts();
@@ -789,7 +930,10 @@ export class PolygonOps {
    * @param outwardNormal
    * @return the number of loops reversed.
    */
-  public static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number {
+  public static orientLoopsCCWForOutwardNormalInPlace(
+    loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[],
+    outwardNormal: Vector3d
+  ): number {
     if (loops instanceof IndexedXYZCollection)
       return this.orientLoopsCCWForOutwardNormalInPlace([loops], outwardNormal);
     const orientations: number[] = [];
@@ -800,8 +944,7 @@ export class PolygonOps {
       if (this.unitNormal(loop, unitNormal)) {
         const q = unitNormal.dotProduct(outwardNormal);
         orientations.push(q);
-        if (q <= 0.0)
-          loop.reverseInPlace();
+        if (q <= 0.0) loop.reverseInPlace();
         numReverse++;
       } else {
         orientations.push(0.0);
@@ -817,7 +960,9 @@ export class PolygonOps {
    * * Any subsequent polygons are holes of the outer loop, oriented clockwise.
    * @see [[RegionOps.sortOuterAndHoleLoopsXY]]
    */
-  public static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][] {
+  public static sortOuterAndHoleLoopsXY(
+    loops: IndexedReadWriteXYZCollection[]
+  ): IndexedReadWriteXYZCollection[][] {
     const loopAndArea: SortablePolygon[] = [];
     for (const loop of loops) {
       SortablePolygon.pushPolygon(loopAndArea, loop);
@@ -831,8 +976,14 @@ export class PolygonOps {
    * @param defaultNormal optional normal for the loops, if known
    * @see [[sortOuterAndHoleLoopsXY]]
    */
-  public static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][] {
-    const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, loops);
+  public static sortOuterAndHoleLoops(
+    loops: IndexedReadWriteXYZCollection[],
+    defaultNormal: Vector3d | undefined
+  ): IndexedReadWriteXYZCollection[][] {
+    const localToWorld = FrameBuilder.createRightHandedFrame(
+      defaultNormal,
+      loops
+    );
     const worldToLocal = localToWorld?.inverse();
 
     const xyLoops: GrowableXYZArray[] = [];
@@ -874,10 +1025,20 @@ export class PolygonOps {
    * * `d.code` classifies the closest point as a vertex (`PolygonLocation.OnPolygonVertex`) or as a point on an edge (`PolygonLocation.OnPolygonEdgeInterior`).
    * * `d.a` is the distance from testPoint to the closest point.
    * * `d.v` can be used to classify p (if p and polygon are coplanar): if n is the polygon normal then `d.v.dotProduct(n)` is +/-/0 if and only if p is inside/outside/on the polygon.
-  */
-  public static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+   */
+  public static closestPointOnBoundary(
+    polygon: Point3d[] | IndexedXYZCollection,
+    testPoint: Point3d,
+    tolerance: number = Geometry.smallMetricDistance,
+    result?: PolygonLocationDetail
+  ): PolygonLocationDetail {
     if (!(polygon instanceof IndexedXYZCollection))
-      return this.closestPointOnBoundary(new Point3dArrayCarrier(polygon), testPoint, tolerance, result);
+      return this.closestPointOnBoundary(
+        new Point3dArrayCarrier(polygon),
+        testPoint,
+        tolerance,
+        result
+      );
 
     const distTol2 = tolerance * tolerance;
 
@@ -889,8 +1050,7 @@ export class PolygonOps {
     }
 
     result = PolygonLocationDetail.create(result);
-    if (0 === numPoints)
-      return result;  // invalid
+    if (0 === numPoints) return result; // invalid
     if (1 === numPoints) {
       polygon.getPoint3dAtUncheckedPointIndex(0, result.point);
       result.a = result.point.distance(testPoint);
@@ -905,18 +1065,21 @@ export class PolygonOps {
     let minDist2 = Geometry.largeCoordinateResult;
     for (let iBase = 0; iBase < numPoints; ++iBase) {
       let iNext = iBase + 1;
-      if (iNext === numPoints)
-        iNext = 0;
+      if (iNext === numPoints) iNext = 0;
 
       const uDotU = polygon.distanceSquaredIndexIndex(iBase, iNext)!;
-      if (uDotU <= distTol2)
-        continue; // ignore trivial polygon edge (keep iPrev)
+      if (uDotU <= distTol2) continue; // ignore trivial polygon edge (keep iPrev)
 
       const vDotV = polygon.distanceSquaredIndexXYAndZ(iBase, testPoint)!;
-      const uDotV = polygon.dotProductIndexIndexXYAndZ(iBase, iNext, testPoint)!;
-      const edgeParam = uDotV / uDotU;  // param of projection of testPoint onto this edge
+      const uDotV = polygon.dotProductIndexIndexXYAndZ(
+        iBase,
+        iNext,
+        testPoint
+      )!;
+      const edgeParam = uDotV / uDotU; // param of projection of testPoint onto this edge
 
-      if (edgeParam <= 0.0) { // testPoint projects to/before edge start
+      if (edgeParam <= 0.0) {
+        // testPoint projects to/before edge start
         const distToStart2 = vDotV;
         if (distToStart2 <= distTol2) {
           // testPoint is at edge start; we are done
@@ -929,7 +1092,9 @@ export class PolygonOps {
           return result;
         }
         if (distToStart2 < minDist2) {
-          if (polygon.dotProductIndexIndexXYAndZ(iBase, iPrev, testPoint)! <= 0.0) {
+          if (
+            polygon.dotProductIndexIndexXYAndZ(iBase, iPrev, testPoint)! <= 0.0
+          ) {
             // update candidate (to edge start) only if previous edge was NOOP
             polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
             result.a = Math.sqrt(distToStart2);
@@ -940,7 +1105,8 @@ export class PolygonOps {
             minDist2 = distToStart2;
           }
         }
-      } else if (edgeParam <= 1.0) {  // testPoint projects inside edge, or to edge end
+      } else if (edgeParam <= 1.0) {
+        // testPoint projects inside edge, or to edge end
         const projDist2 = vDotV - edgeParam * edgeParam * uDotU;
         if (projDist2 <= distTol2) {
           // testPoint is on edge; we are done
@@ -955,7 +1121,8 @@ export class PolygonOps {
             result.closestEdgeParam = 0.0;
             return result;
           }
-          const distToEnd2 = projDist2 + (1.0 - edgeParam) * (1.0 - edgeParam) * uDotU;
+          const distToEnd2 =
+            projDist2 + (1.0 - edgeParam) * (1.0 - edgeParam) * uDotU;
           if (edgeParam > 0.5 && distToEnd2 <= distTol2) {
             // testPoint is at edge end
             polygon.getPoint3dAtUncheckedPointIndex(iNext, result.point);
@@ -979,13 +1146,19 @@ export class PolygonOps {
           // update candidate (to edge interior)
           polygon.interpolateIndexIndex(iBase, edgeParam, iNext, result.point);
           result.a = Math.sqrt(projDist2);
-          polygon.crossProductIndexIndexXYAndZ(iBase, iNext, testPoint, result.v)!;
+          polygon.crossProductIndexIndexXYAndZ(
+            iBase,
+            iNext,
+            testPoint,
+            result.v
+          )!;
           result.code = PolygonLocation.OnPolygonEdgeInterior;
           result.closestEdgeIndex = iBase;
           result.closestEdgeParam = edgeParam;
           minDist2 = projDist2;
         }
-      } else {  // edgeParam > 1.0
+      } else {
+        // edgeParam > 1.0
         // NOOP: testPoint projects beyond edge end, handled by next edge
       }
       iPrev = iBase;
@@ -1013,17 +1186,42 @@ export class PolygonOps {
    * * `d.a` is the ray intersection parameter. If `d.a` >= 0, the ray intersects the plane of the polygon.
    * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point on the polygon to the intersection, within `distTol`.
    */
-  public static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static intersectRay3d(
+    polygon: Point3d[] | IndexedXYZCollection,
+    ray: Ray3d,
+    tolerance: number = Geometry.smallMetricDistance,
+    result?: PolygonLocationDetail
+  ): PolygonLocationDetail {
     if (!(polygon instanceof IndexedXYZCollection))
-      return this.intersectRay3d(new Point3dArrayCarrier(polygon), ray, tolerance, result);
+      return this.intersectRay3d(
+        new Point3dArrayCarrier(polygon),
+        ray,
+        tolerance,
+        result
+      );
     if (!this.unitNormal(polygon, this._normal))
       return PolygonLocationDetail.create(result); // invalid
-    this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
+    this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(
+      polygon.getXAtUncheckedPointIndex(0),
+      polygon.getYAtUncheckedPointIndex(0),
+      polygon.getZAtUncheckedPointIndex(0),
+      this._normal.x,
+      this._normal.y,
+      this._normal.z,
+      this._workPlane
+    )!;
     const intersectionPoint = Point3d.createZero(this._workXYZ);
-    const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
-    if (undefined === rayParam)
-      return PolygonLocationDetail.create(result);
-    result = this.closestPointOnBoundary(polygon, intersectionPoint, tolerance, result);
+    const rayParam = ray.intersectionWithPlane(
+      this._workPlane,
+      intersectionPoint
+    );
+    if (undefined === rayParam) return PolygonLocationDetail.create(result);
+    result = this.closestPointOnBoundary(
+      polygon,
+      intersectionPoint,
+      tolerance,
+      result
+    );
     if (result.isValid) {
       result.point.setFrom(intersectionPoint);
       result.a = rayParam;
@@ -1033,9 +1231,15 @@ export class PolygonOps {
       } else {
         // intersectionPoint is not on polygon, so result.code refers to the closest point. Update it to refer to intersectionPoint.
         if (PolygonLocation.OnPolygonVertex === result.code)
-          result.code = (dot > 0.0) ? PolygonLocation.InsidePolygonProjectsToVertex : PolygonLocation.OutsidePolygonProjectsToVertex;
+          result.code =
+            dot > 0.0
+              ? PolygonLocation.InsidePolygonProjectsToVertex
+              : PolygonLocation.OutsidePolygonProjectsToVertex;
         else if (PolygonLocation.OnPolygonEdgeInterior === result.code)
-          result.code = (dot > 0.0) ? PolygonLocation.InsidePolygonProjectsToEdgeInterior : PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
+          result.code =
+            dot > 0.0
+              ? PolygonLocation.InsidePolygonProjectsToEdgeInterior
+              : PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
       }
     }
     return result;
@@ -1054,7 +1258,13 @@ export class PolygonOps {
    * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point on the polygon to the intersection, within `distTol`.
    * @see intersectRay3d
    */
-  public static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static intersectSegment(
+    polygon: Point3d[] | IndexedXYZCollection,
+    point0: Point3d,
+    point1: Point3d,
+    tolerance: number = Geometry.smallMetricDistance,
+    result?: PolygonLocationDetail
+  ): PolygonLocationDetail {
     this._workRay = Ray3d.createStartEnd(point0, point1, this._workRay);
     return this.intersectRay3d(polygon, this._workRay, tolerance, result);
   }
@@ -1068,20 +1278,43 @@ export class PolygonOps {
    * @param result optional pre-allocated result
    * @returns x: signed projection distance of `point` to the edge, y: edge parameter of the projection
    */
-  private static computeEdgeDataXY(polygon: IndexedXYZCollection, edgeStartVertexIndex: number, point: XYAndZ, edgeOutwardUnitNormal: Vector3d, tolerance: number = Geometry.smallMetricDistance, result?: Point2d): Point2d {
+  private static computeEdgeDataXY(
+    polygon: IndexedXYZCollection,
+    edgeStartVertexIndex: number,
+    point: XYAndZ,
+    edgeOutwardUnitNormal: Vector3d,
+    tolerance: number = Geometry.smallMetricDistance,
+    result?: Point2d
+  ): Point2d {
     const i0 = edgeStartVertexIndex % polygon.length;
     const i1 = (i0 + 1) % polygon.length;
-    polygon.vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!.unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);  // z is zero
+    polygon
+      .vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!
+      .unitPerpendicularXY(edgeOutwardUnitNormal)
+      .negate(edgeOutwardUnitNormal); // z is zero
     const hypDeltaX = polygon.getXAtUncheckedPointIndex(i0) - point.x;
     const hypDeltaY = polygon.getYAtUncheckedPointIndex(i0) - point.y;
-    let projDist = Geometry.dotProductXYXY(hypDeltaX, hypDeltaY, edgeOutwardUnitNormal.x, edgeOutwardUnitNormal.y);
-    const edgeDist = Geometry.crossProductXYXY(hypDeltaX, hypDeltaY, edgeOutwardUnitNormal.x, edgeOutwardUnitNormal.y);
-    const edgeLength = Geometry.distanceXYXY(polygon.getXAtUncheckedPointIndex(i0), polygon.getYAtUncheckedPointIndex(i0), polygon.getXAtUncheckedPointIndex(i1), polygon.getYAtUncheckedPointIndex(i1));
+    let projDist = Geometry.dotProductXYXY(
+      hypDeltaX,
+      hypDeltaY,
+      edgeOutwardUnitNormal.x,
+      edgeOutwardUnitNormal.y
+    );
+    const edgeDist = Geometry.crossProductXYXY(
+      hypDeltaX,
+      hypDeltaY,
+      edgeOutwardUnitNormal.x,
+      edgeOutwardUnitNormal.y
+    );
+    const edgeLength = Geometry.distanceXYXY(
+      polygon.getXAtUncheckedPointIndex(i0),
+      polygon.getYAtUncheckedPointIndex(i0),
+      polygon.getXAtUncheckedPointIndex(i1),
+      polygon.getYAtUncheckedPointIndex(i1)
+    );
     let edgeParam = Geometry.safeDivideFraction(edgeDist, edgeLength, 0.0);
-    if (Geometry.isSameCoordinate(0.0, projDist, tolerance))
-      projDist = 0.0;
-    if (Geometry.isSameCoordinate(0.0, edgeParam, tolerance))
-      edgeParam = 0.0;
+    if (Geometry.isSameCoordinate(0.0, projDist, tolerance)) projDist = 0.0;
+    if (Geometry.isSameCoordinate(0.0, edgeParam, tolerance)) edgeParam = 0.0;
     else if (Geometry.isSameCoordinate(1.0, edgeParam, tolerance))
       edgeParam = 1.0;
     return Point2d.create(projDist, edgeParam, result);
@@ -1098,17 +1331,30 @@ export class PolygonOps {
    * @param coords pre-allocated barycentric coordinate array to return, assumed to have length at least `polygon.length`
    * @returns barycentric coordinates, or undefined if not on either edge
    */
-  private static convexBarycentricCoordinatesOnEdge(polygon: IndexedXYZCollection, iPrev: number, prevNormal: Vector3d, prevProj: XAndY, i: number, normal: Vector3d, proj: XAndY, coords: number[]): number[] | undefined {
+  private static convexBarycentricCoordinatesOnEdge(
+    polygon: IndexedXYZCollection,
+    iPrev: number,
+    prevNormal: Vector3d,
+    prevProj: XAndY,
+    i: number,
+    normal: Vector3d,
+    proj: XAndY,
+    coords: number[]
+  ): number[] | undefined {
     // ignore degenerate edges
-    const pointIsOnPrevEdge = !prevNormal.isZero && (0.0 === prevProj.x) && Geometry.isIn01(prevProj.y);
-    const pointIsOnEdge = !normal.isZero && (0.0 === proj.x) && Geometry.isIn01(proj.y);
-    if (pointIsOnPrevEdge && pointIsOnEdge) { // the point is at vertex i
+    const pointIsOnPrevEdge =
+      !prevNormal.isZero && 0.0 === prevProj.x && Geometry.isIn01(prevProj.y);
+    const pointIsOnEdge =
+      !normal.isZero && 0.0 === proj.x && Geometry.isIn01(proj.y);
+    if (pointIsOnPrevEdge && pointIsOnEdge) {
+      // the point is at vertex i
       coords.fill(0);
       coords[i] = 1.0;
       return coords;
     }
     const n = polygon.length;
-    if (pointIsOnPrevEdge) { // the point is on the previous edge
+    if (pointIsOnPrevEdge) {
+      // the point is on the previous edge
       coords.fill(0);
       const i0 = iPrev;
       const i1 = i;
@@ -1117,7 +1363,8 @@ export class PolygonOps {
       coords[i1] = edgeParam;
       return coords;
     }
-    if (pointIsOnEdge) { // the point is on the edge starting at the i_th vertex
+    if (pointIsOnEdge) {
+      // the point is on the edge starting at the i_th vertex
       coords.fill(0);
       const i0 = i;
       const i1 = (i + 1) % n;
@@ -1126,7 +1373,7 @@ export class PolygonOps {
       coords[i1] = edgeParam;
       return coords;
     }
-    return undefined;   // not on edge
+    return undefined; // not on edge
   }
 
   // cspell:word CAGD
@@ -1137,45 +1384,120 @@ export class PolygonOps {
    * @return barycentric coordinates of the interior point, or undefined if invalid polygon or exterior point. Length is same as `polygon.length`.
    * @see BarycentricTriangle.pointToFraction
    */
-  public static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance: number = Geometry.smallMetricDistance): number[] | undefined {
+  public static convexBarycentricCoordinates(
+    polygon: Point3d[] | IndexedXYZCollection,
+    point: Point3d,
+    tolerance: number = Geometry.smallMetricDistance
+  ): number[] | undefined {
     // cf. "Barycentric Coordinates for Convex Sets", by Warren et al., CAGD (2003)
     if (Array.isArray(polygon))
-      return this.convexBarycentricCoordinates(new Point3dArrayCarrier(polygon), point);
+      return this.convexBarycentricCoordinates(
+        new Point3dArrayCarrier(polygon),
+        point
+      );
     let n = polygon.length;
-    while (n > 1 && polygon.getPoint3dAtUncheckedPointIndex(0).isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1)))
-      --n;  // ignore closure point(s)
+    while (
+      n > 1 &&
+      polygon
+        .getPoint3dAtUncheckedPointIndex(0)
+        .isExactEqual(polygon.getPoint3dAtUncheckedPointIndex(n - 1))
+    )
+      --n; // ignore closure point(s)
     if (n < 3 || !PolygonOps.unitNormal(polygon, this._normal))
       return undefined;
-    const localToWorld = this._workMatrix3d = Matrix3d.createRigidHeadsUp(this._normal, AxisOrder.ZXY, this._workMatrix3d);
+    const localToWorld = (this._workMatrix3d = Matrix3d.createRigidHeadsUp(
+      this._normal,
+      AxisOrder.ZXY,
+      this._workMatrix3d
+    ));
     const polygonXY = new GrowableXYZArray(n);
     for (let i = 0; i < n; ++i)
-      polygonXY.push(localToWorld.multiplyInverseXYZAsPoint3d(polygon.getXAtUncheckedPointIndex(i), polygon.getYAtUncheckedPointIndex(i), polygon.getZAtUncheckedPointIndex(i), this._workXYZ)!);
-    const pointXY = this._workXYZ = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workXYZ)!;
+      polygonXY.push(
+        localToWorld.multiplyInverseXYZAsPoint3d(
+          polygon.getXAtUncheckedPointIndex(i),
+          polygon.getYAtUncheckedPointIndex(i),
+          polygon.getZAtUncheckedPointIndex(i),
+          this._workXYZ
+        )!
+      );
+    const pointXY = (this._workXYZ = localToWorld.multiplyInverseXYZAsPoint3d(
+      point.x,
+      point.y,
+      point.z,
+      this._workXYZ
+    )!);
     // now we know polygon orientation is ccw, its last edge has positive length, and we can ignore z-coords
     let iPrev = n - 1;
     const outwardUnitNormalOfLastEdge = this._vector0;
-    const projToLastEdge = this._workXY0 = this.computeEdgeDataXY(polygonXY, iPrev, pointXY, outwardUnitNormalOfLastEdge, tolerance, this._workXY0);
+    const projToLastEdge = (this._workXY0 = this.computeEdgeDataXY(
+      polygonXY,
+      iPrev,
+      pointXY,
+      outwardUnitNormalOfLastEdge,
+      tolerance,
+      this._workXY0
+    ));
     // we can compare to exact zero because computeEdgeDataXY has chopped small distances to zero
-    if (projToLastEdge.x < 0.0)
-      return undefined; // point is outside polygon, or polygon is nonconvex
-    const outwardUnitNormalOfPrevEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector1);
-    const projToPrevEdge = this._workXY1 = Point2d.createFrom(projToLastEdge, this._workXY1);
+    if (projToLastEdge.x < 0.0) return undefined; // point is outside polygon, or polygon is nonconvex
+    const outwardUnitNormalOfPrevEdge = Vector3d.createFrom(
+      outwardUnitNormalOfLastEdge,
+      this._vector1
+    );
+    const projToPrevEdge = (this._workXY1 = Point2d.createFrom(
+      projToLastEdge,
+      this._workXY1
+    ));
     const coords = Array<number>(polygon.length).fill(0); // use original length
-    const largestResult = (tolerance > 0.0) ? 1.0 / (tolerance * tolerance) : Geometry.largeCoordinateResult;
+    const largestResult =
+      tolerance > 0.0
+        ? 1.0 / (tolerance * tolerance)
+        : Geometry.largeCoordinateResult;
     let coordSum = 0.0;
     for (let i = 0; i < n; ++i) {
-      const outwardUnitNormalOfEdge = Vector3d.createFrom(outwardUnitNormalOfLastEdge, this._vector2);
-      const projToEdge = this._workXY2 = (i < n - 1) ? this.computeEdgeDataXY(polygonXY, i, pointXY, outwardUnitNormalOfEdge, tolerance, this._workXY2) : Point2d.createFrom(projToLastEdge, this._workXY2);
-      if (projToEdge.x < 0.0)
-        return undefined; // point is outside polygon, or polygon is nonconvex
-      if (undefined !== this.convexBarycentricCoordinatesOnEdge(polygonXY, iPrev, outwardUnitNormalOfPrevEdge, projToPrevEdge, i, outwardUnitNormalOfEdge, projToEdge, coords))
+      const outwardUnitNormalOfEdge = Vector3d.createFrom(
+        outwardUnitNormalOfLastEdge,
+        this._vector2
+      );
+      const projToEdge = (this._workXY2 =
+        i < n - 1
+          ? this.computeEdgeDataXY(
+              polygonXY,
+              i,
+              pointXY,
+              outwardUnitNormalOfEdge,
+              tolerance,
+              this._workXY2
+            )
+          : Point2d.createFrom(projToLastEdge, this._workXY2));
+      if (projToEdge.x < 0.0) return undefined; // point is outside polygon, or polygon is nonconvex
+      if (
+        undefined !==
+        this.convexBarycentricCoordinatesOnEdge(
+          polygonXY,
+          iPrev,
+          outwardUnitNormalOfPrevEdge,
+          projToPrevEdge,
+          i,
+          outwardUnitNormalOfEdge,
+          projToEdge,
+          coords
+        )
+      )
         return coords; // point is on vertex or edge; we are done
-      if (outwardUnitNormalOfEdge.x === 0.0 && outwardUnitNormalOfEdge.y === 0.0)
+      if (
+        outwardUnitNormalOfEdge.x === 0.0 &&
+        outwardUnitNormalOfEdge.y === 0.0
+      )
         continue; // edge is degenerate; coords[i] = 0; keep previous edge data
-      if (0.0 === projToPrevEdge.x || 0.0 === projToEdge.x)
-        continue; // point is on subsequent colinear edge (ASSUMING interior point, convex polygon!); coords[i] = 0; keep previous edge data
-      const areaOfNormalParallelogram = Math.abs(outwardUnitNormalOfPrevEdge.crossProductXY(outwardUnitNormalOfEdge));
-      const coord = Geometry.conditionalDivideCoordinate(areaOfNormalParallelogram, projToPrevEdge.x * projToEdge.x, largestResult);
+      if (0.0 === projToPrevEdge.x || 0.0 === projToEdge.x) continue; // point is on subsequent colinear edge (ASSUMING interior point, convex polygon!); coords[i] = 0; keep previous edge data
+      const areaOfNormalParallelogram = Math.abs(
+        outwardUnitNormalOfPrevEdge.crossProductXY(outwardUnitNormalOfEdge)
+      );
+      const coord = Geometry.conditionalDivideCoordinate(
+        areaOfNormalParallelogram,
+        projToPrevEdge.x * projToEdge.x,
+        largestResult
+      );
       if (undefined === coord) {
         assert(!"unexpectedly small projection distance to an edge");
         return undefined; // shouldn't happen due to chopping in computeEdgeDataXY: area/(dist*dist) <= 1/tol^2 = largestResult
@@ -1191,8 +1513,7 @@ export class PolygonOps {
       assert(!"unexpected zero barycentric coordinate sum");
       return undefined;
     }
-    for (let i = 0; i < n; ++i)
-      coords[i] *= scale; // normalized
+    for (let i = 0; i < n; ++i) coords[i] *= scale; // normalized
     return coords;
   }
 }
@@ -1214,10 +1535,13 @@ export class IndexedXYZCollectionPolygonOps {
    * @param xyzNegative array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
    */
-  public static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator,
+  public static splitConvexPolygonInsideOutsidePlane(
+    plane: PlaneAltitudeEvaluator,
     xyz: IndexedReadWriteXYZCollection,
     xyzPositive: IndexedReadWriteXYZCollection,
-    xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d) {
+    xyzNegative: IndexedReadWriteXYZCollection,
+    altitudeRange: Range1d
+  ) {
     const xyz0 = IndexedXYZCollectionPolygonOps._xyz0Work;
     const xyz1 = IndexedXYZCollectionPolygonOps._xyz1Work;
     const xyzInterpolated = IndexedXYZCollectionPolygonOps._xyz2Work;
@@ -1240,7 +1564,7 @@ export class IndexedXYZCollectionPolygonOps {
         let nearZero = false;
         if (a0 * a1 < 0.0) {
           // simple crossing. . .
-          const f = - a0 / (a1 - a0);
+          const f = -a0 / (a1 - a0);
           if (f > 1.0 - fractionTol && a1 >= 0.0) {
             // the endpoint will be saved -- avoid the duplicate
             nearZero = true;
@@ -1251,10 +1575,8 @@ export class IndexedXYZCollectionPolygonOps {
           }
           // numSplit++;
         }
-        if (a1 >= 0.0 || nearZero)
-          xyzPositive.push(xyz1);
-        if (a1 <= 0.0 || nearZero)
-          xyzNegative.push(xyz1);
+        if (a1 >= 0.0 || nearZero) xyzPositive.push(xyz1);
+        if (a1 <= 0.0 || nearZero) xyzNegative.push(xyz1);
         xyz0.setFromPoint3d(xyz1);
         a0 = a1;
       }
@@ -1272,7 +1594,13 @@ export class IndexedXYZCollectionPolygonOps {
    * @param tolerance tolerance for "on plane" decision.
    * @return the number of crossings.   If this is larger than 2, the result is "correct" in a parity sense but may have overlapping (hence cancelling) parts.
    */
-  public static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive: boolean = true, tolerance: number = Geometry.smallMetricDistance): number {
+  public static clipConvexPolygonInPlace(
+    plane: PlaneAltitudeEvaluator,
+    xyz: GrowableXYZArray,
+    work: GrowableXYZArray,
+    keepPositive: boolean = true,
+    tolerance: number = Geometry.smallMetricDistance
+  ): number {
     work.clear();
     const s = keepPositive ? 1.0 : -1.0;
     const n = xyz.length;
@@ -1284,25 +1612,21 @@ export class IndexedXYZCollectionPolygonOps {
       let a1;
       let index0 = xyz.length - 1;
       let a0 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index0, plane);
-      if (Math.abs(a0) < tolerance)
-        a0 = 0;
+      if (Math.abs(a0) < tolerance) a0 = 0;
       //    if (a0 >= 0.0)
       //      work.push_back (xyz0);
       for (let index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
         a1 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index1, plane);
-        if (Math.abs(a1) < tolerance)
-          a1 = 0;
-        if (a1 < 0)
-          numNegative++;
+        if (Math.abs(a1) < tolerance) a1 = 0;
+        if (a1 < 0) numNegative++;
         if (a0 * a1 < 0.0) {
           // simple crossing . . .
-          const f = - a0 / (a1 - a0);
+          const f = -a0 / (a1 - a0);
           if (f > 1.0 - fractionTol && a1 >= 0.0) {
             // the endpoint will be saved -- avoid the duplicate
           } else {
             work.pushInterpolatedFromGrowableXYZArray(xyz, index0, f, index1);
-            if (a1 > 0)
-              numCrossings++; // "out to in"
+            if (a1 > 0) numCrossings++; // "out to in"
           }
         }
         if (a1 >= b) {
@@ -1334,18 +1658,24 @@ export class IndexedXYZCollectionPolygonOps {
    * * `minChainLength` indicates the shortest chain to be returned.
    * @internal
    */
-  public static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength: number = 3, tolerance: number = Geometry.smallMetricDistance): CutLoopMergeContext {
+  public static gatherCutLoopsFromPlaneClip(
+    plane: PlaneAltitudeEvaluator,
+    xyz: GrowableXYZArray,
+    minChainLength: number = 3,
+    tolerance: number = Geometry.smallMetricDistance
+  ): CutLoopMergeContext {
     const result: CutLoopMergeContext = new CutLoopMergeContext();
     // find the first on-plane point
     let firstOnPlaneIndex = 0;
     const n = xyz.length;
     for (; firstOnPlaneIndex < n; firstOnPlaneIndex++) {
-      const a = xyz.evaluateUncheckedIndexPlaneAltitude(firstOnPlaneIndex, plane);
-      if (Math.abs(a) <= tolerance)
-        break;
+      const a = xyz.evaluateUncheckedIndexPlaneAltitude(
+        firstOnPlaneIndex,
+        plane
+      );
+      if (Math.abs(a) <= tolerance) break;
     }
-    if (firstOnPlaneIndex === n)
-      return result;
+    if (firstOnPlaneIndex === n) return result;
     // find contiguous blocks of "off plane" points with on-plane points at their end.
     let candidateA = firstOnPlaneIndex;
     while (candidateA < n) {
@@ -1364,7 +1694,9 @@ export class IndexedXYZCollectionPolygonOps {
         for (let i = 0; i <= firstOnPlaneIndex; i++)
           currentChain.pushFromGrowableXYZArray(xyz, i);
       if (currentChain.length >= minChainLength)
-        result.inputLoops.push(CutLoop.createCaptureWithReturnEdge(currentChain));
+        result.inputLoops.push(
+          CutLoop.createCaptureWithReturnEdge(currentChain)
+        );
       candidateA = candidateB;
     }
     return result;
@@ -1377,12 +1709,15 @@ export class IndexedXYZCollectionPolygonOps {
    */
   public static reorderCutLoops(loops: CutLoopMergeContext) {
     // Simple case: all loops have common orientation
-    if (loops.inputLoops.length === 1)
-      return;
+    if (loops.inputLoops.length === 1) return;
     // Simple cases: 2 loops . . .
     if (loops.inputLoops.length === 2) {
       // if edges are in the same direction, it must be a pair of unrelated loop . . .
-      if (loops.inputLoops[0].edge!.direction.dotProduct(loops.inputLoops[1].edge!.direction) > 0) {
+      if (
+        loops.inputLoops[0].edge!.direction.dotProduct(
+          loops.inputLoops[1].edge!.direction
+        ) > 0
+      ) {
         loops.outputLoops.push(loops.inputLoops[0]);
         loops.outputLoops.push(loops.inputLoops[1]);
         return;
@@ -1404,40 +1739,36 @@ export class IndexedXYZCollectionPolygonOps {
    * @param xyzOut intersection polygon.  This is convex.
    * @return reference to xyz if the polygon still has points; undefined if all points are clipped away.
    */
-  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined {
-    if (range.isNull)
-      return undefined;
+  public static intersectRangeConvexPolygonInPlace(
+    range: Range3d,
+    xyz: GrowableXYZArray
+  ): GrowableXYZArray | undefined {
+    if (range.isNull) return undefined;
     const work = new GrowableXYZArray();
     const plane = Point4d.create();
     plane.set(0, 0, -1, range.high.z);
     this.clipConvexPolygonInPlace(plane, xyz, work, true);
-    if (xyz.length === 0)
-      return undefined;
+    if (xyz.length === 0) return undefined;
 
     plane.set(0, 0, 1, -range.low.z);
     this.clipConvexPolygonInPlace(plane, xyz, work, true);
-    if (xyz.length === 0)
-      return undefined;
+    if (xyz.length === 0) return undefined;
 
     plane.set(0, -1, 0, range.high.y);
     this.clipConvexPolygonInPlace(plane, xyz, work, true);
-    if (xyz.length === 0)
-      return undefined;
+    if (xyz.length === 0) return undefined;
 
     plane.set(0, 1, 0, -range.low.y);
     this.clipConvexPolygonInPlace(plane, xyz, work, true);
-    if (xyz.length === 0)
-      return undefined;
+    if (xyz.length === 0) return undefined;
 
     plane.set(-1, 0, 0, range.high.x);
     this.clipConvexPolygonInPlace(plane, xyz, work, true);
-    if (xyz.length === 0)
-      return undefined;
+    if (xyz.length === 0) return undefined;
 
     plane.set(1, 0, 0, -range.low.x);
     this.clipConvexPolygonInPlace(plane, xyz, work, true);
-    if (xyz.length === 0)
-      return undefined;
+    if (xyz.length === 0) return undefined;
 
     return xyz;
   }
@@ -1457,19 +1788,34 @@ export class Point3dArrayPolygonOps {
    * @param xyzOut array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
    */
-  public static convexPolygonSplitInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
+  public static convexPolygonSplitInsideOutsidePlane(
+    plane: PlaneAltitudeEvaluator,
+    xyz: Point3d[],
+    xyzIn: Point3d[],
+    xyzOut: Point3d[],
+    altitudeRange: Range1d
+  ) {
     const xyzCarrier = new Point3dArrayCarrier(xyz);
     const xyzInCarrier = new Point3dArrayCarrier(xyzIn);
     const xyzOutCarrier = new Point3dArrayCarrier(xyzOut);
-    IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, xyzCarrier, xyzInCarrier, xyzOutCarrier, altitudeRange);
-
+    IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(
+      plane,
+      xyzCarrier,
+      xyzInCarrier,
+      xyzOutCarrier,
+      altitudeRange
+    );
   }
 
   /** Return an array containing
    * * All points that are exactly on the plane.
    * * Crossing points between adjacent points that are (strictly) on opposite sides.
    */
-  public static polygonPlaneCrossings(plane: PlaneAltitudeEvaluator, xyz: Point3d[], crossings: Point3d[]) {
+  public static polygonPlaneCrossings(
+    plane: PlaneAltitudeEvaluator,
+    xyz: Point3d[],
+    crossings: Point3d[]
+  ) {
     crossings.length = 0;
     if (xyz.length >= 2) {
       const xyz0 = this._xyz0Work;
@@ -1479,10 +1825,11 @@ export class Point3dArrayPolygonOps {
         const a1 = plane.altitude(xyz1);
         if (a0 * a1 < 0.0) {
           // simple crossing. . .
-          const f = - a0 / (a1 - a0);
+          const f = -a0 / (a1 - a0);
           crossings.push(xyz0.interpolate(f, xyz1));
         }
-        if (a1 === 0.0) {        // IMPORTANT -- every point is directly tested here
+        if (a1 === 0.0) {
+          // IMPORTANT -- every point is directly tested here
           crossings.push(xyz1.clone());
         }
         xyz0.setFromPoint3d(xyz1);
@@ -1496,9 +1843,13 @@ export class Point3dArrayPolygonOps {
    * @param work scratch object
    * @param tolerance tolerance for on-plane decision.
    */
-  public static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance: number = Geometry.smallMetricDistance) {
-    if (work === undefined)
-      work = [];
+  public static convexPolygonClipInPlace(
+    plane: PlaneAltitudeEvaluator,
+    xyz: Point3d[],
+    work: Point3d[] | undefined,
+    tolerance: number = Geometry.smallMetricDistance
+  ) {
+    if (work === undefined) work = [];
     work.length = 0;
     let numNegative = 0;
     const fractionTol = 1.0e-8;
@@ -1510,19 +1861,17 @@ export class Point3dArrayPolygonOps {
       //      work.push_back (xyz0);
       for (const xyz1 of xyz) {
         const a1 = plane.altitude(xyz1);
-        if (a1 < 0)
-          numNegative++;
+        if (a1 < 0) numNegative++;
         if (a0 * a1 < 0.0) {
           // simple crossing . . .
-          const f = - a0 / (a1 - a0);
+          const f = -a0 / (a1 - a0);
           if (f > 1.0 - fractionTol && a1 >= 0.0) {
             // the endpoint will be saved -- avoid the duplicate
           } else {
             work.push(xyz0.interpolate(f, xyz1));
           }
         }
-        if (a1 >= b)
-          work.push(xyz1);
+        if (a1 >= b) work.push(xyz1);
         xyz0 = Point3d.createFrom(xyz1);
         a0 = a1;
       }

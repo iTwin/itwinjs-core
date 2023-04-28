@@ -13,8 +13,7 @@ export const getClassName = (obj: any): string => {
   let className = "";
 
   if (obj) {
-    if (obj.name)
-      className = obj.name;
+    if (obj.name) className = obj.name;
     else {
       // istanbul ignore else
       if (obj.constructor && obj.constructor.name)
@@ -30,7 +29,6 @@ export const getClassName = (obj: any): string => {
  */
 export const loggerCategory = (obj: any): string => {
   const className = getClassName(obj);
-  const category = `appui-abstract${(className ? `.${className}` : "")}`;
+  const category = `appui-abstract${className ? `.${className}` : ""}`;
   return category;
 };
-

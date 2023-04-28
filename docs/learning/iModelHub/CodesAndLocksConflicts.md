@@ -2,6 +2,7 @@
 ignore: true
 Note: Ignoring this file as much of the referenced code is not yet in the public API
 ---
+
 # Codes and Locks conflicts
 
 When sending update requests for [HubCode]($clients)s and [Lock]($clients)s (jointly referred to as resources) to iModelHub, it's possible that there could be conflicts due to other users requesting and using same resources.

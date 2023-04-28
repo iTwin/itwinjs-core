@@ -10,26 +10,26 @@ accessed when evaluating parent node's `hideExpression` to decide whether it sho
 
 ## Typical use case
 
-The hierarchy consists of *Subject* nodes and each *Subject* may or may not have child *Model* nodes. There are 2 types of *Models*: *A* & *B*, we want *ModelA* nodes to be visible and *ModelB* ones to be hidden. We want *Subject* node to be visible only if it has a *Model* (either *A* or *B*).
+The hierarchy consists of _Subject_ nodes and each _Subject_ may or may not have child _Model_ nodes. There are 2 types of _Models_: _A_ & _B_, we want _ModelA_ nodes to be visible and _ModelB_ ones to be hidden. We want _Subject_ node to be visible only if it has a _Model_ (either _A_ or _B_).
 
 ### Problem
 
-In this case we can't use `hideIfNoChildren` flag on *Subjects*, because a *Subject* node may only have a related *ModelB* which means *Subject* doesn't have children and should be displayed as a leaf node.
+In this case we can't use `hideIfNoChildren` flag on _Subjects_, because a _Subject_ node may only have a related _ModelB_ which means _Subject_ doesn't have children and should be displayed as a leaf node.
 
 ### Solution
 
-Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* nodes. The expression can access artifacts created by child *ModelB* nodes: `NOT ThisNode.HasChildren AND NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsModelB)`.
+Use `NodeArtifacts` on the _ModelB_ nodes and a `hideExpression` on _Subject_ nodes. The expression can access artifacts created by child _ModelB_ nodes: `NOT ThisNode.HasChildren AND NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsModelB)`.
 
 ## Attributes
 
 | Name                                               | Required? | Type                                                                 | Default |
 | -------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*                                        |
+| _Filtering_                                        |
 | [`condition`](#attributer-condition)               | No        | [ECExpression](../customization/ECExpressions.md#rule-condition)     | `""`    |
 | [`requiredSchemas`](#attributer-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attributer-priority)                 | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attributer-onlyifnothandled) | No        | `boolean`                                                            | `false` |
-| *Artifacts*                                        |
+| _Artifacts_                                        |
 | [`items`](#attribute-items)                        | Yes       | `{ [key: string]: ECExpression }`                                    |         |
 
 ### Attribute: `condition`

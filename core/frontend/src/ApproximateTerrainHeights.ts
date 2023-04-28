@@ -22,13 +22,17 @@ export class ApproximateTerrainHeights {
   public static readonly maxLevel = 6;
   public readonly globalHeightRange = Range1d.createXX(-400, 90000); // Dead Sea to Mount Everest.
   private _terrainHeights?: ApproximateTerrainHeightsProps;
-  private readonly _scratchCorners = [Cartographic.createZero(), Cartographic.createZero(), Cartographic.createZero(), Cartographic.createZero()];
+  private readonly _scratchCorners = [
+    Cartographic.createZero(),
+    Cartographic.createZero(),
+    Cartographic.createZero(),
+    Cartographic.createZero(),
+  ];
   private readonly _tilingScheme = new GeographicTilingScheme(2, 1, true); // Y at top... ?
   private readonly _scratchTileXY = Point2d.createZero();
 
   public static get instance(): ApproximateTerrainHeights {
-    if (undefined === instance)
-      instance = new ApproximateTerrainHeights();
+    if (undefined === instance) instance = new ApproximateTerrainHeights();
 
     return instance;
   }
@@ -39,20 +43,23 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (!this._terrainHeights) {
-      const { terrainHeightsPropsString } = await import("./ApproximateTerrainHeightsProps");
+      const { terrainHeightsPropsString } = await import(
+        "./ApproximateTerrainHeightsProps"
+      );
       this._terrainHeights = JSON.parse(terrainHeightsPropsString);
     }
   }
 
   public getTileHeightRange(quadId: QuadId, result?: Range1d): Range1d {
     result = Range1d.createFrom(this.globalHeightRange, result);
-    if (undefined === this._terrainHeights)
-      return result;   // Not initialized.
+    if (undefined === this._terrainHeights) return result; // Not initialized.
 
-    let level = quadId.level, column = quadId.column, row = quadId.row;
+    let level = quadId.level,
+      column = quadId.column,
+      row = quadId.row;
     if (level > 6) {
       column = column >> (level - 6);
-      row = row >> quadId.row >> ((level - 6));
+      row = (row >> quadId.row) >> (level - 6);
       level = 6;
     }
 
@@ -66,10 +73,12 @@ export class ApproximateTerrainHeights {
     return result;
   }
 
-  public getMinimumMaximumHeights(rectangle: Range2d, result?: Range1d): Range1d {
+  public getMinimumMaximumHeights(
+    rectangle: Range2d,
+    result?: Range1d
+  ): Range1d {
     result = Range1d.createFrom(this.globalHeightRange, result);
-    if (undefined === this._terrainHeights)
-      return result;   // Not initialized.
+    if (undefined === this._terrainHeights) return result; // Not initialized.
 
     const xyLevel = this._getTileXYLevel(rectangle);
     if (undefined !== xyLevel) {
@@ -85,15 +94,31 @@ export class ApproximateTerrainHeights {
     return result;
   }
 
-  private _getTileXYLevel(rectangle: Range2d): { x: number, y: number, level: number } | undefined {
-    Cartographic.fromRadians({ longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0 }, this._scratchCorners[0]);
-    Cartographic.fromRadians({ longitude: rectangle.high.x, latitude: rectangle.high.y, height: 0.0 }, this._scratchCorners[1]);
-    Cartographic.fromRadians({ longitude: rectangle.low.x, latitude: rectangle.low.y, height: 0.0 }, this._scratchCorners[2]);
-    Cartographic.fromRadians({ longitude: rectangle.high.x, latitude: rectangle.low.y, height: 0.0 }, this._scratchCorners[3]);
+  private _getTileXYLevel(
+    rectangle: Range2d
+  ): { x: number; y: number; level: number } | undefined {
+    Cartographic.fromRadians(
+      { longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0 },
+      this._scratchCorners[0]
+    );
+    Cartographic.fromRadians(
+      { longitude: rectangle.high.x, latitude: rectangle.high.y, height: 0.0 },
+      this._scratchCorners[1]
+    );
+    Cartographic.fromRadians(
+      { longitude: rectangle.low.x, latitude: rectangle.low.y, height: 0.0 },
+      this._scratchCorners[2]
+    );
+    Cartographic.fromRadians(
+      { longitude: rectangle.high.x, latitude: rectangle.low.y, height: 0.0 },
+      this._scratchCorners[3]
+    );
 
     // Determine which tile the bounding rectangle is in
-    let lastLevelX = 0, lastLevelY = 0;
-    let currentX = 0, currentY = 0;
+    let lastLevelX = 0,
+      lastLevelY = 0;
+    let currentX = 0,
+      currentY = 0;
     const maxLevel = ApproximateTerrainHeights.maxLevel;
     let i;
     for (i = 0; i <= maxLevel; ++i) {
@@ -104,14 +129,16 @@ export class ApproximateTerrainHeights {
         if (j === 0) {
           currentX = this._scratchTileXY.x;
           currentY = this._scratchTileXY.y;
-        } else if (currentX !== this._scratchTileXY.x || currentY !== this._scratchTileXY.y) {
+        } else if (
+          currentX !== this._scratchTileXY.x ||
+          currentY !== this._scratchTileXY.y
+        ) {
           failed = true;
           break;
         }
       }
 
-      if (failed)
-        break;
+      if (failed) break;
 
       lastLevelX = currentX;
       lastLevelY = currentY;
@@ -124,7 +151,7 @@ export class ApproximateTerrainHeights {
     return {
       x: lastLevelX,
       y: lastLevelY,
-      level: (i > maxLevel) ? maxLevel : (i - 1),
+      level: i > maxLevel ? maxLevel : i - 1,
     };
   }
 }

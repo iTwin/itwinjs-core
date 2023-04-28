@@ -5,7 +5,14 @@
 
 import { QueryRowFormat } from "@itwin/core-common";
 import {
-  FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
+  FeatureSymbology,
+  IModelConnection,
+  SceneContext,
+  SnapshotConnection,
+  SpatialModelState,
+  TiledGraphicsProvider,
+  TileTreeReference,
+  Viewport,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
@@ -24,17 +31,17 @@ class ExternalTreeRef extends TileTreeReference {
     return this._ref.castsShadows;
   }
 
-  public get treeOwner() { return this._ref.treeOwner; }
+  public get treeOwner() {
+    return this._ref.treeOwner;
+  }
 
   public override addToScene(context: SceneContext): void {
     const tree = this.treeOwner.load();
-    if (undefined === tree)
-      return;
+    if (undefined === tree) return;
 
     // ###TODO transform
     const args = this.createDrawArgs(context);
-    if (undefined === args)
-      return;
+    if (undefined === args) return;
 
     tree.draw(args);
 
@@ -48,7 +55,11 @@ class Provider implements TiledGraphicsProvider {
   private readonly _refs: TileTreeReference[] = [];
   public readonly iModel: IModelConnection;
 
-  private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
+  private constructor(
+    vp: Viewport,
+    iModel: IModelConnection,
+    ovrs: FeatureSymbology.Overrides
+  ) {
     this.iModel = iModel;
     for (const model of iModel.models) {
       const spatial = model.asSpatialModel;
@@ -59,49 +70,55 @@ class Provider implements TiledGraphicsProvider {
     }
   }
 
-  public static async create(vp: Viewport, iModel: IModelConnection): Promise<Provider> {
+  public static async create(
+    vp: Viewport,
+    iModel: IModelConnection
+  ): Promise<Provider> {
     const query = { from: SpatialModelState.classFullName, wantPrivate: false };
     const props = await iModel.models.queryProps(query);
 
     const modelIds = [];
-    for (const prop of props)
-      if (undefined !== prop.id)
-        modelIds.push(prop.id);
+    for (const prop of props) if (undefined !== prop.id) modelIds.push(prop.id);
 
     await iModel.models.load(modelIds);
 
     // Enable all categories (and subcategories thereof)
-    const ecsql = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
+    const ecsql =
+      "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const catIds: string[] = [];
-    for await (const catId of iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const catId of iModel.createQueryReader(ecsql, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    }))
       catIds.push(catId.categoryId);
 
     const subcatsRequest = iModel.subcategories.load(catIds);
-    if (undefined !== subcatsRequest)
-      await subcatsRequest.promise;
+    if (undefined !== subcatsRequest) await subcatsRequest.promise;
 
     // Ignore the symbology overrides defined on the viewport - instead, set up our own to draw our iModel's categories.
     const ovrs = new FeatureSymbology.Overrides();
     for (const catId of catIds) {
       const subcats = iModel.subcategories.getSubCategories(catId);
       if (undefined !== subcats)
-        for (const subcat of subcats)
-          ovrs.setVisibleSubCategory(subcat);
+        for (const subcat of subcats) ovrs.setVisibleSubCategory(subcat);
     }
 
     return new Provider(vp, iModel, ovrs);
   }
 
-  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
-    for (const ref of this._refs)
-      func(ref);
+  public forEachTileTreeRef(
+    _vp: Viewport,
+    func: (ref: TileTreeReference) => void
+  ): void {
+    for (const ref of this._refs) func(ref);
   }
 }
 
 const providersByViewport = new Map<Viewport, Provider>();
 
 /** A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport. */
-export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise<void> {
+export async function toggleExternalTiledGraphicsProvider(
+  vp: Viewport
+): Promise<void> {
   const existing = providersByViewport.get(vp);
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);
@@ -111,8 +128,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   }
 
   const filename = await DisplayTestApp.surface.selectFileName();
-  if (undefined === filename)
-    return;
+  if (undefined === filename) return;
 
   let iModel;
   try {

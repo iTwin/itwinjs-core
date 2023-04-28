@@ -6,9 +6,20 @@
 import { expect } from "chai";
 import { IModelDb } from "@itwin/core-backend";
 import { assert, Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, ElementAspectProps, ElementProps, IModel } from "@itwin/core-common";
+import {
+  BisCodeSpec,
+  Code,
+  ElementAspectProps,
+  ElementProps,
+  IModel,
+} from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
-import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
+import {
+  DefaultContentDisplayTypes,
+  InstanceKey,
+  KeySet,
+  Ruleset,
+} from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { buildTestIModelDb, getFieldByLabel } from "../Utils";
 
@@ -456,7 +467,11 @@ describe("Default supplemental rules", async () => {
   });
 });
 
-function insertPhysicalElement(db: IModelDb, modelId?: Id64String, categoryId?: Id64String): InstanceKey {
+function insertPhysicalElement(
+  db: IModelDb,
+  modelId?: Id64String,
+  categoryId?: Id64String
+): InstanceKey {
   if (!modelId) {
     const partitionId = db.elements.insertElement({
       classFullName: "BisCore:PhysicalPartition",
@@ -466,9 +481,8 @@ function insertPhysicalElement(db: IModelDb, modelId?: Id64String, categoryId?: 
         id: IModel.rootSubjectId,
       },
       code: new Code({
-        spec: db.codeSpecs.getByName(
-          BisCodeSpec.informationPartitionElement
-        ).id,
+        spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement)
+          .id,
         scope: IModel.rootSubjectId,
         value: "physical model",
       }),

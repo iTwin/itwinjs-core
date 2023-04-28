@@ -41,7 +41,7 @@ export enum AuxChannelDataType {
 
 /**  Represents the [[AuxChannel]] data at a single input value.
  * @public
-*/
+ */
 export class AuxChannelData {
   /** The input value for this data. */
   public input: number;
@@ -54,14 +54,19 @@ export class AuxChannelData {
     if (values instanceof Float64Array) {
       this.values = [];
       for (const v of values) this.values.push(v);
-    } else
-      this.values = values;
+    } else this.values = values;
   }
 
   /** Copy blocks of size `blockSize` from (blocked index) `thisIndex` in this AuxChannelData to (blockIndex) `otherIndex` of `other` */
-  public copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number): void {
+  public copyValues(
+    other: AuxChannelData,
+    thisIndex: number,
+    otherIndex: number,
+    blockSize: number
+  ): void {
     for (let i = 0; i < blockSize; i++)
-      this.values[thisIndex * blockSize + i] = other.values[otherIndex * blockSize + i];
+      this.values[thisIndex * blockSize + i] =
+        other.values[otherIndex * blockSize + i];
   }
 
   /** return a deep copy */
@@ -73,14 +78,17 @@ export class AuxChannelData {
    * * Default tolerance is 1.0e-8
    */
   public isAlmostEqual(other: AuxChannelData, tol?: number): boolean {
-    const tolerance = tol ? tol : 1.0E-8;
-    return Math.abs(this.input - other.input) < tolerance && NumberArray.isAlmostEqual(this.values, other.values, tolerance);
+    const tolerance = tol ? tol : 1.0e-8;
+    return (
+      Math.abs(this.input - other.input) < tolerance &&
+      NumberArray.isAlmostEqual(this.values, other.values, tolerance)
+    );
   }
 }
 
 /**  Represents a single [[PolyfaceAuxData]] channel.
  * @public
-*/
+ */
 export class AuxChannel {
   /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
   public data: AuxChannelData[];
@@ -92,7 +100,12 @@ export class AuxChannel {
   public inputName?: string;
 
   /** Create a [[AuxChannel]] */
-  public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
+  public constructor(
+    data: AuxChannelData[],
+    dataType: AuxChannelDataType,
+    name?: string,
+    inputName?: string
+  ) {
     this.data = data;
     this.dataType = dataType;
     this.name = name;
@@ -108,22 +121,26 @@ export class AuxChannel {
 
   /** Toleranced comparison of contents. */
   public isAlmostEqual(other: AuxChannel, tol?: number): boolean {
-    if (this.dataType !== other.dataType ||
+    if (
+      this.dataType !== other.dataType ||
       this.name !== other.name ||
       this.inputName !== other.inputName ||
-      this.data.length !== other.data.length)
+      this.data.length !== other.data.length
+    )
       return false;
 
     for (let i = 0; i < this.data.length; i++)
-      if (!this.data[i].isAlmostEqual(other.data[i], tol))
-        return false;
+      if (!this.data[i].isAlmostEqual(other.data[i], tol)) return false;
 
     return true;
   }
 
   /** True if [[entriesPerValue]] is `1`. */
   public get isScalar(): boolean {
-    return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar;
+    return (
+      this.dataType === AuxChannelDataType.Distance ||
+      this.dataType === AuxChannelDataType.Scalar
+    );
   }
 
   /** The number of values in `data.values` per entry - 1 for scalar and distance types, 3 for normal and vector types. */
@@ -133,17 +150,17 @@ export class AuxChannel {
 
   /** The number of entries in `data.values`. */
   public get valueCount(): number {
-    return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue;
+    return 0 === this.data.length
+      ? 0
+      : this.data[0].values.length / this.entriesPerValue;
   }
 
   /** The minimum and maximum values in `data.values`, or `undefined` if [[isScalar]] is false. */
   public get scalarRange(): Range1d | undefined {
-    if (!this.isScalar)
-      return undefined;
+    if (!this.isScalar) return undefined;
 
     const range = Range1d.createNull();
-    for (const data of this.data)
-      range.extendArray(data.values);
+    for (const data of this.data) range.extendArray(data.values);
 
     return range;
   }
@@ -198,7 +215,10 @@ export class PolyfaceAuxData {
    * The indices are compared for exact equality. The data in the channels are compared using `tolerance`, which defaults to 1.0e-8.
    */
   public isAlmostEqual(other: PolyfaceAuxData, tolerance?: number): boolean {
-    if (!NumberArray.isExactEqual(this.indices, other.indices) || this.channels.length !== other.channels.length)
+    if (
+      !NumberArray.isExactEqual(this.indices, other.indices) ||
+      this.channels.length !== other.channels.length
+    )
       return false;
 
     for (let i = 0; i < this.channels.length; i++)
@@ -209,11 +229,15 @@ export class PolyfaceAuxData {
   }
 
   /** Returns true if both `left` and `right` are undefined, or both are defined and equivalent within `tolerance` (default: 1.0e-8). */
-  public static isAlmostEqual(left: PolyfaceAuxData | undefined, right: PolyfaceAuxData | undefined, tol?: number): boolean {
-    if (left === right) // This catches double undefined !!!
+  public static isAlmostEqual(
+    left: PolyfaceAuxData | undefined,
+    right: PolyfaceAuxData | undefined,
+    tol?: number
+  ): boolean {
+    if (left === right)
+      // This catches double undefined !!!
       return true;
-    if (left && right)
-      return left.isAlmostEqual(right, tol);
+    if (left && right) return left.isAlmostEqual(right, tol);
     return false;
   }
 
@@ -224,9 +248,18 @@ export class PolyfaceAuxData {
     for (const parentChannel of this.channels) {
       const visitorChannelData: AuxChannelData[] = [];
       for (const parentChannelData of parentChannel.data)
-        visitorChannelData.push(new AuxChannelData(parentChannelData.input, []));
+        visitorChannelData.push(
+          new AuxChannelData(parentChannelData.input, [])
+        );
 
-      visitorChannels.push(new AuxChannel(visitorChannelData, parentChannel.dataType, parentChannel.name, parentChannel.inputName));
+      visitorChannels.push(
+        new AuxChannel(
+          visitorChannelData,
+          parentChannel.dataType,
+          parentChannel.name,
+          parentChannel.inputName
+        )
+      );
     }
 
     return new PolyfaceAuxData(visitorChannels, []);
@@ -256,14 +289,17 @@ export class PolyfaceAuxData {
           }
           case AuxChannelDataType.Normal: {
             inverseRot = inverseRot ?? rot.inverse();
-            if (!inverseRot)
-                return false;
+            if (!inverseRot) return false;
 
-            transformPoints(data.values, (point) => inverseRot!.multiplyTransposeVectorInPlace(point));
+            transformPoints(data.values, (point) =>
+              inverseRot!.multiplyTransposeVectorInPlace(point)
+            );
             break;
           }
           case AuxChannelDataType.Vector: {
-            transformPoints(data.values, (point) => rot.multiplyVectorInPlace(point));
+            transformPoints(data.values, (point) =>
+              rot.multiplyVectorInPlace(point)
+            );
             break;
           }
         }
@@ -274,7 +310,10 @@ export class PolyfaceAuxData {
   }
 }
 
-function transformPoints(coords: number[], transform: (point: Point3d) => void): void {
+function transformPoints(
+  coords: number[],
+  transform: (point: Point3d) => void
+): void {
   const point = new Point3d();
   for (let i = 0; i < coords.length; i += 3) {
     point.set(coords[i], coords[i + 1], coords[i + 2]);

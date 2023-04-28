@@ -41,21 +41,36 @@ export class StandardRotations extends ToolBarDropDown {
         this._element.appendChild(div);
       }
 
-      div.appendChild(createToolButton({
-        iconUnicode: entries[i],
-        click: async () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
-      }));
+      div.appendChild(
+        createToolButton({
+          iconUnicode: entries[i],
+          click: async () =>
+            IModelApp.tools.run(
+              "View.Standard",
+              IModelApp.viewManager.selectedView,
+              i
+            ),
+        })
+      );
     }
 
     parent.appendChild(this._element);
   }
 
-  public get isOpen() { return "none" !== this._element.style.display; }
-  protected _open() { this._element.style.display = "block"; }
-  protected _close() { this._element.style.display = "none"; }
+  public get isOpen() {
+    return "none" !== this._element.style.display;
+  }
+  protected _open() {
+    this._element.style.display = "block";
+  }
+  protected _close() {
+    this._element.style.display = "none";
+  }
 
   public override get onViewChanged(): Promise<void> {
-    this._parent.style.display = this._vp.view.allow3dManipulations() ? "block" : "none";
+    this._parent.style.display = this._vp.view.allow3dManipulations()
+      ? "block"
+      : "none";
     return Promise.resolve();
   }
 }

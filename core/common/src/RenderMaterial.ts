@@ -30,7 +30,8 @@ export abstract class RenderMaterial {
 }
 
 /** @public */
-export namespace RenderMaterial { // eslint-disable-line no-redeclare
+export namespace RenderMaterial {
+  // eslint-disable-line no-redeclare
   function clampToNormalizedRange(value: number): number {
     return Math.max(0.0, Math.min(1.0, value));
   }
@@ -59,12 +60,14 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     /** Currently unused. @alpha */
     public refract: number = 1.0;
     /** Currently unused. @alpha */
-    public ambient: number = .3;
+    public ambient: number = 0.3;
     /** Currently unused. @alpha */
     public shadows = true;
     private _alpha?: number;
 
-    public constructor(key?: string) { this.key = key; }
+    public constructor(key?: string) {
+      this.key = key;
+    }
 
     /** Obtain an immutable instance of a RenderMaterial with all default properties. */
     // eslint-disable-next-line deprecation/deprecation
@@ -73,14 +76,24 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     /** A value from 0.0 (fully-transparent) to 1.0 (fully-opaque) controlling the transparency of surfaces to which this material is applied;
      * or undefined if this material does not override surface transparency.
      */
-    public get alpha(): number | undefined { return this._alpha; }
+    public get alpha(): number | undefined {
+      return this._alpha;
+    }
     public set alpha(alpha: number | undefined) {
-      this._alpha = undefined !== alpha ? clampToNormalizedRange(alpha) : undefined;
+      this._alpha =
+        undefined !== alpha ? clampToNormalizedRange(alpha) : undefined;
     }
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
     // eslint-disable-next-line deprecation/deprecation
-    public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
+    public static fromColors(
+      key?: string,
+      diffuseColor?: ColorDef,
+      specularColor?: ColorDef,
+      emissiveColor?: ColorDef,
+      reflectColor?: ColorDef,
+      textureMap?: TextureMapping
+    ): Params {
       // eslint-disable-next-line deprecation/deprecation
       const materialParams = new Params();
       materialParams.key = key;

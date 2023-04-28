@@ -36,8 +36,12 @@ export class UnitConverter {
    * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
    * @throws Error if base units of source and target unit do not match
    */
-  public async calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion> {
-    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
+  public async calculateConversion(
+    fromUnit: string,
+    toUnit: string
+  ): Promise<UnitConversion> {
+    const [fromSchemaName, fromSchemaItemName] =
+      SchemaItem.parseFullName(fromUnit);
     const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toUnit);
     const fromSchemaKey = new SchemaKey(fromSchemaName);
     const toSchemaKey = new SchemaKey(toSchemaName);
@@ -46,9 +50,18 @@ export class UnitConverter {
     const toSchema = await this._context.getSchema(toSchemaKey);
 
     if (!fromSchema || !toSchema) {
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
-        return { from: fromUnit, fromSchema: fromSchemaName, to: toUnit, toSchema: toSchemaName };
-      });
+      throw new BentleyError(
+        BentleyStatus.ERROR,
+        "Cannot find from's and/or to's schema",
+        () => {
+          return {
+            from: fromUnit,
+            fromSchema: fromSchemaName,
+            to: toUnit,
+            toSchema: toSchemaName,
+          };
+        }
+      );
     }
 
     const from = await this._uGraph.resolveUnit(fromSchemaItemName, fromSchema);
@@ -62,15 +75,21 @@ export class UnitConverter {
    * @param to Target unit converted to
    * @internal
    */
-  private async processUnits(from: Unit | Constant, to: Unit | Constant): Promise<UnitConversion> {
-    if (from.key.matches(to.key))
-      return UnitConversion.identity;
+  private async processUnits(
+    from: Unit | Constant,
+    to: Unit | Constant
+  ): Promise<UnitConversion> {
+    if (from.key.matches(to.key)) return UnitConversion.identity;
 
     const areCompatible = await Unit.areCompatible(from as Unit, to as Unit);
     if (!areCompatible)
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
-        return { from, to };
-      });
+      throw new BentleyError(
+        BentleyStatus.ERROR,
+        `Source and target units do not belong to same phenomenon`,
+        () => {
+          return { from, to };
+        }
+      );
 
     // Add nodes and subsequent children to graph
     await this._uGraph.addUnit(from);
@@ -84,12 +103,17 @@ export class UnitConverter {
     const toMapStore = this._uGraph.reduce(to, toBaseUnits);
 
     if (!this.checkBaseUnitsMatch(fromBaseUnits, toBaseUnits))
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, () => {
-        return { from, to };
-      });
+      throw new BentleyError(
+        BentleyStatus.ERROR,
+        `Source and target units do not have matching base units`,
+        () => {
+          return { from, to };
+        }
+      );
 
     // Final calculations to get singular UnitConversion between from -> to
-    const fromMap = fromMapStore.get(from.key.fullName) || UnitConversion.identity;
+    const fromMap =
+      fromMapStore.get(from.key.fullName) || UnitConversion.identity;
     const toMap = toMapStore.get(to.key.fullName) || UnitConversion.identity;
     const fromInverse = fromMap.inverse();
     return fromInverse.compose(toMap);
@@ -101,7 +125,10 @@ export class UnitConverter {
    * @param toBaseUnits Map of base units for target unit
    * @internal
    */
-  private checkBaseUnitsMatch(fromBaseUnits: Map<string, number>, toBaseUnits: Map<string, number>): boolean {
+  private checkBaseUnitsMatch(
+    fromBaseUnits: Map<string, number>,
+    toBaseUnits: Map<string, number>
+  ): boolean {
     // Trim maps of "One" and value that equal zero as they do not affect the base units and calculations
     for (const [key, value] of fromBaseUnits.entries()) {
       const [, schemaItemName] = SchemaItem.parseFullName(key);
@@ -117,11 +144,13 @@ export class UnitConverter {
       }
     }
 
-    if (fromBaseUnits.size !== toBaseUnits.size)
-      return false;
+    if (fromBaseUnits.size !== toBaseUnits.size) return false;
 
     for (const key of fromBaseUnits.keys()) {
-      if (!toBaseUnits.has(key) || fromBaseUnits.get(key) !== toBaseUnits.get(key)) {
+      if (
+        !toBaseUnits.has(key) ||
+        fromBaseUnits.get(key) !== toBaseUnits.get(key)
+      ) {
         // Mismatching key or value
         return false;
       }

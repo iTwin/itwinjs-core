@@ -7,7 +7,10 @@
  */
 
 import { assert, IDisposable } from "@itwin/core-bentley";
-import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
+import {
+  PresentationError,
+  PresentationStatus,
+} from "@itwin/presentation-common";
 
 /**
  * Configuration properties for [[TemporaryStorage]].
@@ -15,7 +18,11 @@ import { PresentationError, PresentationStatus } from "@itwin/presentation-commo
  */
 export interface TemporaryStorageProps<T> {
   /** A method that's called for every value before it's removed from storage */
-  cleanupHandler?: (id: string, value: T, reason: "timeout" | "dispose" | "request") => void;
+  cleanupHandler?: (
+    id: string,
+    value: T,
+    reason: "timeout" | "dispose" | "request"
+  ) => void;
 
   onDisposedSingle?: (id: string) => void;
   onDisposedAll?: () => void;
@@ -65,7 +72,6 @@ interface TemporaryValue<T> {
  * @internal
  */
 export class TemporaryStorage<T> implements IDisposable {
-
   private _timer?: NodeJS.Timer;
   protected _values: Map<string, TemporaryValue<T>>;
   public readonly props: TemporaryStorageProps<T>;
@@ -77,7 +83,10 @@ export class TemporaryStorage<T> implements IDisposable {
     this.props = props;
     this._values = new Map<string, TemporaryValue<T>>();
     if (this.props.cleanupInterval)
-      this._timer = setInterval(this.disposeOutdatedValues, this.props.cleanupInterval);
+      this._timer = setInterval(
+        this.disposeOutdatedValues,
+        this.props.cleanupInterval
+      );
   }
 
   /**
@@ -85,8 +94,7 @@ export class TemporaryStorage<T> implements IDisposable {
    * and other resources
    */
   public dispose() {
-    if (this._timer)
-      clearInterval(this._timer);
+    if (this._timer) clearInterval(this._timer);
 
     if (this.props.cleanupHandler) {
       this._values.forEach((v, id) => {
@@ -102,29 +110,39 @@ export class TemporaryStorage<T> implements IDisposable {
    * on their max and unused value lifetimes specified through [[Props]]).
    */
   public disposeOutdatedValues = () => {
-    const now = (new Date()).getTime();
+    const now = new Date().getTime();
     const valuesToDispose: string[] = [];
     for (const [key, entry] of this._values.entries()) {
       if (this.props.maxValueLifetime !== undefined) {
-        if (this.props.maxValueLifetime === 0 || (now - entry.created.getTime()) > this.props.maxValueLifetime) {
+        if (
+          this.props.maxValueLifetime === 0 ||
+          now - entry.created.getTime() > this.props.maxValueLifetime
+        ) {
           valuesToDispose.push(key);
           continue;
         }
       }
       if (this.props.unusedValueLifetime !== undefined) {
-        if (this.props.unusedValueLifetime === 0 || (now - entry.lastUsed.getTime()) > this.props.unusedValueLifetime) {
+        if (
+          this.props.unusedValueLifetime === 0 ||
+          now - entry.lastUsed.getTime() > this.props.unusedValueLifetime
+        ) {
           valuesToDispose.push(key);
           continue;
         }
       }
     }
-    for (const id of valuesToDispose)
-      this.deleteExistingEntry(id, true);
+    for (const id of valuesToDispose) this.deleteExistingEntry(id, true);
   };
 
   private deleteExistingEntry(id: string, isTimeout: boolean) {
     assert(this._values.has(id));
-    this.props.cleanupHandler && this.props.cleanupHandler(id, this._values.get(id)!.value, isTimeout ? "timeout" : "request");
+    this.props.cleanupHandler &&
+      this.props.cleanupHandler(
+        id,
+        this._values.get(id)!.value,
+        isTimeout ? "timeout" : "request"
+      );
     this._values.delete(id);
     this.props.onDisposedSingle && this.props.onDisposedSingle(id);
   }
@@ -146,8 +164,7 @@ export class TemporaryStorage<T> implements IDisposable {
   public notifyValueUsed(id: string) {
     const entry = this._values.get(id);
     // istanbul ignore else
-    if (entry)
-      entry.lastUsed = new Date();
+    if (entry) entry.lastUsed = new Date();
   }
 
   /**
@@ -156,15 +173,17 @@ export class TemporaryStorage<T> implements IDisposable {
    */
   public addValue(id: string, value: T) {
     if (this._values.has(id))
-      throw new PresentationError(PresentationStatus.InvalidArgument, `A value with given ID "${id}" already exists in this storage.`);
+      throw new PresentationError(
+        PresentationStatus.InvalidArgument,
+        `A value with given ID "${id}" already exists in this storage.`
+      );
     this._values.set(id, { value, created: new Date(), lastUsed: new Date() });
   }
 
   /** Deletes a value with given id. */
   public deleteValue(id: string) {
     // istanbul ignore else
-    if (this._values.has(id))
-      this.deleteExistingEntry(id, false);
+    if (this._values.has(id)) this.deleteExistingEntry(id, false);
   }
 
   /**
@@ -175,18 +194,17 @@ export class TemporaryStorage<T> implements IDisposable {
    */
   public get values(): T[] {
     const values = new Array<T>();
-    for (const v of this._values.values())
-      values.push(v.value);
+    for (const v of this._values.values()) values.push(v.value);
     return values;
   }
-
 }
 
 /**
  * Configuration properties for [[FactoryBasedTemporaryStorage]].
  * @internal
  */
-export interface FactoryBasedTemporaryStorageProps<T> extends TemporaryStorageProps<T> {
+export interface FactoryBasedTemporaryStorageProps<T>
+  extends TemporaryStorageProps<T> {
   /** A factory method that creates a stored value given it's identifier */
   factory: (id: string, onValueUsed: () => void) => T;
 }
@@ -198,7 +216,6 @@ export interface FactoryBasedTemporaryStorageProps<T> extends TemporaryStoragePr
  * @internal
  */
 export class FactoryBasedTemporaryStorage<T> extends TemporaryStorage<T> {
-
   public override readonly props: FactoryBasedTemporaryStorageProps<T>;
 
   /**
@@ -217,8 +234,7 @@ export class FactoryBasedTemporaryStorage<T> extends TemporaryStorage<T> {
    */
   public override getValue(id: string): T {
     const existingValue = super.getValue(id);
-    if (existingValue)
-      return existingValue;
+    if (existingValue) return existingValue;
 
     const value = this.props.factory(id, () => this.notifyValueUsed(id));
     this.addValue(id, value);

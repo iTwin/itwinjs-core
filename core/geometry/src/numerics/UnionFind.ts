@@ -18,11 +18,12 @@ export class UnionFindContext {
   /** Create a set initialized with numLeaf singleton subsets */
   public constructor(numLeaf: number = 0) {
     this._parentArray = [];
-    for (let i = 0; i < numLeaf; i++)
-      this._parentArray.push(i);
+    for (let i = 0; i < numLeaf; i++) this._parentArray.push(i);
   }
   /** Return the number of leaves. */
-  public get length(): number { return this._parentArray.length; }
+  public get length(): number {
+    return this._parentArray.length;
+  }
   /** test if index is within the valid index range. */
   public isValidIndex(index: number): boolean {
     return 0 <= index && index < this._parentArray.length;
@@ -40,8 +41,7 @@ export class UnionFindContext {
    * @param index start of search
    */
   public findRoot(index: number): number {
-    if (!this.isValidIndex(index))
-      return index;
+    if (!this.isValidIndex(index)) return index;
     let currentIndex = index;
     let nextIndex = this._parentArray[index];
     while (nextIndex !== currentIndex) {
@@ -66,12 +66,10 @@ export class UnionFindContext {
    * * If either index is invalid return index i with no changes.
    */
   public mergeSubsets(i: number, j: number): number {
-    if (!this.isValidIndex(i) || !this.isValidIndex(j))
-      return i;
+    if (!this.isValidIndex(i) || !this.isValidIndex(j)) return i;
     const rootIndexI = this.findRoot(i);
     const rootIndexJ = this.findRoot(j);
-    if (rootIndexI !== rootIndexJ)
-      this._parentArray[rootIndexI] = rootIndexJ;
+    if (rootIndexI !== rootIndexJ) this._parentArray[rootIndexI] = rootIndexJ;
     // cleanup a little more ...
     return this.findRoot(i);
   }
@@ -79,17 +77,14 @@ export class UnionFindContext {
    * * If index is invalid, return it.
    */
   public askParent(index: number): number {
-    if (!this.isValidIndex(index))
-      return index;
+    if (!this.isValidIndex(index)) return index;
     return this._parentArray[index];
   }
   /** Return the number of entries which are their own parent. */
   public countRoots(): number {
     let numRoot = 0;
     const numLeaf = this._parentArray.length;
-    for (let i = 0; i < numLeaf; i++)
-      if (this._parentArray[i] === i)
-        numRoot++;
+    for (let i = 0; i < numLeaf; i++) if (this._parentArray[i] === i) numRoot++;
     return numRoot;
   }
   /** Return the number of entries whose parent is not a root. */
@@ -98,8 +93,7 @@ export class UnionFindContext {
     const numLeaf = this._parentArray.length;
     for (let i = 0; i < numLeaf; i++) {
       const j = this._parentArray[i];
-      if (j !== i && this._parentArray[j] !== j)
-        numLong++;
+      if (j !== i && this._parentArray[j] !== j) numLong++;
     }
     return numLong;
   }
@@ -110,8 +104,7 @@ export class UnionFindContext {
     const roots = [];
     const numLeaf = this._parentArray.length;
     for (let i = 0; i < numLeaf; i++) {
-      if (this._parentArray[i] === i)
-        roots.push(i);
+      if (this._parentArray[i] === i) roots.push(i);
     }
     return roots;
   }

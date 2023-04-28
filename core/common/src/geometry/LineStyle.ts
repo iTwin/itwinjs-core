@@ -7,11 +7,16 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import {
+  Transform,
+  Vector3d,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
+} from "@itwin/core-geometry";
 
 /** @public */
 export namespace LineStyle {
-
   /** Modify the line style appearance without changing the line style definition.
    * Applies to the style previously established by a [[GeometryAppearanceProps]] or current [[SubCategoryAppearance]].
    * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
@@ -72,7 +77,9 @@ export namespace LineStyle {
       this.segmentMode = props.segmentMode;
       this.physicalWidth = props.physicalWidth;
       this.normal = props.normal ? Vector3d.fromJSON(props.normal) : undefined;
-      this.rotation = props.rotation ? YawPitchRollAngles.fromJSON(props.rotation) : undefined;
+      this.rotation = props.rotation
+        ? YawPitchRollAngles.fromJSON(props.rotation)
+        : undefined;
     }
 
     /** Returns a deep copy of this object. */
@@ -82,10 +89,12 @@ export namespace LineStyle {
 
     /** Compare two LineStyle.Modifier for equivalence */
     public equals(other: Modifier): boolean {
-      if (this === other)   // same pointer
+      if (this === other)
+        // same pointer
         return true;
 
-      if (other.scale !== this.scale ||
+      if (
+        other.scale !== this.scale ||
         other.dashScale !== this.dashScale ||
         other.gapScale !== this.gapScale ||
         other.startWidth !== this.startWidth ||
@@ -94,7 +103,8 @@ export namespace LineStyle {
         other.fractPhase !== this.fractPhase ||
         other.centerPhase !== this.centerPhase ||
         other.segmentMode !== this.segmentMode ||
-        other.physicalWidth !== this.physicalWidth)
+        other.physicalWidth !== this.physicalWidth
+      )
         return false;
 
       if ((this.normal === undefined) !== (other.normal === undefined))
@@ -111,24 +121,23 @@ export namespace LineStyle {
     }
 
     public applyTransform(transform: Transform): boolean {
-      if (transform.isIdentity)
-        return true;
+      if (transform.isIdentity) return true;
       if (this.normal) {
         transform.matrix.multiplyVector(this.normal, this.normal);
         const normalized = this.normal.normalize();
-        if (normalized)
-          this.normal.setFrom(normalized);
-        else
-          return false;
+        if (normalized) this.normal.setFrom(normalized);
+        else return false;
       }
       if (this.rotation) {
-        const newTransform = this.rotation.toMatrix3d().multiplyMatrixTransform(transform);
+        const newTransform = this.rotation
+          .toMatrix3d()
+          .multiplyMatrixTransform(transform);
         const scales = new Vector3d();
-        if (!newTransform.matrix.normalizeColumnsInPlace(scales))
-          return false;
-        const newRotation = YawPitchRollAngles.createFromMatrix3d(newTransform.matrix);
-        if (undefined === newRotation)
-          return false;
+        if (!newTransform.matrix.normalizeColumnsInPlace(scales)) return false;
+        const newRotation = YawPitchRollAngles.createFromMatrix3d(
+          newTransform.matrix
+        );
+        if (undefined === newRotation) return false;
         this.rotation.setFrom(newRotation);
       }
 
@@ -138,25 +147,23 @@ export namespace LineStyle {
       scaleMatrix.normalizeRowsInPlace(scaleVector);
 
       // Check for flatten transform, dividing scaleVector by 3 gives wrong scaleFactor
-      if (scaleVector.x !== 0.0 && scaleVector.y !== 0.0 && scaleVector.z !== 0.0)
+      if (
+        scaleVector.x !== 0.0 &&
+        scaleVector.y !== 0.0 &&
+        scaleVector.z !== 0.0
+      )
         scaleFactor = (scaleVector.x + scaleVector.y + scaleVector.z) / 3.0;
-      else
-        scaleFactor = (scaleVector.x + scaleVector.y + scaleVector.z) / 2.0;
+      else scaleFactor = (scaleVector.x + scaleVector.y + scaleVector.z) / 2.0;
 
-      if (1.0 === scaleFactor)
-        return true;
+      if (1.0 === scaleFactor) return true;
 
-      if (this.scale)
-        this.scale *= scaleFactor;
+      if (this.scale) this.scale *= scaleFactor;
 
-      if (this.physicalWidth)
-        return true;
+      if (this.physicalWidth) return true;
 
-      if (this.startWidth)
-        this.startWidth *= scaleFactor;
+      if (this.startWidth) this.startWidth *= scaleFactor;
 
-      if (this.endWidth)
-        this.endWidth *= scaleFactor;
+      if (this.endWidth) this.endWidth *= scaleFactor;
 
       return true;
     }
@@ -175,18 +182,18 @@ export namespace LineStyle {
 
     /** Returns a deep copy of this object. */
     public clone(): Info {
-      return new Info(this.styleId, this.styleMod ? this.styleMod.clone() : undefined);
+      return new Info(
+        this.styleId,
+        this.styleMod ? this.styleMod.clone() : undefined
+      );
     }
 
     public equals(other: Info): boolean {
-      if (this === other)
-        return true;
-      if (this.styleId !== other.styleId)
-        return false;
+      if (this === other) return true;
+      if (this.styleId !== other.styleId) return false;
       if ((this.styleMod === undefined) !== (other.styleMod === undefined))
         return false;
-      if (this.styleMod && !this.styleMod.equals(other.styleMod!))
-        return false;
+      if (this.styleMod && !this.styleMod.equals(other.styleMod!)) return false;
       return true;
     }
   }

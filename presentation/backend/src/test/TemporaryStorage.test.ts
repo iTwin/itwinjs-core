@@ -7,10 +7,12 @@ import * as lolex from "lolex";
 import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
-import { FactoryBasedTemporaryStorage, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
+import {
+  FactoryBasedTemporaryStorage,
+  TemporaryStorage,
+} from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {
-
   let clock: lolex.Clock;
   beforeEach(() => {
     clock = lolex.install();
@@ -20,7 +22,6 @@ describe("TemporaryStorage", () => {
   });
 
   describe("constructor", () => {
-
     it("doesn't set up timer callback when interval is not set", () => {
       const s = sinon.spy(clock, "setInterval");
       using(new TemporaryStorage<string>({}), (_r) => {
@@ -41,11 +42,9 @@ describe("TemporaryStorage", () => {
         expect(s).to.be.calledOnce;
       });
     });
-
   });
 
   describe("dispose", () => {
-
     it("stops automatic cleanup when cleanup interval is set", () => {
       const s = sinon.spy(clock, "clearInterval");
       const storage = new TemporaryStorage<string>({ cleanupInterval: 1 });
@@ -65,9 +64,21 @@ describe("TemporaryStorage", () => {
       storage.dispose();
 
       expect(cleanupHandler.callCount).to.eq(values.length);
-      expect(cleanupHandler.getCall(0)).to.be.calledWithExactly("a", "a", "dispose");
-      expect(cleanupHandler.getCall(1)).to.be.calledWithExactly("b", "b", "dispose");
-      expect(cleanupHandler.getCall(2)).to.be.calledWithExactly("c", "c", "dispose");
+      expect(cleanupHandler.getCall(0)).to.be.calledWithExactly(
+        "a",
+        "a",
+        "dispose"
+      );
+      expect(cleanupHandler.getCall(1)).to.be.calledWithExactly(
+        "b",
+        "b",
+        "dispose"
+      );
+      expect(cleanupHandler.getCall(2)).to.be.calledWithExactly(
+        "c",
+        "c",
+        "dispose"
+      );
     });
 
     it("calls `onDisposedAll` callback", () => {
@@ -83,11 +94,9 @@ describe("TemporaryStorage", () => {
 
       expect(spy).to.be.calledOnce;
     });
-
   });
 
   describe("addValue", () => {
-
     let storage: TemporaryStorage<string>;
     beforeEach(() => {
       storage = new TemporaryStorage<string>({});
@@ -106,11 +115,9 @@ describe("TemporaryStorage", () => {
       expect(() => storage.addValue("a", "X")).to.throw(PresentationError);
       expect(storage.values).to.deep.eq(["A"]);
     });
-
   });
 
   describe("getValue", () => {
-
     it("returns undefined if value does not exist", () => {
       const storage = new TemporaryStorage<string>({});
       const value = storage.getValue("a");
@@ -123,11 +130,9 @@ describe("TemporaryStorage", () => {
       const value = storage.getValue("a");
       expect(value).to.eq("A");
     });
-
   });
 
   describe("deleteValue", () => {
-
     it("calls cleanup handler", () => {
       const cleanupHandler = sinon.spy();
       const storage = new TemporaryStorage<string>({
@@ -137,11 +142,9 @@ describe("TemporaryStorage", () => {
       storage.deleteValue("a");
       expect(cleanupHandler).to.be.calledOnceWithExactly("a", "A", "request");
     });
-
   });
 
   describe("disposeOutdatedValues", () => {
-
     it("doesn't dispose value if neither `unusedValueLifetime` nor `maxValueLifetime` are specified", () => {
       const storage = new TemporaryStorage<string>({});
       storage.addValue("a", "A");
@@ -151,7 +154,6 @@ describe("TemporaryStorage", () => {
     });
 
     describe("disposing based on `unusedValueLifetime`", () => {
-
       it("disposes value immediately if `unusedValueLifetime` is 0", () => {
         const storage = new TemporaryStorage<string>({
           unusedValueLifetime: 0,
@@ -211,11 +213,9 @@ describe("TemporaryStorage", () => {
         storage.disposeOutdatedValues();
         expect(storage.values).to.deep.eq(["B"]);
       });
-
     });
 
     describe("disposing based on `maxValueLifetime`", () => {
-
       it("disposes value immediately if `maxValueLifetime` is 0", () => {
         const storage = new TemporaryStorage<string>({
           maxValueLifetime: 0,
@@ -255,7 +255,6 @@ describe("TemporaryStorage", () => {
         expect(storage.values.length).to.eq(1);
         expect(storage.values[0]).to.eq("B");
       });
-
     });
 
     it("calls cleanup handler for disposed values", () => {
@@ -288,15 +287,11 @@ describe("TemporaryStorage", () => {
       expect(spy.firstCall).to.be.calledWith("a");
       expect(spy.secondCall).to.be.calledWith("b");
     });
-
   });
-
 });
 
 describe("FactoryBasedTemporaryStorage", () => {
-
   describe("getValue", () => {
-
     it("creates value if not exists", () => {
       const factory = sinon.fake((id: string) => id);
       const storage = new FactoryBasedTemporaryStorage<string>({
@@ -305,7 +300,10 @@ describe("FactoryBasedTemporaryStorage", () => {
 
       const value = storage.getValue("a");
       expect(value).to.eq("a");
-      expect(factory).to.be.calledOnceWith("a", sinon.match((arg) => typeof arg === "function"));
+      expect(factory).to.be.calledOnceWith(
+        "a",
+        sinon.match((arg) => typeof arg === "function")
+      );
     });
 
     it("doesn't create value if already exists", () => {
@@ -316,7 +314,10 @@ describe("FactoryBasedTemporaryStorage", () => {
 
       const value1 = storage.getValue("a");
       expect(value1).to.eq("a");
-      expect(factory).to.be.calledOnceWith("a", sinon.match((arg) => typeof arg === "function"));
+      expect(factory).to.be.calledOnceWith(
+        "a",
+        sinon.match((arg) => typeof arg === "function")
+      );
       factory.resetHistory();
 
       const value2 = storage.getValue("a");
@@ -337,7 +338,5 @@ describe("FactoryBasedTemporaryStorage", () => {
       lastUsedTimestampUpdateHandler();
       expect(updateSpy).to.be.calledOnceWith("a");
     });
-
   });
-
 });

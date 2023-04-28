@@ -17,7 +17,6 @@ export const editorIpcStrings = {
  * @beta
  */
 export interface EditorIpc {
-
   /** Start a new instance of an `EditCommand` on the backend, and then call its `onStart` method.
    * @param commandId the Id of a registered `EditCommand` on the backend. If commandId === "", the current command is
    * requested to finish but no new EditCommand is started.
@@ -28,7 +27,11 @@ export interface EditorIpc {
    * before the new `EditCommand` is constructed. If it cannot finish immediately, it may return a string that identifies
    * the work it is performing for `EditTools.busyHandler` to retry and/or display.
    */
-  startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
+  startCommand: (
+    commandId: string,
+    iModelKey: string,
+    ...args: any[]
+  ) => Promise<any>;
 
   /** Call a method on the currently active `EditCommand` and return its value.
    * @param name the name of the method to invoke.
@@ -43,5 +46,9 @@ export interface EditorIpc {
  */
 export interface EditCommandIpc {
   /** Identify the current `EditCommand`'s name and version, optionally returning additional properties that describe its state. */
-  ping: () => Promise<{ commandId: string, version: string, [propName: string]: any }>;
+  ping: () => Promise<{
+    commandId: string;
+    version: string;
+    [propName: string]: any;
+  }>;
 }

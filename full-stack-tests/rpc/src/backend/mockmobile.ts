@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MobileHost, MobileRpcConfiguration, MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import {
+  MobileHost,
+  MobileRpcConfiguration,
+  MobileRpcManager,
+} from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { MobileTestInterface } from "../common/TestRpcInterface";
 import { setupIpcTest } from "./ipc";
 

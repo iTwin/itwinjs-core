@@ -174,28 +174,25 @@ export class PointCloudDisplaySettings {
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
-  public static fromJSON(props?: PointCloudDisplayProps): PointCloudDisplaySettings {
+  public static fromJSON(
+    props?: PointCloudDisplayProps
+  ): PointCloudDisplaySettings {
     return props ? new PointCloudDisplaySettings(props) : this.defaults;
   }
 
   /** Convert these settings to their JSON representation. */
   public toJSON(): PointCloudDisplayProps | undefined {
     const defs = PointCloudDisplaySettings.defaults;
-    if (this.equals(defs))
-      return undefined;
+    if (this.equals(defs)) return undefined;
 
-    const props: PointCloudDisplayProps = { };
-    if (this.shape !== defs.shape)
-      props.shape = this.shape;
+    const props: PointCloudDisplayProps = {};
+    if (this.shape !== defs.shape) props.shape = this.shape;
 
-    if (this.sizeMode !== defs.sizeMode)
-      props.sizeMode = this.sizeMode;
+    if (this.sizeMode !== defs.sizeMode) props.sizeMode = this.sizeMode;
 
-    if (this.pixelSize !== defs.pixelSize)
-      props.pixelSize = this.pixelSize;
+    if (this.pixelSize !== defs.pixelSize) props.pixelSize = this.pixelSize;
 
-    if (this.voxelScale !== defs.voxelScale)
-      props.voxelScale = this.voxelScale;
+    if (this.voxelScale !== defs.voxelScale) props.voxelScale = this.voxelScale;
 
     if (this.minPixelsPerVoxel !== defs.minPixelsPerVoxel)
       props.minPixelsPerVoxel = this.minPixelsPerVoxel;
@@ -203,32 +200,28 @@ export class PointCloudDisplaySettings {
     if (this.maxPixelsPerVoxel !== defs.maxPixelsPerVoxel)
       props.maxPixelsPerVoxel = this.maxPixelsPerVoxel;
 
-    if (this.edlMode !== defs.edlMode)
-      props.edlMode = this.edlMode;
+    if (this.edlMode !== defs.edlMode) props.edlMode = this.edlMode;
 
     if (this.edlStrength !== defs.edlStrength)
       props.edlStrength = this.edlStrength;
 
-    if (this.edlRadius !== defs.edlRadius)
-      props.edlRadius = this.edlRadius;
+    if (this.edlRadius !== defs.edlRadius) props.edlRadius = this.edlRadius;
 
-    if (this.edlFilter !== defs.edlFilter)
-      props.edlFilter = this.edlFilter;
+    if (this.edlFilter !== defs.edlFilter) props.edlFilter = this.edlFilter;
 
-    if (this.edlMixWts1 !== defs.edlMixWts1)
-      props.edlMixWts1 = this.edlMixWts1;
+    if (this.edlMixWts1 !== defs.edlMixWts1) props.edlMixWts1 = this.edlMixWts1;
 
-    if (this.edlMixWts2 !== defs.edlMixWts2)
-      props.edlMixWts2 = this.edlMixWts2;
+    if (this.edlMixWts2 !== defs.edlMixWts2) props.edlMixWts2 = this.edlMixWts2;
 
-    if (this.edlMixWts4 !== defs.edlMixWts4)
-      props.edlMixWts4 = this.edlMixWts4;
+    if (this.edlMixWts4 !== defs.edlMixWts4) props.edlMixWts4 = this.edlMixWts4;
 
     return props;
   }
 
   /** Create a copy of these settings, identical except for any properties explicitly specified by `changedProps`. */
-  public clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings {
+  public clone(
+    changedProps: PointCloudDisplayProps
+  ): PointCloudDisplaySettings {
     return PointCloudDisplaySettings.fromJSON({
       ...this.toJSON(),
       ...changedProps,
@@ -237,15 +230,23 @@ export class PointCloudDisplaySettings {
 
   /** Returns true if these settings are identical to `other`. */
   public equals(other: PointCloudDisplaySettings): boolean {
-    if (this === other)
-      return true;
+    if (this === other) return true;
 
-    return this.shape === other.shape && this.sizeMode === other.sizeMode && this.pixelSize === other.pixelSize
-      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel
-      && this.edlMode === other.edlMode && this.edlStrength === other.edlStrength && this.edlRadius === other.edlRadius
-      && this.edlFilter === other.edlFilter
-      && this.edlMixWts1 === other.edlMixWts1 && this.edlMixWts2 === other.edlMixWts2 && this.edlMixWts4 === other.edlMixWts4
-    ;
+    return (
+      this.shape === other.shape &&
+      this.sizeMode === other.sizeMode &&
+      this.pixelSize === other.pixelSize &&
+      this.voxelScale === other.voxelScale &&
+      this.minPixelsPerVoxel === other.minPixelsPerVoxel &&
+      this.maxPixelsPerVoxel === other.maxPixelsPerVoxel &&
+      this.edlMode === other.edlMode &&
+      this.edlStrength === other.edlStrength &&
+      this.edlRadius === other.edlRadius &&
+      this.edlFilter === other.edlFilter &&
+      this.edlMixWts1 === other.edlMixWts1 &&
+      this.edlMixWts2 === other.edlMixWts2 &&
+      this.edlMixWts4 === other.edlMixWts4
+    );
   }
 }
 
@@ -268,32 +269,45 @@ export class RealityModelDisplaySettings {
   public readonly pointCloud: PointCloudDisplaySettings;
 
   /** Settings with all properties initialized to their default values. */
-  public static defaults = new RealityModelDisplaySettings(undefined, PointCloudDisplaySettings.defaults);
+  public static defaults = new RealityModelDisplaySettings(
+    undefined,
+    PointCloudDisplaySettings.defaults
+  );
 
-  private constructor(overrideColorRatio: number | undefined, pointCloud: PointCloudDisplaySettings) {
+  private constructor(
+    overrideColorRatio: number | undefined,
+    pointCloud: PointCloudDisplaySettings
+  ) {
     this.overrideColorRatio = overrideColorRatio ?? 0.5;
     this.pointCloud = pointCloud;
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
-  public static fromJSON(props?: RealityModelDisplayProps): RealityModelDisplaySettings {
-    if (!props)
-      return this.defaults;
+  public static fromJSON(
+    props?: RealityModelDisplayProps
+  ): RealityModelDisplaySettings {
+    if (!props) return this.defaults;
 
-    return new RealityModelDisplaySettings(props.overrideColorRatio, PointCloudDisplaySettings.fromJSON(props.pointCloud));
+    return new RealityModelDisplaySettings(
+      props.overrideColorRatio,
+      PointCloudDisplaySettings.fromJSON(props.pointCloud)
+    );
   }
 
   /** Convert these settings to their JSON representation, which is `undefined` if all of their properties match the default settings. */
   public toJSON(): RealityModelDisplayProps | undefined {
     const pointCloud = this.pointCloud.toJSON();
-    const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio ? undefined : this.overrideColorRatio;
+    const overrideColorRatio =
+      this.overrideColorRatio ===
+      RealityModelDisplaySettings.defaults.overrideColorRatio
+        ? undefined
+        : this.overrideColorRatio;
 
     if (undefined === pointCloud && undefined === overrideColorRatio)
       return undefined;
 
-    const props: RealityModelDisplayProps = { };
-    if (undefined !== pointCloud)
-      props.pointCloud = pointCloud;
+    const props: RealityModelDisplayProps = {};
+    if (undefined !== pointCloud) props.pointCloud = pointCloud;
 
     if (undefined !== overrideColorRatio)
       props.overrideColorRatio = overrideColorRatio;
@@ -303,16 +317,24 @@ export class RealityModelDisplaySettings {
 
   /** Returns true if these settings are identical to `other`. */
   public equals(other: RealityModelDisplaySettings): boolean {
-    if (this === other)
-      return true;
+    if (this === other) return true;
 
-    return this.overrideColorRatio === other.overrideColorRatio && this.pointCloud.equals(other.pointCloud);
+    return (
+      this.overrideColorRatio === other.overrideColorRatio &&
+      this.pointCloud.equals(other.pointCloud)
+    );
   }
 
   /** Create a copy of these settings, identical except for any properties explicitly specified by `changedProps`. */
-  public clone(changedProps: RealityModelDisplayProps): RealityModelDisplaySettings {
-    const pointCloud = changedProps.pointCloud ? this.pointCloud.clone(changedProps.pointCloud) : this.pointCloud;
-    const colorRatio = changedProps.hasOwnProperty("overrideColorRatio") ? changedProps.overrideColorRatio : this.overrideColorRatio;
+  public clone(
+    changedProps: RealityModelDisplayProps
+  ): RealityModelDisplaySettings {
+    const pointCloud = changedProps.pointCloud
+      ? this.pointCloud.clone(changedProps.pointCloud)
+      : this.pointCloud;
+    const colorRatio = changedProps.hasOwnProperty("overrideColorRatio")
+      ? changedProps.overrideColorRatio
+      : this.overrideColorRatio;
     return new RealityModelDisplaySettings(colorRatio, pointCloud);
   }
 }

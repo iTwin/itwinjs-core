@@ -24,15 +24,15 @@ There are 5 concrete derived types:
 - In a `Loop`, the last member's head must match the first member's tail.
 - Throughout the library, a `Loop` is expected to be a "filled" planar region.
 - A `Path` is usually does _not_ return to its start point.
-  - If a `Path` _does_ return to its start point, it is _not_ interpreted as enclosing area.  The path is still just a wire that happens to come back to its start.
+  - If a `Path` _does_ return to its start point, it is _not_ interpreted as enclosing area. The path is still just a wire that happens to come back to its start.
 
- The immediate base class for both `Path` and `Loop` is `CurveChain`.   The `CurveChain` base class implements various methods that depend on the internal head-to-tail matching but _not_ on the closure of a `Loop`.
+The immediate base class for both `Path` and `Loop` is `CurveChain`. The `CurveChain` base class implements various methods that depend on the internal head-to-tail matching but _not_ on the closure of a `Loop`.
 
 ### Special `Loop` properties
 
 - The purpose of a `Loop` is to act as the boundary of a planar region.
-  - Unless specifically indicated by names or comments for various methods that at on `Loop`s,  The containing plane will be determine "on demand" using the `FrameBuilder` class.
-- A point is "inside" a loop if a line (within the `Loop`'s plane) from the point "to infinity"  crosses the loop an odd number of times.
+  - Unless specifically indicated by names or comments for various methods that at on `Loop`s, The containing plane will be determine "on demand" using the `FrameBuilder` class.
+- A point is "inside" a loop if a line (within the `Loop`'s plane) from the point "to infinity" crosses the loop an odd number of times.
 - The crossing count rule may be applied (and mathematically always produces the same result) for:
   - Any line direction -- horizontal, vertical, or any other direction.
   - Any curved path that starts at the and gets to infinity.
@@ -69,7 +69,7 @@ A `UnionRegion` is a curve collection whose immediate children are
 
 ## Tips for Processing `CurveCollection`s
 
-Processing all 5 subtypes of `CurveCollection` initially appears quite complex.  However, within each of the cases of a top level switch statement or sequence of `if` tests, the number of possibilities drops quickly:
+Processing all 5 subtypes of `CurveCollection` initially appears quite complex. However, within each of the cases of a top level switch statement or sequence of `if` tests, the number of possibilities drops quickly:
 
 - A `Path` or `Loop` can _only_ contain true `CurvePrimitive`.
 - A `ParityRegion` may only contain `Loop`s.

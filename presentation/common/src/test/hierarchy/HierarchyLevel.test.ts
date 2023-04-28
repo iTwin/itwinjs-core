@@ -8,9 +8,7 @@ import { Node } from "../../presentation-common/hierarchy/Node";
 import { createTestNode } from "../_helpers/Hierarchy";
 
 describe("HierarchyLevel", () => {
-
   describe("fromJSON", () => {
-
     it("creates valid HierarchyLevel from JSON", () => {
       // eslint-disable-next-line deprecation/deprecation
       const hl = HierarchyLevel.fromJSON({
@@ -20,7 +18,5 @@ describe("HierarchyLevel", () => {
       });
       expect(hl).to.matchSnapshot();
     });
-
   });
-
 });

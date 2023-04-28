@@ -16,10 +16,8 @@
       ],
       "smartStep": true,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/lib/**/*.js"
-      ],
+      "outFiles": ["${workspaceRoot}/lib/**/*.js"],
       "protocol": "inspector"
     }
-  ],
+  ]
 }

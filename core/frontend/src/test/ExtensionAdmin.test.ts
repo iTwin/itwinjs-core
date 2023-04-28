@@ -23,16 +23,20 @@ describe("ExtensionAdmin", () => {
       manifestUrl: "https://anotherdomain.com/package.json",
     }),
   ];
-  const stubManifest: Promise<ExtensionManifest> = new Promise((res) => res({
-    name: "mock-extension",
-    version: "1.0.0",
-    main: "index.js",
-    activationEvents: [],
-  }));
+  const stubManifest: Promise<ExtensionManifest> = new Promise((res) =>
+    res({
+      name: "mock-extension",
+      version: "1.0.0",
+      main: "index.js",
+      activationEvents: [],
+    })
+  );
 
   before(async () => {
     chai.use(chaiAsPromised);
-    sinon.stub(RemoteExtensionProvider.prototype, "getManifest").returns(stubManifest);
+    sinon
+      .stub(RemoteExtensionProvider.prototype, "getManifest")
+      .returns(stubManifest);
   });
 
   it("ExtensionAdmin can register a url", async () => {
@@ -41,7 +45,8 @@ describe("ExtensionAdmin", () => {
     extensionAdmin.registerHost("https://somedomain:3001");
     extensionAdmin.registerHost("https://anotherdomain.com/dist/index.js");
     for (const extension of extensions) {
-      await expect(extensionAdmin.addExtension(extension)).to.eventually.be.fulfilled;
+      await expect(extensionAdmin.addExtension(extension)).to.eventually.be
+        .fulfilled;
     }
   });
 
@@ -52,7 +57,8 @@ describe("ExtensionAdmin", () => {
     extensionAdmin.registerHost("anotherdomain.com");
 
     for (const extension of extensions) {
-      await expect(extensionAdmin.addExtension(extension)).to.eventually.be.fulfilled;
+      await expect(extensionAdmin.addExtension(extension)).to.eventually.be
+        .fulfilled;
     }
   });
 
@@ -60,13 +66,19 @@ describe("ExtensionAdmin", () => {
     const extensionAdmin = new ExtensionAdmin();
     extensionAdmin.registerHost("aDifferentHostname");
     for (const extension of extensions) {
-      await expect(extensionAdmin.addExtension(extension)).to.eventually.be.rejectedWith(/not registered/);
+      await expect(
+        extensionAdmin.addExtension(extension)
+      ).to.eventually.be.rejectedWith(/not registered/);
     }
   });
 
   it("ExtensionAdmin will reject invalid URLs or hostnames", () => {
     const extensionAdmin = new ExtensionAdmin();
-    expect(() => extensionAdmin.registerHost("3001:invalidUrl")).to.throw(/should be a valid URL or hostname/);
-    expect(() => extensionAdmin.registerHost("invalidUrl342!@#")).to.throw(/should be a valid URL or hostname/);
+    expect(() => extensionAdmin.registerHost("3001:invalidUrl")).to.throw(
+      /should be a valid URL or hostname/
+    );
+    expect(() => extensionAdmin.registerHost("invalidUrl342!@#")).to.throw(
+      /should be a valid URL or hostname/
+    );
   });
 });

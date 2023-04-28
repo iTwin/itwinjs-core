@@ -3,9 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
+import {
+  CanvasDecoration,
+  DecorateContext,
+  GraphicType,
+  HitDetail,
+  IModelApp,
+  Tool,
+} from "@itwin/core-frontend";
 import { AxisAlignedBox3d, GeometryStreamProps } from "@itwin/core-common";
-import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@itwin/core-geometry";
+import {
+  AngleSweep,
+  Arc3d,
+  Path,
+  Range1d,
+  Range3d,
+} from "@itwin/core-geometry";
 
 class PathCanvasDecoration implements CanvasDecoration {
   public drawDecoration(ctx: CanvasRenderingContext2D) {
@@ -37,17 +50,27 @@ export class PathDecorationTest {
   public decorate(context: DecorateContext) {
     if (undefined === this._pickId)
       this._pickId = context.viewport.iModel.transientIds.getNext();
-    const pathBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._pickId);
+    const pathBuilder = context.createGraphicBuilder(
+      GraphicType.WorldDecoration,
+      undefined,
+      this._pickId
+    );
     pathBuilder.addPath(this._path);
     context.addDecorationFromBuilder(pathBuilder);
     context.addCanvasDecoration(PathDecorationTest.canvasDecoration);
   }
 
   /** Test any hits against this id. */
-  public testDecorationHit(id: string): boolean { return id === this._pickId; }
+  public testDecorationHit(id: string): boolean {
+    return id === this._pickId;
+  }
 
   /** Return no decoration geometry for picking. */
-  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined { return undefined; }
+  public getDecorationGeometry(
+    _hit: HitDetail
+  ): GeometryStreamProps | undefined {
+    return undefined;
+  }
 
   /** Create the PathDecorationTest object and adding it as a ViewManager decorator. */
   private static start(extents: AxisAlignedBox3d) {
@@ -64,10 +87,8 @@ export class PathDecorationTest {
 
   /** Turn the line decoration on and off. */
   public static toggle(extents: AxisAlignedBox3d) {
-    if (undefined === PathDecorationTest.decorator)
-      this.start(extents);
-    else
-      this.stop();
+    if (undefined === PathDecorationTest.decorator) this.start(extents);
+    else this.stop();
   }
 }
 
@@ -102,7 +123,14 @@ function _getPath(extents: AxisAlignedBox3d): Path {
     const f = range.fractionToPoint(fract, fract, fract);
 
     curves.push([a, b, c, d]);
-    curves.push(Arc3d.create(d, d.vectorTo(e), d.vectorTo(f), AngleSweep.createStartEndDegrees(0.0, 90.0)));
+    curves.push(
+      Arc3d.create(
+        d,
+        d.vectorTo(e),
+        d.vectorTo(f),
+        AngleSweep.createStartEndDegrees(0.0, 90.0)
+      )
+    );
   }
 
   return Path.create(...curves);

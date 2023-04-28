@@ -9,11 +9,20 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
-import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
+import {
+  DiagnosticsScopeLogs,
+  PresentationError,
+  PresentationStatus,
+  UpdateInfo,
+  VariableValueTypes,
+} from "@itwin/presentation-common";
+import {
+  createDefaultNativePlatform,
+  NativePlatformDefinition,
+  PresentationNativePlatformResponseError,
+} from "../presentation-backend/NativePlatform";
 
 describe("default NativePlatform", () => {
-
   let nativePlatform: NativePlatformDefinition;
   const addonMock = moq.Mock.ofType<IModelJsNative.ECPresentationManager>();
 
@@ -25,9 +34,8 @@ describe("default NativePlatform", () => {
       try {
         IModelHost.platform;
         isLoaded = true;
-      } catch (_e) { }
-      if (!isLoaded)
-        throw e; // re-throw if startup() failed to set up NativePlatform
+      } catch (_e) {}
+      if (!isLoaded) throw e; // re-throw if startup() failed to set up NativePlatform
     }
     addonMock.reset();
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -65,42 +73,90 @@ describe("default NativePlatform", () => {
     addonMock.reset();
     addonMock
       .setup(async (x) => x.forceLoadSchemas(moq.It.isAny()))
-      .returns(async () => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "rejected" } }))
+      .returns(async () => ({
+        error: {
+          status: IModelJsNative.ECPresentationStatus.Error,
+          message: "rejected",
+        },
+      }))
       .verifiable();
     await expect(nativePlatform.forceLoadSchemas(undefined)).to.be.rejected;
     addonMock.verifyAll();
   });
 
   describe("handleRequest", () => {
-
     it("calls addon", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => { } }))
+        .returns(() => ({
+          result: Promise.resolve({ result: "0" }),
+          cancel: () => {},
+        }))
         .verifiable();
-      expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
+      expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({
+        result: "0",
+      });
       addonMock.verifyAll();
     });
 
     it("throws on cancellation response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
+        .returns(() => ({
+          result: Promise.resolve({
+            error: {
+              status: IModelJsNative.ECPresentationStatus.Canceled,
+              message: "test",
+            },
+          }),
+          cancel: () => {},
+        }));
+      await expect(
+        nativePlatform.handleRequest(undefined, "")
+      ).to.eventually.be.rejectedWith(
+        PresentationNativePlatformResponseError,
+        "test"
+      );
     });
 
     it("throws on error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
+        .returns(() => ({
+          result: Promise.resolve({
+            error: {
+              status: IModelJsNative.ECPresentationStatus.Error,
+              message: "test",
+            },
+          }),
+          cancel: () => {},
+        }));
+      await expect(
+        nativePlatform.handleRequest(undefined, "")
+      ).to.eventually.be.rejectedWith(
+        PresentationNativePlatformResponseError,
+        "test"
+      );
     });
 
     it("throws on `ResultSetTooLarge` error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.ResultSetTooLarge, message: "test" } }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test").with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
+        .returns(() => ({
+          result: Promise.resolve({
+            error: {
+              status: IModelJsNative.ECPresentationStatus.ResultSetTooLarge,
+              message: "test",
+            },
+          }),
+          cancel: () => {},
+        }));
+      await expect(nativePlatform.handleRequest(undefined, ""))
+        .to.eventually.be.rejectedWith(
+          PresentationNativePlatformResponseError,
+          "test"
+        )
+        .with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
     });
 
     it("throws with diagnostics", async () => {
@@ -109,8 +165,19 @@ describe("default NativePlatform", () => {
       };
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "" }, diagnostics }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError).and.have.property("diagnostics", diagnostics);
+        .returns(() => ({
+          result: Promise.resolve({
+            error: {
+              status: IModelJsNative.ECPresentationStatus.Error,
+              message: "",
+            },
+            diagnostics,
+          }),
+          cancel: () => {},
+        }));
+      await expect(nativePlatform.handleRequest(undefined, ""))
+        .to.eventually.be.rejectedWith(PresentationNativePlatformResponseError)
+        .and.have.property("diagnostics", diagnostics);
     });
 
     it("adds listener to cancel event and calls it only after first invocation", async () => {
@@ -118,14 +185,18 @@ describe("default NativePlatform", () => {
       const cancelEvent: BeEvent<() => void> = new BeEvent<() => void>();
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: cancelFunction }));
-      expect(await nativePlatform.handleRequest(undefined, "", cancelEvent)).to.deep.equal({ result: "0" });
+        .returns(() => ({
+          result: Promise.resolve({ result: "0" }),
+          cancel: cancelFunction,
+        }));
+      expect(
+        await nativePlatform.handleRequest(undefined, "", cancelEvent)
+      ).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
       cancelEvent.raiseEvent();
       cancelEvent.raiseEvent();
       expect(cancelFunction.calledOnce).to.be.true;
     });
-
   });
 
   it("puts diagnostics into result", async () => {
@@ -134,8 +205,14 @@ describe("default NativePlatform", () => {
     };
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => { } }));
-    expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
+      .returns(() => ({
+        result: Promise.resolve({ result: "0", diagnostics }),
+        cancel: () => {},
+      }));
+    expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({
+      result: "0",
+      diagnostics,
+    });
     addonMock.verifyAll();
   });
 
@@ -160,15 +237,26 @@ describe("default NativePlatform", () => {
   it("throws on void error response", async () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
-      .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.InvalidArgument, message: "test" } }));
-    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError, "test");
+      .returns(() => ({
+        error: {
+          status: IModelJsNative.ECPresentationStatus.InvalidArgument,
+          message: "test",
+        },
+      }));
+    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(
+      PresentationError,
+      "test"
+    );
   });
 
   it("calls addon's getRulesets", async () => {
     const ruleset = { id: "", rules: [] };
     const hash = faker.random.uuid();
     const serializedResult = JSON.stringify([{ ruleset, hash }]);
-    addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => ({ result: serializedResult })).verifiable();
+    addonMock
+      .setup((x) => x.getRulesets(ruleset.id))
+      .returns(() => ({ result: serializedResult }))
+      .verifiable();
     const result = nativePlatform.getRulesets(ruleset.id);
     expect(result).to.deep.eq({ result: serializedResult });
     addonMock.verifyAll();
@@ -178,21 +266,30 @@ describe("default NativePlatform", () => {
     const ruleset = { id: "", rules: [] };
     const hash = faker.random.uuid();
     const serializedRuleset = JSON.stringify(ruleset);
-    addonMock.setup((x) => x.addRuleset(serializedRuleset)).returns(() => ({ result: hash })).verifiable();
+    addonMock
+      .setup((x) => x.addRuleset(serializedRuleset))
+      .returns(() => ({ result: hash }))
+      .verifiable();
     const result = nativePlatform.addRuleset(serializedRuleset);
     addonMock.verifyAll();
     expect(result).to.deep.eq({ result: hash });
   });
 
   it("calls addon's removeRuleset", async () => {
-    addonMock.setup((x) => x.removeRuleset("test id", "test hash")).returns(() => ({ result: true })).verifiable();
+    addonMock
+      .setup((x) => x.removeRuleset("test id", "test hash"))
+      .returns(() => ({ result: true }))
+      .verifiable();
     const result = nativePlatform.removeRuleset("test id", "test hash");
     addonMock.verifyAll();
     expect(result).to.deep.eq({ result: true });
   });
 
   it("calls addon's clearRulesets", async () => {
-    addonMock.setup((x) => x.clearRulesets()).returns(() => ({ result: undefined })).verifiable();
+    addonMock
+      .setup((x) => x.clearRulesets())
+      .returns(() => ({ result: undefined }))
+      .verifiable();
     nativePlatform.clearRulesets();
     addonMock.verifyAll();
   });
@@ -201,17 +298,31 @@ describe("default NativePlatform", () => {
     const rulesetId = faker.random.word();
     const variableId = faker.random.word();
     const value = faker.random.word();
-    addonMock.setup((x) => x.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value))
+    addonMock
+      .setup((x) =>
+        x.setRulesetVariableValue(
+          rulesetId,
+          variableId,
+          VariableValueTypes.String,
+          value
+        )
+      )
       .returns(() => ({ result: undefined }))
       .verifiable();
-    nativePlatform.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value);
+    nativePlatform.setRulesetVariableValue(
+      rulesetId,
+      variableId,
+      VariableValueTypes.String,
+      value
+    );
     addonMock.verifyAll();
   });
 
   it("calls addon's unsetRulesetVariableValue", async () => {
     const rulesetId = faker.random.word();
     const variableId = faker.random.word();
-    addonMock.setup((x) => x.unsetRulesetVariableValue(rulesetId, variableId))
+    addonMock
+      .setup((x) => x.unsetRulesetVariableValue(rulesetId, variableId))
       .returns(() => ({ result: undefined }))
       .verifiable();
     nativePlatform.unsetRulesetVariableValue(rulesetId, variableId);
@@ -222,17 +333,29 @@ describe("default NativePlatform", () => {
     const rulesetId = faker.random.word();
     const variableId = faker.random.word();
     const value = faker.random.word();
-    addonMock.setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String))
+    addonMock
+      .setup((x) =>
+        x.getRulesetVariableValue(
+          rulesetId,
+          variableId,
+          VariableValueTypes.String
+        )
+      )
       .returns(() => ({ result: value }))
       .verifiable();
-    const result = nativePlatform.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String);
+    const result = nativePlatform.getRulesetVariableValue(
+      rulesetId,
+      variableId,
+      VariableValueTypes.String
+    );
     addonMock.verifyAll();
     expect(result).to.deep.equal({ result: value });
   });
 
   it("calls addon's getUpdateInfo", async () => {
     const updates = new Array<UpdateInfo>();
-    addonMock.setup((x) => x.getUpdateInfo())
+    addonMock
+      .setup((x) => x.getUpdateInfo())
       .returns(() => ({ result: updates }))
       .verifiable();
     const result = nativePlatform.getUpdateInfo();
@@ -242,16 +365,23 @@ describe("default NativePlatform", () => {
 
   it("returns imodel addon from IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
-    mock.setup((x) => x.nativeDb).returns(() => ({} as any)).verifiable(moq.Times.atLeastOnce());
+    mock
+      .setup((x) => x.nativeDb)
+      .returns(() => ({} as any))
+      .verifiable(moq.Times.atLeastOnce());
     expect(nativePlatform.getImodelAddon(mock.object)).be.instanceOf(Object);
     mock.verifyAll();
   });
 
   it("throws when fails to find imodel using IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
-    mock.setup((x) => x.nativeDb).returns(() => (undefined as any)).verifiable(moq.Times.atLeastOnce());
-    expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(PresentationError);
+    mock
+      .setup((x) => x.nativeDb)
+      .returns(() => undefined as any)
+      .verifiable(moq.Times.atLeastOnce());
+    expect(() => nativePlatform.getImodelAddon(mock.object)).to.throw(
+      PresentationError
+    );
     mock.verifyAll();
   });
-
 });

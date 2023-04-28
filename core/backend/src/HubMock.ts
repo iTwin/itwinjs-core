@@ -6,22 +6,42 @@
 import { join } from "path";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps,
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  ChangesetProps,
+  ChangesetRange,
+  IModelVersion,
+  LocalDirName,
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CheckpointArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
-  LockMap, LockProps, V2CheckpointAccessProps,
+  BackendHubAccess,
+  BriefcaseDbArg,
+  BriefcaseIdArg,
+  ChangesetArg,
+  CheckpointArg,
+  CreateNewIModelProps,
+  DownloadChangesetArg,
+  DownloadChangesetRangeArg,
+  IModelIdArg,
+  IModelNameArg,
+  LockMap,
+  LockProps,
+  V2CheckpointAccessProps,
 } from "./BackendHubAccess";
-import { CheckpointProps, ProgressFunction, ProgressStatus } from "./CheckpointManager";
+import {
+  CheckpointProps,
+  ProgressFunction,
+  ProgressStatus,
+} from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
 
 function wasStarted(val: string | undefined): asserts val is string {
-  if (undefined === val)
-    throw new Error("Call HubMock.startup first");
+  if (undefined === val) throw new Error("Call HubMock.startup first");
 }
 
 /**
@@ -63,7 +83,9 @@ export class HubMock {
   private static _iTwinId: GuidString | undefined;
 
   /** Determine whether a test us currently being run under HubMock */
-  public static get isValid() { return undefined !== this.mockRoot; }
+  public static get isValid() {
+    return undefined !== this.mockRoot;
+  }
   public static get iTwinId() {
     wasStarted(this._iTwinId);
     return this._iTwinId;
@@ -76,7 +98,9 @@ export class HubMock {
    */
   public static startup(mockName: LocalDirName, outputDir: string) {
     if (this.isValid)
-      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+      throw new Error(
+        "Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed"
+      );
 
     this.hubs.clear();
     this.mockRoot = join(outputDir, "HubMock", mockName);
@@ -92,12 +116,10 @@ export class HubMock {
    * @note this function throws an exception if any of the iModels used during the tests are left open.
    */
   public static shutdown() {
-    if (this.mockRoot === undefined)
-      return;
+    if (this.mockRoot === undefined) return;
 
     HubMock._iTwinId = undefined;
-    for (const hub of this.hubs)
-      hub[1].cleanup();
+    for (const hub of this.hubs) hub[1].cleanup();
 
     this.hubs.clear();
     IModelJsFs.purgeDirSync(this.mockRoot);
@@ -108,13 +130,14 @@ export class HubMock {
 
   public static findLocalHub(iModelId: GuidString): LocalHub {
     const hub = this.hubs.get(iModelId);
-    if (!hub)
-      throw new Error(`local hub for iModel ${iModelId} not created`);
+    if (!hub) throw new Error(`local hub for iModel ${iModelId} not created`);
     return hub;
   }
 
   /** create a [[LocalHub]] for an iModel.  */
-  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
+  public static async createNewIModel(
+    arg: CreateNewIModelProps
+  ): Promise<GuidString> {
     wasStarted(this.mockRoot);
     const props = { ...arg, iModelId: Guid.createValue() };
     const mock = new LocalHub(join(this.mockRoot, props.iModelId), props);
@@ -130,37 +153,42 @@ export class HubMock {
 
   /** All methods below are mocks of the [[BackendHubAccess]] interface */
 
-  public static async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetProps> {
+  public static async getChangesetFromNamedVersion(
+    arg: IModelIdArg & { versionName: string }
+  ): Promise<ChangesetProps> {
     return this.findLocalHub(arg.iModelId).findNamedVersion(arg.versionName);
   }
 
   private static changesetIndexFromArg(arg: ChangesetArg) {
-    return (undefined !== arg.changeset.index) ? arg.changeset.index : this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeset.id);
+    return undefined !== arg.changeset.index
+      ? arg.changeset.index
+      : this.findLocalHub(arg.iModelId).getChangesetIndex(arg.changeset.id);
   }
 
-  public static async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetProps> {
+  public static async getChangesetFromVersion(
+    arg: IModelIdArg & { version: IModelVersion }
+  ): Promise<ChangesetProps> {
     const hub = this.findLocalHub(arg.iModelId);
     const version = arg.version;
-    if (version.isFirst)
-      return hub.getChangesetByIndex(0);
+    if (version.isFirst) return hub.getChangesetByIndex(0);
 
     const asOf = version.getAsOfChangeSet();
-    if (asOf)
-      return hub.getChangesetById(asOf);
+    if (asOf) return hub.getChangesetById(asOf);
 
     const versionName = version.getName();
-    if (versionName)
-      return hub.findNamedVersion(versionName);
+    if (versionName) return hub.findNamedVersion(versionName);
 
     return hub.getLatestChangeset();
   }
 
-  public static async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps> {
+  public static async getLatestChangeset(
+    arg: IModelIdArg
+  ): Promise<ChangesetProps> {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
   private static async getAccessToken(arg: TokenArg) {
-    return arg.accessToken ?? await IModelHost.getAccessToken();
+    return arg.accessToken ?? (await IModelHost.getAccessToken());
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
@@ -168,9 +196,14 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getBriefcaseIds(accessToken);
   }
 
-  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
+  public static async acquireNewBriefcaseId(
+    arg: AcquireNewBriefcaseIdArg
+  ): Promise<number> {
     const accessToken = await this.getAccessToken(arg);
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(accessToken, arg.briefcaseAlias);
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(
+      accessToken,
+      arg.briefcaseAlias
+    );
   }
 
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
@@ -178,8 +211,13 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
-    const changesetProps = this.findLocalHub(arg.iModelId).downloadChangeset({ index: this.changesetIndexFromArg(arg), targetDir: arg.targetDir });
+  public static async downloadChangeset(
+    arg: DownloadChangesetArg
+  ): Promise<ChangesetFileProps> {
+    const changesetProps = this.findLocalHub(arg.iModelId).downloadChangeset({
+      index: this.changesetIndexFromArg(arg),
+      targetDir: arg.targetDir,
+    });
 
     if (arg.progressCallback) {
       const totalSize = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
@@ -190,71 +228,115 @@ export class HubMock {
     return changesetProps;
   }
 
-  public static async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
-    const changesetProps = this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: arg.targetDir });
+  public static async downloadChangesets(
+    arg: DownloadChangesetRangeArg
+  ): Promise<ChangesetFileProps[]> {
+    const changesetProps = this.findLocalHub(arg.iModelId).downloadChangesets({
+      range: arg.range,
+      targetDir: arg.targetDir,
+    });
 
     if (arg.progressCallback) {
-      const totalSize = changesetProps.reduce((sum, props) => sum + (IModelJsFs.lstatSync(props.pathname)?.size ?? 0), 0);
+      const totalSize = changesetProps.reduce(
+        (sum, props) => sum + (IModelJsFs.lstatSync(props.pathname)?.size ?? 0),
+        0
+      );
       await HubMock.mockProgressReporting(arg.progressCallback, totalSize);
     }
 
     return changesetProps;
   }
 
-  public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
-    return this.findLocalHub(arg.iModelId).getChangesetByIndex(this.changesetIndexFromArg(arg));
+  public static async queryChangeset(
+    arg: ChangesetArg
+  ): Promise<ChangesetProps> {
+    return this.findLocalHub(arg.iModelId).getChangesetByIndex(
+      this.changesetIndexFromArg(arg)
+    );
   }
 
-  public static async queryChangesets(arg: IModelIdArg & { range?: ChangesetRange }): Promise<ChangesetProps[]> {
+  public static async queryChangesets(
+    arg: IModelIdArg & { range?: ChangesetRange }
+  ): Promise<ChangesetProps[]> {
     return this.findLocalHub(arg.iModelId).queryChangesets(arg.range);
   }
 
-  public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex> {
+  public static async pushChangeset(
+    arg: IModelIdArg & { changesetProps: ChangesetFileProps }
+  ): Promise<ChangesetIndex> {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
   }
 
-  public static async queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+  public static async queryV2Checkpoint(
+    _arg: CheckpointProps
+  ): Promise<V2CheckpointAccessProps | undefined> {
     return undefined;
   }
 
   // eslint-disable-next-line deprecation/deprecation
-  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
+  public static async downloadV1Checkpoint(
+    arg: CheckpointArg
+  ): Promise<ChangesetIndexAndId> {
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({
+      changeset: arg.checkpoint.changeset,
+      targetFile: arg.localFile,
+    });
   }
 
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const hub = this.findLocalHub(arg.iModelId);
-    hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
+    hub.releaseAllLocks({
+      briefcaseId: arg.briefcaseId,
+      changesetIndex: hub.getIndexFromChangeset(arg.changeset),
+    });
   }
 
-  public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
+  public static async queryAllLocks(
+    _arg: BriefcaseDbArg
+  ): Promise<LockProps[]> {
     return [];
   }
 
-  public static async acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void> {
+  public static async acquireLocks(
+    arg: BriefcaseDbArg,
+    locks: LockMap
+  ): Promise<void> {
     this.findLocalHub(arg.iModelId).acquireLocks(locks, arg);
   }
 
-  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+  public static async queryIModelByName(
+    arg: IModelNameArg
+  ): Promise<GuidString | undefined> {
     for (const hub of this.hubs) {
       const localHub = hub[1];
-      if (localHub.iTwinId === arg.iTwinId && localHub.iModelName === arg.iModelName)
+      if (
+        localHub.iTwinId === arg.iTwinId &&
+        localHub.iModelName === arg.iModelName
+      )
         return localHub.iModelId;
     }
     return undefined;
   }
 
-  public static async deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void> {
+  public static async deleteIModel(
+    arg: IModelIdArg & { iTwinId: GuidString }
+  ): Promise<void> {
     return this.destroy(arg.iModelId);
   }
 
-  private static async mockProgressReporting(progressCallback: ProgressFunction, totalSize: number): Promise<void> {
+  private static async mockProgressReporting(
+    progressCallback: ProgressFunction,
+    totalSize: number
+  ): Promise<void> {
     await new Promise((resolve, reject) => {
       let rejected = false;
 
       const mockProgress = (index: number) => {
         const bytesDownloaded = Math.floor(totalSize * (index / 4));
-        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort){
+        if (
+          !rejected &&
+          progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort
+        ) {
           rejected = true;
           reject(new Error("AbortError"));
         }

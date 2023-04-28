@@ -16,10 +16,10 @@ export enum TileFormat {
   Unknown = 0,
   B3dm = 0x6d643362, // "b3dm"
   Gltf = 0x46546c67, // "glTF"
-  Pnts = 0x73746e70,  // "pnts"
+  Pnts = 0x73746e70, // "pnts"
   IModel = 0x6c644d69, // "iMdl"
-  Cmpt = 0x74706d63,  // cmpt
-  I3dm = 0x6d643369,  // i3dm
+  Cmpt = 0x74706d63, // cmpt
+  I3dm = 0x6d643369, // i3dm
   A3x = 0x583341, // A3X0 (numeric 0 not char '0')
 }
 
@@ -80,13 +80,14 @@ const readStatusMessages = [
  */
 export class TileReadError extends BentleyError {
   public constructor(status: TileReadStatus, message?: string) {
-    if (undefined === message)
-      message = readStatusMessages[status];
+    if (undefined === message) message = readStatusMessages[status];
 
     super(status, message);
   }
 
-  public get wasCanceled(): boolean { return TileReadStatus.Canceled === this.errorNumber; }
+  public get wasCanceled(): boolean {
+    return TileReadStatus.Canceled === this.errorNumber;
+  }
 }
 
 /** The base header preceding tile data of most formats, identifying the tile format and version of that format.
@@ -104,7 +105,9 @@ export abstract class TileHeader {
     this.version = stream.readUint32();
   }
 
-  public get format(): TileFormat { return this._format; }
+  public get format(): TileFormat {
+    return this._format;
+  }
 
   /** Returns whether the header represents valid data */
   public abstract get isValid(): boolean;
@@ -118,13 +121,15 @@ export abstract class TileHeader {
 /** Read 3 64-bit floating point numbers at the byte stream's current read position, advance by 24 bytes, and return a Point3d constructed from the 3 numbers.
  * @internal
  */
-export function nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d {
+export function nextPoint3d64FromByteStream(
+  stream: ByteStream,
+  result?: Point3d
+): Point3d {
   const x = stream.readFloat64(),
     y = stream.readFloat64(),
     z = stream.readFloat64();
 
-  if (undefined === result)
-    return new Point3d(x, y, z);
+  if (undefined === result) return new Point3d(x, y, z);
 
   result.set(x, y, z);
   return result;

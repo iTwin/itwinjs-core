@@ -13,11 +13,11 @@ There are two types of content rules:
 - [Content rule](./contentRule.md) is a container for [specifications](#specifications) that produce content.
 - [Content modifier](./contentModifier.md) is a container for [modifiers](#modifiers) that are applied to all content produced by [content rules](./contentRule.md) and their [specifications](#specifications).
 
-Both rules have *picking attributes* to specify what [input](./Terminology.md#input-instance) the rule applies to.
+Both rules have _picking attributes_ to specify what [input](./Terminology.md#input-instance) the rule applies to.
 
 ### Specifications
 
-Content specifications define **result of the rule** if it does get used after evaluating it's [condition](./contentRule.md#attribute-condition) and other *picking attributes*. There are 3 types of specifications:
+Content specifications define **result of the rule** if it does get used after evaluating it's [condition](./contentRule.md#attribute-condition) and other _picking attributes_. There are 3 types of specifications:
 
 - [Selected node instances](./SelectedNodeInstances.md) specification returns properties of the [input instance](./Terminology.md#input-instance).
 - [Content instances of specific classes](./contentInstancesOfSpecificClasses.md) specification returns properties of instances of given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).

@@ -6,7 +6,12 @@
  * @module Curve
  */
 import { Clipper } from "../clipping/ClipUtils";
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import {
+  AxisOrder,
+  BeJSONFunctions,
+  Geometry,
+  PlaneAltitudeEvaluator,
+} from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -16,15 +21,28 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import {
+  PointStreamGrowableXYZArrayCollector,
+  VariantPointDataStream,
+} from "../geometry3d/PointStreaming";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { MultiLineStringDataVariant } from "../topology/Triangulation";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import {
+  CurveExtendOptions,
+  VariantCurveExtendParameter,
+} from "./CurveExtendMode";
+import {
+  CurveIntervalRole,
+  CurveLocationDetail,
+  CurveSearchStatus,
+} from "./CurveLocationDetail";
+import {
+  AnnounceNumberNumberCurvePrimitive,
+  CurvePrimitive,
+} from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
@@ -46,7 +64,8 @@ function accumulateGoodUnitPerpendicular(
   stepDirection: number,
   weight: number,
   normal: Vector3d,
-  workVector: Vector3d): boolean {
+  workVector: Vector3d
+): boolean {
   const n = points.length;
   if (stepDirection > 0) {
     for (let i = baseIndex; i + 1 < n; i++) {
@@ -58,8 +77,7 @@ function accumulateGoodUnitPerpendicular(
       }
     }
   } else {
-    if (baseIndex + 1 >= n)
-      baseIndex = n - 2;
+    if (baseIndex + 1 >= n) baseIndex = n - 2;
     for (let i = baseIndex; i >= 0; i--) {
       points.vectorIndexIndex(i, i + 1, workVector);
       workVector.crossProduct(vectorA, workVector);
@@ -90,11 +108,15 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private static _workPointC = Point3d.create();
   private static _workRay = Ray3d.createXAxis();
   /** test if `other` is an instance of `LineString3d` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof LineString3d; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof LineString3d;
+  }
   /**
    * A LineString3d extends along its first and final segments.
    */
-  public override get isExtensibleFractionSpace(): boolean { return true; }
+  public override get isExtensibleFractionSpace(): boolean {
+    return true;
+  }
 
   private _points: GrowableXYZArray;
   private _fractions?: GrowableFloat64Array;
@@ -107,36 +129,53 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private _normalIndices?: GrowableFloat64Array;
 
   /** return the points array (cloned). */
-  public get points(): Point3d[] { return this._points.getPoint3dArray(); }
+  public get points(): Point3d[] {
+    return this._points.getPoint3dArray();
+  }
   /** Return (reference to) point data in packed GrowableXYZArray. */
-  public get packedPoints(): GrowableXYZArray { return this._points; }
+  public get packedPoints(): GrowableXYZArray {
+    return this._points;
+  }
   /** Return array of fraction parameters.
    * * These Are only present during certain constructions such as faceting.
    * * When present, these fractions are fractions of some other curve being stroked, and are NOT related to the linestring fraction parameters.
    */
-  public get fractions(): GrowableFloat64Array | undefined { return this._fractions; }
+  public get fractions(): GrowableFloat64Array | undefined {
+    return this._fractions;
+  }
   /** Return the (optional) array of derivatives. These Are only present during certain constructions such as faceting. */
-  public get packedDerivatives(): GrowableXYZArray | undefined { return this._derivatives; }
+  public get packedDerivatives(): GrowableXYZArray | undefined {
+    return this._derivatives;
+  }
   /** Return the (optional) array of uv params. These Are only present during certain constructions such as faceting. */
-  public get packedUVParams(): GrowableXYArray | undefined { return this._uvParams; }
+  public get packedUVParams(): GrowableXYArray | undefined {
+    return this._uvParams;
+  }
   /** Return the (optional) array of surface normals. These Are only present during certain constructions such as faceting. */
-  public get packedSurfaceNormals(): GrowableXYZArray | undefined { return this._surfaceNormals; }
+  public get packedSurfaceNormals(): GrowableXYZArray | undefined {
+    return this._surfaceNormals;
+  }
   /** Return the (optional) array of normal indices. These Are only present during certain constructions such as faceting. */
-  public get normalIndices(): GrowableFloat64Array | undefined { return this._normalIndices; }
+  public get normalIndices(): GrowableFloat64Array | undefined {
+    return this._normalIndices;
+  }
   /** Return the (optional) array of param indices. These Are only present during certain constructions such as faceting. */
-  public get paramIndices(): GrowableFloat64Array | undefined { return this._uvIndices; }
+  public get paramIndices(): GrowableFloat64Array | undefined {
+    return this._uvIndices;
+  }
   /** Return the (optional) array of point indices. These Are only present during certain constructions such as faceting. */
-  public get pointIndices(): GrowableFloat64Array | undefined { return this._pointIndices; }
+  public get pointIndices(): GrowableFloat64Array | undefined {
+    return this._pointIndices;
+  }
 
   private constructor(points?: GrowableXYZArray) {
     super();
-    if (points)
-      this._points = points;
-    else
-      this._points = new GrowableXYZArray();
+    if (points) this._points = points;
+    else this._points = new GrowableXYZArray();
   }
   /** Clone this linestring and apply the transform to the clone points. */
-  public cloneTransformed(transform: Transform): LineString3d {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): LineString3d {
+    // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
@@ -154,11 +193,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public static createCapture(points: GrowableXYZArray): LineString3d {
     return new LineString3d(points);
-
   }
 
   /** Create a linestring from `XAndY` points, with a specified z applied to all. */
-  public static createXY(points: XAndY[], z: number, enforceClosure: boolean = false): LineString3d {
+  public static createXY(
+    points: XAndY[],
+    z: number,
+    enforceClosure: boolean = false
+  ): LineString3d {
     const result = new LineString3d();
     const xyz = result._points;
     for (const xy of points) {
@@ -168,7 +210,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       const distance = xyz.distanceIndexIndex(0, xyz.length - 1);
       if (distance !== undefined && distance !== 0.0) {
         if (Geometry.isSameCoordinate(0, distance)) {
-          xyz.pop();   // nonzero but small distance -- to be replaced by point 0 exactly.
+          xyz.pop(); // nonzero but small distance -- to be replaced by point 0 exactly.
           const xyzA = xyz.front();
           xyz.push(xyzA!);
         }
@@ -189,7 +231,12 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._points.pushFrom(points);
   }
   /** Add points accessed by index in a GrowableXYZArray, with a specified index step. */
-  public addSteppedPoints(source: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number) {
+  public addSteppedPoints(
+    source: GrowableXYZArray,
+    pointIndex0: number,
+    step: number,
+    numAdd: number
+  ) {
     this._points.addSteppedPoints(source, pointIndex0, step, numAdd);
   }
 
@@ -212,8 +259,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fraction
    */
   public addFraction(fraction: number) {
-    if (!this._fractions)
-      this._fractions = new GrowableFloat64Array();
+    if (!this._fractions) this._fractions = new GrowableFloat64Array();
     this._fractions.push(fraction);
   }
 
@@ -304,8 +350,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param uv
    */
   public addUVParam(uvParam: XAndY) {
-    if (!this._uvParams)
-      this._uvParams = new GrowableXYArray();
+    if (!this._uvParams) this._uvParams = new GrowableXYArray();
     this._uvParams.pushXY(uvParam.x, uvParam.y);
   }
 
@@ -314,8 +359,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param uv
    */
   public addUVParamAsUV(u: number, v: number) {
-    if (!this._uvParams)
-      this._uvParams = new GrowableXYArray();
+    if (!this._uvParams) this._uvParams = new GrowableXYArray();
     this._uvParams.pushXY(u, v);
   }
 
@@ -324,8 +368,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param vector
    */
   public addDerivative(vector: Vector3d) {
-    if (!this._derivatives)
-      this._derivatives = new GrowableXYZArray();
+    if (!this._derivatives) this._derivatives = new GrowableXYZArray();
     this._derivatives.push(vector);
   }
 
@@ -334,8 +377,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param vector
    */
   public addSurfaceNormal(vector: Vector3d) {
-    if (!this._surfaceNormals)
-      this._surfaceNormals = new GrowableXYZArray();
+    if (!this._surfaceNormals) this._surfaceNormals = new GrowableXYZArray();
     this._surfaceNormals.push(vector);
   }
 
@@ -343,7 +385,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * If the linestring is not already closed, add a closure point.
    */
   public addClosurePoint() {
-    const distance = this._points.distanceIndexIndex(0, this._points.length - 1);
+    const distance = this._points.distanceIndexIndex(
+      0,
+      this._points.length - 1
+    );
     if (distance !== undefined && !Geometry.isSameCoordinate(distance, 0))
       this._points.pushWrap(1);
   }
@@ -353,7 +398,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** Compute `uvParams` array as (xy parts of) a linear transform of the xyz coordinates */
   public computeUVFromXYZTransform(transform: Transform) {
-    this._uvParams = GrowableXYArray.createFromGrowableXYZArray(this._points, transform);
+    this._uvParams = GrowableXYArray.createFromGrowableXYZArray(
+      this._points,
+      transform
+    );
   }
   /** Create the linestring for a rectangle parallel to the xy plane.
    * * The z coordinate from `point0` is used for all points.
@@ -366,7 +414,12 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    *    * move by (signed !) negative `ay` in the y direction.
    *    * (this returns to `point0`)
    */
-  public static createRectangleXY(point0: Point3d, ax: number, ay: number, closed: boolean = true): LineString3d {
+  public static createRectangleXY(
+    point0: Point3d,
+    ax: number,
+    ay: number,
+    closed: boolean = true
+  ): LineString3d {
     const ls = LineString3d.create();
     const x0 = point0.x;
     const x1 = point0.x + ax;
@@ -377,8 +430,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     ls.addPointXYZ(x1, y0, z);
     ls.addPointXYZ(x1, y1, z);
     ls.addPointXYZ(x0, y1, z);
-    if (closed)
-      ls.addClosurePoint();
+    if (closed) ls.addClosurePoint();
     return ls;
   }
   /**
@@ -388,17 +440,20 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param radius distance to vertex or edge (see `radiusToVertices`)
    * @param radiusToVertices true if polygon is inscribed in circle (radius measured to vertices); false if polygon is outside circle (radius to edges)
    */
-  public static createRegularPolygonXY(center: Point3d, edgeCount: number, radius: number, radiusToVertices: boolean = true): LineString3d {
-    if (edgeCount < 3)
-      edgeCount = 3;
+  public static createRegularPolygonXY(
+    center: Point3d,
+    edgeCount: number,
+    radius: number,
+    radiusToVertices: boolean = true
+  ): LineString3d {
+    if (edgeCount < 3) edgeCount = 3;
     const ls = LineString3d.create();
-    const i0 = radiusToVertices ? 0 : -1;   // offset to make first vector (radius,0,0)
+    const i0 = radiusToVertices ? 0 : -1; // offset to make first vector (radius,0,0)
     const radiansStep = Math.PI / edgeCount;
     let c;
     let s;
     let radians;
-    if (!radiusToVertices)
-      radius = radius / Math.cos(radiansStep);
+    if (!radiusToVertices) radius = radius / Math.cos(radiansStep);
     for (let i = 0; i < edgeCount; i++) {
       radians = (i0 + 2 * i) * radiansStep;
       c = Angle.cleanupTrigValue(Math.cos(radians));
@@ -424,35 +479,31 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._points = other._points.clone(this._points);
     if (other._derivatives)
       this._derivatives = other._derivatives.clone(this._derivatives);
-    else
-      this._derivatives = undefined;
-    if (other._fractions)
-      this._fractions = other._fractions.clone(false);
+    else this._derivatives = undefined;
+    if (other._fractions) this._fractions = other._fractions.clone(false);
     else this._fractions = undefined;
     if (other._surfaceNormals)
       this._surfaceNormals = other._surfaceNormals.clone(this._surfaceNormals);
-    else
-      this._surfaceNormals = undefined;
-    if (other._uvParams)
-      this._uvParams = other._uvParams.clone();
-    else
-      this._uvParams = undefined;
+    else this._surfaceNormals = undefined;
+    if (other._uvParams) this._uvParams = other._uvParams.clone();
+    else this._uvParams = undefined;
   }
   /** Create a linestring from an array of points. */
   public static createPoints(points: Point3d[]): LineString3d {
     const ls = new LineString3d();
     let point;
-    for (point of points)
-      ls._points.push(point);
+    for (point of points) ls._points.push(point);
     return ls;
   }
   /** Create a linestring, taking points at specified indices from an array of points. */
-  public static createIndexedPoints(points: Point3d[], index: number[], addClosure: boolean = false): LineString3d {
+  public static createIndexedPoints(
+    points: Point3d[],
+    index: number[],
+    addClosure: boolean = false
+  ): LineString3d {
     const ls = new LineString3d();
-    for (const i of index)
-      ls._points.push(points[i]); // no clone needed -- we know this reformats to packed array.
-    if (addClosure && index.length > 1)
-      ls._points.push(points[index[0]]);
+    for (const i of index) ls._points.push(points[i]); // no clone needed -- we know this reformats to packed array.
+    if (addClosure && index.length > 1) ls._points.push(points[index[0]]);
     return ls;
   }
 
@@ -460,7 +511,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public static createFloat64Array(xyzData: Float64Array): LineString3d {
     const ls = new LineString3d();
     for (let i = 0; i + 3 <= xyzData.length; i += 3)
-      ls._points.push(Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2]));
+      ls._points.push(
+        Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2])
+      );
     return ls;
   }
   /** Return a clone of this linestring. */
@@ -477,8 +530,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._points.clear();
     if (Array.isArray(json)) {
       let xyz;
-      for (xyz of json)
-        this._points.push(Point3d.fromJSON(xyz));
+      for (xyz of json) this._points.push(Point3d.fromJSON(xyz));
     }
   }
   /**
@@ -498,7 +550,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * * See `LineString3d.setFromJSON ()` for remarks on `json` structure.
    */
   public static fromJSON(json?: any): LineString3d {
-    const ls = new LineString3d(); ls.setFromJSON(json); return ls;
+    const ls = new LineString3d();
+    ls.setFromJSON(json);
+    return ls;
   }
   /**
    * Evaluate a point a fractional position along this linestring.
@@ -508,17 +562,29 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     const n = this._points.length;
-    if (n === 0)
-      return Point3d.createZero();
+    if (n === 0) return Point3d.createZero();
     if (n === 1)
-      return Point3d.createFrom(this._points.getPoint3dAtUncheckedPointIndex(0), result);
+      return Point3d.createFrom(
+        this._points.getPoint3dAtUncheckedPointIndex(0),
+        result
+      );
     const df = 1.0 / (n - 1);
     if (fraction <= df)
       return this._points.interpolate(0, fraction / df, 1, result)!;
     if (fraction + df >= 1.0)
-      return this._points.interpolate(n - 1, (1.0 - fraction) / df, n - 2, result)!;
+      return this._points.interpolate(
+        n - 1,
+        (1.0 - fraction) / df,
+        n - 2,
+        result
+      )!;
     const index0 = Math.floor(fraction / df);
-    return this._points.interpolate(index0, (fraction - index0 * df) / df, index0 + 1, result)!;
+    return this._points.interpolate(
+      index0,
+      (fraction - index0 * df) / df,
+      index0 + 1,
+      result
+    )!;
   }
 
   /**
@@ -549,7 +615,12 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 
     if (fraction + df >= 1.0) {
       result = result ? result : Ray3d.createZero();
-      this._points.interpolate(n - 2, 1.0 - (1.0 - fraction) / df, n - 1, result.origin);
+      this._points.interpolate(
+        n - 2,
+        1.0 - (1.0 - fraction) / df,
+        n - 1,
+        result.origin
+      );
       this._points.vectorIndexIndex(n - 2, n - 1, result.direction);
       result.direction.scaleInPlace(1.0 / df);
       return result;
@@ -566,9 +637,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /** Return point and derivative at fraction, with 000 second derivative. */
-  public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public fractionToPointAnd2Derivatives(
+    fraction: number,
+    result?: Plane3dByOriginAndVectors
+  ): Plane3dByOriginAndVectors {
     const ray = this.fractionToPointAndDerivative(fraction);
-    result = Plane3dByOriginAndVectors.createCapture(ray.origin, ray.direction, Vector3d.createZero(), result);
+    result = Plane3dByOriginAndVectors.createCapture(
+      ray.origin,
+      ray.direction,
+      Vector3d.createZero(),
+      result
+    );
     return result;
   }
   /**
@@ -577,47 +656,59 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param localFraction local fraction in [0,1] within the segment
    * @return global fraction f in [0,1] such that the segment is parameterized by index/N <= f <= (index+1)/N.
    */
-  public segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number {
+  public segmentIndexAndLocalFractionToGlobalFraction(
+    index: number,
+    localFraction: number
+  ): number {
     const numSegment = this._points.length - 1;
-    if (numSegment < 1)
-      return 0.0;
+    if (numSegment < 1) return 0.0;
     return (index + localFraction) / numSegment;
   }
   /**
    * Convert a global fraction to a segment index and local fraction.
    * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
    */
-  public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {index: number, fraction: number} {
+  public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {
+    index: number;
+    fraction: number;
+  } {
     const numSegment = this._points.length - 1;
-    if (numSegment < 1)
-      return {index: 0, fraction: 0.0};
+    if (numSegment < 1) return { index: 0, fraction: 0.0 };
 
     const scaledGlobalFraction = globalFraction * numSegment;
     let segmentIndex: number;
-    if (globalFraction < 0)
-      segmentIndex = 0;
-    else if (globalFraction > 1)
-      segmentIndex = numSegment - 1;
-    else  // globalFraction in [0,1]
-      segmentIndex = Math.floor(scaledGlobalFraction);
+    if (globalFraction < 0) segmentIndex = 0;
+    else if (globalFraction > 1) segmentIndex = numSegment - 1;
+    // globalFraction in [0,1]
+    else segmentIndex = Math.floor(scaledGlobalFraction);
 
     const localFraction = scaledGlobalFraction - segmentIndex;
-    return {index: segmentIndex, fraction: localFraction};
+    return { index: segmentIndex, fraction: localFraction };
   }
 
   /** Return a frenet frame, using nearby points to estimate a plane. */
-  public override fractionToFrenetFrame(fraction: number, result?: Transform): Transform {
+  public override fractionToFrenetFrame(
+    fraction: number,
+    result?: Transform
+  ): Transform {
     const n = this._points.length;
     if (n <= 1) {
       if (n === 1)
-        return Transform.createTranslation(this._points.getPoint3dAtUncheckedPointIndex(0), result);
+        return Transform.createTranslation(
+          this._points.getPoint3dAtUncheckedPointIndex(0),
+          result
+        );
       return Transform.createIdentity(result);
     }
 
     if (n === 2)
       return Transform.createRefs(
         this._points.interpolate(0, fraction, 1),
-        Matrix3d.createRigidHeadsUp(this._points.vectorIndexIndex(0, 1)!, AxisOrder.XYZ));
+        Matrix3d.createRigidHeadsUp(
+          this._points.vectorIndexIndex(0, 1)!,
+          AxisOrder.XYZ
+        )
+      );
 
     /** 3 or more points. */
     const numSegment = n - 1;
@@ -635,28 +726,68 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       localFraction = fraction * numSegment - baseIndex;
     }
 
-    const origin = this._points.interpolate(baseIndex, localFraction, baseIndex + 1)!;
+    const origin = this._points.interpolate(
+      baseIndex,
+      localFraction,
+      baseIndex + 1
+    )!;
     const vectorA = this._points.vectorIndexIndex(baseIndex, baseIndex + 1)!;
     // tricky stuff to handle colinear points.   But if vectorA is zero it is still a mess . ..
     const normal = Vector3d.create();
     const workVector = Vector3d.create();
-    if (baseIndex === 0) {  // only look forward
-      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex + 1, 1, 1.0, normal, workVector);
-    } else if (baseIndex + 2 >= n) { // only look back
-      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex - 1, -1, 1.0, normal, workVector);
+    if (baseIndex === 0) {
+      // only look forward
+      accumulateGoodUnitPerpendicular(
+        this._points,
+        vectorA,
+        baseIndex + 1,
+        1,
+        1.0,
+        normal,
+        workVector
+      );
+    } else if (baseIndex + 2 >= n) {
+      // only look back
+      accumulateGoodUnitPerpendicular(
+        this._points,
+        vectorA,
+        baseIndex - 1,
+        -1,
+        1.0,
+        normal,
+        workVector
+      );
     } else {
-      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex - 1, -1, (1.0 - localFraction), normal, workVector);
-      accumulateGoodUnitPerpendicular(this._points, vectorA, baseIndex + 1, 1, (localFraction), normal, workVector);
+      accumulateGoodUnitPerpendicular(
+        this._points,
+        vectorA,
+        baseIndex - 1,
+        -1,
+        1.0 - localFraction,
+        normal,
+        workVector
+      );
+      accumulateGoodUnitPerpendicular(
+        this._points,
+        vectorA,
+        baseIndex + 1,
+        1,
+        localFraction,
+        normal,
+        workVector
+      );
     }
-    const matrix = Matrix3d.createRigidFromColumns(normal, vectorA, AxisOrder.ZXY);
-    if (matrix)
-      return Transform.createOriginAndMatrix(origin, matrix, result);
+    const matrix = Matrix3d.createRigidFromColumns(
+      normal,
+      vectorA,
+      AxisOrder.ZXY
+    );
+    if (matrix) return Transform.createOriginAndMatrix(origin, matrix, result);
     return Transform.createTranslation(origin, result);
   }
   /** evaluate the start point of the linestring. */
   public override startPoint() {
-    if (this._points.length === 0)
-      return Point3d.createZero();
+    if (this._points.length === 0) return Point3d.createZero();
     return this._points.getPoint3dAtUncheckedPointIndex(0);
   }
   /** If i is a valid index, return that point. */
@@ -667,7 +798,11 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** If i and j are both valid indices, return the vector from point i to point j
    */
-  public vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined {
+  public vectorBetween(
+    i: number,
+    j: number,
+    result?: Vector3d
+  ): Vector3d | undefined {
     return this._points.vectorIndexIndex(i, j, result);
   }
   /** If i is a valid index, return that stored derivative vector. */
@@ -684,19 +819,21 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return undefined;
   }
   /** Return the number of points in this linestring. */
-  public numPoints(): number { return this._points.length; }
+  public numPoints(): number {
+    return this._points.length;
+  }
   /** evaluate the end point of the linestring. */
   public override endPoint() {
-    if (this._points.length === 0)
-      return Point3d.createZero();
-    return this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1);
+    if (this._points.length === 0) return Point3d.createZero();
+    return this._points.getPoint3dAtUncheckedPointIndex(
+      this._points.length - 1
+    );
   }
   /** Reverse the points within the linestring. */
   public reverseInPlace(): void {
     if (this._points.length >= 2) {
       this._points.reverseInPlace();
-      if (this._uvParams)
-        this._uvParams.reverseInPlace();
+      if (this._uvParams) this._uvParams.reverseInPlace();
     }
   }
   /** Apply `transform` to each point of this linestring. */
@@ -705,17 +842,23 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     if (this._derivatives)
       this._derivatives.multiplyMatrix3dInPlace(transform.matrix);
     if (this._surfaceNormals)
-      this._surfaceNormals.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
+      this._surfaceNormals.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(
+        transform.matrix
+      );
     return true;
   }
 
   /** Sum the lengths of segments within the linestring */
-  public override curveLength(): number { return this._points.sumLengths(); }
+  public override curveLength(): number {
+    return this._points.sumLengths();
+  }
   /** Sum the lengths of segments between fractional positions on a linestring. */
-  public override curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
+  public override curveLengthBetweenFractions(
+    fraction0: number,
+    fraction1: number
+  ): number {
     const numSegments = this._points.length - 1;
-    if (fraction1 === fraction0 || numSegments < 1)
-      return 0.0;
+    if (fraction1 === fraction0 || numSegments < 1) return 0.0;
     if (fraction1 < fraction0)
       return this.curveLengthBetweenFractions(fraction1, fraction0);
     const scaledFraction0 = fraction0 * numSegments;
@@ -726,44 +869,50 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const localFraction1 = scaledFraction1 - index1;
     if (index0 > index1) {
       // the interval is entirely within a single segment
-      return Math.abs(scaledFraction1 - scaledFraction0) * this._points.distanceIndexIndex(index0 - 1, index0)!;
+      return (
+        Math.abs(scaledFraction1 - scaledFraction0) *
+        this._points.distanceIndexIndex(index0 - 1, index0)!
+      );
     } else {
       // there is leading partial interval, 0 or more complete segments, and a trailing partial interval.
       // (either or both partial may be zero length)
-      let sum = localFraction0 * this._points.distanceIndexIndex(index0 - 1, index0)!
-        + localFraction1 * (this._points.distanceIndexIndex(index1, index1 + 1))!;
+      let sum =
+        localFraction0 * this._points.distanceIndexIndex(index0 - 1, index0)! +
+        localFraction1 * this._points.distanceIndexIndex(index1, index1 + 1)!;
       for (let i = index0; i < index1; i++)
         sum += this._points.distanceIndexIndex(i, i + 1)!;
       return sum;
     }
   }
-/** Compute the range of points between fractional positions on the linestring. */
-public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
-  const range = Range3d.create ();
-  if (this.points.length < 1)
+  /** Compute the range of points between fractional positions on the linestring. */
+  public override rangeBetweenFractions(
+    fraction0: number,
+    fraction1: number,
+    transform?: Transform
+  ): Range3d {
+    const range = Range3d.create();
+    if (this.points.length < 1) return range;
+    if (fraction1 < fraction0)
+      return this.rangeBetweenFractions(fraction1, fraction0, transform);
+    const numSegments = this._points.length - 1;
+    const scaledFraction0 = fraction0 * numSegments;
+    const index0 = Math.max(0, Math.floor(scaledFraction0));
+    const localFraction0 = scaledFraction0 - index0;
+    const workPoint = Point3d.create();
+    this._points.interpolate(index0, localFraction0, index0 + 1, workPoint);
+    range.extendPoint(workPoint, transform);
+    if (fraction1 === fraction0) return range; // 1-point range
+    const scaledFraction1 = fraction1 * numSegments;
+    const index1 = Math.min(Math.floor(scaledFraction1), numSegments - 1);
+    const localFraction1 = scaledFraction1 - index1;
+    this._points.interpolate(index1, localFraction1, index1 + 1, workPoint);
+    range.extendPoint(workPoint, transform);
+    for (let i = index0 + 1; i <= index1; i++) {
+      this._points.getPoint3dAtUncheckedPointIndex(i, workPoint);
+      range.extendPoint(workPoint, transform);
+    }
     return range;
-  if (fraction1 < fraction0)
-    return this.rangeBetweenFractions(fraction1, fraction0, transform);
-  const numSegments = this._points.length - 1;
-  const scaledFraction0 = fraction0 * numSegments;
-  const index0 = Math.max(0, Math.floor(scaledFraction0));
-  const localFraction0 = scaledFraction0 - index0;
-  const workPoint = Point3d.create();
-  this._points.interpolate (index0, localFraction0, index0 + 1, workPoint);
-  range.extendPoint (workPoint, transform);
-  if (fraction1 === fraction0)
-    return range; // 1-point range
-  const scaledFraction1 = fraction1 * numSegments;
-  const index1 = Math.min(Math.floor(scaledFraction1), numSegments - 1);
-  const localFraction1 = scaledFraction1 - index1;
-  this._points.interpolate (index1, localFraction1, index1 + 1, workPoint);
-  range.extendPoint (workPoint, transform);
-  for (let i = index0 + 1; i <= index1; i++){
-    this._points.getPoint3dAtUncheckedPointIndex (i, workPoint);
-    range.extendPoint (workPoint, transform);
   }
-  return range;
-}
   /**
    * * Implementation of `CurvePrimitive.moveSignedDistanceFromFraction`.  (see comments there!)
    * * Find the segment that contains the start fraction
@@ -774,48 +923,103 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param allowExtension
    * @param result
    */
-  public override moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail {
+  public override moveSignedDistanceFromFraction(
+    startFraction: number,
+    signedDistance: number,
+    allowExtension: false,
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     const numSegments = this._points.length - 1;
     const scaledFraction = startFraction * numSegments;
-    let leftPointIndex = Geometry.restrictToInterval(Math.floor(scaledFraction), 0, numSegments - 1);  // lower point index on active segment.
+    let leftPointIndex = Geometry.restrictToInterval(
+      Math.floor(scaledFraction),
+      0,
+      numSegments - 1
+    ); // lower point index on active segment.
     const localFraction = scaledFraction - leftPointIndex;
-    const point0 = this._points.interpolate(leftPointIndex, localFraction, leftPointIndex + 1, LineString3d._workPointA)!;
+    const point0 = this._points.interpolate(
+      leftPointIndex,
+      localFraction,
+      leftPointIndex + 1,
+      LineString3d._workPointA
+    )!;
     const point1 = LineString3d._workPointB;
-    const context = new MoveByDistanceContext(point0, startFraction, signedDistance);
+    const context = new MoveByDistanceContext(
+      point0,
+      startFraction,
+      signedDistance
+    );
 
     if (signedDistance > 0.0) {
-      for (; leftPointIndex <= numSegments;) {
+      for (; leftPointIndex <= numSegments; ) {
         leftPointIndex++;
         this._points.getPoint3dAtCheckedPointIndex(leftPointIndex, point1);
         if (context.announcePoint(point1, leftPointIndex / numSegments))
-          return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(this, context.fraction0, context.point0,
-            signedDistance, CurveSearchStatus.success, result);
+          return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(
+            this,
+            context.fraction0,
+            context.point0,
+            signedDistance,
+            CurveSearchStatus.success,
+            result
+          );
       }
       // fall through for extrapolation from final segment
       if (allowExtension)
-        context.announceExtrapolation(this._points, numSegments - 1, numSegments,
-          (numSegments - 1) / numSegments, 1.0);
-      return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(this, context.fraction0, context.point0,
-        signedDistance, context.distanceStatus(), result);
-    } else { // (moving backwards)
-      if (localFraction <= 0.0)
-        leftPointIndex--;
+        context.announceExtrapolation(
+          this._points,
+          numSegments - 1,
+          numSegments,
+          (numSegments - 1) / numSegments,
+          1.0
+        );
+      return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(
+        this,
+        context.fraction0,
+        context.point0,
+        signedDistance,
+        context.distanceStatus(),
+        result
+      );
+    } else {
+      // (moving backwards)
+      if (localFraction <= 0.0) leftPointIndex--;
       for (; leftPointIndex >= 0; leftPointIndex--) {
         this._points.getPoint3dAtCheckedPointIndex(leftPointIndex, point1);
         if (context.announcePoint(point1, leftPointIndex / numSegments))
-          return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(this, context.fraction0, context.point0,
-            signedDistance, CurveSearchStatus.success, result);
+          return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(
+            this,
+            context.fraction0,
+            context.point0,
+            signedDistance,
+            CurveSearchStatus.success,
+            result
+          );
       }
       // fall through for backward extrapolation from initial segment
       if (allowExtension)
-        context.announceExtrapolation(this._points, 1, 0, 1.0 / numSegments, 0.0);
-      return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(this, context.fraction0, context.point0,
-        -context.distance0, context.distanceStatus(), result);
+        context.announceExtrapolation(
+          this._points,
+          1,
+          0,
+          1.0 / numSegments,
+          0.0
+        );
+      return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(
+        this,
+        context.fraction0,
+        context.point0,
+        -context.distance0,
+        context.distanceStatus(),
+        result
+      );
     }
   }
 
   /** sum lengths of segments in the linestring.  (This is a true length.) */
-  public quickLength(): number { return this.curveLength(); }
+  public quickLength(): number {
+    return this.curveLength();
+  }
   /**
    * compute and normalize cross product among 3 points on the linestring.
    * * "any" 3 points are acceptable -- no test for positive overall sense.
@@ -826,40 +1030,69 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    */
   public quickUnitNormal(result?: Vector3d): Vector3d | undefined {
     let step = Math.floor(this._points.length / 3);
-    if (step < 1)
-      step = 1;
+    if (step < 1) step = 1;
     result = this._points.crossProductIndexIndexIndex(0, step, step + step);
-    if (result && result.normalizeInPlace())
-      return result;
+    if (result && result.normalizeInPlace()) return result;
     return undefined;
   }
 
   /** Find the point on the linestring (including its segment interiors) that is closest to spacePoint. */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
+  public override closestPoint(
+    spacePoint: Point3d,
+    extend: VariantCurveExtendParameter,
+    result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
-    const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
-    const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
+    const extend0 =
+      CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(
+        extend,
+        0
+      );
+    const extend1 =
+      CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(
+        extend,
+        1
+      );
     const numPoints = this._points.length;
     if (numPoints > 0) {
       const lastIndex = numPoints - 1;
-      result.setFP(1.0, this._points.getPoint3dAtUncheckedPointIndex(lastIndex), undefined);
+      result.setFP(
+        1.0,
+        this._points.getPoint3dAtUncheckedPointIndex(lastIndex),
+        undefined
+      );
       result.setDistanceTo(spacePoint);
       if (numPoints > 1) {
         let segmentFraction = 0;
         let d = 0;
         for (let i = 1; i < numPoints; i++) {
-          segmentFraction = spacePoint.fractionOfProjectionToLine(this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i));
+          segmentFraction = spacePoint.fractionOfProjectionToLine(
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i)
+          );
           if (segmentFraction < 0) {
-            if (!extend0 || i > 1)
-              segmentFraction = 0.0;
+            if (!extend0 || i > 1) segmentFraction = 0.0;
           } else if (segmentFraction > 1.0) {
-            if (!extend1 || i < lastIndex)
-              segmentFraction = 1.0;
+            if (!extend1 || i < lastIndex) segmentFraction = 1.0;
           }
-          this._points.getPoint3dAtUncheckedPointIndex(i - 1).interpolate(segmentFraction, this._points.getPoint3dAtUncheckedPointIndex(i), result.pointQ);
+          this._points
+            .getPoint3dAtUncheckedPointIndex(i - 1)
+            .interpolate(
+              segmentFraction,
+              this._points.getPoint3dAtUncheckedPointIndex(i),
+              result.pointQ
+            );
           d = result.pointQ.distance(spacePoint);
           if (d < result.a) {
-            result.setFP(this.segmentIndexAndLocalFractionToGlobalFraction(i - 1, segmentFraction), result.pointQ, undefined, d);
+            result.setFP(
+              this.segmentIndexAndLocalFractionToGlobalFraction(
+                i - 1,
+                segmentFraction
+              ),
+              result.pointQ,
+              undefined,
+              d
+            );
           }
         }
       }
@@ -874,16 +1107,31 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
   /** push a hit, fixing up the prior entry if needed.
    * return the incremented counter.
    */
-  private static pushVertexHit(result: CurveLocationDetail[], counter: number, cp: CurvePrimitive, fraction: number, point: Point3d) {
-    const detail = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
+  private static pushVertexHit(
+    result: CurveLocationDetail[],
+    counter: number,
+    cp: CurvePrimitive,
+    fraction: number,
+    point: Point3d
+  ) {
+    const detail = CurveLocationDetail.createCurveFractionPoint(
+      cp,
+      fraction,
+      point
+    );
     result.push(detail);
     if (counter === 0) {
       detail.setIntervalRole(CurveIntervalRole.isolatedAtVertex);
-    } else if (counter === 1) {  // last entry must be isolatedAtVertex !!!
-      result[result.length - 2].setIntervalRole(CurveIntervalRole.intervalStart);
+    } else if (counter === 1) {
+      // last entry must be isolatedAtVertex !!!
+      result[result.length - 2].setIntervalRole(
+        CurveIntervalRole.intervalStart
+      );
       detail.setIntervalRole(CurveIntervalRole.intervalEnd);
     } else {
-      result[result.length - 2].setIntervalRole(CurveIntervalRole.intervalInterior);
+      result[result.length - 2].setIntervalRole(
+        CurveIntervalRole.intervalInterior
+      );
       detail.setIntervalRole(CurveIntervalRole.intervalEnd);
     }
   }
@@ -891,7 +1139,10 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    *  Intersections within segments are recorded as CurveIntervalRole.isolated
    *   Intersections at isolated "on" vertex are recoded as CurveIntervalRole.isolatedAtVertex.
    */
-  public override appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
+  public override appendPlaneIntersectionPoints(
+    plane: PlaneAltitudeEvaluator,
+    result: CurveLocationDetail[]
+  ): number {
     if (this._points.length < 1) return 0;
     const initialLength = result.length;
     const n = this._points.length;
@@ -904,16 +1155,31 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     let numConsecutiveZero = 0;
     let hA = 0;
     let segmentFraction = 0;
-    for (let i = 0; i < this._points.length; i++, pointA.setFrom(pointB), hA = hB) {
+    for (
+      let i = 0;
+      i < this._points.length;
+      i++, pointA.setFrom(pointB), hA = hB
+    ) {
       this._points.getPoint3dAtUncheckedPointIndex(i, pointB);
       hB = Geometry.correctSmallMetricDistance(plane.altitude(pointB));
       if (hB === 0.0)
-        LineString3d.pushVertexHit(result, numConsecutiveZero++, this, i / divisor, pointB);
+        LineString3d.pushVertexHit(
+          result,
+          numConsecutiveZero++,
+          this,
+          i / divisor,
+          pointB
+        );
       else {
-        if (hA * hB < 0.0) {  // at point0, hA=0 will keep us out of here . ..
+        if (hA * hB < 0.0) {
+          // at point0, hA=0 will keep us out of here . ..
           segmentFraction = hA / (hA - hB); // this division is safe because the signs are different.
           pointA.interpolate(segmentFraction, pointB, pointC);
-          const detail = CurveLocationDetail.createCurveFractionPoint(this, (i - 1 + segmentFraction) / divisor, pointC);
+          const detail = CurveLocationDetail.createCurveFractionPoint(
+            this,
+            (i - 1 + segmentFraction) / divisor,
+            pointC
+          );
           detail.setIntervalRole(CurveIntervalRole.isolated);
           result.push(detail);
           numConsecutiveZero = 0;
@@ -923,12 +1189,14 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     return result.length - initialLength;
   }
   /** Extend `rangeToExtend` to include all points of this linestring. */
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void { this._points.extendRange(rangeToExtend, transform); }
+  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+    this._points.extendRange(rangeToExtend, transform);
+  }
   /** Test if each point of this linestring isAlmostEqual with corresponding point in `other`. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
-    if (!(other instanceof LineString3d))
+    if (!(other instanceof LineString3d)) return false;
+    if (!GrowableXYZArray.isAlmostEqual(this._points, other._points))
       return false;
-    if (!GrowableXYZArray.isAlmostEqual(this._points, other._points)) return false;
     return true;
   }
   /** Append (clone of) one point.
@@ -940,43 +1208,47 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     let add = true;
     const addFraction = fraction !== undefined && this._fractions !== undefined;
     if (n > 0) {
-      if (addFraction && Geometry.isSameCoordinate(fraction, this._fractions!.back()))
+      if (
+        addFraction &&
+        Geometry.isSameCoordinate(fraction, this._fractions!.back())
+      )
         add = false;
-      if (point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
+      if (
+        point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1))
+      )
         add = false;
     }
 
     if (add) {
       this._points.push(point);
-      if (addFraction)
-        this.addFraction(fraction);
+      if (addFraction) this.addFraction(fraction);
     }
-
   }
 
   /** Compress out duplicate points (according to point.isAlmostEqual)
    */
-   public removeDuplicatePoints(tolerance: number = Geometry.smallMetricDistance) {
+  public removeDuplicatePoints(
+    tolerance: number = Geometry.smallMetricDistance
+  ) {
     const n = this._points.length;
-    if (n < 2)
-      return;
+    if (n < 2) return;
     let n1 = 1;
-    for (let i = 1; i < n; i++){
-      const q = this._points.distanceIndexIndex (i, n1 - 1);
-      if (q !== undefined && q > tolerance){
-        this._points.moveIndexToIndex (i, n1);
+    for (let i = 1; i < n; i++) {
+      const q = this._points.distanceIndexIndex(i, n1 - 1);
+      if (q !== undefined && q > tolerance) {
+        this._points.moveIndexToIndex(i, n1);
         if (this._fractions !== undefined)
-          this._fractions.setAtUncheckedIndex (n1, this._fractions.atUncheckedIndex(i));
-        if (this._derivatives)
-          this._derivatives.moveIndexToIndex (i, n1);
-          n1++;
+          this._fractions.setAtUncheckedIndex(
+            n1,
+            this._fractions.atUncheckedIndex(i)
+          );
+        if (this._derivatives) this._derivatives.moveIndexToIndex(i, n1);
+        n1++;
       }
     }
-    this._points.resize (n1);
-    if (this._fractions)
-      this._fractions.resize (n1);
-    if (this._derivatives)
-      this._derivatives.resize (n1);
+    this._points.resize(n1);
+    if (this._fractions) this._fractions.resize(n1);
+    if (this._derivatives) this._derivatives.resize(n1);
   }
 
   /** Append a suitable evaluation of a curve ..
@@ -987,17 +1259,16 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    */
   public appendFractionToPoint(curve: CurvePrimitive, fraction: number) {
     if (this._derivatives) {
-      const ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
-      if (this._fractions)
-        this._fractions.push(fraction);
+      const ray = curve.fractionToPointAndDerivative(
+        fraction,
+        LineString3d._workRay
+      );
+      if (this._fractions) this._fractions.push(fraction);
       this._points.push(ray.origin);
-      if (this._derivatives)
-        this._derivatives.push(ray.direction);
-
+      if (this._derivatives) this._derivatives.push(ray.direction);
     } else {
       const point = curve.fractionToPoint(fraction, LineString3d._workPointA);
-      if (this._fractions)
-        this._fractions.push(fraction);
+      if (this._fractions) this._fractions.push(fraction);
       this._points.push(point);
     }
   }
@@ -1009,10 +1280,8 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    */
   public clear() {
     this._points.clear();
-    if (this._fractions)
-      this._fractions.clear();
-    if (this._derivatives)
-      this._derivatives.clear();
+    if (this._fractions) this._fractions.clear();
+    if (this._derivatives) this._derivatives.clear();
   }
   /**
    * * options.needParams triggers creation of fraction array and uvParams array.
@@ -1020,10 +1289,12 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param capacity if positive, initial capacity of arrays
    * @param options  optional, to indicate if fraction and derivative arrays are required.
    */
-  public static createForStrokes(capacity: number = 0, options: StrokeOptions | undefined): LineString3d {
+  public static createForStrokes(
+    capacity: number = 0,
+    options: StrokeOptions | undefined
+  ): LineString3d {
     const ls = LineString3d.create();
-    if (capacity > 0)
-      ls._points.ensureCapacity(capacity);
+    if (capacity > 0) ls._points.ensureCapacity(capacity);
     if (options) {
       if (options.needParams) {
         ls._fractions = new GrowableFloat64Array(capacity);
@@ -1049,7 +1320,8 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     numStrokes: number,
     fraction0: number = 0,
     fraction1: number = 1,
-    include01: boolean = true): void {
+    include01: boolean = true
+  ): void {
     let i0 = 1;
     let i1 = numStrokes - 1;
     if (include01) {
@@ -1069,9 +1341,13 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param point1 last point
    * @param include01 if false, OMIT both start and end points (i.e. only compute and add true interior points)
    */
-  public appendInterpolatedStrokePoints(numStrokes: number, point0: Point3d, point1: Point3d, include01: boolean): void {
-    if (include01)
-      this.appendStrokePoint(point0, 0.0);
+  public appendInterpolatedStrokePoints(
+    numStrokes: number,
+    point0: Point3d,
+    point1: Point3d,
+    include01: boolean
+  ): void {
+    if (include01) this.appendStrokePoint(point0, 0.0);
     if (numStrokes > 1) {
       const df = 1.0 / numStrokes;
       for (let i = 1; i < numStrokes; i++) {
@@ -1079,8 +1355,7 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
         this.appendStrokePoint(point0.interpolate(f, point1), f);
       }
     }
-    if (include01)
-      this.appendStrokePoint(point1, 1.0);
+    if (include01) this.appendStrokePoint(point1, 1.0);
   }
 
   /** Emit strokes to caller-supplied linestring */
@@ -1098,14 +1373,24 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
         for (let i = 1; i < n; i++) {
           this._points.getPoint3dAtUncheckedPointIndex(i - 1, pointA);
           this._points.getPoint3dAtUncheckedPointIndex(i, pointB);
-          const numStroke = options.applyMaxEdgeLength(1, pointA.distance(pointB));
+          const numStroke = options.applyMaxEdgeLength(
+            1,
+            pointA.distance(pointB)
+          );
           if (numStroke > 1)
-            dest.appendInterpolatedStrokePoints(numStroke, pointA, pointB, false);
+            dest.appendInterpolatedStrokePoints(
+              numStroke,
+              pointA,
+              pointB,
+              false
+            );
           dest.appendStrokePoint(pointB);
         }
       } else {
         for (let i = 0; i < n; i++) {
-          dest.appendStrokePoint(this._points.getPoint3dAtUncheckedPointIndex(i));
+          dest.appendStrokePoint(
+            this._points.getPoint3dAtUncheckedPointIndex(i)
+          );
         }
       }
     }
@@ -1115,7 +1400,10 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * If the stroke options does not have a maxEdgeLength, one stroke is emitted for each segment of the linestring.
    * If the stroke options has a maxEdgeLength, smaller segments are emitted as needed.
    */
-  public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
+  public emitStrokableParts(
+    handler: IStrokeHandler,
+    options?: StrokeOptions
+  ): void {
     const n = this._points.length;
     handler.startCurvePrimitive(this);
     if (n > 1) {
@@ -1125,12 +1413,31 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       // Do NOT apply min strokes per primitive.
       if (options && options.hasMaxEdgeLength) {
         for (let i = 1; i < n; i++) {
-          const numStroke = options.applyMaxEdgeLength(1, this._points.getPoint3dAtUncheckedPointIndex(i - 1).distance(this._points.getPoint3dAtUncheckedPointIndex(i)));
-          handler.announceSegmentInterval(this, this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i), numStroke, (i - 1) * df, i * df);
+          const numStroke = options.applyMaxEdgeLength(
+            1,
+            this._points
+              .getPoint3dAtUncheckedPointIndex(i - 1)
+              .distance(this._points.getPoint3dAtUncheckedPointIndex(i))
+          );
+          handler.announceSegmentInterval(
+            this,
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i),
+            numStroke,
+            (i - 1) * df,
+            i * df
+          );
         }
       } else {
         for (let i = 1; i < n; i++) {
-          handler.announceSegmentInterval(this, this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i), 1, (i - 1) * df, i * df);
+          handler.announceSegmentInterval(
+            this,
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i),
+            1,
+            (i - 1) * df,
+            i * df
+          );
         }
       }
     }
@@ -1148,7 +1455,10 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     if (options && options.hasMaxEdgeLength) {
       numStroke = 0;
       for (let i = 1; i < numPoints; i++) {
-        numStroke += options.applyMaxEdgeLength(1, this._points.distanceIndexIndex(i - 1, i)!);
+        numStroke += options.applyMaxEdgeLength(
+          1,
+          this._points.distanceIndexIndex(i - 1, i)!
+        );
       }
     }
     return numStroke;
@@ -1158,13 +1468,22 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param options StrokeOptions that determine count
    * @param parentStrokeMap evolving parent map.
    */
-  public override computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+  public override computeAndAttachRecursiveStrokeCounts(
+    options?: StrokeOptions,
+    parentStrokeMap?: StrokeCountMap
+  ) {
     const numPoints = this._points.length;
     const applyOptions = options !== undefined && options.hasMaxEdgeLength;
-    const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
+    const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(
+      this,
+      parentStrokeMap,
+      []
+    );
     for (let i = 1; i < numPoints; i++) {
       const segmentLength = this._points.distanceIndexIndex(i - 1, i)!;
-      const numStrokeOnSegment = applyOptions ? options.applyMaxEdgeLength(1, segmentLength)! : 1;
+      const numStrokeOnSegment = applyOptions
+        ? options.applyMaxEdgeLength(1, segmentLength)!
+        : 1;
       myData.addToCountAndLength(numStrokeOnSegment, segmentLength);
     }
     CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
@@ -1181,7 +1500,10 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param announce (optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.
    */
-  public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+  public override announceClipIntervals(
+    clipper: Clipper,
+    announce?: AnnounceNumberNumberCurvePrimitive
+  ): boolean {
     const n = this._points.length;
     if (n < 2) return false;
     let globalFractionA = 0.0;
@@ -1189,25 +1511,50 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     const capture = (localFraction0: number, localFraction1: number) => {
       if (announce)
         announce(
-          Geometry.interpolate(globalFractionA, localFraction0, globalFractionB),
-          Geometry.interpolate(globalFractionA, localFraction1, globalFractionB),
-          this);
+          Geometry.interpolate(
+            globalFractionA,
+            localFraction0,
+            globalFractionB
+          ),
+          Geometry.interpolate(
+            globalFractionA,
+            localFraction1,
+            globalFractionB
+          ),
+          this
+        );
     };
     const pointA = LineString3d._workPointA;
     const pointB = LineString3d._workPointB;
     this._points.getPoint3dAtUncheckedPointIndex(0, pointA);
     let status = false;
-    for (let i = 1; i < n; i++, pointA.setFrom(pointB), globalFractionA = globalFractionB) {
+    for (
+      let i = 1;
+      i < n;
+      i++, pointA.setFrom(pointB), globalFractionA = globalFractionB
+    ) {
       this._points.getPoint3dAtUncheckedPointIndex(i, pointB);
       globalFractionB = i / (n - 1);
-      if (clipper.announceClippedSegmentIntervals(0.0, 1.0, pointA, pointB, capture))
+      if (
+        clipper.announceClippedSegmentIntervals(
+          0.0,
+          1.0,
+          pointA,
+          pointB,
+          capture
+        )
+      )
         status = true;
     }
     return status;
   }
-  private static _indexPoint = Point3d.create();  // private point for addResolvedPoint
+  private static _indexPoint = Point3d.create(); // private point for addResolvedPoint
   /** @param fraction used to interpolate between points at index and index + 1 */
-  private addResolvedPoint(index: number, fraction: number, dest: GrowableXYZArray) {
+  private addResolvedPoint(
+    index: number,
+    fraction: number,
+    dest: GrowableXYZArray
+  ) {
     const n = this._points.length;
     if (n === 0) return;
     if (n === 1) {
@@ -1215,13 +1562,17 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       dest.push(LineString3d._indexPoint);
       return;
     }
-    if (index < 0)
-      index = 0;
+    if (index < 0) index = 0;
     if (index > n - 2) {
       index = n - 2;
       fraction += 1;
     }
-    this._points.interpolate(index, fraction, index + 1, LineString3d._indexPoint);
+    this._points.interpolate(
+      index,
+      fraction,
+      index + 1,
+      LineString3d._indexPoint
+    );
     dest.push(LineString3d._indexPoint);
   }
   /** Return a LineString which is a portion of this curve.
@@ -1229,45 +1580,53 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(fractionA: number, fractionB: number): LineString3d {
+  public override clonePartialCurve(
+    fractionA: number,
+    fractionB: number
+  ): LineString3d {
     if (fractionB < fractionA) {
       const linestringA = this.clonePartialCurve(fractionB, fractionA);
-      if (linestringA)
-        linestringA.reverseInPlace();
+      if (linestringA) linestringA.reverseInPlace();
       return linestringA;
     }
     const n = this._points.length;
-    if (n < 2)
-      return this.clone();
+    if (n < 2) return this.clone();
     if (n > 2 && this.isPhysicallyClosed) {
       // don't extend a closed linestring
-      if (fractionA < 0)
-        fractionA = 0;
-      if (fractionB > 1)
-        fractionB = 1;
+      if (fractionA < 0) fractionA = 0;
+      if (fractionB > 1) fractionB = 1;
     }
-    let index0, index1: number;   // range of original vertices to copy into clone
+    let index0, index1: number; // range of original vertices to copy into clone
     const localA = this.globalFractionToSegmentIndexAndLocalFraction(fractionA);
     const localB = this.globalFractionToSegmentIndexAndLocalFraction(fractionB);
     if (fractionA < 0) {
       index0 = 1; // first original vertex is not in clone
     } else if (0 <= fractionA && fractionA <= 1) {
-      index0 = Geometry.isSmallRelative(1 - localA.fraction) ? localA.index + 2 : localA.index + 1;
-    } else { // 1 < fractionA
+      index0 = Geometry.isSmallRelative(1 - localA.fraction)
+        ? localA.index + 2
+        : localA.index + 1;
+    } else {
+      // 1 < fractionA
       index0 = n; // no original vertices in clone
     }
     if (fractionB < 0) {
-      index1 = -1;  // no original vertices in clone
+      index1 = -1; // no original vertices in clone
     } else if (0 <= fractionB && fractionB <= 1) {
-      index1 = Geometry.isSmallRelative(localB.fraction) ? localB.index - 1: localB.index;
-    } else {  // 1 < fractionB
+      index1 = Geometry.isSmallRelative(localB.fraction)
+        ? localB.index - 1
+        : localB.index;
+    } else {
+      // 1 < fractionB
       index1 = n - 2; // last original vertex is not in clone
     }
     const result = LineString3d.create();
     this.addResolvedPoint(localA.index, localA.fraction, result._points);
     for (let index = index0; index <= index1; index++) {
       if (this._points.isIndexValid(index)) {
-        this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
+        this._points.getPoint3dAtUncheckedPointIndex(
+          index,
+          LineString3d._workPointA
+        );
         result._points.push(LineString3d._workPointA);
       }
     }
@@ -1277,14 +1636,22 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
   /** Return (if possible) a specific segment of the linestring */
   public getIndexedSegment(index: number): LineSegment3d | undefined {
     if (index >= 0 && index + 1 < this._points.length)
-      return LineSegment3d.create(this._points.getPoint3dAtCheckedPointIndex(index)!, this._points.getPoint3dAtCheckedPointIndex(index + 1)!);
+      return LineSegment3d.create(
+        this._points.getPoint3dAtCheckedPointIndex(index)!,
+        this._points.getPoint3dAtCheckedPointIndex(index + 1)!
+      );
     return undefined;
   }
   /**
    * Returns true if first and last points are within metric tolerance.
    */
   public get isPhysicallyClosed(): boolean {
-    return this._points.length > 0 && Geometry.isSmallMetricDistance(this._points.distanceIndexIndex(0, this._points.length - 1)!);
+    return (
+      this._points.length > 0 &&
+      Geometry.isSmallMetricDistance(
+        this._points.distanceIndexIndex(0, this._points.length - 1)!
+      )
+    );
   }
 
   /**
@@ -1295,7 +1662,10 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param destLinestring = receiver linestring.
    * @return number of strokes added.  0 if `map.componentData` does not match the linestring
    */
-  public override addMappedStrokesToLineString3D(map: StrokeCountMap, destLinestring: LineString3d): number {
+  public override addMappedStrokesToLineString3D(
+    map: StrokeCountMap,
+    destLinestring: LineString3d
+  ): number {
     const numPoint0 = destLinestring.numPoints();
     const needFractions = destLinestring._fractions !== undefined;
     const needDerivatives = destLinestring._derivatives !== undefined;
@@ -1304,9 +1674,18 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
     const pointB = LineString3d._workPointB;
     const pointC = LineString3d._workPointC;
     const numParentPoint = points.length;
-    if (map.primitive && map.primitive === this && map.componentData && map.componentData.length + 1 === numParentPoint) {
+    if (
+      map.primitive &&
+      map.primitive === this &&
+      map.componentData &&
+      map.componentData.length + 1 === numParentPoint
+    ) {
       points.getPoint3dAtUncheckedPointIndex(0, pointA);
-      for (let k = 0; k + 1 < numParentPoint; k++, pointA.setFromPoint3d(pointB)) {
+      for (
+        let k = 0;
+        k + 1 < numParentPoint;
+        k++, pointA.setFromPoint3d(pointB)
+      ) {
         points.getPoint3dAtUncheckedPointIndex(k + 1, pointB);
         const segmentMap = map.componentData[k];
         const m = segmentMap.numStroke;
@@ -1316,11 +1695,8 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
           const fraction = i / m;
           const outputFraction = segmentMap.fractionToA(fraction);
           destLinestring.addPoint(pointA.interpolate(fraction, pointB, pointC));
-          if (needFractions)
-            destLinestring._fractions!.push((outputFraction));
-          if (needDerivatives)
-            destLinestring._derivatives!.push(vectorAB);
-
+          if (needFractions) destLinestring._fractions!.push(outputFraction);
+          if (needDerivatives) destLinestring._derivatives!.push(vectorAB);
         }
       }
     }
@@ -1332,7 +1708,9 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    *   * data with no point is an empty array.
    *   * "deep" data is flattened to a single array of linestrings, losing structure.
    */
-  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
+  public static createArrayOfLineString3d(
+    data: MultiLineStringDataVariant
+  ): LineString3d[] {
     const collector = new PointStreamGrowableXYZArrayCollector();
     VariantPointDataStream.streamXYZ(data, collector);
     const growableArrays = collector.claimArrayOfGrowableXYZArray();
@@ -1349,7 +1727,11 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param _smallestPossiblePrimitives unused
    * @param explodeLinestrings if true, push a [[LineSegment3d]] for each segment. If false, only push `this`.
    */
-  public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false) {
+  public override collectCurvePrimitivesGo(
+    collectorArray: CurvePrimitive[],
+    _smallestPossiblePrimitives: boolean,
+    explodeLinestrings: boolean = false
+  ) {
     if (explodeLinestrings) {
       let segment: LineSegment3d | undefined;
       for (let i = 0; (segment = this.getIndexedSegment(i)) !== undefined; i++)
@@ -1364,14 +1746,15 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * * No attempt is made to join the offset segments. Use RegionOps.constructCurveXYOffset() to return a fully joined offset.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
-  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public override constructOffsetXY(
+    offsetDistanceOrOptions: number | OffsetOptions
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     const options = OffsetOptions.create(offsetDistanceOrOptions);
     const offsets: CurvePrimitive[] = [];
     for (const seg of this.collectCurvePrimitives(undefined, true, true)) {
       const offset = seg.constructOffsetXY(options);
       if (offset !== undefined) {
-        if (offset instanceof CurvePrimitive)
-          offsets.push(offset);
+        if (offset instanceof CurvePrimitive) offsets.push(offset);
         else if (Array.isArray(offset))
           offset.forEach((cp) => offsets.push(cp));
       }
@@ -1383,8 +1766,15 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
    */
-  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
-    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  public override projectedParameterRange(
+    ray: Vector3d | Ray3d,
+    lowHigh?: Range1d
+  ): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(
+      this,
+      ray,
+      lowHigh
+    );
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point
@@ -1405,12 +1795,16 @@ export class AnnotatedLineString3d {
  * context to be called to incrementally accumulate distance along line segments.
  */
 class MoveByDistanceContext {
-  public distance0: number;   // accumulated distance through point0
-  public point0: Point3d;      // most recent point
-  public fraction0: number;   // most recent fraction position
-  public targetDistance: number;  // this is always positive.
+  public distance0: number; // accumulated distance through point0
+  public point0: Point3d; // most recent point
+  public fraction0: number; // most recent fraction position
+  public targetDistance: number; // this is always positive.
   /** CAPTURE point0, fraction0, targetDistance */
-  public constructor(point0: Point3d, fraction0: number, targetDistance: number) {
+  public constructor(
+    point0: Point3d,
+    fraction0: number,
+    targetDistance: number
+  ) {
     this.point0 = point0;
     this.distance0 = 0.0;
     this.targetDistance = Math.abs(targetDistance);
@@ -1418,8 +1812,9 @@ class MoveByDistanceContext {
   }
   // Return CurveSearchStatus indicating whether the accumulated distance has reached the target.
   public distanceStatus(): CurveSearchStatus {
-    return Geometry.isSameCoordinate(this.distance0, this.targetDistance) ?
-      CurveSearchStatus.success : CurveSearchStatus.stoppedAtBoundary;
+    return Geometry.isSameCoordinate(this.distance0, this.targetDistance)
+      ? CurveSearchStatus.success
+      : CurveSearchStatus.stoppedAtBoundary;
   }
   /**
    * Announce next point on the polyline.
@@ -1437,7 +1832,10 @@ class MoveByDistanceContext {
   public announcePoint(point1: Point3d, fraction1: number): boolean {
     const a = this.point0.distance(point1);
     const distance1 = this.distance0 + a;
-    if (distance1 < this.targetDistance && !Geometry.isSameCoordinate(distance1, this.targetDistance)) {
+    if (
+      distance1 < this.targetDistance &&
+      !Geometry.isSameCoordinate(distance1, this.targetDistance)
+    ) {
       this.point0.setFromPoint3d(point1);
       this.distance0 = distance1;
       this.fraction0 = fraction1;
@@ -1446,7 +1844,11 @@ class MoveByDistanceContext {
     const b = this.targetDistance - this.distance0;
     const intervalFraction = Geometry.safeDivideFraction(b, a, 0.0);
     this.point0.interpolate(intervalFraction, point1, this.point0);
-    this.fraction0 = Geometry.interpolate(this.fraction0, intervalFraction, fraction1);
+    this.fraction0 = Geometry.interpolate(
+      this.fraction0,
+      intervalFraction,
+      fraction1
+    );
     this.distance0 = this.targetDistance;
     return true;
   }
@@ -1461,21 +1863,27 @@ class MoveByDistanceContext {
    * @param result
    * @param CurveLocationDetail
    */
-  public announceExtrapolation(points: GrowableXYZArray,
-    index0: number, index1: number,
-    fraction0: number, fraction1: number): boolean {
+  public announceExtrapolation(
+    points: GrowableXYZArray,
+    index0: number,
+    index1: number,
+    fraction0: number,
+    fraction1: number
+  ): boolean {
     const residual = this.targetDistance - this.distance0;
     const d01 = points.distanceIndexIndex(index0, index1);
-    if (!d01)
-      return false;
+    if (!d01) return false;
     const extensionFraction = Geometry.conditionalDivideFraction(residual, d01);
-    if (extensionFraction === undefined)
-      return false;
+    if (extensionFraction === undefined) return false;
     // (Remark: indices are swapped and extensionFraction negated to prevent incidental precision
     // loss with the alternative call with (index0, 1 + extensionFraction, index1);
     points.interpolate(index1, -extensionFraction, index0, this.point0);
     this.distance0 = this.targetDistance;
-    this.fraction0 = Geometry.interpolate(fraction1, -extensionFraction, fraction0);
+    this.fraction0 = Geometry.interpolate(
+      fraction1,
+      -extensionFraction,
+      fraction0
+    );
     return true;
   }
 }

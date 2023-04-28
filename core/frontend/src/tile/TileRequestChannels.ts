@@ -9,7 +9,11 @@
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import {
-  IModelTile, IModelTileRequestChannels, TileRequest, TileRequestChannel, TileRequestChannelStatistics,
+  IModelTile,
+  IModelTileRequestChannels,
+  TileRequest,
+  TileRequestChannel,
+  TileRequestChannelStatistics,
 } from "./internal";
 
 /** For an [[IpcApp]], allows backend element graphics requests in progress to be canceled. */
@@ -19,8 +23,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
   public override onActiveRequestCanceled(request: TileRequest): void {
     const imodel = request.tile.tree.iModel;
     let ids = this._canceled.get(imodel);
-    if (!ids)
-      this._canceled.set(imodel, ids = []);
+    if (!ids) this._canceled.set(imodel, (ids = []));
 
     ids.push(request.tile.contentId);
   }
@@ -28,7 +31,10 @@ class ElementGraphicsChannel extends TileRequestChannel {
   public override processCancellations(): void {
     for (const [imodel, requestIds] of this._canceled) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IpcApp.appFunctionIpc.cancelElementGraphicsRequests(imodel.key, requestIds);
+      IpcApp.appFunctionIpc.cancelElementGraphicsRequests(
+        imodel.key,
+        requestIds
+      );
       this._statistics.totalAbortedRequests += requestIds.length;
     }
 
@@ -61,14 +67,23 @@ export class TileRequestChannels {
   /** `rpcConcurrency` is defined if [[IpcApp.isValid]]; otherwise RPC requests are made over HTTP and use the same limits.
    * @internal
    */
-  public constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean) {
+  public constructor(
+    rpcConcurrency: number | undefined,
+    cacheMetadata: boolean
+  ) {
     this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
     const elementGraphicsChannelName = "itwinjs-elem-rpc";
     if (undefined !== rpcConcurrency)
-      this.elementGraphicsRpc = new ElementGraphicsChannel(elementGraphicsChannelName, rpcConcurrency);
+      this.elementGraphicsRpc = new ElementGraphicsChannel(
+        elementGraphicsChannelName,
+        rpcConcurrency
+      );
     else
-      this.elementGraphicsRpc = new TileRequestChannel(elementGraphicsChannelName, this.rpcConcurrency);
+      this.elementGraphicsRpc = new TileRequestChannel(
+        elementGraphicsChannelName,
+        this.rpcConcurrency
+      );
 
     this.add(this.elementGraphicsRpc);
 
@@ -79,8 +94,7 @@ export class TileRequestChannels {
       cacheConcurrency: this.httpConcurrency,
     });
 
-    for (const channel of this.iModelChannels)
-      this.add(channel);
+    for (const channel of this.iModelChannels) this.add(channel);
   }
 
   /** The number of registered channels. */
@@ -104,7 +118,9 @@ export class TileRequestChannels {
    */
   public add(channel: TileRequestChannel): void {
     if (this.get(channel.name))
-      throw new Error(`Tile request channel ${channel.name} is already registered.`);
+      throw new Error(
+        `Tile request channel ${channel.name} is already registered.`
+      );
 
     this._channels.set(channel.name, channel);
   }
@@ -114,8 +130,7 @@ export class TileRequestChannels {
    * @see [[getForHttp]] to obtain or register a channel for the host name.
    */
   public static getNameFromUrl(url: URL | string): string {
-    if (typeof url === "string")
-      url = new URL(url);
+    if (typeof url === "string") url = new URL(url);
 
     return url.hostname;
   }
@@ -127,7 +142,7 @@ export class TileRequestChannels {
   public getForHttp(name: string): TileRequestChannel {
     let channel = this.get(name);
     if (!channel)
-      this.add(channel = new TileRequestChannel(name, this.httpConcurrency));
+      this.add((channel = new TileRequestChannel(name, this.httpConcurrency)));
 
     return channel;
   }
@@ -161,48 +176,42 @@ export class TileRequestChannels {
   /** Statistics intended primarily for debugging. */
   public get statistics(): TileRequestChannelStatistics {
     const stats = new TileRequestChannelStatistics();
-    for (const channel of this)
-      channel.statistics.addTo(stats);
+    for (const channel of this) channel.statistics.addTo(stats);
 
     return stats;
   }
 
   /** Reset all [[statistics]] to zero. */
   public resetStatistics(): void {
-    for (const channel of this)
-      channel.resetStatistics();
+    for (const channel of this) channel.resetStatistics();
   }
 
   /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests.
    * @internal
    */
   public swapPending(): void {
-    for (const channel of this)
-      channel.swapPending();
+    for (const channel of this) channel.swapPending();
   }
 
   /** Invoked by [[TileAdmin.processQueue]] when it is about to start enqueuing new requests.
    * @internal
    */
   public process(): void {
-    for (const channel of this)
-      channel.process();
+    for (const channel of this) channel.process();
   }
 
   /** Invoked by [[TileAdmin.onIModelClosed]].
    * @internal
    */
   public onIModelClosed(iModel: IModelConnection): void {
-    for (const channel of this)
-      channel.onIModelClosed(iModel);
+    for (const channel of this) channel.onIModelClosed(iModel);
   }
 
   /** Invoked by [[TileAdmin.onShutDown]].
    * @internal
    */
   public onShutDown(): void {
-    for (const channel of this)
-      channel.cancelAndClearAll();
+    for (const channel of this) channel.cancelAndClearAll();
 
     this._channels.clear();
   }

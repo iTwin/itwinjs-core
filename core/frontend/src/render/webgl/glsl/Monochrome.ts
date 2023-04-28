@@ -7,7 +7,11 @@
  */
 
 import { MonochromeMode } from "@itwin/core-common";
-import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import {
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  VariableType,
+} from "../ShaderBuilder";
 
 const applyUnlitMonochromeColor = `
   vec4 monoColor = vec4(u_monoRgb, baseColor.a);
@@ -45,9 +49,17 @@ export function addSurfaceMonochrome(frag: FragmentShaderBuilder): void {
   addMonoRgb(frag);
   frag.addUniform("u_mixMonoColor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_mixMonoColor", (uniform, params) => {
-      uniform.setUniform1f(MonochromeMode.Scaled === params.target.plan.monochromeMode && params.geometry.wantMixMonochromeColor(params.target) ? 1.0 : 0.0);
+      uniform.setUniform1f(
+        MonochromeMode.Scaled === params.target.plan.monochromeMode &&
+          params.geometry.wantMixMonochromeColor(params.target)
+          ? 1.0
+          : 0.0
+      );
     });
   });
 
-  frag.set(FragmentShaderComponent.ApplyMonochrome, applySurfaceMonochromeColor);
+  frag.set(
+    FragmentShaderComponent.ApplyMonochrome,
+    applySurfaceMonochromeColor
+  );
 }

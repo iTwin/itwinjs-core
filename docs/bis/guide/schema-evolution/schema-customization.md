@@ -39,7 +39,7 @@ BigCo:MonsterPumpType might define four new properties:
 - InletDiameter
 - OutletDiameter
 
- BigCo:MonsterPump might define one new property:
+BigCo:MonsterPump might define one new property:
 
 - OutletLength
 
@@ -83,5 +83,6 @@ There needs to be a default strategy for converting the dynamic schemas to desce
 -->
 
 ---
+
 | Next: [Data Evolution Across Time](./data-evolution-across-time.md)
 |:---

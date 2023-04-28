@@ -2,7 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import {
+  RpcConfiguration,
+  RpcDefaultConfiguration,
+  RpcInterfaceDefinition,
+} from "@itwin/core-common";
 
 /**
  * @internal Used for testing only.
@@ -13,8 +17,7 @@ export class TestRpcManager {
       public override interfaces: any = () => interfaces;
     };
 
-    for (const def of interfaces)
-      RpcConfiguration.assign(def, () => config);
+    for (const def of interfaces) RpcConfiguration.assign(def, () => config);
 
     const instance = RpcConfiguration.obtain(config);
     try {

@@ -7,9 +7,18 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
+import {
+  PlanarClipMaskMode,
+  PlanarClipMaskPriority,
+  PlanarClipMaskProps,
+  PlanarClipMaskSettings,
+} from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
+import {
+  createMaskTreeReference,
+  DisclosedTileTreeSet,
+  TileTreeReference,
+} from "./tile/internal";
 import { ViewState3d } from "./ViewState";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
@@ -38,13 +47,23 @@ export class PlanarClipMaskState {
       this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }
 
-  public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
+  public getTileTrees(
+    view: ViewState3d,
+    classifiedModelId: Id64String
+  ): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
       const viewTrees = new Array<TileTreeReference>();
-      const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
+      const thisPriority =
+        this.settings.priority === undefined
+          ? PlanarClipMaskPriority.RealityModel
+          : this.settings.priority;
       view.forEachTileTreeRef((ref) => {
         const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && ref.planarclipMaskPriority > thisPriority)
+        if (
+          tree &&
+          tree.modelId !== classifiedModelId &&
+          ref.planarclipMaskPriority > thisPriority
+        )
           viewTrees.push(ref);
       });
 
@@ -56,27 +75,35 @@ export class PlanarClipMaskState {
       if (this.settings.modelIds) {
         for (const modelId of this.settings.modelIds) {
           const model = view.iModel.models.getLoaded(modelId);
-          assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
+          assert(model !== undefined); // Models should be loaded by RealityModelTileTree
           if (model?.asGeometricModel)
-            this._tileTreeRefs.push(createMaskTreeReference(view, model.asGeometricModel));
+            this._tileTreeRefs.push(
+              createMaskTreeReference(view, model.asGeometricModel)
+            );
         }
       }
     }
 
     if (!this._allLoaded)
-      this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
+      this._allLoaded = this._tileTreeRefs.every(
+        (treeRef) => treeRef.treeOwner.load() !== undefined
+      );
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
-  public getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    if (!this.settings.subCategoryOrElementIds)
-      return undefined;
+  public getPlanarClipMaskSymbologyOverrides():
+    | FeatureSymbology.Overrides
+    | undefined {
+    if (!this.settings.subCategoryOrElementIds) return undefined;
 
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
         const overrides = new FeatureSymbology.Overrides();
-        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds, true);
+        overrides.setAlwaysDrawnSet(
+          this.settings.subCategoryOrElementIds,
+          true
+        );
         return overrides;
       }
       case PlanarClipMaskMode.ExcludeElements: {

@@ -6,14 +6,26 @@
  * @module RpcInterface
  */
 import { LogLevel } from "@itwin/core-bentley";
-import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
+import {
+  DevToolsRpcInterface,
+  DevToolsStatsOptions,
+  IModelRpcProps,
+  RpcInterface,
+  RpcManager,
+} from "@itwin/core-common";
 import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 
 /** The backend implementation of WipRpcInterface.
  * @internal
  */
-export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterface { // eslint-disable-line deprecation/deprecation
-  public static register() { RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl); }
+export class DevToolsRpcImpl
+  extends RpcInterface
+  implements DevToolsRpcInterface
+{
+  // eslint-disable-line deprecation/deprecation
+  public static register() {
+    RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl);
+  }
 
   // Returns true if the backend received the ping
   public async ping(_tokenProps: IModelRpcProps): Promise<boolean> {
@@ -21,10 +33,12 @@ export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterfac
   }
 
   // Returns JSON object with statistics
-  public async stats(_tokenProps: IModelRpcProps, options: DevToolsStatsOptions): Promise<any> {
+  public async stats(
+    _tokenProps: IModelRpcProps,
+    options: DevToolsStatsOptions
+  ): Promise<any> {
     const stats = DevTools.stats();
-    if (options === DevToolsStatsOptions.None)
-      return stats;
+    if (options === DevToolsStatsOptions.None) return stats;
     const formattedStats = DevToolsStatsFormatter.toFormattedJson(stats);
     return formattedStats;
   }
@@ -35,7 +49,11 @@ export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterfac
   }
 
   // Sets up a log level at the backend
-  public async setLogLevel(_tokenProps: IModelRpcProps, loggerCategory: string, logLevel: LogLevel): Promise<LogLevel | undefined> {
+  public async setLogLevel(
+    _tokenProps: IModelRpcProps,
+    loggerCategory: string,
+    logLevel: LogLevel
+  ): Promise<LogLevel | undefined> {
     return DevTools.setLogLevel(loggerCategory, logLevel);
   }
 }

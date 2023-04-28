@@ -6,7 +6,11 @@
  * @module WebGL
  */
 
-import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
+import {
+  ShaderBuilder,
+  VariableType,
+  VertexShaderBuilder,
+} from "../ShaderBuilder";
 import { addRenderPass } from "./RenderPass";
 import { addModelViewMatrix, addProjectionMatrix } from "./Vertex";
 

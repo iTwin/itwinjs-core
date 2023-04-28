@@ -9,7 +9,10 @@
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 
-import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import type {
+  GeometryHandler,
+  IStrokeHandler,
+} from "../geometry3d/GeometryHandler";
 import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import type { Ray3d } from "../geometry3d/Ray3d";
@@ -50,7 +53,9 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
 
   /** return the (pointer to) the proxy curve. */
-  public get proxyCurve(): CurvePrimitive { return this._proxyCurve;}
+  public get proxyCurve(): CurvePrimitive {
+    return this._proxyCurve;
+  }
 
   /** Implement by proxyCurve */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -58,7 +63,10 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
 
   /** Implement by proxyCurve */
-  public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void{
+  public emitStrokableParts(
+    dest: IStrokeHandler,
+    options?: StrokeOptions
+  ): void {
     this._proxyCurve.emitStrokableParts(dest, options);
   }
 
@@ -66,26 +74,30 @@ export abstract class ProxyCurve extends CurvePrimitive {
   public abstract override clone(): ProxyCurve;
 
   /** Return a transformed clone. */
-  public override cloneTransformed(transform: Transform): ProxyCurve | undefined {
+  public override cloneTransformed(
+    transform: Transform
+  ): ProxyCurve | undefined {
     const myClone = this.clone();
-    if (myClone.tryTransformInPlace(transform))
-      return myClone;
+    if (myClone.tryTransformInPlace(transform)) return myClone;
     return undefined;
   }
 
   /** Implement by proxyCurve. Subclasses may eventually override this default implementation. */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+  public override clonePartialCurve(
+    fractionA: number,
+    fractionB: number
+  ): CurvePrimitive | undefined {
     return this._proxyCurve.clonePartialCurve(fractionA, fractionB);
   }
 
   /** Implement by proxyCurve */
-  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void{
+  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     this._proxyCurve.emitStrokes(dest, options);
   }
 
   /** Implement by proxyCurve */
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void{
-    this._proxyCurve.extendRange (rangeToExtend, transform);
+  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+    this._proxyCurve.extendRange(rangeToExtend, transform);
   }
 
   /** Implement by proxyCurve */
@@ -94,17 +106,20 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
 
   /** Implement by proxyCurve */
-  public fractionToPoint(fraction: number, result?: Point3d): Point3d{
+  public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     return this._proxyCurve.fractionToPoint(fraction, result);
   }
 
   /** Implement by proxyCurve */
-  public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d{
+  public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     return this._proxyCurve.fractionToPointAndDerivative(fraction, result);
   }
 
   /** Implement by proxyCurve */
-  public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined{
+  public fractionToPointAnd2Derivatives(
+    fraction: number,
+    result?: Plane3dByOriginAndVectors
+  ): Plane3dByOriginAndVectors | undefined {
     return this._proxyCurve.fractionToPointAnd2Derivatives(fraction, result);
   }
 
@@ -119,12 +134,17 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
 
   /** Implement by proxyCurve */
-  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public override constructOffsetXY(
+    offsetDistanceOrOptions: number | OffsetOptions
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     return this._proxyCurve.constructOffsetXY(offsetDistanceOrOptions);
   }
 
   /** Implement by proxyCurve */
-  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+  public override projectedParameterRange(
+    ray: Vector3d | Ray3d,
+    lowHigh?: Range1d
+  ): Range1d | undefined {
     return this._proxyCurve.projectedParameterRange(ray, lowHigh);
   }
 }

@@ -22,8 +22,7 @@ describe("BisCore Cache test", () => {
         </ECEntityClass>
       </ECSchema>`;
 
-    const expectedSchemaString =
-      `import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
+    const expectedSchemaString = `import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
 import * as elementsModule from "./MyDomainElements";
 
 export class MyDomain extends Schema {
@@ -40,8 +39,7 @@ export class MyDomain extends Schema {
   }
 }\n\n`;
 
-    const expectedElementString =
-      `import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";
+    const expectedElementString = `import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";
 import { GeometricElement3dProps } from "@itwin/core-common";
 
 export class Building extends SpatialLocationElement {
@@ -59,7 +57,8 @@ export class Building extends SpatialLocationElement {
 
     const schema = utils.deserializeXml(context, schemaXml);
     const ecschema2ts = new ECSchemaToTs();
-    const { schemaTsString, elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
+    const { schemaTsString, elemTsString, propsTsString } =
+      ecschema2ts.convertSchemaToTs(schema);
     assert.equal(schemaTsString, expectedSchemaString);
     assert.equal(propsTsString, `\n`);
     assert.equal(elemTsString, expectedElementString);

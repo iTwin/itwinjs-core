@@ -54,9 +54,15 @@ export class SubCategoryAppearance {
    * @note The transparency component of the fill color is ignored.
    * @see [[SubCategoryAppearance.fillTransparency]].
    */
-  public get fillColor(): ColorDef { return (undefined !== this._fillColor ? this._fillColor : this.color); }
+  public get fillColor(): ColorDef {
+    return undefined !== this._fillColor ? this._fillColor : this.color;
+  }
   /** A value in the range [0, 1] indicating the fill transparency of the geometry where 0.0 means "fully opaque" and 1.0 means "fully transparent". */
-  public get fillTransparency(): number { return (undefined !== this._fillTransparency ? this._fillTransparency : this.transparency); }
+  public get fillTransparency(): number {
+    return undefined !== this._fillTransparency
+      ? this._fillTransparency
+      : this.transparency;
+  }
 
   constructor(props?: SubCategoryAppearance.Props) {
     if (!props) {
@@ -80,14 +86,14 @@ export class SubCategoryAppearance {
     this.priority = JsonUtils.asInt(props.priority);
     this.materialId = Id64.fromJSON(props.material);
     this.transparency = JsonUtils.asDouble(props.transp);
-    if (props.fill)
-      this._fillColor = ColorDef.fromJSON(props.fill);
+    if (props.fill) this._fillColor = ColorDef.fromJSON(props.fill);
     if (props.transpFill)
       this._fillTransparency = JsonUtils.asDouble(props.transpFill);
   }
 
   public equals(other: SubCategoryAppearance): boolean {
-    return this.invisible === other.invisible &&
+    return (
+      this.invisible === other.invisible &&
       this.dontPlot === other.dontPlot &&
       this.dontSnap === other.dontSnap &&
       this.dontLocate === other.dontLocate &&
@@ -98,55 +104,48 @@ export class SubCategoryAppearance {
       this.materialId === other.materialId &&
       this.transparency === other.transparency &&
       this.fillColor.equals(other.fillColor) &&
-      this.fillTransparency === other.fillTransparency;
+      this.fillTransparency === other.fillTransparency
+    );
   }
 
   /** @internal */
   public toJSON(): SubCategoryAppearance.Props {
     const val: SubCategoryAppearance.Props = { color: this.color.toJSON() };
-    if (this.invisible)
-      val.invisible = true;
+    if (this.invisible) val.invisible = true;
 
-    if (this.dontPlot)
-      val.dontPlot = true;
+    if (this.dontPlot) val.dontPlot = true;
 
-    if (this.dontSnap)
-      val.dontSnap = true;
+    if (this.dontSnap) val.dontSnap = true;
 
-    if (this.dontLocate)
-      val.dontLocate = true;
+    if (this.dontLocate) val.dontLocate = true;
 
-    if (0 !== this.weight)
-      val.weight = this.weight;
+    if (0 !== this.weight) val.weight = this.weight;
 
-    if (0 !== this.priority)
-      val.priority = this.priority;
+    if (0 !== this.priority) val.priority = this.priority;
 
-    if (Id64.isValid(this.styleId))
-      val.style = this.styleId;
+    if (Id64.isValid(this.styleId)) val.style = this.styleId;
 
-    if (Id64.isValid(this.materialId))
-      val.material = this.materialId;
+    if (Id64.isValid(this.materialId)) val.material = this.materialId;
 
-    if (0.0 !== this.transparency)
-      val.transp = this.transparency;
+    if (0.0 !== this.transparency) val.transp = this.transparency;
 
-    if (this._fillColor)
-      val.fill = this._fillColor.toJSON();
+    if (this._fillColor) val.fill = this._fillColor.toJSON();
 
-    if (this._fillTransparency)
-      val.transpFill = this._fillTransparency;
+    if (this._fillTransparency) val.transpFill = this._fillTransparency;
 
     return val;
   }
 
-  public clone(): SubCategoryAppearance { return new SubCategoryAppearance(this.toJSON()); }
+  public clone(): SubCategoryAppearance {
+    return new SubCategoryAppearance(this.toJSON());
+  }
 
   public static defaults = new SubCategoryAppearance();
 }
 
 /** @public */
-export namespace SubCategoryAppearance { // eslint-disable-line no-redeclare
+export namespace SubCategoryAppearance {
+  // eslint-disable-line no-redeclare
   /** Properties used to create a SubCategoryAppearance
    * See [[SubCategoryAppearance]]
    */

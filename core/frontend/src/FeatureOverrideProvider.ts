@@ -20,5 +20,8 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
  */
 export interface FeatureOverrideProvider {
   /** Add to the supplied overrides any symbology overrides to be applied to the specified viewport. */
-  addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+  addFeatureOverrides(
+    overrides: FeatureSymbology.Overrides,
+    viewport: Viewport
+  ): void;
 }

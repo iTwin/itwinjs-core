@@ -43,9 +43,13 @@ export class SmoothTransformBetweenFrusta {
   private _localToWorldA: Transform;
   private _localToWorldB: Transform;
   /** (property accessor) rigid frame at start of motion */
-  public get localToWorldA(): Transform { return this._localToWorldA; }
+  public get localToWorldA(): Transform {
+    return this._localToWorldA;
+  }
   /** (property accessor) rigid frame at end of motion */
-  public get localToWorldB(): Transform { return this._localToWorldB; }
+  public get localToWorldB(): Transform {
+    return this._localToWorldB;
+  }
   private _rotationAxis: Vector3d;
   private _rotationAngle: Angle;
 
@@ -58,7 +62,14 @@ export class SmoothTransformBetweenFrusta {
    * @param rotationAxis
    * @param rotationAngle
    */
-  private constructor(localToWorldA: Transform, localCornerA: Point3d[], localToWorldB: Transform, localCornerB: Point3d[], rotationAxis: Vector3d, rotationAngle: Angle) {
+  private constructor(
+    localToWorldA: Transform,
+    localCornerA: Point3d[],
+    localToWorldB: Transform,
+    localCornerB: Point3d[],
+    rotationAxis: Vector3d,
+    rotationAngle: Angle
+  ) {
     this._localCornerA = localCornerA;
     this._localCornerB = localCornerB;
     this._localToWorldA = localToWorldA;
@@ -72,49 +83,109 @@ export class SmoothTransformBetweenFrusta {
    * @param cornerA
    * @param cornerB
    */
-  public static create(cornerA: Point3d[], cornerB: Point3d[], preferSimpleRotation: boolean = true): SmoothTransformBetweenFrusta | undefined {
-    const localToWorldA = Point3dArray.evaluateTrilinearDerivativeTransform(cornerA, 0.5, 0.5, 0.5);
-    const localToWorldB = Point3dArray.evaluateTrilinearDerivativeTransform(cornerB, 0.5, 0.5, 0.5);
-    const rigidA = Transform.createOriginAndMatrix(localToWorldA.origin, Matrix3d.createRigidFromMatrix3d(localToWorldA.matrix, AxisOrder.ZXY));
-    const rigidB = Transform.createOriginAndMatrix(localToWorldB.origin, Matrix3d.createRigidFromMatrix3d(localToWorldB.matrix, AxisOrder.ZXY));
-    if (rigidA.matrix.computeCachedInverse(true) && rigidB.matrix.computeCachedInverse(true)) {
-      const spinMatrix = rigidB.matrix.multiplyMatrixMatrixInverse(rigidA.matrix)!;
+  public static create(
+    cornerA: Point3d[],
+    cornerB: Point3d[],
+    preferSimpleRotation: boolean = true
+  ): SmoothTransformBetweenFrusta | undefined {
+    const localToWorldA = Point3dArray.evaluateTrilinearDerivativeTransform(
+      cornerA,
+      0.5,
+      0.5,
+      0.5
+    );
+    const localToWorldB = Point3dArray.evaluateTrilinearDerivativeTransform(
+      cornerB,
+      0.5,
+      0.5,
+      0.5
+    );
+    const rigidA = Transform.createOriginAndMatrix(
+      localToWorldA.origin,
+      Matrix3d.createRigidFromMatrix3d(localToWorldA.matrix, AxisOrder.ZXY)
+    );
+    const rigidB = Transform.createOriginAndMatrix(
+      localToWorldB.origin,
+      Matrix3d.createRigidFromMatrix3d(localToWorldB.matrix, AxisOrder.ZXY)
+    );
+    if (
+      rigidA.matrix.computeCachedInverse(true) &&
+      rigidB.matrix.computeCachedInverse(true)
+    ) {
+      const spinMatrix = rigidB.matrix.multiplyMatrixMatrixInverse(
+        rigidA.matrix
+      )!;
       const spinAxis = spinMatrix.getAxisAndAngleOfRotation();
       const localCornerA = rigidA.multiplyInversePoint3dArray(cornerA)!;
       const localCornerB = rigidB.multiplyInversePoint3dArray(cornerB)!;
       /** Is this a pure rotation -- i.e. no clip volume resizing for camera or clip changes */
-      if (preferSimpleRotation && Point3dArray.isAlmostEqual(localCornerA, localCornerB) && !spinAxis.angle.isAlmostZero) {
+      if (
+        preferSimpleRotation &&
+        Point3dArray.isAlmostEqual(localCornerA, localCornerB) &&
+        !spinAxis.angle.isAlmostZero
+      ) {
         // world vectors
-        const worldOriginShift = Vector3d.createStartEnd(localToWorldA.origin, localToWorldB.origin);
-        const chordMidPoint = localToWorldA.getOrigin().interpolate(0.5, localToWorldB.getOrigin());
+        const worldOriginShift = Vector3d.createStartEnd(
+          localToWorldA.origin,
+          localToWorldB.origin
+        );
+        const chordMidPoint = localToWorldA
+          .getOrigin()
+          .interpolate(0.5, localToWorldB.getOrigin());
         const bisector = spinAxis.axis.unitCrossProduct(worldOriginShift);
         if (bisector) {
           const halfChordLength = 0.5 * worldOriginShift.magnitude();
-          const alpha = Geometry.conditionalDivideFraction(halfChordLength, Math.tan(spinAxis.angle.radians * 0.5));
+          const alpha = Geometry.conditionalDivideFraction(
+            halfChordLength,
+            Math.tan(spinAxis.angle.radians * 0.5)
+          );
           if (alpha !== undefined) {
             const spinCenter = chordMidPoint.plusScaled(bisector, alpha);
-            const rigidA1 = Transform.createOriginAndMatrix(spinCenter, rigidA.matrix);
-            const rigidB1 = Transform.createOriginAndMatrix(spinCenter, rigidB.matrix);
+            const rigidA1 = Transform.createOriginAndMatrix(
+              spinCenter,
+              rigidA.matrix
+            );
+            const rigidB1 = Transform.createOriginAndMatrix(
+              spinCenter,
+              rigidB.matrix
+            );
             const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA)!;
             const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB)!;
-            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1,
-              spinAxis.axis, spinAxis.angle);
+            return new SmoothTransformBetweenFrusta(
+              rigidA1,
+              localCornerA1,
+              rigidB1,
+              localCornerB1,
+              spinAxis.axis,
+              spinAxis.angle
+            );
           }
         }
       }
-      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB,
-        spinAxis.axis, spinAxis.angle);
+      return new SmoothTransformBetweenFrusta(
+        rigidA,
+        localCornerA,
+        rigidB,
+        localCornerB,
+        spinAxis.axis,
+        spinAxis.angle
+      );
     }
     return undefined;
   }
 
   /** interpolate local corner coordinates at fractional move from m_localFrustum0 to m_localFrustum1 */
-  public interpolateLocalCorners(fraction: number, result?: Point3d[]): Point3d[] {
+  public interpolateLocalCorners(
+    fraction: number,
+    result?: Point3d[]
+  ): Point3d[] {
     result = result || [];
     result.length = 0;
     const n = this._localCornerA.length;
     for (let i = 0; i < n; i++) {
-      result.push(this._localCornerA[i].interpolate(fraction, this._localCornerB[i]));
+      result.push(
+        this._localCornerA[i].interpolate(fraction, this._localCornerB[i])
+      );
     }
     return result;
   }
@@ -122,14 +193,24 @@ export class SmoothTransformBetweenFrusta {
    * After initialization, call this for various intermediate fractions.
    * The returned corner points are in world coordinates "between" start and end positions.
    */
-  public fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[] {
+  public fractionToWorldCorners(
+    fraction: number,
+    result?: Point3d[]
+  ): Point3d[] {
     const corners = this.interpolateLocalCorners(fraction, result);
-    const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis,
-      this._rotationAngle.cloneScaled(fraction))!;
+    const fractionalRotation = Matrix3d.createRotationAroundVector(
+      this._rotationAxis,
+      this._rotationAngle.cloneScaled(fraction)
+    )!;
     const axes0 = this._localToWorldA.matrix;
     const fractionalAxes = fractionalRotation.multiplyMatrixMatrix(axes0);
-    const fractionalOrigin = this._localToWorldA.getOrigin().interpolate(fraction, this._localToWorldB.origin);
-    const putdownFrame = Transform.createOriginAndMatrix(fractionalOrigin, fractionalAxes);
+    const fractionalOrigin = this._localToWorldA
+      .getOrigin()
+      .interpolate(fraction, this._localToWorldB.origin);
+    const putdownFrame = Transform.createOriginAndMatrix(
+      fractionalOrigin,
+      fractionalAxes
+    );
     putdownFrame.multiplyPoint3dArray(corners, corners);
     return corners;
   }

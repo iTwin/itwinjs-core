@@ -9,16 +9,35 @@
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
 import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
-  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
-  ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
-  StartStructProps, traverseContent,
+  CategoryDescription,
+  Content,
+  ElementProperties,
+  ElementPropertiesItem,
+  ElementPropertiesPrimitiveArrayPropertyItem,
+  ElementPropertiesPropertyItem,
+  ElementPropertiesStructArrayPropertyItem,
+  IContentVisitor,
+  Item,
+  PresentationError,
+  PresentationStatus,
+  ProcessFieldHierarchiesProps,
+  ProcessMergedValueProps,
+  ProcessPrimitiveValueProps,
+  PropertyValueFormat,
+  StartArrayProps,
+  StartCategoryProps,
+  StartContentProps,
+  StartFieldProps,
+  StartItemProps,
+  StartStructProps,
+  traverseContent,
 } from "@itwin/presentation-common";
 
 /** @internal */
-export const buildElementsProperties = (content: Content | undefined): ElementProperties[] => {
-  if (!content || content.contentSet.length === 0)
-    return [];
+export const buildElementsProperties = (
+  content: Content | undefined
+): ElementProperties[] => {
+  if (!content || content.contentSet.length === 0) return [];
 
   const builder = new ElementPropertiesBuilder();
   traverseContent(builder, content);
@@ -35,28 +54,37 @@ export function getElementsCount(db: IModelDb, classNames?: string[]) {
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
+    return stmt.step() === DbResult.BE_SQLITE_ROW
+      ? stmt.getValue(0).getInteger()
+      : 0;
   });
 }
 
 /** @internal */
-export function* iterateElementIds(db: IModelDb, classNames?: string[], limit?: number) {
+export function* iterateElementIds(
+  db: IModelDb,
+  classNames?: string[],
+  limit?: number
+) {
   let lastElementId;
   while (true) {
     const result = queryElementIds(db, classNames, limit, lastElementId);
     yield result.ids;
     lastElementId = result.lastElementId;
-    if (!lastElementId)
-      break;
+    if (!lastElementId) break;
   }
 }
 
-function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, lastElementId?: Id64String) {
+function queryElementIds(
+  db: IModelDb,
+  classNames?: string[],
+  limit?: number,
+  lastElementId?: Id64String
+) {
   function createWhereClause() {
     const classFilter = createElementsFilter("e", classNames);
     const elementFilter = lastElementId ? `e.ECInstanceId > ?` : undefined;
-    if (!classFilter && !elementFilter)
-      return "";
+    if (!classFilter && !elementFilter) return "";
     if (classFilter && elementFilter)
       return `WHERE ${classFilter} AND ${elementFilter}`;
     return `WHERE ${classFilter ?? ""} ${elementFilter ?? ""}`;
@@ -72,8 +100,7 @@ function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, la
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    if (lastElementId)
-      stmt.bindId(1, lastElementId);
+    if (lastElementId) stmt.bindId(1, lastElementId);
 
     const ids = new Map<string, string[]>();
     let currentClassName = "";
@@ -81,8 +108,7 @@ function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, la
     let loadedIds = 0;
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const row = stmt.getRow();
-      if (!row.elId || !row.elClassName)
-        continue;
+      if (!row.elId || !row.elClassName) continue;
 
       if (currentClassName !== row.elClassName) {
         currentClassName = row.elClassName;
@@ -96,23 +122,24 @@ function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, la
       }
       currentIds.push(row.elId);
       loadedIds++;
-      if (limit && loadedIds >= limit)
-        return { ids, lastElementId: row.elId };
+      if (limit && loadedIds >= limit) return { ids, lastElementId: row.elId };
     }
     return { ids, lastElementId: undefined };
   });
 }
 
 function createElementsFilter(elementAlias: string, classNames?: string[]) {
-  if (classNames === undefined || classNames.length === 0)
-    return undefined;
+  if (classNames === undefined || classNames.length === 0) return undefined;
 
   // check if list contains only valid class names
   const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
   const invalidName = classNames.find((name) => !name.match(classNameRegExp));
   if (invalidName) {
-    throw new PresentationError(PresentationStatus.InvalidArgument, `Encountered invalid class name - ${invalidName}.
-      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`);
+    throw new PresentationError(
+      PresentationStatus.InvalidArgument,
+      `Encountered invalid class name - ${invalidName}.
+      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`
+    );
   }
 
   return `${elementAlias}.ECClassId IS (${classNames.join(",")})`;
@@ -125,8 +152,13 @@ interface IPropertiesAppender {
 
 class ElementPropertiesAppender implements IPropertiesAppender {
   private _propertyItems: { [label: string]: ElementPropertiesItem } = {};
-  private _categoryItemAppenders: { [categoryName: string]: IPropertiesAppender } = {};
-  constructor(private _item: Item, private _onItemFinished: (item: ElementProperties) => void) { }
+  private _categoryItemAppenders: {
+    [categoryName: string]: IPropertiesAppender;
+  } = {};
+  constructor(
+    private _item: Item,
+    private _onItemFinished: (item: ElementProperties) => void
+  ) {}
 
   public append(label: string, item: ElementPropertiesItem): void {
     this._propertyItems[label] = item;
@@ -147,7 +179,10 @@ class ElementPropertiesAppender implements IPropertiesAppender {
     });
   }
 
-  public getCategoryAppender(parentAppender: IPropertiesAppender, category: CategoryDescription): IPropertiesAppender {
+  public getCategoryAppender(
+    parentAppender: IPropertiesAppender,
+    category: CategoryDescription
+  ): IPropertiesAppender {
     let appender = this._categoryItemAppenders[category.name];
     if (!appender) {
       appender = new CategoryItemAppender(parentAppender, category);
@@ -159,13 +194,15 @@ class ElementPropertiesAppender implements IPropertiesAppender {
 
 class CategoryItemAppender implements IPropertiesAppender {
   private _items: { [label: string]: ElementPropertiesItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _category: CategoryDescription) { }
+  constructor(
+    private _parentAppender: IPropertiesAppender,
+    private _category: CategoryDescription
+  ) {}
   public append(label: string, item: ElementPropertiesItem): void {
     this._items[label] = item;
   }
   public finish(): void {
-    if (Object.keys(this._items).length === 0)
-      return;
+    if (Object.keys(this._items).length === 0) return;
 
     this._parentAppender.append(this._category.label, {
       type: "category",
@@ -176,17 +213,29 @@ class CategoryItemAppender implements IPropertiesAppender {
 
 class ArrayItemAppender implements IPropertiesAppender {
   private _items: ElementPropertiesPropertyItem[] = [];
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartArrayProps) { }
+  constructor(
+    private _parentAppender: IPropertiesAppender,
+    private _props: StartArrayProps
+  ) {}
   public append(_label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._items.push(item);
   }
   public finish(): void {
     assert(this._props.valueType.valueFormat === PropertyValueFormat.Array);
-    if (this._props.valueType.memberType.valueFormat === PropertyValueFormat.Primitive)
-      this._parentAppender.append(this._props.hierarchy.field.label, this.createPrimitivesArray());
+    if (
+      this._props.valueType.memberType.valueFormat ===
+      PropertyValueFormat.Primitive
+    )
+      this._parentAppender.append(
+        this._props.hierarchy.field.label,
+        this.createPrimitivesArray()
+      );
     else
-      this._parentAppender.append(this._props.hierarchy.field.label, this.createStructsArray());
+      this._parentAppender.append(
+        this._props.hierarchy.field.label,
+        this.createStructsArray()
+      );
   }
   private createPrimitivesArray(): ElementPropertiesPrimitiveArrayPropertyItem {
     return {
@@ -212,7 +261,10 @@ class ArrayItemAppender implements IPropertiesAppender {
 
 class StructItemAppender implements IPropertiesAppender {
   private _members: { [label: string]: ElementPropertiesPropertyItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartStructProps) { }
+  constructor(
+    private _parentAppender: IPropertiesAppender,
+    private _props: StartStructProps
+  ) {}
   public append(label: string, item: ElementPropertiesItem): void {
     assert(item.type !== "category");
     this._members[label] = item;
@@ -241,13 +293,18 @@ class ElementPropertiesBuilder implements IContentVisitor {
     return appender;
   }
 
-  public startContent(_props: StartContentProps): boolean { return true; }
-  public finishContent(): void { }
+  public startContent(_props: StartContentProps): boolean {
+    return true;
+  }
+  public finishContent(): void {}
 
-  public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void { }
+  public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void {}
 
   public startItem(props: StartItemProps): boolean {
-    this._elementPropertiesAppender = new ElementPropertiesAppender(props.item, (item) => this._items.push(item));
+    this._elementPropertiesAppender = new ElementPropertiesAppender(
+      props.item,
+      (item) => this._items.push(item)
+    );
     this._appendersStack.push(this._elementPropertiesAppender);
     return true;
   }
@@ -260,27 +317,42 @@ class ElementPropertiesBuilder implements IContentVisitor {
 
   public startCategory(props: StartCategoryProps): boolean {
     assert(this._elementPropertiesAppender !== undefined);
-    this._appendersStack.push(this._elementPropertiesAppender.getCategoryAppender(this._currentAppender, props.category));
+    this._appendersStack.push(
+      this._elementPropertiesAppender.getCategoryAppender(
+        this._currentAppender,
+        props.category
+      )
+    );
     return true;
   }
   public finishCategory(): void {
     this._appendersStack.pop();
   }
 
-  public startField(_props: StartFieldProps): boolean { return true; }
-  public finishField(): void { }
+  public startField(_props: StartFieldProps): boolean {
+    return true;
+  }
+  public finishField(): void {}
 
   public startStruct(props: StartStructProps): boolean {
-    this._appendersStack.push(new StructItemAppender(this._currentAppender, props));
+    this._appendersStack.push(
+      new StructItemAppender(this._currentAppender, props)
+    );
     return true;
   }
-  public finishStruct(): void { this._appendersStack.pop()!.finish(); }
+  public finishStruct(): void {
+    this._appendersStack.pop()!.finish();
+  }
 
   public startArray(props: StartArrayProps): boolean {
-    this._appendersStack.push(new ArrayItemAppender(this._currentAppender, props));
+    this._appendersStack.push(
+      new ArrayItemAppender(this._currentAppender, props)
+    );
     return true;
   }
-  public finishArray(): void { this._appendersStack.pop()!.finish(); }
+  public finishArray(): void {
+    this._appendersStack.pop()!.finish();
+  }
 
   public processMergedValue(props: ProcessMergedValueProps): void {
     this._currentAppender.append(props.mergedField.label, {

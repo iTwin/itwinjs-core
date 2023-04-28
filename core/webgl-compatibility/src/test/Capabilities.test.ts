@@ -5,10 +5,16 @@
 import { expect } from "chai";
 import { Capabilities, DepthType, RenderType } from "../Capabilities";
 
-function createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): WebGLRenderingContext | undefined {
+function createContext(
+  canvas: HTMLCanvasElement,
+  contextAttributes?: WebGLContextAttributes
+): WebGLRenderingContext | undefined {
   let context = canvas.getContext("webgl", contextAttributes);
   if (null === context) {
-    context = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
+    context = canvas.getContext(
+      "experimental-webgl",
+      contextAttributes
+    ) as WebGLRenderingContext | null; // IE, Edge...
     if (null === context) {
       return undefined;
     }
@@ -18,8 +24,7 @@ function createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLConte
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
-  if (null === canvas)
-    return undefined;
+  if (null === canvas) return undefined;
   return canvas;
 }
 
@@ -70,6 +75,7 @@ describe("System WebGL Capabilities", () => {
     expect(cap.init(context!)).to.be.not.undefined;
     expect(cap.maxTextureSize).to.not.equal(0);
     expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
-    expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined; // eslint-disable-line @typescript-eslint/naming-convention
+    expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers"))
+      .to.not.be.undefined; // eslint-disable-line @typescript-eslint/naming-convention
   });
 });

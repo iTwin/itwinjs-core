@@ -8,11 +8,25 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags";
+import {
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariableType,
+  VertexShaderComponent,
+} from "../ShaderBuilder";
+import {
+  FeatureMode,
+  IsAnimated,
+  IsClassified,
+  IsThematic,
+} from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addUniformHiliter } from "./FeatureSymbology";
-import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
+import {
+  addColorPlanarClassifier,
+  addFeaturePlanarClassifier,
+  addHilitePlanarClassifier,
+} from "./PlanarClassification";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { addViewportTransformation } from "./Viewport";
 import { addThematicDisplay } from "./Thematic";
@@ -60,13 +74,18 @@ const computePosition = `
 `;
 
 function createBuilder(): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PointCloud, false));
+  const builder = new ProgramBuilder(
+    AttributeMap.findAttributeMap(TechniqueId.PointCloud, false)
+  );
   const vert = builder.vert;
   addViewportTransformation(vert);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
-  builder.frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
+  builder.frag.set(
+    FragmentShaderComponent.CheckForEarlyDiscard,
+    roundPointDiscard
+  );
 
   // Uniforms based on the PointCloudDisplaySettings.
   builder.addUniform("u_pointCloudSettings", VariableType.Vec4, (prog) => {
@@ -91,7 +110,11 @@ function createBuilder(): ProgramBuilder {
 const scratchPointCloud = new Float32Array([0, 0]);
 
 /** @internal */
-export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
+export function createPointCloudBuilder(
+  classified: IsClassified,
+  featureMode: FeatureMode,
+  thematic: IsThematic
+): ProgramBuilder {
   const builder = createBuilder();
 
   builder.addVarying("v_color", VariableType.Vec4);
@@ -100,10 +123,12 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   if (classified) {
     addColorPlanarClassifier(builder, false, thematic);
-    builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
+    builder.frag.set(
+      FragmentShaderComponent.CheckForDiscard,
+      checkForClassifiedDiscard
+    );
 
-    if (FeatureMode.None !== featureMode)
-      addFeaturePlanarClassifier(builder);
+    if (FeatureMode.None !== featureMode) addFeaturePlanarClassifier(builder);
   }
 
   if (IsThematic.Yes === thematic) {
@@ -115,7 +140,9 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 }
 
 /** @internal */
-export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
+export function createPointCloudHiliter(
+  classified: IsClassified
+): ProgramBuilder {
   const builder = createBuilder();
   if (classified) {
     addHilitePlanarClassifier(builder, false);

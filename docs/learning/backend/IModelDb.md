@@ -1,6 +1,6 @@
 # Opening an iModel via the IModelDb class
 
-## Opening a local *briefcase* of an iModel managed by iModelHub
+## Opening a local _briefcase_ of an iModel managed by iModelHub
 
 The [BriefcaseManager]($backend) class provides a method to download a [briefcase](../Glossary.md#briefcase) (i.e. a local copy of an iModel.).
 Once downloaded, the [BriefcaseDb]($backend) class provides methods for opening, closing, and accessing the briefcase. An instance of BriefcaseDb in memory holds a briefcase file open.
@@ -11,16 +11,16 @@ Use [BriefcaseDb.close]($backend) to close the local briefcase.
 
 Note that an [AccessToken](../common/AccessToken.md) is an argument to BriefcaseDb.open.
 
-## Opening a *snapshot* iModel
+## Opening a _snapshot_ iModel
 
-The [SnapshotDb]($backend) class also provides methods for opening, closing, and accessing a *snapshot* iModel.
-A *snapshot* iModel is a file that is disconnected from iModelHub and therefore does not have a change timeline.
-Once created, a *snapshot* iModel is read-only and cannot be changed.
-This makes *snapshot* iModels ideal for archival or data transfer purposes.
+The [SnapshotDb]($backend) class also provides methods for opening, closing, and accessing a _snapshot_ iModel.
+A _snapshot_ iModel is a file that is disconnected from iModelHub and therefore does not have a change timeline.
+Once created, a _snapshot_ iModel is read-only and cannot be changed.
+This makes _snapshot_ iModels ideal for archival or data transfer purposes.
 
-Use [SnapshotDb.openFile]($backend) to open an existing *snapshot* iModel.
+Use [SnapshotDb.openFile]($backend) to open an existing _snapshot_ iModel.
 
-Use [SnapshotDb.close]($backend) to close the *snapshot* iModel.
+Use [SnapshotDb.close]($backend) to close the _snapshot_ iModel.
 
 ## Upgrading schemas in an iModel
 
@@ -29,7 +29,7 @@ Every now and then the schemas in the iModel may become incompatible with newer 
 There are two kinds of schemas that typically get upgraded:
 
 - [Domain schemas](../../bis/guide/fundamentals/schemas-domains) - the ECSchema-s that define the information for specific [Domains](../../bis/guide/references/glossary.md#domain)
-- *Profile schemas* - the Schemas of database tables that are either not mapped to domain schemas, or are otherwise used to store meta-data about the mapping of database tables to domain schemas.
+- _Profile schemas_ - the Schemas of database tables that are either not mapped to domain schemas, or are otherwise used to store meta-data about the mapping of database tables to domain schemas.
 
 The iTwin.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -
 

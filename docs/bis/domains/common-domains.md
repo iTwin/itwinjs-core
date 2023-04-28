@@ -23,4 +23,3 @@ The following domains lay out the [Common layer](../guide/intro/bis-organization
 ### [Profiles](./Profiles.ecschema.md)
 
 ### [SpatialComposition](./SpatialComposition.ecschema.md)
-

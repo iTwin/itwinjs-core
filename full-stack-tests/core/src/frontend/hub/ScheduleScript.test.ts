@@ -3,8 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
-import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import {
+  Code,
+  DisplayStyle3dProps,
+  DisplayStyleProps,
+  ElementProps,
+  RenderSchedule,
+  RenderTimelineProps,
+} from "@itwin/core-common";
+import {
+  CheckpointConnection,
+  DisplayStyle3dState,
+  IModelApp,
+  IModelConnection,
+  SpatialViewState,
+  ViewState,
+} from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 
@@ -28,10 +42,18 @@ describe("Schedule script (#integration)", () => {
     await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
-    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);
+    const iTwinId = await TestUtility.queryITwinIdByName(
+      TestUtility.testITwinName
+    );
+    const oldIModelId = await TestUtility.queryIModelIdByName(
+      iTwinId,
+      TestUtility.testIModelNames.synchro
+    );
     dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
-    const newIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchroNew);
+    const newIModelId = await TestUtility.queryIModelIdByName(
+      iTwinId,
+      TestUtility.testIModelNames.synchroNew
+    );
     dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 
@@ -44,12 +66,22 @@ describe("Schedule script (#integration)", () => {
   it("obtains tile tree with script source Id", async () => {
     // f_1-A:0x100000004d8_#ffffffff_E:0_0x10000000001
     // f_1-A:0x100000004d8_#f_E:0_0x10000000001
-    const expectTileTreeProps = async (scriptSourceId: string, nodeId: number, imodel: IModelConnection, expectValid: boolean) => {
-      const treeId = `f_1-A:${scriptSourceId}_#${nodeId.toString(16)}_${modelId}`;
+    const expectTileTreeProps = async (
+      scriptSourceId: string,
+      nodeId: number,
+      imodel: IModelConnection,
+      expectValid: boolean
+    ) => {
+      const treeId = `f_1-A:${scriptSourceId}_#${nodeId.toString(
+        16
+      )}_${modelId}`;
       let treeProps;
       let threw = false;
       try {
-        treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
+        treeProps = await IModelApp.tileAdmin.requestTileTreeProps(
+          imodel,
+          treeId
+        );
       } catch {
         threw = true;
       }
@@ -71,7 +103,9 @@ describe("Schedule script (#integration)", () => {
   });
 
   it("excludes element Ids if specified", async () => {
-    const scriptHasNonEmptyElementIds = (script: RenderSchedule.ScriptProps) => {
+    const scriptHasNonEmptyElementIds = (
+      script: RenderSchedule.ScriptProps
+    ) => {
       expect(script.length).least(1);
       let numElementIdProps = 0;
       let numNonEmptyElementIdProps = 0;
@@ -99,23 +133,31 @@ describe("Schedule script (#integration)", () => {
 
     const timelineHasNonEmptyElementIds = (props: ElementProps | undefined) => {
       expect(props).not.to.be.undefined;
-      return scriptHasNonEmptyElementIds(JSON.parse((props as RenderTimelineProps).script));
+      return scriptHasNonEmptyElementIds(
+        JSON.parse((props as RenderTimelineProps).script)
+      );
     };
 
     const testStyle = async (imodel: IModelConnection) => {
       const styles = await imodel.elements.getProps(embedStyleId);
       expect(styles.length).to.equal(1);
-      expect(styleHasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
+      expect(styleHasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be
+        .true;
 
       const view = await imodel.views.load(viewId);
       expect(view.displayStyle.id).to.equal(embedStyleId);
-      expect(styleHasNonEmptyElementIds(view.displayStyle.toJSON())).to.be.false;
+      expect(styleHasNonEmptyElementIds(view.displayStyle.toJSON())).to.be
+        .false;
 
-      let style = await imodel.elements.loadProps(embedStyleId, { displayStyle: { omitScheduleScriptElementIds: true } });
+      let style = await imodel.elements.loadProps(embedStyleId, {
+        displayStyle: { omitScheduleScriptElementIds: true },
+      });
       expect(style).not.to.be.undefined;
       expect(styleHasNonEmptyElementIds(style!)).to.be.false;
 
-      style = await imodel.elements.loadProps(embedStyleId, { displayStyle: { omitScheduleScriptElementIds: false } });
+      style = await imodel.elements.loadProps(embedStyleId, {
+        displayStyle: { omitScheduleScriptElementIds: false },
+      });
       expect(style).not.to.be.undefined;
       expect(styleHasNonEmptyElementIds(style!)).to.be.true;
 
@@ -129,11 +171,26 @@ describe("Schedule script (#integration)", () => {
 
     const timelines = await dbNew.elements.getProps(timelineId);
     expect(timelines.length).to.equal(1);
-    expect(timelineHasNonEmptyElementIds(timelines[0] as RenderTimelineProps)).to.be.true;
+    expect(timelineHasNonEmptyElementIds(timelines[0] as RenderTimelineProps))
+      .to.be.true;
 
-    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId))).to.be.true;
-    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: false } }))).to.be.true;
-    expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }))).to.be.false;
+    expect(
+      timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId))
+    ).to.be.true;
+    expect(
+      timelineHasNonEmptyElementIds(
+        await dbNew.elements.loadProps(timelineId, {
+          renderTimeline: { omitScriptElementIds: false },
+        })
+      )
+    ).to.be.true;
+    expect(
+      timelineHasNonEmptyElementIds(
+        await dbNew.elements.loadProps(timelineId, {
+          renderTimeline: { omitScriptElementIds: true },
+        })
+      )
+    ).to.be.false;
   });
 
   it("creates an additional tile tree per animation transform node", async () => {
@@ -146,31 +203,40 @@ describe("Schedule script (#integration)", () => {
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
-    const transformTimeline = JSON.parse(`[{"interpolation":2,"time":1526641200,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-17.786201477050781,8.4895801544189453,-3.6213436126708984],"transform":[[1,0,0,0.53248977661132813],[0,1,0,-0.54394721984863281],[0,0,1,0.51640319824218750]]}},{"interpolation":2,"time":1526641260,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-17.78613281250,8.4904203414916992,-3.6213412284851074],"transform":[[1,0,0,0.53255844116210938],[0,1,0,-0.54310703277587891],[0,0,1,0.51640558242797852]]}},{"interpolation":2,"time":1527431880,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-16.876888275146484,19.567762374877930,-3.5913453102111816],"transform":[[1,0,0,1.4418029785156250],[0,1,0,10.534235000610352],[0,0,1,0.54640150070190430]]}},{"interpolation":1,"time":1527850740,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-15.742227554321289,26.631050109863281,-4.1812567710876465],"transform":[[1,0,0,2.5764636993408203],[0,1,0,17.597522735595703],[0,0,1,-0.043509960174560547]]}}]`) as RenderSchedule.TransformEntryProps[];
+    const transformTimeline = JSON.parse(
+      `[{"interpolation":2,"time":1526641200,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-17.786201477050781,8.4895801544189453,-3.6213436126708984],"transform":[[1,0,0,0.53248977661132813],[0,1,0,-0.54394721984863281],[0,0,1,0.51640319824218750]]}},{"interpolation":2,"time":1526641260,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-17.78613281250,8.4904203414916992,-3.6213412284851074],"transform":[[1,0,0,0.53255844116210938],[0,1,0,-0.54310703277587891],[0,0,1,0.51640558242797852]]}},{"interpolation":2,"time":1527431880,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-16.876888275146484,19.567762374877930,-3.5913453102111816],"transform":[[1,0,0,1.4418029785156250],[0,1,0,10.534235000610352],[0,0,1,0.54640150070190430]]}},{"interpolation":1,"time":1527850740,"value":{"orientation":[0,0,0,1],"pivot":[18.318691253662109,-9.0335273742675781,4.1377468109130859],"position":[-15.742227554321289,26.631050109863281,-4.1812567710876465],"transform":[[1,0,0,2.5764636993408203],[0,1,0,17.597522735595703],[0,0,1,-0.043509960174560547]]}}]`
+    ) as RenderSchedule.TransformEntryProps[];
 
-    const json: RenderSchedule.ModelTimelineProps[] = [{
-      modelId,
-      elementTimelines: [{
-        batchId: 1,
-        elementIds: "",
-        transformTimeline,
-      }, {
-        batchId: 2,
-        elementIds: "",
-        transformTimeline,
-      }],
-    }];
+    const json: RenderSchedule.ModelTimelineProps[] = [
+      {
+        modelId,
+        elementTimelines: [
+          {
+            batchId: 1,
+            elementIds: "",
+            transformTimeline,
+          },
+          {
+            batchId: 2,
+            elementIds: "",
+            transformTimeline,
+          },
+        ],
+      },
+    ];
 
     view.displayStyle.settings.scheduleScriptProps = json; // eslint-disable-line deprecation/deprecation
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
     // eslint-disable-next-line deprecation/deprecation
-    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
+    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(
+      embedStyleId
+    );
     expect(countTileTrees(view)).to.equal(3);
   });
 
   it("updates tile tree references when script changes", async () => {
-    const view = await dbOld.views.load(viewId) as SpatialViewState;
+    const view = (await dbOld.views.load(viewId)) as SpatialViewState;
     expect(view instanceof SpatialViewState).to.be.true;
 
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
@@ -192,7 +258,7 @@ describe("Schedule script (#integration)", () => {
   });
 
   it("applies to newly-added tile tree references", async () => {
-    const view = await dbOld.views.load(viewId) as SpatialViewState;
+    const view = (await dbOld.views.load(viewId)) as SpatialViewState;
     view.modelSelector.models.clear();
     expect(countTileTrees(view)).to.equal(0);
 
@@ -203,12 +269,17 @@ describe("Schedule script (#integration)", () => {
     expect(countTileTrees(view)).to.equal(2);
   });
 
-  async function loadDisplayStyle(styleId: string, imodel: IModelConnection, load = true): Promise<DisplayStyle3dState> {
-    const props = (await imodel.elements.getProps(styleId))[0] as DisplayStyle3dProps;
+  async function loadDisplayStyle(
+    styleId: string,
+    imodel: IModelConnection,
+    load = true
+  ): Promise<DisplayStyle3dState> {
+    const props = (
+      await imodel.elements.getProps(styleId)
+    )[0] as DisplayStyle3dProps;
     expect(props).not.to.be.undefined;
     const style = new DisplayStyle3dState(props, imodel);
-    if (load)
-      await style.load();
+    if (load) await style.load();
 
     return style;
   }

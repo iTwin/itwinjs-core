@@ -26,8 +26,16 @@ export class HSLColor {
     this.l = lightness;
   }
 
-  public clone(hue?: number, saturation?: number, lightness?: number): HSLColor {
-    return new HSLColor(hue ?? this.h, saturation ?? this.s, lightness ?? this.l);
+  public clone(
+    hue?: number,
+    saturation?: number,
+    lightness?: number
+  ): HSLColor {
+    return new HSLColor(
+      hue ?? this.h,
+      saturation ?? this.s,
+      lightness ?? this.l
+    );
   }
 
   public toColorDef(transparency = 0): ColorDef {

@@ -21,8 +21,8 @@ export enum GltfVersions {
 
 /** @internal */
 export enum GltfV2ChunkTypes {
-  JSON = 0x4E4F534a,
-  Binary = 0x004E4942,
+  JSON = 0x4e4f534a,
+  Binary = 0x004e4942,
 }
 
 /** A chunk of a glb file.
@@ -42,9 +42,10 @@ export interface GltfChunk {
  */
 export type TypedGltfChunk = GltfChunk & { type: number };
 
-function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | false {
-  if (stream.isAtTheEnd)
-    return undefined;
+function consumeNextChunk(
+  stream: ByteStream
+): TypedGltfChunk | undefined | false {
+  if (stream.isAtTheEnd) return undefined;
 
   const offset = stream.curPos + 8;
   const length = stream.readUint32();
@@ -73,7 +74,10 @@ export class GlbHeader extends TileHeader {
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
-    if (this.version === GltfVersions.Version2 && word5 === GltfVersions.Gltf1SceneFormat)
+    if (
+      this.version === GltfVersions.Version2 &&
+      word5 === GltfVersions.Gltf1SceneFormat
+    )
       this.version = GltfVersions.Version1;
 
     this.jsonChunk = { offset: stream.curPos, length: jsonLength };
@@ -85,7 +89,10 @@ export class GlbHeader extends TileHeader {
         }
 
         const binaryOffset = stream.curPos + jsonLength;
-        this.binaryChunk = { offset: binaryOffset, length: this.gltfLength - binaryOffset };
+        this.binaryChunk = {
+          offset: binaryOffset,
+          length: this.gltfLength - binaryOffset,
+        };
         break;
       case GltfVersions.Version2:
         if (word5 !== GltfV2ChunkTypes.JSON) {
@@ -100,7 +107,7 @@ export class GlbHeader extends TileHeader {
         }
 
         let chunk;
-        while (chunk = consumeNextChunk(stream)) {
+        while ((chunk = consumeNextChunk(stream))) {
           switch (chunk.type) {
             case GltfV2ChunkTypes.JSON:
               // Only one JSON chunk permitted and it must be the first.

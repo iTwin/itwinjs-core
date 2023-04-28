@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { Arc3d, Point3d } from "@itwin/core-geometry";
 // __PUBLISH_EXTRACT_START__ Element.subclass
-import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
+import {
+  IModelDb,
+  SpatialCategory,
+  SpatialLocationElement,
+} from "@itwin/core-backend";
 import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
@@ -15,16 +19,18 @@ import { RobotWorld } from "./RobotWorldSchema";
  * In this example, a "robot" is represented as a circle in the X-Y plane.
  */
 export class Robot extends SpatialLocationElement {
-  public static override get className(): string { return "Robot"; }
+  public static override get className(): string {
+    return "Robot";
+  }
   //  Define the properties added by this subclass
-  public radius: number = 0.1;                     // The girth of the robot
+  public radius: number = 0.1; // The girth of the robot
 
   // Note: Do not redefine the constructor. You must not interfere with the constructor that is
   // already defined by the base Element class.
 
   // You can provide handy methods for creating new Robots
   public static generateGeometry(radius: number = 0.1): GeometryStreamProps {
-    const builder = new GeometryStreamBuilder();  // I know what graphics represent a robot.
+    const builder = new GeometryStreamBuilder(); // I know what graphics represent a robot.
     const circle = Arc3d.createXY(Point3d.createZero(), radius);
     builder.appendGeometry(circle);
     return builder.geometryStream;

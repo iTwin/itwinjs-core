@@ -58,14 +58,20 @@ export class Layer extends GraphicWrapper {
   }
 
   public getPriority(target: Target): number {
-    return target.currentFeatureSymbologyOverrides.getSubCategoryPriority(this._idLo, this._idHi);
+    return target.currentFeatureSymbologyOverrides.getSubCategoryPriority(
+      this._idLo,
+      this._idHi
+    );
   }
 
   public addCommands(commands: RenderCommands): void {
     commands.addLayerCommands(this);
   }
 
-  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(
+    commands: RenderCommands,
+    pass: RenderPass
+  ): void {
     commands.addHiliteLayerCommands(this.graphic, pass);
   }
 }
@@ -78,23 +84,28 @@ export class LayerContainer extends GraphicWrapper {
   public readonly renderPass: RenderPass;
   public readonly elevation: number;
 
-  public constructor(graphic: Graphic, drawAsOverlay: boolean, transparency: number, elevation: number) {
+  public constructor(
+    graphic: Graphic,
+    drawAsOverlay: boolean,
+    transparency: number,
+    elevation: number
+  ) {
     super(graphic);
     this.elevation = elevation;
 
-    if (drawAsOverlay)
-      this.renderPass = RenderPass.OverlayLayers;
-    else if (transparency > 0)
-      this.renderPass = RenderPass.TranslucentLayers;
-    else
-      this.renderPass = RenderPass.OpaqueLayers; // ###TODO: What about layers containing naturally-transparent geometry?
+    if (drawAsOverlay) this.renderPass = RenderPass.OverlayLayers;
+    else if (transparency > 0) this.renderPass = RenderPass.TranslucentLayers;
+    else this.renderPass = RenderPass.OpaqueLayers; // ###TODO: What about layers containing naturally-transparent geometry?
   }
 
   public addCommands(commands: RenderCommands): void {
     commands.processLayers(this);
   }
 
-  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(
+    commands: RenderCommands,
+    pass: RenderPass
+  ): void {
     commands.addHiliteLayerCommands(this.graphic, pass);
   }
 }

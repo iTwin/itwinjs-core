@@ -8,18 +8,18 @@ tips for better performance.
 ## Writing presentation rulesets
 
 - Define `RequiredSchemas` property for both rule sets and individual rules.
-That helps the library to filter-out uninteresting schemas
-which may contain a lot of information and thus improves performance.
+  That helps the library to filter-out uninteresting schemas
+  which may contain a lot of information and thus improves performance.
 - Make rule specifications as specific as possible. Most specifications require
-just part of information (e.g. the related class) and the library can find out
-the rest (e.g. the relationship). However, that required additional resources.
+  just part of information (e.g. the related class) and the library can find out
+  the rest (e.g. the relationship). However, that required additional resources.
 - Avoid `IsRecursive=True` in content specifications, if possible. It has a huge
-performance penalty and should only be used where absolutely necessary.
+  performance penalty and should only be used where absolutely necessary.
 
 ## ECExpressions in rule conditions
 
 - The rules engine is able to optimize some [ECExpressions](./ECExpressions.md)
-to improve their performance. Try using only the below symbols, if possible:
+  to improve their performance. Try using only the below symbols, if possible:
   - IsOfClass
   - IsInstanceNode
   - IsClassGroupingNode

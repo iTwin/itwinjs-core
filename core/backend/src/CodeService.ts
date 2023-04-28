@@ -3,7 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
+import {
+  AccessToken,
+  BentleyError,
+  GuidString,
+  IModelStatus,
+  MarkRequired,
+  Mutable,
+} from "@itwin/core-bentley";
 import { CodeProps, FontId, FontType } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
@@ -29,7 +36,9 @@ export interface CodeIndex {
    * @param from the sequence and scope to search
    * @returns the highest used value, or undefined if no values have been used.
    */
-  findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+  findHighestUsed(
+    from: CodeService.SequenceScope
+  ): CodeService.CodeValue | undefined;
 
   /** Determine whether a code is present in this CodeIndex by its Guid. */
   isCodePresent(guid: CodeService.CodeGuid): boolean;
@@ -42,7 +51,9 @@ export interface CodeIndex {
   /** Look up a code by its Scope, Spec, and Value.
    * @returns the Guid of the code, or undefined if not present.
    */
-  findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+  findCode(
+    code: CodeService.ScopeSpecAndValue
+  ): CodeService.CodeGuid | undefined;
 
   /** Look up a code spec by its name
    * @throws if the spec is not present.
@@ -50,10 +61,16 @@ export interface CodeIndex {
   getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
 
   /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
-  forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+  forAllCodes(
+    iter: CodeService.CodeIteration,
+    filter?: CodeService.CodeFilter
+  ): void;
 
   /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
-  forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+  forAllCodeSpecs(
+    iter: CodeService.NameAndJsonIteration,
+    filter?: CodeService.ValueFilter
+  ): void;
 }
 
 /**
@@ -143,7 +160,9 @@ export interface CodesDb {
    * @returns number of codes actually reserved.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
+  reserveNextAvailableCodes(
+    arg: CodeService.ReserveNextArrayArgs
+  ): Promise<number>;
 
   /**
    * Update the properties of a single code.
@@ -170,7 +189,9 @@ export interface CodesDb {
  */
 export interface InternalCodes extends CodesDb {
   reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
-  reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
+  reserveBisCodeSpecs(
+    specs: CodeService.BisCodeSpecIndexProps[]
+  ): Promise<void>;
   verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
 }
 
@@ -215,7 +236,9 @@ export namespace CodeService {
   const codeSequences = new Map<string, CodeSequence>();
 
   /** @internal */
-  export let createForIModel: ((db: IModelDb) => Promise<CodeService>) | undefined;
+  export let createForIModel:
+    | ((db: IModelDb) => Promise<CodeService>)
+    | undefined;
 
   /** Register an instance of a`CodeSequence` so it can be looked up by name. */
   export function registerSequence(seq: CodeSequence) {
@@ -228,7 +251,11 @@ export namespace CodeService {
   export function getSequence(name: string): CodeSequence {
     const seq = codeSequences.get(name);
     if (!seq)
-      throw new Error("SequenceNotFound", -1, `code sequence ${name} not found`);
+      throw new Error(
+        "SequenceNotFound",
+        -1,
+        `code sequence ${name} not found`
+      );
     return seq;
   }
 
@@ -238,10 +265,20 @@ export namespace CodeService {
    * the `scope` member refers to the element Id of the scope element in the iModel. This helper function
    * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
    */
-  export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec {
-    const scopeGuid = iModel.elements.getElementProps({ id: code.scope, onlyBaseProperties: true }).federationGuid;
+  export function makeScopeAndSpec(
+    iModel: IModelDb,
+    code: CodeProps
+  ): CodeService.ScopeAndSpec {
+    const scopeGuid = iModel.elements.getElementProps({
+      id: code.scope,
+      onlyBaseProperties: true,
+    }).federationGuid;
     if (undefined === scopeGuid)
-      throw new CodeService.Error("MissingGuid", IModelStatus.InvalidCode, "code scope element has no federationGuid");
+      throw new CodeService.Error(
+        "MissingGuid",
+        IModelStatus.InvalidCode,
+        "code scope element has no federationGuid"
+      );
 
     return { scopeGuid, specName: iModel.codeSpecs.getById(code.spec).name };
   }
@@ -249,7 +286,9 @@ export namespace CodeService {
   /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use with a CodeService.
    * @see [[makeScopeAndSpec]] for explanation of why this is necessary.
    */
-  export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode {
+  export function makeProposedCode(
+    arg: CodeService.MakeProposedCodeArgs
+  ): CodeService.ProposedCode {
     return {
       ...arg.props,
       value: arg.code.value,
@@ -288,7 +327,9 @@ export namespace CodeService {
   export type CodeIteration = (guid: GuidString) => IterationReturn;
 
   /** An iteration function over code specs in a code index. It is called with the name and json of a each code spec. */
-  export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
+  export type NameAndJsonIteration = (
+    nameAndJson: NameAndJson
+  ) => IterationReturn;
 
   /** Argument for reserving an array of new codes. */
   export interface ReserveCodesArgs {
@@ -398,7 +439,14 @@ export namespace CodeService {
     /** A value filter. May include wild cards when used with `GLOB` or `LIKE` */
     readonly value?: string;
     /** The comparison operator for `value`. Default is `=` */
-    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    readonly valueCompare?:
+      | "GLOB"
+      | "LIKE"
+      | "NOT GLOB"
+      | "NOT LIKE"
+      | "="
+      | "<"
+      | ">";
     /** Order results ascending or descending. If not supplied, the results are unordered (random). */
     readonly orderBy?: "ASC" | "DESC";
     /** An SQL expression to further filter results. This string is appended to the `WHERE` clause with an `AND` (that should not be part of the sqlExpression) */
@@ -523,7 +571,12 @@ export namespace CodeService {
     public readonly problems?: ReserveProblem[] | UpdateProblem[];
 
     /** @internal */
-    constructor(errorId: ErrorId, errNum: number, message: string, problems?: ReserveProblem[] | UpdateProblem[]) {
+    constructor(
+      errorId: ErrorId,
+      errNum: number,
+      message: string,
+      problems?: ReserveProblem[] | UpdateProblem[]
+    ) {
       super(errNum, message);
       this.errorId = errorId;
       this.problems = problems;
@@ -534,29 +587,28 @@ export namespace CodeService {
    * @see [[CodeService.Error.errorId]]
    */
   export type ErrorId =
-    "BadIndexProps" |
-    "CorruptIModel" |
-    "CorruptIndex" |
-    "DuplicateValue" |
-    "GuidIsInUse" |
-    "GuidMismatch" |
-    "IllegalValue" |
-    "InconsistentIModels" |
-    "IndexReadonly" |
-    "InvalidCodeScope" |
-    "InvalidGuid" |
-    "InvalidSequence" |
-    "MissingCode" |
-    "MissingGuid" |
-    "MissingInput" |
-    "MissingSpec" |
-    "NoCodeIndex" |
-    "SequenceFull" |
-    "ReserveErrors" |
-    "SequenceNotFound" |
-    "SqlLogicError" |
-    "UpdateErrors" |
-    "ValueIsInUse" |
-    "WrongVersion";
-
+    | "BadIndexProps"
+    | "CorruptIModel"
+    | "CorruptIndex"
+    | "DuplicateValue"
+    | "GuidIsInUse"
+    | "GuidMismatch"
+    | "IllegalValue"
+    | "InconsistentIModels"
+    | "IndexReadonly"
+    | "InvalidCodeScope"
+    | "InvalidGuid"
+    | "InvalidSequence"
+    | "MissingCode"
+    | "MissingGuid"
+    | "MissingInput"
+    | "MissingSpec"
+    | "NoCodeIndex"
+    | "SequenceFull"
+    | "ReserveErrors"
+    | "SequenceNotFound"
+    | "SqlLogicError"
+    | "UpdateErrors"
+    | "ValueIsInUse"
+    | "WrongVersion";
 }

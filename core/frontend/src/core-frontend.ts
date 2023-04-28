@@ -234,4 +234,4 @@ import "./extension/ExtensionRuntime";
 /**
  * @docs-group-description TileStorage
  * Class for working with cloud storage using iTwin/object-storage cloud providers
-*/
+ */

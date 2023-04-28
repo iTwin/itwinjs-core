@@ -62,7 +62,10 @@ private static _exampleMenuItems: AbstractMenuItemProps[] = [
 This function call example uses the `_exampleMenuItems` above and displays those menu items at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showContextMenu(this._exampleMenuItems, IModelApp.uiAdmin.cursorPosition);
+IModelApp.uiAdmin.showContextMenu(
+  this._exampleMenuItems,
+  IModelApp.uiAdmin.cursorPosition
+);
 ```
 
 The menu items are displayed at the cursor.
@@ -78,7 +81,12 @@ This function call example uses the `_exampleMenuItems` above and displays the m
 ```ts
 const viewport = IModelApp.viewManager.selectedView;
 if (viewport) {
-  IModelApp.uiAdmin.showMenuButton("test1", this._exampleMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
+  IModelApp.uiAdmin.showMenuButton(
+    "test1",
+    this._exampleMenuItems,
+    IModelApp.uiAdmin.createXAndY(150, 150),
+    viewport.toolTipDiv
+  );
 }
 ```
 
@@ -180,8 +188,12 @@ The relative position defaults to the top-right. This can be overridden using th
 
 ```ts
 IModelApp.uiAdmin.showToolbar(
-  this._exampleToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
-  this._toolbarItemExecuted, this._toolbarCancel);
+  this._exampleToolbar(),
+  IModelApp.uiAdmin.cursorPosition,
+  IModelApp.uiAdmin.createXAndY(8, 8),
+  this._toolbarItemExecuted,
+  this._toolbarCancel
+);
 ```
 
 ![uiAdmin-showToolbar](./images/UiAdmin-showToolbar.png "IModelApp.uiAdmin.showToolbar")
@@ -212,8 +224,13 @@ This function call example displays the calculator at the current cursor positio
 A default value and an icon specification are supplied.
 
 ```ts
-IModelApp.uiAdmin.showCalculator(100, "icon-placeholder", IModelApp.uiAdmin.cursorPosition,
-  this._calculatorOnOk, this._calculatorOnCancel);
+IModelApp.uiAdmin.showCalculator(
+  100,
+  "icon-placeholder",
+  IModelApp.uiAdmin.cursorPosition,
+  this._calculatorOnOk,
+  this._calculatorOnCancel
+);
 ```
 
 ![uiAdmin-showCalculator](./images/UiAdmin-showCalculator.png "IModelApp.uiAdmin.showCalculator")
@@ -255,7 +272,12 @@ private static _closeInputEditor() {
 This function call example displays an angle editor at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.cursorPosition, this._numberInputCommit, this._inputCancel);
+IModelApp.uiAdmin.showAngleEditor(
+  90,
+  IModelApp.uiAdmin.cursorPosition,
+  this._numberInputCommit,
+  this._inputCancel
+);
 ```
 
 #### showLengthEditor
@@ -263,7 +285,12 @@ IModelApp.uiAdmin.showAngleEditor(90, IModelApp.uiAdmin.cursorPosition, this._nu
 This function call example displays a length editor at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.cursorPosition, this._numberInputCommit, this._inputCancel);
+IModelApp.uiAdmin.showLengthEditor(
+  90,
+  IModelApp.uiAdmin.cursorPosition,
+  this._numberInputCommit,
+  this._inputCancel
+);
 ```
 
 ![uiAdmin-showLengthEditor](./images/UiAdmin-showLengthEditor.png "IModelApp.uiAdmin.showLengthEditor")
@@ -273,7 +300,12 @@ IModelApp.uiAdmin.showLengthEditor(90, IModelApp.uiAdmin.cursorPosition, this._n
 This function call example displays a height editor at the current cursor position.
 
 ```ts
-IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.cursorPosition, this._numberInputCommit, this._inputCancel);
+IModelApp.uiAdmin.showHeightEditor(
+  30,
+  IModelApp.uiAdmin.cursorPosition,
+  this._numberInputCommit,
+  this._inputCancel
+);
 ```
 
 ![uiAdmin-showHeightEditor](./images/UiAdmin-showHeightEditor.png "IModelApp.uiAdmin.showHeightEditor")
@@ -283,8 +315,18 @@ IModelApp.uiAdmin.showHeightEditor(30, IModelApp.uiAdmin.cursorPosition, this._n
 This function call example displays a generic number editor at the current cursor position.
 
 ```ts
-const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
-IModelApp.uiAdmin.showInputEditor(30, propertyDescription, IModelApp.uiAdmin.cursorPosition, this._inputCommit, this._inputCancel);
+const propertyDescription: PropertyDescription = {
+  name: "test",
+  displayLabel: "Test",
+  typename: "number",
+};
+IModelApp.uiAdmin.showInputEditor(
+  30,
+  propertyDescription,
+  IModelApp.uiAdmin.cursorPosition,
+  this._inputCommit,
+  this._inputCancel
+);
 ```
 
 ### showCard
@@ -349,14 +391,26 @@ opened on the first and second data points for the tool.
 ```ts
 class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   // ------------- Weight ---------------
-  public weightProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildWeightPickerDescription("weight", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight")), 3);
+  public weightProperty = new DialogProperty<number>(
+    PropertyDescriptionHelper.buildWeightPickerDescription(
+      "weight",
+      IModelApp.i18n.translate(
+        "SampleApp:tools.ToolWithSettings.Prompts.Weight"
+      )
+    ),
+    3
+  );
 
   /** Called by UI to inform data provider of changes.  */
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public applyUiPropertyChange = (
+    updatedValue: DialogPropertySyncItem
+  ): void => {
     if (updatedValue.propertyName === this.weightProperty.name) {
       this.weightProperty.value = updatedValue.value.value! as number;
       const msg = `Set Weight = ${this.weightProperty.value}`;
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Info, msg)
+      );
     }
   };
 
@@ -384,15 +438,26 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
 class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   // ------------- text based edit field ---------------
   public sourceProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("source", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source")),
-    "unknown", undefined);
+    PropertyDescriptionHelper.buildTextEditorDescription(
+      "source",
+      IModelApp.i18n.translate(
+        "SampleApp:tools.ToolWithSettings.Prompts.Source"
+      )
+    ),
+    "unknown",
+    undefined
+  );
 
   /** Called by UI to inform data provider of changes.  */
   public applyUiPropertyChange = (prop: DialogPropertySyncItem): void => {
     if (prop.propertyName === this.sourceProperty.name) {
-      this.sourceProperty.value = prop.value.value ? prop.value.value as string : "";
+      this.sourceProperty.value = prop.value.value
+        ? (prop.value.value as string)
+        : "";
       const msg = `Set Source = ${this.sourceProperty.value}`;
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Info, msg)
+      );
     }
   };
 
@@ -512,19 +577,25 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   }
 
   // called to apply a single property value change.
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public applyUiPropertyChange = (
+    updatedValue: DialogPropertySyncItem
+  ): void => {
     this.processChangesInUi([updatedValue]);
   };
 
   /** Called by UI to inform data provider of changes.  */
-  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public processChangesInUi(
+    properties: DialogPropertyItem[]
+  ): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === DynamicModalUiDataProvider.userPropertyName) {
-          this.user = prop.value.value ? prop.value.value as string : "";
+          this.user = prop.value.value ? (prop.value.value as string) : "";
           continue;
-        } else if (prop.propertyName === DynamicModalUiDataProvider.cityPropertyName) {
-          this.city = prop.value.value ? prop.value.value as string : "";
+        } else if (
+          prop.propertyName === DynamicModalUiDataProvider.cityPropertyName
+        ) {
+          this.city = prop.value.value ? (prop.value.value as string) : "";
           continue;
         }
       }
@@ -538,9 +609,17 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   public supplyDialogItems(): DialogItem[] | undefined {
     const items: DialogItem[] = [];
 
-    items.push({ value: this._userValue, property: DynamicModalUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
+    items.push({
+      value: this._userValue,
+      property: DynamicModalUiDataProvider._getUserDescription(),
+      editorPosition: { rowPriority: 1, columnIndex: 1 },
+    });
     if (this.currentPageIndex > 0) {
-      items.push({ value: this._cityValue, property: DynamicModalUiDataProvider._getCityDescription(), editorPosition: { rowPriority: 2, columnIndex: 1 } });
+      items.push({
+        value: this._cityValue,
+        property: DynamicModalUiDataProvider._getCityDescription(),
+        editorPosition: { rowPriority: 2, columnIndex: 1 },
+      });
     }
     return items;
   }
@@ -563,16 +642,23 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
     const buttons: DialogButtonDef[] = [];
 
     if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)
-      buttons.push({ type: DialogButtonType.Previous, onClick: this.handlePrevious });
+      buttons.push({
+        type: DialogButtonType.Previous,
+        onClick: this.handlePrevious,
+      });
 
     if (this.currentPageIndex < this.numberOfPages - 1)
       buttons.push({ type: DialogButtonType.Next, onClick: this.handleNext });
 
     if (this.currentPageIndex === this.numberOfPages - 1) {
-      buttons.push({ type: DialogButtonType.OK, onClick: () => { }, disabled: (this.user === "unknown" || this.city === "unknown") });
+      buttons.push({
+        type: DialogButtonType.OK,
+        onClick: () => {},
+        disabled: this.user === "unknown" || this.city === "unknown",
+      });
     }
 
-    buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
+    buttons.push({ type: DialogButtonType.Cancel, onClick: () => {} });
     return buttons;
   }
 }

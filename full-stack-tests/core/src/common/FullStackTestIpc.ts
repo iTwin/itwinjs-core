@@ -8,6 +8,14 @@ import { Id64String } from "@itwin/core-bentley";
 
 export const fullstackIpcChannel = "fullStackIpc";
 export interface FullStackTestIpc {
-  createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String>;
-  createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
+  createAndInsertPhysicalModel(
+    key: string,
+    newModelCode: CodeProps
+  ): Promise<Id64String>;
+  createAndInsertSpatialCategory(
+    key: string,
+    scopeModelId: Id64String,
+    categoryName: string,
+    appearance: SubCategoryAppearance.Props
+  ): Promise<Id64String>;
 }

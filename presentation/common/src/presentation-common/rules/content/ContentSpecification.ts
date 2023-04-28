@@ -67,4 +67,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
  *
  * @public
  */
-export declare type ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification;
+export declare type ContentSpecification =
+  | ContentInstancesOfSpecificClassesSpecification
+  | ContentRelatedInstancesSpecification
+  | SelectedNodeInstancesSpecification;

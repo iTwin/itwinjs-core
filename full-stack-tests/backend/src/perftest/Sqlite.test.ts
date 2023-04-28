@@ -7,12 +7,18 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { DbResult, OpenMode, StopWatch, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
+import {
+  ECDb,
+  ECDbOpenMode,
+  SQLiteDb,
+  SqliteStatement,
+} from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 function makeRandStr(length: number) {
   let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for (let i = 0; i < length; i++)
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -26,7 +32,13 @@ async function reportProgress(prefix: string, c: number, m: number) {
     process.stdout.write(os.EOL);
   }
 }
-async function createSeedFile(pathName: string, tbl: string, nCols: number, nRows: number, startId: number) {
+async function createSeedFile(
+  pathName: string,
+  tbl: string,
+  nCols: number,
+  nRows: number,
+  startId: number
+) {
   const kMaxLengthOfString = 11;
   await using(new ECDb(), async (ecdb) => {
     ecdb.createDb(pathName);
@@ -36,45 +48,66 @@ async function createSeedFile(pathName: string, tbl: string, nCols: number, nRow
     }
     const sp = new StopWatch(undefined, true);
     process.stdout.write(`Creating seed file ... ${pathName}\n`);
-    ecdb.withPreparedSqliteStatement(`create table [${tbl}](id integer primary key,${cols.join(",")});`, (stmt) => stmt.step());
-    await using(ecdb.prepareSqliteStatement(`insert into ${tbl} values(?${",?".repeat(nCols)});`), async (stmt: SqliteStatement) => {
-      for (let i = 0; i < nRows; i++) {
-        stmt.reset();
-        stmt.clearBindings();
-        stmt.bindValue(1, startId + i);
-        for (let j = 2; j < nCols; j++) {
-          const randStr = makeRandStr(Math.round(Math.random() * kMaxLengthOfString + 1));
-          stmt.bindValue(j, randStr);
+    ecdb.withPreparedSqliteStatement(
+      `create table [${tbl}](id integer primary key,${cols.join(",")});`,
+      (stmt) => stmt.step()
+    );
+    await using(
+      ecdb.prepareSqliteStatement(
+        `insert into ${tbl} values(?${",?".repeat(nCols)});`
+      ),
+      async (stmt: SqliteStatement) => {
+        for (let i = 0; i < nRows; i++) {
+          stmt.reset();
+          stmt.clearBindings();
+          stmt.bindValue(1, startId + i);
+          for (let j = 2; j < nCols; j++) {
+            const randStr = makeRandStr(
+              Math.round(Math.random() * kMaxLengthOfString + 1)
+            );
+            stmt.bindValue(j, randStr);
+          }
+          stmt.step();
+          await reportProgress("Generating seed file ...", i + 1, nRows);
         }
-        stmt.step();
-        await reportProgress("Generating seed file ...", i + 1, nRows);
       }
-    });
+    );
     ecdb.saveChanges();
     sp.stop();
     process.stdout.write(`Completed in ${sp.elapsedSeconds} sec\n`);
   });
 }
-async function readRow(stmt: SqliteStatement, id: number, nParam: number = 1): Promise<boolean> {
+async function readRow(
+  stmt: SqliteStatement,
+  id: number,
+  nParam: number = 1
+): Promise<boolean> {
   stmt.reset();
   stmt.clearBindings();
   stmt.bindValue(nParam, id);
-  return stmt.step() === DbResult.BE_SQLITE_ROW && stmt.getValue(0).getInteger() === id;
+  return (
+    stmt.step() === DbResult.BE_SQLITE_ROW &&
+    stmt.getValue(0).getInteger() === id
+  );
 }
 
-async function simulateRowRead(stmt: SqliteStatement, probabilityOfConsecutiveReads: number, percentageOfRowToRead: number, startId: number, endId: number) {
+async function simulateRowRead(
+  stmt: SqliteStatement,
+  probabilityOfConsecutiveReads: number,
+  percentageOfRowToRead: number,
+  startId: number,
+  endId: number
+) {
   const nRows = endId - startId;
   const rowsToBeRead = Math.round((percentageOfRowToRead / 100) * nRows);
   let rowReadSoFar = 0;
   let nextRowToRead = 0;
   const sp = new StopWatch(undefined, true);
   do {
-    if (await readRow(stmt, nextRowToRead))
-      rowReadSoFar++;
+    if (await readRow(stmt, nextRowToRead)) rowReadSoFar++;
     if (probabilityOfConsecutiveReads < Math.random()) {
       nextRowToRead++;
-      while (nextRowToRead >= endId)
-        nextRowToRead = startId;
+      while (nextRowToRead >= endId) nextRowToRead = startId;
     } else {
       nextRowToRead = Math.round(Math.random() * nRows) + startId;
     }
@@ -95,9 +128,14 @@ function changePageSize(dbName: string, pageSizeInKb: number) {
         throw new Error(`changePageSize() failed to get page size`);
       pageSize = stmt.getValue(0).getInteger();
     });
-    db.vacuum({ pageSize: pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024 });
+    db.vacuum({
+      pageSize:
+        pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024,
+    });
   });
-  process.stdout.write(`Change page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
+  process.stdout.write(
+    `Change page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`
+  );
 }
 
 interface ReadParams {
@@ -146,12 +184,16 @@ async function runReadTest(param: ReadParams) {
   if (!fs.existsSync(param.testFolder))
     fs.mkdirSync(param.testFolder, { recursive: true });
   if (!fs.existsSync(seedFilePath)) {
-    await createSeedFile(seedFilePath, testTableName, param.columnsCount, param.seedRowCount, param.startId);
-    if (fs.existsSync(testFilepath))
-      fs.unlinkSync(testFilepath);
+    await createSeedFile(
+      seedFilePath,
+      testTableName,
+      param.columnsCount,
+      param.seedRowCount,
+      param.startId
+    );
+    if (fs.existsSync(testFilepath)) fs.unlinkSync(testFilepath);
   }
-  if (!fs.existsSync(testFilepath))
-    fs.copyFileSync(seedFilePath, testFilepath);
+  if (!fs.existsSync(testFilepath)) fs.copyFileSync(seedFilePath, testFilepath);
 
   changePageSize(testFilepath, param.pageSizeInKb);
   let r = 0;
@@ -162,22 +204,41 @@ async function runReadTest(param: ReadParams) {
       ecdb.openDb(testFilepath, ECDbOpenMode.Readonly);
       if (!ecdb.isOpen)
         throw new Error(`changePageSize() fail to open file ${testFilepath}`);
-      await ecdb.withPreparedSqliteStatement(`select * from ${testTableName} where id=?`, async (stmt: SqliteStatement) => {
-        const elapsedTime = await simulateRowRead(stmt, param.probabilityOfConsecutiveReads, param.percentageOfRowsToRead, param.startId, param.startId + param.seedRowCount);
-        result.push(elapsedTime);
-      });
+      await ecdb.withPreparedSqliteStatement(
+        `select * from ${testTableName} where id=?`,
+        async (stmt: SqliteStatement) => {
+          const elapsedTime = await simulateRowRead(
+            stmt,
+            param.probabilityOfConsecutiveReads,
+            param.percentageOfRowsToRead,
+            param.startId,
+            param.startId + param.seedRowCount
+          );
+          result.push(elapsedTime);
+        }
+      );
     });
   }
 
   const avg = average(result);
   const stddev = standardDeviation(result);
-  process.stdout.write(`\nAvg Time:${avg.toFixed(4)} sec, stddev:${stddev.toFixed(4)}\n`);
+  process.stdout.write(
+    `\nAvg Time:${avg.toFixed(4)} sec, stddev:${stddev.toFixed(4)}\n`
+  );
   if (!fs.existsSync(report))
-    fs.appendFileSync(report, "test dir, runs, page size, avg time elapsed (sec), std-dev\r\n");
-  fs.appendFileSync(report, `${param.testFolder}, ${param.runCount}, ${param.pageSizeInKb}K, ${avg.toFixed(4)}, ${stddev.toFixed(4)}\r\n`);
+    fs.appendFileSync(
+      report,
+      "test dir, runs, page size, avg time elapsed (sec), std-dev\r\n"
+    );
+  fs.appendFileSync(
+    report,
+    `${param.testFolder}, ${param.runCount}, ${
+      param.pageSizeInKb
+    }K, ${avg.toFixed(4)}, ${stddev.toFixed(4)}\r\n`
+  );
 }
 /* This test suite require configuring dataset path
-**/
+ **/
 describe.skip("SQLite performance test", () => {
   it("Read Test", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");

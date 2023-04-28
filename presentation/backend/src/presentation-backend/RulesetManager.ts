@@ -40,7 +40,6 @@ export interface RulesetManager {
  * @internal
  */
 export class RulesetManagerImpl implements RulesetManager {
-
   private _getNativePlatform: () => NativePlatformDefinition;
   private _registeredRulesets = new Map<string, RegisteredRuleset>();
 
@@ -53,14 +52,19 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public get(id: string): RegisteredRuleset | undefined {
     const foundRuleset = this._registeredRulesets.get(id);
-    if (foundRuleset)
-      return foundRuleset;
+    if (foundRuleset) return foundRuleset;
 
-    const serializedRulesetsArray = this._getNativePlatform().getRulesets(id).result;
-    const rulesetsArray: RulesetResponseJson[] = JSON.parse(serializedRulesetsArray);
-    if (0 === rulesetsArray.length)
-      return undefined;
-    return this.saveRuleset(rulesetsArray[0].ruleset, rulesetsArray[0].hash, (ruleset: RegisteredRuleset) => this.remove(ruleset));
+    const serializedRulesetsArray =
+      this._getNativePlatform().getRulesets(id).result;
+    const rulesetsArray: RulesetResponseJson[] = JSON.parse(
+      serializedRulesetsArray
+    );
+    if (0 === rulesetsArray.length) return undefined;
+    return this.saveRuleset(
+      rulesetsArray[0].ruleset,
+      rulesetsArray[0].hash,
+      (ruleset: RegisteredRuleset) => this.remove(ruleset)
+    );
   }
 
   /**
@@ -68,11 +72,14 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public add(ruleset: Ruleset): RegisteredRuleset {
     const foundRuleset = this._registeredRulesets.get(ruleset.id);
-    if (foundRuleset)
-      return foundRuleset;
+    if (foundRuleset) return foundRuleset;
 
-    const hash = this._getNativePlatform().addRuleset(JSON.stringify(ruleset)).result;
-    return this.saveRuleset(ruleset, hash, (r: RegisteredRuleset) => this.remove(r));
+    const hash = this._getNativePlatform().addRuleset(
+      JSON.stringify(ruleset)
+    ).result;
+    return this.saveRuleset(ruleset, hash, (r: RegisteredRuleset) =>
+      this.remove(r)
+    );
   }
 
   /**
@@ -89,7 +96,8 @@ export class RulesetManagerImpl implements RulesetManager {
     }
 
     this._registeredRulesets.delete(rulesetId);
-    return this._getNativePlatform().removeRuleset(rulesetId, rulesetIdentifier).result;
+    return this._getNativePlatform().removeRuleset(rulesetId, rulesetIdentifier)
+      .result;
   }
 
   /**
@@ -100,7 +108,11 @@ export class RulesetManagerImpl implements RulesetManager {
     this._registeredRulesets.clear();
   }
 
-  private saveRuleset(ruleset: Ruleset, hash: string, disposeFunc: (ruleset: RegisteredRuleset) => void) {
+  private saveRuleset(
+    ruleset: Ruleset,
+    hash: string,
+    disposeFunc: (ruleset: RegisteredRuleset) => void
+  ) {
     const newRuleset = new RegisteredRuleset(ruleset, hash, disposeFunc);
     this._registeredRulesets.set(newRuleset.id, newRuleset);
     return newRuleset;

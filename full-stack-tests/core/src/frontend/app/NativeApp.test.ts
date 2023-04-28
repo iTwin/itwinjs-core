@@ -11,7 +11,6 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) {
-
   describe("NativeApp startup", () => {
     before(async () => {
       await TestUtility.startFrontend();
@@ -56,7 +55,11 @@ if (ProcessDetector.isElectronAppFrontend) {
         if (item.value instanceof Uint8Array) {
           assert.equal((data as Uint8Array).length, item.value.length);
         } else {
-          assert.equal(data, item.value, `${item.key} -> ${item.value} <> ${data}`);
+          assert.equal(
+            data,
+            item.value,
+            `${item.key} -> ${item.value} <> ${data}`
+          );
         }
       }
       assert.equal((await test1.getKeys()).length, dataset.length);
@@ -99,12 +102,14 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       const testArray = new Uint8Array([1, 2, 3, 4, 5]);
       await test1.setData("key1", testArray);
-      assert.isTrue(await test1.getData("key1") instanceof Uint8Array);
-      assert.equal((await test1.getData("key1") as Uint8Array).length, testArray.length);
+      assert.isTrue((await test1.getData("key1")) instanceof Uint8Array);
+      assert.equal(
+        ((await test1.getData("key1")) as Uint8Array).length,
+        testArray.length
+      );
       await test1.removeData("key1");
       assert.isUndefined(await test1.getData("key1"));
       await NativeApp.closeStorage(test1, true);
     });
   });
-
 }

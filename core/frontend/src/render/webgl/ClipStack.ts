@@ -7,7 +7,13 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import {
+  ClipPlaneContainment,
+  ClipVector,
+  Point3d,
+  Range3d,
+  Transform,
+} from "@itwin/core-geometry";
 import { RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
@@ -28,8 +34,14 @@ const emptyClip = {
 };
 
 const scratchRangeCorners = [
-  new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-  new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
 ];
 
 function getRangeCorners(r: Range3d): Point3d[] {
@@ -66,7 +78,10 @@ export class ClipStack {
   /** For detecting whether the transform changed from one invocation of setViewClip to the next. */
   protected readonly _prevTransform = Transform.createZero();
 
-  public constructor(getTransform: () => Transform, wantViewClip: () => boolean) {
+  public constructor(
+    getTransform: () => Transform,
+    wantViewClip: () => boolean
+  ) {
     this._getTransform = getTransform;
     this._wantViewClip = wantViewClip;
 
@@ -91,7 +106,10 @@ export class ClipStack {
     return this._texture ? this._texture.bytesUsed : 0;
   }
 
-  public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor }): void {
+  public setViewClip(
+    clip: ClipVector | undefined,
+    style: { insideColor?: RgbColor; outsideColor?: RgbColor }
+  ): void {
     assert(this._stack.length === 1);
 
     this.updateColor(style.insideColor, this._insideColor);
@@ -105,8 +123,7 @@ export class ClipStack {
 
     const cur = this._stack[0];
     if (cur === emptyClip) {
-      if (!clip)
-        return; // no change.
+      if (!clip) return; // no change.
     } else if (!clip) {
       this._stack[0] = emptyClip;
       this._numRowsInUse = 0;
@@ -144,7 +161,7 @@ export class ClipStack {
   public pop(): void {
     assert(this._stack.length > 0);
     const clip = this._stack.pop();
-    this._numRowsInUse -= (clip ? clip.numRows : 0);
+    this._numRowsInUse -= clip ? clip.numRows : 0;
   }
 
   public get hasClip(): boolean {
@@ -174,16 +191,19 @@ export class ClipStack {
   }
 
   public isRangeClipped(range: Range3d, transform: Transform): boolean {
-    if (this.hasOutsideColor || !this.hasClip)
-      return false;
+    if (this.hasOutsideColor || !this.hasClip) return false;
 
     range = transform.multiplyRange(range, range);
     const corners = getRangeCorners(range);
-    const startIndex = this._wantViewClip() && emptyClip !== this._stack[0] ? 0 : 1;
+    const startIndex =
+      this._wantViewClip() && emptyClip !== this._stack[0] ? 0 : 1;
     for (let i = startIndex; i < this._stack.length; i++) {
       const clip = this._stack[i];
       assert(clip instanceof ClipVolume);
-      if (ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(corners))
+      if (
+        ClipPlaneContainment.StronglyOutside ===
+        clip.clipVector.classifyPointContainment(corners)
+      )
         return true;
     }
 
@@ -201,7 +221,10 @@ export class ClipStack {
   }
 
   protected updateTexture(): void {
-    if (this._numTotalRows > 0 && (!this._texture || this._texture.height < this._numTotalRows)) {
+    if (
+      this._numTotalRows > 0 &&
+      (!this._texture || this._texture.height < this._numTotalRows)
+    ) {
       // We need to resize the texture.
       assert(this._isStackDirty);
       this._isStackDirty = true;
@@ -237,10 +260,16 @@ export class ClipStack {
   }
 
   protected uploadTexture(): void {
-    if (this._texture)
-      this._texture.replaceTextureData(this._gpuBuffer);
+    if (this._texture) this._texture.replaceTextureData(this._gpuBuffer);
     else
-      this._texture = Texture2DHandle.createForData(1, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+      this._texture = Texture2DHandle.createForData(
+        1,
+        this._numTotalRows,
+        this._gpuBuffer,
+        false,
+        GL.Texture.WrapMode.ClampToEdge,
+        GL.Texture.Format.Rgba
+      );
 
     assert(this._texture!.height === this._numTotalRows);
   }
@@ -251,7 +280,6 @@ export class ClipStack {
 
   protected updateColor(rgb: RgbColor | undefined, rgba: FloatRgba): void {
     rgba.alpha = undefined !== rgb ? 1 : 0;
-    if (rgb)
-      rgba.setRgbColor(rgb);
+    if (rgb) rgba.setRgbColor(rgb);
   }
 }

@@ -22,16 +22,27 @@ export class HiliteUniforms {
 
   private _hiliteSettings = new Hilite.Settings();
   private _emphasisSettings = new Hilite.Settings();
-  private readonly _hiliteRgb = FloatRgb.fromColorDef(this.hiliteSettings.color);
+  private readonly _hiliteRgb = FloatRgb.fromColorDef(
+    this.hiliteSettings.color
+  );
 
   public syncKey = 0;
 
-  public get hiliteSettings() { return this._hiliteSettings; }
-  public get emphasisSettings() { return this._emphasisSettings; }
-  public get hiliteColor() { return this._hiliteRgb; }
+  public get hiliteSettings() {
+    return this._hiliteSettings;
+  }
+  public get emphasisSettings() {
+    return this._emphasisSettings;
+  }
+  public get hiliteColor() {
+    return this._hiliteRgb;
+  }
 
   public update(hilite: Hilite.Settings, emphasis: Hilite.Settings): void {
-    if (Hilite.equalSettings(hilite, this._hiliteSettings) && Hilite.equalSettings(emphasis, this._emphasisSettings))
+    if (
+      Hilite.equalSettings(hilite, this._hiliteSettings) &&
+      Hilite.equalSettings(emphasis, this._emphasisSettings)
+    )
       return;
 
     desync(this);
@@ -69,15 +80,13 @@ export class HiliteUniforms {
   // emph.red       emph.green   emph.blue
   // hilite.hidden  emph.hidden unused
   public bindCompositeSettings(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix3(this._compositeSettings);
+    if (!sync(this, uniform)) uniform.setMatrix3(this._compositeSettings);
   }
 
   // vec2:
   // hilite.silhouette emph.silhouette
   public bindCompositeWidths(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform2fv(this._compositeWidths);
+    if (!sync(this, uniform)) uniform.setUniform2fv(this._compositeWidths);
   }
 
   // mat3:
@@ -85,7 +94,6 @@ export class HiliteUniforms {
   // emph.red       emph.green   emph.blue
   // hilite.visible emph.visible unused
   public bindFeatureSettings(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix3(this._featureSettings);
+    if (!sync(this, uniform)) uniform.setMatrix3(this._featureSettings);
   }
 }

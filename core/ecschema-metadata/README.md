@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/ecschema-metadata__ package contains classes for working with EC metadata.
+The **@itwin/ecschema-metadata** package contains classes for working with EC metadata.
 
 ## Documentation
 

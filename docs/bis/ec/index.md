@@ -1,8 +1,8 @@
 # ECObjects Information Modeling Language Overview
 
-The ECObjects language is comprised of items that have attributes. Items are grouped into "domains" via an "ECSchema", which provides the container and namespace for the items in that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities.  Each item type is described below in more detail.
+The ECObjects language is comprised of items that have attributes. Items are grouped into "domains" via an "ECSchema", which provides the container and namespace for the items in that domain. There are several types of items in an ECSchema that describe objects, relationships, value types and quantities. Each item type is described below in more detail.
 
-The root of any domain is an *ECSchema* itself.
+The root of any domain is an _ECSchema_ itself.
 
 - An **[ECSchema](./ec-schema.md)** describes one "domain"—its primary contents are a closely related set of "ECClasses" of various kinds. The name attribute of the ECSchema serves as a namespace for all items defined within it. All items within an ECSchema have a unique name.
 
@@ -12,7 +12,7 @@ ECSchemas cannot contain other ECSchemas but they can reference ECSchemas:
 
 ECObjects has a fixed set of items and those items have a fixed set of attributes, the attributes of ECSchema and its items can be extended via custom attributes:
 
-- **[ECCustomAttributes](./ec-custom-attributes.md)** is an optional child of ECSchema and some schema items that hold extended attribute values for the parent they are applied to.  ECCustomAttributes can be directly applied to most (but not all) kinds of items in an ECSchema, including ECSchema, ECClass and ECProperty.
+- **[ECCustomAttributes](./ec-custom-attributes.md)** is an optional child of ECSchema and some schema items that hold extended attribute values for the parent they are applied to. ECCustomAttributes can be directly applied to most (but not all) kinds of items in an ECSchema, including ECSchema, ECClass and ECProperty.
 
 The next 5 kinds of items are direct members of ECSchema and define different kinds of ECClasses. All of the ECClasses can contain **[ECProperties](./ec-property.md)** that define named properties with data types that are "primitives", "structs", arrays or navigation.
 
@@ -20,7 +20,7 @@ The next 5 kinds of items are direct members of ECSchema and define different ki
 
 - **[ECMixinClass](./ec-mixin-class.md)** describes a special type of abstract entity class that can add properties and secondary inheritance hierarchies to an entity class. Mixin classes define concepts that span the primary entity inheritance hierarchy and they hold common property definitions. Mixins can be used as relationship endpoints.
 
-- **[ECStructClass](./ec-struct-class.md)** describes a class of object whose instances are always instantiated as part of a larger entity, and are not individually identifiable or addressable. ECStructClasses are the only kind of ECClass that can be used as the *datatype* of an ECProperty.
+- **[ECStructClass](./ec-struct-class.md)** describes a class of object whose instances are always instantiated as part of a larger entity, and are not individually identifiable or addressable. ECStructClasses are the only kind of ECClass that can be used as the _datatype_ of an ECProperty.
 
 - **[ECCustomAttributeClass](./ec-custom-attribute-class.md)** describes a class of object whose instances are "applied to" particular items of an ECSchema in order to extend their metadata beyond the built-in attributes of the items.
 

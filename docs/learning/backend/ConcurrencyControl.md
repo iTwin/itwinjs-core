@@ -7,7 +7,7 @@ Concurrency control is a way to coordinate simultaneous changes among multiple B
 
 An iModel has a concurrency control policy that specifies how multiple briefcases may modify elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
 
-The concurrency control policy for an iModel is established when it is created in iModelHub via the `noLocks` parameter of [BackendHubAccess.createNewIModel]. If `noLocks` is not specified (the default), iTwin.js will enforce that the appropriate locks must be acquired *before* modifying elements.
+The concurrency control policy for an iModel is established when it is created in iModelHub via the `noLocks` parameter of [BackendHubAccess.createNewIModel]. If `noLocks` is not specified (the default), iTwin.js will enforce that the appropriate locks must be acquired _before_ modifying elements.
 
 An app uses [BriefcaseDb.locks]($backend) to follow concurrency control rules.
 
@@ -28,7 +28,7 @@ This article assumes that you already know that:
 
 | Term                                | Definition                                                                                                                                                                                                                                                          |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Base**                            | Changeset B is *based* on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
+| **Base**                            | Changeset B is _based_ on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
 | **Change-merging**                  | Same as merge.                                                                                                                                                                                                                                                      |
 | **Concurrency Control**             | How to coordinate simultaneous transactions while preserving data integrity.                                                                                                                                                                                        |
 | **Concurrency Control Policy**      | The rules that apps must follow when changing models and elements. May be [optimistic](#optimistic-concurrency-control) or [pessimistic](#pessimistic-concurrency-control).                                                                                         |
@@ -41,7 +41,7 @@ This article assumes that you already know that:
 | **Push**                            | Upload a Changeset to iModelHub                                                                                                                                                                                                                                     |
 | **Pull**                            | Download a Changeset from iModelHub. See [IModelDb synchronization](./IModelDbSync.md)                                                                                                                                                                              |
 | **Tip**                             | The most recent version of an iModel. Also, the most recent Changeset in the timeline.                                                                                                                                                                              |
-| **Transaction**                     | A set of changes that are committed or abandoned atomically, making up a unit of work. A transaction is *committed* by calling [BriefcaseDb.saveChanges]($backend). Multiple transactions to a briefcase are combined into a [Changeset](../Glossary.md#Changeset). |
+| **Transaction**                     | A set of changes that are committed or abandoned atomically, making up a unit of work. A transaction is _committed_ by calling [BriefcaseDb.saveChanges]($backend). Multiple transactions to a briefcase are combined into a [Changeset](../Glossary.md#Changeset). |
 | **Version**                         | The state of an iModel as of a specific point in its timeline, that is, the result of the Changesets up to that point.                                                                                                                                              |
 
 ## Concurrency Control Policies
@@ -73,7 +73,7 @@ Rules for acquiring locks:
 - An attempt to obtain a lock on an Element (either Exclusive or Shared) requires also obtaining the Shared lock on its Model and its Parent, if it has one. This is both automatic and recursive. That is, a request to obtain a single lock may, in fact, require many locks all the way to the top of the hierarchy, if they are not already held. If any required lock is unavailable, no locks are obtained.
 - Acquiring the exclusive lock on a model (via its modeled element) implicitly acquires the exclusive lock on all its elements. Likewise, acquiring the exclusive lock on an element implicitly acquires the exclusive lock on its children.
 
-The "root" ElementId is the [IModel.repositoryModelId]($common). For convenience, the Exclusive lock on the root Element is called the **Schema Lock**. From the rules above you can tell that to obtain the Schema Lock of an iModel no other briefcase can be *holding any* locks. Further, while the Schema Lock is held, no other briefcases may *obtain any* locks.
+The "root" ElementId is the [IModel.repositoryModelId]($common). For convenience, the Exclusive lock on the root Element is called the **Schema Lock**. From the rules above you can tell that to obtain the Schema Lock of an iModel no other briefcase can be _holding any_ locks. Further, while the Schema Lock is held, no other briefcases may _obtain any_ locks.
 
 To work with an iModel with pessimistic concurrency control policy, apps must follow the pull -> lock -> change -> push pattern.
 
@@ -87,7 +87,7 @@ For reference, the pessimistic locking rules are as follows:
 
 Notes:
 
-- these rules only apply to *direct* changes to Elements. *Indirect* changes, made during change propagation from ElementDrivesElement relationships, do *not* require locks.
+- these rules only apply to _direct_ changes to Elements. _Indirect_ changes, made during change propagation from ElementDrivesElement relationships, do _not_ require locks.
 
 - the lock on a Model is really a lock on its modeled element, since they have the same Id.
 

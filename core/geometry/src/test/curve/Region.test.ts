@@ -19,7 +19,9 @@ describe("Regions", () => {
     // GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "SweepContour");
     const region = UnionRegion.create();
     const segment = LineSegment3d.createXYZXYZ(0, 0, 0, 1, 0, 0);
-    const loop = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0)));
+    const loop = Loop.create(
+      LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0))
+    );
     ck.testFalse(region.tryAddChild(segment));
     ck.testTrue(region.tryAddChild(loop));
     ck.testPointer(region.getChild(0));
@@ -33,7 +35,9 @@ describe("Regions", () => {
     // GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "SweepContour");
     const region = ParityRegion.create();
     const segment = LineSegment3d.createXYZXYZ(0, 0, 0, 1, 0, 0);
-    const loop = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0)));
+    const loop = Loop.create(
+      LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0))
+    );
     ck.testFalse(region.tryAddChild(segment));
     ck.testTrue(region.tryAddChild(loop));
     ck.testPointer(region.getChild(0));

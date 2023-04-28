@@ -43,8 +43,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    * * Note that it does NOT walk the entire graph to clear masks.
    */
   public clear() {
-    for (; undefined !== this.chooseAndRemoveAny();) {
-    }
+    for (; undefined !== this.chooseAndRemoveAny(); ) {}
   }
 
   /**
@@ -67,7 +66,9 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
     return this._candidates.length;
   }
   /** Read property accessor: return the graph */
-  public get graph(): HalfEdgeGraph { return this._graph; }
+  public get graph(): HalfEdgeGraph {
+    return this._graph;
+  }
 
   /** return borrowed assets (the mask!) to the graph. */
   public teardown() {
@@ -76,13 +77,14 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
     // this._graph = undefined;
   }
   /** (Read property) return the mask used to mark members of the set. */
-  public get mask(): HalfEdgeMask { return this._mask; }
+  public get mask(): HalfEdgeMask {
+    return this._mask;
+  }
 
   /** pop and return the last node out of the array, without testing if it is still marked. */
   protected popAndReturn(): HalfEdge | undefined {
     const n = this._candidates.length;
-    if (n === 0)
-      return undefined;
+    if (n === 0) return undefined;
     const node = this._candidates[n - 1];
     this._candidates.pop();
     return node;
@@ -97,8 +99,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
   public getAtIndex(index: number): HalfEdge | undefined {
     if (index >= 0 && index < this._candidates.length) {
       const candidate = this._candidates[index];
-      if (candidate.isMaskSet(this._mask))
-        return candidate;
+      if (candidate.isMaskSet(this._mask)) return candidate;
     }
     return undefined;
   }
@@ -112,8 +113,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    * @returns true if the HalfEdge is a new member of the set, false if it was already in the set.
    */
   public addToSet(candidate: HalfEdge) {
-    if (candidate.isMaskSet(this._mask))
-      return false;
+    if (candidate.isMaskSet(this._mask)) return false;
     this._candidates.push(candidate);
     this.setMaskInScope(candidate);
     return true;
@@ -134,8 +134,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    * @return true if the candidate was a member (an hence removed), false if the candidate was not masked.
    */
   public removeFromSet(candidate: HalfEdge): boolean {
-    if (!candidate.isMaskSet(this._mask))
-      return false;
+    if (!candidate.isMaskSet(this._mask)) return false;
     this.clearMaskInScope(candidate);
     return true;
   }
@@ -145,12 +144,10 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    *  * If unmasked HalfEdges are found in the array, they are removed from the array.
    */
   public chooseAndRemoveAny(): HalfEdge | undefined {
-    for (; ;) {
+    for (;;) {
       const candidate = this.popAndReturn();
-      if (!candidate)
-        return undefined;
-      if (this.removeFromSet(candidate))
-        return candidate;
+      if (!candidate) return undefined;
+      if (this.removeFromSet(candidate)) return candidate;
     }
   }
   /** Set mask on candidate -- i.e. edge, face, vertex, or single half edge as required.
@@ -169,9 +166,13 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    * * This is always 1 for HalfEdgeMarkSet
    * @param candidate
    */
-  public abstract countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number;
+  public abstract countHalfEdgesAroundCandidate(
+    candidate: HalfEdge | undefined
+  ): number;
   /** Create an iterator over member HalfEdges */
-  public [Symbol.iterator](): IterableIterator<HalfEdge> { return new IterableHalfEdgeMarkSetIterator(this); }
+  public [Symbol.iterator](): IterableIterator<HalfEdge> {
+    return new IterableHalfEdgeMarkSetIterator(this);
+  }
   /**
    * * visit all half edges around face.
    * * Add each to mark set.
@@ -211,8 +212,7 @@ export class MarkedHalfEdgeSt extends AbstractHalfEdgeGraphMarkSet {
    */
   public static create(graph: HalfEdgeGraph): MarkedHalfEdgeSt | undefined {
     const mask = graph.grabMask();
-    if (mask === HalfEdgeMask.NULL_MASK)
-      return undefined;
+    if (mask === HalfEdgeMask.NULL_MASK) return undefined;
     return new MarkedHalfEdgeSt(graph, mask);
   }
 
@@ -237,9 +237,10 @@ export class MarkedHalfEdgeSt extends AbstractHalfEdgeGraphMarkSet {
    * * return 0 for undefined candidate
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
-    if (!candidate)
-      return 0;
+  public countHalfEdgesAroundCandidate(
+    candidate: HalfEdge | undefined
+  ): number {
+    if (!candidate) return 0;
     return 1;
   }
 }
@@ -258,8 +259,7 @@ export class MarkedEdgeSet extends AbstractHalfEdgeGraphMarkSet {
    */
   public static create(graph: HalfEdgeGraph): MarkedEdgeSet | undefined {
     const mask = graph.grabMask();
-    if (mask === HalfEdgeMask.NULL_MASK)
-      return undefined;
+    if (mask === HalfEdgeMask.NULL_MASK) return undefined;
     return new MarkedEdgeSet(graph, mask);
   }
 
@@ -283,9 +283,10 @@ export class MarkedEdgeSet extends AbstractHalfEdgeGraphMarkSet {
    * * This is always 2 for EdgeMarkSet
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
-    if (!candidate)
-      return 0;
+  public countHalfEdgesAroundCandidate(
+    candidate: HalfEdge | undefined
+  ): number {
+    if (!candidate) return 0;
     return 2;
   }
 }
@@ -304,8 +305,7 @@ export class MarkedFaceSet extends AbstractHalfEdgeGraphMarkSet {
    */
   public static create(graph: HalfEdgeGraph): MarkedFaceSet | undefined {
     const mask = graph.grabMask();
-    if (mask === HalfEdgeMask.NULL_MASK)
-      return undefined;
+    if (mask === HalfEdgeMask.NULL_MASK) return undefined;
     return new MarkedFaceSet(graph, mask);
   }
 
@@ -329,9 +329,10 @@ export class MarkedFaceSet extends AbstractHalfEdgeGraphMarkSet {
    * * This is the "aroundFace" count.
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
-    if (!candidate)
-      return 0;
+  public countHalfEdgesAroundCandidate(
+    candidate: HalfEdge | undefined
+  ): number {
+    if (!candidate) return 0;
     return candidate.countEdgesAroundFace();
   }
 }
@@ -349,8 +350,7 @@ export class MarkedVertexSet extends AbstractHalfEdgeGraphMarkSet {
    */
   public static create(graph: HalfEdgeGraph): MarkedVertexSet | undefined {
     const mask = graph.grabMask();
-    if (mask === HalfEdgeMask.NULL_MASK)
-      return undefined;
+    if (mask === HalfEdgeMask.NULL_MASK) return undefined;
     return new MarkedVertexSet(graph, mask);
   }
 
@@ -374,9 +374,10 @@ export class MarkedVertexSet extends AbstractHalfEdgeGraphMarkSet {
    * * This is the "aroundVertex" count.
    * @param candidate
    */
-  public countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number {
-    if (!candidate)
-      return 0;
+  public countHalfEdgesAroundCandidate(
+    candidate: HalfEdge | undefined
+  ): number {
+    if (!candidate) return 0;
     return candidate.countEdgesAroundVertex();
   }
 }
@@ -400,11 +401,12 @@ class IterableHalfEdgeMarkSetIterator implements Iterator<HalfEdge> {
     // Walk over candidates that have been quietly de-masked
     while (this._nextReadIndex < n) {
       const p = this._markSet.getAtIndex(this._nextReadIndex++);
-      if (p !== undefined)
-        return { done: false, value: p };
+      if (p !== undefined) return { done: false, value: p };
     }
     return { done: true, value: undefined } as any as IteratorResult<HalfEdge>;
   }
 
-  public [Symbol.iterator](): IterableIterator<HalfEdge> { return this; }
+  public [Symbol.iterator](): IterableIterator<HalfEdge> {
+    return this;
+  }
 }

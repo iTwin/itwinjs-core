@@ -6,10 +6,25 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64Set, Id64String, SortedArray } from "@itwin/core-bentley";
+import {
+  assert,
+  BeEvent,
+  compareStrings,
+  DbOpcode,
+  DuplicatePolicy,
+  GuidString,
+  Id64Set,
+  Id64String,
+  SortedArray,
+} from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
-  EditingScopeNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+  EditingScopeNotifications,
+  ElementGeometryChange,
+  IpcAppChannel,
+  ModelGeometryChanges,
+  ModelGeometryChangesProps,
+  RemoveFunction,
 } from "@itwin/core-common";
 import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -20,7 +35,10 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
   public readonly range: Range3d;
 
   public constructor(geometryGuid: GuidString, range: Range3d) {
-    super((lhs, rhs) => compareStrings(lhs.id, rhs.id), DuplicatePolicy.Replace);
+    super(
+      (lhs, rhs) => compareStrings(lhs.id, rhs.id),
+      DuplicatePolicy.Replace
+    );
     this.geometryGuid = geometryGuid;
     this.range = range;
   }
@@ -52,8 +70,13 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
  * @see [[exit]] to terminate a scope.
  * @public
  */
-export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
-  public get briefcaseChannelName() { return IpcAppChannel.EditingScope; }
+export class GraphicalEditingScope
+  extends BriefcaseNotificationHandler
+  implements EditingScopeNotifications
+{
+  public get briefcaseChannelName() {
+    return IpcAppChannel.EditingScope;
+  }
 
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
@@ -66,34 +89,53 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   /** Event raised when a new scope is created for any [[BriefcaseConnection]].
    * @see [[onExiting]] and [[onExited]] for complementary events.
    */
-  public static readonly onEnter = new BeEvent<(scope: GraphicalEditingScope) => void>();
+  public static readonly onEnter = new BeEvent<
+    (scope: GraphicalEditingScope) => void
+  >();
 
   /** Event raised when this scope is about to exit.
    * @see [[onEnter]] for the complementary event.
    * @see [[onExited]] for an event raised after the scope exits.
    */
-  public readonly onExiting = new BeEvent<(scope: GraphicalEditingScope) => void>();
+  public readonly onExiting = new BeEvent<
+    (scope: GraphicalEditingScope) => void
+  >();
 
   /** Event raised when this scope has exited.
    * @see [[onEnter]] for the complementary event.
    * @see [[onExiting]] for an event raised just before the scope is exited.
    */
-  public readonly onExited = new BeEvent<(scope: GraphicalEditingScope) => void>();
+  public readonly onExited = new BeEvent<
+    (scope: GraphicalEditingScope) => void
+  >();
 
   /** Event raised after geometric changes are written to the iModel. */
-  public readonly onGeometryChanges = new BeEvent<(changes: Iterable<ModelGeometryChanges>, scope: GraphicalEditingScope) => void>();
+  public readonly onGeometryChanges = new BeEvent<
+    (
+      changes: Iterable<ModelGeometryChanges>,
+      scope: GraphicalEditingScope
+    ) => void
+  >();
 
   /** Don't call this directly - use BriefcaseConnection.enterEditingScope.
    * @internal
    */
-  public static async enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope> {
+  public static async enter(
+    imodel: BriefcaseConnection
+  ): Promise<GraphicalEditingScope> {
     if (imodel.editingScope)
-      throw new Error("Cannot create an editing scope for an iModel that already has one");
+      throw new Error(
+        "Cannot create an editing scope for an iModel that already has one"
+      );
 
     // Register the scope synchronously, in case enter() is called again for same iModel while awaiting asynchronous initialization.
     const scope = new GraphicalEditingScope(imodel);
     try {
-      const scopeStarted = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(imodel.key, true);
+      const scopeStarted =
+        await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(
+          imodel.key,
+          true
+        );
       assert(scopeStarted); // If it didn't, the backend threw an error.
     } catch (e) {
       scope.dispose();
@@ -111,13 +153,19 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
    */
   public async exit(): Promise<void> {
     if (this._disposed || this.iModel.editingScope !== this)
-      throw new Error("Cannot exit editing scope after it is disconnected from the iModel");
+      throw new Error(
+        "Cannot exit editing scope after it is disconnected from the iModel"
+      );
 
     this._disposed = true;
     try {
       this.onExiting.raiseEvent(this);
     } finally {
-      const scopeExited = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(this.iModel.key, false);
+      const scopeExited =
+        await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(
+          this.iModel.key,
+          false
+        );
       assert(!scopeExited);
       try {
         this.onExited.raiseEvent(this);
@@ -128,7 +176,9 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   }
 
   /** Obtain all geometric changes to elements within the specified model accumulated within this scope. */
-  public getGeometryChangesForModel(modelId: Id64String): Iterable<ElementGeometryChange> | undefined {
+  public getGeometryChangesForModel(
+    modelId: Id64String
+  ): Iterable<ElementGeometryChange> | undefined {
     return this._geometryChanges.get(modelId);
   }
 
@@ -142,7 +192,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     return this._disposed;
   }
 
-  private * geometryChangeIterator(): Iterator<ModelGeometryChanges> {
+  private *geometryChangeIterator(): Iterator<ModelGeometryChanges> {
     for (const [key, value] of this._geometryChanges) {
       yield {
         id: key,
@@ -186,7 +236,13 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
       modelIds.push(modelChanges.id);
       for (const elementChange of modelChanges.elements) {
         if (!list) {
-          this._geometryChanges.set(modelChanges.id, list = new ModelChanges(modelChanges.geometryGuid, modelChanges.range));
+          this._geometryChanges.set(
+            modelChanges.id,
+            (list = new ModelChanges(
+              modelChanges.geometryGuid,
+              modelChanges.range
+            ))
+          );
         } else {
           list.geometryGuid = modelChanges.geometryGuid;
           modelChanges.range.clone(list.range);
@@ -194,8 +250,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 
         list.insert(elementChange);
         if (DbOpcode.Delete === elementChange.type) {
-          if (undefined === deletedIds)
-            deletedIds = new Set<Id64String>();
+          if (undefined === deletedIds) deletedIds = new Set<Id64String>();
           deletedIds.add(elementChange.id);
         }
       }

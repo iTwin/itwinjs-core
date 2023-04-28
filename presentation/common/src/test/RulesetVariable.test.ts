@@ -5,18 +5,30 @@
 import { expect } from "chai";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  BooleanRulesetVariable, BooleanRulesetVariableJSON, Id64RulesetVariable, Id64RulesetVariableJSON, Id64sRulesetVariable, Id64sRulesetVariableJSON,
-  IntRulesetVariable, IntRulesetVariableJSON, IntsRulesetVariable, IntsRulesetVariableJSON, RulesetVariable, StringRulesetVariable,
-  StringRulesetVariableJSON, VariableValueTypes,
+  BooleanRulesetVariable,
+  BooleanRulesetVariableJSON,
+  Id64RulesetVariable,
+  Id64RulesetVariableJSON,
+  Id64sRulesetVariable,
+  Id64sRulesetVariableJSON,
+  IntRulesetVariable,
+  IntRulesetVariableJSON,
+  IntsRulesetVariable,
+  IntsRulesetVariableJSON,
+  RulesetVariable,
+  StringRulesetVariable,
+  StringRulesetVariableJSON,
+  VariableValueTypes,
 } from "../presentation-common/RulesetVariables";
 import { createRandomId } from "./_helpers/random";
 
 describe("RulesetVariable", () => {
-
   describe("toJSON", () => {
-
     it("serializes Id64[] to CompressedId64Set", () => {
-      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const ids = OrderedId64Iterable.sortArray([
+        createRandomId(),
+        createRandomId(),
+      ]);
       const variable: Id64sRulesetVariable = {
         type: VariableValueTypes.Id64Array,
         id: "test",
@@ -66,13 +78,14 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.toJSON(stringVariable)).to.eq(stringVariable);
     });
-
   });
 
   describe("fromJSON", () => {
-
     it("deserializes CompressedId64Set to Id64[]", () => {
-      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const ids = OrderedId64Iterable.sortArray([
+        createRandomId(),
+        createRandomId(),
+      ]);
       const json: Id64sRulesetVariableJSON = {
         type: VariableValueTypes.Id64Array,
         id: "test",
@@ -109,7 +122,9 @@ describe("RulesetVariable", () => {
         id: "test",
         value: [123, 456],
       };
-      expect(RulesetVariable.fromJSON(intArrayVariable)).to.eq(intArrayVariable);
+      expect(RulesetVariable.fromJSON(intArrayVariable)).to.eq(
+        intArrayVariable
+      );
 
       // eslint-disable-next-line deprecation/deprecation
       const id64Variable: Id64RulesetVariableJSON = {
@@ -124,7 +139,9 @@ describe("RulesetVariable", () => {
         id: "test",
         value: ["0x123", "0x456"],
       };
-      expect(RulesetVariable.fromJSON(id64ArrayVariable)).to.eq(id64ArrayVariable);
+      expect(RulesetVariable.fromJSON(id64ArrayVariable)).to.eq(
+        id64ArrayVariable
+      );
 
       // eslint-disable-next-line deprecation/deprecation
       const stringVariable: StringRulesetVariableJSON = {
@@ -134,7 +151,5 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.fromJSON(stringVariable)).to.eq(stringVariable);
     });
-
   });
-
 });

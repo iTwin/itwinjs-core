@@ -19,19 +19,26 @@ export class ViewRectUniforms {
   public readonly projectionMatrix = Matrix4d.createIdentity();
 
   public readonly projectionMatrix32 = new Matrix4();
-  private readonly _dimensions = [ 0, 0 ];
-  private readonly _inverseDimensions = [ 0, 0 ];
+  private readonly _dimensions = [0, 0];
+  private readonly _inverseDimensions = [0, 0];
   private readonly _viewportMatrix = new Matrix4();
 
   public update(width: number, height: number): void {
-    if (width === this.width && height === this.height)
-      return;
+    if (width === this.width && height === this.height) return;
 
     desync(this);
     this._dimensions[0] = width;
     this._dimensions[1] = height;
 
-    Matrix4.fromOrtho(0.0, width, height, 0.0, -1.0, 1.0, this.projectionMatrix32);
+    Matrix4.fromOrtho(
+      0.0,
+      width,
+      height,
+      0.0,
+      -1.0,
+      1.0,
+      this.projectionMatrix32
+    );
     this.projectionMatrix32.toMatrix4d(this.projectionMatrix);
 
     this._inverseDimensions[0] = 1 / width;
@@ -55,33 +62,46 @@ export class ViewRectUniforms {
     const column3Row3 = 1.0;
 
     Matrix4.fromValues(
-      column0Row0, 0.0, 0.0, column3Row0,
-      0.0, column1Row1, 0.0, column3Row1,
-      0.0, 0.0, column2Row2, column3Row2,
-      0.0, 0.0, 0.0, column3Row3,
-      this._viewportMatrix);
+      column0Row0,
+      0.0,
+      0.0,
+      column3Row0,
+      0.0,
+      column1Row1,
+      0.0,
+      column3Row1,
+      0.0,
+      0.0,
+      column2Row2,
+      column3Row2,
+      0.0,
+      0.0,
+      0.0,
+      column3Row3,
+      this._viewportMatrix
+    );
   }
 
-  public get width() { return this._dimensions[0]; }
-  public get height() { return this._dimensions[1]; }
+  public get width() {
+    return this._dimensions[0];
+  }
+  public get height() {
+    return this._dimensions[1];
+  }
 
   public bindProjectionMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix4(this.projectionMatrix32);
+    if (!sync(this, uniform)) uniform.setMatrix4(this.projectionMatrix32);
   }
 
   public bindDimensions(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform2fv(this._dimensions);
+    if (!sync(this, uniform)) uniform.setUniform2fv(this._dimensions);
   }
 
   public bindInverseDimensions(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform2fv(this._inverseDimensions);
+    if (!sync(this, uniform)) uniform.setUniform2fv(this._inverseDimensions);
   }
 
   public bindViewportMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix4(this._viewportMatrix);
+    if (!sync(this, uniform)) uniform.setMatrix4(this._viewportMatrix);
   }
 }

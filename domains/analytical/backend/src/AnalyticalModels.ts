@@ -13,5 +13,7 @@ import { GeometricModel3d } from "@itwin/core-backend";
  */
 export abstract class AnalyticalModel extends GeometricModel3d {
   /** @internal */
-  public static override get className(): string { return "AnalyticalModel"; }
+  public static override get className(): string {
+    return "AnalyticalModel";
+  }
 }

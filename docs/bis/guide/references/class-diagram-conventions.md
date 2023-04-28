@@ -26,11 +26,11 @@ Colors of nodes are determined by the type of the class/entity. Bellow are liste
 
 All entity classes have **rectangle** shape margins. Outline and class name style of nodes are determined by the class modifier:
 
-|Modifier            |Class name style|Line style|Line thickness|
-|--------------------|----------------|----------|-------------:|
-|`Abstract`          |bold + italic   |dotted    |1             |
-|`None (default)`    |bold            |solid     |1             |
-|`Sealed`            |bold + underline|solid     |2             |
+| Modifier         | Class name style | Line style | Line thickness |
+| ---------------- | ---------------- | ---------- | -------------: |
+| `Abstract`       | bold + italic    | dotted     |              1 |
+| `None (default)` | bold             | solid      |              1 |
+| `Sealed`         | bold + underline | solid      |              2 |
 
 ![Shapes](../media/class-diagram-shapes.png)
 

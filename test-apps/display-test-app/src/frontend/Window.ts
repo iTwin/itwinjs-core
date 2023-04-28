@@ -74,11 +74,17 @@ class ResizeState {
       const surfaceTop = window.surface.element.clientTop;
 
       if (width > this.minSize)
-        target.style.width = `${(windowRight <= surfaceRight) ? width : surfaceWidth - windowLeft}px`;
+        target.style.width = `${
+          windowRight <= surfaceRight ? width : surfaceWidth - windowLeft
+        }px`;
 
       if (height > minSize) {
-        target.style.height = `${(windowTop >= surfaceTop) ? height : prevBottom}px`;
-        target.style.top = `${(windowTop >= surfaceTop) ? windowTop : surfaceTop}px`;
+        target.style.height = `${
+          windowTop >= surfaceTop ? height : prevBottom
+        }px`;
+        target.style.top = `${
+          windowTop >= surfaceTop ? windowTop : surfaceTop
+        }px`;
       }
     };
 
@@ -92,7 +98,8 @@ class ResizeState {
       e.stopPropagation();
 
       const style = getComputedStyle(target, null);
-      const pxToNum = (propName: string) => parseFloat(style.getPropertyValue(propName).replace("px", ""));
+      const pxToNum = (propName: string) =>
+        parseFloat(style.getPropertyValue(propName).replace("px", ""));
       this._prevWidth = pxToNum("width");
       this._prevHeight = pxToNum("height");
       this._prevY = pxToNum("top");
@@ -138,16 +145,27 @@ class WindowHeader {
 
   public constructor(window: Window, parent: HTMLElement, title?: string) {
     this.window = window;
-    this.element = IModelApp.makeHTMLElement("div", { className: "floating-window-header", parent });
+    this.element = IModelApp.makeHTMLElement("div", {
+      className: "floating-window-header",
+      parent,
+    });
 
-    this._titleElement = IModelApp.makeHTMLElement("span", { parent: this.element });
+    this._titleElement = IModelApp.makeHTMLElement("span", {
+      parent: this.element,
+    });
     this.setTitle(title);
 
-    this._closeElement = IModelApp.makeHTMLElement("div", { className: "floating-window-header-close", parent: this.element });
+    this._closeElement = IModelApp.makeHTMLElement("div", {
+      className: "floating-window-header-close",
+      parent: this.element,
+    });
     this._closeElement.onclick = () => this.window.surface.close(this.window);
     this.hideCloseWidget(!this.window.isCloseable);
 
-    this._resizerElement = IModelApp.makeHTMLElement("div", { className: "floating-window-header-resize", parent: this.element });
+    this._resizerElement = IModelApp.makeHTMLElement("div", {
+      className: "floating-window-header-resize",
+      parent: this.element,
+    });
     this.hideResizerWidget(!this.window.isResizable);
 
     // Left-drag => move
@@ -158,10 +176,8 @@ class WindowHeader {
 
     // Double-click => maximize or restore
     const maximizeOrRestore = () => {
-      if (this.isDocked)
-        this.undock();
-      else
-        this.dock(Dock.Full);
+      if (this.isDocked) this.undock();
+      else this.dock(Dock.Full);
     };
 
     this.element.addEventListener("dblclick", maximizeOrRestore);
@@ -192,8 +208,7 @@ class WindowHeader {
 
   public undock(): void {
     const s = this._dockState;
-    if (undefined === s)
-      return;
+    if (undefined === s) return;
 
     const target = this.window.container;
     target.style.width = `${s.width}px`;
@@ -206,8 +221,7 @@ class WindowHeader {
   }
 
   public applyDock(): void {
-    if (undefined === this._dockState || !this.window.isResizable)
-      return;
+    if (undefined === this._dockState || !this.window.isResizable) return;
 
     const surf = this.window.surface;
     const sw = surf.element.clientWidth;
@@ -222,15 +236,11 @@ class WindowHeader {
 
     const dock = this._dockState.dock;
     if (Dock.Full !== dock) {
-      if (dock & Dock.Top)
-        h = hh;
-      else if (dock & Dock.Bottom)
-        t = h = hh;
+      if (dock & Dock.Top) h = hh;
+      else if (dock & Dock.Bottom) t = h = hh;
 
-      if (dock & Dock.Left)
-        w = hw;
-      else if (dock & Dock.Right)
-        l = w = hw;
+      if (dock & Dock.Left) w = hw;
+      else if (dock & Dock.Right) l = w = hw;
     }
 
     const style = this.window.container.style;
@@ -257,22 +267,16 @@ class WindowHeader {
     const windowRight = windowLeft + windowWidth;
 
     // assure the window above of the surface boarder
-    if (windowBottom >= surfaceBottom)
-      windowTop = (surfaceBottom - windowHeight);
-    if (windowTop < surfaceTop)
-      windowTop = surfaceTop;
+    if (windowBottom >= surfaceBottom) windowTop = surfaceBottom - windowHeight;
+    if (windowTop < surfaceTop) windowTop = surfaceTop;
     style.top = `${windowTop}px`;
-    if (windowHeight > surfaceBottom)
-      style.height = `${surfaceBottom}px`;
+    if (windowHeight > surfaceBottom) style.height = `${surfaceBottom}px`;
 
     // assure the window left of the surface boarder
-    if (windowRight >= surfaceRight)
-      windowLeft = (surfaceRight - windowWidth);
-    if (windowLeft < surfaceLeft)
-      windowLeft = surfaceLeft;
+    if (windowRight >= surfaceRight) windowLeft = surfaceRight - windowWidth;
+    if (windowLeft < surfaceLeft) windowLeft = surfaceLeft;
     style.left = `${windowLeft}px`;
-    if (windowWidth > surfaceRight)
-      style.width = `${surfaceRight}px`;
+    if (windowWidth > surfaceRight) style.width = `${surfaceRight}px`;
   }
 
   public addDock(add: Dock): void {
@@ -281,26 +285,25 @@ class WindowHeader {
       return;
     }
 
-    if (Dock.Full === add)
-      return;
+    if (Dock.Full === add) return;
 
     let dock = this._dockState.dock;
     dock |= add;
-    if (add & Dock.Left)
-      dock &= ~Dock.Right;
-    if (add & Dock.Right)
-      dock &= ~Dock.Left;
-    if (add & Dock.Top)
-      dock &= ~Dock.Bottom;
-    if (add & Dock.Bottom)
-      dock &= ~Dock.Top;
+    if (add & Dock.Left) dock &= ~Dock.Right;
+    if (add & Dock.Right) dock &= ~Dock.Left;
+    if (add & Dock.Top) dock &= ~Dock.Bottom;
+    if (add & Dock.Bottom) dock &= ~Dock.Top;
 
     this._dockState.dock = dock;
     this.applyDock();
   }
 
-  public get isDocked() { return undefined !== this._dockState; }
-  public invalidateDock() { this._dockState = undefined; }
+  public get isDocked() {
+    return undefined !== this._dockState;
+  }
+  public invalidateDock() {
+    this._dockState = undefined;
+  }
 
   public resizeContent(w: number, h: number): void {
     // ###TODO kludge for 2px borders...
@@ -329,10 +332,8 @@ class WindowHeader {
   }
 
   public markAsPinned(isPinned: boolean) {
-    if (isPinned)
-      this._resizerElement.classList.add("window-pinned");
-    else
-      this._resizerElement.classList.remove("window-pinned");
+    if (isPinned) this._resizerElement.classList.add("window-pinned");
+    else this._resizerElement.classList.remove("window-pinned");
   }
 }
 
@@ -356,15 +357,16 @@ export abstract class Window {
 
   public constructor(surface: Surface, props?: WindowProps) {
     this.surface = surface;
-    this.container = IModelApp.makeHTMLElement("div", { className: "floating-window-container" });
+    this.container = IModelApp.makeHTMLElement("div", {
+      className: "floating-window-container",
+    });
 
     this.container.style.top = `${0}px`;
     this.container.style.left = `${0}px`;
     this.container.style.width = `${surface.element.clientWidth / 3}px`;
     this.container.style.height = `${surface.element.clientHeight / 3}px`;
     if (undefined !== props) {
-      if (undefined !== props.top)
-        this.container.style.top = `${props.top}px`;
+      if (undefined !== props.top) this.container.style.top = `${props.top}px`;
       if (undefined !== props.left)
         this.container.style.left = `${props.left}px`;
       if (undefined !== props.width)
@@ -373,14 +375,23 @@ export abstract class Window {
         this.container.style.height = `${props.height}px`;
     }
 
-    this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);
-    this.contentDiv = IModelApp.makeHTMLElement("div", { className: "floating-window", parent: this.container });
+    this._header = new WindowHeader(
+      this,
+      this.container,
+      undefined !== props ? props.title : undefined
+    );
+    this.contentDiv = IModelApp.makeHTMLElement("div", {
+      className: "floating-window",
+      parent: this.container,
+    });
     if (props && props.scrollbars)
       this.contentDiv.classList.add("overflow-auto");
   }
 
   // Do not set directly - use Surface.togglePin(window)
-  public get isPinned(): boolean { return this._isPinned; }
+  public get isPinned(): boolean {
+    return this._isPinned;
+  }
   public set isPinned(value: boolean) {
     this._header.markAsPinned(value);
     this._isPinned = value;
@@ -394,14 +405,30 @@ export abstract class Window {
     this.surface.focus(this);
   }
 
-  public get isDocked() { return this._header.isDocked; }
-  public dock(dock: Dock) { this._header.dock(dock); }
-  public updateDock() { this._header.applyDock(); }
-  public undock() { this._header.undock(); }
-  public ensureInSurface() { this._header.ensureInSurface(); }
-  public invalidateDock() { this._header.invalidateDock(); }
-  public addDock(dock: Dock) { this._header.addDock(dock); }
-  public updateUi(): void { this._header.hideCloseWidget(!this.isCloseable); }
+  public get isDocked() {
+    return this._header.isDocked;
+  }
+  public dock(dock: Dock) {
+    this._header.dock(dock);
+  }
+  public updateDock() {
+    this._header.applyDock();
+  }
+  public undock() {
+    this._header.undock();
+  }
+  public ensureInSurface() {
+    this._header.ensureInSurface();
+  }
+  public invalidateDock() {
+    this._header.invalidateDock();
+  }
+  public addDock(dock: Dock) {
+    this._header.addDock(dock);
+  }
+  public updateUi(): void {
+    this._header.hideCloseWidget(!this.isCloseable);
+  }
 
   public onFocus(): void {
     this.container.classList.add("window-focused");
@@ -413,10 +440,14 @@ export abstract class Window {
     this._header.element.classList.remove("window-header-focused");
   }
 
-  public onClosing(): void { }
-  public onClosed(): void { }
-  public get isCloseable(): boolean { return true; }
-  public get isResizable(): boolean { return true; }
+  public onClosing(): void {}
+  public onClosed(): void {}
+  public get isCloseable(): boolean {
+    return true;
+  }
+  public get isResizable(): boolean {
+    return true;
+  }
 
   public resizeContent(w: number, h: number): void {
     this._header.resizeContent(w, h);
@@ -437,9 +468,10 @@ export class NamedWindow extends Window {
   public constructor(surface: Surface, props: NamedWindowProps) {
     super(surface, props);
     this._windowId = props.id;
-    if (undefined === props.title)
-      this._header.setTitle(this.windowId);
+    if (undefined === props.title) this._header.setTitle(this.windowId);
   }
 
-  public get windowId() { return this._windowId; }
+  public get windowId() {
+    return this._windowId;
+  }
 }

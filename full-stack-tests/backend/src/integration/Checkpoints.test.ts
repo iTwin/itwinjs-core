@@ -8,7 +8,16 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import {
+  CloudSqlite,
+  IModelDb,
+  IModelHost,
+  IModelJsFs,
+  NativeCloudSqlite,
+  SnapshotDb,
+  V2CheckpointAccessProps,
+  V2CheckpointManager,
+} from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -20,8 +29,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 
 async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");
-  if (await reader.step())
-    return reader.current[0] as number;
+  if (await reader.step()) return reader.current[0] as number;
   return -1;
 }
 
@@ -46,8 +54,12 @@ describe("Checkpoints", () => {
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
-    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
+    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744); // FIXME: This probably needs to be an imodeljs-native postinstall step...
+    daemon = NativeCloudSqlite.Daemon.start({
+      ...daemonProps,
+      ...cacheProps,
+      ...accountProps,
+    });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
@@ -55,7 +67,9 @@ describe("Checkpoints", () => {
 
   const shutdownDaemon = async () => {
     if (daemon) {
-      const onDaemonExit = new Promise((resolve) => daemon.once("exit", resolve));
+      const onDaemonExit = new Promise((resolve) =>
+        daemon.once("exit", resolve)
+      );
       daemon.kill();
       await onDaemonExit;
     }
@@ -89,12 +103,29 @@ describe("Checkpoints", () => {
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
-    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
-    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId });
-    testChangeSetFirstVersion = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: testIModelId, version: IModelVersion.first() });
+    testIModelId = await HubUtility.getTestIModelId(
+      accessToken,
+      HubUtility.testIModelNames.stadium
+    );
+    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({
+      accessToken,
+      iModelId: testIModelId,
+    });
+    testChangeSetFirstVersion =
+      await IModelHost.hubAccess.getChangesetFromVersion({
+        accessToken,
+        iModelId: testIModelId,
+        version: IModelVersion.first(),
+      });
     testITwinId2 = await HubUtility.getTestITwinId(accessToken);
-    testIModelId2 = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
-    testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId2 });
+    testIModelId2 = await HubUtility.getTestIModelId(
+      accessToken,
+      HubUtility.testIModelNames.readOnly
+    );
+    testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({
+      accessToken,
+      iModelId: testIModelId2,
+    });
 
     checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
       expectV2: true,
@@ -107,9 +138,11 @@ describe("Checkpoints", () => {
     });
     assert.isDefined(checkpoint, "checkpoint missing");
 
-    assert.isDefined(checkpoint?.accountName, "checkpoint storage account is invalid");
+    assert.isDefined(
+      checkpoint?.accountName,
+      "checkpoint storage account is invalid"
+    );
     assert.isDefined(checkpoint?.sasToken, "checkpoint accessToken is invalid");
-
   });
 
   afterEach(async () => {
@@ -139,12 +172,16 @@ describe("Checkpoints", () => {
     fs.writeFileSync(portfile, "INVALID");
 
     try {
-      await expect(SnapshotDb.openCheckpointV2({
-        accessToken,
-        iTwinId: testITwinId,
-        iModelId: testIModelId,
-        changeset: testChangeSet,
-      })).eventually.rejectedWith(/Cannot create CloudCache: invalid cache directory or directory does not exist/);
+      await expect(
+        SnapshotDb.openCheckpointV2({
+          accessToken,
+          iTwinId: testITwinId,
+          iModelId: testIModelId,
+          changeset: testChangeSet,
+        })
+      ).eventually.rejectedWith(
+        /Cannot create CloudCache: invalid cache directory or directory does not exist/
+      );
     } finally {
       IModelJsFs.removeSync(portfile);
     }
@@ -292,6 +329,5 @@ describe("Checkpoints", () => {
       iModel2.close();
       iModel3.close();
     }).timeout(120000);
-
   });
 });

@@ -57,7 +57,7 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
     input.type = "radio";
     input.name = props.name ? props.name : props.id;
 
-    input.value = (undefined !== entry.value) ? entry.value.toString() : "";
+    input.value = undefined !== entry.value ? entry.value.toString() : "";
 
     const inputLabel: HTMLLabelElement = document.createElement("label");
     inputLabel.innerText = entry.label;
@@ -98,14 +98,17 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
   }
 
   div.appendChild(form);
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
+  if (undefined !== props.parent) props.parent.appendChild(div);
 
   const setValue = (value: number | string): boolean => {
     const stringValue = value.toString();
-    const validValue: boolean = radioBoxes.map((input) => input.value).includes(stringValue);
+    const validValue: boolean = radioBoxes
+      .map((input) => input.value)
+      .includes(stringValue);
     if (validValue) {
-      radioBoxes.forEach((input) => input.checked = input.value === stringValue);
+      radioBoxes.forEach(
+        (input) => (input.checked = input.value === stringValue)
+      );
       props.handler(stringValue, form);
     }
     return validValue;

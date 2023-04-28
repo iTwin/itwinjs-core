@@ -7,7 +7,12 @@
  */
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
-import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
+import {
+  IndexedPolyface,
+  Polyface,
+  PolyfaceData,
+  PolyfaceVisitor,
+} from "@itwin/core-geometry";
 import { ColorDefProps, GeometryClass } from "@itwin/core-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
@@ -272,17 +277,15 @@ export namespace ExportGraphics {
   /** Test if ExportPartDisplayInfos have exactly the same values.
    * @public
    */
-  export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean {
-    if (lhs.categoryId !== rhs.categoryId)
-      return false;
-    if (lhs.subCategoryId !== rhs.subCategoryId)
-      return false;
-    if (lhs.materialId !== rhs.materialId)
-      return false;
-    if (lhs.elmTransparency !== rhs.elmTransparency)
-      return false;
-    if (lhs.lineColor !== rhs.lineColor)
-      return false;
+  export function arePartDisplayInfosEqual(
+    lhs: ExportPartDisplayInfo,
+    rhs: ExportPartDisplayInfo
+  ): boolean {
+    if (lhs.categoryId !== rhs.categoryId) return false;
+    if (lhs.subCategoryId !== rhs.subCategoryId) return false;
+    if (lhs.materialId !== rhs.materialId) return false;
+    if (lhs.elmTransparency !== rhs.elmTransparency) return false;
+    if (lhs.lineColor !== rhs.lineColor) return false;
     return true;
   }
 
@@ -291,7 +294,9 @@ export namespace ExportGraphics {
    * @note The resulting IndexedPolyface may have duplicate points, normals and params. If problematic, call [PolyfaceData.compress]($core-geometry)
    * @public
    */
-  export function convertToIndexedPolyface(mesh: ExportGraphicsMesh): IndexedPolyface {
+  export function convertToIndexedPolyface(
+    mesh: ExportGraphicsMesh
+  ): IndexedPolyface {
     const polyface = IndexedPolyface.create(true, true, false, mesh.isTwoSided);
 
     const p: Float64Array = mesh.points;
@@ -332,14 +337,22 @@ export namespace ExportGraphics {
  *   * All edgeVisible are true.
  * @public
  */
-export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceVisitor {
+export class ExportGraphicsMeshVisitor
+  extends PolyfaceData
+  implements PolyfaceVisitor
+{
   private _currentFacetIndex: number;
   private _nextFacetIndex: number;
   private _numWrap: number;
   private _polyface: ExportGraphicsMesh;
   // to be called from static factory method that validates the polyface ...
   private constructor(facets: ExportGraphicsMesh, numWrap: number) {
-    super(facets.normals.length > 0, facets.params.length > 0, false, facets.isTwoSided);
+    super(
+      facets.normals.length > 0,
+      facets.params.length > 0,
+      false,
+      facets.isTwoSided
+    );
     this._polyface = facets;
     this._numWrap = numWrap;
 
@@ -354,7 +367,10 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
    * * 1 -- add point 0 as closure point
    * * 2 -- add points 0 and 1 as closure and wrap point.  This is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
    */
-  public static create(polyface: ExportGraphicsMesh, numWrap: number): ExportGraphicsMeshVisitor {
+  public static create(
+    polyface: ExportGraphicsMesh,
+    numWrap: number
+  ): ExportGraphicsMeshVisitor {
     return new ExportGraphicsMeshVisitor(polyface, numWrap);
   }
   /** Reset the iterator to start at the first facet of the polyface. */
@@ -380,7 +396,11 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     for (let i = i0; i < i0 + 3; i++) {
       const k = 3 * indices[i];
       this.pointIndex.push(indices[i]);
-      this.point.pushXYZ(sourcePoints[k], sourcePoints[k + 1], sourcePoints[k + 2]);
+      this.point.pushXYZ(
+        sourcePoints[k],
+        sourcePoints[k + 1],
+        sourcePoints[k + 2]
+      );
       this.edgeVisible.push(true);
     }
     for (let i = 0; i < this._numWrap; i++) {
@@ -408,7 +428,11 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
       for (let i = i0; i < i0 + 3; i++) {
         const k = 3 * indices[i];
         this.normalIndex.push(indices[i]);
-        this.normal.pushXYZ(sourceNormals[k], sourceNormals[k + 1], sourceNormals[k + 2]);
+        this.normal.pushXYZ(
+          sourceNormals[k],
+          sourceNormals[k + 1],
+          sourceNormals[k + 2]
+        );
       }
       for (let i = 0; i < this._numWrap; i++) {
         this.normal.pushFromGrowableXYZArray(this.normal, i);
@@ -420,46 +444,89 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     return this.moveToReadIndex(this._nextFacetIndex);
   }
   /** Set the number of vertices to replicate in visitor arrays. */
-  public setNumWrap(numWrap: number): void { this._numWrap = numWrap; }
+  public setNumWrap(numWrap: number): void {
+    this._numWrap = numWrap;
+  }
 
   /** Return the index (in the client polyface) of the current facet */
-  public currentReadIndex(): number { return this._currentFacetIndex; }
+  public currentReadIndex(): number {
+    return this._currentFacetIndex;
+  }
   /** Return the point index of vertex i within the currently loaded facet */
-  public clientPointIndex(i: number): number { return this.pointIndex[i]; }
+  public clientPointIndex(i: number): number {
+    return this.pointIndex[i];
+  }
   /** Return the param index of vertex i within the currently loaded facet.
    * Use the artificial paramIndex, which matches pointIndex.
    */
-  public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }
+  public clientParamIndex(i: number): number {
+    return this.paramIndex ? this.paramIndex[i] : -1;
+  }
   /** Return the normal index of vertex i within the currently loaded facet.
    * Use the artificial paramIndex, which matches pointIndex.
    */
-  public clientNormalIndex(i: number): number { return this.normalIndex ? this.normalIndex[i] : -1; }
+  public clientNormalIndex(i: number): number {
+    return this.normalIndex ? this.normalIndex[i] : -1;
+  }
   /** Return the color index of vertex i within the currently loaded facet */
-  public clientColorIndex(_i: number): number { return 1; }
+  public clientColorIndex(_i: number): number {
+    return 1;
+  }
   /** Return the aux data index of vertex i within the currently loaded facet */
-  public clientAuxIndex(_i: number): number { return -1; }
+  public clientAuxIndex(_i: number): number {
+    return -1;
+  }
 
   /** return the client polyface */
-  public clientPolyface(): Polyface { return (undefined as unknown) as Polyface; }
+  public clientPolyface(): Polyface {
+    return undefined as unknown as Polyface;
+  }
   /** clear the contents of all arrays.  Use this along with transferDataFrom methods to build up new facets */
   public clearArrays(): void {
-    if (this.point !== undefined)
-      this.point.length = 0;
-    if (this.param !== undefined)
-      this.param.length = 0;
-    if (this.normal !== undefined)
-      this.normal.length = 0;
+    if (this.point !== undefined) this.point.length = 0;
+    if (this.param !== undefined) this.param.length = 0;
+    if (this.normal !== undefined) this.normal.length = 0;
     // ignore color and aux -- they never exist.
   }
   /** transfer interpolated data from the other visitor.
    * * all data values are interpolated at `fraction` between `other` values at index0 and index1.
    */
-  public pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void {
-    this.point.pushInterpolatedFromGrowableXYZArray(other.point, index0, fraction, index1);
-    if (this.param && other.param && index0 < other.param.length && index1 < other.param.length)
-      this.param.pushInterpolatedFromGrowableXYArray(other.param, index0, fraction, index1);
-    if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
-      this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
+  public pushInterpolatedDataFrom(
+    other: PolyfaceVisitor,
+    index0: number,
+    fraction: number,
+    index1: number
+  ): void {
+    this.point.pushInterpolatedFromGrowableXYZArray(
+      other.point,
+      index0,
+      fraction,
+      index1
+    );
+    if (
+      this.param &&
+      other.param &&
+      index0 < other.param.length &&
+      index1 < other.param.length
+    )
+      this.param.pushInterpolatedFromGrowableXYArray(
+        other.param,
+        index0,
+        fraction,
+        index1
+      );
+    if (
+      this.normal &&
+      other.normal &&
+      index0 < other.normal.length &&
+      index1 < other.normal.length
+    )
+      this.normal.pushInterpolatedFromGrowableXYZArray(
+        other.normal,
+        index0,
+        fraction,
+        index1
+      );
   }
   /** transfer data from a specified index of the other visitor as new data in this visitor. */
   public pushDataFrom(other: PolyfaceVisitor, index: number): void {
@@ -471,5 +538,4 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     if (this.normal && other.normal && index < other.normal.length)
       this.normal.pushFromGrowableXYZArray(other.normal, index);
   }
-
 }

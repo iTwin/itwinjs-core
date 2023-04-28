@@ -88,11 +88,14 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   /** Creates a JSON from the Geodetic Ellipsoid definition
    * @public */
   public toJSON(): GeodeticEllipsoidProps {
-    const data: GeodeticEllipsoidProps = { equatorialRadius: this.equatorialRadius, polarRadius: this.polarRadius };
+    const data: GeodeticEllipsoidProps = {
+      equatorialRadius: this.equatorialRadius,
+      polarRadius: this.polarRadius,
+    };
     data.id = this.id;
     data.description = this.description;
     /* We prefer to use the default undef instead of false value for deprecated in Json */
-    data.deprecated = (this.deprecated === false ? undefined : true);
+    data.deprecated = this.deprecated === false ? undefined : true;
     data.source = this.source;
     data.epsg = this.epsg;
     data.equatorialRadius = this.equatorialRadius;
@@ -105,13 +108,22 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
    * It takes into account descriptive properties not only mathematical definition properties.
    *  @public */
   public equals(other: GeodeticEllipsoid): boolean {
-    return this.id === other.id &&
+    return (
+      this.id === other.id &&
       this.description === other.description &&
       this.deprecated === other.deprecated &&
       this.source === other.source &&
       this.epsg === other.epsg &&
-      Geometry.isAlmostEqualOptional(this.equatorialRadius, other.equatorialRadius, Geometry.smallMetricDistance) &&
-      Geometry.isAlmostEqualOptional(this.polarRadius, other.polarRadius, Geometry.smallMetricDistance);
+      Geometry.isAlmostEqualOptional(
+        this.equatorialRadius,
+        other.equatorialRadius,
+        Geometry.smallMetricDistance
+      ) &&
+      Geometry.isAlmostEqualOptional(
+        this.polarRadius,
+        other.polarRadius,
+        Geometry.smallMetricDistance
+      )
+    );
   }
 }
-

@@ -40,7 +40,10 @@ export interface GroupingRule extends RuleBase {
  * Grouping rule specifications.
  * @public
  */
-export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
+export declare type GroupingSpecification =
+  | ClassGroup
+  | PropertyGroup
+  | SameLabelInstanceGroup;
 
 /**
  * Available types of [[GroupingSpecification]].

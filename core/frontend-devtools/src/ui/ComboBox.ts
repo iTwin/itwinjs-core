@@ -37,8 +37,7 @@ export interface ComboBox {
 function _appendComboBoxEntry(select: HTMLSelectElement, entry: ComboBoxEntry) {
   const option = document.createElement("option");
   option.innerText = entry.name;
-  if (undefined !== entry.value)
-    option.value = entry.value.toString();
+  if (undefined !== entry.value) option.value = entry.value.toString();
   select.appendChild(option);
 }
 
@@ -61,19 +60,15 @@ export function createComboBox(props: ComboBoxProps): ComboBox {
     _appendComboBoxEntry(select, entry);
   }
 
-  if (undefined !== props.value)
-    select.value = props.value.toString();
+  if (undefined !== props.value) select.value = props.value.toString();
 
   const handler = props.handler;
-  if (undefined !== handler)
-    select.onchange = () => handler(select);
+  if (undefined !== handler) select.onchange = () => handler(select);
 
-  if (undefined !== props.tooltip)
-    div.title = props.tooltip;
+  if (undefined !== props.tooltip) div.title = props.tooltip;
 
   div.appendChild(select);
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
+  if (undefined !== props.parent) props.parent.appendChild(div);
 
   return { div, label, select };
 }

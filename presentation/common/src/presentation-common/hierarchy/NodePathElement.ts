@@ -57,8 +57,7 @@ export namespace NodePathElement {
       // eslint-disable-next-line deprecation/deprecation
       children: npe.children.map(NodePathElement.toJSON),
     };
-    if (undefined !== npe.isMarked)
-      result.isMarked = npe.isMarked;
+    if (undefined !== npe.isMarked) result.isMarked = npe.isMarked;
     if (undefined !== npe.filteringData) {
       // eslint-disable-next-line deprecation/deprecation
       result.filteringData = NodePathFilteringData.toJSON(npe.filteringData);
@@ -71,17 +70,17 @@ export namespace NodePathElement {
    * @deprecated in 3.x. Use [[NodePathElement]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function fromJSON(json: NodePathElementJSON | string): NodePathElement {
-    if (typeof json === "string")
-      return JSON.parse(json, reviver);
+  export function fromJSON(
+    json: NodePathElementJSON | string
+  ): NodePathElement {
+    if (typeof json === "string") return JSON.parse(json, reviver);
     const result: NodePathElement = {
       index: json.index,
       // eslint-disable-next-line deprecation/deprecation
       node: Node.fromJSON(json.node),
       children: listFromJSON(json.children),
     };
-    if (undefined !== json.isMarked)
-      result.isMarked = json.isMarked;
+    if (undefined !== json.isMarked) result.isMarked = json.isMarked;
     if (undefined !== json.filteringData) {
       // eslint-disable-next-line deprecation/deprecation
       result.filteringData = NodePathFilteringData.fromJSON(json.filteringData);
@@ -106,9 +105,10 @@ export namespace NodePathElement {
    * @internal
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[] {
-    if (typeof json === "string")
-      return JSON.parse(json, listReviver);
+  export function listFromJSON(
+    json: NodePathElementJSON[] | string
+  ): NodePathElement[] {
+    if (typeof json === "string") return JSON.parse(json, listReviver);
     // eslint-disable-next-line deprecation/deprecation
     return json.map((m) => fromJSON(m));
   }
@@ -151,7 +151,9 @@ export namespace NodePathFilteringData {
    * @deprecated in 3.x. Use [[NodePathFilteringData]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function toJSON(npfd: NodePathFilteringData): NodePathFilteringDataJSON {
+  export function toJSON(
+    npfd: NodePathFilteringData
+  ): NodePathFilteringDataJSON {
     return {
       occurances: npfd.matchesCount,
       childrenOccurances: npfd.childMatchesCount,
@@ -163,7 +165,9 @@ export namespace NodePathFilteringData {
    * @deprecated in 3.x. Use [[NodePathFilteringData]].
    */
   // eslint-disable-next-line deprecation/deprecation
-  export function fromJSON(json: NodePathFilteringDataJSON): NodePathFilteringData {
+  export function fromJSON(
+    json: NodePathFilteringDataJSON
+  ): NodePathFilteringData {
     return {
       matchesCount: json.occurances,
       childMatchesCount: json.childrenOccurances,

@@ -4,7 +4,7 @@ A [Tool]($frontend) is a JavaScript class that performs an action on behalf of a
 
 ## Immediate Tools
 
-Immediate tools execute their assigned tasks *immediately* without further input. They do not become the *active* tool, and are implemented as direct subclasses of [Tool]($frontend).
+Immediate tools execute their assigned tasks _immediately_ without further input. They do not become the _active_ tool, and are implemented as direct subclasses of [Tool]($frontend).
 
 It is important to make user actions that result in changes to your application state happen through Tool invocation, which can be recorded for testing, or for playback through macros; immediate tools are very handy for this.
 
@@ -22,7 +22,7 @@ There are three interactive Tool classifications, each of which is implemented b
 - [PrimitiveTool]($frontend) is used for graphical interactions with an iModel.
   - When invoked, they become the active tool, reacting to user input such as data points, mouse movements, touch, keystrokes, and resets.
   - Primitive tools are the most common type of tool implemented by iTwin.js applications. Refer [here](./PrimitiveTools) for guidelines on writing Primitive tools.
-  - The frontend package includes a [Select Tool](#selection-tool) to fill the role of a *default* Primitive tool.
+  - The frontend package includes a [Select Tool](#selection-tool) to fill the role of a _default_ Primitive tool.
 
 iTwin.js provides some specializations of [InteractiveTool]($frontend) to make it easier to implement certain types of interactions, ex. creating new elements vs. modifying existing elements.
 
@@ -37,11 +37,11 @@ The [ToolAdmin]($frontend) class supervises the collection of low-level input fr
 Routing of the interpreted, high-level events is as follows:
 
 - If there is an active tool, the events are directed to it. The active tool can either handle a particular event or ignore it.
-- If the active tool does not handle a particular event, it *may* be directed to the [idle tool](#idle-tool).
+- If the active tool does not handle a particular event, it _may_ be directed to the [idle tool](#idle-tool).
 
 As mentioned above a View tool or Input Collector can temporarily interrupt a Primitive tool. The ToolAdmin handles that sequence transparently such that the Primitive tool does not have to be aware of the interruption.
 
-A Primitive tool ends when another Primitive tool is run. The ToolAdmin establishes [Select Tool](#selection-tool) as the *default* Primitive tool. When a default tool is provided, it becomes the active tool when the iTwin.js application starts or a Primitive tool wishes to exit. Having a default tool is optional, an application can instead choose to have the [idle tool](#idle-tool) handle input that would normally only be directed to the active tool, like data points and resets.
+A Primitive tool ends when another Primitive tool is run. The ToolAdmin establishes [Select Tool](#selection-tool) as the _default_ Primitive tool. When a default tool is provided, it becomes the active tool when the iTwin.js application starts or a Primitive tool wishes to exit. Having a default tool is optional, an application can instead choose to have the [idle tool](#idle-tool) handle input that would normally only be directed to the active tool, like data points and resets.
 
 ## Idle Tool
 

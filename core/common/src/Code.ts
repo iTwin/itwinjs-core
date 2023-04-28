@@ -42,8 +42,12 @@ export class Code implements CodeProps {
   /** The [CodeValue]($docs/bis/guide/fundamentals/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
-  public get value() { return this._value ?? ""; }
-  public set value(val: string) { this._value = val?.trim(); }
+  public get value() {
+    return this._value ?? "";
+  }
+  public set value(val: string) {
+    this._value = val?.trim();
+  }
   private _value?: string;
 
   constructor(codeProps: CodeProps) {
@@ -58,24 +62,36 @@ export class Code implements CodeProps {
     return new Code({ spec: id, scope: id });
   }
 
-  public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
-  public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
-  public equals(other: Code): boolean { return Code.equalCodes(this, other); }
+  public static fromJSON(json?: any): Code {
+    return json ? new Code(json) : Code.createEmpty();
+  }
+  public toJSON(): CodeProps {
+    return { spec: this.spec, scope: this.scope, value: this.value };
+  }
+  public equals(other: Code): boolean {
+    return Code.equalCodes(this, other);
+  }
   /** @internal */
   public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
-    return c1.spec === c2.spec && c1.scope === c2.scope && c1.value === c2.value;
+    return (
+      c1.spec === c2.spec && c1.scope === c2.scope && c1.value === c2.value
+    );
   }
   /** Determine whether this Code is valid. */
-  public static isValid(c: CodeProps): boolean { return Id64.isValidId64(c.spec); }
+  public static isValid(c: CodeProps): boolean {
+    return Id64.isValidId64(c.spec);
+  }
   /** Determine if this code is valid but not otherwise meaningful (and therefore not necessarily unique) */
-  public static isEmpty(c: CodeProps): boolean { return this.isValid(c) && (c.value === undefined || c.value === ""); }
+  public static isEmpty(c: CodeProps): boolean {
+    return this.isValid(c) && (c.value === undefined || c.value === "");
+  }
 }
 
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  * @public
-* @extensions
-* @see [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec)
+ * @extensions
+ * @see [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec)
  */
 export enum BisCodeSpec {
   /** The name of the standard [[CodeSpec]] used when creating *empty* codes.
@@ -275,21 +291,34 @@ export class CodeSpec {
    */
   public properties: CodeSpecProperties;
 
-  private constructor(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties) {
+  private constructor(
+    iModel: IModel,
+    id: Id64String,
+    name: string,
+    properties?: CodeSpecProperties
+  ) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
-    this.properties = properties ?? { scopeSpec: { type: CodeScopeSpec.Type.Repository } };
+    this.properties = properties ?? {
+      scopeSpec: { type: CodeScopeSpec.Type.Repository },
+    };
   }
 
   /** Create a new CodeSpec from the specified parameters
    * > Note: CodeSpec.id will not be valid until inserted
    * @see [CodeSpecs.insert]($backend)
    */
-  public static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec {
+  public static create(
+    iModel: IModel,
+    name: string,
+    scopeType: CodeScopeSpec.Type,
+    scopeReq?: CodeScopeSpec.ScopeRequirement
+  ): CodeSpec {
     const props: CodeSpecProperties = { scopeSpec: { type: scopeType } };
     if (scopeReq)
-      props.scopeSpec.fGuidRequired = scopeReq === CodeScopeSpec.ScopeRequirement.FederationGuid;
+      props.scopeSpec.fGuidRequired =
+        scopeReq === CodeScopeSpec.ScopeRequirement.FederationGuid;
 
     return new CodeSpec(iModel, Id64.invalid, name, props);
   }
@@ -297,31 +326,43 @@ export class CodeSpec {
   /** Create a new CodeSpec directly from JSON. Used internally by the CodeSpecs.load function.
    * @internal
    */
-  public static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec {
+  public static createFromJson(
+    iModel: IModel,
+    id: Id64String,
+    name: string,
+    properties?: CodeSpecProperties
+  ): CodeSpec {
     return new CodeSpec(iModel, id, name, properties);
   }
 
   /** Will be true if the id of this CodeSpec is valid. */
-  public get isValid(): boolean { return Id64.isValid(this.id); }
+  public get isValid(): boolean {
+    return Id64.isValid(this.id);
+  }
   public get isExternal(): boolean {
     return true === this.properties.scopeSpec.fGuidRequired;
   }
 
   /** The scope type of this CodeSpec. */
-  public get scopeType(): CodeScopeSpec.Type { return this.properties.scopeSpec.type; }
-  public set scopeType(scopeType: CodeScopeSpec.Type) { this.properties.scopeSpec.type = scopeType; }
+  public get scopeType(): CodeScopeSpec.Type {
+    return this.properties.scopeSpec.type;
+  }
+  public set scopeType(scopeType: CodeScopeSpec.Type) {
+    this.properties.scopeSpec.type = scopeType;
+  }
 
   /** Will be `CodeScopeSpec.ScopeRequirement.FederationGuid` if the scoping element is required to have a FederationGuid or
    * CodeScopeSpec.ScopeRequirement.ElementId` otherwise (the default).
    */
   public get scopeReq(): CodeScopeSpec.ScopeRequirement {
-    return this.properties.scopeSpec.fGuidRequired ? CodeScopeSpec.ScopeRequirement.FederationGuid : CodeScopeSpec.ScopeRequirement.ElementId;
+    return this.properties.scopeSpec.fGuidRequired
+      ? CodeScopeSpec.ScopeRequirement.FederationGuid
+      : CodeScopeSpec.ScopeRequirement.ElementId;
   }
   public set scopeReq(req: CodeScopeSpec.ScopeRequirement) {
     if (CodeScopeSpec.ScopeRequirement.FederationGuid === req)
       this.properties.scopeSpec.fGuidRequired = true;
-    else
-      this.properties.scopeSpec.fGuidRequired = undefined;
+    else this.properties.scopeSpec.fGuidRequired = undefined;
   }
 
   /** Will be true if the codes associated with this CodeSpec are managed along with the iModel and false if the codes are managed by an external service.
@@ -331,8 +372,7 @@ export class CodeSpec {
     return this.properties.spec?.isManagedWithDgnDb ?? true;
   }
   public set isManagedWithIModel(value: boolean) {
-    if (!this.properties.spec)
-      this.properties.spec = {};
+    if (!this.properties.spec) this.properties.spec = {};
 
     this.properties.spec.isManagedWithDgnDb = value;
   }

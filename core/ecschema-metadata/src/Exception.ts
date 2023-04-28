@@ -10,7 +10,7 @@ import { BentleyError } from "@itwin/core-bentley";
 
 /** @beta */
 export enum ECObjectsStatus {
-  ECOBJECTS_ERROR_BASE = 0x88EC,
+  ECOBJECTS_ERROR_BASE = 0x88ec,
   Success = 0,
   DuplicateItem = ECOBJECTS_ERROR_BASE + 1,
   DuplicateProperty = ECOBJECTS_ERROR_BASE + 2,
@@ -43,34 +43,59 @@ export enum ECObjectsStatus {
 
 /** @internal */
 export class ECObjectsError extends BentleyError {
-  public constructor(public override readonly errorNumber: number, message?: string) {
+  public constructor(
+    public override readonly errorNumber: number,
+    message?: string
+  ) {
     super(errorNumber, message);
   }
 
   public toDebugString(): string {
     switch (this.errorNumber) {
-      case ECObjectsStatus.DuplicateItem: return this._appendMessage("ECObjectsStatus.DuplicateItem");
-      case ECObjectsStatus.DuplicateProperty: return this._appendMessage("ECObjectsStatus.DuplicateProperty");
-      case ECObjectsStatus.DuplicateSchema: return this._appendMessage("ECObjectsStatus.DuplicateSchema");
-      case ECObjectsStatus.ImmutableSchema: return this._appendMessage("ECObjectsStatus.ImmutableSchema");
-      case ECObjectsStatus.InvalidContainerType: return this._appendMessage("ECObjectsStatus.InvalidContainerType");
-      case ECObjectsStatus.InvalidECJson: return this._appendMessage("ECObjectsStatus.InvalidECJson");
-      case ECObjectsStatus.InvalidECName: return this._appendMessage("ECObjectsStatus.InvalidECName");
-      case ECObjectsStatus.InvalidECVersion: return this._appendMessage("ECObjectsStatus.InvalidECVersion");
-      case ECObjectsStatus.InvalidEnumValue: return this._appendMessage("ECObjectsStatus.InvalidEnumValue");
-      case ECObjectsStatus.InvalidModifier: return this._appendMessage("ECObjectsStatus.InvalidModifier");
-      case ECObjectsStatus.InvalidMultiplicity: return this._appendMessage("ECObjectsStatus.InvalidMultiplicity");
-      case ECObjectsStatus.InvalidPrimitiveType: return this._appendMessage("ECObjectsStatus.InvalidPrimitiveType");
-      case ECObjectsStatus.InvalidSchemaItemType: return this._appendMessage("ECObjectsStatus.InvalidSchemaItemType");
-      case ECObjectsStatus.InvalidStrength: return this._appendMessage("ECObjectsStatus.InvalidStrength");
-      case ECObjectsStatus.InvalidStrengthDirection: return this._appendMessage("ECObjectsStatus.InvalidStrengthDirection");
-      case ECObjectsStatus.InvalidRelationshipEnd: return this._appendMessage("ECObjectsStatus.InvalidRelationshipEnd");
-      case ECObjectsStatus.InvalidType: return this._appendMessage("ECObjectsStatus.InvalidType");
-      case ECObjectsStatus.MissingSchemaUrl: return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
-      case ECObjectsStatus.UnableToLocateSchema: return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
-      case ECObjectsStatus.ClassNotFound: return this._appendMessage("ECObjectsStatus.ClassNotFound");
-      case ECObjectsStatus.SchemaContextUndefined: return this._appendMessage("ECObjectsStatus.SchemaContextUndefined");
-      case ECObjectsStatus.DifferentSchemaContexts: return this._appendMessage("ECObjectsStatus.DifferentSchemaContexts");
+      case ECObjectsStatus.DuplicateItem:
+        return this._appendMessage("ECObjectsStatus.DuplicateItem");
+      case ECObjectsStatus.DuplicateProperty:
+        return this._appendMessage("ECObjectsStatus.DuplicateProperty");
+      case ECObjectsStatus.DuplicateSchema:
+        return this._appendMessage("ECObjectsStatus.DuplicateSchema");
+      case ECObjectsStatus.ImmutableSchema:
+        return this._appendMessage("ECObjectsStatus.ImmutableSchema");
+      case ECObjectsStatus.InvalidContainerType:
+        return this._appendMessage("ECObjectsStatus.InvalidContainerType");
+      case ECObjectsStatus.InvalidECJson:
+        return this._appendMessage("ECObjectsStatus.InvalidECJson");
+      case ECObjectsStatus.InvalidECName:
+        return this._appendMessage("ECObjectsStatus.InvalidECName");
+      case ECObjectsStatus.InvalidECVersion:
+        return this._appendMessage("ECObjectsStatus.InvalidECVersion");
+      case ECObjectsStatus.InvalidEnumValue:
+        return this._appendMessage("ECObjectsStatus.InvalidEnumValue");
+      case ECObjectsStatus.InvalidModifier:
+        return this._appendMessage("ECObjectsStatus.InvalidModifier");
+      case ECObjectsStatus.InvalidMultiplicity:
+        return this._appendMessage("ECObjectsStatus.InvalidMultiplicity");
+      case ECObjectsStatus.InvalidPrimitiveType:
+        return this._appendMessage("ECObjectsStatus.InvalidPrimitiveType");
+      case ECObjectsStatus.InvalidSchemaItemType:
+        return this._appendMessage("ECObjectsStatus.InvalidSchemaItemType");
+      case ECObjectsStatus.InvalidStrength:
+        return this._appendMessage("ECObjectsStatus.InvalidStrength");
+      case ECObjectsStatus.InvalidStrengthDirection:
+        return this._appendMessage("ECObjectsStatus.InvalidStrengthDirection");
+      case ECObjectsStatus.InvalidRelationshipEnd:
+        return this._appendMessage("ECObjectsStatus.InvalidRelationshipEnd");
+      case ECObjectsStatus.InvalidType:
+        return this._appendMessage("ECObjectsStatus.InvalidType");
+      case ECObjectsStatus.MissingSchemaUrl:
+        return this._appendMessage("ECObjectsStatus.MissingSchemaUrl");
+      case ECObjectsStatus.UnableToLocateSchema:
+        return this._appendMessage("ECObjectsStatus.UnableToLocateSchema");
+      case ECObjectsStatus.ClassNotFound:
+        return this._appendMessage("ECObjectsStatus.ClassNotFound");
+      case ECObjectsStatus.SchemaContextUndefined:
+        return this._appendMessage("ECObjectsStatus.SchemaContextUndefined");
+      case ECObjectsStatus.DifferentSchemaContexts:
+        return this._appendMessage("ECObjectsStatus.DifferentSchemaContexts");
       default:
         /* istanbul ignore next */
         return this._appendMessage(`Error ${this.errorNumber.toString()}`);

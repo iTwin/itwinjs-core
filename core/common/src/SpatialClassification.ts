@@ -66,15 +66,25 @@ export class SpatialClassifierFlags {
   public readonly isVolumeClassifier: boolean;
 
   /** Construct new flags. */
-  public constructor(inside = SpatialClassifierInsideDisplay.ElementColor, outside = SpatialClassifierOutsideDisplay.Dimmed, isVolumeClassifier = false) {
+  public constructor(
+    inside = SpatialClassifierInsideDisplay.ElementColor,
+    outside = SpatialClassifierOutsideDisplay.Dimmed,
+    isVolumeClassifier = false
+  ) {
     this.inside = insideDisplay(inside);
     this.outside = outsideDisplay(outside);
     this.isVolumeClassifier = isVolumeClassifier;
   }
 
   /** Construct from JSON representation. */
-  public static fromJSON(props: SpatialClassifierFlagsProps): SpatialClassifierFlags {
-    return new SpatialClassifierFlags(props.inside, props.outside, true === props.isVolumeClassifier);
+  public static fromJSON(
+    props: SpatialClassifierFlagsProps
+  ): SpatialClassifierFlags {
+    return new SpatialClassifierFlags(
+      props.inside,
+      props.outside,
+      true === props.isVolumeClassifier
+    );
   }
 
   /** Convert to JSON representation. */
@@ -84,31 +94,41 @@ export class SpatialClassifierFlags {
       outside: this.outside,
     };
 
-    if (this.isVolumeClassifier)
-      props.isVolumeClassifier = true;
+    if (this.isVolumeClassifier) props.isVolumeClassifier = true;
 
     return props;
   }
 
   /** Create flags indentical to these ones except for any properties explicitly specified by `changedProps`. */
-  public clone(changedProps?: Partial<SpatialClassifierFlagsProps>): SpatialClassifierFlags {
-    if (!changedProps)
-      return this;
+  public clone(
+    changedProps?: Partial<SpatialClassifierFlagsProps>
+  ): SpatialClassifierFlags {
+    if (!changedProps) return this;
 
-    return SpatialClassifierFlags.fromJSON({ ...this.toJSON(), ...changedProps });
+    return SpatialClassifierFlags.fromJSON({
+      ...this.toJSON(),
+      ...changedProps,
+    });
   }
 
   /** Return true if these flags are equivalent to `other`. */
   public equals(other: SpatialClassifierFlags): boolean {
-    if (other === this)
-      return true;
+    if (other === this) return true;
 
-    return other.inside === this.inside && other.outside === this.outside && other.isVolumeClassifier === this.isVolumeClassifier;
+    return (
+      other.inside === this.inside &&
+      other.outside === this.outside &&
+      other.isVolumeClassifier === this.isVolumeClassifier
+    );
   }
 
   /** Return true if these flags are equivalent to `props`. */
   public equalsProps(props: SpatialClassifierFlagsProps): boolean {
-    return this.inside === props.inside && this.outside === props.outside && this.isVolumeClassifier === (true === props.isVolumeClassifier);
+    return (
+      this.inside === props.inside &&
+      this.outside === props.outside &&
+      this.isVolumeClassifier === (true === props.isVolumeClassifier)
+    );
   }
 }
 
@@ -162,7 +182,12 @@ export class SpatialClassifier {
   public readonly name: string;
 
   /** Construct a new classifier. */
-  public constructor(modelId: Id64String, name: string, flags = new SpatialClassifierFlags(), expand = 0) {
+  public constructor(
+    modelId: Id64String,
+    name: string,
+    flags = new SpatialClassifierFlags(),
+    expand = 0
+  ) {
     this.modelId = modelId;
     this.expand = expand;
     this.flags = flags;
@@ -171,7 +196,12 @@ export class SpatialClassifier {
 
   /** Construct from JSON representation. */
   public static fromJSON(props: SpatialClassifierProps): SpatialClassifier {
-    return new SpatialClassifier(props.modelId, props.name, SpatialClassifierFlags.fromJSON(props.flags), props.expand);
+    return new SpatialClassifier(
+      props.modelId,
+      props.name,
+      SpatialClassifierFlags.fromJSON(props.flags),
+      props.expand
+    );
   }
 
   /** Convert to JSON representation.
@@ -190,31 +220,46 @@ export class SpatialClassifier {
   /** Construct from Model Map Layer.
    * @beta
    */
-  public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
-    const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
+  public static fromModelMapLayer(
+    mapLayer: ModelMapLayerSettings
+  ): SpatialClassifier {
+    const flags = SpatialClassifierFlags.fromJSON({
+      inside: SpatialClassifierInsideDisplay.Off,
+      outside: SpatialClassifierOutsideDisplay.Off,
+    });
 
     return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
   }
 
   /** Create a classifier identical to this one except for any properties explicitly specified by `changedProps`. */
-  public clone(changedProps?: Partial<SpatialClassifierProps>): SpatialClassifier {
-    if (!changedProps)
-      return this;
+  public clone(
+    changedProps?: Partial<SpatialClassifierProps>
+  ): SpatialClassifier {
+    if (!changedProps) return this;
 
     return SpatialClassifier.fromJSON({ ...this.toJSON(), ...changedProps });
   }
 
   /** Return true if this classifier is equivalent to `other`. */
   public equals(other: SpatialClassifier): boolean {
-    if (other === this)
-      return true;
+    if (other === this) return true;
 
-    return this.modelId === other.modelId && this.expand === other.expand && this.name === other.name && this.flags.equals(other.flags);
+    return (
+      this.modelId === other.modelId &&
+      this.expand === other.expand &&
+      this.name === other.name &&
+      this.flags.equals(other.flags)
+    );
   }
 
   /** Return true if this classifier is equivalent to `props`. */
   public equalsProps(props: SpatialClassifierProps): boolean {
-    return this.modelId === props.modelId && this.expand === props.expand && this.name === props.name && this.flags.equalsProps(props.flags);
+    return (
+      this.modelId === props.modelId &&
+      this.expand === props.expand &&
+      this.name === props.name &&
+      this.flags.equalsProps(props.flags)
+    );
   }
 }
 
@@ -251,17 +296,14 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
     this._json = container;
 
     const json = this._array;
-    if (!json)
-      return;
+    if (!json) return;
 
     for (const props of json) {
       const classifier = SpatialClassifier.fromJSON(props);
       this._classifiers.push(classifier);
       if (props.isActive) {
-        if (!this._active)
-          this._active = classifier;
-        else
-          props.isActive = false;
+        if (!this._active) this._active = classifier;
+        else props.isActive = false;
       }
     }
   }
@@ -281,30 +323,27 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
    * @param The classifier to set as active, or `undefined` to clear the active classifier.
    * @returns the active classifier.
    */
-  public setActive(active: SpatialClassifier | undefined): SpatialClassifier | undefined {
+  public setActive(
+    active: SpatialClassifier | undefined
+  ): SpatialClassifier | undefined {
     const array = this._array;
-    if (!array)
-      return this.active;
+    if (!array) return this.active;
 
     if (active) {
       active = this.findEquivalent(active);
-      if (!active)
-        return this.active;
+      if (!active) return this.active;
     }
 
-    if (active === this.active)
-      return this.active;
+    if (active === this.active) return this.active;
 
     let propsIndex = -1;
     if (active) {
       propsIndex = array.findIndex((x) => active!.equalsProps(x));
-      if (-1 === propsIndex)
-        return this.active;
+      if (-1 === propsIndex) return this.active;
     }
 
     this._active = active;
-    for (let i = 0; i < array.length; i++)
-      array[i].isActive = (i === propsIndex);
+    for (let i = 0; i < array.length; i++) array[i].isActive = i === propsIndex;
 
     return this.active;
   }
@@ -320,12 +359,16 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
   }
 
   /** Returns the first classifier that satisfies `criterion`, or `undefined` if no classifier satisfies it. */
-  public find(criterion: (classifier: SpatialClassifier) => boolean): SpatialClassifier | undefined {
+  public find(
+    criterion: (classifier: SpatialClassifier) => boolean
+  ): SpatialClassifier | undefined {
     return this._classifiers.find(criterion);
   }
 
   /** Find the first classifier that is equivalent to the supplied classifier, or `undefined` if no equivalent classifier exists in this set. */
-  public findEquivalent(classifier: SpatialClassifier): SpatialClassifier | undefined {
+  public findEquivalent(
+    classifier: SpatialClassifier
+  ): SpatialClassifier | undefined {
     return this.find((x) => x.equals(classifier));
   }
 
@@ -340,12 +383,10 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
    */
   public add(classifier: SpatialClassifier): SpatialClassifier {
     const existing = this.findEquivalent(classifier);
-    if (existing)
-      return existing;
+    if (existing) return existing;
 
     let array = this._array;
-    if (!array)
-      array = this._json.classifiers = [];
+    if (!array) array = this._json.classifiers = [];
 
     this._classifiers.push(classifier);
     array.push(classifier.toJSON());
@@ -358,25 +399,27 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
    * @returns true if a classifier equivalent to `toReplace` existed in the set and was replaced by `replacement`.
    * @note If `toReplace` was the [[active]] classifier, `replacement` will become active.
    */
-  public replace(toReplace: SpatialClassifier, replacement: SpatialClassifier): boolean {
+  public replace(
+    toReplace: SpatialClassifier,
+    replacement: SpatialClassifier
+  ): boolean {
     const list = this._array;
-    if (!list)
-      return false;
+    if (!list) return false;
 
-    const classifierIndex = this._classifiers.findIndex((x) => x.equals(toReplace));
-    if (-1 === classifierIndex)
-      return false;
+    const classifierIndex = this._classifiers.findIndex((x) =>
+      x.equals(toReplace)
+    );
+    if (-1 === classifierIndex) return false;
 
     const propsIndex = list.findIndex((x) => toReplace.equalsProps(x));
     assert(propsIndex === classifierIndex);
-    if (-1 === propsIndex)
-      return false;
+    if (-1 === propsIndex) return false;
 
     toReplace = this._classifiers[classifierIndex];
     const wasActive = this.active === toReplace;
 
     this._classifiers[classifierIndex] = replacement;
-    const props = list[propsIndex] = replacement.toJSON();
+    const props = (list[propsIndex] = replacement.toJSON());
 
     if (wasActive) {
       props.isActive = true;
@@ -392,26 +435,23 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
    */
   public delete(classifier: SpatialClassifier): SpatialClassifier | undefined {
     const list = this._array;
-    if (!list)
-      return undefined;
+    if (!list) return undefined;
 
-    const classifierIndex = this._classifiers.findIndex((x) => x.equals(classifier));
-    if (-1 === classifierIndex)
-      return undefined;
+    const classifierIndex = this._classifiers.findIndex((x) =>
+      x.equals(classifier)
+    );
+    if (-1 === classifierIndex) return undefined;
 
     classifier = this._classifiers[classifierIndex];
     const propsIndex = list.findIndex((x) => classifier.equalsProps(x));
     assert(propsIndex === classifierIndex);
-    if (-1 === propsIndex)
-      return undefined;
+    if (-1 === propsIndex) return undefined;
 
     list.splice(propsIndex, 1);
     this._classifiers.splice(classifierIndex, 1);
-    if (list.length === 0)
-      this._json.classifiers = undefined;
+    if (list.length === 0) this._json.classifiers = undefined;
 
-    if (classifier === this.active)
-      this._active = undefined;
+    if (classifier === this.active) this._active = undefined;
 
     return classifier;
   }
@@ -424,7 +464,9 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
   }
 
   private get _array(): SpatialClassifierProps[] | undefined {
-    return Array.isArray(this._json.classifiers) ? this._json.classifiers : undefined;
+    return Array.isArray(this._json.classifiers)
+      ? this._json.classifiers
+      : undefined;
   }
 }
 

@@ -7,7 +7,13 @@ import { expect } from "chai";
 import { ViewRect } from "../ViewRect";
 import { getCenteredViewRect } from "../ImageUtil";
 
-function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number): void {
+function expectRect(
+  rect: ViewRect,
+  l: number,
+  t: number,
+  r: number,
+  b: number
+): void {
   expect(rect.left).to.equal(l);
   expect(rect.right).to.equal(r);
   expect(rect.top).to.equal(t);
@@ -16,7 +22,7 @@ function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number):
 
 describe("ViewRect", () => {
   it("rounds negative inputs up to zero", () => {
-    expectRect(new ViewRect(-0.001, -50,  1, 2), 0, 0, 1, 2);
+    expectRect(new ViewRect(-0.001, -50, 1, 2), 0, 0, 1, 2);
   });
 
   it("truncates inputs", () => {
@@ -25,7 +31,13 @@ describe("ViewRect", () => {
 });
 
 describe("getCenteredViewRect", () => {
-  function center(l: number, t: number, r: number, b: number, aspect?: number): ViewRect {
+  function center(
+    l: number,
+    t: number,
+    r: number,
+    b: number,
+    aspect?: number
+  ): ViewRect {
     return getCenteredViewRect(new ViewRect(l, t, r, b), aspect);
   }
 

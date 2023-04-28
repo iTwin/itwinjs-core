@@ -7,16 +7,41 @@
  */
 
 import {
-  assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
+  assert,
+  BeTimePoint,
+  ByteStream,
+  compareStrings,
+  DbOpcode,
+  Id64,
+  Id64Array,
+  Id64String,
+  partitionArray,
+  SortedArray,
 } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+  BatchType,
+  ElementGeometryChange,
+  ElementGraphicsRequestProps,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
+  FeatureAppearanceSource,
+  GeometryClass,
+  TileFormat,
 } from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { IModelApp } from "../IModelApp";
 import {
-  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
+  ImdlReader,
+  IModelTileTree,
+  RootIModelTile,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
@@ -29,12 +54,17 @@ export abstract class DynamicIModelTile extends Tile {
     super(params, tree);
   }
 
-  public static create(root: RootIModelTile, elements: Iterable<ElementGeometryChange>): DynamicIModelTile {
+  public static create(
+    root: RootIModelTile,
+    elements: Iterable<ElementGeometryChange>
+  ): DynamicIModelTile {
     return new RootTile(root, elements);
   }
 
   /** Updates the tiles when elements are modified during the editing scope. */
-  public abstract handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void;
+  public abstract handleGeometryChanges(
+    changes: Iterable<ElementGeometryChange>
+  ): void;
 
   /** Overrides symbology of the *static* [[IModelTile]]s to hide elements that have been deleted or modified. */
   public abstract get appearanceProvider(): FeatureAppearanceProvider;
@@ -66,7 +96,9 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   public readonly transformToTree: Transform;
   private readonly _elements: ElementTiles;
 
-  private get _imodelRoot() { return this.parent as RootIModelTile; }
+  private get _imodelRoot() {
+    return this.parent as RootIModelTile;
+  }
 
   private get _elementChildren(): ElementTile[] {
     assert(undefined !== this.children);
@@ -74,7 +106,10 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return this._elements.array;
   }
 
-  public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>) {
+  public constructor(
+    parent: RootIModelTile,
+    elements: Iterable<ElementGeometryChange>
+  ) {
     const params: TileParams = {
       parent,
       isLeaf: false,
@@ -107,11 +142,31 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return this;
   }
 
-  public getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
-    if (this._hiddenElements.has(elemLo, elemHi))
-      return undefined;
+  public getFeatureAppearance(
+    source: FeatureAppearanceSource,
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number
+  ): FeatureAppearance | undefined {
+    if (this._hiddenElements.has(elemLo, elemHi)) return undefined;
 
-    return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+    return source.getAppearance(
+      elemLo,
+      elemHi,
+      subcatLo,
+      subcatHi,
+      geomClass,
+      modelLo,
+      modelHi,
+      type,
+      animationNodeId
+    );
   }
 
   public handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void {
@@ -121,30 +176,37 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       if (change.type !== DbOpcode.Insert)
         this._hiddenElements.addId(change.id);
 
-      let tile = this._elements.findEquivalent((t: ElementTile) => compareStrings(t.contentId, change.id));
+      let tile = this._elements.findEquivalent((t: ElementTile) =>
+        compareStrings(t.contentId, change.id)
+      );
       if (change.type === DbOpcode.Delete) {
         if (tile) {
           tile.dispose();
           this._elements.remove(tile);
         }
       } else {
-        const range = change.range.isNull ? change.range.clone() : this.transformToTree.multiplyRange(change.range);
-        if (tile)
-          tile.update(range);
+        const range = change.range.isNull
+          ? change.range.clone()
+          : this.transformToTree.multiplyRange(change.range);
+        if (tile) tile.update(range);
         else
-          this._elements.insert(tile = new ElementTile(this, change.id, range));
+          this._elements.insert(
+            (tile = new ElementTile(this, change.id, range))
+          );
       }
     }
 
     // Recompute range.
     this.range.setNull();
-    for (const element of this._elements)
-      this.range.extendRange(element.range);
+    for (const element of this._elements) this.range.extendRange(element.range);
 
     this._imodelRoot.updateDynamicRange(this);
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (errpr: Error) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void,
+    _reject: (errpr: Error) => void
+  ): void {
     // This is invoked from constructor. We will add a child per element later - for now just mark the children as having been loaded.
     resolve(this._elements.array);
   }
@@ -158,7 +220,11 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return undefined;
   }
 
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
+  public async readContent(
+    _data: TileRequest.ResponseData,
+    _system: RenderSystem,
+    _isCanceled: () => boolean
+  ): Promise<TileContent> {
     throw new Error("Root dynamic tile has no content");
   }
 
@@ -169,8 +235,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
 
   public pruneChildren(olderThan: BeTimePoint): void {
     // Never discard ElementTiles - do discard not-recently-used graphics.
-    for (const child of this._elementChildren)
-      child.pruneChildren(olderThan);
+    for (const child of this._elementChildren) child.pruneChildren(olderThan);
   }
 }
 
@@ -180,19 +245,25 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
  */
 class ElementTile extends Tile {
   public constructor(parent: RootTile, elementId: Id64String, range: Range3d) {
-    super({
-      parent,
-      isLeaf: false,
-      contentId: elementId,
-      range,
-      maximumSize: parent.maximumSize,
-    }, parent.tree);
+    super(
+      {
+        parent,
+        isLeaf: false,
+        contentId: elementId,
+        range,
+        maximumSize: parent.maximumSize,
+      },
+      parent.tree
+    );
 
     this.loadChildren();
     this.setIsReady();
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void,
+    _reject: (error: Error) => void
+  ): void {
     // Invoked from constructor. We'll add child tiles later as needed.
     resolve([]);
   }
@@ -201,12 +272,18 @@ class ElementTile extends Tile {
     throw new Error("ElementTile has no content");
   }
 
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public async requestContent(
+    _isCanceled: () => boolean
+  ): Promise<TileRequest.Response> {
     assert(false, "ElementTile has no content");
     return undefined;
   }
 
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
+  public async readContent(
+    _data: TileRequest.ResponseData,
+    _system: RenderSystem,
+    _isCanceled: () => boolean
+  ): Promise<TileContent> {
     throw new Error("ElementTile has no content");
   }
 
@@ -214,13 +291,15 @@ class ElementTile extends Tile {
     const children = this.children as GraphicsTile[];
     assert(undefined !== children);
 
-    const partitionIndex = partitionArray(children, (child) => !child.usageMarker.isExpired(olderThan));
+    const partitionIndex = partitionArray(
+      children,
+      (child) => !child.usageMarker.isExpired(olderThan)
+    );
 
     // Remove expired children.
     if (partitionIndex < children.length) {
       const expired = children.splice(partitionIndex);
-      for (const child of expired)
-        child.dispose();
+      for (const child of expired) child.dispose();
     }
 
     // Restore ordering.
@@ -229,8 +308,7 @@ class ElementTile extends Tile {
 
   public selectTiles(selected: Tile[], args: TileDrawArgs): void {
     assert(undefined !== this.children);
-    if (this.isRegionCulled(args))
-      return;
+    if (this.isRegionCulled(args)) return;
 
     args.markUsed(this);
 
@@ -254,22 +332,31 @@ class ElementTile extends Tile {
       const tol = child.toleranceLog10;
       if (tol > toleranceLog10) {
         assert(undefined === exactMatch);
-        if (child.hasGraphics)
-          closestMatch = child;
+        if (child.hasGraphics) closestMatch = child;
       } else if (tol === toleranceLog10) {
         exactMatch = child;
       } else if (tol < toleranceLog10) {
         if (!exactMatch)
-          children.splice(i++, 0, exactMatch = new GraphicsTile(this, toleranceLog10));
+          children.splice(
+            i++,
+            0,
+            (exactMatch = new GraphicsTile(this, toleranceLog10))
+          );
 
-        if (child.hasGraphics && (!closestMatch || closestMatch.toleranceLog10 > toleranceLog10))
+        if (
+          child.hasGraphics &&
+          (!closestMatch || closestMatch.toleranceLog10 > toleranceLog10)
+        )
           closestMatch = child;
       }
     }
 
     if (!exactMatch) {
-      assert(children.length === 0 || children[children.length - 1].toleranceLog10 > toleranceLog10);
-      children.push(exactMatch = new GraphicsTile(this, toleranceLog10));
+      assert(
+        children.length === 0 ||
+          children[children.length - 1].toleranceLog10 > toleranceLog10
+      );
+      children.push((exactMatch = new GraphicsTile(this, toleranceLog10)));
     }
 
     if (!exactMatch.isReady) {
@@ -289,8 +376,7 @@ class ElementTile extends Tile {
 
     // Discard out-dated graphics.
     assert(undefined !== this.children);
-    for (const child of this.children)
-      child.dispose();
+    for (const child of this.children) child.dispose();
 
     this.children.length = 0;
   }
@@ -299,8 +385,7 @@ class ElementTile extends Tile {
 function* makeIdSequence() {
   let current = 0;
   while (true) {
-    if (current >= Number.MAX_SAFE_INTEGER)
-      current = 0;
+    if (current >= Number.MAX_SAFE_INTEGER) current = 0;
 
     yield ++current;
   }
@@ -315,13 +400,16 @@ class GraphicsTile extends Tile {
 
   public constructor(parent: ElementTile, toleranceLog10: number) {
     assert(Math.round(toleranceLog10) === toleranceLog10);
-    super({
-      parent,
-      isLeaf: true,
-      contentId: `${parent.contentId}_${toleranceLog10}`,
-      range: parent.range,
-      maximumSize: parent.maximumSize,
-    }, parent.tree);
+    super(
+      {
+        parent,
+        isLeaf: true,
+        contentId: `${parent.contentId}_${toleranceLog10}`,
+        range: parent.range,
+        maximumSize: parent.maximumSize,
+      },
+      parent.tree
+    );
 
     this.toleranceLog10 = toleranceLog10;
     this.tolerance = 10 ** toleranceLog10;
@@ -332,7 +420,10 @@ class GraphicsTile extends Tile {
     return 0;
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void,
+    _reject: (error: Error) => void
+  ): void {
     resolve(undefined);
   }
 
@@ -340,7 +431,9 @@ class GraphicsTile extends Tile {
     return IModelApp.tileAdmin.channels.elementGraphicsRpc;
   }
 
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public async requestContent(
+    _isCanceled: () => boolean
+  ): Promise<TileRequest.Response> {
     // ###TODO tree flags (enforce display priority)
     // ###TODO classifiers, animation
 
@@ -361,7 +454,8 @@ class GraphicsTile extends Tile {
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.edgeOptions,
       edgeType: this.tree.edgeOptions && this.tree.edgeOptions.indexed ? 2 : 1,
-      smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
+      smoothPolyfaceEdges:
+        this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: true,
       sectionCut: this.tree.stringifiedSectionClip,
     };
@@ -369,9 +463,12 @@ class GraphicsTile extends Tile {
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);
   }
 
-  public async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled: () => boolean): Promise<TileContent> {
-    if (undefined === isCanceled)
-      isCanceled = () => !this.isLoading;
+  public async readContent(
+    data: TileRequest.ResponseData,
+    system: RenderSystem,
+    isCanceled: () => boolean
+  ): Promise<TileContent> {
+    if (undefined === isCanceled) isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
     const stream = ByteStream.fromUint8Array(data);
@@ -387,7 +484,13 @@ class GraphicsTile extends Tile {
     assert(tree instanceof IModelTileTree);
     const { iModel, modelId, is3d, containsTransformNodes } = tree;
     const reader = ImdlReader.create({
-      stream, iModel, modelId, is3d, system, isCanceled, containsTransformNodes,
+      stream,
+      iModel,
+      modelId,
+      is3d,
+      system,
+      isCanceled,
+      containsTransformNodes,
       type: tree.batchType,
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },

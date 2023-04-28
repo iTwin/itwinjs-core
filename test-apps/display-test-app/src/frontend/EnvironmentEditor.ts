@@ -4,9 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  CheckBox, ColorInput, createButton, createCheckBox, createColorInput, createNestedMenu, createRadioBox, createSlider, RadioBox, Slider,
+  CheckBox,
+  ColorInput,
+  createButton,
+  createCheckBox,
+  createColorInput,
+  createNestedMenu,
+  createRadioBox,
+  createSlider,
+  RadioBox,
+  Slider,
 } from "@itwin/frontend-devtools";
-import { ColorDef, Environment, RenderMode, SkyBox, SkyBoxProps, SkyGradient } from "@itwin/core-common";
+import {
+  ColorDef,
+  Environment,
+  RenderMode,
+  SkyBox,
+  SkyBoxProps,
+  SkyGradient,
+} from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { LightingEditor } from "./LightingEditor";
 import { AtmosphereEditor } from "./Atmosphere";
@@ -45,7 +61,9 @@ export class EnvironmentEditor {
         envMenu.label.style.fontWeight = expanded ? "bold" : "500";
       },
     });
-    (envMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
+    (
+      envMenu.div.firstElementChild!.lastElementChild! as HTMLElement
+    ).style.borderColor = "grey";
     const nestedMenu = envMenu.body;
     const is3d = this._vp.view.is3d();
 
@@ -53,7 +71,10 @@ export class EnvironmentEditor {
     const lightingEditor = new LightingEditor(vp, lightingDiv);
     this._updates.push((view: ViewState) => {
       lightingEditor.update(view);
-      lightingDiv.style.display = view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode ? "" : "none";
+      lightingDiv.style.display =
+        view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode
+          ? ""
+          : "none";
     });
 
     lightingDiv.appendChild(document.createElement("hr"));
@@ -81,7 +102,9 @@ export class EnvironmentEditor {
 
     this.listen();
 
-    const curEnv = this._vp.view.is3d() ? this._vp.view.getDisplayStyle3d().environment : undefined;
+    const curEnv = this._vp.view.is3d()
+      ? this._vp.view.getDisplayStyle3d().environment
+      : undefined;
     const curGrad = curEnv?.sky.gradient;
 
     const eeDiv = document.createElement("div");
@@ -122,7 +145,8 @@ export class EnvironmentEditor {
     row1.style.justifyContent = "flex-end";
 
     this._eeSkyColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ skyColor: ColorDef.create(value).toJSON() }),
+      handler: (value: string) =>
+        this.updateEnvironment({ skyColor: ColorDef.create(value).toJSON() }),
       value: !curGrad ? "#FFFFFF" : curGrad.skyColor.toHexString(),
       label: "Sky Color",
       parent: row1,
@@ -130,7 +154,10 @@ export class EnvironmentEditor {
     this._eeSkyColor.div.style.marginRight = "10px";
 
     this._eeZenithColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ zenithColor: ColorDef.create(value).toJSON() }),
+      handler: (value: string) =>
+        this.updateEnvironment({
+          zenithColor: ColorDef.create(value).toJSON(),
+        }),
       value: !curGrad ? "#FFFFFF" : curGrad.zenithColor.toHexString(),
       label: "Zenith Color",
       parent: row1,
@@ -142,7 +169,10 @@ export class EnvironmentEditor {
     row2.style.justifyContent = "flex-end";
 
     this._eeGroundColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ groundColor: ColorDef.create(value).toJSON() }),
+      handler: (value: string) =>
+        this.updateEnvironment({
+          groundColor: ColorDef.create(value).toJSON(),
+        }),
       value: !curGrad ? "#FFFFFF" : curGrad.groundColor.toHexString(),
       label: "Ground Color",
       parent: row2,
@@ -150,7 +180,8 @@ export class EnvironmentEditor {
     this._eeGroundColor.div.style.marginRight = "16px";
 
     this._eeNadirColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ nadirColor: ColorDef.create(value).toJSON() }),
+      handler: (value: string) =>
+        this.updateEnvironment({ nadirColor: ColorDef.create(value).toJSON() }),
       value: !curGrad ? "#FFFFFF" : curGrad.nadirColor.toHexString(),
       label: "Nadir Color",
       parent: row2,
@@ -165,7 +196,8 @@ export class EnvironmentEditor {
       max: "20.0",
       readout: "right",
       value: !curGrad ? "#FFFFFF" : curGrad.skyExponent.toString(),
-      handler: (slider) => this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
+      handler: (slider) =>
+        this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
     });
 
     this._eeGroundExponent = createSlider({
@@ -177,7 +209,8 @@ export class EnvironmentEditor {
       max: "20.0",
       readout: "right",
       value: !curGrad ? "#FFFFFF" : curGrad.groundExponent.toString(),
-      handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
+      handler: (slider) =>
+        this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
     });
 
     const buttonDiv = document.createElement("div");
@@ -196,10 +229,15 @@ export class EnvironmentEditor {
       value: "Export",
       inline: true,
       handler: () => {
-        const env = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky.gradient;
+        const env = (this._vp.view as ViewState3d).getDisplayStyle3d()
+          .environment.sky.gradient;
         let msg = `Zenith Color: ${env.zenithColor.toRgbString()}\nNadir Color: ${env.nadirColor.toRgbString()}`;
         if (!env.twoColor)
-          msg = msg.concat(`\nSky Color: ${env.skyColor.toRgbString()}\nGround Color: ${env.groundColor.toRgbString()}\nSky Exponent: ${env.skyExponent}\nGround Exponent: ${env.groundExponent}`);
+          msg = msg.concat(
+            `\nSky Color: ${env.skyColor.toRgbString()}\nGround Color: ${env.groundColor.toRgbString()}\nSky Exponent: ${
+              env.skyExponent
+            }\nGround Exponent: ${env.groundExponent}`
+          );
         alert(msg);
       },
     });
@@ -227,8 +265,7 @@ export class EnvironmentEditor {
   }
 
   public update(view: ViewState): void {
-    for (const update of this._updates)
-      update(view);
+    for (const update of this._updates) update(view);
   }
 
   private listen(): void {
@@ -239,7 +276,8 @@ export class EnvironmentEditor {
     }
 
     if (this._vp.view.is3d())
-      this._removeDisplayStyleListener = this._vp.view.onDisplayStyleChanged.addListener(() => this.listen());
+      this._removeDisplayStyleListener =
+        this._vp.view.onDisplayStyleChanged.addListener(() => this.listen());
   }
 
   private listenForEnvironment(): void {
@@ -249,36 +287,43 @@ export class EnvironmentEditor {
     }
 
     if (this._vp.view.is3d()) {
-      this._removeEnvironmentListener = this._vp.view.displayStyle.settings.onEnvironmentChanged.addListener((env) => {
-        this.updateEnvironmentEditorUI(env);
-      });
+      this._removeEnvironmentListener =
+        this._vp.view.displayStyle.settings.onEnvironmentChanged.addListener(
+          (env) => {
+            this.updateEnvironmentEditorUI(env);
+          }
+        );
     }
   }
 
   private updateEnvironment(newEnv: SkyBoxProps): void {
-    if (this._updatingEnvironment || !this._vp.view.is3d())
-      return;
+    if (this._updatingEnvironment || !this._vp.view.is3d()) return;
 
     // We don't want our event listeners to respond to events we ourselves produced.
     this._updatingEnvironment = true;
 
     const style = this._vp.view.displayStyle;
-    const gradient = SkyGradient.fromJSON({ ...style.environment.sky.toJSON(), ...newEnv });
-    style.environment = style.environment.clone({ sky: SkyBox.createGradient(gradient) });
+    const gradient = SkyGradient.fromJSON({
+      ...style.environment.sky.toJSON(),
+      ...newEnv,
+    });
+    style.environment = style.environment.clone({
+      sky: SkyBox.createGradient(gradient),
+    });
 
     this.sync();
     this._updatingEnvironment = false;
   }
 
   private updateEnvironmentEditorUI(env: Environment): void {
-    if (this._updatingEnvironment)
-      return;
+    if (this._updatingEnvironment) return;
 
     // Setting the values of UI controls below will trigger callbacks that call updateEnvironment().
     // We don't want to do that when we're modifying the controls ourselves.
     this._updatingEnvironment = true;
 
-    this._eeBackgroundColor.input.value = this._vp.view.backgroundColor.toHexString();
+    this._eeBackgroundColor.input.value =
+      this._vp.view.backgroundColor.toHexString();
 
     const gradient = env.sky.gradient;
 
@@ -287,33 +332,48 @@ export class EnvironmentEditor {
     this._eeSkyColor.input.value = gradient.skyColor.toHexString();
     this._eeGroundColor.input.value = gradient.groundColor.toHexString();
     this._eeNadirColor.input.value = gradient.nadirColor.toHexString();
-    this._eeSkyExponent.slider.value = this._eeSkyExponent.readout.innerText = gradient.skyExponent.toString();
-    this._eeGroundExponent.slider.value = this._eeGroundExponent.readout.innerText = gradient.groundExponent.toString();
+    this._eeSkyExponent.slider.value = this._eeSkyExponent.readout.innerText =
+      gradient.skyExponent.toString();
+    this._eeGroundExponent.slider.value =
+      this._eeGroundExponent.readout.innerText =
+        gradient.groundExponent.toString();
 
     this._updatingEnvironment = false;
   }
 
   private resetEnvironmentEditor(): void {
     const view = this._vp.view;
-    if (!view.is3d())
-      return;
+    if (!view.is3d()) return;
 
-    view.displayStyle.environment = Environment.defaults.withDisplay({ sky: true });
+    view.displayStyle.environment = Environment.defaults.withDisplay({
+      sky: true,
+    });
     this.sync();
     this.updateEnvironmentEditorUI(view.displayStyle.environment);
   }
 
-  private addEnvAttribute(parent: HTMLElement, label: string, which: "sky" | "ground", updateHandler?: (enabled: boolean) => void): void {
-    const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const view3d = this._vp.view as ViewState3d;
-      const style = view3d.getDisplayStyle3d();
-      style.environment = style.environment.withDisplay("sky" === which ? { sky: enabled } : { ground: enabled });
+  private addEnvAttribute(
+    parent: HTMLElement,
+    label: string,
+    which: "sky" | "ground",
+    updateHandler?: (enabled: boolean) => void
+  ): void {
+    const elems = this.addCheckbox(
+      label,
+      (enabled: boolean) => {
+        const view3d = this._vp.view as ViewState3d;
+        const style = view3d.getDisplayStyle3d();
+        style.environment = style.environment.withDisplay(
+          "sky" === which ? { sky: enabled } : { ground: enabled }
+        );
 
-      if (undefined !== updateHandler)
-        updateHandler(enabled);
+        if (undefined !== updateHandler) updateHandler(enabled);
 
-      this.sync();
-    }, parent, this._nextId);
+        this.sync();
+      },
+      parent,
+      this._nextId
+    );
 
     const update = (view: ViewState) => {
       const visible = view.is3d();
@@ -321,7 +381,8 @@ export class EnvironmentEditor {
       if (visible) {
         const view3d = view;
         const style = view3d.getDisplayStyle3d();
-        elems.checkbox.checked = style.environment[which === "sky" ? "displaySky" : "displayGround"];
+        elems.checkbox.checked =
+          style.environment[which === "sky" ? "displaySky" : "displayGround"];
       }
     };
 
@@ -332,7 +393,12 @@ export class EnvironmentEditor {
     this._vp.synchWithView();
   }
 
-  private addCheckbox(cbLabel: string, handler: (enabled: boolean) => void, parent: HTMLElement, id: string): CheckBox {
+  private addCheckbox(
+    cbLabel: string,
+    handler: (enabled: boolean) => void,
+    parent: HTMLElement,
+    id: string
+  ): CheckBox {
     return createCheckBox({
       parent,
       name: cbLabel,

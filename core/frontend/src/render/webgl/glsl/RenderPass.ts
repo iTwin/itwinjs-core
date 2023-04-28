@@ -49,5 +49,10 @@ export function addRenderPass(builder: ShaderBuilder) {
   });
 
   for (const renderPass of renderPasses)
-    builder.addGlobal(`kRenderPass_${renderPass[1]}`, VariableType.Float, `${renderPass[0].toString()}.0`, true);
+    builder.addGlobal(
+      `kRenderPass_${renderPass[1]}`,
+      VariableType.Float,
+      `${renderPass[0].toString()}.0`,
+      true
+    );
 }

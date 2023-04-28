@@ -5,10 +5,28 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
-import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import {
+  BentleyError,
+  GuidString,
+  Logger,
+  LoggingMetaData,
+  RealityDataStatus,
+} from "@itwin/core-bentley";
+import {
+  Cartographic,
+  EcefLocation,
+  OrbitGtBlobProps,
+  RealityData,
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+} from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
+import {
+  CesiumIonAssetProvider,
+  ContextShareProvider,
+  getCesiumAssetUrl,
+} from "./tile/internal";
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
@@ -22,7 +40,11 @@ const loggerCategory: string = FrontendLoggerCategory.RealityData;
  * @alpha
  */
 export class RealityDataError extends BentleyError {
-  public constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData) {
+  public constructor(
+    errorNumber: RealityDataStatus,
+    message: string,
+    getMetaData?: LoggingMetaData
+  ) {
     super(errorNumber, message, getMetaData);
   }
 }
@@ -110,7 +132,9 @@ export interface RealityDataSource {
    * @throws [[RealityDataError]] if source is invalid or cannot be read
    * @alpha
    */
-  getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
+  getSpatialLocationAndExtents(): Promise<
+    SpatialLocationAndExtents | undefined
+  >;
   /** Gets information to identify the product and engine that create this reality data
    * Will return undefined if cannot be resolved
    * @returns information to identify the product and engine that create this reality data
@@ -128,15 +152,28 @@ export namespace RealityDataSource {
    * @param inputFormat identify the RealityDataFormat if known, otherwise function will try to extract it from the tilesetUrl
    * @returns the RealityDataSourceKey that uniquely identify a reality data for a provider
    */
-  export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
-    let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
+  export function createKeyFromUrl(
+    tilesetUrl: string,
+    inputProvider?: RealityDataProvider,
+    inputFormat?: RealityDataFormat
+  ): RealityDataSourceKey {
+    let format = inputFormat
+      ? inputFormat
+      : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
-      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id:  CesiumIonAssetProvider.osmBuildingId }; // default OSM building
+      let cesiumIonAssetKey: RealityDataSourceKey = {
+        provider,
+        format,
+        id: CesiumIonAssetProvider.osmBuildingId,
+      }; // default OSM building
       // Parse URL to extract possible asset id and key if provided
       const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(tilesetUrl);
       if (cesiumAsset) {
-        cesiumIonAssetKey = RealityDataSource.createCesiumIonAssetKey(cesiumAsset.id, cesiumAsset.key);
+        cesiumIonAssetKey = RealityDataSource.createCesiumIonAssetKey(
+          cesiumAsset.id,
+          cesiumAsset.key
+        );
       }
       return cesiumIonAssetKey;
     }
@@ -146,37 +183,75 @@ export namespace RealityDataSource {
       const info = ContextShareProvider.getInfoFromUrl(tilesetUrl);
       const provider = inputProvider ? inputProvider : info.provider;
       format = inputFormat ? inputFormat : info.format;
-      const contextShareKey: RealityDataSourceKey = { provider, format, id: info.id, iTwinId: info.iTwinId };
+      const contextShareKey: RealityDataSourceKey = {
+        provider,
+        format,
+        id: info.id,
+        iTwinId: info.iTwinId,
+      };
       return contextShareKey;
     }
 
     // default to tileSetUrl
-    const provider2 = inputProvider ? inputProvider : RealityDataProvider.TilesetUrl;
-    const urlKey: RealityDataSourceKey = { provider: provider2, format, id: tilesetUrl };
+    const provider2 = inputProvider
+      ? inputProvider
+      : RealityDataProvider.TilesetUrl;
+    const urlKey: RealityDataSourceKey = {
+      provider: provider2,
+      format,
+      id: tilesetUrl,
+    };
     return urlKey;
   }
   /** @alpha - was used for a very specific case of point cloud (opc) attachment that should not be made public */
-  export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+  export function createKeyFromBlobUrl(
+    blobUrl: string,
+    inputProvider?: RealityDataProvider,
+    inputFormat?: RealityDataFormat
+  ): RealityDataSourceKey {
     const info = ContextShareProvider.getInfoFromBlobUrl(blobUrl);
     const format = inputFormat ? inputFormat : info.format;
     const provider = inputProvider ? inputProvider : info.provider;
-    const contextShareKey: RealityDataSourceKey = { provider, format, id: info.id };
+    const contextShareKey: RealityDataSourceKey = {
+      provider,
+      format,
+      id: info.id,
+    };
     return contextShareKey;
   }
   /** @alpha - OrbitGtBlobProps is alpha */
-  export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+  export function createKeyFromOrbitGtBlobProps(
+    orbitGtBlob: OrbitGtBlobProps,
+    inputProvider?: RealityDataProvider,
+    inputFormat?: RealityDataFormat
+  ): RealityDataSourceKey {
     const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
-    if (orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
-      return RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName, inputProvider, format);
+    if (
+      orbitGtBlob.blobFileName &&
+      orbitGtBlob.blobFileName.toLowerCase().startsWith("http")
+    ) {
+      return RealityDataSource.createKeyFromBlobUrl(
+        orbitGtBlob.blobFileName,
+        inputProvider,
+        format
+      );
     } else if (orbitGtBlob.rdsUrl) {
-      return RealityDataSource.createKeyFromUrl(orbitGtBlob.rdsUrl, inputProvider, format);
+      return RealityDataSource.createKeyFromUrl(
+        orbitGtBlob.rdsUrl,
+        inputProvider,
+        format
+      );
     }
-    const provider = inputProvider ? inputProvider : RealityDataProvider.OrbitGtBlob;
+    const provider = inputProvider
+      ? inputProvider
+      : RealityDataProvider.OrbitGtBlob;
     const id = `${orbitGtBlob.accountName}:${orbitGtBlob.containerName}:${orbitGtBlob.blobFileName}:?${orbitGtBlob.sasToken}`;
     return { provider, format, id };
   }
   /** @alpha - OrbitGtBlobProps is alpha */
-  export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
+  export function createOrbitGtBlobPropsFromKey(
+    rdSourceKey: RealityDataSourceKey
+  ): OrbitGtBlobProps | undefined {
     if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
       return undefined;
     const splitIds = rdSourceKey.id.split(":");
@@ -191,18 +266,31 @@ export namespace RealityDataSource {
     return orbitGtBlob;
   }
   /** @internal - Is used by "fdt attach cesium asset" keyin*/
-  export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
-    const id = getCesiumAssetUrl(osmAssetId,requestKey);
-    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
+  export function createCesiumIonAssetKey(
+    osmAssetId: number,
+    requestKey: string
+  ): RealityDataSourceKey {
+    const id = getCesiumAssetUrl(osmAssetId, requestKey);
+    return {
+      provider: RealityDataProvider.CesiumIonAsset,
+      format: RealityDataFormat.ThreeDTile,
+      id,
+    };
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
    * @alpha
    */
-  export async function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+  export async function fromKey(
+    key: RealityDataSourceKey,
+    iTwinId: GuidString | undefined
+  ): Promise<RealityDataSource | undefined> {
     const provider = IModelApp.realityDataSourceProviders.find(key.provider);
     if (!provider) {
-      Logger.logWarning(loggerCategory, `RealityDataSourceProvider "${key.provider}" is not registered`);
+      Logger.logWarning(
+        loggerCategory,
+        `RealityDataSourceProvider "${key.provider}" is not registered`
+      );
       return undefined;
     }
 
@@ -222,7 +310,10 @@ export interface RealityDataSourceProvider {
    * @param iTwinId A default iTwinId to use.
    * @returns the requested reality data source, or `undefined` if it could not be produced.
    */
-  createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+  createRealityDataSource(
+    key: RealityDataSourceKey,
+    iTwinId: GuidString | undefined
+  ): Promise<RealityDataSource | undefined>;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
@@ -236,17 +327,21 @@ export class RealityDataSourceProviderRegistry {
   /** @internal */
   public constructor() {
     this.register(RealityDataProvider.CesiumIonAsset, {
-      createRealityDataSource: async (key, iTwinId) => RealityDataSourceCesiumIonAssetImpl.createFromKey(key, iTwinId),
+      createRealityDataSource: async (key, iTwinId) =>
+        RealityDataSourceCesiumIonAssetImpl.createFromKey(key, iTwinId),
     });
     this.register(RealityDataProvider.TilesetUrl, {
-      createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+      createRealityDataSource: async (key, iTwinId) =>
+        RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
     });
     this.register(RealityDataProvider.ContextShare, {
-      createRealityDataSource: async (key, iTwinId) => RealityDataSourceContextShareImpl.createFromKey(key, iTwinId),
+      createRealityDataSource: async (key, iTwinId) =>
+        RealityDataSourceContextShareImpl.createFromKey(key, iTwinId),
     });
     this.register(RealityDataProvider.OrbitGtBlob, {
       // ###TODO separate TilesetUrlImpl
-      createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+      createRealityDataSource: async (key, iTwinId) =>
+        RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
     });
   }
 

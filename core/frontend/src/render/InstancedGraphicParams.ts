@@ -6,9 +6,7 @@
  * @module Rendering
  */
 
-import {
-  Point2d, Point3d, Range3d, Transform,
-} from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.

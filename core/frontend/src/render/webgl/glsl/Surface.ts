@@ -9,35 +9,81 @@
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
-import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent,
+  Pass,
+  SurfaceBitIndex,
+  SurfaceFlags,
+  TextureUnit,
+} from "../RenderFlags";
+import {
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  ShaderBuilder,
+  VariableType,
+  VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
 import {
-  FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags,
+  FeatureMode,
+  IsAnimated,
+  IsClassified,
+  IsInstanced,
+  IsShadowable,
+  IsThematic,
+  PositionType,
+  TechniqueFlags,
 } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addAnimation } from "./Animation";
 import { unpackFloat } from "./Clipping";
 import { addColor } from "./Color";
-import { addChooseVec2WithBitFlagsFunction, addChooseVec3WithBitFlagFunction, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
-import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
 import {
-  addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
+  addChooseVec2WithBitFlagsFunction,
+  addChooseVec3WithBitFlagFunction,
+  addExtractNthBit,
+  addFrustum,
+  addShaderFlags,
+} from "./Common";
+import {
+  addUnpackAndNormalize2Bytes,
+  decodeDepthRgb,
+  unquantize2d,
+} from "./Decode";
+import {
+  addFeatureSymbology,
+  addMaxAlpha,
+  addRenderOrder,
+  addRenderOrderConstants,
+  addSurfaceDiscard,
+  addSurfaceHiliter,
+  FeatureSymbologyOptions,
 } from "./FeatureSymbology";
 import {
-  addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
+  addAltPickBufferOutputs,
+  addFragColorWithPreMultipliedAlpha,
+  addPickBufferOutputs,
+  addWhiteOnWhiteReversal,
+  assignFragColor,
 } from "./Fragment";
 import { addLighting } from "./Lighting";
 import { addSurfaceMonochrome } from "./Monochrome";
-import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier, addOverrideClassifierColor } from "./PlanarClassification";
+import {
+  addColorPlanarClassifier,
+  addFeaturePlanarClassifier,
+  addHilitePlanarClassifier,
+  addOverrideClassifierColor,
+} from "./PlanarClassification";
 import { addRenderPass } from "./RenderPass";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
-import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import {
+  addModelViewMatrix,
+  addNormalMatrix,
+  addProjectionMatrix,
+} from "./Vertex";
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
 import { Npc } from "@itwin/core-common";
@@ -195,13 +241,17 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   vert.addGlobal("use_material", VariableType.Boolean);
-  vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");
+  vert.addInitializer(
+    "use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));"
+  );
 
   // Uniform material
   vert.addFunction(decodeMaterialColor);
   vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialColor", (uniform, params) => {
-      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags)
+        ? params.geometry.materialInfo
+        : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.rgba);
     });
@@ -209,7 +259,9 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
 
   vert.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags)
+        ? params.geometry.materialInfo
+        : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.fragUniforms);
     });
@@ -222,15 +274,24 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
     vert.addUniform("u_numColors", VariableType.Float, (prog) => {
       prog.addGraphicUniform("u_numColors", (uniform, params) => {
         const info = params.geometry.materialInfo;
-        const numColors = undefined !== info && info.isAtlas ? info.vertexTableOffset : 0;
+        const numColors =
+          undefined !== info && info.isAtlas ? info.vertexTableOffset : 0;
         uniform.setUniform1f(numColors);
       });
     });
   }
   vert.addGlobal("g_materialParams", VariableType.Vec4);
-  vert.set(VertexShaderComponent.ComputeMaterial, instanced ? computeMaterialInstanced : computeMaterial);
+  vert.set(
+    VertexShaderComponent.ComputeMaterial,
+    instanced ? computeMaterialInstanced : computeMaterial
+  );
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
-  builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec4, "computeMaterialParams", computeMaterialParams);
+  builder.addFunctionComputedVarying(
+    "v_materialParams",
+    VariableType.Vec4,
+    "computeMaterialParams",
+    computeMaterialParams
+  );
 }
 
 const computePositionPrelude = `
@@ -258,17 +319,21 @@ const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isHiliter: boolean, positionType: PositionType): ProgramBuilder {
+function createCommon(
+  isInstanced: IsInstanced,
+  animated: IsAnimated,
+  shadowable: IsShadowable,
+  isHiliter: boolean,
+  positionType: PositionType
+): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
   const vert = builder.vert;
 
-  if (animated)
-    addAnimation(vert, true);
+  if (animated) addAnimation(vert, true);
 
-  if (shadowable)
-    addSolarShadowMap(builder);
+  if (shadowable) addSolarShadowMap(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -281,8 +346,7 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
     builder.addVarying("v_eyeSpace", VariableType.Vec3);
     computePosition += adjustEyeSpace;
   }
-  if (!isHiliter)
-    computePosition += computeConstantLodUvCustom;
+  if (!isHiliter) computePosition += computeConstantLodUvCustom;
   computePosition += computePositionPostlude;
 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
@@ -291,14 +355,28 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
 }
 
 /** @internal */
-export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified, posType: PositionType): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, true, posType);
+export function createSurfaceHiliter(
+  instanced: IsInstanced,
+  classified: IsClassified,
+  posType: PositionType
+): ProgramBuilder {
+  const builder = createCommon(
+    instanced,
+    IsAnimated.No,
+    IsShadowable.No,
+    true,
+    posType
+  );
 
   addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No, IsThematic.No, false, true);
   if (classified) {
     addHilitePlanarClassifier(builder);
-    builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
+    builder.vert.addGlobal(
+      "feature_ignore_material",
+      VariableType.Boolean,
+      "false"
+    );
     builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   } else {
     addSurfaceHiliter(builder);
@@ -313,33 +391,109 @@ bool isSurfaceBitSet(uint flag) { return 0u != (surfaceFlags & flag); }
 
 /** @internal */
 function addSurfaceFlagsLookup(builder: ShaderBuilder) {
-  builder.addConstant("kSurfaceBitIndex_HasTexture", VariableType.Int, SurfaceBitIndex.HasTexture.toString());
-  builder.addConstant("kSurfaceBitIndex_ApplyLighting", VariableType.Int, SurfaceBitIndex.ApplyLighting.toString());
-  builder.addConstant("kSurfaceBitIndex_HasNormals", VariableType.Int, SurfaceBitIndex.HasNormals.toString());
-  builder.addConstant("kSurfaceBitIndex_IgnoreMaterial", VariableType.Int, SurfaceBitIndex.IgnoreMaterial.toString());
-  builder.addConstant("kSurfaceBitIndex_TransparencyThreshold", VariableType.Int, SurfaceBitIndex.TransparencyThreshold.toString());
-  builder.addConstant("kSurfaceBitIndex_BackgroundFill", VariableType.Int, SurfaceBitIndex.BackgroundFill.toString());
-  builder.addConstant("kSurfaceBitIndex_HasColorAndNormal", VariableType.Int, SurfaceBitIndex.HasColorAndNormal.toString());
-  builder.addConstant("kSurfaceBitIndex_OverrideRgb", VariableType.Int, SurfaceBitIndex.OverrideRgb.toString());
-  builder.addConstant("kSurfaceBitIndex_HasNormalMap", VariableType.Int, SurfaceBitIndex.HasNormalMap.toString());
-  builder.addConstant("kSurfaceBitIndex_HasMaterialAtlas", VariableType.Int, SurfaceBitIndex.HasMaterialAtlas.toString());
-  builder.addConstant("kSurfaceBitIndex_UseConstantLodTextureMapping", VariableType.Int, SurfaceBitIndex.UseConstantLodTextureMapping.toString());
-  builder.addConstant("kSurfaceBitIndex_UseConstantLodNormalMapMapping", VariableType.Int, SurfaceBitIndex.UseConstantLodNormalMapMapping.toString());
+  builder.addConstant(
+    "kSurfaceBitIndex_HasTexture",
+    VariableType.Int,
+    SurfaceBitIndex.HasTexture.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_ApplyLighting",
+    VariableType.Int,
+    SurfaceBitIndex.ApplyLighting.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_HasNormals",
+    VariableType.Int,
+    SurfaceBitIndex.HasNormals.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_IgnoreMaterial",
+    VariableType.Int,
+    SurfaceBitIndex.IgnoreMaterial.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_TransparencyThreshold",
+    VariableType.Int,
+    SurfaceBitIndex.TransparencyThreshold.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_BackgroundFill",
+    VariableType.Int,
+    SurfaceBitIndex.BackgroundFill.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_HasColorAndNormal",
+    VariableType.Int,
+    SurfaceBitIndex.HasColorAndNormal.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_OverrideRgb",
+    VariableType.Int,
+    SurfaceBitIndex.OverrideRgb.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_HasNormalMap",
+    VariableType.Int,
+    SurfaceBitIndex.HasNormalMap.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_HasMaterialAtlas",
+    VariableType.Int,
+    SurfaceBitIndex.HasMaterialAtlas.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_UseConstantLodTextureMapping",
+    VariableType.Int,
+    SurfaceBitIndex.UseConstantLodTextureMapping.toString()
+  );
+  builder.addConstant(
+    "kSurfaceBitIndex_UseConstantLodNormalMapMapping",
+    VariableType.Int,
+    SurfaceBitIndex.UseConstantLodNormalMapMapping.toString()
+  );
 
   // Surface flags which get modified in vertex shader are still passed to fragment shader as a single float & are thus
   // used differently there & so require different constants.  Unused constants are commented out.
-  builder.addBitFlagConstant("kSurfaceBit_HasTexture", SurfaceBitIndex.HasTexture);
-  builder.addBitFlagConstant("kSurfaceBit_IgnoreMaterial", SurfaceBitIndex.IgnoreMaterial);
-  builder.addBitFlagConstant("kSurfaceBit_OverrideRgb", SurfaceBitIndex.OverrideRgb);
-  builder.addBitFlagConstant("kSurfaceBit_HasNormalMap", SurfaceBitIndex.HasNormalMap);
+  builder.addBitFlagConstant(
+    "kSurfaceBit_HasTexture",
+    SurfaceBitIndex.HasTexture
+  );
+  builder.addBitFlagConstant(
+    "kSurfaceBit_IgnoreMaterial",
+    SurfaceBitIndex.IgnoreMaterial
+  );
+  builder.addBitFlagConstant(
+    "kSurfaceBit_OverrideRgb",
+    SurfaceBitIndex.OverrideRgb
+  );
+  builder.addBitFlagConstant(
+    "kSurfaceBit_HasNormalMap",
+    SurfaceBitIndex.HasNormalMap
+  );
 
   // Only need masks for flags modified in vertex shader
   const suffix = "u";
   const type = VariableType.Uint;
-  builder.addConstant("kSurfaceMask_HasTexture", type, SurfaceFlags.HasTexture.toString() + suffix);
-  builder.addConstant("kSurfaceMask_IgnoreMaterial", type, SurfaceFlags.IgnoreMaterial.toString() + suffix);
-  builder.addConstant("kSurfaceMask_OverrideRgb", type, SurfaceFlags.OverrideRgb.toString() + suffix);
-  builder.addConstant("kSurfaceMask_HasNormalMap", type, SurfaceFlags.HasNormalMap.toString() + suffix);
+  builder.addConstant(
+    "kSurfaceMask_HasTexture",
+    type,
+    SurfaceFlags.HasTexture.toString() + suffix
+  );
+  builder.addConstant(
+    "kSurfaceMask_IgnoreMaterial",
+    type,
+    SurfaceFlags.IgnoreMaterial.toString() + suffix
+  );
+  builder.addConstant(
+    "kSurfaceMask_OverrideRgb",
+    type,
+    SurfaceFlags.OverrideRgb.toString() + suffix
+  );
+  builder.addConstant(
+    "kSurfaceMask_HasNormalMap",
+    type,
+    SurfaceFlags.HasNormalMap.toString() + suffix
+  );
 
   addExtractNthBit(builder);
   builder.addFunction(isSurfaceBitSet);
@@ -373,7 +527,8 @@ const computeColorSurfaceFlags = `
 const returnSurfaceFlags = "  return float(surfaceFlags);\n";
 
 const computeSurfaceFlags = computeBaseSurfaceFlags;
-const computeSurfaceFlagsWithColor = computeBaseSurfaceFlags + computeColorSurfaceFlags;
+const computeSurfaceFlagsWithColor =
+  computeBaseSurfaceFlags + computeColorSurfaceFlags;
 
 /** @internal */
 export const octDecodeNormal = `
@@ -500,26 +655,44 @@ const computeBaseColor = `
 const surfaceFlagArray = new Int32Array(SurfaceBitIndex.Count);
 
 /** @internal */
-export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean, withFeatureColor: boolean) {
+export function addSurfaceFlags(
+  builder: ProgramBuilder,
+  withFeatureOverrides: boolean,
+  withFeatureColor: boolean
+) {
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
 
   let compute = initSurfaceFlags;
   if (withFeatureOverrides)
-    compute += `${withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags}\n`;
+    compute += `${
+      withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags
+    }\n`;
   compute += returnSurfaceFlags;
-  builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
+  builder.addFunctionComputedVarying(
+    "v_surfaceFlags",
+    VariableType.Float,
+    "computeSurfaceFlags",
+    compute
+  );
 
-  builder.frag.addInitializer("surfaceFlags = uint(floor(v_surfaceFlags + 0.5));");
+  builder.frag.addInitializer(
+    "surfaceFlags = uint(floor(v_surfaceFlags + 0.5));"
+  );
 
-  builder.addUniformArray("u_surfaceFlags", VariableType.Boolean, SurfaceBitIndex.Count, (prog) => {
-    prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
-      assert(undefined !== params.geometry.asSurface);
-      const mesh = params.geometry.asSurface;
-      mesh.computeSurfaceFlags(params.programParams, surfaceFlagArray);
-      uniform.setUniform1iv(surfaceFlagArray);
-    });
-  });
+  builder.addUniformArray(
+    "u_surfaceFlags",
+    VariableType.Boolean,
+    SurfaceBitIndex.Count,
+    (prog) => {
+      prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
+        assert(undefined !== params.geometry.asSurface);
+        const mesh = params.geometry.asSurface;
+        mesh.computeSurfaceFlags(params.programParams, surfaceFlagArray);
+        uniform.setUniform1iv(surfaceFlagArray);
+      });
+    }
+  );
 }
 
 function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
@@ -527,8 +700,18 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 
   const quantized = "quantized" === builder.vert.positionType;
   builder.vert.addFunction(octDecodeNormal);
-  builder.vert.addFunction("vec3 computeSurfaceNormal()", getComputeNormal(quantized));
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();");
+  builder.vert.addFunction(
+    "vec3 computeSurfaceNormal()",
+    getComputeNormal(quantized)
+  );
+  builder.addFunctionComputedVarying(
+    "v_n",
+    VariableType.Vec3,
+    "computeLightingNormal",
+    animated
+      ? getComputeAnimatedNormal(quantized)
+      : "return computeSurfaceNormal();"
+  );
   builder.frag.addGlobal("g_normal", VariableType.Vec3);
   let finalizeNormal = finalizeNormalPrelude;
 
@@ -536,13 +719,16 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   builder.frag.addFunction(constantLodTextureLookup);
   builder.frag.addUniform("u_normalMapScale", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_normalMapScale", (uniform, params) => {
-      if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas) {
-        const normalMapParams = params.geometry.materialInfo.textureMapping?.normalMapParams;
+      if (
+        undefined !== params.geometry.materialInfo &&
+        !params.geometry.materialInfo.isAtlas
+      ) {
+        const normalMapParams =
+          params.geometry.materialInfo.textureMapping?.normalMapParams;
         if (undefined !== normalMapParams) {
           let normalMapScale = 1.0;
           normalMapScale = normalMapParams.scale ?? 1.0;
-          if (normalMapParams.greenUp)
-            normalMapScale = -normalMapScale;
+          if (normalMapParams.greenUp) normalMapScale = -normalMapScale;
           uniform.setUniform1f(normalMapScale);
         }
       }
@@ -556,15 +742,36 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   // You must also set checkMaxVarying to false in ProgramBuilder.buildProgram to avoid assertions, if using a non-optimized build.
   const debugNormals = false;
   if (debugNormals) {
-    builder.frag.set(FragmentShaderComponent.ApplyDebugColor, "return vec4(vec3(v_normal / 2.0 + 0.5), baseColor.a);");
-    builder.addInlineComputedVarying("v_normal", VariableType.Vec3, "v_normal = computeSurfaceNormal();");
+    builder.frag.set(
+      FragmentShaderComponent.ApplyDebugColor,
+      "return vec4(vec3(v_normal / 2.0 + 0.5), baseColor.a);"
+    );
+    builder.addInlineComputedVarying(
+      "v_normal",
+      VariableType.Vec3,
+      "v_normal = computeSurfaceNormal();"
+    );
   }
 }
 
 /** @internal */
-export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud: boolean, isHilite: boolean) {
+export function addTexture(
+  builder: ProgramBuilder,
+  animated: IsAnimated,
+  isThematic: IsThematic,
+  isPointCloud: boolean,
+  isHilite: boolean
+) {
   if (isThematic) {
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud, true));
+    builder.addInlineComputedVarying(
+      "v_thematicIndex",
+      VariableType.Float,
+      getComputeThematicIndex(
+        builder.vert.usesInstancedGeometry,
+        isPointCloud,
+        true
+      )
+    );
   }
 
   // Point clouds do not need to compute texture coordinates since the only texture they use is the thematic gradient.
@@ -573,11 +780,21 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
     builder.vert.addFunction(unquantize2d);
     addChooseVec2WithBitFlagsFunction(builder.vert);
     const quantized = "quantized" === builder.vert.positionType;
-    builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized));
+    builder.addFunctionComputedVarying(
+      "v_texCoord",
+      VariableType.Vec2,
+      "computeTexCoord",
+      animated
+        ? getComputeAnimatedTexCoord(quantized)
+        : getComputeTexCoord(quantized)
+    );
     builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
         const surfGeom = params.geometry.asSurface!;
-        if (surfGeom.useTexture(params.programParams) || (surfGeom.useNormalMap(params.programParams) && !isPointCloud)) {
+        if (
+          surfGeom.useTexture(params.programParams) ||
+          (surfGeom.useNormalMap(params.programParams) && !isPointCloud)
+        ) {
           const uvQParams = surfGeom.lut.uvQParams;
           if (undefined !== uvQParams) {
             uniform.setUniform4fv(uvQParams);
@@ -590,10 +807,20 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry.asSurface!;
-      if (params.geometry.supportsThematicDisplay && params.target.wantThematicDisplay) { // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
-        params.target.uniforms.thematic.bindTexture(uniform, TextureUnit.SurfaceTexture);
+      if (
+        params.geometry.supportsThematicDisplay &&
+        params.target.wantThematicDisplay
+      ) {
+        // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
+        params.target.uniforms.thematic.bindTexture(
+          uniform,
+          TextureUnit.SurfaceTexture
+        );
       } else if (surfGeom.useTexture(params.programParams)) {
-        const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
+        const texture =
+          params.geometry.hasAnimation && params.target.analysisTexture
+            ? (params.target.analysisTexture as Texture)
+            : surfGeom.texture;
         assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
@@ -649,7 +876,12 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
       // Otherwise, if the geometry draws in both opaque and translucent passes, use DisplayParams.minTransparency to filter pixels into appropriate pass to produce appropriate blending.
       // Negative cutoff applies only during opaque pass; positive cutoff applies during opaque and translucent passes.
       const pass = params.geometry.getPass(params.target);
-      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? -1 / 255 : 241 / 255;
+      const cutoff =
+        !Pass.rendersOpaqueAndTranslucent(pass) ||
+        params.target.isReadPixelsInProgress ||
+        !params.target.currentViewFlags.transparency
+          ? -1 / 255
+          : 241 / 255;
       uniform.setUniform1f(cutoff);
     });
   });
@@ -659,11 +891,20 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, false, flags.positionType);
+  const builder = createCommon(
+    flags.isInstanced,
+    flags.isAnimated,
+    flags.isShadowable,
+    false,
+    flags.positionType
+  );
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
-  let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+  let opts =
+    FeatureMode.Overrides === feat
+      ? FeatureSymbologyOptions.Surface
+      : FeatureSymbologyOptions.None;
   if (flags.isClassified) {
     opts &= ~FeatureSymbologyOptions.Alpha;
     addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
@@ -675,7 +916,11 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     builder.vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
       prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
         if (undefined !== params.geometry.asSurface?.mesh.constantLodVParams)
-          params.target.uniforms.branch.bindModelToWorldTransform(uniform, params.geometry, false);
+          params.target.uniforms.branch.bindModelToWorldTransform(
+            uniform,
+            params.geometry,
+            false
+          );
       });
     });
   }
@@ -686,7 +931,10 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
-  builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
+  builder.frag.set(
+    FragmentShaderComponent.FinalizeBaseColor,
+    applyBackgroundColor
+  );
   builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
       params.target.uniforms.style.bindBackgroundRgb(uniform);
@@ -698,7 +946,9 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry.asSurface!;
-      uniform.setUniform1i(surfGeom.useTexture(params.programParams) && surfGeom.isGlyph ? 1 : 0);
+      uniform.setUniform1i(
+        surfGeom.useTexture(params.programParams) && surfGeom.isGlyph ? 1 : 0
+      );
     });
   });
 
@@ -718,14 +968,12 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     } else {
       if (!flags.isClassified)
         addOverrideClassifierColor(builder, flags.isThematic);
-      else
-        addFeaturePlanarClassifier(builder);
+      else addFeaturePlanarClassifier(builder);
 
       builder.frag.addFunction(decodeDepthRgb);
       if (flags.isEdgeTestNeeded || flags.isClassified)
         addPickBufferOutputs(builder.frag);
-      else
-        addAltPickBufferOutputs(builder.frag);
+      else addAltPickBufferOutputs(builder.frag);
     }
   }
 
@@ -735,7 +983,9 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     prog.addGraphicUniform("u_constantLodVParams", (uniform, params) => {
       const vParams = params.geometry.asSurface?.mesh.constantLodVParams;
       if (undefined !== vParams) {
-        vParams[2] = params.target.planFrustum.points[Npc.LeftTopRear].distance(params.target.planFrustum.points[Npc.RightTopRear]);
+        vParams[2] = params.target.planFrustum.points[Npc.LeftTopRear].distance(
+          params.target.planFrustum.points[Npc.RightTopRear]
+        );
         uniform.setUniform3fv(vParams);
       }
     });
@@ -744,26 +994,27 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.addUniform("u_constantLodFParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_constantLodFParams", (uniform, params) => {
       const fParams = params.geometry.asSurface?.mesh.constantLodFParams;
-      if (undefined !== fParams)
-        uniform.setUniform3fv(fParams);
+      if (undefined !== fParams) uniform.setUniform3fv(fParams);
     });
   });
   builder.frag.addFunction(constantLodTextureLookup);
   builder.frag.addFunction(sampleSurfaceTexture);
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, (flags.isThematic === IsThematic.No) ? computeBaseColor : "return getSurfaceColor();");
+  builder.frag.set(
+    FragmentShaderComponent.ComputeBaseColor,
+    flags.isThematic === IsThematic.No
+      ? computeBaseColor
+      : "return getSurfaceColor();"
+  );
 
-  if (flags.isClassified)
-    addClassificationTranslucencyDiscard(builder);
-  else
-    addTransparencyDiscard(builder.frag);
+  if (flags.isClassified) addClassificationTranslucencyDiscard(builder);
+  else addTransparencyDiscard(builder.frag);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder, flags.isInstanced === IsInstanced.Yes);
 
-  if (flags.isWiremesh)
-    addWiremesh(builder);
+  if (flags.isWiremesh) addWiremesh(builder);
 
   return builder;
 }
@@ -777,11 +1028,18 @@ export function addClassificationTranslucencyDiscard(builder: ProgramBuilder) {
   addRenderPass(builder.frag);
 
   // Do not discard transparent classified geometry if we're trying to do a pick...
-  builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
-    prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
-      uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
-    });
-  });
+  builder.frag.addUniform(
+    "u_no_classifier_discard",
+    VariableType.Boolean,
+    (prog) => {
+      prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
+        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+      });
+    }
+  );
 
-  builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
+  builder.frag.set(
+    FragmentShaderComponent.DiscardByAlpha,
+    discardClassifiedByAlpha
+  );
 }

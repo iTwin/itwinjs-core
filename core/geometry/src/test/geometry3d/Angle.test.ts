@@ -18,12 +18,12 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 /* cspell:word isnan */
 
 class AngleTests {
-  constructor(public noisy: boolean = false) { }
+  constructor(public noisy: boolean = false) {}
 
   public testAlmostEqual(ck: Checker) {
     const a = 0.5 * Geometry.smallAngleRadians;
     const b = 8.0 * Geometry.smallAngleRadians;
-    const c = 1.0;    // radians, a nonzero angle
+    const c = 1.0; // radians, a nonzero angle
     const degreeCandidates = [0, 2, 56, 89, 90, 180];
     const periodCandidates = [0, 1, -1, 4, -6];
     let shiftPeriod = 0;
@@ -38,16 +38,56 @@ class AngleTests {
         ck.testTrue(theta0.isAlmostEqualNoPeriodShift(theta0A));
 
         const theta1 = Angle.createDegrees(degrees + shift);
-        ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta1), "exact shift");
+        ck.testBoolean(
+          true,
+          theta0.isAlmostEqualAllowPeriodShift(theta1),
+          "exact shift"
+        );
 
-        ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(Angle.createRadians(theta1.radians + a)), "Small positive shift");
-        ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(Angle.createRadians(theta1.radians - a)), "Small negative shift");
+        ck.testBoolean(
+          true,
+          theta0.isAlmostEqualAllowPeriodShift(
+            Angle.createRadians(theta1.radians + a)
+          ),
+          "Small positive shift"
+        );
+        ck.testBoolean(
+          true,
+          theta0.isAlmostEqualAllowPeriodShift(
+            Angle.createRadians(theta1.radians - a)
+          ),
+          "Small negative shift"
+        );
 
-        ck.testBoolean(false, theta0.isAlmostEqualAllowPeriodShift(Angle.createRadians(theta1.radians + b)), "medium positive shift");
-        ck.testBoolean(false, theta0.isAlmostEqualAllowPeriodShift(Angle.createRadians(theta1.radians - b)), "medium negative shift");
+        ck.testBoolean(
+          false,
+          theta0.isAlmostEqualAllowPeriodShift(
+            Angle.createRadians(theta1.radians + b)
+          ),
+          "medium positive shift"
+        );
+        ck.testBoolean(
+          false,
+          theta0.isAlmostEqualAllowPeriodShift(
+            Angle.createRadians(theta1.radians - b)
+          ),
+          "medium negative shift"
+        );
 
-        ck.testBoolean(false, theta0.isAlmostEqualAllowPeriodShift(Angle.createRadians(theta1.radians + c)), "large positive shift");
-        ck.testBoolean(false, theta0.isAlmostEqualAllowPeriodShift(Angle.createRadians(theta1.radians - c)), "large negative shift");
+        ck.testBoolean(
+          false,
+          theta0.isAlmostEqualAllowPeriodShift(
+            Angle.createRadians(theta1.radians + c)
+          ),
+          "large positive shift"
+        );
+        ck.testBoolean(
+          false,
+          theta0.isAlmostEqualAllowPeriodShift(
+            Angle.createRadians(theta1.radians - c)
+          ),
+          "large negative shift"
+        );
       }
     }
   }
@@ -66,12 +106,23 @@ class AngleTests {
         const theta2 = Angle.createDegreesAdjustSigned180(degrees);
         if (this.noisy)
           GeometryCoreTestIO.consoleLog(
-            "adjust angle:", theta0.degrees,
-            "    positive:", theta1.degrees,
-            "    signed:", theta2.degrees
+            "adjust angle:",
+            theta0.degrees,
+            "    positive:",
+            theta1.degrees,
+            "    signed:",
+            theta2.degrees
           );
-        ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta1), "adjust positive");
-        ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta2), "adjust signed");
+        ck.testBoolean(
+          true,
+          theta0.isAlmostEqualAllowPeriodShift(theta1),
+          "adjust positive"
+        );
+        ck.testBoolean(
+          true,
+          theta0.isAlmostEqualAllowPeriodShift(theta2),
+          "adjust signed"
+        );
       }
     }
   }
@@ -104,7 +155,11 @@ class AngleTests {
       ck.testAngleAllowShift(theta0, theta3, "angleToSignedPeriodicFraction");
 
       const inside = sweep.isAngleInSweep(theta0);
-      ck.testBoolean(inside, f2 <= 1.0, "isAngleInSweep agrees with positivePeriodicFraction");
+      ck.testBoolean(
+        inside,
+        f2 <= 1.0,
+        "isAngleInSweep agrees with positivePeriodicFraction"
+      );
 
       ck.testAngleAllowShift(
         sweep.fractionToAngle(f0),
@@ -159,7 +214,13 @@ describe("Angle.Adjust", () => {
   });
 });
 
-function testSweep(ck: Checker, sweep: AngleSweep, isCCW: boolean, isFullCircle: boolean, sweepDegrees: number | undefined) {
+function testSweep(
+  ck: Checker,
+  sweep: AngleSweep,
+  isCCW: boolean,
+  isFullCircle: boolean,
+  sweepDegrees: number | undefined
+) {
   ck.testBoolean(sweep.isCCW, isCCW, "sweep.isCCW");
   ck.testBoolean(sweep.isFullCircle, isFullCircle, "sweep.isFullCircle");
   if (sweepDegrees !== undefined)
@@ -173,7 +234,13 @@ describe("AngleSweep", () => {
     source.testFractions(AngleSweep.createStartSweepDegrees(0, 90), ck);
     source.testFractions(AngleSweep.createStartSweepRadians(-1, 1), ck);
     source.testFractions(AngleSweep.createStartSweepRadians(1, -2), ck);
-    source.testFractions(AngleSweep.createStartSweep(Angle.createRadians(0), Angle.createDegrees(360)), ck);
+    source.testFractions(
+      AngleSweep.createStartSweep(
+        Angle.createRadians(0),
+        Angle.createDegrees(360)
+      ),
+      ck
+    );
 
     ck.checkpoint("AngleSweeps.TestFractions");
     expect(ck.getNumErrors()).equals(0);
@@ -208,7 +275,10 @@ describe("AngleSweep", () => {
       const sweep = AngleSweep.createStartSweep(theta0, dTheta);
       const sweep1 = AngleSweep.createStartEnd(theta0, theta1);
       ck.testCoordinate(sweep.startAngle.degrees, theta0.degrees);
-      ck.testCoordinate(sweep.endAngle.degrees, theta0.degrees + dTheta.degrees);
+      ck.testCoordinate(
+        sweep.endAngle.degrees,
+        theta0.degrees + dTheta.degrees
+      );
       ck.testTrue(sweep.isAlmostEqualNoPeriodShift(sweep1));
 
       ck.checkpoint("AngleSweeps.Hello");
@@ -230,8 +300,11 @@ describe("SmallNumbers", () => {
     ck.testFalse(Geometry.isDistanceWithinTol(-4.0, 2.0));
     ck.testTrue(Geometry.isDistanceWithinTol(1.0e-8));
 
-    for (let x = 1.e-15; x < 0.001; x *= 10.0) {
-      ck.testTrue(Geometry.isSmallMetricDistance(x) === Geometry.isSmallMetricDistanceSquared(x * x));
+    for (let x = 1e-15; x < 0.001; x *= 10.0) {
+      ck.testTrue(
+        Geometry.isSmallMetricDistance(x) ===
+          Geometry.isSmallMetricDistanceSquared(x * x)
+      );
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -240,27 +313,46 @@ describe("SmallNumbers", () => {
 describe("MiscAngles", () => {
   it("orientedAngleBetweenVectorsXYZ", () => {
     const ck = new Checker();
-    for (const degrees of [179, 181, 0, 45, 90, 130, 179, 181, 270, 359, -10, -45, -90, -100, -179]) {
+    for (const degrees of [
+      179, 181, 0, 45, 90, 130, 179, 181, 270, 359, -10, -45, -90, -100, -179,
+    ]) {
       const theta = Angle.createDegrees(degrees);
       const vectorU = Vector3d.create(1, 0, 0);
       const vectorV = Vector3d.create(theta.cos(), theta.sin(), 0);
       const vectorW = Vector3d.create(0, 0, 1);
       const radians = Angle.degreesToRadians(degrees);
-      const radiansPositive = radians > 0 ? radians : Angle.adjustRadians0To2Pi(radians);
+      const radiansPositive =
+        radians > 0 ? radians : Angle.adjustRadians0To2Pi(radians);
       const alphaTrue = Angle.orientedRadiansBetweenVectorsXYZ(
-        vectorU.x, vectorU.y, vectorU.z,
-        vectorV.x, vectorV.y, vectorV.z,
-        vectorW.x, vectorW.y, vectorW.z,
+        vectorU.x,
+        vectorU.y,
+        vectorU.z,
+        vectorV.x,
+        vectorV.y,
+        vectorV.z,
+        vectorW.x,
+        vectorW.y,
+        vectorW.z,
         true
       );
       const alphaFalse = Angle.orientedRadiansBetweenVectorsXYZ(
-        vectorU.x, vectorU.y, vectorU.z,
-        vectorV.x, vectorV.y, vectorV.z,
-        vectorW.x, vectorW.y, vectorW.z,
+        vectorU.x,
+        vectorU.y,
+        vectorU.z,
+        vectorV.x,
+        vectorV.y,
+        vectorV.z,
+        vectorW.x,
+        vectorW.y,
+        vectorW.z,
         false
       );
       ck.testCoordinate(alphaTrue, radiansPositive, { degrees, adjust: true });
-      ck.testCoordinate(alphaFalse, degrees <= 180.0 ? radians : Angle.adjustRadiansMinusPiPlusPi(radians), { degrees, adjust: false });
+      ck.testCoordinate(
+        alphaFalse,
+        degrees <= 180.0 ? radians : Angle.adjustRadiansMinusPiPlusPi(radians),
+        { degrees, adjust: false }
+      );
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -303,13 +395,19 @@ describe("MiscAngles", () => {
       const radiansA = Angle.degreesToRadians(degreesA);
       const degreesC = Angle.radiansToDegrees(radiansA);
       const eC = (degreesC - degreesA) / degreesA;
-      if (eB !== 0.0)
-        errorRangeB.extendX(eB);
-      if (eC !== 0.0)
-        errorRangeC.extendX(eC);
+      if (eB !== 0.0) errorRangeB.extendX(eB);
+      if (eC !== 0.0) errorRangeC.extendX(eC);
     }
-    ck.testLT(errorRangeB.maxAbs(), 1.0e-15, " degrees round trip error range through Angle logic");
-    ck.testLT(errorRangeC.maxAbs(), 1.0e-15, " degrees round trip error range through direct multiply");
+    ck.testLT(
+      errorRangeB.maxAbs(),
+      1.0e-15,
+      " degrees round trip error range through Angle logic"
+    );
+    ck.testLT(
+      errorRangeC.maxAbs(),
+      1.0e-15,
+      " degrees round trip error range through direct multiply"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -321,10 +419,28 @@ describe("MiscAngles", () => {
         const angleA = Angle.createDegrees(degrees);
         const angleB = Angle.createDegreesAdjustPositive(degrees);
         const angleC = Angle.createDegreesAdjustSigned180(degrees);
-        ck.testTrue(angleA.isAlmostEqualAllowPeriodShift(angleB), degrees, "adjust03600 wrap");
-        ck.testTrue(angleA.isAlmostEqualAllowPeriodShift(angleC), degrees, "adjustSigned180 wrap");
-        ck.testLE(Math.abs(angleB.degrees - 180), 180.0, degrees, "adjust 0360 bounds");
-        ck.testLE(Math.abs(angleC.degrees), 180.0, degrees, "adjust signed180 bounds");
+        ck.testTrue(
+          angleA.isAlmostEqualAllowPeriodShift(angleB),
+          degrees,
+          "adjust03600 wrap"
+        );
+        ck.testTrue(
+          angleA.isAlmostEqualAllowPeriodShift(angleC),
+          degrees,
+          "adjustSigned180 wrap"
+        );
+        ck.testLE(
+          Math.abs(angleB.degrees - 180),
+          180.0,
+          degrees,
+          "adjust 0360 bounds"
+        );
+        ck.testLE(
+          Math.abs(angleC.degrees),
+          180.0,
+          degrees,
+          "adjust signed180 bounds"
+        );
         ck.testCoordinate(
           angleB.radians,
           Angle.adjustRadians0To2Pi(Angle.degreesToRadians(degrees)),
@@ -350,7 +466,12 @@ describe("MiscAngles", () => {
 
     const fullRadiansA = AngleSweep.createStartEndRadians();
     const fullDegreesA = AngleSweep.createStartEndDegrees();
-    ck.testTrue(fullRadiansA.isAlmostEqualNoPeriodShift(fullDegreesA), "radians, degrees defaults", fullRadiansA, fullDegreesA);
+    ck.testTrue(
+      fullRadiansA.isAlmostEqualNoPeriodShift(fullDegreesA),
+      "radians, degrees defaults",
+      fullRadiansA,
+      fullDegreesA
+    );
     ck.testCoordinate(360, fullRadiansA.sweepDegrees);
 
     const sweepB = AngleSweep.create360();
@@ -389,8 +510,14 @@ describe("MiscAngles", () => {
         const deltaStepADegrees = stepADegrees - totalMultiple * 360;
         const stepBRadians = angleB.radians - baseRadians;
         const deltaStepBRadians = stepBRadians - totalMultiple * 2.0 * Math.PI;
-        maxDeltaStepADegrees = Math.max(maxDeltaStepADegrees, Math.abs(deltaStepADegrees));
-        maxDeltaStepBRadians = Math.max(maxDeltaStepBRadians, Math.abs(deltaStepBRadians));
+        maxDeltaStepADegrees = Math.max(
+          maxDeltaStepADegrees,
+          Math.abs(deltaStepADegrees)
+        );
+        maxDeltaStepBRadians = Math.max(
+          maxDeltaStepBRadians,
+          Math.abs(deltaStepBRadians)
+        );
       }
     }
     ck.testTrue(0 === maxDeltaStepADegrees, "degree shifts are exact");
@@ -399,7 +526,8 @@ describe("MiscAngles", () => {
     GeometryCoreTestIO.consoleLog({
       maxErrDegrees: maxDeltaStepADegrees,
       maxErrRadians: maxDeltaStepBRadians,
-      maxErrRadiansConvertedToDegrees: Angle.radiansToDegrees(maxDeltaStepBRadians),
+      maxErrRadiansConvertedToDegrees:
+        Angle.radiansToDegrees(maxDeltaStepBRadians),
     });
 
     const f = Angle.createDegrees(10);
@@ -412,8 +540,14 @@ describe("MiscAngles", () => {
   it("SmallSweep", () => {
     const ck = new Checker();
     const defaultFraction = 3;
-    const sweep = AngleSweep.createStartEndRadians(0.14859042783429374, 0.14859042783429377);
-    const f = sweep.radiansToPositivePeriodicFraction(3.2901830814240864, defaultFraction);
+    const sweep = AngleSweep.createStartEndRadians(
+      0.14859042783429374,
+      0.14859042783429377
+    );
+    const f = sweep.radiansToPositivePeriodicFraction(
+      3.2901830814240864,
+      defaultFraction
+    );
     ck.testCoordinate(f, defaultFraction);
     expect(ck.getNumErrors()).equals(0);
   });
@@ -464,10 +598,22 @@ describe("MiscAngles", () => {
     ck.testExactNumber(0, Angle.adjustRadians0To2Pi(Number.NaN));
     ck.testExactNumber(0, Angle.adjustRadiansMinusPiPlusPi(Number.NaN));
 
-    ck.testExactNumber(0, Angle.adjustDegrees0To360((undefined as unknown) as number));
-    ck.testExactNumber(0, Angle.adjustDegreesSigned180((undefined as unknown) as number));
-    ck.testExactNumber(0, Angle.adjustRadians0To2Pi((undefined as unknown) as number));
-    ck.testExactNumber(0, Angle.adjustRadiansMinusPiPlusPi((undefined as unknown) as number));
+    ck.testExactNumber(
+      0,
+      Angle.adjustDegrees0To360(undefined as unknown as number)
+    );
+    ck.testExactNumber(
+      0,
+      Angle.adjustDegreesSigned180(undefined as unknown as number)
+    );
+    ck.testExactNumber(
+      0,
+      Angle.adjustRadians0To2Pi(undefined as unknown as number)
+    );
+    ck.testExactNumber(
+      0,
+      Angle.adjustRadiansMinusPiPlusPi(undefined as unknown as number)
+    );
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -475,9 +621,13 @@ describe("MiscAngles", () => {
   it("AngleSweep.fromJSON", () => {
     const ck = new Checker();
     const sweepA = AngleSweep.createStartEndDegrees(10, 50);
-    const sweepB = AngleSweep.fromJSON({ degrees: [sweepA.startDegrees, sweepA.endDegrees] });
+    const sweepB = AngleSweep.fromJSON({
+      degrees: [sweepA.startDegrees, sweepA.endDegrees],
+    });
     ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepB));
-    const sweepC = AngleSweep.fromJSON({ radians: [sweepA.startRadians, sweepA.endRadians] });
+    const sweepC = AngleSweep.fromJSON({
+      radians: [sweepA.startRadians, sweepA.endRadians],
+    });
     ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepC));
     const sweepD = AngleSweep.fromJSON(sweepB);
     ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepD));
@@ -496,10 +646,23 @@ describe("Angle.fromJson", () => {
     it("Angle.fromJsonUndefined", () => {
       const startAngle: number = Math.PI / 6;
       const endAngle: number = Math.PI / 3;
-      const json: AngleSweep = AngleSweep.createStartEndRadians(startAngle, endAngle);
+      const json: AngleSweep = AngleSweep.createStartEndRadians(
+        startAngle,
+        endAngle
+      );
       const output: AngleSweep = AngleSweep.fromJSON(json);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngle));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngle));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngle
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngle
+        )
+      );
     }),
     it("Angle.fromJson", () => {
       const startAngleInDegrees: number = 30;
@@ -508,34 +671,76 @@ describe("Angle.fromJson", () => {
       const endAngleInRadians: number = Math.PI / 3;
       const json: AngleSweepProps = [startAngleInDegrees, endAngleInDegrees];
       const output: AngleSweep = AngleSweep.fromJSON(json);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngleInRadians));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngleInRadians));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngleInRadians
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngleInRadians
+        )
+      );
     }),
     it("Angle.fromJsonDegrees", () => {
       const startAngleInDegrees: number = 30;
       const endAngleInDegrees: number = 60;
       const startAngleInRadians: number = Math.PI / 6;
       const endAngleInRadians: number = Math.PI / 3;
-      const json: AngleSweepProps = { degrees: [startAngleInDegrees, endAngleInDegrees] };
+      const json: AngleSweepProps = {
+        degrees: [startAngleInDegrees, endAngleInDegrees],
+      };
       const output: AngleSweep = AngleSweep.fromJSON(json);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngleInRadians));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngleInRadians));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngleInRadians
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngleInRadians
+        )
+      );
     }),
     it("Angle.fromJsonRadian", () => {
       const startAngle: number = Math.PI / 6;
       const endAngle: number = Math.PI / 3;
       const json: AngleSweepProps = { radians: [startAngle, endAngle] };
       const output: AngleSweep = AngleSweep.fromJSON(json);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngle));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngle));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngle
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngle
+        )
+      );
     }),
     it("Angle.fromJsonOtherwise", () => {
       const startAngle: number = 0;
       const endAngle: number = 2 * Math.PI;
       const json: any = { x: 1, y: 2 };
       const output: AngleSweep = AngleSweep.fromJSON(json);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngle));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngle));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngle
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngle
+        )
+      );
     });
 });
 
@@ -550,8 +755,18 @@ describe("Angle.create", () => {
       const startAngle: Angle = Angle.createRadians(Math.PI / 6);
       const endAngle: Angle = Angle.createRadians(Math.PI / 3);
       AngleSweep.createStartEnd(startAngle, endAngle, result);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(result.startAngle.radians, startAngle.radians));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(result.endAngle.radians, endAngle.radians));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          result.startAngle.radians,
+          startAngle.radians
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          result.endAngle.radians,
+          endAngle.radians
+        )
+      );
     }),
     it("Angle.createStartSweepRadians", () => {
       const result: AngleSweep = AngleSweep.create360();
@@ -559,15 +774,35 @@ describe("Angle.create", () => {
       const endAngle: number = Math.PI / 3;
       const sweep: number = Math.PI / 6;
       AngleSweep.createStartSweepRadians(startAngle, sweep, result);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(result.startAngle.radians, startAngle));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(result.endAngle.radians, endAngle));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          result.startAngle.radians,
+          startAngle
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          result.endAngle.radians,
+          endAngle
+        )
+      );
     }),
     it("Angle.createStartSweepRadiansDefault", () => {
       const startAngle: number = 0;
       const endAngle: number = Math.PI;
       const output: AngleSweep = AngleSweep.createStartSweepRadians();
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngle));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngle));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngle
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngle
+        )
+      );
     });
 });
 
@@ -591,7 +826,10 @@ describe("Angle.HalfAngle", () => {
       const rCos2A = r * Math.cos(angle);
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
-      ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
+      ck.testAngleNoShift(
+        Angle.createRadians(halfAngle),
+        Angle.createRadians(trig.radians)
+      );
       expect(ck.getNumErrors()).equals(0);
     }),
     it("Angle.SE", () => {
@@ -602,29 +840,38 @@ describe("Angle.HalfAngle", () => {
       const rCos2A = r * Math.cos(angle);
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
-      ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
+      ck.testAngleNoShift(
+        Angle.createRadians(halfAngle),
+        Angle.createRadians(trig.radians)
+      );
       expect(ck.getNumErrors()).equals(0);
     }),
     it("Angle.NW", () => {
       const ck = new Checker();
       const r = 2;
-      const angle = 3 * Math.PI / 4;
+      const angle = (3 * Math.PI) / 4;
       const halfAngle = angle / 2;
       const rCos2A = r * Math.cos(angle);
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
-      ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
+      ck.testAngleNoShift(
+        Angle.createRadians(halfAngle),
+        Angle.createRadians(trig.radians)
+      );
       expect(ck.getNumErrors()).equals(0);
     }),
     it("Angle.SW", () => {
       const ck = new Checker();
       const r = 2;
-      const angle = -3 * Math.PI / 4;
+      const angle = (-3 * Math.PI) / 4;
       const halfAngle = angle / 2;
       const rCos2A = r * Math.cos(angle);
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
-      ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
+      ck.testAngleNoShift(
+        Angle.createRadians(halfAngle),
+        Angle.createRadians(trig.radians)
+      );
       expect(ck.getNumErrors()).equals(0);
     });
 });
@@ -636,21 +883,47 @@ describe("Angle.cloneComplement", () => {
     const endAngle: number = Math.PI / 3;
     const startAngleComplement: number = Math.PI / 3;
     const endAngleComplement: number = 2 * Math.PI + Math.PI / 6;
-    const angleSweep: AngleSweep = AngleSweep.createStartEndRadians(startAngle, endAngle);
+    const angleSweep: AngleSweep = AngleSweep.createStartEndRadians(
+      startAngle,
+      endAngle
+    );
     const output: AngleSweep = angleSweep.cloneComplement();
-    assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngleComplement));
-    assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngleComplement));
+    assert.isOk(
+      Angle.isAlmostEqualRadiansNoPeriodShift(
+        output.startAngle.radians,
+        startAngleComplement
+      )
+    );
+    assert.isOk(
+      Angle.isAlmostEqualRadiansNoPeriodShift(
+        output.endAngle.radians,
+        endAngleComplement
+      )
+    );
   }),
     it("Angle.cloneComplementReverseDirectionTrue", () => {
       // angle sweep is (30,60) so complement is (30, -300) with reverseDirection = true
       const startAngle: number = Math.PI / 6;
       const endAngle: number = Math.PI / 3;
       const startAngleComplement: number = Math.PI / 6;
-      const endAngleComplement: number = - 2 * Math.PI + Math.PI / 3;
-      const angleSweep: AngleSweep = AngleSweep.createStartEndRadians(startAngle, endAngle);
+      const endAngleComplement: number = -2 * Math.PI + Math.PI / 3;
+      const angleSweep: AngleSweep = AngleSweep.createStartEndRadians(
+        startAngle,
+        endAngle
+      );
       const output: AngleSweep = angleSweep.cloneComplement(true);
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngleComplement));
-      assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.endAngle.radians, endAngleComplement));
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.startAngle.radians,
+          startAngleComplement
+        )
+      );
+      assert.isOk(
+        Angle.isAlmostEqualRadiansNoPeriodShift(
+          output.endAngle.radians,
+          endAngleComplement
+        )
+      );
     });
 });
 
@@ -664,14 +937,18 @@ describe("Angle.isAlmostEqualAllowPeriodShift", () => {
     it("Angle.isAlmostEqualAllowPeriodShiftFalse", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(Angle.pi2Radians);
-      const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle);
+      const output: boolean =
+        thisAngle.isAlmostEqualAllowPeriodShift(otherAngle);
       expect(output).equal(false);
     }),
     it("Angle.isAlmostEqualAllowPeriodShiftTrueWithDefaultTolerance", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(0.9 + Angle.pi2Radians);
       const radianTol: number = 0.2;
-      const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle, radianTol);
+      const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(
+        otherAngle,
+        radianTol
+      );
       expect(output).equal(true);
     });
 });
@@ -685,7 +962,9 @@ describe("Angle.isAlmostEqualNoPeriodShift", () => {
   }),
     it("Angle.isAlmostEqualNoPeriodShiftFalse", () => {
       const thisAngle: Angle = Angle.createRadians(1);
-      const otherAngle: Angle = Angle.createRadians(1 + Angle.pi2Radians + 1e-15);
+      const otherAngle: Angle = Angle.createRadians(
+        1 + Angle.pi2Radians + 1e-15
+      );
       const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle);
       expect(output).equal(false);
     }),
@@ -693,7 +972,10 @@ describe("Angle.isAlmostEqualNoPeriodShift", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(0.9);
       const radianTol: number = 0.2;
-      const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle, radianTol);
+      const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(
+        otherAngle,
+        radianTol
+      );
       expect(output).equal(true);
     });
 });
@@ -701,28 +983,42 @@ describe("Angle.isAlmostEqualNoPeriodShift", () => {
 describe("Angle.angleToUnboundedFraction", () => {
   it("Angle.10and(20,30)", () => {
     const theta: Angle = Angle.createRadians(Math.PI / 18); // 10 degrees
-    const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
+    const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+      Math.PI / 9,
+      Math.PI / 6
+    ); // (20,30) degrees
     const outputFraction: number = sweep.angleToUnboundedFraction(theta);
     const expectedFraction = -1; // (10-20)/(30-20) = -10/10 = -1
     assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
   }),
     it("Angle.25and(20,30)", () => {
-      const theta: Angle = Angle.createRadians(5 * Math.PI / 36); // 25 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
+      const theta: Angle = Angle.createRadians((5 * Math.PI) / 36); // 25 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 9,
+        Math.PI / 6
+      ); // (20,30) degrees
       const outputFraction: number = sweep.angleToUnboundedFraction(theta);
       const expectedFraction = 0.5; // (25-20)/(30-20) = 5/10 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.40and(20,30)", () => {
-      const theta: Angle = Angle.createRadians(2 * Math.PI / 9); // 40 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
+      const theta: Angle = Angle.createRadians((2 * Math.PI) / 9); // 40 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 9,
+        Math.PI / 6
+      ); // (20,30) degrees
       const outputFraction: number = sweep.angleToUnboundedFraction(theta);
       const expectedFraction = 2; // (40-20)/(30-20) = 20/10 = 2
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.385and(20,30)", () => {
-      const theta: Angle = Angle.createRadians(2 * Math.PI + 5 * Math.PI / 36); // 360+25 = 385 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
+      const theta: Angle = Angle.createRadians(
+        2 * Math.PI + (5 * Math.PI) / 36
+      ); // 360+25 = 385 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 9,
+        Math.PI / 6
+      ); // (20,30) degrees
       const outputFraction: number = sweep.angleToUnboundedFraction(theta);
       const expectedFraction = 36.5; // (385-20)/(30-20) = 365/10 = 36.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
@@ -734,31 +1030,51 @@ describe("Angle.radiansToPositivePeriodicFractionStartEnd", () => {
     const radians: number = Math.PI / 18; // 10 degrees
     const radians0: number = Math.PI / 9; // 20 degrees
     const radians1: number = Math.PI / 6; // 30 degrees
-    const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+    const outputFraction: number =
+      AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+        radians,
+        radians0,
+        radians1
+      );
     const expectedFraction = 35; // (10-20)/(30-20) = -10/10 ==> 350/10 = 35
     assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
   }),
     it("Angle.25and(20,30)", () => {
-      const radians: number = 5 * Math.PI / 36; // 25 degrees
+      const radians: number = (5 * Math.PI) / 36; // 25 degrees
       const radians0: number = Math.PI / 9; // 20 degrees
       const radians1: number = Math.PI / 6; // 30 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 0.5; // (25-20)/(30-20) = 5/10 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.40and(20,30)", () => {
-      const radians: number = 2 * Math.PI / 9; // 40 degrees
+      const radians: number = (2 * Math.PI) / 9; // 40 degrees
       const radians0: number = Math.PI / 9; // 20 degrees
       const radians1: number = Math.PI / 6; // 30 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 2; // (40-20)/(30-20) = 20/10 = 2
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.385and(20,30)", () => {
-      const radians: number = 2 * Math.PI + 5 * Math.PI / 36; // 360+25 = 385 degrees
+      const radians: number = 2 * Math.PI + (5 * Math.PI) / 36; // 360+25 = 385 degrees
       const radians0: number = Math.PI / 9; // 20 degrees
       const radians1: number = Math.PI / 6; // 30 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 0.5; // (385-20)/(30-20) = 365/10 ==> 5/10 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
@@ -766,31 +1082,51 @@ describe("Angle.radiansToPositivePeriodicFractionStartEnd", () => {
       const radians: number = Math.PI / 18; // 10 degrees
       const radians0: number = Math.PI / 6; // 30 degrees
       const radians1: number = Math.PI / 9; // 20 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 2; // (10-30)/(20-30) = -20/-10 ==> 20/10 = 2
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.25and(30,20)", () => {
-      const radians: number = 5 * Math.PI / 36; // 25 degrees
+      const radians: number = (5 * Math.PI) / 36; // 25 degrees
       const radians0: number = Math.PI / 6; // 30 degrees
       const radians1: number = Math.PI / 9; // 20 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 0.5; // (25-30)/(20-30) = -5/-10 ==> 5/10 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.40and(30,20)", () => {
-      const radians: number = 2 * Math.PI / 9; // 40 degrees
+      const radians: number = (2 * Math.PI) / 9; // 40 degrees
       const radians0: number = Math.PI / 6; // 30 degrees
       const radians1: number = Math.PI / 9; // 20 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 35; // (40-30)/(20-30) = 10/-10 ==> -10/10 ==> 350/10 = 35
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.385and(30,20)", () => {
-      const radians: number = 2 * Math.PI + 5 * Math.PI / 36; // 360+25 = 385 degrees
+      const radians: number = 2 * Math.PI + (5 * Math.PI) / 36; // 360+25 = 385 degrees
       const radians0: number = Math.PI / 6; // 30 degrees
       const radians1: number = Math.PI / 9; // 20 degrees
-      const outputFraction: number = AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1);
+      const outputFraction: number =
+        AngleSweep.radiansToPositivePeriodicFractionStartEnd(
+          radians,
+          radians0,
+          radians1
+        );
       const expectedFraction = 0.5; // (385-30)/(20-30) = 355/-10 ==> -355/10 ==> 5/10 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     });
@@ -799,57 +1135,89 @@ describe("Angle.radiansToPositivePeriodicFractionStartEnd", () => {
 describe("Angle.radiansToSignedPeriodicFraction", () => {
   it("Angle.10and(20,30)", () => {
     const radians: number = Math.PI / 18; // 10 degrees
-    const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
-    const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+    const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+      Math.PI / 9,
+      Math.PI / 6
+    ); // (20,30) degrees
+    const outputFraction: number =
+      sweep.radiansToSignedPeriodicFraction(radians);
     const expectedFraction = -1; // (10-20 - 0.5*10)/(30-20) = -15/10 = -1.5 ==> 0.5 + (-1.5) = 1
     assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
   }),
     it("Angle.25and(20,30)", () => {
-      const radians: number = 5 * Math.PI / 36; // 25 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const radians: number = (5 * Math.PI) / 36; // 25 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 9,
+        Math.PI / 6
+      ); // (20,30) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = 0.5; // (25-20 - 0.5*10)/(30-20) = 0 ==> 0.5 + 0 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.40and(20,30)", () => {
-      const radians: number = 2 * Math.PI / 9; // 40 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const radians: number = (2 * Math.PI) / 9; // 40 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 9,
+        Math.PI / 6
+      ); // (20,30) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = 2; // (40-20 - 0.5*10)/(30-20) = 15/10 = 1.5 ==> 0.5 + 1.5 = 2
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.385and(20,30)", () => {
-      const radians: number = 2 * Math.PI + 5 * Math.PI / 36; // 360+25 = 385 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 9, Math.PI / 6); // (20,30) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const radians: number = 2 * Math.PI + (5 * Math.PI) / 36; // 360+25 = 385 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 9,
+        Math.PI / 6
+      ); // (20,30) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = 0.5; // (385-20 - 0.5*10)/(30-20) = 360/10 ==> 0/10 = 0 ==> 0.5 + 0 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.10and(30,20)", () => {
       const radians: number = Math.PI / 18; // 10 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 6, Math.PI / 9); // (30,20) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 6,
+        Math.PI / 9
+      ); // (30,20) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = 2; // (10-30 + 0.5*10)/(20-30) = -15/-10 ==> 15/10 = 1.5 ==> 0.5 + 1.5 = 2
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.25and(30,20)", () => {
-      const radians: number = 5 * Math.PI / 36; // 25 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 6, Math.PI / 9); // (30,20) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const radians: number = (5 * Math.PI) / 36; // 25 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 6,
+        Math.PI / 9
+      ); // (30,20) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = 0.5; // (25-30 + 0.5*10)/(20-30) = 0 ==> 0.5 + 0 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.40and(30,20)", () => {
-      const radians: number = 2 * Math.PI / 9; // 40 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 6, Math.PI / 9); // (30,20) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const radians: number = (2 * Math.PI) / 9; // 40 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 6,
+        Math.PI / 9
+      ); // (30,20) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = -1; // (40-30 + 0.5*10)/(20-30) = 15/-10 ==> -15/10 = -1.5 ==> 0.5 + (-1.5) = -1
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     }),
     it("Angle.385and(30,20)", () => {
-      const radians: number = 2 * Math.PI + 5 * Math.PI / 36; // 360+25 = 385 degrees
-      const sweep: AngleSweep = AngleSweep.createStartEndRadians(Math.PI / 6, Math.PI / 9); // (30,20) degrees
-      const outputFraction: number = sweep.radiansToSignedPeriodicFraction(radians);
+      const radians: number = 2 * Math.PI + (5 * Math.PI) / 36; // 360+25 = 385 degrees
+      const sweep: AngleSweep = AngleSweep.createStartEndRadians(
+        Math.PI / 6,
+        Math.PI / 9
+      ); // (30,20) degrees
+      const outputFraction: number =
+        sweep.radiansToSignedPeriodicFraction(radians);
       const expectedFraction = 0.5; // (385-30 + 0.5*10)/(20-30) = 360/10 ==> 0/10 = 0 ==> 0.5 + 0 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     });
@@ -863,30 +1231,65 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     // u and v are 2 random vectors which define vector basis for the ellipse x(t) = c + U cos(t) + V sin(t)
     const U = Vector3d.create(3, 1);
     const V = Vector3d.create(2, 2);
-    const sweep = AngleSweep.createStartEndRadians(2 / 5 * Math.PI, 4 / 3 * Math.PI); // a radom sweep on the ellipse
+    const sweep = AngleSweep.createStartEndRadians(
+      (2 / 5) * Math.PI,
+      (4 / 3) * Math.PI
+    ); // a radom sweep on the ellipse
     const arc0 = Arc3d.create(c, U, V, sweep); // the arc on the ellipse (limited by the sweep)
     // uSeg0 and vSeg0 are the 2 ellipse vector basis (they have the same direction as U and V)
-    const uSeg0 = LineSegment3d.create(arc0.center, arc0.center.plus(arc0.vector0));
-    const vSeg0 = LineSegment3d.create(arc0.center, arc0.center.plus(arc0.vector90));
+    const uSeg0 = LineSegment3d.create(
+      arc0.center,
+      arc0.center.plus(arc0.vector0)
+    );
+    const vSeg0 = LineSegment3d.create(
+      arc0.center,
+      arc0.center.plus(arc0.vector90)
+    );
     const arc0full = arc0.clone();
-    arc0full.sweep = AngleSweep.create360(arc0full.sweep.startRadians);  // the full ellipse created by c, u, and v
+    arc0full.sweep = AngleSweep.create360(arc0full.sweep.startRadians); // the full ellipse created by c, u, and v
     const dotUU = U.dotProduct(U);
     const dotVV = V.dotProduct(V);
     const dotUV = U.dotProduct(V);
     const t = Angle.dotProductsToHalfAngleTrigValues(dotUU, dotVV, dotUV); // the angle at which one of the ellipse semi-axis is located
     // perpSeg is one of the ellipse semi-axis
-    const perpSeg = LineSegment3d.create(arc0.center, arc0.angleToPointAndDerivative(Angle.createRadians(t.radians)).origin);
+    const perpSeg = LineSegment3d.create(
+      arc0.center,
+      arc0.angleToPointAndDerivative(Angle.createRadians(t.radians)).origin
+    );
     const arc1json = arc0.toScaledMatrix3d(); // toScaledMatrix3d internally calls dotProductsToHalfAngleTrigValues
     // arc1 is the squared arc (created by 2 perpendicular vector basis). arc1 is same as arc0 but arc1 is
     // created by the 2 semi-axis (2 perpendicular vector basis) while arc0 is created by 2 random vector basis.
     // note that toScaledMatrix3d returns unit axis so we have to apply scale (r0 and r90)
-    const arc1 = Arc3d.create(arc1json.center, arc1json.axes.columnX().scale(arc1json.r0), arc1json.axes.columnY().scale(arc1json.r90), arc1json.sweep);
+    const arc1 = Arc3d.create(
+      arc1json.center,
+      arc1json.axes.columnX().scale(arc1json.r0),
+      arc1json.axes.columnY().scale(arc1json.r90),
+      arc1json.sweep
+    );
     // uSeg0 and vSeg0 are the 2 ellipse semi-axis. note that uSeg1 is same as perpSeg
-    const uSeg1 = LineSegment3d.create(arc1.center, arc1.center.plus(arc1.vector0));
-    const vSeg1 = LineSegment3d.create(arc1.center, arc1.center.plus(arc1.vector90));
-    ck.testPoint3d(arc0.startPoint(), arc1.startPoint(), "arc and squared arc start point same");
-    ck.testPoint3d(arc0.endPoint(), arc1.endPoint(), "arc and squared arc end point same");
-    ck.testCoordinate(arc0.curveLength(), arc1.curveLength(), "arc and squared arc lengths same");
+    const uSeg1 = LineSegment3d.create(
+      arc1.center,
+      arc1.center.plus(arc1.vector0)
+    );
+    const vSeg1 = LineSegment3d.create(
+      arc1.center,
+      arc1.center.plus(arc1.vector90)
+    );
+    ck.testPoint3d(
+      arc0.startPoint(),
+      arc1.startPoint(),
+      "arc and squared arc start point same"
+    );
+    ck.testPoint3d(
+      arc0.endPoint(),
+      arc1.endPoint(),
+      "arc and squared arc end point same"
+    );
+    ck.testCoordinate(
+      arc0.curveLength(),
+      arc1.curveLength(),
+      "arc and squared arc lengths same"
+    );
     ck.testPoint3d(
       perpSeg.startPoint(),
       uSeg1.startPoint(),
@@ -897,11 +1300,29 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
       uSeg1.endPoint(),
       "the radial segment at angle t in the original arc has the same end point as the semi-axis at angle 0 in the squared arc"
     );
-    ck.testPoint3d(perpSeg.point1Ref, arc1.center.plusScaled(arc1.vector0, 1.0), "point at angle t in arc equals point at angle 0 in squared arc");
-    ck.testFalse(arc0.vector0.angleTo(arc1.vector0).isAlmostEqual(Angle.createRadians(t.radians)), "angle t is NOT measured from u to perpSeg");
+    ck.testPoint3d(
+      perpSeg.point1Ref,
+      arc1.center.plusScaled(arc1.vector0, 1.0),
+      "point at angle t in arc equals point at angle 0 in squared arc"
+    );
+    ck.testFalse(
+      arc0.vector0
+        .angleTo(arc1.vector0)
+        .isAlmostEqual(Angle.createRadians(t.radians)),
+      "angle t is NOT measured from u to perpSeg"
+    );
 
     // for visualization in MicroStation
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc0full, uSeg0, vSeg0, perpSeg, arc1, uSeg1, vSeg1]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [
+      arc0,
+      arc0full,
+      uSeg0,
+      vSeg0,
+      perpSeg,
+      arc1,
+      uSeg1,
+      vSeg1,
+    ]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SquareEllipseAxes");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -909,9 +1330,22 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
 
 describe("Angle.radiansBetweenVectorsXYZ", () => {
   it("Angle.radiansBetweenVectorsXYZ", () => {
-    const radians = Angle.radiansBetweenVectorsXYZ(1 / 2, Math.sqrt(3) / 2, 0, -1 / 2, Math.sqrt(3) / 2, 0);
+    const radians = Angle.radiansBetweenVectorsXYZ(
+      1 / 2,
+      Math.sqrt(3) / 2,
+      0,
+      -1 / 2,
+      Math.sqrt(3) / 2,
+      0
+    );
     const angle = Angle.createRadians(radians);
     const expectedRadian: number = 60;
-    expect(Geometry.isAlmostEqualOptional(angle.degrees, expectedRadian, Geometry.smallAngleRadians)).equal(true);
+    expect(
+      Geometry.isAlmostEqualOptional(
+        angle.degrees,
+        expectedRadian,
+        Geometry.smallAngleRadians
+      )
+    ).equal(true);
   });
 });

@@ -18,16 +18,23 @@ import { RpcRoutingToken } from "./RpcRoutingToken";
 /* eslint-disable deprecation/deprecation */
 
 /** @internal */
-export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
+export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
+  new (): RpcConfiguration;
+}; // eslint-disable-line @typescript-eslint/prefer-function-type
 
 /** @internal */
-export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier> }
+export interface RpcRoutingMap extends RpcConfigurationSupplier {
+  configurations: Map<number, RpcConfigurationSupplier>;
+}
 
 /** @internal */
 export namespace RpcRoutingMap {
   export function create(): RpcRoutingMap {
     const configurations = new Map();
-    return Object.assign((routing?: RpcRoutingToken) => configurations.get(routing!.id)(), { configurations });
+    return Object.assign(
+      (routing?: RpcRoutingToken) => configurations.get(routing!.id)(),
+      { configurations }
+    );
   }
 }
 
@@ -58,9 +65,14 @@ export abstract class RpcConfiguration {
   public static throwOnTokenMismatch = false;
 
   /** @internal Sets the configuration supplier for an RPC interface class. */
-  public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
-    const map = definition.prototype.configurationSupplier as RpcRoutingMap | undefined;
-    if (!map || typeof (map.configurations) === "undefined") {
+  public static assign<T extends RpcInterface>(
+    definition: RpcInterfaceDefinition<T>,
+    supplier: RpcConfigurationSupplier
+  ): void {
+    const map = definition.prototype.configurationSupplier as
+      | RpcRoutingMap
+      | undefined;
+    if (!map || typeof map.configurations === "undefined") {
       definition.prototype.configurationSupplier = supplier;
     } else {
       map.configurations.set(RpcRoutingToken.default.id, supplier);
@@ -68,13 +80,17 @@ export abstract class RpcConfiguration {
   }
 
   /** Sets the configuration supplier for an RPC interface class for a given routing. */
-  public static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void {
+  public static assignWithRouting<T extends RpcInterface>(
+    definition: RpcInterfaceDefinition<T>,
+    routing: RpcRoutingToken,
+    configuration: new () => RpcConfiguration
+  ): void {
     if (!definition.prototype.configurationSupplier) {
       RpcConfiguration.assign(definition, RpcRoutingMap.create());
     }
 
     let map = definition.prototype.configurationSupplier as RpcRoutingMap;
-    if (typeof (map.configurations) === "undefined") {
+    if (typeof map.configurations === "undefined") {
       const existing = map as RpcConfigurationSupplier;
       map = RpcRoutingMap.create();
       RpcConfiguration.assign(definition, map);
@@ -86,10 +102,13 @@ export abstract class RpcConfiguration {
   }
 
   /** Obtains the instance of an RPC configuration class. */
-  public static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T {
+  public static obtain<T extends RpcConfiguration>(
+    configurationConstructor: new () => T
+  ): T {
     let instance = (configurationConstructor as any)[INSTANCE] as T;
     if (!instance)
-      instance = (configurationConstructor as any)[INSTANCE] = new configurationConstructor();
+      instance = (configurationConstructor as any)[INSTANCE] =
+        new configurationConstructor();
 
     return instance;
   }
@@ -121,7 +140,9 @@ export abstract class RpcConfiguration {
   public allowAttachedInterfaces: boolean = true;
 
   /** @internal */
-  public get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition> { return this.attached; }
+  public get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition> {
+    return this.attached;
+  }
 
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;
@@ -138,12 +159,17 @@ export abstract class RpcConfiguration {
   public readonly controlChannel = RpcControlChannel.obtain(this);
 
   /** @internal */
-  public attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
+  public attach<T extends RpcInterface>(
+    definition: RpcInterfaceDefinition<T>
+  ): void {
     if (!this.allowAttachedInterfaces) {
       return;
     }
 
-    if (this.interfaces().indexOf(definition) !== -1 || this.attached.indexOf(definition) !== -1) {
+    if (
+      this.interfaces().indexOf(definition) !== -1 ||
+      this.attached.indexOf(definition) !== -1
+    ) {
       return;
     }
 
@@ -154,31 +180,49 @@ export abstract class RpcConfiguration {
 
   /** Initializes the RPC interfaces managed by the configuration. */
   public static initializeInterfaces(configuration: RpcConfiguration) {
-    configuration.interfaces().forEach((definition) => RpcManager.initializeInterface(definition));
+    configuration
+      .interfaces()
+      .forEach((definition) => RpcManager.initializeInterface(definition));
   }
 
   /** @internal */
   public static supply(definition: RpcInterface): RpcConfiguration {
-    return RpcConfiguration.obtain(definition.configurationSupplier ? definition.configurationSupplier(definition.routing) : RpcDefaultConfiguration);
+    return RpcConfiguration.obtain(
+      definition.configurationSupplier
+        ? definition.configurationSupplier(definition.routing)
+        : RpcDefaultConfiguration
+    );
   }
 
   /** @internal */
-  public onRpcClientInitialized(definition: RpcInterfaceDefinition, client: RpcInterface): void {
+  public onRpcClientInitialized(
+    definition: RpcInterfaceDefinition,
+    client: RpcInterface
+  ): void {
     this.protocol.onRpcClientInitialized(definition, client);
   }
 
   /** @internal */
-  public onRpcImplInitialized(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
+  public onRpcImplInitialized(
+    definition: RpcInterfaceDefinition,
+    impl: RpcInterface
+  ): void {
     this.protocol.onRpcImplInitialized(definition, impl);
   }
 
   /** @internal */
-  public onRpcClientTerminated(definition: RpcInterfaceDefinition, client: RpcInterface): void {
+  public onRpcClientTerminated(
+    definition: RpcInterfaceDefinition,
+    client: RpcInterface
+  ): void {
     this.protocol.onRpcClientTerminated(definition, client);
   }
 
   /** @internal */
-  public onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void {
+  public onRpcImplTerminated(
+    definition: RpcInterfaceDefinition,
+    impl: RpcInterface
+  ): void {
     this.protocol.onRpcImplTerminated(definition, impl);
   }
 }

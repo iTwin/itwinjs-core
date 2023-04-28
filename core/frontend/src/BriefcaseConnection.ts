@@ -6,10 +6,25 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
-  PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
+  assert,
+  BeEvent,
+  CompressedId64Set,
+  Guid,
+  GuidString,
+  Id64String,
+  IModelStatus,
+  OpenMode,
+} from "@itwin/core-bentley";
+import {
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  getPullChangesIpcChannel,
+  IModelConnectionProps,
+  IModelError,
+  PullChangesOptions as IpcAppPullChangesOptions,
+  OpenBriefcaseProps,
+  StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
@@ -44,9 +59,15 @@ export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
  */
 export interface GenericAbortSignal {
   /** Add Listener for abort signal. */
-  addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+  addEventListener: (
+    type: "abort",
+    listener: (this: GenericAbortSignal, ev: any) => any
+  ) => void;
   /** Remove Listener for abort signal. */
-  removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+  removeEventListener: (
+    type: "abort",
+    listener: (this: GenericAbortSignal, ev: any) => any
+  ) => void;
 }
 
 /**
@@ -84,27 +105,30 @@ class ModelChangeMonitor {
     this._briefcase = briefcase;
 
     // Buffer updated geometry guids.
-    this._removals.push(briefcase.txns.onModelGeometryChanged.addListener((changes) => {
-      for (const change of changes) {
-        this._deletedModels.delete(change.id);
-        this._modelIdToGuid.set(change.id, change.guid);
-      }
-    }));
+    this._removals.push(
+      briefcase.txns.onModelGeometryChanged.addListener((changes) => {
+        for (const change of changes) {
+          this._deletedModels.delete(change.id);
+          this._modelIdToGuid.set(change.id, change.guid);
+        }
+      })
+    );
 
     // Buffer deletions of models.
-    this._removals.push(briefcase.txns.onModelsChanged.addListener((changes) => {
-      if (changes.deleted) {
-        for (const id of CompressedId64Set.iterable(changes.deleted)) {
-          this._modelIdToGuid.delete(id);
-          this._deletedModels.add(id);
+    this._removals.push(
+      briefcase.txns.onModelsChanged.addListener((changes) => {
+        if (changes.deleted) {
+          for (const id of CompressedId64Set.iterable(changes.deleted)) {
+            this._modelIdToGuid.delete(id);
+            this._deletedModels.add(id);
+          }
         }
-      }
-    }));
+      })
+    );
 
     // Outside of an editing scope, we want to update viewport contents after commit, undo/redo, or merging changes.
     const maybeProcess = async () => {
-      if (this.editingScope)
-        return;
+      if (this.editingScope) return;
 
       const modelIds = Array.from(this._modelIdToGuid.keys());
       if (modelIds.length > 0)
@@ -114,13 +138,16 @@ class ModelChangeMonitor {
     };
 
     this._removals.push(briefcase.txns.onCommitted.addListener(maybeProcess));
-    this._removals.push(briefcase.txns.onAfterUndoRedo.addListener(maybeProcess));
-    this._removals.push(briefcase.txns.onChangesPulled.addListener(maybeProcess));
+    this._removals.push(
+      briefcase.txns.onAfterUndoRedo.addListener(maybeProcess)
+    );
+    this._removals.push(
+      briefcase.txns.onChangesPulled.addListener(maybeProcess)
+    );
   }
 
   public async close(): Promise<void> {
-    for (const removal of this._removals)
-      removal();
+    for (const removal of this._removals) removal();
 
     this._removals.length = 0;
 
@@ -136,17 +163,20 @@ class ModelChangeMonitor {
 
   public async enterEditingScope(): Promise<GraphicalEditingScope> {
     if (this._editingScope)
-      throw new Error("Cannot create an editing scope for an iModel that already has one");
+      throw new Error(
+        "Cannot create an editing scope for an iModel that already has one"
+      );
 
     this._editingScope = await GraphicalEditingScope.enter(this._briefcase);
 
-    const removeGeomListener = this._editingScope.onGeometryChanges.addListener((changes) => {
-      const modelIds = [];
-      for (const change of changes)
-        modelIds.push(change.id);
+    const removeGeomListener = this._editingScope.onGeometryChanges.addListener(
+      (changes) => {
+        const modelIds = [];
+        for (const change of changes) modelIds.push(change.id);
 
-      this.invalidateScenes(modelIds);
-    });
+        this.invalidateScenes(modelIds);
+      }
+    );
 
     this._editingScope.onExited.addOnce((scope) => {
       assert(scope === this._editingScope);
@@ -162,8 +192,7 @@ class ModelChangeMonitor {
     const models = this._briefcase.models;
     for (const [id, guid] of this._modelIdToGuid) {
       const model = models.getLoaded(id)?.asGeometricModel;
-      if (model)
-        model.geometryGuid = guid;
+      if (model) model.geometryGuid = guid;
     }
 
     const modelIds = new Set<string>(this._modelIdToGuid.keys());
@@ -209,10 +238,14 @@ export class BriefcaseEditorToolSettings {
   private _model?: Id64String;
 
   /** An event raised just after the default [[category]] is changed. */
-  public readonly onCategoryChanged = new BeEvent<(previousCategory: Id64String | undefined) => void>();
+  public readonly onCategoryChanged = new BeEvent<
+    (previousCategory: Id64String | undefined) => void
+  >();
 
   /** An event raised just after the default [[model]] is changed. */
-  public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
+  public readonly onModelChanged = new BeEvent<
+    (previousModel: Id64String | undefined) => void
+  >();
 
   /** The [Category]($backend) into which new elements should be inserted by default.
    * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate category.
@@ -263,13 +296,19 @@ export class BriefcaseConnection extends IModelConnection {
   public readonly txns: BriefcaseTxns;
 
   /** @internal */
-  public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
+  public override isBriefcaseConnection(): this is BriefcaseConnection {
+    return true;
+  }
 
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString {
+    return super.iTwinId!;
+  } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iModelId(): GuidString {
+    return super.iModelId!;
+  } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
     super(props);
@@ -279,9 +318,16 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
-  public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
-    const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
-    const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
+  public static async openFile(
+    briefcaseProps: OpenBriefcaseProps
+  ): Promise<BriefcaseConnection> {
+    const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(
+      briefcaseProps
+    );
+    const connection = new this(
+      { ...briefcaseProps, ...iModelProps },
+      briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite
+    );
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -289,23 +335,32 @@ export class BriefcaseConnection extends IModelConnection {
   /** Open a BriefcaseConnection to a [StandaloneDb]($backend)
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
    */
-  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
-    const openResponse = await IpcApp.appFunctionIpc.openStandalone(filePath, openMode, opts);
+  public static async openStandalone(
+    filePath: string,
+    openMode: OpenMode = OpenMode.ReadWrite,
+    opts?: StandaloneOpenOptions
+  ): Promise<BriefcaseConnection> {
+    const openResponse = await IpcApp.appFunctionIpc.openStandalone(
+      filePath,
+      openMode,
+      opts
+    );
     const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
   /** Returns `true` if [[close]] has already been called. */
-  public get isClosed(): boolean { return this._isClosed === true; }
+  public get isClosed(): boolean {
+    return this._isClosed === true;
+  }
 
   /**
    * Close this BriefcaseConnection.
    * @note make sure to call [[saveChanges]] before calling this method. Unsaved local changes are abandoned.
    */
   public async close(): Promise<void> {
-    if (this.isClosed)
-      return;
+    if (this.isClosed) return;
 
     await this._modelsMonitor.close();
 
@@ -322,7 +377,8 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async hasPendingTxns(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return this.txns.hasPendingTxns();
   }
 
@@ -338,13 +394,20 @@ export class BriefcaseConnection extends IModelConnection {
    * @param options Options for pulling changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
+  public async pullChanges(
+    toIndex?: ChangesetIndex,
+    options?: PullChangesOptions
+  ): Promise<void> {
     const removeListeners: VoidFunction[] = [];
     // eslint-disable-next-line deprecation/deprecation
-    const shouldReportProgress = !!options?.progressCallback || !!options?.downloadProgressCallback;
+    const shouldReportProgress =
+      !!options?.progressCallback || !!options?.downloadProgressCallback;
 
     if (shouldReportProgress) {
-      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
+      const handleProgress = (
+        _evt: Event,
+        data: { loaded: number; total: number }
+      ) => {
         // eslint-disable-next-line deprecation/deprecation
         options?.progressCallback?.(data);
         options?.downloadProgressCallback?.(data);
@@ -352,15 +415,18 @@ export class BriefcaseConnection extends IModelConnection {
 
       const removeProgressListener = IpcApp.addListener(
         getPullChangesIpcChannel(this.iModelId),
-        handleProgress,
+        handleProgress
       );
       removeListeners.push(removeProgressListener);
     }
 
     if (options?.abortSignal) {
-      const abort = () => void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
+      const abort = () =>
+        void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
       options?.abortSignal.addEventListener("abort", abort);
-      removeListeners.push(() => options?.abortSignal?.removeEventListener("abort", abort));
+      removeListeners.push(() =>
+        options?.abortSignal?.removeEventListener("abort", abort)
+      );
     }
 
     this.requireTimeline();
@@ -370,7 +436,11 @@ export class BriefcaseConnection extends IModelConnection {
       enableCancellation: !!options?.abortSignal,
     };
     try {
-      this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex, ipcAppOptions);
+      this.changeset = await IpcApp.appFunctionIpc.pullChanges(
+        this.key,
+        toIndex,
+        ipcAppOptions
+      );
     } finally {
       removeListeners.forEach((remove) => remove());
     }
@@ -414,5 +484,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** Strictly for tests - dispatched from ModelChangeMonitor.processBuffered.
    * @internal
    */
-  public readonly onBufferedModelChanges = new BeEvent<(changedModelIds: Set<string>) => void>();
+  public readonly onBufferedModelChanges = new BeEvent<
+    (changedModelIds: Set<string>) => void
+  >();
 }

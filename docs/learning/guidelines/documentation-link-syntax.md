@@ -11,25 +11,25 @@ Each type of file is processed (using [MetalSmith](https://metalsmith.io/) scrip
 
 You can create links into the TypeDoc generated documentation using the same syntax, either from Markdown files or from other TypeDoc comments.
 
-| Link to: | Syntax| Notes
-|---------|----|--
-| A package | `($package)`| links to the documentation found in the index.ts file for *package*, marked with the `@docs-package-description` tag.
-| A topic|`[label]($package:Topic)`| links to the documentation found in the index.ts file for *package*, marked with the `@docs-group-description Topic` tag.
-| A class|`[Class]($package)`| links to the documentation for *Class* in *package*
-| An inner class|`[Class.InnerClass]($package)`| links to links to the documentation for *Class.InnerClass* in *package*
-| A method|`[Class.method]($package)` or `[method]($package.Class)`|links to the documentation for *Class.method* in *package*
+| Link to:       | Syntax                                                   | Notes                                                                                                                     |
+| -------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| A package      | `($package)`                                             | links to the documentation found in the index.ts file for _package_, marked with the `@docs-package-description` tag.     |
+| A topic        | `[label]($package:Topic)`                                | links to the documentation found in the index.ts file for _package_, marked with the `@docs-group-description Topic` tag. |
+| A class        | `[Class]($package)`                                      | links to the documentation for _Class_ in _package_                                                                       |
+| An inner class | `[Class.InnerClass]($package)`                           | links to links to the documentation for _Class.InnerClass_ in _package_                                                   |
+| A method       | `[Class.method]($package)` or `[method]($package.Class)` | links to the documentation for _Class.method_ in _package_                                                                |
 
-> *Package aliases* can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> core-common.
+> _Package aliases_ can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> core-common.
 
 ## Linking Markdown -> Markdown
 
 Standard markdown rules apply:
 
-| Destination | Syntax | Notes
-|---|---|--
-| In same file |`[label](#section)`| |
-| In same folder|`[label](./filename.md#section)`| both `./` and `.md` are required|
-| Another folder|`[label](./relativePath/filename.md#section)`|`.md` is required|
+| Destination    | Syntax                                        | Notes                            |
+| -------------- | --------------------------------------------- | -------------------------------- |
+| In same file   | `[label](#section)`                           |                                  |
+| In same folder | `[label](./filename.md#section)`              | both `./` and `.md` are required |
+| Another folder | `[label](./relativePath/filename.md#section)` | `.md` is required                |
 
 ### Notes on #section
 

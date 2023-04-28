@@ -25,7 +25,13 @@ function expectRgb<T extends Rgb>(rgb: T, r: number, g: number, b: number) {
   expectComponent(rgb.blue, b);
 }
 
-function expectRgba(rgba: FloatRgba, r: number, g: number, b: number, a: number) {
+function expectRgba(
+  rgba: FloatRgba,
+  r: number,
+  g: number,
+  b: number,
+  a: number
+) {
   expectRgb(rgba, r, g, b);
   expectComponent(rgba.alpha, a);
 }
@@ -54,7 +60,7 @@ describe("FloatRgb", () => {
     rgb.setColorDef(color);
     expect(rgb.tbgr).not.to.equal(color.tbgr);
     expectRgb(rgb, 25 / 255, 192 / 255, 212 / 255);
-    expect(rgb.tbgr).to.equal(0x00D4C019);
+    expect(rgb.tbgr).to.equal(0x00d4c019);
   });
 
   it("should create from components", () => {
@@ -118,7 +124,7 @@ describe("FloatRgba", () => {
     expect(rgba.hasTranslucency).to.be.false;
 
     rgba.set(25 / 255, 192 / 255, 212 / 255, 200 / 255);
-    expect(rgba.tbgr).to.equal(0x37D4C019);
+    expect(rgba.tbgr).to.equal(0x37d4c019);
     expectRgba(rgba, 25 / 255, 192 / 255, 212 / 255, 200 / 255);
     expect(rgba.hasTranslucency).to.be.true;
 

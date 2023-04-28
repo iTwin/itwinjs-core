@@ -25,21 +25,40 @@ class CustomRealityDataSource implements RealityDataSource {
     this._baseUrl = url.origin;
   }
 
-  public get isContextShare() { return false; }
-  public get realityData() { return undefined; }
-  public get realityDataId() { return undefined; }
-  public get realityDataType() { return "ThreeDTile"; }
-  public async getServiceUrl() { return Promise.resolve(this._tilesetUrl); }
-  public async getSpatialLocationAndExtents() { return Promise.resolve(undefined); }
-  public async getPublisherProductInfo() { return Promise.resolve(undefined); }
+  public get isContextShare() {
+    return false;
+  }
+  public get realityData() {
+    return undefined;
+  }
+  public get realityDataId() {
+    return undefined;
+  }
+  public get realityDataType() {
+    return "ThreeDTile";
+  }
+  public async getServiceUrl() {
+    return Promise.resolve(this._tilesetUrl);
+  }
+  public async getSpatialLocationAndExtents() {
+    return Promise.resolve(undefined);
+  }
+  public async getPublisherProductInfo() {
+    return Promise.resolve(undefined);
+  }
 
   public async getRootDocument(): Promise<any> {
     const response = await fetch(`${this._tilesetUrl}?key=${this._apiKey}`);
     return response.json();
   }
 
-  private async _getTileContent(name: string, responseType: "json" | "arraybuffer"): Promise<any> {
-    const response = await fetch(`${this._baseUrl}/${name}?key=${this._apiKey}`);
+  private async _getTileContent(
+    name: string,
+    responseType: "json" | "arraybuffer"
+  ): Promise<any> {
+    const response = await fetch(
+      `${this._baseUrl}/${name}?key=${this._apiKey}`
+    );
     return "json" === responseType ? response.json() : response.arrayBuffer();
   }
 
@@ -58,14 +77,19 @@ class CustomRealityDataSource implements RealityDataSource {
 
 export function registerRealityDataSourceProvider(apiKey: string): void {
   IModelApp.realityDataSourceProviders.register("DtaRealityDataProvider", {
-    createRealityDataSource: async (key) => new CustomRealityDataSource(key, apiKey),
+    createRealityDataSource: async (key) =>
+      new CustomRealityDataSource(key, apiKey),
   });
 }
 
 export class AttachCustomRealityDataTool extends Tool {
   public static override toolId = "AttachCustomRealityData";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(url: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

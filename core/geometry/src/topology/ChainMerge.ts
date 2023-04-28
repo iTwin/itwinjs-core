@@ -43,7 +43,11 @@ class ChainMergeContextValidatedOptions {
   /** UNNORMALIZED base vector for sorting.
    * * Actual vector hoisted into an instance is normalized.
    */
-  private static readonly _defaultPrimarySortDirection = Vector3d.create(0.294234298, 0.72391399, 0.45234328798);
+  private static readonly _defaultPrimarySortDirection = Vector3d.create(
+    0.294234298,
+    0.72391399,
+    0.45234328798
+  );
   /**
    * Direction for primary sort.  This is normalized !!!
    */
@@ -58,7 +62,8 @@ class ChainMergeContextValidatedOptions {
     return vector.normalizeWithDefault(
       ChainMergeContextValidatedOptions._defaultPrimarySortDirection.x,
       ChainMergeContextValidatedOptions._defaultPrimarySortDirection.y,
-      ChainMergeContextValidatedOptions._defaultPrimarySortDirection.z);
+      ChainMergeContextValidatedOptions._defaultPrimarySortDirection.z
+    );
   }
   /**
    * PRIVATE constructor -- assumes all inputs are validated in public create method !!!!
@@ -70,19 +75,27 @@ class ChainMergeContextValidatedOptions {
     this.primarySortDirection = unitVectorForPrimarySort;
   }
   /** return the default option set. */
-  public static createFromUnValidated(options?: ChainMergeContextOptions): ChainMergeContextValidatedOptions {
-    const result = new ChainMergeContextValidatedOptions(Geometry.smallMetricDistance, ChainMergeContextValidatedOptions.createPrimarySortVector());
+  public static createFromUnValidated(
+    options?: ChainMergeContextOptions
+  ): ChainMergeContextValidatedOptions {
+    const result = new ChainMergeContextValidatedOptions(
+      Geometry.smallMetricDistance,
+      ChainMergeContextValidatedOptions.createPrimarySortVector()
+    );
     if (options !== undefined) {
-      if (options.tolerance !== undefined)
-        result.tolerance = options.tolerance;
+      if (options.tolerance !== undefined) result.tolerance = options.tolerance;
       if (options.primarySortDirection !== undefined)
-        result.primarySortDirection = ChainMergeContextValidatedOptions.createPrimarySortVector();
+        result.primarySortDirection =
+          ChainMergeContextValidatedOptions.createPrimarySortVector();
     }
     return result;
   }
   /** Clone this context. */
   public clone(): ChainMergeContextValidatedOptions {
-    return new ChainMergeContextValidatedOptions(this.tolerance, this.primarySortDirection);
+    return new ChainMergeContextValidatedOptions(
+      this.tolerance,
+      this.primarySortDirection
+    );
   }
 }
 /**
@@ -101,7 +114,6 @@ class ChainMergeContextValidatedOptions {
  * @internal
  */
 export class ChainMergeContext {
-
   private _graph: HalfEdgeGraph;
   private _options: ChainMergeContextValidatedOptions;
   private _plane?: PlaneAltitudeEvaluator;
@@ -111,14 +123,22 @@ export class ChainMergeContext {
     this._options = options;
   }
   /** Save a reference plane for later use, e.g. in addSegmentsOnPlane */
-  public set plane(value: PlaneAltitudeEvaluator | undefined) { this._plane = value; }
+  public set plane(value: PlaneAltitudeEvaluator | undefined) {
+    this._plane = value;
+  }
   /** Property access for the reference plane. */
-  public get plane(): PlaneAltitudeEvaluator | undefined { return this._plane; }
+  public get plane(): PlaneAltitudeEvaluator | undefined {
+    return this._plane;
+  }
 
   /** Save a reference plane for later use, e.g. in addSegmentsOnPlane */
-  public set convexClipper(value: ConvexClipPlaneSet | undefined) { this._convexClipper = value; }
+  public set convexClipper(value: ConvexClipPlaneSet | undefined) {
+    this._convexClipper = value;
+  }
   /** Property access for the reference plane. */
-  public get convexClipper(): ConvexClipPlaneSet | undefined { return this._convexClipper; }
+  public get convexClipper(): ConvexClipPlaneSet | undefined {
+    return this._convexClipper;
+  }
 
   /**
    * * Construct an empty chain merge graph.
@@ -130,12 +150,22 @@ export class ChainMergeContext {
    *     * The default points into the first octant with non-obvious components.
    */
   public static create(options?: ChainMergeContextOptions): ChainMergeContext {
-    const validatedOptions = ChainMergeContextValidatedOptions.createFromUnValidated(options);
+    const validatedOptions =
+      ChainMergeContextValidatedOptions.createFromUnValidated(options);
     return new ChainMergeContext(validatedOptions);
   }
   /** Add a segment to the evolving graph. */
   public addSegment(pointA: Point3d, pointB: Point3d) {
-    this._graph.createEdgeXYZXYZ(pointA.x, pointA.y, pointA.z, 0, pointB.x, pointB.y, pointB.z, 0);
+    this._graph.createEdgeXYZXYZ(
+      pointA.x,
+      pointA.y,
+      pointA.z,
+      0,
+      pointB.x,
+      pointB.y,
+      pointB.z,
+      0
+    );
   }
   /** Add all segments from an array to the graph. */
   public addLineSegment3dArray(data: LineSegment3d[]) {
@@ -146,20 +176,32 @@ export class ChainMergeContext {
   /** Add edges for all segments that are "on" the plane.
    * * No action if `this.plane` is undefined.
    */
-  public addSegmentsOnPlane(points: GrowableXYZArray, addClosure: boolean = false) {
-    if (!this._plane)
-      return;
+  public addSegmentsOnPlane(
+    points: GrowableXYZArray,
+    addClosure: boolean = false
+  ) {
+    if (!this._plane) return;
     const plane = this._plane;
     let i0 = addClosure ? points.length - 1 : 0;
     let a0 = points.evaluateUncheckedIndexPlaneAltitude(i0, plane);
     let i1 = addClosure ? 0 : 1;
     let a1;
-    for (; i1 < points.length; i0 = i1++ , a0 = a1) {
+    for (; i1 < points.length; i0 = i1++, a0 = a1) {
       a1 = points.evaluateUncheckedIndexPlaneAltitude(i1, plane);
-      if (Geometry.isSmallMetricDistance(a0) && Geometry.isSmallMetricDistance(a1))
+      if (
+        Geometry.isSmallMetricDistance(a0) &&
+        Geometry.isSmallMetricDistance(a1)
+      )
         this._graph.createEdgeXYZXYZ(
-          points.getXAtUncheckedPointIndex(i0), points.getYAtUncheckedPointIndex(i0), points.getZAtUncheckedPointIndex(i0), 0,
-          points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1), points.getZAtUncheckedPointIndex(i1), 0);
+          points.getXAtUncheckedPointIndex(i0),
+          points.getYAtUncheckedPointIndex(i0),
+          points.getZAtUncheckedPointIndex(i0),
+          0,
+          points.getXAtUncheckedPointIndex(i1),
+          points.getYAtUncheckedPointIndex(i1),
+          points.getZAtUncheckedPointIndex(i1),
+          0
+        );
     }
   }
   /**
@@ -169,7 +211,11 @@ export class ChainMergeContext {
    * @param node node with x,y,z coordinates
    */
   private primarySortKey(node: HalfEdge): number {
-    return this._options.primarySortDirection.dotProductXYZ(node.x, node.y, node.z);
+    return this._options.primarySortDirection.dotProductXYZ(
+      node.x,
+      node.y,
+      node.z
+    );
   }
   /** Return difference of sortData members as sort comparison */
   private static nodeCompareSortData(nodeA: HalfEdge, nodeB: HalfEdge): number {
@@ -210,11 +256,10 @@ export class ChainMergeContext {
         for (let i1 = i0 + 1; i1 < n; i1++) {
           const node1 = sortArray[i1];
           if (ChainMergeContext.isIsolatedEnd(node1)) {
-            if (node1.sortData! > qMax)
-              break;
+            if (node1.sortData! > qMax) break;
             if (node0.distanceXYZ(node1) <= xyzTolerance) {
               HalfEdge.pinch(node0, node1);
-              node1.setXYZFrom(node0);    // force true equal coordinates.
+              node1.setXYZFrom(node0); // force true equal coordinates.
             }
           }
         }
@@ -226,16 +271,23 @@ export class ChainMergeContext {
    * @param chains growing array of chains.
    * @param node0 start node for search.
    */
-  private collectMaximalLineString3dFromStartNode(chains: LineString3d[], node0: HalfEdge, visitMask: HalfEdgeMask) {
+  private collectMaximalLineString3dFromStartNode(
+    chains: LineString3d[],
+    node0: HalfEdge,
+    visitMask: HalfEdgeMask
+  ) {
     if (!node0.isMaskSet(visitMask)) {
       const ls = LineString3d.create();
       ls.addPointXYZ(node0.x, node0.y, node0.z);
-      for (; ;) {
+      for (;;) {
         node0.setMask(visitMask);
         node0.edgeMate.setMask(visitMask);
         node0 = node0.faceSuccessor;
         ls.addPointXYZ(node0.x, node0.y, node0.z);
-        if (node0.isMaskSet(visitMask) || !ChainMergeContext.isChainInteriorVertex(node0))
+        if (
+          node0.isMaskSet(visitMask) ||
+          !ChainMergeContext.isChainInteriorVertex(node0)
+        )
           break;
       }
       chains.push(ls);
@@ -246,20 +298,26 @@ export class ChainMergeContext {
    * @param chains growing array of chains.
    * @param node0 start node for search.
    */
-  private collectMaximalGrowableXYXArrayFromStartNode(result: GrowableXYZArray[], node0: HalfEdge, visitMask: HalfEdgeMask) {
+  private collectMaximalGrowableXYXArrayFromStartNode(
+    result: GrowableXYZArray[],
+    node0: HalfEdge,
+    visitMask: HalfEdgeMask
+  ) {
     if (!node0.isMaskSet(visitMask)) {
       const points = new GrowableXYZArray();
       points.pushXYZ(node0.x, node0.y, node0.z);
-      for (; ;) {
+      for (;;) {
         node0.setMask(visitMask);
         node0.edgeMate.setMask(visitMask);
         node0 = node0.faceSuccessor;
         points.pushXYZ(node0.x, node0.y, node0.z);
-        if (node0.isMaskSet(visitMask) || !ChainMergeContext.isChainInteriorVertex(node0))
+        if (
+          node0.isMaskSet(visitMask) ||
+          !ChainMergeContext.isChainInteriorVertex(node0)
+        )
           break;
       }
-      if (points.length > 0)
-        result.push(points);
+      if (points.length > 0) result.push(points);
     }
   }
 
@@ -272,8 +330,10 @@ export class ChainMergeContext {
   private exciseAndMarkSlingEdges(mask: HalfEdgeMask): number {
     let n = 0;
     for (const p of this._graph.allHalfEdges) {
-      if (p.distanceXYZ(p.edgeMate) < this._options.tolerance
-        && !p.isMaskSet(mask)) {
+      if (
+        p.distanceXYZ(p.edgeMate) < this._options.tolerance &&
+        !p.isMaskSet(mask)
+      ) {
         const q = p.edgeMate;
         HalfEdge.pinch(p, p.vertexPredecessor);
         HalfEdge.pinch(q, q.vertexPredecessor);
@@ -316,12 +376,20 @@ export class ChainMergeContext {
     // (Note that collectMaximalChain checks the visit mask.)
     for (const node0 of this._graph.allHalfEdges) {
       if (!ChainMergeContext.isChainInteriorVertex(node0)) {
-        this.collectMaximalGrowableXYXArrayFromStartNode(result, node0, visitMask);
+        this.collectMaximalGrowableXYXArrayFromStartNode(
+          result,
+          node0,
+          visitMask
+        );
       }
     }
     // Pass 2: start anywhere in an unvisited loop.
     for (const node0 of this._graph.allHalfEdges) {
-      this.collectMaximalGrowableXYXArrayFromStartNode(result, node0, visitMask);
+      this.collectMaximalGrowableXYXArrayFromStartNode(
+        result,
+        node0,
+        visitMask
+      );
     }
     return result;
   }

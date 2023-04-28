@@ -37,7 +37,8 @@ export interface ElementPropertiesItemBase {
  * Definition for a category. A category can nest other property items, including categories.
  * @public
  */
-export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase {
+export interface ElementPropertiesCategoryItem
+  extends ElementPropertiesItemBase {
   /** Type of the properties item. */
   type: "category";
   /** Container of property values */
@@ -48,7 +49,8 @@ export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase
  * Base type for all [[ElementPropertiesPropertyItem]] types.
  * @public
  */
-export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItemBase {
+export interface ElementPropertiesPropertyItemBase
+  extends ElementPropertiesItemBase {
   /** Type of the properties item. */
   type: ElementPropertiesPropertyValueType;
 }
@@ -57,7 +59,8 @@ export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItem
  * Definition for a primitive property value.
  * @public
  */
-export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertiesPropertyItemBase {
+export interface ElementPropertiesPrimitivePropertyItem
+  extends ElementPropertiesPropertyItemBase {
   /** Type of the properties item. */
   type: "primitive";
   /** Display value of the property. */
@@ -68,7 +71,8 @@ export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertie
  * Base type for all [[ElementPropertiesArrayPropertyItem]] types.
  * @public
  */
-export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertiesPropertyItemBase {
+export interface ElementPropertiesArrayPropertyItemBase
+  extends ElementPropertiesPropertyItemBase {
   /** Type of the properties item. */
   type: "array";
   /** Type of values contained in this array. */
@@ -79,7 +83,8 @@ export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertie
  * Definition for a primitives' array property value.
  * @public
  */
-export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
+export interface ElementPropertiesPrimitiveArrayPropertyItem
+  extends ElementPropertiesArrayPropertyItemBase {
   /** Type of values contained in this array. */
   valueType: "primitive";
   /** Array of display values. */
@@ -90,7 +95,8 @@ export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementProp
  * Definition for a structs' array property value.
  * @public
  */
-export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
+export interface ElementPropertiesStructArrayPropertyItem
+  extends ElementPropertiesArrayPropertyItemBase {
   /** Type of values contained in this array. */
   valueType: "struct";
   /** Array of structs. */
@@ -101,13 +107,16 @@ export interface ElementPropertiesStructArrayPropertyItem extends ElementPropert
  * Definition for an array property value.
  * @public
  */
-export type ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem;
+export type ElementPropertiesArrayPropertyItem =
+  | ElementPropertiesPrimitiveArrayPropertyItem
+  | ElementPropertiesStructArrayPropertyItem;
 
 /**
  * Definition for an struct property value.
  * @public
  */
-export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPropertyItemBase {
+export interface ElementPropertiesStructPropertyItem
+  extends ElementPropertiesPropertyItemBase {
   /** Type of the properties item. */
   type: "struct";
   /** Container of struct members. */
@@ -118,16 +127,24 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
  * Available element property types.
  * @public
  */
-export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct";
+export type ElementPropertiesPropertyValueType =
+  | "primitive"
+  | "array"
+  | "struct";
 
 /**
  * Definition of a property value.
  * @public
  */
-export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem;
+export type ElementPropertiesPropertyItem =
+  | ElementPropertiesPrimitivePropertyItem
+  | ElementPropertiesArrayPropertyItem
+  | ElementPropertiesStructPropertyItem;
 
 /**
  * Definition of a property item, including a property category.
  * @public
  */
-export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;
+export type ElementPropertiesItem =
+  | ElementPropertiesCategoryItem
+  | ElementPropertiesPropertyItem;

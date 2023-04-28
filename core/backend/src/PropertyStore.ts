@@ -16,7 +16,6 @@ import { SettingObject } from "./workspace/Settings";
  * made by others, as appropriate (see [[synchronizeWithCloud]]).
  * @alpha */
 export interface PropertyStore {
-
   /** The collection of property values in the PropertyStore as of the last time it was synchronized. */
   readonly values: PropertyStore.Values;
 
@@ -47,7 +46,10 @@ export interface PropertyStore {
   /** Save a single property in this PropertyStore. If the property already exists, its value is overwritten.
    * @note This will obtain the write lock, save the value, and then release the write lock.
    */
-  saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
+  saveProperty(
+    name: PropertyStore.PropertyName,
+    value: PropertyStore.PropertyType
+  ): Promise<void>;
   /** Save an array of properties in this PropertyStore. If a property already exists, its value is overwritten.
    * @note This will obtain the write lock, save the values, and then release the write lock.
    */
@@ -65,14 +67,21 @@ export interface PropertyStore {
 /** @alpha */
 export namespace PropertyStore {
   /** @internal */
-  export let openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
+  export let openPropertyStore:
+    | ((props: CloudSqlite.ContainerAccessProps) => PropertyStore)
+    | undefined;
 
   /** The set of valid types for properties in a PropertyStore. */
-  export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
+  export type PropertyType =
+    | string
+    | number
+    | boolean
+    | Uint8Array
+    | SettingObject;
   /** The name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
   export type PropertyName = string;
   /** An array of PropertyName/PropertyType pairs to be stored in a PropertyStore. */
-  export type PropertyArray = { name: PropertyName, value: PropertyType }[];
+  export type PropertyArray = { name: PropertyName; value: PropertyType }[];
   /** The return status of an iteration function. The value "stop" causes the iteration to terminate. */
   export type IterationReturn = void | "stop";
   /** An iteration function over Properties in a PropertyStore. It is called with the name of a each Property. */
@@ -83,7 +92,14 @@ export namespace PropertyStore {
     /** A value filter. May include wild cards when used with `GLOB` or `LIKE` */
     readonly value?: string;
     /** The comparison operator for `value`. Default is `=` */
-    readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    readonly valueCompare?:
+      | "GLOB"
+      | "LIKE"
+      | "NOT GLOB"
+      | "NOT LIKE"
+      | "="
+      | "<"
+      | ">";
     /** Order results ascending or descending. If not supplied, the results are unordered (random). */
     readonly orderBy?: "ASC" | "DESC";
     /** An SQL expression to further filter results. This string is appended to the `WHERE` clause with an `AND` (that should not be part of the sqlExpression) */
@@ -100,44 +116,44 @@ export namespace PropertyStore {
      */
     getProperty(name: PropertyName): PropertyType | undefined;
     /** Get the value of a string property by name.
-    * @returns the property's value if it exists and is a string, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a string, `undefined` otherwise.
+     */
     getString(name: PropertyName): string | undefined;
     /** Get the value of a string property by name.
-    * @returns the property's value if it exists and is a string, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a string, otherwise the supplied default value.
+     */
     getString(name: PropertyName, defaultValue: string): string;
     /** Get the value of a boolean property by name.
-    * @returns the property's value if it exists and is a boolean, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a boolean, `undefined` otherwise.
+     */
     getBoolean(name: PropertyName): boolean | undefined;
     /** Get the value of a boolean property by name.
-    * @returns the property's value if it exists and is a boolean, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a boolean, otherwise the supplied default value.
+     */
     getBoolean(name: PropertyName, defaultValue: boolean): boolean;
     /** Get the value of a number property by name.
-    * @returns the property's value if it exists and is a number, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a number, `undefined` otherwise.
+     */
     getNumber(name: PropertyName): number | undefined;
     /** Get the value of a number property by name.
-    * @returns the property's value if it exists and is a number, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a number, otherwise the supplied default value.
+     */
     getNumber(name: PropertyName, defaultValue: number): number;
     /** Get the value of a blob property by name.
-    * @returns the property's value if it exists and is a blob, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a blob, `undefined` otherwise.
+     */
     getBlob(name: PropertyName): Uint8Array | undefined;
     /** Get the value of a blob property by name.
-    * @returns the property's value if it exists and is a blob, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a blob, otherwise the supplied default value.
+     */
     getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
     /** Get the value of an object property by name.
-    * @returns the property's value if it exists and is an object, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is an object, `undefined` otherwise.
+     */
     getObject<T extends SettingObject>(name: PropertyName): T | undefined;
     /** Get the value of an object property by name.
-    * @returns the property's value if it exists and is an object, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is an object, otherwise the supplied default value.
+     */
     getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
     /** call an iteration function for each property, optionally applying a filter */
     forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;

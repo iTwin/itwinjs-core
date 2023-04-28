@@ -38,9 +38,18 @@ describe("ECVersion", () => {
     });
 
     it("should throw for an incomplete version string", () => {
-      expect(() => ECVersion.fromString("")).to.throw(ECObjectsError, "The read version is missing from version string, ");
-      expect(() => ECVersion.fromString("10")).to.throw(ECObjectsError, "The write version is missing from version string, 10");
-      expect(() => ECVersion.fromString("10.0")).to.throw(ECObjectsError, "The minor version is missing from version string, 10.0");
+      expect(() => ECVersion.fromString("")).to.throw(
+        ECObjectsError,
+        "The read version is missing from version string, "
+      );
+      expect(() => ECVersion.fromString("10")).to.throw(
+        ECObjectsError,
+        "The write version is missing from version string, 10"
+      );
+      expect(() => ECVersion.fromString("10.0")).to.throw(
+        ECObjectsError,
+        "The minor version is missing from version string, 10.0"
+      );
     });
   });
 

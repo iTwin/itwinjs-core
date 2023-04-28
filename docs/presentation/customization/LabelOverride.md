@@ -11,12 +11,12 @@ exchange of some performance penalty.
 
 | Name                                              | Required? | Type                                                                 | Default |
 | ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*                                       |
+| _Filtering_                                       |
 | [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
 | [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
-| *Overrides*                                       |
+| _Overrides_                                       |
 | [`label`](#attribute-label)                       | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
 | [`description`](#attribute-description)           | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
 
@@ -99,9 +99,9 @@ An expression whose result becomes the description.
 The rule should be avoided in favor of [InstanceLabelOverride](./InstanceLabelOverride) due to:
 
 - `InstanceLabelOverride` rules **always** take precedence over `LabelOverride`, no matter what their priorities are.
-A possible workaround is to avoid having `InstanceLabelOverride` rules for the class targeted by specific
-`LabelOverride`. If `InstanceLabelOverride` rules come from a supplemental schema, that can't be controlled, there's an
-option to add such an `InstanceLabelOverride` to reset overrides in supplemental ruleset:
+  A possible workaround is to avoid having `InstanceLabelOverride` rules for the class targeted by specific
+  `LabelOverride`. If `InstanceLabelOverride` rules come from a supplemental schema, that can't be controlled, there's an
+  option to add such an `InstanceLabelOverride` to reset overrides in supplemental ruleset:
 
   ```JSON
   {
@@ -113,4 +113,4 @@ option to add such an `InstanceLabelOverride` to reset overrides in supplemental
   ```
 
 - Nested `LabelOverride` rules (specified anywhere else other than at the root rules level) have no effect.
-A possible workaround is to move them to the root rules level.
+  A possible workaround is to move them to the root rules level.

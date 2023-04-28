@@ -23,25 +23,38 @@ describe("BriefcaseManager", async () => {
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
     HubMock.startup("bad names", KnownTestLocations.outputDir);
     let iModelName = "iModel Name With Spaces";
-    let iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
+    let iModelId = await HubWrappers.createIModel(
+      managerAccessToken,
+      testITwinId,
+      iModelName
+    );
     const args = { accessToken, iTwinId: testITwinId, iModelId };
     assert.isDefined(iModelId);
     let iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
 
-    iModelName = "iModel Name With :\/<>?* Characters";
-    iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
+    iModelName = "iModel Name With :/<>?* Characters";
+    iModelId = await HubWrappers.createIModel(
+      managerAccessToken,
+      testITwinId,
+      iModelName
+    );
     assert.isDefined(iModelId);
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
 
-    iModelName = "iModel Name Thats Excessively Long " +
+    iModelName =
+      "iModel Name Thats Excessively Long " +
       "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
       "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
       "01234567890123456789"; // 35 + 2*100 + 20 = 255
     // Note: iModelHub does not accept a name that's longer than 255 characters.
     assert.equal(255, iModelName.length);
-    iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
+    iModelId = await HubWrappers.createIModel(
+      managerAccessToken,
+      testITwinId,
+      iModelName
+    );
     assert.isDefined(iModelId);
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
@@ -51,16 +64,40 @@ describe("BriefcaseManager", async () => {
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
     HubMock.startup("briefcaseIds", KnownTestLocations.outputDir);
-    const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
-    const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: true };
+    const iModelId = await HubWrappers.createIModel(
+      accessToken,
+      testITwinId,
+      "imodel1"
+    );
+    const args = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId,
+      deleteFirst: true,
+    };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
-    assert.equal(BriefcaseIdValue.Unassigned, iModel1.nativeDb.getBriefcaseId(), "checkpoint should be 0");
+    assert.equal(
+      BriefcaseIdValue.Unassigned,
+      iModel1.nativeDb.getBriefcaseId(),
+      "checkpoint should be 0"
+    );
 
-    const iModel2 = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
-    assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
+    const iModel2 = await HubWrappers.openBriefcaseUsingRpc({
+      ...args,
+      briefcaseId: 0,
+    });
+    assert.equal(
+      BriefcaseIdValue.Unassigned,
+      iModel2.briefcaseId,
+      "pullOnly should be 0"
+    );
 
     const iModel3 = await HubWrappers.openBriefcaseUsingRpc(args);
-    assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
+    assert.isTrue(
+      iModel3.briefcaseId >= BriefcaseIdValue.FirstValid &&
+        iModel3.briefcaseId <= BriefcaseIdValue.LastValid,
+      "valid briefcaseId"
+    );
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
@@ -70,9 +107,18 @@ describe("BriefcaseManager", async () => {
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
     HubMock.startup("briefcaseIdsReopen", KnownTestLocations.outputDir);
-    const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
+    const iModelId = await HubWrappers.createIModel(
+      accessToken,
+      testITwinId,
+      "imodel1"
+    );
 
-    const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: false };
+    const args = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId,
+      deleteFirst: false,
+    };
     const iModel1 = await HubWrappers.openBriefcaseUsingRpc(args);
     const briefcaseId1 = iModel1.briefcaseId;
     iModel1.close(); // Keeps the briefcase by default
@@ -91,17 +137,27 @@ describe("BriefcaseManager", async () => {
     const userToken2 = "super manager token";
 
     // User1 creates an iModel on the Hub
-    const testUtility = new TestChangeSetUtility(userToken1, IModelTestUtils.generateUniqueName("BriefcaseReuseTest"));
+    const testUtility = new TestChangeSetUtility(
+      userToken1,
+      IModelTestUtils.generateUniqueName("BriefcaseReuseTest")
+    );
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase
-    const args = { accessToken: userToken2, iTwinId: testUtility.iTwinId, iModelId: testUtility.iModelId };
+    const args = {
+      accessToken: userToken2,
+      iTwinId: testUtility.iTwinId,
+      iModelId: testUtility.iModelId,
+    };
     const iModelPullAndPush = await HubWrappers.openBriefcaseUsingRpc(args);
     const briefcaseIdPullAndPush: number = iModelPullAndPush.briefcaseId;
     const changesetPullAndPush = iModelPullAndPush.changeset;
     iModelPullAndPush.close();
 
-    const iModelPullOnly = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
+    const iModelPullOnly = await HubWrappers.openBriefcaseUsingRpc({
+      ...args,
+      briefcaseId: 0,
+    });
     const briefcaseIdPullOnly: number = iModelPullOnly.briefcaseId;
     const changesetPullOnly = iModelPullOnly.changeset;
     iModelPullOnly.close();
@@ -117,7 +173,10 @@ describe("BriefcaseManager", async () => {
     assert.notStrictEqual(changesetPullAndPush2, changesetPullAndPush);
     await HubWrappers.closeAndDeleteBriefcaseDb(userToken2, iModelPullAndPush2);
 
-    const iModelPullOnly2 = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
+    const iModelPullOnly2 = await HubWrappers.openBriefcaseUsingRpc({
+      ...args,
+      briefcaseId: 0,
+    });
     const briefcaseIdPullOnly2: number = iModelPullOnly2.briefcaseId;
     assert.strictEqual(briefcaseIdPullOnly2, briefcaseIdPullOnly);
     const changesetPullOnly2 = iModelPullOnly2.changeset;
@@ -139,7 +198,11 @@ describe("BriefcaseManager", async () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel pullAndPush and is able to edit and save changes
-    const args = { accessToken: userToken2, iTwinId: testUtility.iTwinId, iModelId: testUtility.iModelId };
+    const args = {
+      accessToken: userToken2,
+      iTwinId: testUtility.iTwinId,
+      iModelId: testUtility.iModelId,
+    };
     let iModelPullAndPush = await HubWrappers.openBriefcaseUsingRpc(args);
     assert.exists(iModelPullAndPush);
     const briefcaseId = iModelPullAndPush.briefcaseId;
@@ -185,7 +248,10 @@ describe("BriefcaseManager", async () => {
     assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
 
     // User2 should be able to push the changes now
-    await iModelPullAndPush.pushChanges({ accessToken: userToken2, description: "test change" });
+    await iModelPullAndPush.pushChanges({
+      accessToken: userToken2,
+      description: "test change",
+    });
     const changesetPullAndPush4 = iModelPullAndPush.changeset;
     assert.notStrictEqual(changesetPullAndPush4, changesetPullAndPush3);
 

@@ -6,11 +6,29 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
+  AsyncMethodsOf,
+  BeEvent,
+  GuidString,
+  Logger,
+  PromiseReturnType,
+} from "@itwin/core-bentley";
+import {
+  BriefcaseDownloader,
+  BriefcaseProps,
+  IModelVersion,
+  InternetConnectivityStatus,
+  IpcSocketFrontend,
+  LocalBriefcaseProps,
+  nativeAppChannel,
+  NativeAppFunctions,
+  NativeAppNotifications,
+  nativeAppNotify,
+  OverriddenBy,
+  RemoveFunction,
+  RequestNewBriefcaseProps,
+  StorageValue,
+  SyncMode,
 } from "@itwin/core-common";
 import { ProgressCallback } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -23,13 +41,13 @@ import { OnDownloadProgress } from "./BriefcaseConnection";
  * @public
  */
 export type DownloadBriefcaseId =
-  { syncMode?: SyncMode, briefcaseId?: never } |
-  { briefcaseId: number, syncMode?: never };
+  | { syncMode?: SyncMode; briefcaseId?: never }
+  | { briefcaseId: number; syncMode?: never };
 
 /**
-* Options to download a briefcase
-* @public
-*/
+ * Options to download a briefcase
+ * @public
+ */
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
   /** the full path for the briefcase file */
   fileName?: string;
@@ -40,10 +58,18 @@ export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
 };
 
 /** NativeApp notifications from backend */
-class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNotifications {
-  public get channelName() { return nativeAppNotify; }
+class NativeAppNotifyHandler
+  extends NotificationHandler
+  implements NativeAppNotifications
+{
+  public get channelName() {
+    return nativeAppNotify;
+  }
   public notifyInternetConnectivityChanged(status: InternetConnectivityStatus) {
-    Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
+    Logger.logInfo(
+      FrontendLoggerCategory.NativeApp,
+      "Internet connectivity changed"
+    );
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
 }
@@ -65,20 +91,36 @@ export class NativeApp {
   private static _removeAppNotify?: RemoveFunction;
 
   /** @deprecated in 3.x. use nativeAppIpc */
-  public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
-    return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
+  public static async callNativeHost<
+    T extends AsyncMethodsOf<NativeAppFunctions>
+  >(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
+    return IpcApp.callIpcChannel(
+      nativeAppChannel,
+      methodName,
+      ...args
+    ) as PromiseReturnType<NativeAppFunctions[T]>;
   }
   /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
-  public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppChannel);
+  public static nativeAppIpc =
+    IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppChannel);
 
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
-    await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
+    await NativeApp.setConnectivity(
+      OverriddenBy.Browser,
+      InternetConnectivityStatus.Online
+    );
   };
   private static _onOffline = async () => {
-    await NativeApp.setConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
+    await NativeApp.setConnectivity(
+      OverriddenBy.Browser,
+      InternetConnectivityStatus.Offline
+    );
   };
-  private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
+  private static async setConnectivity(
+    by: OverriddenBy,
+    status: InternetConnectivityStatus
+  ) {
     await this.nativeAppIpc.overrideInternetConnectivity(by, status);
   }
   private static hookBrowserConnectivityEvents() {
@@ -94,18 +136,27 @@ export class NativeApp {
     }
   }
   /** event called when internet connectivity changes, if known */
-  public static onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
+  public static onInternetConnectivityChanged = new BeEvent<
+    (status: InternetConnectivityStatus) => void
+  >();
 
   /** determine whether the app currently has internet connectivity, if known */
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return this.nativeAppIpc.checkInternetConnectivity();
   }
   /** @internal */
-  public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
-    return this.nativeAppIpc.overrideInternetConnectivity(OverriddenBy.User, status);
+  public static async overrideInternetConnectivity(
+    status: InternetConnectivityStatus
+  ): Promise<void> {
+    return this.nativeAppIpc.overrideInternetConnectivity(
+      OverriddenBy.User,
+      status
+    );
   }
   private static _isValid = false;
-  public static get isValid(): boolean { return this._isValid; }
+  public static get isValid(): boolean {
+    return this._isValid;
+  }
 
   /**
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
@@ -113,8 +164,7 @@ export class NativeApp {
    */
   public static async startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts) {
     await IpcApp.startup(ipc, opts);
-    if (this._isValid)
-      return;
+    if (this._isValid) return;
     this._isValid = true;
 
     this._removeAppNotify = NativeAppNotifyHandler.register(); // receives notifications from backend
@@ -122,7 +172,12 @@ export class NativeApp {
 
     // initialize current online state.
     if (window.navigator.onLine) {
-      await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+      await this.setConnectivity(
+        OverriddenBy.Browser,
+        window.navigator.onLine
+          ? InternetConnectivityStatus.Online
+          : InternetConnectivityStatus.Offline
+      );
     }
   }
 
@@ -135,61 +190,101 @@ export class NativeApp {
     this._isValid = false;
   }
 
-  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
-    asOf?: IModelVersion): Promise<BriefcaseDownloader>;
+  public static async requestDownloadBriefcase(
+    iTwinId: string,
+    iModelId: string,
+    downloadOptions: DownloadBriefcaseOptions,
+    asOf?: IModelVersion
+  ): Promise<BriefcaseDownloader>;
 
   /**
    * @deprecated in 3.6. `progress` argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
    */
-  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+  public static async requestDownloadBriefcase(
+    iTwinId: string,
+    iModelId: string,
+    downloadOptions: DownloadBriefcaseOptions,
     // eslint-disable-next-line @typescript-eslint/unified-signatures, deprecation/deprecation
-    asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    asOf?: IModelVersion,
+    progress?: ProgressCallback
+  ): Promise<BriefcaseDownloader>;
 
   public static async requestDownloadBriefcase(
     iTwinId: string,
     iModelId: string,
     downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(),
-    progress?: ProgressCallback, // eslint-disable-line deprecation/deprecation
+    progress?: ProgressCallback // eslint-disable-line deprecation/deprecation
   ): Promise<BriefcaseDownloader> {
-    const shouldReportProgress = !!progress || !!downloadOptions.progressCallback;
+    const shouldReportProgress =
+      !!progress || !!downloadOptions.progressCallback;
 
-    let stopProgressEvents = () => { };
+    let stopProgressEvents = () => {};
     if (shouldReportProgress) {
-      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
+      const handleProgress = (
+        _evt: Event,
+        data: { loaded: number; total: number }
+      ) => {
         progress?.(data);
         downloadOptions.progressCallback?.(data);
       };
 
-      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, handleProgress);
+      stopProgressEvents = IpcApp.addListener(
+        `nativeApp.progress-${iModelId}`,
+        handleProgress
+      );
     }
 
-    const briefcaseId = (undefined !== downloadOptions.briefcaseId) ? downloadOptions.briefcaseId :
-      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.nativeAppIpc.acquireNewBriefcaseId(iModelId));
+    const briefcaseId =
+      undefined !== downloadOptions.briefcaseId
+        ? downloadOptions.briefcaseId
+        : downloadOptions.syncMode === SyncMode.PullOnly
+        ? 0
+        : await this.nativeAppIpc.acquireNewBriefcaseId(iModelId);
 
-    const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
-    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, iTwinId, asOf: asOf.toJSON(), fileName };
+    const fileName =
+      downloadOptions.fileName ??
+      (await this.getBriefcaseFileName({ briefcaseId, iModelId }));
+    const requestProps: RequestNewBriefcaseProps = {
+      iModelId,
+      briefcaseId,
+      iTwinId,
+      asOf: asOf.toJSON(),
+      fileName,
+    };
 
     const doDownload = async (): Promise<void> => {
       try {
-        await this.nativeAppIpc.downloadBriefcase(requestProps, shouldReportProgress, downloadOptions.progressInterval);
+        await this.nativeAppIpc.downloadBriefcase(
+          requestProps,
+          shouldReportProgress,
+          downloadOptions.progressInterval
+        );
       } finally {
         stopProgressEvents();
       }
     };
 
     const requestCancel = async (): Promise<boolean> => {
-      const status = await this.nativeAppIpc.requestCancelDownloadBriefcase(fileName);
-      if (status)
-        stopProgressEvents();
+      const status = await this.nativeAppIpc.requestCancelDownloadBriefcase(
+        fileName
+      );
+      if (status) stopProgressEvents();
       return status;
     };
 
-    return { briefcaseId, fileName, downloadPromise: doDownload(), requestCancel };
+    return {
+      briefcaseId,
+      fileName,
+      downloadPromise: doDownload(),
+      requestCancel,
+    };
   }
 
   /** Get the full path filename for a briefcase within the briefcase cache */
-  public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
+  public static async getBriefcaseFileName(
+    props: BriefcaseProps
+  ): Promise<string> {
     return this.nativeAppIpc.getBriefcaseFileName(props);
   }
 
@@ -201,7 +296,9 @@ export class NativeApp {
   }
 
   /** Get a list of all briefcase files held in the local briefcase cache directory */
-  public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
+  public static async getCachedBriefcases(
+    iModelId?: GuidString
+  ): Promise<LocalBriefcaseProps[]> {
     return this.nativeAppIpc.getCachedBriefcases(iModelId);
   }
 
@@ -211,8 +308,7 @@ export class NativeApp {
    * @returns a Promise for the [[Storage]].
    */
   public static async openStorage(name: string): Promise<Storage> {
-    if (this._storages.has(name))
-      return this._storages.get(name)!;
+    if (this._storages.has(name)) return this._storages.get(name)!;
 
     const storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
     this._storages.set(storage.id, storage);
@@ -224,7 +320,10 @@ export class NativeApp {
    * @param storage normally not call directly instead use Storage.close()
    * @param deleteStorage if true, delete the storage from disk after closing it.
    */
-  public static async closeStorage(storage: Storage, deleteStorage: boolean = false): Promise<void> {
+  public static async closeStorage(
+    storage: Storage,
+    deleteStorage: boolean = false
+  ): Promise<void> {
     if (!this._storages.has(storage.id))
       throw new Error(`Storage [Id=${storage.id}] not open`);
 
@@ -244,10 +343,14 @@ export class NativeApp {
  * @public
  */
 export class Storage {
-  constructor(public readonly id: string) { }
+  constructor(public readonly id: string) {}
 
   /** get the type of a value for a key, or undefined if not present. */
-  public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+  public async getValueType(
+    key: string
+  ): Promise<
+    "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined
+  > {
     return NativeApp.nativeAppIpc.storageGetValueType(this.id, key);
   }
 

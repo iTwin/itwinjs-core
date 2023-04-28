@@ -5,8 +5,21 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
+import {
+  ECObjectsError,
+  ECObjectsStatus,
+  ECVersion,
+  ISchemaLocater,
+  Schema,
+  SchemaContext,
+  SchemaKey,
+  SchemaMatchType,
+} from "@itwin/ecschema-metadata";
+import {
+  FileSchemaKey,
+  SchemaFileLocater,
+  SchemaJsonFileLocater,
+} from "@itwin/ecschema-locaters";
 import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaXmlContext, IModelHost } from "@itwin/core-backend";
 import { ECSchemaToTs } from "./ecschema2ts";
@@ -19,7 +32,10 @@ const formatsSchemaKey = new SchemaKey("Formats", 1, 0, 0);
  * to json schema and then, use Typescript side json deserialization to convert it to schema object.
  * @beta
  */
-class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocater {
+class SchemaBackendFileLocater
+  extends SchemaFileLocater
+  implements ISchemaLocater
+{
   private _nativeContext: ECSchemaXmlContext;
 
   public constructor(nativeContext: ECSchemaXmlContext) {
@@ -33,7 +49,11 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(
+    key: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): Promise<T | undefined> {
     return this.getSchemaSync(key, matchType, context) as T;
   }
 
@@ -43,7 +63,11 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync<T extends Schema>(
+    key: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext
+  ): T | undefined {
     const localPath: Set<string> = new Set<string>();
     return this.getSchemaRecursively(key, matchType, context, localPath);
   }
@@ -57,13 +81,19 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
   public getSchemaKey(data: string): SchemaKey {
     const matches = data.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidSchemaXML,
+        `Could not find '<ECSchema>' tag in the given file`
+      );
 
     // parse name and version
     const name = matches[0].match(/schemaName="(.+?)"/);
     const version = matches[0].match(/version="(.+?)"/);
     if (!name || name.length !== 2 || !version || version.length !== 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidSchemaXML,
+        `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`
+      );
 
     const versionStr: string = this.resolveECVersionString(version[1]);
     const key = new SchemaKey(name[1], ECVersion.fromString(versionStr));
@@ -79,16 +109,25 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param context The schema context used to parse schema
    * @param localPath The path of the recursion is following used to detect cyclic dependency
    */
-  private getSchemaRecursively<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
+  private getSchemaRecursively<T extends Schema>(
+    key: SchemaKey,
+    matchType: SchemaMatchType,
+    context: SchemaContext,
+    localPath: Set<string>
+  ): T | undefined {
     // load the schema file
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
-    if (0 === candidates.length)
-      return undefined;
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(
+      key,
+      matchType,
+      "xml"
+    );
+    if (0 === candidates.length) return undefined;
 
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[
+      candidates.length - 1
+    ];
     const schemaPath = maxCandidate.fileName;
-    if (undefined === this.fileExistsSync(schemaPath))
-      return undefined;
+    if (undefined === this.fileExistsSync(schemaPath)) return undefined;
 
     // mark that schema is already visited
     const schemaKeyName = maxCandidate.toString();
@@ -96,20 +135,37 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
 
     // resolve all the references before beginning parsing the current schema
     const domParser: DOMParser = new DOMParser();
-    const schemaXmlDocument: Document = domParser.parseFromString(fs.readFileSync(schemaPath, "utf8"));
-    const referenceKeys: SchemaKey[] = this.getReferenceSchemaKeys(schemaXmlDocument);
+    const schemaXmlDocument: Document = domParser.parseFromString(
+      fs.readFileSync(schemaPath, "utf8")
+    );
+    const referenceKeys: SchemaKey[] =
+      this.getReferenceSchemaKeys(schemaXmlDocument);
     for (const referenceKey of referenceKeys) {
       const referenceKeyName = referenceKey.toString();
 
       // jump to the next reference if it is not visited. If it is, check if the current schema refers back to other visited schema node
       if (undefined === context.getSchemaSync(referenceKey, matchType)) {
-        const referenceSchema = this.getSchemaRecursively(referenceKey, SchemaMatchType.LatestWriteCompatible, context, localPath);
+        const referenceSchema = this.getSchemaRecursively(
+          referenceKey,
+          SchemaMatchType.LatestWriteCompatible,
+          context,
+          localPath
+        );
         if (!referenceSchema) {
-          throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,
-            `Could not locate reference schema, ${referenceKey.name}.${referenceKey.version.toString()} of schema ${key.name}.${key.version.toString()}`);
+          throw new ECObjectsError(
+            ECObjectsStatus.UnableToLocateSchema,
+            `Could not locate reference schema, ${
+              referenceKey.name
+            }.${referenceKey.version.toString()} of schema ${
+              key.name
+            }.${key.version.toString()}`
+          );
         }
       } else if (localPath.has(referenceKeyName)) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Schema ${schemaKeyName} and ${referenceKeyName} form cyclic dependency`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidSchemaXML,
+          `Schema ${schemaKeyName} and ${referenceKeyName} form cyclic dependency`
+        );
       }
     }
 
@@ -125,17 +181,24 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param schemaXmlDocument Current schema XML DOM document
    */
   private getReferenceSchemaKeys(schemaXmlDocument: Document): SchemaKey[] {
-    const referenceDocuments = schemaXmlDocument.getElementsByTagName("ECSchemaReference");
+    const referenceDocuments =
+      schemaXmlDocument.getElementsByTagName("ECSchemaReference");
     const referenceSchemaKeys: SchemaKey[] = [];
 
     // unfortunately, for-of loop cannot work with HTMLCollectionOf<Element> type here
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < referenceDocuments.length; ++i) {
       const element = referenceDocuments[i];
-      const name = this.getRequiredXmlAttribute(element, "name",
-        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'name' attribute");
-      let version = this.getRequiredXmlAttribute(element, "version",
-        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'version' attribute");
+      const name = this.getRequiredXmlAttribute(
+        element,
+        "name",
+        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'name' attribute"
+      );
+      let version = this.getRequiredXmlAttribute(
+        element,
+        "version",
+        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'version' attribute"
+      );
       version = this.resolveECVersionString(version);
 
       const key = new SchemaKey(name, ECVersion.fromString(version));
@@ -151,7 +214,11 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param attribute The required attribute name of the DOM Element
    * @param errorMessage The error message if there is no attribute found in the DOM Element
    */
-  private getRequiredXmlAttribute(xmlElement: Element, attribute: string, errorMessage: string): string {
+  private getRequiredXmlAttribute(
+    xmlElement: Element,
+    attribute: string,
+    errorMessage: string
+  ): string {
     const value = xmlElement.getAttribute(attribute);
     if (!value)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMessage);
@@ -168,7 +235,10 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
     // check that version at leasts contain read and write number. If so, add 00 to the minor version if there is none existed in the version
     let versionNumbers: string[] = version.split(".");
     if (versionNumbers.length < 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `'version' number does not at least have read and minor number in the given file`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidSchemaXML,
+        `'version' number does not at least have read and minor number in the given file`
+      );
     else if (versionNumbers.length === 2) {
       versionNumbers.push("00");
       const [readNumber, minorNumber, writeNumber] = versionNumbers;
@@ -189,16 +259,22 @@ class SchemaDeserializer {
    * @param schemaContext The schema context in which to deserialize the schema.
    * @param referencePaths Optional paths to search when locating schema references.
    */
-  public async deserializeXmlFile(schemaFilePath: string, schemaContext: SchemaContext, referencePaths?: string[]): Promise<Schema> {
+  public async deserializeXmlFile(
+    schemaFilePath: string,
+    schemaContext: SchemaContext,
+    referencePaths?: string[]
+  ): Promise<Schema> {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaFilePath}`);
+      throw new ECObjectsError(
+        ECObjectsStatus.UnableToLocateSchema,
+        `Unable to locate schema XML file at ${schemaFilePath}`
+      );
 
     await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
 
     // add reference paths to the native context
-    if (undefined === referencePaths)
-      referencePaths = [];
+    if (undefined === referencePaths) referencePaths = [];
     referencePaths.push(path.dirname(schemaFilePath));
 
     const nativeContext = new ECSchemaXmlContext();
@@ -211,16 +287,33 @@ class SchemaDeserializer {
     // parsing the current xml schema
     let schema: Schema | undefined;
     try {
-      const schemaKey = locater.getSchemaKey(fs.readFileSync(schemaFilePath, "utf8"));
+      const schemaKey = locater.getSchemaKey(
+        fs.readFileSync(schemaFilePath, "utf8")
+      );
 
       // Units and Formats have to be added to the ts side context first because the native context will add them automatically to
       // the schema as references even if the schema does not use them
-      if (!schemaKey.compareByName(unitsSchemaKey) && !schemaKey.compareByName(formatsSchemaKey)) {
-        locater.getSchemaSync(unitsSchemaKey, SchemaMatchType.LatestWriteCompatible, schemaContext);
-        locater.getSchemaSync(formatsSchemaKey, SchemaMatchType.LatestWriteCompatible, schemaContext);
+      if (
+        !schemaKey.compareByName(unitsSchemaKey) &&
+        !schemaKey.compareByName(formatsSchemaKey)
+      ) {
+        locater.getSchemaSync(
+          unitsSchemaKey,
+          SchemaMatchType.LatestWriteCompatible,
+          schemaContext
+        );
+        locater.getSchemaSync(
+          formatsSchemaKey,
+          SchemaMatchType.LatestWriteCompatible,
+          schemaContext
+        );
       }
 
-      schema = locater.getSchemaSync(schemaKey, SchemaMatchType.Exact, schemaContext);
+      schema = locater.getSchemaSync(
+        schemaKey,
+        SchemaMatchType.Exact,
+        schemaContext
+      );
     } finally {
       await IModelHost.shutdown();
     }
@@ -234,14 +327,20 @@ class SchemaDeserializer {
    * @param context The schema context in which to deserialize the schema.
    * @param referencePaths Optional paths to search when locating schema references.
    */
-  public deserializeJsonFile(schemaFilePath: string, context: SchemaContext, referencePaths?: string[]): Schema {
+  public deserializeJsonFile(
+    schemaFilePath: string,
+    context: SchemaContext,
+    referencePaths?: string[]
+  ): Schema {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema JSON file at ${schemaFilePath}`);
+      throw new ECObjectsError(
+        ECObjectsStatus.UnableToLocateSchema,
+        `Unable to locate schema JSON file at ${schemaFilePath}`
+      );
 
     // add locater to the context
-    if (!referencePaths)
-      referencePaths = [];
+    if (!referencePaths) referencePaths = [];
     referencePaths.push(path.dirname(schemaFilePath));
 
     const locater = new SchemaJsonFileLocater();
@@ -265,7 +364,11 @@ class SchemaDeserializer {
  * Schema file path can be json or xml or both or an obscured file format depending how the concrete class interprets it.
  */
 export interface ECSchemaToTsFileWriter {
-  convertSchemaFile(context: SchemaContext, schemaPath: string, referencePaths?: string[]): Promise<string>;
+  convertSchemaFile(
+    context: SchemaContext,
+    schemaPath: string,
+    referencePaths?: string[]
+  ): Promise<string>;
 }
 
 /**
@@ -290,7 +393,11 @@ export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
    * @param schemaPath The full path to the ECSchema xml file
    * @param outdir The path to the directory to write the generated typescript file.
    */
-  public async convertSchemaFile(context: SchemaContext, schemaPath: string, referencePaths?: string[]): Promise<string> {
+  public async convertSchemaFile(
+    context: SchemaContext,
+    schemaPath: string,
+    referencePaths?: string[]
+  ): Promise<string> {
     // check if outdir is correct path
     if (!this._outdir)
       throw new Error(`The out directory ${this._outdir} is invalid.`);
@@ -300,7 +407,11 @@ export class ECSchemaToTsXmlWriter implements ECSchemaToTsFileWriter {
       throw new Error(`The out directory ${this._outdir} does not exist.`);
 
     // convert schema to typescript String
-    const schema = await this._deserializer.deserializeXmlFile(schemaPath, context, referencePaths);
+    const schema = await this._deserializer.deserializeXmlFile(
+      schemaPath,
+      context,
+      referencePaths
+    );
     const tsString = this._ecschema2ts.convertSchemaToTs(schema);
     const schemaTsString = tsString.schemaTsString;
     const elemTsString = tsString.elemTsString;

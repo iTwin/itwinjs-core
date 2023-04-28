@@ -7,7 +7,6 @@ import { using } from "@itwin/core-bentley";
 import { AsyncTasksTracker } from "../presentation-common";
 
 describe("AsyncTasksTracker", () => {
-
   it("tracks async task while it's disposed", () => {
     const tracker = new AsyncTasksTracker();
     expect(tracker.pendingAsyncs.size).to.eq(0);
@@ -28,5 +27,4 @@ describe("AsyncTasksTracker", () => {
     });
     expect(tracker.pendingAsyncs.size).to.eq(0);
   });
-
 });

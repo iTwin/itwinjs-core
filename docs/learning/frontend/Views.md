@@ -1,6 +1,6 @@
 # Using Views in iTwin.js
 
-A *View* renders geometry from one or more [Models](../../bis/guide/fundamentals/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
+A _View_ renders geometry from one or more [Models](../../bis/guide/fundamentals/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
 
 Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
 
@@ -8,13 +8,13 @@ Multiple Views may be simultaneously visible on the same web page, each with the
 
 ## ViewDefinition Elements
 
-A *View* is saved in an iModel as an element of the [ViewDefinition]($backend) class. ViewDefinitions hold all the information necessary to show the same content across sessions.
+A _View_ is saved in an iModel as an element of the [ViewDefinition]($backend) class. ViewDefinitions hold all the information necessary to show the same content across sessions.
 This includes the camera position, the model(s) displayed, the CategorySelector, the DisplayStyle to use, plus any additional view-specific settings.
 
 ## The ViewState Class
 
 The `ViewDefinition` classes (in fact all [Element]($backend) classes) exist only on the backend, because their purpose is to read and write those elements to/from the iModel.
-On the frontend, access to the elements needed to display views is provided by the [ElementState]($frontend) classes. The ElementState classes only hold the *state* of elements, not
+On the frontend, access to the elements needed to display views is provided by the [ElementState]($frontend) classes. The ElementState classes only hold the _state_ of elements, not
 the methods to read and write elements from the database.
 
 Views are opened by loading a ViewDefinition into a [ViewState]($frontend) object. They begin showing the content as it was saved in the iModel, but users may
@@ -34,14 +34,14 @@ Here are several significant subclasses:
 
 - `ViewDefinition`
   - `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
-  - `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
-  - `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
+  - `DrawingViewDefinition` - shows a view of a _single_ 2d DrawingModel
+  - `SheetViewDefinition` - shows a view of a _single_ 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
 ## Using Viewports
 
-[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (*what* is shown in a View) in the frontend.
+[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (_what_ is shown in a View) in the frontend.
 
 [Viewport]($frontend) is an abstract class that connects a ViewState to a [RenderTarget]($frontend).
 
@@ -58,26 +58,26 @@ format for User Interfaces. This can be used to present a list of possible views
 
 For example, to get a list of all spatial views:
 
-``` ts
+```ts
 [[include:IModelConnection.Views.getSpatialViewList]]
 ```
 
 To get a list of all drawing views:
 
-``` ts
+```ts
 [[include:IModelConnection.Views.getDrawingViewList]]
 ```
 
 Once a view is selected from the list, it may be loaded with:
 
-``` ts
+```ts
 [[include:IModelConnection.Views.load]]
 ```
 
 Then, you may wish to change one of the existing views to show the contents of the now-loaded view. For example, to switch the
 [ViewManager.selectedView]($frontend) to show it, use code like:
 
-``` ts
+```ts
 [[include:ScreenViewport.changeView]]
 ```
 
@@ -86,11 +86,11 @@ Then, you may wish to change one of the existing views to show the contents of t
 ## Changing the Model displayed by a 2d view
 
 Viewports always display one ViewState. If that ViewState happens to be a ViewState2d, we sometimes call that a "2d view". Since ViewState2d shows one and only one 2d Model, it is sometimes is desireable to "switch the Model" of an existing 2d view, versus loading a new ViewState2d. This will sometimes
-be appropriate if you *know* that a set of 2d Models use a common coordinate system and categories, etc.
+be appropriate if you _know_ that a set of 2d Models use a common coordinate system and categories, etc.
 
 The [Viewport.changeViewedModel2d]($frontend) method can be used to accomplish this:
 
-``` ts
+```ts
 [[include:ScreenViewport.changeViewedModel2d]]
 ```
 
@@ -101,7 +101,7 @@ to modify the View itself, or to interact with its contents.
 
 To facilitate that, you need to connect the event system of the browser with Viewports via [IModelApp.viewManager]($frontend).
 
-``` ts
+```ts
 [[include:ViewManager.addViewport]]
 ```
 
@@ -121,12 +121,12 @@ special viewing operations.
 
 ## View Decorators
 
-The Viewport class is responsible for displaying the *persistent* data (e.g. Models, reality data, maps, etc.) in your view. Often, however, Tools wish to show
+The Viewport class is responsible for displaying the _persistent_ data (e.g. Models, reality data, maps, etc.) in your view. Often, however, Tools wish to show
 additional, non-persistent, information to convey context or call attention to items or areas of interest. That is accomplished via [View Decorators](./ViewDecorations)
 
 ## DisplayStyles
 
-DisplayStyles describe the *styling* that should be applied to the contents of a View.
+DisplayStyles describe the _styling_ that should be applied to the contents of a View.
 
 This includes the:
 
@@ -175,7 +175,7 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 ## ViewState Parameters
 
- The diagrams below illustrate what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean. You can also visualize these parameters interactively using the [camera visualization sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Camera%20Visualizer).
+The diagrams below illustrate what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean. You can also visualize these parameters interactively using the [camera visualization sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Camera%20Visualizer).
 
 <img src="./ViewFrustum-D1.png" width="75%">
 
@@ -183,7 +183,7 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 <img src="./ViewFrustum-D2.png" width="75%">
 
-**<center>View Frustum -  3D view</center>**
+**<center>View Frustum - 3D view</center>**
 
 <img src="./ViewFrustum-D3.png" width="75%">
 
@@ -197,25 +197,25 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 - The three view vectors come from:
 
- ```cmd
-  {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
-  {the up vector}                     : +Y
-  {Z cross Y}                         : +X
-  ```
+```cmd
+ {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
+ {the up vector}                     : +Y
+ {Z cross Y}                         : +X
+```
 
-  these three vectors form the rows of the view's [Matrix3d]($geometry)
+these three vectors form the rows of the view's [Matrix3d]($geometry)
 
 - Objects in space in front of the front plane or behind the back plane are not displayed.
 
 - The focus plane is not necessarily centered between the front plane and back plane (though it often is.)
-It should generally be between the front plane and the back plane.
+  It should generally be between the front plane and the back plane.
 
 - targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
 
 - The ViewState holds the parameters: `{origin}{delta}[Matrix3d]` from which the View frustum is derived.
 
 - Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
-The lens angle value is not used to compute the perspective transform for a view.
-Instead, the lens angle value can be used to reposition `{eyePoint}` when the view volume or target changes.
+  The lens angle value is not used to compute the perspective transform for a view.
+  Instead, the lens angle value can be used to reposition `{eyePoint}` when the view volume or target changes.
 
 - View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.

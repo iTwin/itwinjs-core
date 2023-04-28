@@ -33,8 +33,7 @@ export interface DataList {
 
 function _appendDataListEntry(list: HTMLDataListElement, entry: DataListEntry) {
   const option = document.createElement("option");
-  if (undefined !== entry.value)
-    option.value = entry.value.toString();
+  if (undefined !== entry.value) option.value = entry.value.toString();
   list.appendChild(option);
 }
 
@@ -55,16 +54,13 @@ export function createDataList(props: DataListProps): DataList {
   }
 
   const handler = props.handler;
-  if (undefined !== handler)
-    list.onselect = () => handler(list);
+  if (undefined !== handler) list.onselect = () => handler(list);
 
   const div = document.createElement("div");
-  if (props.inline)
-    div.style.display = "inline";
+  if (props.inline) div.style.display = "inline";
 
   div.appendChild(list);
-  if (undefined !== props.parent)
-    props.parent.appendChild(div);
+  if (undefined !== props.parent) props.parent.appendChild(div);
 
   return { div, list };
 }

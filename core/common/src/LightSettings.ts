@@ -12,7 +12,9 @@ import { RgbColor, RgbColorProps } from "./RgbColor";
 
 function extractIntensity(value: number | undefined, defaultValue: number) {
   const maxIntensity = 5;
-  return typeof value === "number" ? Math.max(0, Math.min(maxIntensity, value)) : defaultValue;
+  return typeof value === "number"
+    ? Math.max(0, Math.min(maxIntensity, value))
+    : defaultValue;
 }
 
 /** Wire format for the solar directional light associated with a [[LightSettingsProps]].
@@ -64,36 +66,36 @@ export class SolarLight {
     this.intensity = extractIntensity(json.intensity, 1);
     this.alwaysEnabled = JsonUtils.asBool(json.alwaysEnabled);
 
-    if (json.direction)
-      this.direction = Vector3d.fromJSON(json.direction);
-    else
-      this.direction = defaultSolarDirection.clone();
+    if (json.direction) this.direction = Vector3d.fromJSON(json.direction);
+    else this.direction = defaultSolarDirection.clone();
 
-    if (typeof json.timePoint === "number")
-      this.timePoint = json.timePoint;
+    if (typeof json.timePoint === "number") this.timePoint = json.timePoint;
   }
 
   public toJSON(): SolarLightProps | undefined {
-    const direction = this.direction.isAlmostEqual(defaultSolarDirection) ? undefined : this.direction.toJSON();
+    const direction = this.direction.isAlmostEqual(defaultSolarDirection)
+      ? undefined
+      : this.direction.toJSON();
     const intensity = this.intensity !== 1 ? this.intensity : undefined;
     const alwaysEnabled = this.alwaysEnabled ? true : undefined;
     const timePoint = this.timePoint;
 
-    if (undefined === direction && undefined === intensity && undefined === alwaysEnabled && undefined === timePoint)
+    if (
+      undefined === direction &&
+      undefined === intensity &&
+      undefined === alwaysEnabled &&
+      undefined === timePoint
+    )
       return undefined;
 
     const json: SolarLightProps = {};
-    if (direction)
-      json.direction = direction;
+    if (direction) json.direction = direction;
 
-    if (undefined !== intensity)
-      json.intensity = intensity;
+    if (undefined !== intensity) json.intensity = intensity;
 
-    if (undefined !== alwaysEnabled)
-      json.alwaysEnabled = alwaysEnabled;
+    if (undefined !== alwaysEnabled) json.alwaysEnabled = alwaysEnabled;
 
-    if (undefined !== timePoint)
-      json.timePoint = timePoint;
+    if (undefined !== timePoint) json.timePoint = timePoint;
 
     return json;
   }
@@ -103,8 +105,7 @@ export class SolarLight {
    * copy if `changesProps.direction` is equal to `this.direction`.
    */
   public clone(changedProps?: SolarLightProps): SolarLight {
-    if (!changedProps)
-      return this;
+    if (!changedProps) return this;
 
     const props = this.toJSON() ?? {};
     if (undefined !== changedProps.direction)
@@ -121,7 +122,11 @@ export class SolarLight {
 
     // If our direction was computed from a time point and the caller only supplies a direction, invalidate the time point unless the input direction matches our direction.
     // If caller explicitly supplied a timePoint, trust it.
-    if (undefined !== this.timePoint && undefined === changedProps.timePoint && undefined !== changedProps.direction) {
+    if (
+      undefined !== this.timePoint &&
+      undefined === changedProps.timePoint &&
+      undefined !== changedProps.direction
+    ) {
       const newDirection = Vector3d.fromJSON(changedProps.direction);
       if (!newDirection.isAlmostEqual(this.direction))
         props.timePoint = undefined;
@@ -131,7 +136,12 @@ export class SolarLight {
   }
 
   public equals(rhs: SolarLight): boolean {
-    return this.intensity === rhs.intensity && this.alwaysEnabled === rhs.alwaysEnabled && this.direction.isExactEqual(rhs.direction) && this.timePoint === rhs.timePoint;
+    return (
+      this.intensity === rhs.intensity &&
+      this.alwaysEnabled === rhs.alwaysEnabled &&
+      this.direction.isExactEqual(rhs.direction) &&
+      this.timePoint === rhs.timePoint
+    );
   }
 }
 
@@ -158,36 +168,35 @@ export class AmbientLight {
   public constructor(json?: AmbientLightProps) {
     json = json || {};
     this.intensity = extractIntensity(json.intensity, 0.2);
-    this.color = json.color ? RgbColor.fromJSON(json.color) : new RgbColor(0, 0, 0);
+    this.color = json.color
+      ? RgbColor.fromJSON(json.color)
+      : new RgbColor(0, 0, 0);
   }
 
   public toJSON(): AmbientLightProps | undefined {
-    const color = this.color.r !== 0 || this.color.g !== 0 || this.color.b !== 0 ? this.color.toJSON() : undefined;
+    const color =
+      this.color.r !== 0 || this.color.g !== 0 || this.color.b !== 0
+        ? this.color.toJSON()
+        : undefined;
     const intensity = 0.2 !== this.intensity ? this.intensity : undefined;
-    if (undefined === color && undefined === intensity)
-      return undefined;
+    if (undefined === color && undefined === intensity) return undefined;
 
     const json: AmbientLightProps = {};
-    if (color)
-      json.color = color;
+    if (color) json.color = color;
 
-    if (undefined !== intensity)
-      json.intensity = intensity;
+    if (undefined !== intensity) json.intensity = intensity;
 
     return json;
   }
 
   /** Create a copy of this light, identical except for any properties explicitly specified by `changed`. */
   public clone(changed?: AmbientLightProps): AmbientLight {
-    if (!changed)
-      return this;
+    if (!changed) return this;
 
     const props = this.toJSON() ?? {};
-    if (undefined !== changed.intensity)
-      props.intensity = changed.intensity;
+    if (undefined !== changed.intensity) props.intensity = changed.intensity;
 
-    if (undefined !== changed.color)
-      props.color = changed.color;
+    if (undefined !== changed.color) props.color = changed.color;
 
     return new AmbientLight(props);
   }
@@ -228,51 +237,60 @@ export class HemisphereLights {
   public constructor(json?: HemisphereLightsProps) {
     json = json || {};
     this.intensity = extractIntensity(json.intensity, 0);
-    this.upperColor = json.upperColor ? RgbColor.fromJSON(json.upperColor) : defaultUpperHemisphereColor;
-    this.lowerColor = json.lowerColor ? RgbColor.fromJSON(json.lowerColor) : defaultLowerHemisphereColor;
+    this.upperColor = json.upperColor
+      ? RgbColor.fromJSON(json.upperColor)
+      : defaultUpperHemisphereColor;
+    this.lowerColor = json.lowerColor
+      ? RgbColor.fromJSON(json.lowerColor)
+      : defaultLowerHemisphereColor;
   }
 
   public toJSON(): HemisphereLightsProps | undefined {
-    const upperColor = this.upperColor.equals(defaultUpperHemisphereColor) ? undefined : this.upperColor.toJSON();
-    const lowerColor = this.lowerColor.equals(defaultLowerHemisphereColor) ? undefined : this.lowerColor.toJSON();
+    const upperColor = this.upperColor.equals(defaultUpperHemisphereColor)
+      ? undefined
+      : this.upperColor.toJSON();
+    const lowerColor = this.lowerColor.equals(defaultLowerHemisphereColor)
+      ? undefined
+      : this.lowerColor.toJSON();
     const intensity = 0 === this.intensity ? undefined : this.intensity;
 
-    if (undefined === upperColor && undefined === lowerColor && undefined === intensity)
+    if (
+      undefined === upperColor &&
+      undefined === lowerColor &&
+      undefined === intensity
+    )
       return undefined;
 
     const json: HemisphereLightsProps = {};
-    if (upperColor)
-      json.upperColor = upperColor;
+    if (upperColor) json.upperColor = upperColor;
 
-    if (lowerColor)
-      json.lowerColor = lowerColor;
+    if (lowerColor) json.lowerColor = lowerColor;
 
-    if (undefined !== intensity)
-      json.intensity = intensity;
+    if (undefined !== intensity) json.intensity = intensity;
 
     return json;
   }
 
   /** Create a copy of these lights, identical except for any properties explicitly specified by `changed`. */
   public clone(changed?: HemisphereLightsProps): HemisphereLights {
-    if (!changed)
-      return this;
+    if (!changed) return this;
 
     const props = this.toJSON() || {};
-    if (undefined !== changed.upperColor)
-      props.upperColor = changed.upperColor;
+    if (undefined !== changed.upperColor) props.upperColor = changed.upperColor;
 
-    if (undefined !== changed.lowerColor)
-      props.lowerColor = changed.lowerColor;
+    if (undefined !== changed.lowerColor) props.lowerColor = changed.lowerColor;
 
-    if (undefined !== changed.intensity)
-      props.intensity = changed.intensity;
+    if (undefined !== changed.intensity) props.intensity = changed.intensity;
 
     return new HemisphereLights(props);
   }
 
   public equals(rhs: HemisphereLights): boolean {
-    return this.intensity === rhs.intensity && this.upperColor.equals(rhs.upperColor) && this.lowerColor.equals(rhs.lowerColor);
+    return (
+      this.intensity === rhs.intensity &&
+      this.upperColor.equals(rhs.upperColor) &&
+      this.lowerColor.equals(rhs.lowerColor)
+    );
   }
 }
 
@@ -331,8 +349,7 @@ export class FresnelSettings {
   public static fromJSON(props?: FresnelSettingsProps): FresnelSettings {
     const intensity = clampIntensity(JsonUtils.asDouble(props?.intensity));
     const invert = JsonUtils.asBool(props?.invert);
-    if (0 === intensity && !invert)
-      return this._defaults;
+    if (0 === intensity && !invert) return this._defaults;
 
     return new this(intensity, invert);
   }
@@ -348,23 +365,24 @@ export class FresnelSettings {
    * @note If all settings match the default values, `undefined` will be returned.
    */
   public toJSON(): FresnelSettingsProps | undefined {
-    if (0 === this.intensity && !this.invert)
-      return undefined;
+    if (0 === this.intensity && !this.invert) return undefined;
 
     const props: FresnelSettingsProps = {};
-    if (0 !== this.intensity)
-      props.intensity = this.intensity;
+    if (0 !== this.intensity) props.intensity = this.intensity;
 
-    if (this.invert)
-      props.invert = true;
+    if (this.invert) props.invert = true;
 
     return props;
   }
 
   /** Create a copy of these settings, modified to match any properties explicitly specified by `changedProps`. */
   public clone(changedProps?: FresnelSettingsProps): FresnelSettings {
-    if ((undefined === changedProps?.intensity || changedProps.intensity === this.intensity)
-      && (undefined === changedProps?.invert || changedProps.invert === this.invert))
+    if (
+      (undefined === changedProps?.intensity ||
+        changedProps.intensity === this.intensity) &&
+      (undefined === changedProps?.invert ||
+        changedProps.invert === this.invert)
+    )
       return this;
 
     const intensity = changedProps?.intensity ?? this.intensity;
@@ -374,7 +392,10 @@ export class FresnelSettings {
 
   /** Return true if these settings are equivalent to `rhs`. */
   public equals(rhs: FresnelSettings): boolean {
-    return this === rhs || (this.intensity === rhs.intensity && this.invert === rhs.invert);
+    return (
+      this === rhs ||
+      (this.intensity === rhs.intensity && this.invert === rhs.invert)
+    );
   }
 }
 
@@ -434,8 +455,15 @@ export class LightSettings {
   public readonly numCels: number;
   public readonly fresnel: FresnelSettings;
 
-  private constructor(solar: SolarLight, ambient: AmbientLight, hemisphere: HemisphereLights, portraitIntensity: number, specularIntensity: number, numCels: number,
-    fresnel: FresnelSettings) {
+  private constructor(
+    solar: SolarLight,
+    ambient: AmbientLight,
+    hemisphere: HemisphereLights,
+    portraitIntensity: number,
+    specularIntensity: number,
+    numCels: number,
+    fresnel: FresnelSettings
+  ) {
     this.solar = solar;
     this.ambient = ambient;
     this.hemisphere = hemisphere;
@@ -454,42 +482,56 @@ export class LightSettings {
     const numCels = JsonUtils.asInt(props?.numCels, 0);
     const fresnel = FresnelSettings.fromJSON(props?.fresnel);
 
-    return new LightSettings(solar, ambient, hemisphere, portraitIntensity, specularIntensity, numCels, fresnel);
+    return new LightSettings(
+      solar,
+      ambient,
+      hemisphere,
+      portraitIntensity,
+      specularIntensity,
+      numCels,
+      fresnel
+    );
   }
 
   public toJSON(): LightSettingsProps | undefined {
     const solar = this.solar.toJSON();
     const ambient = this.ambient.toJSON();
     const hemisphere = this.hemisphere.toJSON();
-    const portrait = 0.3 !== this.portraitIntensity ? { intensity: this.portraitIntensity } : undefined;
-    const specularIntensity = 1 !== this.specularIntensity ? this.specularIntensity : undefined;
+    const portrait =
+      0.3 !== this.portraitIntensity
+        ? { intensity: this.portraitIntensity }
+        : undefined;
+    const specularIntensity =
+      1 !== this.specularIntensity ? this.specularIntensity : undefined;
     const numCels = 0 !== this.numCels ? this.numCels : undefined;
     const fresnel = this.fresnel.toJSON();
 
-    if (!solar && !ambient && !hemisphere && !portrait && undefined === specularIntensity && undefined === numCels && undefined === fresnel)
+    if (
+      !solar &&
+      !ambient &&
+      !hemisphere &&
+      !portrait &&
+      undefined === specularIntensity &&
+      undefined === numCels &&
+      undefined === fresnel
+    )
       return undefined;
 
     const json: LightSettingsProps = {};
-    if (solar)
-      json.solar = solar;
+    if (solar) json.solar = solar;
 
-    if (ambient)
-      json.ambient = ambient;
+    if (ambient) json.ambient = ambient;
 
-    if (hemisphere)
-      json.hemisphere = hemisphere;
+    if (hemisphere) json.hemisphere = hemisphere;
 
-    if (portrait)
-      json.portrait = portrait;
+    if (portrait) json.portrait = portrait;
 
     if (undefined !== specularIntensity)
       json.specularIntensity = specularIntensity;
 
-    if (undefined !== numCels)
-      json.numCels = numCels;
+    if (undefined !== numCels) json.numCels = numCels;
 
-    if (fresnel)
-      json.fresnel = fresnel;
+    if (fresnel) json.fresnel = fresnel;
 
     return json;
   }
@@ -500,8 +542,7 @@ export class LightSettings {
    * will overwrite the ambient light's intensity but preserve its current color, rather than replacing the color with the default color.
    */
   public clone(changed?: LightSettingsProps): LightSettings {
-    if (!changed)
-      return this;
+    if (!changed) return this;
 
     const solar = this.solar.clone(changed.solar);
     const ambient = this.ambient.clone(changed.ambient);
@@ -511,14 +552,28 @@ export class LightSettings {
     const numCels = changed.numCels ?? this.numCels;
     const fresnel = this.fresnel.clone(changed.fresnel);
 
-    return new LightSettings(solar, ambient, hemisphere, portrait, specular, numCels, fresnel);
+    return new LightSettings(
+      solar,
+      ambient,
+      hemisphere,
+      portrait,
+      specular,
+      numCels,
+      fresnel
+    );
   }
 
   public equals(rhs: LightSettings): boolean {
-    if (this === rhs)
-      return true;
+    if (this === rhs) return true;
 
-    return this.portraitIntensity === rhs.portraitIntensity && this.specularIntensity === rhs.specularIntensity && this.numCels === rhs.numCels
-      && this.ambient.equals(rhs.ambient) && this.solar.equals(rhs.solar) && this.hemisphere.equals(rhs.hemisphere) && this.fresnel.equals(rhs.fresnel);
+    return (
+      this.portraitIntensity === rhs.portraitIntensity &&
+      this.specularIntensity === rhs.specularIntensity &&
+      this.numCels === rhs.numCels &&
+      this.ambient.equals(rhs.ambient) &&
+      this.solar.equals(rhs.solar) &&
+      this.hemisphere.equals(rhs.hemisphere) &&
+      this.fresnel.equals(rhs.fresnel)
+    );
   }
 }

@@ -6,13 +6,13 @@ Extended data rule is used to inject some arbitrary data into presentation data 
 
 ## Typical use case
 
-Table is showing *Models* and *Elements* polymorphically and application wants to handle these two types
+Table is showing _Models_ and _Elements_ polymorphically and application wants to handle these two types
 of rows differently.
 
 ### Problem
 
 Each content record knows only it's exact ECClass, but there's no way to tell if that class is a subclass
-of a *Model* or an *Element*.
+of a _Model_ or an _Element_.
 
 ### Solution
 
@@ -23,10 +23,10 @@ flag can then be accessed on the frontend and used to determine how the row shou
 
 | Name                                            | Required? | Type                                                                 | Default |
 | ----------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*                                     |
+| _Filtering_                                     |
 | [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`condition`](#attribute-condition)             | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
-| *Extended Data*                                 |
+| _Extended Data_                                 |
 | [`items`](#attribute-items)                     | Yes       | `{ [key: string]: ECExpression }`                                    |         |
 
 ### Attribute: `requiredSchemas`

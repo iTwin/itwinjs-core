@@ -6,14 +6,27 @@ import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
-  TileRequest, TileRequestChannel, TileTree,
+  IModelApp,
+  IModelConnection,
+  overrideRequestTileTreeProps,
+  RenderSystem,
+  SnapshotConnection,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 
 class MockTile extends Tile {
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void,
+    _reject: (error: Error) => void
+  ): void {
     resolve([]);
   }
 
@@ -22,20 +35,29 @@ class MockTile extends Tile {
     return {} as unknown as TileRequestChannel;
   }
 
-  public async requestContent(_canceled: () => boolean): Promise<TileRequest.Response> {
+  public async requestContent(
+    _canceled: () => boolean
+  ): Promise<TileRequest.Response> {
     return undefined;
   }
 
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _canceled?: () => boolean): Promise<TileContent> {
+  public async readContent(
+    _data: TileRequest.ResponseData,
+    _system: RenderSystem,
+    _canceled?: () => boolean
+  ): Promise<TileContent> {
     return {};
   }
 
   public constructor(tree: TileTree) {
-    super({
-      contentId: "tile",
-      range: new Range3d(),
-      maximumSize: 512,
-    }, tree);
+    super(
+      {
+        contentId: "tile",
+        range: new Range3d(),
+        maximumSize: 512,
+      },
+      tree
+    );
   }
 }
 
@@ -54,18 +76,28 @@ class MockTree extends TileTree {
     this._rootTile = new MockTile(this);
   }
 
-  public get rootTile() { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return 1; }
-  public get viewFlagOverrides() { return {}; }
-  public override get isContentUnbounded() { return false; }
+  public get rootTile() {
+    return this._rootTile;
+  }
+  public get is3d() {
+    return true;
+  }
+  public get maxDepth() {
+    return 1;
+  }
+  public get viewFlagOverrides() {
+    return {};
+  }
+  public override get isContentUnbounded() {
+    return false;
+  }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
     return [];
   }
 
-  public draw(_args: TileDrawArgs): void { }
-  public prune(): void { }
+  public draw(_args: TileDrawArgs): void {}
+  public prune(): void {}
 }
 
 describe("TileTreeSupplier", () => {
@@ -77,8 +109,7 @@ describe("TileTreeSupplier", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -88,15 +119,17 @@ describe("TileTreeSupplier", () => {
       public readonly isEcefDependent?: true;
 
       public constructor(isEcefDependent: boolean) {
-        if (isEcefDependent)
-          this.isEcefDependent = true;
+        if (isEcefDependent) this.isEcefDependent = true;
       }
 
       public compareTileTreeIds(lhs: string, rhs: string): number {
         return compareStrings(lhs, rhs);
       }
 
-      public async createTileTree(id: string, iModel: IModelConnection): Promise<TileTree | undefined> {
+      public async createTileTree(
+        id: string,
+        iModel: IModelConnection
+      ): Promise<TileTree | undefined> {
         return new MockTree(id, iModel);
       }
     }
@@ -153,11 +186,9 @@ describe("requestTileTreeProps", () => {
   after(async () => {
     overrideRequestTileTreeProps(undefined);
 
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
-    if (imodel2)
-      await imodel2.close();
+    if (imodel2) await imodel2.close();
 
     await TestUtility.shutdownFrontend();
   });
@@ -181,13 +212,11 @@ describe("requestTileTreeProps", () => {
 
     const promises = [];
     const numRequests = 10;
-    for (let id = 0; id < numRequests; id++)
-      promises.push(makePromise(id));
+    for (let id = 0; id < numRequests; id++) promises.push(makePromise(id));
 
     await Promise.all(promises);
     expect(processed.length).to.equal(numRequests);
-    for (let i = 0; i < numRequests; i++)
-      expect(processed[i]).to.equal(i);
+    for (let i = 0; i < numRequests; i++) expect(processed[i]).to.equal(i);
 
     overrideRequestTileTreeProps(undefined);
   });
@@ -203,7 +232,13 @@ describe("requestTileTreeProps", () => {
       }
     };
 
-    const promises = [getProps("0x1c"), getProps("invalid"), getProps("0x1c"), getProps("notanid"), getProps("0x1c")];
+    const promises = [
+      getProps("0x1c"),
+      getProps("invalid"),
+      getProps("0x1c"),
+      getProps("notanid"),
+      getProps("0x1c"),
+    ];
     await Promise.all(promises);
     expect(fulfilled.length).to.equal(3);
     expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
@@ -216,18 +251,22 @@ describe("requestTileTreeProps", () => {
       const stats = IModelApp.tileAdmin.statistics;
 
       const numRemaining = numRequests - index;
-      const expectedNumActive = Math.min(maxActiveTileTreePropsRequests, numRemaining);
+      const expectedNumActive = Math.min(
+        maxActiveTileTreePropsRequests,
+        numRemaining
+      );
       expect(stats.numActiveTileTreePropsRequests).to.equal(expectedNumActive);
 
       const expectedNumPending = numRemaining - expectedNumActive;
 
       // ###TODO The following occasionally fails with 'expected 1 to equal 0'.
-      expect(stats.numPendingTileTreePropsRequests).to.equal(expectedNumPending);
+      expect(stats.numPendingTileTreePropsRequests).to.equal(
+        expectedNumPending
+      );
     };
 
     const promises = [];
-    for (let i = 1; i <= numRequests; i++)
-      promises.push(getProps(i));
+    for (let i = 1; i <= numRequests; i++) promises.push(getProps(i));
 
     await Promise.all(promises);
   });
@@ -244,7 +283,12 @@ describe("requestTileTreeProps", () => {
     const numRequests = 5;
     const promises = [];
     for (let i = 0; i < numRequests; i++)
-      promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, i.toString()).then((_props) => i).catch((err) => err));
+      promises.push(
+        IModelApp.tileAdmin
+          .requestTileTreeProps(imodel, i.toString())
+          .then((_props) => i)
+          .catch((err) => err)
+      );
 
     await imodel.close();
 

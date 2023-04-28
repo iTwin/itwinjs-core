@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
+import {
+  IModelConnection,
+  SpatialTileTreeReferences,
+  SpatialViewState,
+} from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
@@ -12,7 +16,9 @@ import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTree
  * @see [[FrontendTilesOptions.computeSpatialTilesetBaseUrl]].
  * @alpha
  */
-export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
+export type ComputeSpatialTilesetBaseUrl = (
+  iModel: IModelConnection
+) => Promise<URL | undefined>;
 
 /** Options supplied to [[initializeFrontendTiles]].
  * @alpha
@@ -32,7 +38,8 @@ export interface FrontendTilesOptions {
 }
 
 /** @internal */
-export const createFallbackSpatialTileTreeReferences = SpatialTileTreeReferences.create;
+export const createFallbackSpatialTileTreeReferences =
+  SpatialTileTreeReferences.create;
 
 let maxLevelsToSkip = 4;
 
@@ -48,5 +55,9 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
   if (undefined !== options.maxLevelsToSkip && options.maxLevelsToSkip >= 0)
     maxLevelsToSkip = options.maxLevelsToSkip;
 
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, options.computeSpatialTilesetBaseUrl);
+  SpatialTileTreeReferences.create = (view: SpatialViewState) =>
+    createBatchedSpatialTileTreeReferences(
+      view,
+      options.computeSpatialTilesetBaseUrl
+    );
 }

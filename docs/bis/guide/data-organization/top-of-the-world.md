@@ -2,11 +2,11 @@
 
 <!-- Responsible for this page: ??? -->
 
-BIS repositories have a strict hierarchical organization. This page describes the top of that hierarchy and how it functions as a *table of contents* for the repository as a whole.  This *table of contents* consists of:
+BIS repositories have a strict hierarchical organization. This page describes the top of that hierarchy and how it functions as a _table of contents_ for the repository as a whole. This _table of contents_ consists of:
 
-* `RepositoryModel`
-* `Subject`s
-* `InformationPartitionElement`s
+- `RepositoryModel`
+- `Subject`s
+- `InformationPartitionElement`s
 
 <!-- TODO
 The following figure shows a simple example of a the top of the hierarchy.
@@ -17,30 +17,30 @@ TODO: add figure
 
 Every BIS repository has exactly one `RepositoryModel` that defines the top of the hierarchy. `Element`s can be inserted into or updated within the `RepositoryModel`, but the `RepositoryModel` itself cannot be deleted. The `RepositoryModel` sub-models the root `Subject` of a BIS repository.
 
-*The RepositoryModel is the only Model in a BIS repository that sub-models an Element contained within itself (the root `Subject`). Due to implementation details, this was easier than the RepositoryModel not sub-modeling any Element.*
+_The RepositoryModel is the only Model in a BIS repository that sub-models an Element contained within itself (the root `Subject`). Due to implementation details, this was easier than the RepositoryModel not sub-modeling any Element._
 
 ## Subjects
 
-`Subject`s are `Element`s that are used to identify things that the repository is *about*. The `Subject` class cannot be specialized (subclassed). The most important capabilities of `Subject` are:
+`Subject`s are `Element`s that are used to identify things that the repository is _about_. The `Subject` class cannot be specialized (subclassed). The most important capabilities of `Subject` are:
 
-* It can have a UserLabel (inherited from Element)
-* It can have a Description
-* It can have child `Subject`s
-* It can have child `InformationPartitionElement`s
+- It can have a UserLabel (inherited from Element)
+- It can have a Description
+- It can have child `Subject`s
+- It can have child `InformationPartitionElement`s
 
 `Subject`s only exist in the `RepositoryModel`.
 
-Every BIS repository has exactly one *root* `Subject` that describes what the repository as a whole is about.
+Every BIS repository has exactly one _root_ `Subject` that describes what the repository as a whole is about.
 
-* The root `Subject` - like all `Subject`s - is contained by the `RepositoryModel`.
-* The root `Subject` has no parent element as it is the top of the `Subject` hierarchy.
-* The root `Subject` can be updated, but it cannot be deleted.
-* the root `Subject` is sub-modeled by the `RepositoryModel`.
+- The root `Subject` - like all `Subject`s - is contained by the `RepositoryModel`.
+- The root `Subject` has no parent element as it is the top of the `Subject` hierarchy.
+- The root `Subject` can be updated, but it cannot be deleted.
+- the root `Subject` is sub-modeled by the `RepositoryModel`.
 
 Child `Subject`s (optional) can be introduced to further organize the contents of the repository.
 
-* Child `Subject`s - like all `Subject`s - are contained by the `RepositoryModel`.
-* Child `Subject`s  have another `Subject` as a parent.
+- Child `Subject`s - like all `Subject`s - are contained by the `RepositoryModel`.
+- Child `Subject`s have another `Subject` as a parent.
 
 ## InformationPartitionElements
 
@@ -53,5 +53,6 @@ It is usually expected for a `Subject` to have only one `InformationPartitionEle
 `InformationPartitionElement`s always have a parent `Subject` and are never used outside of the `RepositoryModel`.
 
 ---
+
 | Next: [Single Responsible-Party Principle](./srpp.md)
 |:---

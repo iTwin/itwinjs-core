@@ -19,22 +19,20 @@ type float64 = number;
  */
 /** @internal */
 export class OutStream {
-    /**
-     * Create a new stream.
-     */
-    public constructor() {
-    }
+  /**
+   * Create a new stream.
+   */
+  public constructor() {}
 
-    /**
-     * Write the next byte (0.255) (the stream should only look at the lowest 8 bits of the value and ignore all others).
-     */
-    public write(value: int32): void {
-        /* Override in subclasses */
-    }
+  /**
+   * Write the next byte (0.255) (the stream should only look at the lowest 8 bits of the value and ignore all others).
+   */
+  public write(value: int32): void {
+    /* Override in subclasses */
+  }
 
-    /**
-     * Close the stream
-     */
-    public close(): void {
-    }
+  /**
+   * Close the stream
+   */
+  public close(): void {}
 }

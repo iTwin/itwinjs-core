@@ -30,10 +30,12 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
  * @param distances offset distances
  * @param distanceFactor factor to apply to distances.
  */
-function testCurveOffset(allPaths: AnyCurve[],
+function testCurveOffset(
+  allPaths: AnyCurve[],
   caseName: string,
   distances: number[],
-  distanceFactor: number) {
+  distanceFactor: number
+) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0;
@@ -59,7 +61,13 @@ function testCurveOffset(allPaths: AnyCurve[],
           options.leftOffsetDistance = offsetDistance * distanceFactor;
           const stickA = RegionOps.constructCurveXYOffset(path, options);
           if (stickA)
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA, x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(
+              allGeometry,
+              stickA,
+              x0,
+              y0,
+              0
+            );
         }
         y0 += yStep + 4 * dMax + 2;
       }
@@ -71,7 +79,6 @@ function testCurveOffset(allPaths: AnyCurve[],
 }
 
 describe("CurveOffset", () => {
-
   it("SimplePaths", () => {
     let counter = 0;
     for (const paths of [
@@ -86,9 +93,7 @@ describe("CurveOffset", () => {
 
   it("SimpleLoops", () => {
     let counter = 0;
-    for (const paths of [
-      Sample.createSimpleLoops(),
-    ]) {
+    for (const paths of [Sample.createSimpleLoops()]) {
       const a = paths[0].range().xLength() * 0.02;
       const offsetDistances = [2 * a, a, -a, -2 * a];
       testCurveOffset(paths, `SimpleLoops ${counter++}`, offsetDistances, 1.0);
@@ -101,7 +106,8 @@ describe("CurveOffset", () => {
     for (const pointPath of [
       Sample.appendVariableSawTooth([], 1, 0, 1, 2, 4, 0.8),
       Sample.appendVariableSawTooth([], 1, 0.5, 1, 2, 4, 0.8),
-      Sample.appendVariableSawTooth([], 3, -0.5, 1, 2, 4, 0.8)]) {
+      Sample.appendVariableSawTooth([], 3, -0.5, 1, 2, 4, 0.8),
+    ]) {
       paths.push(Path.create(LineString3d.create(pointPath)));
     }
 
@@ -109,7 +115,6 @@ describe("CurveOffset", () => {
     const offsetDistances = [2 * a, a, -a, -2 * a];
     // const offsetDistances = [a];
     testCurveOffset(paths, `SawtoothPaths ${counter++}`, offsetDistances, 1.0);
-
   });
 
   it("FractalPaths", () => {
@@ -117,7 +122,8 @@ describe("CurveOffset", () => {
     const paths = [];
     for (const pointPath of [
       Sample.createFractalDiamondConvexPattern(1, -0.5),
-      Sample.createFractalHatReversingPattern(1, 0.25)]) {
+      Sample.createFractalHatReversingPattern(1, 0.25),
+    ]) {
       paths.push(Path.create(LineString3d.create(pointPath)));
     }
 
@@ -125,7 +131,6 @@ describe("CurveOffset", () => {
     const offsetDistances = [2 * a, a, -a, -2 * a];
     // const offsetDistances = [a];
     testCurveOffset(paths, `FractalPaths ${counter++}`, offsetDistances, 1.0);
-
   });
   // cspell:word Daumantas
   it("Daumantas", () => {
@@ -136,36 +141,63 @@ describe("CurveOffset", () => {
     const y3 = 1.078;
     const x4 = 8.0;
     const y4 = 8.0;
-    const path0 = Path.create(LineString3d.create([[x0, y0], [0, y0], [0, 0], [x3, y3], [x4, y4]]));
+    const path0 = Path.create(
+      LineString3d.create([
+        [x0, y0],
+        [0, y0],
+        [0, 0],
+        [x3, y3],
+        [x4, y4],
+      ])
+    );
     const a = 0.56;
     const offsetDistances = [a, -a];
     // const offsetDistances = [a];
     testCurveOffset([path0], `Daumantas ${counter++}`, offsetDistances, 1.0);
-
   });
   it("OffsetGap10", () => {
     let counter = 10;
     for (const e of [0, 0.1, 0.3, -0.1, -0.3]) {
-      const path0 = Path.create(LineString3d.create([[0, 0], [10, 0], [10 + e, -1], [18, -1]]));
+      const path0 = Path.create(
+        LineString3d.create([
+          [0, 0],
+          [10, 0],
+          [10 + e, -1],
+          [18, -1],
+        ])
+      );
       const offsetDistances = [0.5, -0.5, 1.5, -1.5, 2, -2];
       // const offsetDistances = [a];
       testCurveOffset([path0], `OffsetGap ${counter++}`, offsetDistances, 1.0);
     }
-
   });
   it("OffsetGap", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const path = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/ChainCollector/gapAtSmallShift.imjs", "utf8")))!;
+    const path = IModelJson.Reader.parse(
+      JSON.parse(
+        fs.readFileSync(
+          "./src/test/testInputs/ChainCollector/gapAtSmallShift.imjs",
+          "utf8"
+        )
+      )
+    )!;
     if (ck.testDefined(path) && path instanceof CurveChain) {
       const x0 = 0;
       const y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0.1);
       for (const offset of [1, 2, 2.4]) {
         const options = new JointOptions(offset, 80, 135);
-        const offsetCurves = RegionOps.constructCurveXYOffset(path as Path, options);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurves, x0, y0);
+        const offsetCurves = RegionOps.constructCurveXYOffset(
+          path as Path,
+          options
+        );
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          offsetCurves,
+          x0,
+          y0
+        );
       }
     }
 
@@ -177,24 +209,48 @@ describe("CurveOffset", () => {
     const allGeometry: GeometryQuery[] = [];
     const offset = 0.5;
     let x0 = 0;
-    const z1 = 0.04;  // to place center geometry above filled loops.
+    const z1 = 0.04; // to place center geometry above filled loops.
     const pointA = Point3d.create(0, 0);
     const pointB = Point3d.create(4, 0);
     const e = 0.1;
     const f = 0.02;
     const sC = 0.98;
-    const path1 = Loop.create(LineString3d.create(pointA, pointB, [2, -e], pointA));
-    const arcA = Arc3d.createCircularStartMiddleEnd(pointA, Point3d.create(2, 0.5), pointB) as Arc3d;
-    const arcB = Arc3d.createCircularStartMiddleEnd(pointB, Point3d.create(2, 0.25), pointA) as Arc3d;
+    const path1 = Loop.create(
+      LineString3d.create(pointA, pointB, [2, -e], pointA)
+    );
+    const arcA = Arc3d.createCircularStartMiddleEnd(
+      pointA,
+      Point3d.create(2, 0.5),
+      pointB
+    ) as Arc3d;
+    const arcB = Arc3d.createCircularStartMiddleEnd(
+      pointB,
+      Point3d.create(2, 0.25),
+      pointA
+    ) as Arc3d;
     const arcC = arcA.clonePartialCurve(1.0, 0.0)!;
-    arcC.tryTransformInPlace(Transform.createFixedPointAndMatrix(arcA.center, Matrix3d.createScale(sC, sC, sC)));
+    arcC.tryTransformInPlace(
+      Transform.createFixedPointAndMatrix(
+        arcA.center,
+        Matrix3d.createScale(sC, sC, sC)
+      )
+    );
     const path2 = Loop.create(arcA, arcB);
-    const path3 = Loop.create(LineString3d.create(pointA, pointB, pointA.interpolatePerpendicularXY(1.0, pointB, -f),
-      pointA.interpolatePerpendicularXY(0, pointB, -f), pointA));
-    const path4 = Loop.create(arcA,
+    const path3 = Loop.create(
+      LineString3d.create(
+        pointA,
+        pointB,
+        pointA.interpolatePerpendicularXY(1.0, pointB, -f),
+        pointA.interpolatePerpendicularXY(0, pointB, -f),
+        pointA
+      )
+    );
+    const path4 = Loop.create(
+      arcA,
       LineSegment3d.create(arcA.endPoint(), arcC.startPoint()),
       arcC,
-      LineSegment3d.create(arcC.endPoint(), arcA.startPoint()));
+      LineSegment3d.create(arcC.endPoint(), arcA.startPoint())
+    );
     // construct offset for ...
     // a) primitive (one way only)
     // b) primitive + reversed primitive
@@ -204,7 +260,12 @@ describe("CurveOffset", () => {
         const options = new JointOptions(offset, minArcDegrees, 135);
         const offsetCurves = RegionOps.constructCurveXYOffset(path, options);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, z1);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurves, x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          offsetCurves,
+          x0,
+          y0
+        );
         y0 += 5;
       }
       x0 += 10;
@@ -212,5 +273,4 @@ describe("CurveOffset", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveOffset", "TrivialPath");
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

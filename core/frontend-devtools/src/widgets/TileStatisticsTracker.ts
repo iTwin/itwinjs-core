@@ -22,28 +22,49 @@ function computeProgress(vp: Viewport): number {
   const ready = vp.numReadyTiles;
   const requested = vp.numRequestedTiles;
   const total = ready + requested;
-  const ratio = (total > 0) ? (ready / total) : 1.0;
+  const ratio = total > 0 ? ready / total : 1.0;
   return Math.round(ratio * 100);
 }
 
 const statEntries: StatEntry[] = [
-  { getValue: (stats, vp) => stats.numActiveRequests + (IModelApp.tileAdmin.getTilesForUser(vp)?.external.requested ?? 0), label: "Active" },
+  {
+    getValue: (stats, vp) =>
+      stats.numActiveRequests +
+      (IModelApp.tileAdmin.getTilesForUser(vp)?.external.requested ?? 0),
+    label: "Active",
+  },
   { getValue: (stats, _vp) => stats.numPendingRequests, label: "Pending" },
   { getValue: (stats, _vp) => stats.numCanceled, label: "Canceled" },
-  { getValue: (stats, _vp) => stats.numActiveRequests + stats.numPendingRequests, label: "Total" },
+  {
+    getValue: (stats, _vp) =>
+      stats.numActiveRequests + stats.numPendingRequests,
+    label: "Total",
+  },
   { getValue: (_stats, vp) => vp.numSelectedTiles, label: "Selected" },
   { getValue: (_stats, vp) => vp.numReadyTiles, label: "Ready" },
   { getValue: (_stats, vp) => computeProgress(vp), label: "Progress" },
-  { getValue: (stats, _vp) => stats.totalCompletedRequests, label: "Completed" },
+  {
+    getValue: (stats, _vp) => stats.totalCompletedRequests,
+    label: "Completed",
+  },
   { getValue: (stats, _vp) => stats.totalTimedOutRequests, label: "Timed Out" },
   { getValue: (stats, _vp) => stats.totalFailedRequests, label: "Failed" },
   { getValue: (stats, _vp) => stats.totalEmptyTiles, label: "Empty" },
-  { getValue: (stats, _vp) => stats.totalUndisplayableTiles, label: "Undisplayable" },
+  {
+    getValue: (stats, _vp) => stats.totalUndisplayableTiles,
+    label: "Undisplayable",
+  },
   { getValue: (stats, _vp) => stats.totalElidedTiles, label: "Elided" },
   { getValue: (stats, _vp) => stats.totalCacheMisses, label: "Cache Misses" },
-  { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
+  {
+    getValue: (stats, _vp) => stats.totalDispatchedRequests,
+    label: "Dispatched",
+  },
   { getValue: (stats, _vp) => stats.totalAbortedRequests, label: "Aborted" },
-  { getValue: (stats) => Math.round(stats.decoding.mean), label: "Decoding mean time (ms)" },
+  {
+    getValue: (stats) => Math.round(stats.decoding.mean),
+    label: "Decoding mean time (ms)",
+  },
   { getValue: (stats) => stats.decoding.max, label: "Decoding max time (ms)" },
 ];
 
@@ -91,7 +112,8 @@ export class TileStatisticsTracker {
       this._statElements[i] = elem;
       div.appendChild(elem);
 
-      const column = i >= indexOfFirstGlobalStatistic ? globalColumn : frameColumn;
+      const column =
+        i >= indexOfFirstGlobalStatistic ? globalColumn : frameColumn;
       column.appendChild(div);
     }
 

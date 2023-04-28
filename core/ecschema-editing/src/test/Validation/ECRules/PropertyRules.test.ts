@@ -4,11 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnyProperty, DelayedPromiseWithProps, ECClass, EntityClass, KindOfQuantity, PrimitiveProperty, PrimitiveType,
-  PropertyProps, RelationshipClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
+import {
+  AnyProperty,
+  DelayedPromiseWithProps,
+  ECClass,
+  EntityClass,
+  KindOfQuantity,
+  PrimitiveProperty,
+  PrimitiveType,
+  PropertyProps,
+  RelationshipClass,
+  Schema,
+  SchemaContext,
+  StructClass,
+} from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../../Editing/Mutable/MutableClass";
 import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import {
+  DiagnosticCategory,
+  DiagnosticType,
+} from "../../../Validation/Diagnostic";
 import * as Rules from "../../../Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
@@ -30,100 +45,184 @@ describe("PropertyRule tests", () => {
     testBaseClass = await mutable.createEntityClass("TestBaseClass");
     testKindOfQuantity = await mutable.createKindOfQuantity("TestKoQ");
     testBaseKindOfQuantity = await mutable.createKindOfQuantity("TestBaseKoQ");
-    testClass.baseClass = new DelayedPromiseWithProps(testBaseClass.key, async () => testBaseClass);
+    testClass.baseClass = new DelayedPromiseWithProps(
+      testBaseClass.key,
+      async () => testBaseClass
+    );
   });
 
   describe("IncompatibleValueTypePropertyOverride Tests", () => {
     it("IncompatibleValueTypePropertyOverride, rule violated.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", testBaseClass.fullName, "string", "int"]);
-        expect(diagnostic.messageText)
-          .eq("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.TestBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
+        expect(diagnostic.messageArgs).deep.eq([
+          testClass.fullName,
+          "TestProperty",
+          testBaseClass.fullName,
+          "string",
+          "int",
+        ]);
+        expect(diagnostic.messageText).eq(
+          "The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.TestBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int."
+        );
         expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride);
+        expect(diagnostic.code).eq(
+          Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride
+        );
         expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+      expect(
+        resultHasEntries,
+        "expected rule to return an AsyncIterable with entries."
+      ).true;
     });
 
     it("IncompatibleValueTypePropertyOverride, multiple base classes, rule violated.", async () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
-      await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
+      testBaseClass.baseClass = new DelayedPromiseWithProps(
+        rootBaseClass.key,
+        async () => rootBaseClass
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", rootBaseClass.fullName, "string", "int"]);
-        expect(diagnostic.messageText)
-          .eq("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.RootBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
+        expect(diagnostic.messageArgs).deep.eq([
+          testClass.fullName,
+          "TestProperty",
+          rootBaseClass.fullName,
+          "string",
+          "int",
+        ]);
+        expect(diagnostic.messageText).eq(
+          "The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.RootBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int."
+        );
         expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride);
+        expect(diagnostic.code).eq(
+          Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride
+        );
         expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+      expect(
+        resultHasEntries,
+        "expected rule to return an AsyncIterable with entries."
+      ).true;
     });
 
     it("IncompatibleValueTypePropertyOverride, different property types, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      await (
+        testBaseClass as ECClass as MutableClass
+      ).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleValueTypePropertyOverride, same value types, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleValueTypePropertyOverride, same array value types, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
+      await (
+        testBaseClass as ECClass as MutableClass
+      ).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
+      await (testClass as ECClass as MutableClass).createPrimitiveArrayProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleValueTypePropertyOverride, non-primitive type, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createStructProperty("TestProperty", new StructClass(schema, "TestStruct"));
-      await (testClass as ECClass as MutableClass).createStructProperty("TestProperty", new StructClass(schema, "TestStruct"));
+      await (testBaseClass as ECClass as MutableClass).createStructProperty(
+        "TestProperty",
+        new StructClass(schema, "TestStruct")
+      );
+      await (testClass as ECClass as MutableClass).createStructProperty(
+        "TestProperty",
+        new StructClass(schema, "TestStruct")
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleValueTypePropertyOverride, no base class, rule passes.", async () => {
-      const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
-      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      const entityClass = new EntityClass(
+        new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3),
+        "TestEntity"
+      );
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const properties = [...entityClass.properties!];
-      const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleValueTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -131,66 +230,123 @@ describe("PropertyRule tests", () => {
 
   describe("IncompatibleTypePropertyOverride Tests", () => {
     it("IncompatibleTypePropertyOverride, rule violated.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      await (
+        testBaseClass as ECClass as MutableClass
+      ).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", testBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
-        expect(diagnostic.messageText)
-          .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
+        expect(diagnostic.messageArgs).deep.eq([
+          testClass.fullName,
+          "TestProperty",
+          testBaseClass.fullName,
+          "PrimitiveArrayProperty",
+          "PrimitiveProperty",
+        ]);
+        expect(diagnostic.messageText).eq(
+          `The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`
+        );
         expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleTypePropertyOverride);
+        expect(diagnostic.code).eq(
+          Rules.DiagnosticCodes.IncompatibleTypePropertyOverride
+        );
         expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+      expect(
+        resultHasEntries,
+        "expected rule to return an AsyncIterable with entries."
+      ).true;
     });
 
     it("IncompatibleTypePropertyOverride, multiple base classes, rule violated.", async () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
-      await (rootBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (
+        rootBaseClass as ECClass as MutableClass
+      ).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      testBaseClass.baseClass = new DelayedPromiseWithProps(
+        rootBaseClass.key,
+        async () => rootBaseClass
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", rootBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
-        expect(diagnostic.messageText)
-          .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
+        expect(diagnostic.messageArgs).deep.eq([
+          testClass.fullName,
+          "TestProperty",
+          rootBaseClass.fullName,
+          "PrimitiveArrayProperty",
+          "PrimitiveProperty",
+        ]);
+        expect(diagnostic.messageText).eq(
+          `The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`
+        );
         expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleTypePropertyOverride);
+        expect(diagnostic.code).eq(
+          Rules.DiagnosticCodes.IncompatibleTypePropertyOverride
+        );
         expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+      expect(
+        resultHasEntries,
+        "expected rule to return an AsyncIterable with entries."
+      ).true;
     });
 
     it("IncompatibleTypePropertyOverride, types compatible, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
       // different value type, but THIS rule should still pass
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const properties = [...testClass.properties!];
-      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleTypePropertyOverride, no base class, rule passes.", async () => {
-      const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
-      await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      const entityClass = new EntityClass(
+        new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3),
+        "TestEntity"
+      );
+      await (entityClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const properties = [...entityClass.properties!];
-      const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleTypePropertyOverride(
+        properties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
@@ -198,8 +354,14 @@ describe("PropertyRule tests", () => {
 
   describe("IncompatibleUnitPropertyOverride Tests", () => {
     it("IncompatibleUnitPropertyOverride, rule violated.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const basePropJson: PropertyProps = {
         name: "TestProperty",
@@ -222,7 +384,9 @@ describe("PropertyRule tests", () => {
       const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
-      const baseUnit = await (schema as MutableSchema).createUnit("BaseTestUnit");
+      const baseUnit = await (schema as MutableSchema).createUnit(
+        "BaseTestUnit"
+      );
       await testBaseKindOfQuantity.fromJSON({
         persistenceUnit: "TestSchema.BaseTestUnit",
         relativeError: 5,
@@ -234,30 +398,52 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(
+        childProperties[0] as PrimitiveProperty
+      );
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).eq(childProperties[0]);
         expect(diagnostic.messageArgs).deep.eq([
-          testClass.fullName, "TestProperty", testBaseClass.fullName,
-          testBaseKindOfQuantity.fullName, baseUnit.fullName, childUnit.fullName, testKindOfQuantity.fullName,
+          testClass.fullName,
+          "TestProperty",
+          testBaseClass.fullName,
+          testBaseKindOfQuantity.fullName,
+          baseUnit.fullName,
+          childUnit.fullName,
+          testKindOfQuantity.fullName,
         ]);
-        expect(diagnostic.messageText)
-          .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`);
+        expect(diagnostic.messageText).eq(
+          `The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`
+        );
         expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride);
+        expect(diagnostic.code).eq(
+          Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride
+        );
         expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+      expect(
+        resultHasEntries,
+        "expected rule to return an AsyncIterable with entries."
+      ).true;
     });
 
     it("IncompatibleUnitPropertyOverride, multiple base classes, rule violated.", async () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
-      await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
+      testBaseClass.baseClass = new DelayedPromiseWithProps(
+        rootBaseClass.key,
+        async () => rootBaseClass
+      );
 
       const basePropJson = {
         name: "TestProperty",
@@ -280,7 +466,9 @@ describe("PropertyRule tests", () => {
       const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
-      const baseUnit = await (schema as MutableSchema).createUnit("BaseTestUnit");
+      const baseUnit = await (schema as MutableSchema).createUnit(
+        "BaseTestUnit"
+      );
       await testBaseKindOfQuantity.fromJSON({
         persistenceUnit: "TestSchema.BaseTestUnit",
         relativeError: 5,
@@ -292,27 +480,47 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(childProperty as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(
+        childProperty as PrimitiveProperty
+      );
 
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
         expect(diagnostic.ecDefinition).eq(childProperty);
         expect(diagnostic.messageArgs).deep.eq([
-          testClass.fullName, "TestProperty", rootBaseClass.fullName,
-          testBaseKindOfQuantity.fullName, baseUnit.fullName, childUnit.fullName, testKindOfQuantity.fullName,
+          testClass.fullName,
+          "TestProperty",
+          rootBaseClass.fullName,
+          testBaseKindOfQuantity.fullName,
+          baseUnit.fullName,
+          childUnit.fullName,
+          testKindOfQuantity.fullName,
         ]);
-        expect(diagnostic.messageText).eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`);
+        expect(diagnostic.messageText).eq(
+          `The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`
+        );
         expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride);
+        expect(diagnostic.code).eq(
+          Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride
+        );
         expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+      expect(
+        resultHasEntries,
+        "expected rule to return an AsyncIterable with entries."
+      ).true;
     });
 
     it("IncompatibleUnitPropertyOverride, same persistence units, rule passes", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const basePropJson = {
         name: "TestProperty",
@@ -346,14 +554,25 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(childProperty as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(
+        childProperty as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
-        expect(false, `Rule should have passed, instead recieved "${_diagnostic.messageText}"`).true;
+        expect(
+          false,
+          `Rule should have passed, instead recieved "${_diagnostic.messageText}"`
+        ).true;
     });
 
     it("IncompatibleUnitPropertyOverride, no base unit, rule passes", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
 
       const basePropJson = {
         name: "TestProperty",
@@ -382,14 +601,22 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(
+        childProperties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleUnitPropertyOverride, not a KOQ, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
 
       const basePropJson = {
         name: "TestProperty",
@@ -410,14 +637,22 @@ describe("PropertyRule tests", () => {
       const childProperty = childProperties[0];
       await childProperty.fromJSON(childPropJson);
 
-      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(
+        childProperties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
 
     it("IncompatibleUnitPropertyOverride, incompatible property types, rule passes.", async () => {
-      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      await (testClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.Integer);
+      await (testBaseClass as ECClass as MutableClass).createPrimitiveProperty(
+        "TestProperty",
+        PrimitiveType.String
+      );
+      await (testClass as ECClass as MutableClass).createPrimitiveArrayProperty(
+        "TestProperty",
+        PrimitiveType.Integer
+      );
 
       const basePropJson = {
         name: "TestProperty",
@@ -452,14 +687,24 @@ describe("PropertyRule tests", () => {
         relativeError: 4,
       });
 
-      const results = Rules.incompatibleUnitPropertyOverride(childProperties[0] as PrimitiveProperty);
+      const results = Rules.incompatibleUnitPropertyOverride(
+        childProperties[0] as PrimitiveProperty
+      );
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
     });
   });
 
   describe("Validate NavigationProperty Tests", () => {
-    function createSchemaJson(baseRelationship: any, sourceConst: any, targetConst: any, sourceProperties: any, targetProperties: any, inheritanceLevel: any, relationshipProperties?: any) {
+    function createSchemaJson(
+      baseRelationship: any,
+      sourceConst: any,
+      targetConst: any,
+      sourceProperties: any,
+      targetProperties: any,
+      inheritanceLevel: any,
+      relationshipProperties?: any
+    ) {
       let sourcePropsInherited1: any;
       let targetPropsInherited1: any;
       let sourcePropsInherited2: any;
@@ -531,17 +776,13 @@ describe("PropertyRule tests", () => {
             polymorphic: false,
             multiplicity: "(0..*)",
             roleLabel: "Test Source roleLabel",
-            constraintClasses: [
-              "TestSchema.TestSourceEntity",
-            ],
+            constraintClasses: ["TestSchema.TestSourceEntity"],
           },
           target: {
             polymorphic: false,
             multiplicity: "(0..1)",
             roleLabel: "Test Source roleLabel",
-            constraintClasses: [
-              "TestSchema.TestTargetEntity",
-            ],
+            constraintClasses: ["TestSchema.TestTargetEntity"],
           },
         },
       });
@@ -549,8 +790,12 @@ describe("PropertyRule tests", () => {
 
     it("Property is not a NavigationProperty, rule not violated.", async () => {
       const mutableSchema = schema as MutableSchema;
-      const testRelationship = await mutableSchema.createRelationshipClass("TestRelationshipClass");
-      const testProperty = await (testRelationship as ECClass as MutableClass).createPrimitiveProperty("TestProperty") as AnyProperty;
+      const testRelationship = await mutableSchema.createRelationshipClass(
+        "TestRelationshipClass"
+      );
+      const testProperty = (await (
+        testRelationship as ECClass as MutableClass
+      ).createPrimitiveProperty("TestProperty")) as AnyProperty;
 
       const results = Rules.validateNavigationProperty(testProperty);
 
@@ -564,18 +809,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -593,8 +834,20 @@ describe("PropertyRule tests", () => {
           baseClass: "TestSchema.TestRelationship2",
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(baseRelationshipJson, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            baseRelationshipJson,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -602,13 +855,23 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship"]);
-          expect(diagnostic.messageText).eq(`The referenced relationship 'TestSchema.TestRelationship', used in NavigationProperty 'TestSourceEntity.TestProperty' is not the root relationship.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestSourceEntity.TestProperty",
+            "TestSchema.TestRelationship",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `The referenced relationship 'TestSchema.TestRelationship', used in NavigationProperty 'TestSourceEntity.TestProperty' is not the root relationship.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationRelationshipMustBeRoot.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics.NavigationRelationshipMustBeRoot.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("NavigationProperty relationship is a root relationship, rule not violated.", async () => {
@@ -616,18 +879,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -641,8 +900,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -657,18 +928,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -682,8 +949,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -691,13 +970,24 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship", "Forward"]);
-          expect(diagnostic.messageText).eq(`NavigationProperty 'TestSourceEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Forward' direction due to a max multiplicity greater than 1.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestSourceEntity.TestProperty",
+            "TestSchema.TestRelationship",
+            "Forward",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `NavigationProperty 'TestSourceEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Forward' direction due to a max multiplicity greater than 1.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("Relationship target multiplicity (0..1), forward direction, rule passes.", async () => {
@@ -705,18 +995,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -730,8 +1016,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -744,18 +1042,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -769,8 +1063,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -778,13 +1084,24 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestTargetEntity.TestProperty", "TestSchema.TestRelationship", "Backward"]);
-          expect(diagnostic.messageText).eq(`NavigationProperty 'TestTargetEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Backward' direction due to a max multiplicity greater than 1.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestTargetEntity.TestProperty",
+            "TestSchema.TestRelationship",
+            "Backward",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `NavigationProperty 'TestTargetEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Backward' direction due to a max multiplicity greater than 1.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("Relationship source multiplicity (0..1), backward direction, rule passes.", async () => {
@@ -792,18 +1109,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -817,8 +1130,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -833,18 +1158,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestRelationship2",
-          ],
+          constraintClasses: ["TestSchema.TestRelationship2"],
         };
 
         const propertyJson = {
@@ -858,8 +1179,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -867,13 +1200,24 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship"]);
-          expect(diagnostic.messageText).eq(`The NavigationProperty 'TestSourceEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestSourceEntity.TestProperty",
+            "TestSchema.TestRelationship",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `The NavigationProperty 'TestSourceEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics
+              .NavigationRelationshipAbstractConstraintEntityOrMixin.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("Forward direction, relationship target abstract constraint is a EntityClass, rule passes.", async () => {
@@ -881,18 +1225,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestRelationship2",
-          ],
+          constraintClasses: ["TestSchema.TestRelationship2"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -906,8 +1246,21 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, 0, propertyJson), new SchemaContext());
-        const testProperty = (await testSchema.getItem<RelationshipClass>("TestRelationship2"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            undefined,
+            0,
+            propertyJson
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<RelationshipClass>("TestRelationship2")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -920,18 +1273,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestRelationship2",
-          ],
+          constraintClasses: ["TestSchema.TestRelationship2"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -945,8 +1294,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -954,13 +1315,24 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestTargetEntity.TestProperty", "TestSchema.TestRelationship"]);
-          expect(diagnostic.messageText).eq(`The NavigationProperty 'TestTargetEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestTargetEntity.TestProperty",
+            "TestSchema.TestRelationship",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `The NavigationProperty 'TestTargetEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics
+              .NavigationRelationshipAbstractConstraintEntityOrMixin.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("Backward direction, relationship source abstract constraint is a EntityClass, rule passes.", async () => {
@@ -968,18 +1340,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestRelationship2",
-          ],
+          constraintClasses: ["TestSchema.TestRelationship2"],
         };
 
         const propertyJson = {
@@ -993,8 +1361,21 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, 0, propertyJson), new SchemaContext());
-        const testProperty = (await testSchema.getItem<RelationshipClass>("TestRelationship2"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            undefined,
+            0,
+            propertyJson
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<RelationshipClass>("TestRelationship2")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1009,18 +1390,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -1034,8 +1411,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1043,13 +1432,26 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity", "TestProperty", "TestSchema.TestRelationship", "source"]);
-          expect(diagnostic.messageText).eq(`The class 'TestSourceEntity' of NavigationProperty 'TestProperty' is not supported by the source constraint of the referenced relationship 'TestSchema.TestRelationship'.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestSourceEntity",
+            "TestProperty",
+            "TestSchema.TestRelationship",
+            "source",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `The class 'TestSourceEntity' of NavigationProperty 'TestProperty' is not supported by the source constraint of the referenced relationship 'TestSchema.TestRelationship'.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics
+              .NavigationClassMustBeAConstraintClassOfRelationship.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("Forward direction, relationship source constraint does include property class, rule passes.", async () => {
@@ -1057,18 +1459,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -1082,8 +1480,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1096,18 +1506,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const propertyJson = {
@@ -1121,8 +1527,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1130,13 +1548,26 @@ describe("PropertyRule tests", () => {
         for await (const diagnostic of results) {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestTargetEntity", "TestProperty", "TestSchema.TestRelationship", "target"]);
-          expect(diagnostic.messageText).eq(`The class 'TestTargetEntity' of NavigationProperty 'TestProperty' is not supported by the target constraint of the referenced relationship 'TestSchema.TestRelationship'.`);
+          expect(diagnostic.messageArgs).deep.eq([
+            "TestTargetEntity",
+            "TestProperty",
+            "TestSchema.TestRelationship",
+            "target",
+          ]);
+          expect(diagnostic.messageText).eq(
+            `The class 'TestTargetEntity' of NavigationProperty 'TestProperty' is not supported by the target constraint of the referenced relationship 'TestSchema.TestRelationship'.`
+          );
           expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship.code);
+          expect(diagnostic.code).eq(
+            Rules.Diagnostics
+              .NavigationClassMustBeAConstraintClassOfRelationship.code
+          );
           expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
         }
-        expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
+        expect(
+          resultHasEntries,
+          "expected rule to return an AsyncIterable with entries."
+        ).true;
       });
 
       it("Backward direction, relationship target constraint does include property class, rule passes.", async () => {
@@ -1144,18 +1575,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.TestSourceEntity",
-          ],
+          constraintClasses: ["TestSchema.TestSourceEntity"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TestTargetEntity",
-          ],
+          constraintClasses: ["TestSchema.TestTargetEntity"],
         };
 
         const propertyJson = {
@@ -1169,8 +1596,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<RelationshipClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            0
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<RelationshipClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1183,18 +1622,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.SourceBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.SourceBaseEntity1"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TargetBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.TargetBaseEntity1"],
         };
 
         const propertyJson = {
@@ -1208,8 +1643,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 1), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            1
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1222,18 +1669,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.SourceBaseEntity2",
-          ],
+          constraintClasses: ["TestSchema.SourceBaseEntity2"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TargetBaseEntity2",
-          ],
+          constraintClasses: ["TestSchema.TargetBaseEntity2"],
         };
 
         const propertyJson = {
@@ -1247,8 +1690,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 2), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            2
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1261,18 +1716,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.SourceBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.SourceBaseEntity1"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TargetBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.TargetBaseEntity1"],
         };
 
         const propertyJson = {
@@ -1286,8 +1737,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 3), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            propertyJson,
+            undefined,
+            3
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestSourceEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1300,18 +1763,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.SourceBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.SourceBaseEntity1"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TargetBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.TargetBaseEntity1"],
         };
 
         const propertyJson = {
@@ -1325,8 +1784,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 1), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            1
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1339,18 +1810,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.SourceBaseEntity2",
-          ],
+          constraintClasses: ["TestSchema.SourceBaseEntity2"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TargetBaseEntity2",
-          ],
+          constraintClasses: ["TestSchema.TargetBaseEntity2"],
         };
 
         const propertyJson = {
@@ -1364,8 +1831,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 2), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            2
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1378,18 +1857,14 @@ describe("PropertyRule tests", () => {
           polymorphic: false,
           multiplicity: "(0..1)",
           roleLabel: "Test Source roleLabel",
-          constraintClasses: [
-            "TestSchema.SourceBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.SourceBaseEntity1"],
         };
 
         const targetJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
           roleLabel: "Test Target roleLabel",
-          constraintClasses: [
-            "TestSchema.TargetBaseEntity1",
-          ],
+          constraintClasses: ["TestSchema.TargetBaseEntity1"],
         };
 
         const propertyJson = {
@@ -1403,8 +1878,20 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 3), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testSchema = await Schema.fromJson(
+          createSchemaJson(
+            undefined,
+            sourceJson,
+            targetJson,
+            undefined,
+            propertyJson,
+            3
+          ),
+          new SchemaContext()
+        );
+        const testProperty = (
+          await testSchema.getItem<EntityClass>("TestTargetEntity")
+        )?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 

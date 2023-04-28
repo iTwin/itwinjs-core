@@ -26,19 +26,22 @@ describe("UpdatesTracker", () => {
   });
 
   describe("constructor", () => {
-
     it("sets up timer callback with specified `pollInterval`", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(UpdatesTracker.create({ nativePlatformGetter: () => nativePlatformMock.object, pollInterval: 123 }), (_r) => {
-        expect(s).to.be.calledOnce;
-        expect(s.firstCall.args[1]).to.eq(123);
-      });
+      using(
+        UpdatesTracker.create({
+          nativePlatformGetter: () => nativePlatformMock.object,
+          pollInterval: 123,
+        }),
+        (_r) => {
+          expect(s).to.be.calledOnce;
+          expect(s.firstCall.args[1]).to.eq(123);
+        }
+      );
     });
-
   });
 
   describe("dispose", () => {
-
     it("stops tracking on dispose", () => {
       const s = sinon.spy(clock, "clearInterval");
       const tracker = UpdatesTracker.create({
@@ -48,11 +51,9 @@ describe("UpdatesTracker", () => {
       tracker.dispose();
       expect(s).to.be.calledOnce;
     });
-
   });
 
   describe("tracking", () => {
-
     let spy: sinon.SinonSpy<[string, ...any[]], void>;
     let tracker: UpdatesTracker;
     beforeEach(() => {
@@ -67,7 +68,9 @@ describe("UpdatesTracker", () => {
     });
 
     it("doesn't emit events if there are no updates", () => {
-      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: undefined }));
+      nativePlatformMock
+        .setup((x) => x.getUpdateInfo())
+        .returns(() => ({ result: undefined }));
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
       expect(spy).to.not.be.called;
@@ -80,10 +83,14 @@ describe("UpdatesTracker", () => {
           "b-ruleset": { content: "FULL" },
         },
       };
-      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: updates }));
+      nativePlatformMock
+        .setup((x) => x.getUpdateInfo())
+        .returns(() => ({ result: updates }));
       const findDbStub = sinon.stub(IModelDb, "findByFilename");
       findDbStub.returns(imodelDbMock.object);
-      imodelDbMock.setup((x) => x.getRpcProps()).returns(() => ({ key: "imodelKey" }));
+      imodelDbMock
+        .setup((x) => x.getRpcProps())
+        .returns(() => ({ key: "imodelKey" }));
 
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
@@ -91,7 +98,10 @@ describe("UpdatesTracker", () => {
       const expectedUpdateInfo: UpdateInfo = {
         ["imodelKey"]: updates["imodel-File-Path"],
       };
-      expect(spy).to.be.calledOnceWithExactly(PresentationIpcEvents.Update, expectedUpdateInfo);
+      expect(spy).to.be.calledOnceWithExactly(
+        PresentationIpcEvents.Update,
+        expectedUpdateInfo
+      );
     });
 
     it("does not emit events if imodelDb is not found", () => {
@@ -100,14 +110,14 @@ describe("UpdatesTracker", () => {
           "a-ruleset": { hierarchy: "FULL" },
         },
       };
-      nativePlatformMock.setup((x) => x.getUpdateInfo()).returns(() => ({ result: updates }));
+      nativePlatformMock
+        .setup((x) => x.getUpdateInfo())
+        .returns(() => ({ result: updates }));
       const findDbStub = sinon.stub(IModelDb, "findByFilename");
       findDbStub.returns(undefined);
       clock.tick(1);
       nativePlatformMock.verify((x) => x.getUpdateInfo(), moq.Times.once());
       expect(spy).to.not.be.called;
     });
-
   });
-
 });

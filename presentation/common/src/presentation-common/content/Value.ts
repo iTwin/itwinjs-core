@@ -14,12 +14,23 @@ import { ValuesDictionary } from "../Utils";
  * Raw value type
  * @public
  */
-export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NavigationPropertyValue | NestedContentValue[];
+export type Value =
+  | string
+  | number
+  | boolean
+  | undefined
+  | ValuesMap
+  | ValuesArray
+  | NavigationPropertyValue
+  | NestedContentValue[];
 
 /** @public */
-export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace Value {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a primitive */
-  export function isPrimitive(value: Value): value is string | number | boolean | undefined {
+  export function isPrimitive(
+    value: Value
+  ): value is string | number | boolean | undefined {
     return isPrimitiveValue(value);
   }
 
@@ -39,11 +50,15 @@ export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
   }
 
   /** Is the value a navigation value */
-  export function isNavigationValue(value: Value): value is NavigationPropertyValue {
-    return value !== undefined
-      && (value as NavigationPropertyValue).id !== undefined
-      && (value as NavigationPropertyValue).className !== undefined
-      && (value as NavigationPropertyValue).label !== undefined;
+  export function isNavigationValue(
+    value: Value
+  ): value is NavigationPropertyValue {
+    return (
+      value !== undefined &&
+      (value as NavigationPropertyValue).id !== undefined &&
+      (value as NavigationPropertyValue).className !== undefined &&
+      (value as NavigationPropertyValue).label !== undefined
+    );
   }
 
   /**
@@ -52,15 +67,12 @@ export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
    */
   // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: ValueJSON): Value {
-    if (json === null)
-      return undefined;
+    if (json === null) return undefined;
     if (isNestedContentValue(json))
       // eslint-disable-next-line deprecation/deprecation
       return json.map(NestedContentValue.fromJSON);
-    if (isArrayValue(json))
-      return valuesArrayFromJSON(json);
-    if (isMapValue(json))
-      return valuesMapFromJSON(json);
+    if (isArrayValue(json)) return valuesArrayFromJSON(json);
+    if (isMapValue(json)) return valuesMapFromJSON(json);
     return json;
   }
 
@@ -70,15 +82,12 @@ export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
    */
   // eslint-disable-next-line deprecation/deprecation
   export function toJSON(value: Value): ValueJSON {
-    if (undefined === value)
-      return null;
+    if (undefined === value) return null;
     if (isNestedContentValue(value))
       // eslint-disable-next-line deprecation/deprecation
       return value.map(NestedContentValue.toJSON);
-    if (isArrayValue(value))
-      return valuesArrayToJSON(value);
-    if (isMapValue(value))
-      return valuesMapToJSON(value);
+    if (isArrayValue(value)) return valuesArrayToJSON(value);
+    if (isMapValue(value)) return valuesMapToJSON(value);
     return value;
   }
 }
@@ -87,24 +96,31 @@ export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
  * A map of raw values
  * @public
  */
-export interface ValuesMap extends ValuesDictionary<Value> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ValuesMap extends ValuesDictionary<Value> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * An array of raw values
  * @public
  */
-export interface ValuesArray extends Array<Value> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ValuesArray extends Array<Value> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Display value type.
  * @public
  */
-export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray;
+export type DisplayValue =
+  | string
+  | undefined
+  | DisplayValuesMap
+  | DisplayValuesArray;
 
 /** @public */
-export namespace DisplayValue { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace DisplayValue {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a primitive */
-  export function isPrimitive(value: DisplayValue): value is string | undefined {
+  export function isPrimitive(
+    value: DisplayValue
+  ): value is string | undefined {
     return isPrimitiveValue(value);
   }
 
@@ -124,12 +140,9 @@ export namespace DisplayValue { // eslint-disable-line @typescript-eslint/no-red
    */
   // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: DisplayValueJSON): DisplayValue {
-    if (json === null)
-      return undefined;
-    if (isArrayValue(json))
-      return displayValuesArrayFromJSON(json);
-    if (isMapValue(json))
-      return displayValuesMapFromJSON(json);
+    if (json === null) return undefined;
+    if (isArrayValue(json)) return displayValuesArrayFromJSON(json);
+    if (isMapValue(json)) return displayValuesMapFromJSON(json);
     return json;
   }
 
@@ -139,12 +152,9 @@ export namespace DisplayValue { // eslint-disable-line @typescript-eslint/no-red
    */
   // eslint-disable-next-line deprecation/deprecation
   export function toJSON(value: DisplayValue): DisplayValueJSON {
-    if (undefined === value)
-      return null;
-    if (isArrayValue(value))
-      return displayValuesArrayToJSON(value);
-    if (isMapValue(value))
-      return displayValuesMapToJSON(value);
+    if (undefined === value) return null;
+    if (isArrayValue(value)) return displayValuesArrayToJSON(value);
+    if (isMapValue(value)) return displayValuesMapToJSON(value);
     return value;
   }
 }
@@ -153,13 +163,13 @@ export namespace DisplayValue { // eslint-disable-line @typescript-eslint/no-red
  * A map of display values
  * @public
  */
-export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * An array of display values
  * @public
  */
-export interface DisplayValuesArray extends Array<DisplayValue> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface DisplayValuesArray extends Array<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * Data structure that describes nested content value.
@@ -224,14 +234,22 @@ export namespace NestedContentValue {
  * @deprecated in 3.x. Use [[Value]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[];
+export type ValueJSON =
+  | string
+  | number
+  | boolean
+  | null
+  | ValuesMapJSON
+  | ValuesArrayJSON
+  | NavigationPropertyValue
+  | NestedContentValueJSON[];
 /**
  * JSON representation of [[ValuesMap]]
  * @public
  * @deprecated in 3.x. Use [[ValuesMap]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[ValuesArray]]
@@ -239,7 +257,7 @@ export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> { } // eslint
  * @deprecated in 3.x. Use [[ValuesArray]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export interface ValuesArrayJSON extends Array<ValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ValuesArrayJSON extends Array<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[DisplayValue]]
@@ -247,7 +265,11 @@ export interface ValuesArrayJSON extends Array<ValueJSON> { } // eslint-disable-
  * @deprecated in 3.x. Use [[DisplayValue]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON;
+export type DisplayValueJSON =
+  | string
+  | null
+  | DisplayValuesMapJSON
+  | DisplayValuesArrayJSON;
 
 /**
  * JSON representation of [[DisplayValuesMap]]
@@ -255,7 +277,8 @@ export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayVal
  * @deprecated in 3.x. Use [[DisplayValuesMap]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface DisplayValuesMapJSON
+  extends ValuesDictionary<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[DisplayValuesArray]]
@@ -263,7 +286,7 @@ export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON>
  * @deprecated in 3.x. Use [[DisplayValuesArray]]
  */
 // eslint-disable-next-line deprecation/deprecation
-export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> { } // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
 
 /**
  * JSON representation of [[NestedContentValue]]
@@ -334,25 +357,40 @@ export namespace DisplayValueGroup {
 }
 
 // eslint-disable-next-line deprecation/deprecation
-function isNestedContentValue(v: Value | ValueJSON): v is NestedContentValue[] | NestedContentValueJSON[] {
-  return (v !== undefined) && Array.isArray(v)
-    && ((v.length === 0)
-      || (v[0] as NestedContentValue).primaryKeys !== undefined
-      && (v[0] as NestedContentValue).values !== undefined
-      && (v[0] as NestedContentValue).displayValues !== undefined
-      && (v[0] as NestedContentValue).mergedFieldNames !== undefined);
+function isNestedContentValue(
+  v: Value | ValueJSON
+): v is NestedContentValue[] | NestedContentValueJSON[] {
+  return (
+    v !== undefined &&
+    Array.isArray(v) &&
+    (v.length === 0 ||
+      ((v[0] as NestedContentValue).primaryKeys !== undefined &&
+        (v[0] as NestedContentValue).values !== undefined &&
+        (v[0] as NestedContentValue).displayValues !== undefined &&
+        (v[0] as NestedContentValue).mergedFieldNames !== undefined))
+  );
 }
 // eslint-disable-next-line deprecation/deprecation
-function isArrayValue(v: Value | ValueJSON | DisplayValue | DisplayValueJSON): v is ValuesArray | ValuesArrayJSON | DisplayValuesArray | DisplayValuesArrayJSON {
+function isArrayValue(
+  v: Value | ValueJSON | DisplayValue | DisplayValueJSON
+): v is
+  | ValuesArray
+  | ValuesArrayJSON
+  | DisplayValuesArray
+  | DisplayValuesArrayJSON {
   // note: we don't guarantee by 100% that v is ValuesArray | DisplayValuesArray, but merely make compiler happy.
   // we have other means to determine the type of value.
-  return (v !== undefined) && Array.isArray(v);
+  return v !== undefined && Array.isArray(v);
 }
 // eslint-disable-next-line deprecation/deprecation
-function isMapValue(v: Value | ValueJSON | DisplayValue | DisplayValueJSON): v is ValuesMap | ValuesMapJSON | DisplayValuesMap | DisplayValuesMapJSON {
-  return (v !== undefined) && (typeof v === "object") && !Array.isArray(v);
+function isMapValue(
+  v: Value | ValueJSON | DisplayValue | DisplayValueJSON
+): v is ValuesMap | ValuesMapJSON | DisplayValuesMap | DisplayValuesMapJSON {
+  return v !== undefined && typeof v === "object" && !Array.isArray(v);
 }
-function isPrimitiveValue(v: Value | DisplayValue): v is string | number | boolean | undefined {
+function isPrimitiveValue(
+  v: Value | DisplayValue
+): v is string | number | boolean | undefined {
   return !isArrayValue(v) && !isMapValue(v);
 }
 
@@ -393,17 +431,23 @@ function valuesMapToJSON(values: ValuesMap): ValuesMapJSON {
 }
 
 // eslint-disable-next-line deprecation/deprecation
-function displayValuesArrayFromJSON(json: DisplayValuesArrayJSON): DisplayValuesArray {
+function displayValuesArrayFromJSON(
+  json: DisplayValuesArrayJSON
+): DisplayValuesArray {
   // eslint-disable-next-line deprecation/deprecation
   return json.map(DisplayValue.fromJSON);
 }
 // eslint-disable-next-line deprecation/deprecation
-function displayValuesArrayToJSON(values: DisplayValuesArray): DisplayValuesArrayJSON {
+function displayValuesArrayToJSON(
+  values: DisplayValuesArray
+): DisplayValuesArrayJSON {
   // eslint-disable-next-line deprecation/deprecation
   return values.map(DisplayValue.toJSON);
 }
 // eslint-disable-next-line deprecation/deprecation
-function displayValuesMapFromJSON(json: DisplayValuesMapJSON): DisplayValuesMap {
+function displayValuesMapFromJSON(
+  json: DisplayValuesMapJSON
+): DisplayValuesMap {
   const map: DisplayValuesMap = {};
   for (const key in json) {
     /* istanbul ignore else */
@@ -415,7 +459,9 @@ function displayValuesMapFromJSON(json: DisplayValuesMapJSON): DisplayValuesMap 
   return map;
 }
 // eslint-disable-next-line deprecation/deprecation
-function displayValuesMapToJSON(values: DisplayValuesMap): DisplayValuesMapJSON {
+function displayValuesMapToJSON(
+  values: DisplayValuesMap
+): DisplayValuesMapJSON {
   // eslint-disable-next-line deprecation/deprecation
   const map: DisplayValuesMapJSON = {};
   for (const key in values) {

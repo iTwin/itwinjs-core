@@ -1,6 +1,6 @@
 # ECCustomAttributes
 
-Instances of [ECCustomAttributeClasses](./ec-custom-attribute-class.md) that are applied to other items in a schema to add new metadata attributes.  Any number of custom attributes may be applied to a schema item but only one instance of each class may be applied.
+Instances of [ECCustomAttributeClasses](./ec-custom-attribute-class.md) that are applied to other items in a schema to add new metadata attributes. Any number of custom attributes may be applied to a schema item but only one instance of each class may be applied.
 
 For example:
 

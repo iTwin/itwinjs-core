@@ -20,16 +20,16 @@ To run the integration tests, there is an initial configuration step required to
 1. Create a `.env` file as a peer of the `package.json` for this package.
 1. Populate the newly created `.env` with the following variables:
 
-    ```sh
-    # User registered with iTwin Platform
-    IMJS_TEST_REGULAR_USER_NAME=
-    IMJS_TEST_REGULAR_USER_PASSWORD=
+   ```sh
+   # User registered with iTwin Platform
+   IMJS_TEST_REGULAR_USER_NAME=
+   IMJS_TEST_REGULAR_USER_PASSWORD=
 
-    # Register a new SPA client at https://developer.bentley.com/my-apps.
-    # Ensure the client is configured for  the redirect uri and scopes below.
-    IMJS_OIDC_BROWSER_TEST_CLIENT_ID=
-    IMJS_OIDC_BROWSER_TEST_REDIRECT_URI="http://localhost:3000/signin-callback"
-    IMJS_OIDC_BROWSER_TEST_SCOPES="openid email profile organization imodelhub context-registry-service:read-only"
-    ```
+   # Register a new SPA client at https://developer.bentley.com/my-apps.
+   # Ensure the client is configured for  the redirect uri and scopes below.
+   IMJS_OIDC_BROWSER_TEST_CLIENT_ID=
+   IMJS_OIDC_BROWSER_TEST_REDIRECT_URI="http://localhost:3000/signin-callback"
+   IMJS_OIDC_BROWSER_TEST_SCOPES="openid email profile organization imodelhub context-registry-service:read-only"
+   ```
 
 > Important: Every time the `.env` file, or environment variables, are changed it requires the tests be re-built using `npm run build`

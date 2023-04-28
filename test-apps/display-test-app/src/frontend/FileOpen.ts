@@ -15,8 +15,12 @@ export interface BrowserFileSelector {
 export class MobileMessenger {
   private static _anyWindow: any = window;
 
-  public static getHandler(handlerName: string): ((data: string) => any) | undefined {
-    const messageHandlers = ProcessDetector.isIOSAppFrontend ? this._anyWindow.webkit?.messageHandlers : this._anyWindow.DTA_Android;
+  public static getHandler(
+    handlerName: string
+  ): ((data: string) => any) | undefined {
+    const messageHandlers = ProcessDetector.isIOSAppFrontend
+      ? this._anyWindow.webkit?.messageHandlers
+      : this._anyWindow.DTA_Android;
     if (!messageHandlers) {
       console.log("No message handler found for this platform!"); // eslint-disable-line no-console
       return undefined;
@@ -42,16 +46,16 @@ export class MobileMessenger {
 
   public static postMessage(handlerName: string, data: string): boolean {
     const handler = this.getHandler(handlerName);
-    if (!handler)
-      return false;
+    if (!handler) return false;
     handler(data);
     return true;
   }
 
-  public static async sendMessage(handlerName: string): Promise<string | undefined> {
+  public static async sendMessage(
+    handlerName: string
+  ): Promise<string | undefined> {
     const handler = this.getHandler(handlerName);
-    if (!handler)
-      return undefined;
+    if (!handler) return undefined;
 
     // formulate unique name for the promise resolver and pass it to the native code as a parameter
     const resolverName = `DTA_${handlerName}Resolver`;
@@ -68,13 +72,14 @@ export class MobileMessenger {
   }
 }
 
-export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
+export async function selectFileName(
+  selector: BrowserFileSelector | undefined
+): Promise<string | undefined> {
   if (ProcessDetector.isElectronAppFrontend) {
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
       title: "Open iModel",
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
-
     };
     const val = await ElectronApp.dialogIpc.showOpenDialog(opts);
     return val.canceled ? undefined : val.filePaths[0];
@@ -102,8 +107,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
         const files = selector.input.files;
         if (files && files.length > 0)
           resolve(`${selector.directory}/${files[0].name}`);
-        else
-          resolve(undefined);
+        else resolve(undefined);
       } catch (e) {
         reject(e);
       }

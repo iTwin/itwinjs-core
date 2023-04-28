@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  RelationshipClass, RelationshipClassProps, RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey,
+  RelationshipClass,
+  RelationshipClassProps,
+  RelationshipConstraintProps,
+  Schema,
+  SchemaContext,
+  SchemaItemKey,
+  SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -51,18 +57,14 @@ describe("Relationship tests from an existing schema", () => {
       multiplicity: "(0..*)",
       roleLabel: "Source RoleLabel",
       abstractConstraint: "TestSchema.SourceBaseEntity",
-      constraintClasses: [
-        "TestSchema.TestSourceEntity",
-      ],
+      constraintClasses: ["TestSchema.TestSourceEntity"],
     };
     const targetJson: RelationshipConstraintProps = {
       polymorphic: true,
       multiplicity: "(0..*)",
       roleLabel: "Target RoleLabel",
       abstractConstraint: "TestSchema.TargetBaseEntity",
-      constraintClasses: [
-        "TestSchema.TestTargetEntity",
-      ],
+      constraintClasses: ["TestSchema.TestTargetEntity"],
     };
 
     const relClassProps: RelationshipClassProps = {
@@ -73,10 +75,19 @@ describe("Relationship tests from an existing schema", () => {
       target: targetJson,
     };
 
-    const result = await testEditor.relationships.createFromProps(testKey, relClassProps);
-    const relClass = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as RelationshipClass;
-    const baseSourceClassKey = testSchema.getSchemaItemKey("TestSchema.SourceBaseEntity");
-    expect(await relClass.source.abstractConstraint).to.eql(await testEditor.schemaContext.getSchemaItem(baseSourceClassKey));
+    const result = await testEditor.relationships.createFromProps(
+      testKey,
+      relClassProps
+    );
+    const relClass = (await testEditor.schemaContext.getSchemaItem(
+      result.itemKey!
+    )) as RelationshipClass;
+    const baseSourceClassKey = testSchema.getSchemaItemKey(
+      "TestSchema.SourceBaseEntity"
+    );
+    expect(await relClass.source.abstractConstraint).to.eql(
+      await testEditor.schemaContext.getSchemaItem(baseSourceClassKey)
+    );
   });
 
   it("should delete a relationship class", async () => {
@@ -85,18 +96,14 @@ describe("Relationship tests from an existing schema", () => {
       multiplicity: "(0..*)",
       roleLabel: "Source RoleLabel",
       abstractConstraint: "TestSchema.SourceBaseEntity",
-      constraintClasses: [
-        "TestSchema.TestSourceEntity",
-      ],
+      constraintClasses: ["TestSchema.TestSourceEntity"],
     };
     const targetJson: RelationshipConstraintProps = {
       polymorphic: true,
       multiplicity: "(0..*)",
       roleLabel: "Target RoleLabel",
       abstractConstraint: "TestSchema.TargetBaseEntity",
-      constraintClasses: [
-        "TestSchema.TestTargetEntity",
-      ],
+      constraintClasses: ["TestSchema.TestTargetEntity"],
     };
 
     const relClassProps: RelationshipClassProps = {
@@ -107,10 +114,19 @@ describe("Relationship tests from an existing schema", () => {
       target: targetJson,
     };
 
-    const result = await testEditor.relationships.createFromProps(testKey, relClassProps);
-    const relClass = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as RelationshipClass;
-    const baseSourceClassKey = testSchema.getSchemaItemKey("TestSchema.SourceBaseEntity");
-    expect(await relClass.source.abstractConstraint).to.eql(await testEditor.schemaContext.getSchemaItem(baseSourceClassKey));
+    const result = await testEditor.relationships.createFromProps(
+      testKey,
+      relClassProps
+    );
+    const relClass = (await testEditor.schemaContext.getSchemaItem(
+      result.itemKey!
+    )) as RelationshipClass;
+    const baseSourceClassKey = testSchema.getSchemaItemKey(
+      "TestSchema.SourceBaseEntity"
+    );
+    expect(await relClass.source.abstractConstraint).to.eql(
+      await testEditor.schemaContext.getSchemaItem(baseSourceClassKey)
+    );
 
     let relationship = await testSchema.getItem("TestRelationship");
     expect(relationship).to.eql(relClass);

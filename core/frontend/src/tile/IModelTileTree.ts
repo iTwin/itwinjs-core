@@ -6,11 +6,26 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import {
+  assert,
+  BeTimePoint,
+  GuidString,
+  Id64Array,
+  Id64String,
+} from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
+  BatchType,
+  ContentIdProvider,
+  EdgeOptions,
+  ElementAlignedBox3d,
+  ElementGeometryChange,
+  FeatureAppearanceProvider,
+  IModelTileTreeId,
+  IModelTileTreeProps,
+  ModelGeometryChanges,
+  RenderSchedule,
+  TileProps,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -18,8 +33,19 @@ import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
 import {
-  DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileRequestChannel, TileTree, TileTreeParams,
+  DynamicIModelTile,
+  IModelTile,
+  IModelTileParams,
+  iModelTileParamsFromJSON,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
+  TileTreeParams,
 } from "./internal";
 
 /** @internal */
@@ -49,9 +75,21 @@ export interface IModelTileTreeParams extends TileTreeParams {
 }
 
 /** @internal */
-export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
+export function iModelTileTreeParamsFromJSON(
+  props: IModelTileTreeProps,
+  iModel: IModelConnection,
+  modelId: Id64String,
+  options: IModelTileTreeOptions
+): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
-  const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
+  const {
+    formatVersion,
+    id,
+    rootTile,
+    contentIdQualifier,
+    maxInitialTilesToSkip,
+    geometryGuid,
+  } = props;
   const tileScreenSize = props.tileScreenSize ?? 512;
 
   let contentRange;
@@ -65,7 +103,10 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
       transformNodeRanges.set(entry.id, Range3d.fromJSON(entry));
   }
 
-  const priority = BatchType.Primary === options.batchType ? TileLoadPriority.Primary : TileLoadPriority.Classifier;
+  const priority =
+    BatchType.Primary === options.batchType
+      ? TileLoadPriority.Primary
+      : TileLoadPriority.Classifier;
   return {
     formatVersion,
     id,
@@ -84,10 +125,12 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
   };
 }
 
-function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): Iterable<ElementGeometryChange> | undefined {
+function findElementChangesForModel(
+  changes: Iterable<ModelGeometryChanges>,
+  modelId: Id64String
+): Iterable<ElementGeometryChange> | undefined {
   for (const change of changes)
-    if (change.id === modelId)
-      return change.elements;
+    if (change.id === modelId) return change.elements;
 
   return undefined;
 }
@@ -98,9 +141,11 @@ class StaticState {
   public readonly dispose: () => void;
 
   public constructor(root: RootTile) {
-    this.dispose = GraphicalEditingScope.onEnter.addOnce((scope: GraphicalEditingScope) => {
-      root.transition(new InteractiveState(scope, root));
-    });
+    this.dispose = GraphicalEditingScope.onEnter.addOnce(
+      (scope: GraphicalEditingScope) => {
+        root.transition(new InteractiveState(scope, root));
+      }
+    );
   }
 }
 
@@ -114,12 +159,20 @@ class InteractiveState {
       root.transition(new StaticState(root));
     });
 
-    const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _scope: GraphicalEditingScope) => {
-      assert(scope === _scope);
-      const elemChanges = findElementChangesForModel(changes, root.tree.modelId);
-      if (elemChanges)
-        root.transition(new DynamicState(root, elemChanges, scope));
-    });
+    const removeGeomListener = scope.onGeometryChanges.addListener(
+      (
+        changes: Iterable<ModelGeometryChanges>,
+        _scope: GraphicalEditingScope
+      ) => {
+        assert(scope === _scope);
+        const elemChanges = findElementChangesForModel(
+          changes,
+          root.tree.modelId
+        );
+        if (elemChanges)
+          root.transition(new DynamicState(root, elemChanges, scope));
+      }
+    );
 
     this.dispose = () => {
       removeEndingListener();
@@ -139,19 +192,27 @@ class DynamicState {
     this.rootTile.dispose();
   }
 
-  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, scope: GraphicalEditingScope) {
+  public constructor(
+    root: RootTile,
+    elemChanges: Iterable<ElementGeometryChange>,
+    scope: GraphicalEditingScope
+  ) {
     this.rootTile = DynamicIModelTile.create(root, elemChanges);
 
     const removeEndingListener = scope.onExiting.addOnce((_) => {
       root.transition(new StaticState(root));
     });
 
-    const removeGeomListener = scope.onGeometryChanges.addListener((changes: Iterable<ModelGeometryChanges>, _scope: GraphicalEditingScope) => {
-      assert(scope === _scope);
-      const elems = findElementChangesForModel(changes, root.tree.modelId);
-      if (elems)
-        this.rootTile.handleGeometryChanges(elems);
-    });
+    const removeGeomListener = scope.onGeometryChanges.addListener(
+      (
+        changes: Iterable<ModelGeometryChanges>,
+        _scope: GraphicalEditingScope
+      ) => {
+        assert(scope === _scope);
+        const elems = findElementChangesForModel(changes, root.tree.modelId);
+        if (elems) this.rootTile.handleGeometryChanges(elems);
+      }
+    );
 
     this._dispose = () => {
       removeEndingListener();
@@ -163,18 +224,25 @@ class DynamicState {
 /** The tile tree has been disposed. */
 class DisposedState {
   public readonly type = "disposed";
-  public dispose(): void { }
+  public dispose(): void {}
 }
 
 const disposedState = new DisposedState();
 
 /** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to GraphicalEditingScope events. */
-type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
+type RootTileState =
+  | StaticState
+  | InteractiveState
+  | DynamicState
+  | DisposedState;
 
 /** The root tile for an [[IModelTileTree]].
  * @internal
  */
-export type RootIModelTile = Tile & { tileScreenSize: number, updateDynamicRange: (childTile: Tile) => void };
+export type RootIModelTile = Tile & {
+  tileScreenSize: number;
+  updateDynamicRange: (childTile: Tile) => void;
+};
 
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
  *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[GraphicalEditingScope]].
@@ -207,12 +275,16 @@ class RootTile extends Tile {
       this._contentRange = this.staticBranch.contentRange.clone();
 
     // Determine initial state.
-    const scope = tree.iModel.isBriefcaseConnection() ? tree.iModel.editingScope : undefined;
+    const scope = tree.iModel.isBriefcaseConnection()
+      ? tree.iModel.editingScope
+      : undefined;
     if (undefined === scope) {
       this._tileState = new StaticState(this);
     } else {
       const changes = scope.getGeometryChangesForModel(tree.modelId);
-      this._tileState = changes ? new DynamicState(this, changes, scope) : new InteractiveState(scope, this);
+      this._tileState = changes
+        ? new DynamicState(this, changes, scope)
+        : new InteractiveState(scope, this);
     }
 
     // Load the children immediately.
@@ -225,7 +297,10 @@ class RootTile extends Tile {
     super.dispose();
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected _loadChildren(
+    resolve: (children: Tile[] | undefined) => void,
+    _reject: (error: Error) => void
+  ): void {
     const children: Tile[] = [this.staticBranch];
     if (this._tileState.type === "dynamic")
       children.push(this._tileState.rootTile);
@@ -237,12 +312,18 @@ class RootTile extends Tile {
     throw new Error("Root iModel tile has no content");
   }
 
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public async requestContent(
+    _isCanceled: () => boolean
+  ): Promise<TileRequest.Response> {
     assert(false, "Root iModel tile has no content");
     return undefined;
   }
 
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled: () => boolean): Promise<TileContent> {
+  public async readContent(
+    _data: TileRequest.ResponseData,
+    _system: RenderSystem,
+    _isCanceled: () => boolean
+  ): Promise<TileContent> {
     throw new Error("Root iModel tile has no content");
   }
 
@@ -250,8 +331,7 @@ class RootTile extends Tile {
     assert(numStaticTiles >= 0 && numStaticTiles <= tiles.length);
 
     // Draw the static tiles.
-    for (let i = 0; i < numStaticTiles; i++)
-      tiles[i].drawGraphics(args);
+    for (let i = 0; i < numStaticTiles; i++) tiles[i].drawGraphics(args);
 
     if ("dynamic" !== this._tileState.type || numStaticTiles === tiles.length) {
       if ("dynamic" === this._tileState.type)
@@ -269,10 +349,19 @@ class RootTile extends Tile {
 
       let appearanceProvider = this._tileState.rootTile.appearanceProvider;
       if (args.appearanceProvider)
-        appearanceProvider = FeatureAppearanceProvider.chain(args.appearanceProvider, appearanceProvider);
+        appearanceProvider = FeatureAppearanceProvider.chain(
+          args.appearanceProvider,
+          appearanceProvider
+        );
 
       args.graphics.clear();
-      args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
+      args.graphics.add(
+        args.context.createGraphicBranch(
+          staticBranch,
+          Transform.createIdentity(),
+          { appearanceProvider }
+        )
+      );
     }
 
     // Draw the dynamic tiles.
@@ -304,8 +393,7 @@ class RootTile extends Tile {
     this._tileState.dispose();
     this._tileState = newState;
 
-    if (resetRange)
-      this.resetRange();
+    if (resetRange) this.resetRange();
   }
 
   private resetRange(): void {
@@ -314,7 +402,6 @@ class RootTile extends Tile {
 
     if (this._staticTreeContentRange && this.tree.contentRange)
       this._staticTreeContentRange.clone(this.tree.contentRange);
-
   }
 
   public get tileScreenSize(): number {
@@ -323,11 +410,14 @@ class RootTile extends Tile {
 
   public updateDynamicRange(tile: Tile): void {
     this.resetRange();
-    if (this._staticTreeContentRange && this.tree.contentRange && !tile.contentRange.isNull)
+    if (
+      this._staticTreeContentRange &&
+      this.tree.contentRange &&
+      !tile.contentRange.isNull
+    )
       this.tree.contentRange.extendRange(tile.contentRange);
 
-    if (!tile.range.isNull)
-      this.range.extendRange(tile.range);
+    if (!tile.range.isNull) this.range.extendRange(tile.range);
 
     assert(undefined !== this._contentRange);
     if (!tile.contentRange.isNull)
@@ -372,27 +462,54 @@ export class IModelTileTree extends TileTree {
     this._options = params.options;
     this._transformNodeRanges = params.transformNodeRanges;
 
-    this.contentIdProvider = ContentIdProvider.create(params.options.allowInstancing, IModelApp.tileAdmin, params.formatVersion);
+    this.contentIdProvider = ContentIdProvider.create(
+      params.options.allowInstancing,
+      IModelApp.tileAdmin,
+      params.formatVersion
+    );
 
     params.rootTile.contentId = this.contentIdProvider.rootContentId;
-    this._rootTile = new RootTile(iModelTileParamsFromJSON(params.rootTile, undefined), this);
+    this._rootTile = new RootTile(
+      iModelTileParamsFromJSON(params.rootTile, undefined),
+      this
+    );
   }
 
-  public get maxDepth() { return 32; }
-  public get rootTile(): Tile { return this._rootTile; }
+  public get maxDepth() {
+    return 32;
+  }
+  public get rootTile(): Tile {
+    return this._rootTile;
+  }
   /** Exposed chiefly for tests. */
-  public get staticBranch(): IModelTile { return this._rootTile.staticBranch; }
-  public get is3d() { return this._options.is3d; }
-  public override get isContentUnbounded() { return false; }
-  public get viewFlagOverrides() { return viewFlagOverrides; }
+  public get staticBranch(): IModelTile {
+    return this._rootTile.staticBranch;
+  }
+  public get is3d() {
+    return this._options.is3d;
+  }
+  public override get isContentUnbounded() {
+    return false;
+  }
+  public get viewFlagOverrides() {
+    return viewFlagOverrides;
+  }
 
-  public get batchType(): BatchType { return this._options.batchType; }
-  public get edgeOptions(): EdgeOptions | false { return this._options.edges; }
-  public get timeline(): RenderSchedule.ModelTimeline | undefined { return this._options.timeline; }
+  public get batchType(): BatchType {
+    return this._options.batchType;
+  }
+  public get edgeOptions(): EdgeOptions | false {
+    return this._options.edges;
+  }
+  public get timeline(): RenderSchedule.ModelTimeline | undefined {
+    return this._options.timeline;
+  }
 
   public override get loadPriority(): TileLoadPriority {
     // If the model has been modified, we want to prioritize keeping its graphics up to date.
-    return this.tileState === "dynamic" ? TileLoadPriority.Dynamic : super.loadPriority;
+    return this.tileState === "dynamic"
+      ? TileLoadPriority.Dynamic
+      : super.loadPriority;
   }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] {

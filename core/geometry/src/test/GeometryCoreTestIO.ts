@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import { Arc3d } from "../curve/Arc3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import {
+  CurveLocationDetail,
+  CurveLocationDetailPair,
+} from "../curve/CurveLocationDetail";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../curve/LineString3d";
@@ -37,42 +40,41 @@ export class GeometryCoreTestIO {
 
   /** wrapper for console.log */
   public static consoleLog(message?: any, ...optionalParams: any[]): void {
-    if (!this.enableConsole)
-      return;
+    if (!this.enableConsole) return;
     console.log(message, ...optionalParams); // eslint-disable-line no-console
   }
   /** wrapper for console.time */
   public static consoleTime(label?: string): void {
-    if (!this.enableConsole)
-      return;
-    console.time(label);  // eslint-disable-line no-console
+    if (!this.enableConsole) return;
+    console.time(label); // eslint-disable-line no-console
   }
   /** wrapper for console.timeEnd */
   public static consoleTimeEnd(label?: string): void {
-    if (!this.enableConsole)
-      return;
+    if (!this.enableConsole) return;
     console.timeEnd(label); // eslint-disable-line no-console
   }
   private static makeOutputDir(subDirectoryName?: string): string {
     let path = GeometryCoreTestIO.outputRootDirectory;
-    if (!fs.existsSync(path))
-      fs.mkdirSync(path);
+    if (!fs.existsSync(path)) fs.mkdirSync(path);
     if (subDirectoryName !== undefined) {
       path = `${path}/${subDirectoryName}`;
-      if (!fs.existsSync(path))
-        fs.mkdirSync(path);
+      if (!fs.existsSync(path)) fs.mkdirSync(path);
     }
     return path;
   }
   /** Output geometry as json for debugging */
-  public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
-    if (!this.enableSave)
-      return;
+  public static saveGeometry(
+    geometry: any,
+    directoryName: string | undefined,
+    fileName: string
+  ) {
+    if (!this.enableSave) return;
 
     const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
-    if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
-        fullPath = `${fullPath}.imjs`;
+    if (fileName.search(`\\.imjs$`) === -1)
+      // tricky: escape the escape char for the regex
+      fullPath = `${fullPath}.imjs`;
 
     this.consoleLog(`saveGeometry:: ${fullPath}`);
 
@@ -80,9 +82,11 @@ export class GeometryCoreTestIO {
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
   /** For each property of data: save the value in a file name `${propertyName}.json` */
-  public static savePropertiesAsSeparateFiles(directoryName: string | undefined, data: { [key: string]: any }) {
-    if (!GeometryCoreTestIO.enableSave)
-      return;
+  public static savePropertiesAsSeparateFiles(
+    directoryName: string | undefined,
+    data: { [key: string]: any }
+  ) {
+    if (!GeometryCoreTestIO.enableSave) return;
     const path = this.makeOutputDir(directoryName);
     for (const property in data) {
       if (data.hasOwnProperty(property)) {
@@ -92,9 +96,14 @@ export class GeometryCoreTestIO {
     }
   }
   /** Append the geometry to the collection, e.g., for output by saveGeometry. */
-  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (!newGeometry)
-      return;
+  public static captureGeometry(
+    collection: GeometryQuery[],
+    newGeometry: GeometryQuery | GeometryQuery[] | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
+    if (!newGeometry) return;
     if (newGeometry instanceof GeometryQuery) {
       if (Geometry.hypotenuseSquaredXYZ(dx, dy, dz) !== 0)
         newGeometry.tryTranslateInPlace(dx, dy, dz);
@@ -107,9 +116,14 @@ export class GeometryCoreTestIO {
     }
   }
   /** Create and capture a loop object from a (single) sequence of points . */
-  public static createAndCaptureLoop(collection: GeometryQuery[], points: IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (!points || points.length === 0)
-      return;
+  public static createAndCaptureLoop(
+    collection: GeometryQuery[],
+    points: IndexedXYZCollection | Point3d[] | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
+    if (!points || points.length === 0) return;
     if (points.length <= 2) {
       // const linestring = LineString3d.create(points);
       // this.createAndCaptureXYMarker(collection, 0, linestring.packedPoints.getPoint3dArray(), dx, dy, dz);
@@ -118,24 +132,44 @@ export class GeometryCoreTestIO {
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
   /** Create and capture loop object(s) from an array of point sequences. */
-  public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureLoops(
+    collection: GeometryQuery[],
+    points:
+      | IndexedXYZCollection
+      | IndexedXYZCollection[]
+      | Point3d[][]
+      | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     if (points instanceof IndexedXYZCollection) {
       this.createAndCaptureLoop(collection, points, dx, dy, dz);
       return;
     }
-    if (!points || points.length === 0)
-      return;
+    if (!points || points.length === 0) return;
     for (const loop of points)
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
   /** Clone the geometry and append to collection, e.g., for output by saveGeometry. */
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
-    if (!newGeometry)
-      return;
+  public static captureCloneGeometry(
+    collection: GeometryQuery[],
+    newGeometry:
+      | GeometryQuery
+      | GeometryQuery[]
+      | IndexedXYZCollection
+      | Point3d[]
+      | Point3d[][]
+      | IndexedXYZCollection[]
+      | undefined,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
+    if (!newGeometry) return;
     if (newGeometry instanceof GeometryQuery) {
       const g1 = newGeometry.clone();
-      if (g1)
-        GeometryCoreTestIO.captureGeometry(collection, g1, dx, dy, dz);
+      if (g1) GeometryCoreTestIO.captureGeometry(collection, g1, dx, dy, dz);
       return;
     }
     if (newGeometry instanceof IndexedXYZCollection) {
@@ -162,7 +196,14 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static createAndCaptureXYCircle(collection: GeometryQuery[], center: Point3d | Point3d[], radius: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureXYCircle(
+    collection: GeometryQuery[],
+    center: Point3d | Point3d[],
+    radius: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     if (Array.isArray(center)) {
       for (const c of center)
         this.createAndCaptureXYCircle(collection, c, radius, dx, dy, dz);
@@ -187,23 +228,37 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static createAndCaptureSectorMarkup(collection: GeometryQuery[], polyface: Polyface, radius: number, lines: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureSectorMarkup(
+    collection: GeometryQuery[],
+    polyface: Polyface,
+    radius: number,
+    lines: boolean = false,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     const visitor = polyface.createVisitor(0);
     const xyz = Point3d.create();
     const centers = [];
-    for (visitor.reset(); visitor.moveToNextFacet();) {
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
       centers.length = 0;
       const centroid = PolygonOps.centroidAreaNormal(visitor.point)!;
       for (let i = 0; i < visitor.point.length; i++) {
         visitor.point.getPoint3dAtUncheckedPointIndex(i, xyz);
         const distanceToCentroid = xyz.distance(centroid.getOriginRef());
-        const fraction = 1.5 * radius / distanceToCentroid;
+        const fraction = (1.5 * radius) / distanceToCentroid;
         centers.push(xyz.interpolate(fraction, centroid.getOriginRef()));
       }
       this.createAndCaptureXYCircle(collection, centers, radius, dx, dy, dz);
       if (lines) {
         centers.push(centers[0]);
-        this.captureGeometry(collection, LineString3d.create(centers), dx, dy, dz);
+        this.captureGeometry(
+          collection,
+          LineString3d.create(centers),
+          dx,
+          dy,
+          dz
+        );
       }
     }
   }
@@ -220,7 +275,15 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static createAndCaptureXYMarker(collection: GeometryQuery[], markerId: number, center: Point3d | Point3d[], a: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureXYMarker(
+    collection: GeometryQuery[],
+    markerId: number,
+    center: Point3d | Point3d[],
+    a: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     if (Array.isArray(center)) {
       for (const c of center)
         if (markerId === 0)
@@ -235,7 +298,7 @@ export class GeometryCoreTestIO {
     const n = Math.abs(markerId);
     if (markerId > 0 && n <= 10) {
       const linestring = LineString3d.create();
-      const radiansStep = Math.PI * 2 / n;
+      const radiansStep = (Math.PI * 2) / n;
       linestring.addPointXYZ(x, y, z);
       linestring.addPointXYZ(x + a, y, z);
       for (let i = 1; i < n; i++) {
@@ -248,7 +311,7 @@ export class GeometryCoreTestIO {
       collection.push(linestring);
     } else if (markerId < 0 && -10 <= n) {
       const linestring = LineString3d.create();
-      const radiansStep = Math.PI * 2 / n;
+      const radiansStep = (Math.PI * 2) / n;
       linestring.addPointXYZ(x, y, z);
       for (let i = 0; i < n; i++) {
         const radians = i * radiansStep;
@@ -258,8 +321,7 @@ export class GeometryCoreTestIO {
         linestring.addPointXYZ(x, y, z);
       }
       collection.push(linestring);
-    } else
-      this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
+    } else this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
   }
 
   /**
@@ -273,23 +335,58 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureTransformedRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, placement?: Transform, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureTransformedRangeEdges(
+    collection: GeometryQuery[],
+    range?: Range2d | Range3d,
+    placement?: Transform,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     if (range !== undefined && !range.isNull) {
       if (range instanceof Range3d) {
         const corners = range.corners();
-        if (placement)
-          placement.multiplyPoint3dArrayInPlace(corners);
-        this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
+        if (placement) placement.multiplyPoint3dArrayInPlace(corners);
+        this.captureGeometry(
+          collection,
+          LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]),
+          dx,
+          dy,
+          dz
+        );
         if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]), dx, dy, dz);
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
+          this.captureGeometry(
+            collection,
+            LineString3d.createIndexedPoints(corners, [4, 5, 7, 6, 4]),
+            dx,
+            dy,
+            dz
+          );
+          this.captureGeometry(
+            collection,
+            LineString3d.createIndexedPoints(corners, [0, 4, 6, 2]),
+            dx,
+            dy,
+            dz
+          );
+          this.captureGeometry(
+            collection,
+            LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]),
+            dx,
+            dy,
+            dz
+          );
         }
       } else if (range instanceof Range2d) {
         const corners = range.corners3d(true, 0);
-        if (placement)
-          placement.multiplyPoint3dArrayInPlace(corners);
-        this.captureGeometry(collection, LineString3d.create(corners), dx, dy, dz);
+        if (placement) placement.multiplyPoint3dArrayInPlace(corners);
+        this.captureGeometry(
+          collection,
+          LineString3d.create(corners),
+          dx,
+          dy,
+          dz
+        );
       }
     }
   }
@@ -304,13 +401,29 @@ export class GeometryCoreTestIO {
    * @param dy y shift
    * @param dz z shift
    */
-  public static captureRangeEdges(collection: GeometryQuery[], range?: Range2d | Range3d, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureRangeEdges(
+    collection: GeometryQuery[],
+    range?: Range2d | Range3d,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     this.captureTransformedRangeEdges(collection, range, undefined, dx, dy, dz);
   }
 
-  public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static showMomentData(
+    collection: GeometryQuery[],
+    momentData?: MomentData,
+    xyOnly: boolean = false,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     if (momentData) {
-      const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
+      const momentData1 = MomentData.inertiaProductsToPrincipalAxes(
+        momentData.origin,
+        momentData.sums
+      );
       if (momentData1) {
         const unitX = momentData1.localToWorldMap.matrix.columnX();
         const unitY = momentData1.localToWorldMap.matrix.columnY();
@@ -318,48 +431,130 @@ export class GeometryCoreTestIO {
         const rx = momentData1.radiusOfGyration.x;
         const ry = momentData1.radiusOfGyration.y;
         const rz = momentData1.radiusOfGyration.z;
-        this.captureGeometry(collection,
+        this.captureGeometry(
+          collection,
           LineString3d.create([
             momentData1.origin,
             momentData1.origin.plusScaled(unitX, 2.0 * rz),
             momentData1.origin.plusScaled(unitY, rz),
             momentData1.origin,
-            momentData1.origin.plusScaled(unitZ, 3.0 * rz)]), dx, dy, dz);
-        this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)), dx, dy, dz);
+            momentData1.origin.plusScaled(unitZ, 3.0 * rz),
+          ]),
+          dx,
+          dy,
+          dz
+        );
+        this.captureGeometry(
+          collection,
+          Arc3d.create(
+            momentData1.origin,
+            unitX.scale(rz),
+            unitY.scale(rz),
+            AngleSweep.createStartEndDegrees(0, 355)
+          ),
+          dx,
+          dy,
+          dz
+        );
         if (!xyOnly) {
-          this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)), dx, dy, dz);
-          this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitZ.scale(ry), unitX.scale(ry)), dx, dy, dz);
+          this.captureGeometry(
+            collection,
+            Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)),
+            dx,
+            dy,
+            dz
+          );
+          this.captureGeometry(
+            collection,
+            Arc3d.create(momentData1.origin, unitZ.scale(ry), unitX.scale(ry)),
+            dx,
+            dy,
+            dz
+          );
         }
       }
     }
   }
-  public static captureMesh(collection: GeometryQuery[], patch: UVSurface, numX: number, numY: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureMesh(
+    collection: GeometryQuery[],
+    patch: UVSurface,
+    numX: number,
+    numY: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     const builder = PolyfaceBuilder.create();
     builder.addUVGridBody(patch, numX, numY);
     this.captureGeometry(collection, builder.claimPolyface(), dx, dy, dz);
   }
-  public static captureCurveLocationDetails(collection: GeometryQuery[], data: CurveLocationDetail | CurveLocationDetailPair | CurveLocationDetail[] | CurveLocationDetailPair[], markerSize: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCurveLocationDetails(
+    collection: GeometryQuery[],
+    data:
+      | CurveLocationDetail
+      | CurveLocationDetailPair
+      | CurveLocationDetail[]
+      | CurveLocationDetailPair[],
+    markerSize: number,
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0
+  ) {
     if (Array.isArray(data)) {
       for (const item of data) {
-        this.captureCurveLocationDetails(collection, item, markerSize, dx, dy, dz);
+        this.captureCurveLocationDetails(
+          collection,
+          item,
+          markerSize,
+          dx,
+          dy,
+          dz
+        );
       }
     } else if (data instanceof CurveLocationDetail) {
       if (data.hasFraction1) {
         if (data.curve) {
-          const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1!);
+          const partialCurve = data.curve.clonePartialCurve(
+            data.fraction,
+            data.fraction1!
+          );
           if (partialCurve) {
-            const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);
+            const curveB =
+              CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(
+                partialCurve,
+                0.6 * markerSize
+              );
             this.captureGeometry(collection, curveB, dx, dy, dz);
           }
         }
       } else {
-        this.createAndCaptureXYMarker(collection, 0, data.point, markerSize, dx, dy, dz);
+        this.createAndCaptureXYMarker(
+          collection,
+          0,
+          data.point,
+          markerSize,
+          dx,
+          dy,
+          dz
+        );
       }
     } else if (data instanceof CurveLocationDetailPair) {
-      this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
-      this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
+      this.captureCurveLocationDetails(
+        collection,
+        data.detailA,
+        markerSize,
+        dx,
+        dy,
+        dz
+      );
+      this.captureCurveLocationDetails(
+        collection,
+        data.detailB,
+        markerSize * 0.75,
+        dx,
+        dy,
+        dz
+      );
     }
-
   }
-
 }

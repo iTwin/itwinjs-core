@@ -11,18 +11,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ]
+    "lib": ["dom", "dom.iterable", "esnext"]
   },
-  "include": [
-    "./src/**/*.ts",
-  ],
-  "exclude": [
-    "lib",
-    "node_modules",
-    "./src/backend/**/*.ts"
-  ]
+  "include": ["./src/**/*.ts"],
+  "exclude": ["lib", "node_modules", "./src/backend/**/*.ts"]
 }

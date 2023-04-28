@@ -26,12 +26,23 @@ describe("NativeApp storage backend", () => {
     for (const item of dataset) {
       test1.setData(item.key, item.value);
       if (item.value instanceof Uint8Array) {
-        assert.equal((test1.getData(item.key) as Uint8Array).length, item.value.length);
+        assert.equal(
+          (test1.getData(item.key) as Uint8Array).length,
+          item.value.length
+        );
       } else {
-        assert.equal(test1.getData(item.key), item.value, `${item.key} -> ${item.value} <> ${test1.getData(item.key)}`);
+        assert.equal(
+          test1.getData(item.key),
+          item.value,
+          `${item.key} -> ${item.value} <> ${test1.getData(item.key)}`
+        );
       }
     }
-    assert.equal(test1.getKeys().length, dataset.length, "Number keys must match");
+    assert.equal(
+      test1.getKeys().length,
+      dataset.length,
+      "Number keys must match"
+    );
 
     // Close storage show now all function to throw exception
     test1.close();
@@ -47,9 +58,16 @@ describe("NativeApp storage backend", () => {
     for (const item of dataset) {
       test2.setData(item.key, item.value);
       if (item.value instanceof Uint8Array) {
-        assert.equal((test2.getData(item.key) as Uint8Array).length, item.value.length);
+        assert.equal(
+          (test2.getData(item.key) as Uint8Array).length,
+          item.value.length
+        );
       } else {
-        assert.equal(test2.getData(item.key), item.value, `${item.key} -> ${item.value} <> ${test2.getData(item.key)}`);
+        assert.equal(
+          test2.getData(item.key),
+          item.value,
+          `${item.key} -> ${item.value} <> ${test2.getData(item.key)}`
+        );
       }
     }
 
@@ -123,5 +141,4 @@ describe("NativeApp storage backend", () => {
       storage.close(true);
     });
   });
-
 });

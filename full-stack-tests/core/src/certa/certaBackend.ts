@@ -12,15 +12,20 @@ import { AccessToken } from "@itwin/core-bentley";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
 
-export function exposeBackendCallbacks(){
-  registerBackendCallback(getTokenCallbackName, async (user: any): Promise<AccessToken> => {
-    const testAuthClient = TestUtility.getAuthorizationClient(user, {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    });
-    const accessToken = await testAuthClient.getAccessToken();
-    (IModelHost.authorizationClient as ElectronMainAuthorization).setAccessToken(accessToken);
-    return accessToken;
-  });
+export function exposeBackendCallbacks() {
+  registerBackendCallback(
+    getTokenCallbackName,
+    async (user: any): Promise<AccessToken> => {
+      const testAuthClient = TestUtility.getAuthorizationClient(user, {
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+      });
+      const accessToken = await testAuthClient.getAccessToken();
+      (
+        IModelHost.authorizationClient as ElectronMainAuthorization
+      ).setAccessToken(accessToken);
+      return accessToken;
+    }
+  );
 }

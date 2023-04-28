@@ -6,12 +6,29 @@
  * @module Core
  */
 
-import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import {
+  AccessToken,
+  compareStrings,
+  Dictionary,
+  Guid,
+  IDisposable,
+  isIDisposable,
+  OrderedComparator,
+} from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
-import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
-import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
+import {
+  PresentationError,
+  PresentationStatus,
+} from "@itwin/presentation-common";
+import {
+  ConnectivityInformationProvider,
+  IConnectivityInformationProvider,
+} from "../ConnectivityInformationProvider";
+import {
+  FavoritePropertiesOrderInfo,
+  PropertyFullName,
+} from "./FavoritePropertiesManager";
 
 /** @internal */
 export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
@@ -20,7 +37,8 @@ export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
 /** @internal */
 export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
 /** @internal */
-export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
+export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME =
+  "FavoritePropertiesOrderInfo";
 
 /**
  * Stores user preferences for favorite properties.
@@ -31,26 +49,40 @@ export interface IFavoritePropertiesStorage {
    * @param iTwinId ITwin Id, if the settings is specific to a iTwin, otherwise undefined.
    * @param imodelId iModel Id, if the setting is specific to an iModel, otherwise undefined. The iTwinId must be specified if iModelId is specified.
    */
-  loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+  loadProperties(
+    iTwinId?: string,
+    imodelId?: string
+  ): Promise<Set<PropertyFullName> | undefined>;
   /** Saves Favorite properties to user-specific settings.
    * @param properties Favorite properties to save.
    * @param iTwinId iTwin Id, if the settings is specific to a iTwin, otherwise undefined.
    * @param iModelId iModel Id, if the setting is specific to an iModel, otherwise undefined. The iTwinId must be specified if iModelId is specified.
    */
-  saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
+  saveProperties(
+    properties: Set<PropertyFullName>,
+    iTwinId?: string,
+    imodelId?: string
+  ): Promise<void>;
   /** Load array of FavoritePropertiesOrderInfo from user-specific settings.
    * Setting is specific to an iModel.
    * @param iTwinId iTwin Id.
    * @param imodelId iModel Id.
    */
-  loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+  loadPropertiesOrder(
+    iTwinId: string | undefined,
+    imodelId: string
+  ): Promise<FavoritePropertiesOrderInfo[] | undefined>;
   /** Saves FavoritePropertiesOrderInfo array to user-specific settings.
    * Setting is specific to an iModel.
    * @param orderInfo Array of FavoritePropertiesOrderInfo to save.
    * @param iTwinId iTwin Id.
    * @param imodelId iModel Id.
    */
-  savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
+  savePropertiesOrder(
+    orderInfos: FavoritePropertiesOrderInfo[],
+    iTwinId: string | undefined,
+    imodelId: string
+  ): Promise<void>;
 }
 
 /**
@@ -70,29 +102,47 @@ export enum DefaultFavoritePropertiesStorageTypes {
  * A factory method to create one of the available [[IFavoritePropertiesStorage]] implementations.
  * @public
  */
-export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage {
+export function createFavoritePropertiesStorage(
+  type: DefaultFavoritePropertiesStorageTypes
+): IFavoritePropertiesStorage {
   switch (type) {
-    case DefaultFavoritePropertiesStorageTypes.Noop: return new NoopFavoritePropertiesStorage();
-    case DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage: return new BrowserLocalFavoritePropertiesStorage();
-    case DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
+    case DefaultFavoritePropertiesStorageTypes.Noop:
+      return new NoopFavoritePropertiesStorage();
+    case DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage:
+      return new BrowserLocalFavoritePropertiesStorage();
+    case DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage:
+      return new OfflineCachingFavoritePropertiesStorage({
+        impl: new IModelAppFavoritePropertiesStorage(),
+      });
   }
 }
 
 /**
  * @internal
  */
-export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
-
+export class IModelAppFavoritePropertiesStorage
+  implements IFavoritePropertiesStorage
+{
   private async ensureIsSignedIn(): Promise<{ accessToken: AccessToken }> {
-    const accessToken = IModelApp.authorizationClient ? await IModelApp.authorizationClient.getAccessToken() : "";
-    if (accessToken)
-      return { accessToken };
-    throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
+    const accessToken = IModelApp.authorizationClient
+      ? await IModelApp.authorizationClient.getAccessToken()
+      : "";
+    if (accessToken) return { accessToken };
+    throw new PresentationError(
+      PresentationStatus.Error,
+      "Current user is not authorized to use the settings service"
+    );
   }
 
-  public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
+  public async loadProperties(
+    iTwinId?: string,
+    imodelId?: string
+  ): Promise<Set<PropertyFullName> | undefined> {
     if (!IModelApp.userPreferences)
-      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+      throw new PresentationError(
+        PresentationStatus.Error,
+        "User preferences service is not set up"
+      );
 
     const { accessToken } = await this.ensureIsSignedIn();
     let setting = await IModelApp.userPreferences.get({
@@ -103,8 +153,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       key: FAVORITE_PROPERTIES_SETTING_NAME,
     });
 
-    if (setting !== undefined)
-      return new Set<PropertyFullName>(setting);
+    if (setting !== undefined) return new Set<PropertyFullName>(setting);
 
     // try to check the old namespace
     setting = await IModelApp.userPreferences.get({
@@ -115,15 +164,31 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       key: FAVORITE_PROPERTIES_SETTING_NAME,
     });
 
-    if (setting !== undefined && setting.hasOwnProperty("nestedContentInfos") && setting.hasOwnProperty("propertyInfos") && setting.hasOwnProperty("baseFieldInfos"))
-      return new Set<PropertyFullName>([...setting.nestedContentInfos, ...setting.propertyInfos, ...setting.baseFieldInfos]);
+    if (
+      setting !== undefined &&
+      setting.hasOwnProperty("nestedContentInfos") &&
+      setting.hasOwnProperty("propertyInfos") &&
+      setting.hasOwnProperty("baseFieldInfos")
+    )
+      return new Set<PropertyFullName>([
+        ...setting.nestedContentInfos,
+        ...setting.propertyInfos,
+        ...setting.baseFieldInfos,
+      ]);
 
     return undefined;
   }
 
-  public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void> {
+  public async saveProperties(
+    properties: Set<PropertyFullName>,
+    iTwinId?: string,
+    imodelId?: string
+  ): Promise<void> {
     if (!IModelApp.userPreferences)
-      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+      throw new PresentationError(
+        PresentationStatus.Error,
+        "User preferences service is not set up"
+      );
 
     const { accessToken } = await this.ensureIsSignedIn();
     await IModelApp.userPreferences.save({
@@ -136,9 +201,15 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     });
   }
 
-  public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+  public async loadPropertiesOrder(
+    iTwinId: string | undefined,
+    imodelId: string
+  ): Promise<FavoritePropertiesOrderInfo[] | undefined> {
     if (!IModelApp.userPreferences)
-      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+      throw new PresentationError(
+        PresentationStatus.Error,
+        "User preferences service is not set up"
+      );
 
     const { accessToken } = await this.ensureIsSignedIn();
     const setting = await IModelApp.userPreferences.get({
@@ -151,9 +222,16 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     return setting as FavoritePropertiesOrderInfo[];
   }
 
-  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string) {
+  public async savePropertiesOrder(
+    orderInfos: FavoritePropertiesOrderInfo[],
+    iTwinId: string | undefined,
+    imodelId: string
+  ) {
     if (!IModelApp.userPreferences)
-      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+      throw new PresentationError(
+        PresentationStatus.Error,
+        "User preferences service is not set up"
+      );
 
     const { accessToken } = await this.ensureIsSignedIn();
     await IModelApp.userPreferences.save({
@@ -173,41 +251,74 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
   connectivityInfo?: IConnectivityInformationProvider;
 }
 /** @internal */
-export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
-
+export class OfflineCachingFavoritePropertiesStorage
+  implements IFavoritePropertiesStorage, IDisposable
+{
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
-  private _propertiesOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, Set<PropertyFullName>>(iTwinAndIModelIdsKeyComparer);
-  private _propertiesOrderOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, FavoritePropertiesOrderInfo[]>(iTwinAndIModelIdsKeyComparer);
+  private _propertiesOfflineCache = new DictionaryWithReservations<
+    ITwinAndIModelIdsKey,
+    Set<PropertyFullName>
+  >(iTwinAndIModelIdsKeyComparer);
+  private _propertiesOrderOfflineCache = new DictionaryWithReservations<
+    ITwinAndIModelIdsKey,
+    FavoritePropertiesOrderInfo[]
+  >(iTwinAndIModelIdsKeyComparer);
 
   public constructor(props: OfflineCachingFavoritePropertiesStorageProps) {
     this._impl = props.impl;
     // istanbul ignore next
-    this._connectivityInfo = props.connectivityInfo ?? new ConnectivityInformationProvider();
-    this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
+    this._connectivityInfo =
+      props.connectivityInfo ?? new ConnectivityInformationProvider();
+    this._connectivityInfo.onInternetConnectivityChanged.addListener(
+      this.onConnectivityStatusChanged
+    );
   }
 
   public dispose() {
-    if (isIDisposable(this._connectivityInfo))
-      this._connectivityInfo.dispose();
+    if (isIDisposable(this._connectivityInfo)) this._connectivityInfo.dispose();
   }
 
-  public get impl() { return this._impl; }
+  public get impl() {
+    return this._impl;
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
+  private onConnectivityStatusChanged = (args: {
+    status: InternetConnectivityStatus;
+  }) => {
     // istanbul ignore else
     if (args.status === InternetConnectivityStatus.Online) {
       // note: we're copying the cached values to temp arrays because `saveProperties` and `savePropertiesOrder` both
       // attempt to modify cache dictionaries
 
-      const propertiesCache = new Array<{ properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string }>();
-      this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, iTwinId: key[0], imodelId: key[1] }));
-      propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.iTwinId, cached.imodelId));
+      const propertiesCache = new Array<{
+        properties: Set<PropertyFullName>;
+        iTwinId?: string;
+        imodelId?: string;
+      }>();
+      this._propertiesOfflineCache.forEach((key, value) =>
+        propertiesCache.push({
+          properties: value,
+          iTwinId: key[0],
+          imodelId: key[1],
+        })
+      );
+      propertiesCache.forEach(async (cached) =>
+        this.saveProperties(cached.properties, cached.iTwinId, cached.imodelId)
+      );
 
-      const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[], iTwinId?: string, imodelId: string }>();
-      this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, iTwinId: key[0], imodelId: key[1]! }));
-      ordersCache.forEach(async (cached) => this.savePropertiesOrder(cached.order, cached.iTwinId, cached.imodelId));
+      const ordersCache = new Array<{
+        order: FavoritePropertiesOrderInfo[];
+        iTwinId?: string;
+        imodelId: string;
+      }>();
+      this._propertiesOrderOfflineCache.forEach((key, value) =>
+        ordersCache.push({ order: value, iTwinId: key[0], imodelId: key[1]! })
+      );
+      ordersCache.forEach(async (cached) =>
+        this.savePropertiesOrder(cached.order, cached.iTwinId, cached.imodelId)
+      );
     }
   };
 
@@ -222,7 +333,11 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     return this._propertiesOfflineCache.get([iTwinId, imodelId]);
   }
 
-  public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string) {
+  public async saveProperties(
+    properties: Set<PropertyFullName>,
+    iTwinId?: string,
+    imodelId?: string
+  ) {
     const key: ITwinAndIModelIdsKey = [iTwinId, imodelId];
     if (this._connectivityInfo.status === InternetConnectivityStatus.Offline) {
       this._propertiesOfflineCache.set(key, properties);
@@ -237,7 +352,10 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     }
   }
 
-  public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string) {
+  public async loadPropertiesOrder(
+    iTwinId: string | undefined,
+    imodelId: string
+  ) {
     if (this._connectivityInfo.status === InternetConnectivityStatus.Online) {
       try {
         return await this._impl.loadPropertiesOrder(iTwinId, imodelId);
@@ -248,7 +366,11 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     return this._propertiesOrderOfflineCache.get([iTwinId, imodelId]);
   }
 
-  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string) {
+  public async savePropertiesOrder(
+    orderInfos: FavoritePropertiesOrderInfo[],
+    iTwinId: string | undefined,
+    imodelId: string
+  ) {
     const key: ITwinAndIModelIdsKey = [iTwinId, imodelId];
     if (this._connectivityInfo.status === InternetConnectivityStatus.Offline) {
       this._propertiesOrderOfflineCache.set(key, orderInfos);
@@ -259,23 +381,30 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
       await this._impl.savePropertiesOrder(orderInfos, iTwinId, imodelId);
       this._propertiesOrderOfflineCache.reservedDelete(key, reservationId);
     } catch {
-      this._propertiesOrderOfflineCache.reservedSet(key, orderInfos, reservationId);
+      this._propertiesOrderOfflineCache.reservedSet(
+        key,
+        orderInfos,
+        reservationId
+      );
     }
   }
-
 }
 
 class DictionaryWithReservations<TKey, TValue> {
-  private _impl: Dictionary<TKey, { value?: TValue, lastReservationId?: string }>;
+  private _impl: Dictionary<
+    TKey,
+    { value?: TValue; lastReservationId?: string }
+  >;
   public constructor(compareKeys: OrderedComparator<TKey>) {
     this._impl = new Dictionary(compareKeys);
   }
-  public get(key: TKey) { return this._impl.get(key)?.value; }
+  public get(key: TKey) {
+    return this._impl.get(key)?.value;
+  }
   public forEach(func: (key: TKey, value: TValue) => void): void {
     this._impl.forEach((key, entry) => {
       // istanbul ignore else
-      if (entry.value)
-        func(key, entry.value);
+      if (entry.value) func(key, entry.value);
     });
   }
   public reserve(key: TKey) {
@@ -283,7 +412,9 @@ class DictionaryWithReservations<TKey, TValue> {
     this._impl.set(key, { lastReservationId: reservationId });
     return reservationId;
   }
-  public set(key: TKey, value: TValue) { return this._impl.set(key, { value }); }
+  public set(key: TKey, value: TValue) {
+    return this._impl.set(key, { value });
+  }
   public reservedSet(key: TKey, value: TValue, reservationId: string) {
     const entry = this._impl.get(key);
     if (entry && entry.lastReservationId === reservationId)
@@ -298,25 +429,52 @@ class DictionaryWithReservations<TKey, TValue> {
 type ITwinAndIModelIdsKey = [string | undefined, string | undefined];
 
 // istanbul ignore next
-function iTwinAndIModelIdsKeyComparer(lhs: ITwinAndIModelIdsKey, rhs: ITwinAndIModelIdsKey) {
+function iTwinAndIModelIdsKeyComparer(
+  lhs: ITwinAndIModelIdsKey,
+  rhs: ITwinAndIModelIdsKey
+) {
   const iTwinIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");
-  return (iTwinIdCompare !== 0) ? iTwinIdCompare : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
+  return iTwinIdCompare !== 0
+    ? iTwinIdCompare
+    : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
 }
 
 /** @internal */
-export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+export class NoopFavoritePropertiesStorage
+  implements IFavoritePropertiesStorage
+{
   // istanbul ignore next
-  public async loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined> { return undefined; }
+  public async loadProperties(
+    _iTwinId?: string,
+    _imodelId?: string
+  ): Promise<Set<PropertyFullName> | undefined> {
+    return undefined;
+  }
   // istanbul ignore next
-  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) { }
+  public async saveProperties(
+    _properties: Set<PropertyFullName>,
+    _iTwinId?: string,
+    _imodelId?: string
+  ) {}
   // istanbul ignore next
-  public async loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> { return undefined; }
+  public async loadPropertiesOrder(
+    _iTwinId: string | undefined,
+    _imodelId: string
+  ): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+    return undefined;
+  }
   // istanbul ignore next
-  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> { }
+  public async savePropertiesOrder(
+    _orderInfos: FavoritePropertiesOrderInfo[],
+    _iTwinId: string | undefined,
+    _imodelId: string
+  ): Promise<void> {}
 }
 
 /** @internal */
-export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+export class BrowserLocalFavoritePropertiesStorage
+  implements IFavoritePropertiesStorage
+{
   private _localStorage: Storage;
 
   public constructor(props?: { localStorage?: Storage }) {
@@ -324,39 +482,69 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
     this._localStorage = props?.localStorage ?? window.localStorage;
   }
 
-  public createFavoritesSettingItemKey(iTwinId?: string, imodelId?: string): string {
+  public createFavoritesSettingItemKey(
+    iTwinId?: string,
+    imodelId?: string
+  ): string {
     return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_SETTING_NAME}?iTwinId=${iTwinId}&imodelId=${imodelId}`;
   }
-  public createOrderSettingItemKey(iTwinId?: string, imodelId?: string): string {
+  public createOrderSettingItemKey(
+    iTwinId?: string,
+    imodelId?: string
+  ): string {
     return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}?iTwinId=${iTwinId}&imodelId=${imodelId}`;
   }
 
-  public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    const value = this._localStorage.getItem(this.createFavoritesSettingItemKey(iTwinId, imodelId));
-    if (!value)
-      return undefined;
+  public async loadProperties(
+    iTwinId?: string,
+    imodelId?: string
+  ): Promise<Set<PropertyFullName> | undefined> {
+    const value = this._localStorage.getItem(
+      this.createFavoritesSettingItemKey(iTwinId, imodelId)
+    );
+    if (!value) return undefined;
 
     const properties: PropertyFullName[] = JSON.parse(value);
     return new Set(properties);
   }
 
-  public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string) {
-    this._localStorage.setItem(this.createFavoritesSettingItemKey(iTwinId, imodelId), JSON.stringify([...properties]));
+  public async saveProperties(
+    properties: Set<PropertyFullName>,
+    iTwinId?: string,
+    imodelId?: string
+  ) {
+    this._localStorage.setItem(
+      this.createFavoritesSettingItemKey(iTwinId, imodelId),
+      JSON.stringify([...properties])
+    );
   }
 
-  public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    const value = this._localStorage.getItem(this.createOrderSettingItemKey(iTwinId, imodelId));
-    if (!value)
-      return undefined;
+  public async loadPropertiesOrder(
+    iTwinId: string | undefined,
+    imodelId: string
+  ): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+    const value = this._localStorage.getItem(
+      this.createOrderSettingItemKey(iTwinId, imodelId)
+    );
+    if (!value) return undefined;
 
-    const orderInfos: FavoritePropertiesOrderInfo[] = JSON.parse(value).map((json: any) => ({
-      ...json,
-      orderedTimestamp: new Date(json.orderedTimestamp),
-    }));
+    const orderInfos: FavoritePropertiesOrderInfo[] = JSON.parse(value).map(
+      (json: any) => ({
+        ...json,
+        orderedTimestamp: new Date(json.orderedTimestamp),
+      })
+    );
     return orderInfos;
   }
 
-  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void> {
-    this._localStorage.setItem(this.createOrderSettingItemKey(iTwinId, imodelId), JSON.stringify(orderInfos));
+  public async savePropertiesOrder(
+    orderInfos: FavoritePropertiesOrderInfo[],
+    iTwinId: string | undefined,
+    imodelId: string
+  ): Promise<void> {
+    this._localStorage.setItem(
+      this.createOrderSettingItemKey(iTwinId, imodelId),
+      JSON.stringify(orderInfos)
+    );
   }
 }

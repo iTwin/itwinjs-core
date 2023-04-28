@@ -5,7 +5,11 @@
 import * as express from "express";
 import * as enableWs from "express-ws";
 import { Server as HttpServer } from "http";
-import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
+import {
+  BentleyCloudRpcConfiguration,
+  RpcConfiguration,
+  WebAppRpcProtocol,
+} from "@itwin/core-common";
 import { LocalhostIpcHost } from "@itwin/core-backend";
 
 /**
@@ -34,9 +38,14 @@ export class IModelJsExpressServer {
   protected _app: import("express").Application = express();
 
   /** @alpha */
-  public get rpcConfiguration(): RpcConfiguration { return this._protocol.configuration; }
+  public get rpcConfiguration(): RpcConfiguration {
+    return this._protocol.configuration;
+  }
 
-  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
+  constructor(
+    protocol: WebAppRpcProtocol,
+    config = IModelJsExpressServer.defaults
+  ) {
     this._protocol = protocol;
     this._config = config;
   }
@@ -49,18 +58,35 @@ export class IModelJsExpressServer {
   protected _configureHeaders() {
     // enable CORS for all apis
     this._app.all("/**", (_req, res, next) => {
-      res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
-      res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
-      res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
+      res.header(
+        "Access-Control-Allow-Origin",
+        BentleyCloudRpcConfiguration.accessControl.allowOrigin
+      );
+      res.header(
+        "Access-Control-Allow-Methods",
+        BentleyCloudRpcConfiguration.accessControl.allowMethods
+      );
+      res.header(
+        "Access-Control-Allow-Headers",
+        BentleyCloudRpcConfiguration.accessControl.allowHeaders
+      );
       next();
     });
   }
 
   protected _configureRoutes() {
-    this._app.get("/v3/swagger.json", (req, res) => this._protocol.handleOpenApiDescriptionRequest(req, res));
-    this._app.post("*", async (req, res) => this._protocol.handleOperationPostRequest(req, res));
-    this._app.get(/\/imodel\//, async (req, res) => this._protocol.handleOperationGetRequest(req, res));
-    this._app.get("/ping", async (_req, res) => res.status(200).send("Success"));
+    this._app.get("/v3/swagger.json", (req, res) =>
+      this._protocol.handleOpenApiDescriptionRequest(req, res)
+    );
+    this._app.post("*", async (req, res) =>
+      this._protocol.handleOperationPostRequest(req, res)
+    );
+    this._app.get(/\/imodel\//, async (req, res) =>
+      this._protocol.handleOperationGetRequest(req, res)
+    );
+    this._app.get("/ping", async (_req, res) =>
+      res.status(200).send("Success")
+    );
     // for all HTTP requests, identify the server.
     this._app.use("*", (_req, resp) => {
       resp.send("<h1>IModelJs RPC Server</h1>");
@@ -78,7 +104,9 @@ export class IModelJsExpressServer {
 
     this._app.set("port", port);
     return new Promise<HttpServer>((resolve) => {
-      const server: HttpServer = this._app.listen(this._app.get("port"), () => resolve(server));
+      const server: HttpServer = this._app.listen(this._app.get("port"), () =>
+        resolve(server)
+      );
     });
   }
 }
@@ -88,11 +116,16 @@ export class IModelJsExpressServer {
  */
 export class WebEditServer extends IModelJsExpressServer {
   protected override _configureRoutes() {
-    (this._app as any).ws("/ipc", (ws: any, _req: any) => LocalhostIpcHost.connect(ws));
+    (this._app as any).ws("/ipc", (ws: any, _req: any) =>
+      LocalhostIpcHost.connect(ws)
+    );
     super._configureRoutes();
   }
 
-  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
+  constructor(
+    protocol: WebAppRpcProtocol,
+    config = IModelJsExpressServer.defaults
+  ) {
     super(protocol, config);
     enableWs(this._app);
   }

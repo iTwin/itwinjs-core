@@ -14,17 +14,25 @@ describe("BaseQuantityDescription", () => {
 
       // eslint-disable-next-line @typescript-eslint/naming-convention
       protected formatValue = (_numberValue: number): string => {
-        return ("This is the number");
+        return "This is the number";
       };
 
       protected parseString(_userInput: string): ParseResults {
         return { value: 10 };
       }
 
-      public get quantityType(): string { return "MockType"; }
-      public get parseError(): string { return "MockError"; }
+      public get quantityType(): string {
+        return "MockType";
+      }
+      public get parseError(): string {
+        return "MockError";
+      }
     }
-    const sut = new QuantityDescription("mockQuantity", "Mock Quantity", "icon-placeholder");
+    const sut = new QuantityDescription(
+      "mockQuantity",
+      "Mock Quantity",
+      "icon-placeholder"
+    );
     const formattedValue = sut.format(5);
     expect(formattedValue).to.eq("This is the number");
     const results = sut.parse("mock value");

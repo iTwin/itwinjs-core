@@ -3,10 +3,10 @@
 The [Toolbar]($components-react:Toolbar) category in the `@itwin/components-react` package includes
 components that provide a toolbar that supports an overflow button.
 
-|Component|Description
-|-----|-----
-|[ToolbarWithOverflow]($components-react)|Toolbar that can be oriented horizontal or vertical.
-|[PopupItem]($components-react)|Toolbar button that display a popup panel
+| Component                                | Description                                          |
+| ---------------------------------------- | ---------------------------------------------------- |
+| [ToolbarWithOverflow]($components-react) | Toolbar that can be oriented horizontal or vertical. |
+| [PopupItem]($components-react)           | Toolbar button that display a popup panel            |
 
 ## ToolbarWithOverflow
 
@@ -16,7 +16,7 @@ components that provide a toolbar that supports an overflow button.
 
 The following sample shows the definition of a toolbar.
 
-``` tsx
+```tsx
 // First create toolbar item definitions
 const toolbarItems = [
   ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef),
@@ -39,8 +39,8 @@ const toolbarItems = [
 
 The props defined above are all defaults, so the above definition could be shortened to the following.
 
-``` tsx
-<ToolbarWithOverflow items={toolbarItems} />;
+```tsx
+<ToolbarWithOverflow items={toolbarItems} />
 ```
 
 ![ToolbarWithOverflow](./images/toolbar.png "ToolbarWithOverflow Component")
@@ -55,13 +55,13 @@ A [CustomToolbarItem]($components-react) definition can be used to define a butt
 
 ```tsx
 const buttonDefWithPopupPanel = {
-    id: "MyPopupPanelButton",
-    itemPriority: 10,
-    icon: "icon-placeholder",
-    label: "Show Hello World",
-    isCustom: true,
-    panelContentNode: <div data-testid="popup-panel">HelloWorld!</div>,
-  } as CustomToolbarItem;
+  id: "MyPopupPanelButton",
+  itemPriority: 10,
+  icon: "icon-placeholder",
+  label: "Show Hello World",
+  isCustom: true,
+  panelContentNode: <div data-testid="popup-panel">HelloWorld!</div>,
+} as CustomToolbarItem;
 ```
 
 #### Group Popup Panel
@@ -70,12 +70,34 @@ Below is an example of setting up a [GroupButton]($appui-abstract) definition th
 
 ```tsx
 const childItems: ActionButton[] = [
-  ToolbarItemUtilities.createActionButton("Child1", 10, "icon-app-1", "Child1 Tool", (): void => {/* start tool or open a dialog */ }),
-  ToolbarItemUtilities.createActionButton("Child2", 20, "icon-app-2", "Child2 Tool", (): void => {/* start tool or open a dialog */}),
+  ToolbarItemUtilities.createActionButton(
+    "Child1",
+    10,
+    "icon-app-1",
+    "Child1 Tool",
+    (): void => {
+      /* start tool or open a dialog */
+    }
+  ),
+  ToolbarItemUtilities.createActionButton(
+    "Child2",
+    20,
+    "icon-app-2",
+    "Child2 Tool",
+    (): void => {
+      /* start tool or open a dialog */
+    }
+  ),
 ];
 
 const toolbarItemsWithGroup: CommonToolbarItem[] = [
-  ToolbarItemUtilities.createGroupButton("GroupButton", 10, "icon-developer", "Tool Group", childItems),
+  ToolbarItemUtilities.createGroupButton(
+    "GroupButton",
+    10,
+    "icon-developer",
+    "Tool Group",
+    childItems
+  ),
 ];
 ```
 

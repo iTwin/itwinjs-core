@@ -8,29 +8,108 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import {
+  ECSqlStatement,
+  ECSqlValue,
+  IModelDb,
+  IModelHost,
+  IModelJsNative,
+  IpcHost,
+} from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsLoggerSeverity,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
-  HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, IntRulesetVariable,
-  ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, PropertyValueFormat, RegisteredRuleset,
-  RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions,
-  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ArrayTypeDescription,
+  CategoryDescription,
+  Content,
+  ContentDescriptorRequestOptions,
+  ContentFlags,
+  ContentJSON,
+  ContentRequestOptions,
+  ContentSourcesRequestOptions,
+  DefaultContentDisplayTypes,
+  Descriptor,
+  DescriptorJSON,
+  DescriptorOverrides,
+  DiagnosticsLoggerSeverity,
+  DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions,
+  ElementProperties,
+  FieldDescriptor,
+  FieldDescriptorType,
+  FieldJSON,
+  FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions,
+  HierarchyCompareInfo,
+  HierarchyCompareInfoJSON,
+  HierarchyCompareOptions,
+  HierarchyLevelDescriptorRequestOptions,
+  HierarchyLevelJSON,
+  HierarchyRequestOptions,
+  InstanceKey,
+  IntRulesetVariable,
+  ItemJSON,
+  KeySet,
+  KindOfQuantityInfo,
+  LabelDefinition,
+  MultiElementPropertiesRequestOptions,
+  NestedContentFieldJSON,
+  NodeKey,
+  Paged,
+  PageOptions,
+  PresentationError,
+  PrimitiveTypeDescription,
+  PropertiesFieldJSON,
+  PropertyInfoJSON,
+  PropertyJSON,
+  PropertyValueFormat,
+  RegisteredRuleset,
+  RelatedClassInfo,
+  Ruleset,
+  SelectClassInfo,
+  SelectClassInfoJSON,
+  SelectionInfo,
+  SelectionScope,
+  SingleElementPropertiesRequestOptions,
+  StandardNodeTypes,
+  StructTypeDescription,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
-  createRandomECClassInfo, createRandomECInstanceKey, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomId,
-  createRandomLabelDefinition, createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription,
-  createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo,
-  createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo, createTestSimpleContentField,
+  createRandomECClassInfo,
+  createRandomECInstanceKey,
+  createRandomECInstancesNodeJSON,
+  createRandomECInstancesNodeKey,
+  createRandomId,
+  createRandomLabelDefinition,
+  createRandomNodePathElementJSON,
+  createRandomRelationshipPath,
+  createRandomRuleset,
+  createTestCategoryDescription,
+  createTestContentDescriptor,
+  createTestContentItem,
+  createTestECClassInfo,
+  createTestPropertiesContentField,
+  createTestPropertyInfo,
+  createTestRelatedClassInfo,
+  createTestRelationshipPath,
+  createTestSelectClassInfo,
+  createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
-import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
-import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
+import {
+  NativePlatformDefinition,
+  NativePlatformRequestTypes,
+  NativePresentationUnitSystem,
+  PresentationNativePlatformResponseError,
+} from "../presentation-backend/NativePlatform";
+import {
+  HierarchyCacheMode,
+  HybridCacheConfig,
+  PresentationManager,
+  PresentationManagerProps,
+} from "../presentation-backend/PresentationManager";
 import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
@@ -40,7 +119,6 @@ import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 describe("PresentationManager", () => {
-
   before(async () => {
     try {
       await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
@@ -49,9 +127,8 @@ describe("PresentationManager", () => {
       try {
         IModelHost.platform;
         isLoaded = true;
-      } catch (_e) { }
-      if (!isLoaded)
-        throw e; // re-throw if startup() failed to set up NativePlatform
+      } catch (_e) {}
+      if (!isLoaded) throw e; // re-throw if startup() failed to set up NativePlatform
     }
   });
 
@@ -59,33 +136,49 @@ describe("PresentationManager", () => {
     await IModelHost.shutdown();
   });
 
-  const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey) => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
-      const valueMock = moq.Mock.ofType<ECSqlValue>();
-      valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
-      const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-      stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
-      stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
-      cb(stmtMock.object);
-    });
+  const setupIModelForElementKey = (
+    imodelMock: moq.IMock<IModelDb>,
+    key: InstanceKey
+  ) => {
+    imodelMock
+      .setup((x) =>
+        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
+      )
+      .callback((_q, cb) => {
+        const valueMock = moq.Mock.ofType<ECSqlValue>();
+        valueMock
+          .setup((x) => x.getClassNameForClassId())
+          .returns(() => key.className);
+        const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+        stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
+        cb(stmtMock.object);
+      });
   };
 
   const setupIModelForNoResultStatement = (imodelMock: moq.IMock<IModelDb>) => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
-      const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-      stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
-      cb(stmtMock.object);
-    });
+    imodelMock
+      .setup((x) =>
+        x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
+      )
+      .callback((_q, cb) => {
+        const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+        stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        cb(stmtMock.object);
+      });
   };
 
   describe("constructor", () => {
-
     describe("uses default native library implementation if not overridden", () => {
-
       it("creates without props", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(
+          IModelHost.platform,
+          "ECPresentationManager"
+        );
         using(new PresentationManager(), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(
+            IModelHost.platform.ECPresentationManager
+          );
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -100,7 +193,10 @@ describe("PresentationManager", () => {
       });
 
       it("creates with props", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(
+          IModelHost.platform,
+          "ECPresentationManager"
+        );
         const testThreadsCount = 999;
         const hierarchyCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -109,9 +205,7 @@ describe("PresentationManager", () => {
           composite: {
             includeZero: true,
             spacer: " ",
-            units: [
-              { label: "'", name: "IN" },
-            ],
+            units: [{ label: "'", name: "IN" }],
           },
           formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
           precision: 4,
@@ -139,7 +233,9 @@ describe("PresentationManager", () => {
           mode: HierarchyCacheMode.Memory,
         };
         using(new PresentationManager(props), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(
+            IModelHost.platform.ECPresentationManager
+          );
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
@@ -148,7 +244,10 @@ describe("PresentationManager", () => {
             contentCacheSize: 999,
             workerConnectionCacheSize: 123,
             defaultFormats: {
-              length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
+              length: {
+                unitSystems: [NativePresentationUnitSystem.BritishImperial],
+                serializedFormat: JSON.stringify(formatProps),
+              },
             },
             useMmap: 666,
           });
@@ -156,57 +255,85 @@ describe("PresentationManager", () => {
       });
 
       it("creates with disk cache config", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Disk } } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly({
-            id: "",
-            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
-            cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
-            contentCacheSize: undefined,
-            workerConnectionCacheSize: undefined,
-            useMmap: undefined,
-            defaultFormats: {},
-          });
-        });
+        const constructorSpy = sinon.spy(
+          IModelHost.platform,
+          "ECPresentationManager"
+        );
+        using(
+          new PresentationManager({
+            caching: { hierarchies: { mode: HierarchyCacheMode.Disk } },
+          }),
+          (manager) => {
+            expect(
+              (manager.getNativePlatform() as any)._nativeAddon
+            ).instanceOf(IModelHost.platform.ECPresentationManager);
+            expect(constructorSpy).to.be.calledOnceWithExactly({
+              id: "",
+              taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
+              isChangeTrackingEnabled: false,
+              cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
+              contentCacheSize: undefined,
+              workerConnectionCacheSize: undefined,
+              useMmap: undefined,
+              defaultFormats: {},
+            });
+          }
+        );
         constructorSpy.resetHistory();
         const cacheConfig = {
           mode: HierarchyCacheMode.Disk,
           directory: faker.random.word(),
           memoryCacheSize: 123,
         };
-        const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
-        using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly({
-            id: "",
-            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
-            cacheConfig: expectedConfig,
-            contentCacheSize: undefined,
-            workerConnectionCacheSize: undefined,
-            useMmap: undefined,
-            defaultFormats: {},
-          });
-        });
+        const expectedConfig = {
+          ...cacheConfig,
+          directory: path.resolve(cacheConfig.directory),
+        };
+        using(
+          new PresentationManager({ caching: { hierarchies: cacheConfig } }),
+          (manager) => {
+            expect(
+              (manager.getNativePlatform() as any)._nativeAddon
+            ).instanceOf(IModelHost.platform.ECPresentationManager);
+            expect(constructorSpy).to.be.calledOnceWithExactly({
+              id: "",
+              taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
+              isChangeTrackingEnabled: false,
+              cacheConfig: expectedConfig,
+              contentCacheSize: undefined,
+              workerConnectionCacheSize: undefined,
+              useMmap: undefined,
+              defaultFormats: {},
+            });
+          }
+        );
       });
 
       it("creates with hybrid cache config", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly({
-            id: "",
-            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
-            cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
-            contentCacheSize: undefined,
-            workerConnectionCacheSize: undefined,
-            useMmap: undefined,
-            defaultFormats: {},
-          });
-        });
+        const constructorSpy = sinon.spy(
+          IModelHost.platform,
+          "ECPresentationManager"
+        );
+        using(
+          new PresentationManager({
+            caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } },
+          }),
+          (manager) => {
+            expect(
+              (manager.getNativePlatform() as any)._nativeAddon
+            ).instanceOf(IModelHost.platform.ECPresentationManager);
+            expect(constructorSpy).to.be.calledOnceWithExactly({
+              id: "",
+              taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
+              isChangeTrackingEnabled: false,
+              cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
+              contentCacheSize: undefined,
+              workerConnectionCacheSize: undefined,
+              useMmap: undefined,
+              defaultFormats: {},
+            });
+          }
+        );
         constructorSpy.resetHistory();
         const cacheConfig: HybridCacheConfig = {
           mode: HierarchyCacheMode.Hybrid,
@@ -217,34 +344,44 @@ describe("PresentationManager", () => {
           },
         };
         const expectedConfig = {
-          ...cacheConfig, disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
+          ...cacheConfig,
+          disk: {
+            ...cacheConfig.disk,
+            directory: path.resolve(cacheConfig.disk!.directory!),
+          },
         };
-        using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly({
-            id: "",
-            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            isChangeTrackingEnabled: false,
-            cacheConfig: expectedConfig,
-            contentCacheSize: undefined,
-            workerConnectionCacheSize: undefined,
-            useMmap: undefined,
-            defaultFormats: {},
-          });
-        });
+        using(
+          new PresentationManager({ caching: { hierarchies: cacheConfig } }),
+          (manager) => {
+            expect(
+              (manager.getNativePlatform() as any)._nativeAddon
+            ).instanceOf(IModelHost.platform.ECPresentationManager);
+            expect(constructorSpy).to.be.calledOnceWithExactly({
+              id: "",
+              taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
+              isChangeTrackingEnabled: false,
+              cacheConfig: expectedConfig,
+              contentCacheSize: undefined,
+              workerConnectionCacheSize: undefined,
+              useMmap: undefined,
+              defaultFormats: {},
+            });
+          }
+        );
       });
-
     });
 
     it("uses addon implementation supplied through props", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      using(new PresentationManager({ addon: nativePlatformMock.object }), (manager) => {
-        expect(manager.getNativePlatform()).eq(nativePlatformMock.object);
-      });
+      using(
+        new PresentationManager({ addon: nativePlatformMock.object }),
+        (manager) => {
+          expect(manager.getNativePlatform()).eq(nativePlatformMock.object);
+        }
+      );
     });
 
     describe("addon setup based on props", () => {
-
       const addon = moq.Mock.ofType<NativePlatformDefinition>();
       beforeEach(() => {
         addon.reset();
@@ -252,90 +389,171 @@ describe("PresentationManager", () => {
 
       it("sets up primary ruleset directories if supplied", () => {
         const dirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
+        const addonDirs = [
+          path.join(
+            PRESENTATION_BACKEND_ASSETS_ROOT,
+            "primary-presentation-rules"
+          ),
+          "test1",
+          "test2",
+        ];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => {
-          pm;
-        });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            rulesetDirectories: dirs,
+          }),
+          (pm: PresentationManager) => {
+            pm;
+          }
+        );
         addon.verifyAll();
       });
 
       it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
         const addonDirs = [path.join("/test", "primary-presentation-rules")];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => {
-          pm;
-        });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            presentationAssetsRoot: "/test",
+          }),
+          (pm: PresentationManager) => {
+            pm;
+          }
+        );
         addon.verifyAll();
       });
 
       it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
-        const addonDirs = [path.join("/backend-test", "primary-presentation-rules")];
+        const addonDirs = [
+          path.join("/backend-test", "primary-presentation-rules"),
+        ];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            presentationAssetsRoot: {
+              backend: "/backend-test",
+              common: "/common-test",
+            },
+          }),
+          (_pm: PresentationManager) => {}
+        );
         addon.verifyAll();
       });
 
       it("sets up supplemental ruleset directories if supplied", () => {
         const dirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules"), "test1", "test2"];
+        const addonDirs = [
+          path.join(
+            PRESENTATION_BACKEND_ASSETS_ROOT,
+            "supplemental-presentation-rules"
+          ),
+          "test1",
+          "test2",
+        ];
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
-        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (_pm: PresentationManager) => { });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            supplementalRulesetDirectories: dirs,
+          }),
+          (_pm: PresentationManager) => {}
+        );
         addon.verifyAll();
       });
 
       it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
-        const addonDirs = [path.join("/test", "supplemental-presentation-rules")];
+        const addonDirs = [
+          path.join("/test", "supplemental-presentation-rules"),
+        ];
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (_pm: PresentationManager) => { });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            presentationAssetsRoot: "/test",
+          }),
+          (_pm: PresentationManager) => {}
+        );
         addon.verifyAll();
       });
 
       it("sets up presentation backend's supplemental ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
-        const addonDirs = [path.join("/backend-test", "supplemental-presentation-rules")];
+        const addonDirs = [
+          path.join("/backend-test", "supplemental-presentation-rules"),
+        ];
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            presentationAssetsRoot: {
+              backend: "/backend-test",
+              common: "/common-test",
+            },
+          }),
+          (_pm: PresentationManager) => {}
+        );
         addon.verifyAll();
       });
 
       it("sets up active locale if supplied [deprecated]", () => {
         const locale = faker.random.locale();
-        using(new PresentationManager({ addon: addon.object, defaultLocale: locale }), (manager) => {
-          expect(manager.activeLocale).to.eq(locale); // eslint-disable-line deprecation/deprecation
-        });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            defaultLocale: locale,
+          }),
+          (manager) => {
+            expect(manager.activeLocale).to.eq(locale); // eslint-disable-line deprecation/deprecation
+          }
+        );
       });
 
       it("creates an `UpdateTracker` when `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
-        const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
+        const tracker = sinon.createStubInstance(
+          UpdatesTracker
+        ) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
-        using(new PresentationManager({ addon: addon.object, updatesPollInterval: 123 }), (_) => {
-          expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123 }));
-          expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
-        });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            updatesPollInterval: 123,
+          }),
+          (_) => {
+            expect(stub).to.be.calledOnceWith(
+              sinon.match({ pollInterval: 123 })
+            );
+            expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
+          }
+        );
         expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
       });
 
       it("doesn't create an `UpdateTracker` when IPC host is unavailable", () => {
         sinon.stub(IpcHost, "isValid").get(() => false);
         const stub = sinon.stub(UpdatesTracker, "create");
-        using(new PresentationManager({ addon: addon.object, updatesPollInterval: 123 }), (_) => {
-          expect(stub).to.not.be.called;
-        });
+        using(
+          new PresentationManager({
+            addon: addon.object,
+            updatesPollInterval: 123,
+          }),
+          (_) => {
+            expect(stub).to.not.be.called;
+          }
+        );
       });
-
     });
-
   });
 
   describe("props", () => {
-
     it("returns empty object if initialized without props", () => {
       using(new PresentationManager(undefined), (newManager) => {
         expect(newManager.props).to.deep.eq({});
@@ -348,11 +566,9 @@ describe("PresentationManager", () => {
         expect(newManager.props).to.equal(props);
       });
     });
-
   });
 
   describe("defaultUnitSystem", () => {
-
     const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
     beforeEach(() => {
       addonMock.reset();
@@ -362,81 +578,150 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "metric";
-      await using(new PresentationManager({ addon: addonMock.object }), async (manager) => {
-        addonMock
-          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-            const request = JSON.parse(serializedRequest);
-            return request.params.unitSystem === NativePresentationUnitSystem.Metric;
-          }), undefined))
-          .returns(async () => ({ result: "null" }))
-          .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
-        addonMock.verifyAll();
-      });
+      await using(
+        new PresentationManager({ addon: addonMock.object }),
+        async (manager) => {
+          addonMock
+            .setup(async (x) =>
+              x.handleRequest(
+                moq.It.isAny(),
+                moq.It.is((serializedRequest: string): boolean => {
+                  const request = JSON.parse(serializedRequest);
+                  return (
+                    request.params.unitSystem ===
+                    NativePresentationUnitSystem.Metric
+                  );
+                }),
+                undefined
+              )
+            )
+            .returns(async () => ({ result: "null" }))
+            .verifiable(moq.Times.once());
+          await manager.getContentDescriptor({
+            imodel: imodelMock.object,
+            rulesetOrId: rulesetId,
+            displayType: "",
+            keys: new KeySet(),
+            unitSystem,
+          });
+          addonMock.verifyAll();
+        }
+      );
     });
 
     it("uses manager's defaultUnitSystem when not specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usSurvey";
-      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem }), async (manager) => {
-        addonMock
-          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-            const request = JSON.parse(serializedRequest);
-            return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
-          }), undefined))
-          .returns(async () => ({ result: "null" }))
-          .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
-        addonMock.verifyAll();
-      });
+      await using(
+        new PresentationManager({
+          addon: addonMock.object,
+          defaultUnitSystem: unitSystem,
+        }),
+        async (manager) => {
+          addonMock
+            .setup(async (x) =>
+              x.handleRequest(
+                moq.It.isAny(),
+                moq.It.is((serializedRequest: string): boolean => {
+                  const request = JSON.parse(serializedRequest);
+                  return (
+                    request.params.unitSystem ===
+                    NativePresentationUnitSystem.UsSurvey
+                  );
+                }),
+                undefined
+              )
+            )
+            .returns(async () => ({ result: "null" }))
+            .verifiable(moq.Times.once());
+          await manager.getContentDescriptor({
+            imodel: imodelMock.object,
+            rulesetOrId: rulesetId,
+            displayType: "",
+            keys: new KeySet(),
+          });
+          addonMock.verifyAll();
+        }
+      );
     });
 
     it("ignores manager's defaultUnitSystem when unit system is specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usCustomary";
-      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" }), async (manager) => {
-        expect(manager.activeUnitSystem).to.not.eq(unitSystem);
-        addonMock
-          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
-            const request = JSON.parse(serializedRequest);
-            return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
-          }), undefined))
-          .returns(async () => ({ result: "null" }))
-          .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
-        addonMock.verifyAll();
-      });
+      await using(
+        new PresentationManager({
+          addon: addonMock.object,
+          defaultUnitSystem: "metric",
+        }),
+        async (manager) => {
+          expect(manager.activeUnitSystem).to.not.eq(unitSystem);
+          addonMock
+            .setup(async (x) =>
+              x.handleRequest(
+                moq.It.isAny(),
+                moq.It.is((serializedRequest: string): boolean => {
+                  const request = JSON.parse(serializedRequest);
+                  return (
+                    request.params.unitSystem ===
+                    NativePresentationUnitSystem.UsCustomary
+                  );
+                }),
+                undefined
+              )
+            )
+            .returns(async () => ({ result: "null" }))
+            .verifiable(moq.Times.once());
+          await manager.getContentDescriptor({
+            imodel: imodelMock.object,
+            rulesetOrId: rulesetId,
+            unitSystem,
+            displayType: "",
+            keys: new KeySet(),
+          });
+          addonMock.verifyAll();
+        }
+      );
     });
-
   });
 
   describe("setOnManagerUsedHandler", () => {
-
     it("invokes when making presentation requests", async () => {
       const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const manager = new PresentationManager({ addon: addonMock.object });
       const managerUsedSpy = sinon.spy();
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
+      addonMock
+        .setup(async (x) =>
+          x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)
+        )
         .returns(async () => ({ result: `{"nodes":[]}` }));
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
+      addonMock
+        .setup(async (x) =>
+          x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)
+        )
         .returns(async () => ({ result: "{}" }));
 
       manager.setOnManagerUsedHandler(managerUsedSpy);
-      await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
+      await manager.getNodes({
+        imodel: imodelMock.object,
+        rulesetOrId: "RulesetId",
+      });
       expect(managerUsedSpy).to.be.calledOnce;
-      await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });
+      await manager.getContent({
+        imodel: imodelMock.object,
+        rulesetOrId: "RulesetId",
+        keys: new KeySet([]),
+        descriptor: {},
+      });
       expect(managerUsedSpy).to.be.calledTwice;
     });
-
   });
 
   describe("vars", () => {
-
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
 
     it("returns variables manager", () => {
@@ -444,25 +729,23 @@ describe("PresentationManager", () => {
       const vars = manager.vars(faker.random.word());
       expect(vars).to.be.instanceOf(RulesetVariablesManagerImpl);
     });
-
   });
 
   describe("rulesets", () => {
-
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
 
     it("returns rulesets manager", () => {
       const manager = new PresentationManager({ addon: addon.object });
       expect(manager.rulesets()).to.be.instanceOf(RulesetManagerImpl);
     });
-
   });
 
   describe("dispose", () => {
-
     it("calls native platform dispose when manager is disposed", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
+      const manager = new PresentationManager({
+        addon: nativePlatformMock.object,
+      });
       manager.dispose();
       manager.dispose();
       // note: verify native platform's `dispose` called only once
@@ -471,15 +754,15 @@ describe("PresentationManager", () => {
 
     it("throws when attempting to use native platform after disposal", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
+      const manager = new PresentationManager({
+        addon: nativePlatformMock.object,
+      });
       manager.dispose();
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
     });
-
   });
 
   describe("getRulesetId", () => {
-
     let manager: PresentationManager;
 
     beforeEach(() => {
@@ -504,15 +787,15 @@ describe("PresentationManager", () => {
     it("returns correct id when input is a ruleset and in one-backend-one-frontend mode", async () => {
       sinon.stub(IpcHost, "isValid").get(() => true);
       sinon.stub(IpcHost, "handle");
-      manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
+      manager = new PresentationManager({
+        addon: moq.Mock.ofType<NativePlatformDefinition>().object,
+      });
       const ruleset = await createRandomRuleset();
       expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
     });
-
   });
 
   describe("handling options", () => {
-
     const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
     let manager: PresentationManager;
@@ -525,46 +808,68 @@ describe("PresentationManager", () => {
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
+        .setup(async (x) =>
+          x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined)
+        )
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: ruleset });
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: ruleset,
+      });
       addonMock.verifyAll();
     });
 
     it("doesn't register ruleset if `rulesetOrId` is a string", async () => {
       const rulesetId = faker.random.word();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
+        .setup(async (x) =>
+          x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined)
+        )
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.never());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: rulesetId,
+      });
       addonMock.verifyAll();
     });
 
     it("invokes request's diagnostics handler with diagnostic results", async () => {
       const diagnosticsResult = {
-        logs: [{
-          scope: "test",
-          duration: 123,
-        }],
+        logs: [
+          {
+            scope: "test",
+            duration: 123,
+          },
+        ],
       };
       const diagnosticsContext = {};
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup(async (x) => x.handleRequest(
-          moq.It.isAny(),
-          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
-          undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((reqStr) =>
+              sinon
+                .match(JSON.parse(reqStr).params.diagnostics)
+                .test({ perf: true })
+            ),
+            undefined
+          )
+        )
+        .returns(async () => ({
+          result: "{}",
+          diagnostics: diagnosticsResult.logs[0],
+        }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({
         imodel: imodelMock.object,
@@ -576,7 +881,10 @@ describe("PresentationManager", () => {
         },
       });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
+      expect(diagnosticsListener).to.be.calledOnceWithExactly(
+        diagnosticsResult,
+        diagnosticsContext
+      );
     });
 
     it("invokes manager's diagnostics callback with diagnostic results when request succeeds", async () => {
@@ -593,22 +901,40 @@ describe("PresentationManager", () => {
         },
       });
       const diagnosticsResult = {
-        logs: [{
-          scope: "test",
-          scopeCreateTimestamp: 1000,
-          duration: 123,
-        }],
+        logs: [
+          {
+            scope: "test",
+            scopeCreateTimestamp: 1000,
+            duration: 123,
+          },
+        ],
       };
       addonMock
-        .setup(async (x) => x.handleRequest(
-          moq.It.isAny(),
-          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
-          undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((reqStr) =>
+              sinon
+                .match(JSON.parse(reqStr).params.diagnostics)
+                .test({ perf: true })
+            ),
+            undefined
+          )
+        )
+        .returns(async () => ({
+          result: "{}",
+          diagnostics: diagnosticsResult.logs[0],
+        }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: "ruleset",
+      });
       addonMock.verifyAll();
-      expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
+      expect(diagnosticsCallback).to.be.calledOnceWithExactly(
+        diagnosticsResult,
+        diagnosticsContext
+      );
     });
 
     it("invokes manager's diagnostics callback with diagnostic results when request fails", async () => {
@@ -625,22 +951,47 @@ describe("PresentationManager", () => {
         },
       });
       const diagnosticsResult = {
-        logs: [{
-          scope: "test",
-          scopeCreateTimestamp: 1000,
-          duration: 123,
-        }],
+        logs: [
+          {
+            scope: "test",
+            scopeCreateTimestamp: 1000,
+            duration: 123,
+          },
+        ],
       };
       addonMock
-        .setup(async (x) => x.handleRequest(
-          moq.It.isAny(),
-          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
-          undefined))
-        .returns(async () => { throw new PresentationNativePlatformResponseError({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "" }, diagnostics: diagnosticsResult.logs[0] }); })
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((reqStr) =>
+              sinon
+                .match(JSON.parse(reqStr).params.diagnostics)
+                .test({ perf: true })
+            ),
+            undefined
+          )
+        )
+        .returns(async () => {
+          throw new PresentationNativePlatformResponseError({
+            error: {
+              status: IModelJsNative.ECPresentationStatus.Error,
+              message: "",
+            },
+            diagnostics: diagnosticsResult.logs[0],
+          });
+        })
         .verifiable(moq.Times.once());
-      await expect(manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" })).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError);
+      await expect(
+        manager.getNodesCount({
+          imodel: imodelMock.object,
+          rulesetOrId: "ruleset",
+        })
+      ).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError);
       addonMock.verifyAll();
-      expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
+      expect(diagnosticsCallback).to.be.calledOnceWithExactly(
+        diagnosticsResult,
+        diagnosticsContext
+      );
     });
 
     it("invokes manager and request diagnostics callbacks", async () => {
@@ -661,25 +1012,37 @@ describe("PresentationManager", () => {
       });
       const diagnosticsResult = {
         scope: "req",
-        logs: [{
-          scope: "perf scope",
-          scopeCreateTimestamp: 1000,
-          duration: 123,
-        }, {
-          scope: "log scope",
-          logs: [{
-            message: "msg",
-            category: "cat",
-            severity: { dev: "debug" as DiagnosticsLoggerSeverity },
-            timestamp: 123,
-          }],
-        }],
+        logs: [
+          {
+            scope: "perf scope",
+            scopeCreateTimestamp: 1000,
+            duration: 123,
+          },
+          {
+            scope: "log scope",
+            logs: [
+              {
+                message: "msg",
+                category: "cat",
+                severity: { dev: "debug" as DiagnosticsLoggerSeverity },
+                timestamp: 123,
+              },
+            ],
+          },
+        ],
       };
       addonMock
-        .setup(async (x) => x.handleRequest(
-          moq.It.isAny(),
-          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true, dev: "debug" })),
-          undefined))
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((reqStr) =>
+              sinon
+                .match(JSON.parse(reqStr).params.diagnostics)
+                .test({ perf: true, dev: "debug" })
+            ),
+            undefined
+          )
+        )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({
@@ -692,14 +1055,18 @@ describe("PresentationManager", () => {
         },
       });
       addonMock.verifyAll();
-      expect(managerDiagnosticsCallback).to.be.calledOnceWithExactly({ logs: [{ scope: "req", logs: [diagnosticsResult.logs[0]] }] }, managerDiagnosticsContext);
-      expect(requestDiagnosticsCallback).to.be.calledOnceWithExactly({ logs: [{ scope: "req", logs: [diagnosticsResult.logs[1]] }] }, requestDiagnosticsContext);
+      expect(managerDiagnosticsCallback).to.be.calledOnceWithExactly(
+        { logs: [{ scope: "req", logs: [diagnosticsResult.logs[0]] }] },
+        managerDiagnosticsContext
+      );
+      expect(requestDiagnosticsCallback).to.be.calledOnceWithExactly(
+        { logs: [{ scope: "req", logs: [diagnosticsResult.logs[1]] }] },
+        requestDiagnosticsContext
+      );
     });
-
   });
 
   describe("addon results conversion to Presentation objects", () => {
-
     let testData: any;
     const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
@@ -707,7 +1074,10 @@ describe("PresentationManager", () => {
     beforeEach(async () => {
       testData = {
         rulesetOrId: await createRandomRuleset(),
-        pageOptions: { start: faker.random.number(), size: faker.random.number() } as PageOptions,
+        pageOptions: {
+          start: faker.random.number(),
+          size: faker.random.number(),
+        } as PageOptions,
         displayType: faker.random.word(),
         selectionInfo: {
           providerName: faker.random.word(),
@@ -716,7 +1086,9 @@ describe("PresentationManager", () => {
       };
       imodelMock.reset();
       nativePlatformMock.reset();
-      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
+      nativePlatformMock
+        .setup((x) => x.getImodelAddon(imodelMock.object))
+        .verifiable(moq.Times.atLeastOnce());
       recreateManager();
     });
     afterEach(() => {
@@ -726,25 +1098,44 @@ describe("PresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       const serialized = JSON.stringify(addonResponse);
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
+      nativePlatformMock
+        .setup(async (x) =>
+          x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)
+        )
         .returns(async () => ({ result: JSON.stringify(addonResponse) }));
       return JSON.parse(serialized);
     };
     const verifyMockRequest = (expectedParams: any) => {
       // verify the addon was called with correct params
-      nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedParam: string): boolean => {
-        const param = JSON.parse(serializedParam);
-        expectedParams = JSON.parse(JSON.stringify(expectedParams));
-        return deepEqual(param, expectedParams);
-      }), undefined), moq.Times.once());
+      nativePlatformMock.verify(
+        async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((serializedParam: string): boolean => {
+              const param = JSON.parse(serializedParam);
+              expectedParams = JSON.parse(JSON.stringify(expectedParams));
+              return deepEqual(param, expectedParams);
+            }),
+            undefined
+          ),
+        moq.Times.once()
+      );
     };
-    const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
+    const verifyWithSnapshot = (
+      result: any,
+      expectedParams: any,
+      recreateSnapshot: boolean = false
+    ) => {
       // verify the addon was called with correct params
       verifyMockRequest(expectedParams);
       // verify the manager correctly used addonResponse to create its result
       expect(result).to.matchSnapshot(recreateSnapshot);
     };
-    const verifyWithExpectedResult = (actualResult: any, expectedResult: any, expectedParams: any) => {
+    const verifyWithExpectedResult = (
+      actualResult: any,
+      expectedResult: any,
+      expectedParams: any
+    ) => {
       // verify the addon was called with correct params
       verifyMockRequest(expectedParams);
       // verify the manager correctly used addonResponse to create its result
@@ -757,13 +1148,18 @@ describe("PresentationManager", () => {
         addon: nativePlatformMock.object,
         ...props,
       });
-      sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
-        add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
-      }));
+      sinon.stub(manager.getDetail(), "rulesets").value(
+        sinon.createStubInstance(RulesetManagerImpl, {
+          add: sinon
+            .stub<[Ruleset], RegisteredRuleset>()
+            .callsFake(
+              (ruleset) => new RegisteredRuleset(ruleset, "", () => {})
+            ),
+        })
+      );
     }
 
     describe("getNodes", () => {
-
       it("returns root nodes", async () => {
         // what the addon receives
         const expectedParams = {
@@ -777,50 +1173,54 @@ describe("PresentationManager", () => {
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
-          nodes: [{
-            key: {
-              type: "type1",
-              pathFromRoot: ["p1", "p2", "p3"],
+          nodes: [
+            {
+              key: {
+                type: "type1",
+                pathFromRoot: ["p1", "p2", "p3"],
+              },
+              labelDefinition: LabelDefinition.fromLabelString("test1"),
+              description: "description1",
+              imageId: "img_1",
+              foreColor: "foreColor1",
+              backColor: "backColor1",
+              fontStyle: "fontStyle1",
+              hasChildren: true,
+              isSelectionDisabled: true,
+              isEditable: true,
+              isChecked: true,
+              isCheckboxVisible: true,
+              isCheckboxEnabled: true,
+              isExpanded: true,
             },
-            labelDefinition: LabelDefinition.fromLabelString("test1"),
-            description: "description1",
-            imageId: "img_1",
-            foreColor: "foreColor1",
-            backColor: "backColor1",
-            fontStyle: "fontStyle1",
-            hasChildren: true,
-            isSelectionDisabled: true,
-            isEditable: true,
-            isChecked: true,
-            isCheckboxVisible: true,
-            isCheckboxEnabled: true,
-            isExpanded: true,
-          }, {
-            key: {
-              type: StandardNodeTypes.ECInstancesNode,
-              pathFromRoot: ["p1"],
-              instanceKeys: [createRandomECInstanceKey()],
+            {
+              key: {
+                type: StandardNodeTypes.ECInstancesNode,
+                pathFromRoot: ["p1"],
+                instanceKeys: [createRandomECInstanceKey()],
+              },
+              labelDefinition: LabelDefinition.fromLabelString("test2"),
+              description: "description2",
+              imageId: "",
+              foreColor: "",
+              backColor: "",
+              fontStyle: "",
+              hasChildren: false,
+              isSelectionDisabled: false,
+              isEditable: false,
+              isChecked: false,
+              isCheckboxVisible: false,
+              isCheckboxEnabled: false,
+              isExpanded: false,
             },
-            labelDefinition: LabelDefinition.fromLabelString("test2"),
-            description: "description2",
-            imageId: "",
-            foreColor: "",
-            backColor: "",
-            fontStyle: "",
-            hasChildren: false,
-            isSelectionDisabled: false,
-            isEditable: false,
-            isChecked: false,
-            isCheckboxVisible: false,
-            isCheckboxEnabled: false,
-            isExpanded: false,
-          }, {
-            key: {
-              type: "some node",
-              pathFromRoot: ["p1", "p3"],
+            {
+              key: {
+                type: "some node",
+                pathFromRoot: ["p1", "p3"],
+              },
+              labelDefinition: LabelDefinition.fromLabelString("test2"),
             },
-            labelDefinition: LabelDefinition.fromLabelString("test2"),
-          }],
+          ],
           supportsFiltering: true,
         };
         setup(addonResponse);
@@ -850,20 +1250,23 @@ describe("PresentationManager", () => {
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
-          nodes: [{
-            key: {
-              type: StandardNodeTypes.ECInstancesNode,
-              pathFromRoot: ["p1"],
-              instanceKeys: [createRandomECInstanceKey()],
+          nodes: [
+            {
+              key: {
+                type: StandardNodeTypes.ECInstancesNode,
+                pathFromRoot: ["p1"],
+                instanceKeys: [createRandomECInstanceKey()],
+              },
+              labelDefinition: LabelDefinition.fromLabelString("test2"),
             },
-            labelDefinition: LabelDefinition.fromLabelString("test2"),
-          }, {
-            key: {
-              type: "type 2",
-              pathFromRoot: ["p1", "p3"],
+            {
+              key: {
+                type: "type 2",
+                pathFromRoot: ["p1", "p3"],
+              },
+              labelDefinition: LabelDefinition.fromLabelString("test3"),
             },
-            labelDefinition: LabelDefinition.fromLabelString("test3"),
-          }],
+          ],
           supportsFiltering: true,
         };
         setup(addonResponse);
@@ -893,25 +1296,29 @@ describe("PresentationManager", () => {
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
-          nodes: [{
-            key: {
-              type: "type1",
-              pathFromRoot: ["p1", "p2", "p3"],
+          nodes: [
+            {
+              key: {
+                type: "type1",
+                pathFromRoot: ["p1", "p2", "p3"],
+              },
+              labelDefinition: LabelDefinition.fromLabelString(
+                "@Presentation:label.notSpecified@"
+              ),
+              description: "description1",
+              imageId: "img_1",
+              foreColor: "foreColor1",
+              backColor: "backColor1",
+              fontStyle: "fontStyle1",
+              hasChildren: true,
+              isSelectionDisabled: true,
+              isEditable: true,
+              isChecked: true,
+              isCheckboxVisible: true,
+              isCheckboxEnabled: true,
+              isExpanded: true,
             },
-            labelDefinition: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
-            description: "description1",
-            imageId: "img_1",
-            foreColor: "foreColor1",
-            backColor: "backColor1",
-            fontStyle: "fontStyle1",
-            hasChildren: true,
-            isSelectionDisabled: true,
-            isEditable: true,
-            isChecked: true,
-            isCheckboxVisible: true,
-            isCheckboxEnabled: true,
-            isExpanded: true,
-          }],
+          ],
           supportsFiltering: true,
         };
         setup(addonResponse);
@@ -925,11 +1332,9 @@ describe("PresentationManager", () => {
         const result = await manager.getNodes(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("getNodesCount", () => {
-
       it("returns root nodes count", async () => {
         // what the addon receives
         const expectedParams = {
@@ -977,11 +1382,9 @@ describe("PresentationManager", () => {
         const result = await manager.getNodesCount(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
-
     });
 
     describe("getNodesDescriptor", () => {
-
       it("returns hierarchy level descriptor", async () => {
         // what the addon receives
         const parentNodeKey = createRandomECInstancesNodeKey();
@@ -998,7 +1401,10 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey> = {
+        const options: HierarchyLevelDescriptorRequestOptions<
+          IModelDb,
+          NodeKey
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: parentNodeKey,
@@ -1006,11 +1412,9 @@ describe("PresentationManager", () => {
         const result = await manager.getNodesDescriptor(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("getFilteredNodePaths", () => {
-
       it("returns filtered node paths", async () => {
         // what the addon receives
         const expectedParams = {
@@ -1034,14 +1438,14 @@ describe("PresentationManager", () => {
         const result = await manager.getFilteredNodePaths(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("getNodePaths", () => {
-
       it("returns node paths", async () => {
         // what the addon receives
-        const keyJsonArray = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+        const keyJsonArray = [
+          [createRandomECInstanceKey(), createRandomECInstanceKey()],
+        ];
         const keyArray = [[...keyJsonArray[0]]];
         const markedIndex = faker.random.number();
         const expectedParams = {
@@ -1058,23 +1462,30 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: FilterByInstancePathsHierarchyRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-          instancePaths: keyArray,
-          markedIndex,
-        };
+        const options: FilterByInstancePathsHierarchyRequestOptions<IModelDb> =
+          {
+            imodel: imodelMock.object,
+            rulesetOrId: testData.rulesetOrId,
+            instancePaths: keyArray,
+            markedIndex,
+          };
         const result = await manager.getNodePaths(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("compareHierarchies", () => {
-
       it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
-        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
-        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
+        const var1: IntRulesetVariable = {
+          id: "var",
+          type: VariableValueTypes.Int,
+          value: 123,
+        };
+        const var2: IntRulesetVariable = {
+          id: "var",
+          type: VariableValueTypes.Int,
+          value: 465,
+        };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1092,11 +1503,13 @@ describe("PresentationManager", () => {
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const unprocessedResponse: HierarchyCompareInfoJSON = {
-          changes: [{
-            type: "Insert",
-            position: 1,
-            node: createRandomECInstancesNodeJSON(),
-          }],
+          changes: [
+            {
+              type: "Insert",
+              position: 1,
+              node: createRandomECInstancesNodeJSON(),
+            },
+          ],
         };
         const addonResponse = setup(unprocessedResponse);
 
@@ -1113,7 +1526,11 @@ describe("PresentationManager", () => {
         };
         const result = await manager.compareHierarchies(options);
         // eslint-disable-next-line deprecation/deprecation
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+        verifyWithExpectedResult(
+          result,
+          HierarchyCompareInfo.fromJSON(addonResponse),
+          expectedParams
+        );
       });
 
       it("requests addon to compare hierarchies based on ruleset changes", async () => {
@@ -1132,11 +1549,13 @@ describe("PresentationManager", () => {
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyCompareInfoJSON = {
-          changes: [{
-            type: "Delete",
-            parent: createRandomECInstancesNodeJSON().key,
-            position: 123,
-          }],
+          changes: [
+            {
+              type: "Delete",
+              parent: createRandomECInstancesNodeJSON().key,
+              position: 123,
+            },
+          ],
         };
         setup(addonResponse);
 
@@ -1150,12 +1569,24 @@ describe("PresentationManager", () => {
         };
         const result = await manager.compareHierarchies(options);
         // eslint-disable-next-line deprecation/deprecation
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+        verifyWithExpectedResult(
+          result,
+          HierarchyCompareInfo.fromJSON(addonResponse),
+          expectedParams
+        );
       });
 
       it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
-        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
-        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
+        const var1: IntRulesetVariable = {
+          id: "var",
+          type: VariableValueTypes.Int,
+          value: 123,
+        };
+        const var2: IntRulesetVariable = {
+          id: "var",
+          type: VariableValueTypes.Int,
+          value: 465,
+        };
 
         // what the addon receives
         const expectedParams = {
@@ -1172,11 +1603,13 @@ describe("PresentationManager", () => {
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyCompareInfoJSON = {
-          changes: [{
-            type: "Update",
-            target: createRandomECInstancesNodeJSON().key,
-            changes: {},
-          }],
+          changes: [
+            {
+              type: "Update",
+              target: createRandomECInstancesNodeJSON().key,
+              changes: {},
+            },
+          ],
         };
         setup(addonResponse);
 
@@ -1191,7 +1624,11 @@ describe("PresentationManager", () => {
         };
         const result = await manager.compareHierarchies(options);
         // eslint-disable-next-line deprecation/deprecation
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+        verifyWithExpectedResult(
+          result,
+          HierarchyCompareInfo.fromJSON(addonResponse),
+          expectedParams
+        );
       });
 
       it("returns empty result if neither ruleset nor ruleset variables changed", async () => {
@@ -1201,7 +1638,11 @@ describe("PresentationManager", () => {
           prev: {},
           rulesetOrId: "test",
         });
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(
+          async (x) =>
+            x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()),
+          moq.Times.never()
+        );
         expect(result).to.deep.eq({ changes: [] });
       });
 
@@ -1215,14 +1656,17 @@ describe("PresentationManager", () => {
           rulesetOrId: "2",
           expandedNodeKeys: [],
         };
-        await expect(manager.compareHierarchies(options)).to.eventually.be.rejected;
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        await expect(manager.compareHierarchies(options)).to.eventually.be
+          .rejected;
+        nativePlatformMock.verify(
+          async (x) =>
+            x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()),
+          moq.Times.never()
+        );
       });
-
     });
 
     describe("getContentSources", () => {
-
       it("returns content sources", async () => {
         // what the addon receives
         const classes = ["test.class1", "test.class2"];
@@ -1236,16 +1680,64 @@ describe("PresentationManager", () => {
 
         // what the addon returns
         const addonResponse = {
-          sources: [{
-            selectClassInfo: "0x123",
-            isSelectPolymorphic: true,
-            pathToPrimaryClass: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-            pathFromInputToSelectClass: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-            relatedPropertyPaths: [[{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }]],
-            navigationPropertyClasses: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-            relatedInstanceClasses: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-            relatedInstancePaths: [[{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }]],
-          } as SelectClassInfoJSON<Id64String>],
+          sources: [
+            {
+              selectClassInfo: "0x123",
+              isSelectPolymorphic: true,
+              pathToPrimaryClass: [
+                {
+                  sourceClassInfo: "0x123",
+                  relationshipInfo: "0x456",
+                  isForwardRelationship: true,
+                  targetClassInfo: "0x789",
+                },
+              ],
+              pathFromInputToSelectClass: [
+                {
+                  sourceClassInfo: "0x123",
+                  relationshipInfo: "0x456",
+                  isForwardRelationship: true,
+                  targetClassInfo: "0x789",
+                },
+              ],
+              relatedPropertyPaths: [
+                [
+                  {
+                    sourceClassInfo: "0x123",
+                    relationshipInfo: "0x456",
+                    isForwardRelationship: true,
+                    targetClassInfo: "0x789",
+                  },
+                ],
+              ],
+              navigationPropertyClasses: [
+                {
+                  sourceClassInfo: "0x123",
+                  relationshipInfo: "0x456",
+                  isForwardRelationship: true,
+                  targetClassInfo: "0x789",
+                },
+              ],
+              relatedInstanceClasses: [
+                {
+                  sourceClassInfo: "0x123",
+                  relationshipInfo: "0x456",
+                  isForwardRelationship: true,
+                  targetClassInfo: "0x789",
+                },
+              ],
+              relatedInstancePaths: [
+                [
+                  {
+                    sourceClassInfo: "0x123",
+                    relationshipInfo: "0x456",
+                    isForwardRelationship: true,
+                    targetClassInfo: "0x789",
+                  },
+                ],
+              ],
+            } as SelectClassInfoJSON<Id64String>,
+          ],
           classesMap: {
             "0x123": { name: "class1", label: "Class One" },
             "0x456": { name: "class2", label: "Class Two" },
@@ -1262,14 +1754,15 @@ describe("PresentationManager", () => {
         const result = await manager.getContentSources(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("getContentDescriptor", () => {
-
       it("returns content descriptor", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentDescriptor,
           params: {
@@ -1296,127 +1789,154 @@ describe("PresentationManager", () => {
           displayType: testData.displayType,
           classesMap,
           selectClasses: [
-            SelectClassInfo.toCompressedJSON(createTestSelectClassInfo({
-              pathFromInputToSelectClass: createTestRelationshipPath(1),
-              relatedPropertyPaths: [createTestRelationshipPath(1)],
-              navigationPropertyClasses: [createTestRelatedClassInfo()],
-              relatedInstancePaths: [createTestRelationshipPath(1)],
-            }), classesMap),
+            SelectClassInfo.toCompressedJSON(
+              createTestSelectClassInfo({
+                pathFromInputToSelectClass: createTestRelationshipPath(1),
+                relatedPropertyPaths: [createTestRelationshipPath(1)],
+                navigationPropertyClasses: [createTestRelatedClassInfo()],
+                relatedInstancePaths: [createTestRelationshipPath(1)],
+              }),
+              classesMap
+            ),
           ],
-          categories: [CategoryDescription.toJSON(createTestCategoryDescription({ name: "test-category" }))],
-          fields: [{
-            name: "Primitive property field with editor",
-            category: "test-category",
-            label: faker.random.words(),
-            type: {
-              typeName: "string",
-              valueFormat: "Primitive",
-            } as PrimitiveTypeDescription,
-            isReadonly: faker.random.boolean(),
-            priority: faker.random.number(),
-            editor: {
-              name: faker.random.word(),
-              params: {
-                ["some_param"]: faker.random.number(),
-              },
-            },
-            properties: [{
-              property: {
-                classInfo: testClassInfo.id,
-                name: faker.random.word(),
-                type: "string",
-                enumerationInfo: {
-                  choices: [{
-                    label: faker.random.words(),
-                    value: faker.random.uuid(),
-                  }, {
-                    label: faker.random.words(),
-                    value: faker.random.uuid(),
-                  }],
-                  isStrict: faker.random.boolean(),
-                },
-              } as PropertyInfoJSON<Id64String>,
-              relatedClassPath: [],
-            } as PropertyJSON<Id64String>],
-          } as PropertiesFieldJSON<Id64String>, {
-            name: "Complex array of structs property field",
-            category: "test-category",
-            label: faker.random.words(),
-            type: {
-              typeName: "string[]",
-              valueFormat: "Array",
-              memberType: {
-                typeName: "SomeClass",
-                valueFormat: "Struct",
-                members: [{
-                  name: faker.random.word(),
-                  label: faker.random.words(),
-                  type: {
-                    typeName: "string",
-                    valueFormat: "Primitive",
-                  },
-                }, {
-                  name: faker.random.word(),
-                  label: faker.random.words(),
-                  type: {
-                    typeName: "string[]",
-                    valueFormat: "Array",
-                    memberType: {
-                      typeName: "string",
-                      valueFormat: "Primitive",
-                    },
-                  } as ArrayTypeDescription,
-                }],
-              } as StructTypeDescription,
-            } as ArrayTypeDescription,
-            isReadonly: faker.random.boolean(),
-            priority: faker.random.number(),
-            properties: [{
-              property: {
-                classInfo: testClassInfo.id,
-                name: faker.random.word(),
-                type: "double",
-                kindOfQuantity: {
-                  name: faker.random.word(),
-                  label: faker.random.words(),
-                  persistenceUnit: faker.random.word(),
-                } as KindOfQuantityInfo,
-              } as PropertyInfoJSON<Id64String>,
-              relatedClassPath: [],
-            } as PropertyJSON<Id64String>],
-          } as PropertiesFieldJSON<Id64String>, {
-            name: "Nested content field",
-            category: "test-category",
-            label: faker.random.words(),
-            type: {
-              typeName: faker.random.word(),
-              valueFormat: "Struct",
-              members: [{
-                name: faker.random.word(),
-                label: faker.random.words(),
-                type: {
-                  typeName: "string",
-                  valueFormat: "Primitive",
-                },
-              }],
-            } as StructTypeDescription,
-            contentClassInfo: testClassInfo.id,
-            pathToPrimaryClass: createRandomRelationshipPath(1).map((step) => RelatedClassInfo.toCompressedJSON(step, classesMap)),
-            nestedFields: [{
-              name: "Simple property field",
+          categories: [
+            CategoryDescription.toJSON(
+              createTestCategoryDescription({ name: "test-category" })
+            ),
+          ],
+          fields: [
+            {
+              name: "Primitive property field with editor",
               category: "test-category",
               label: faker.random.words(),
               type: {
                 typeName: "string",
                 valueFormat: "Primitive",
-              },
+              } as PrimitiveTypeDescription,
               isReadonly: faker.random.boolean(),
               priority: faker.random.number(),
-            } as FieldJSON],
-            isReadonly: faker.random.boolean(),
-            priority: faker.random.number(),
-            autoExpand: faker.random.boolean(),
-          } as NestedContentFieldJSON<Id64String>],
+              editor: {
+                name: faker.random.word(),
+                params: {
+                  ["some_param"]: faker.random.number(),
+                },
+              },
+              properties: [
+                {
+                  property: {
+                    classInfo: testClassInfo.id,
+                    name: faker.random.word(),
+                    type: "string",
+                    enumerationInfo: {
+                      choices: [
+                        {
+                          label: faker.random.words(),
+                          value: faker.random.uuid(),
+                        },
+                        {
+                          label: faker.random.words(),
+                          value: faker.random.uuid(),
+                        },
+                      ],
+                      isStrict: faker.random.boolean(),
+                    },
+                  } as PropertyInfoJSON<Id64String>,
+                  relatedClassPath: [],
+                } as PropertyJSON<Id64String>,
+              ],
+            } as PropertiesFieldJSON<Id64String>,
+            {
+              name: "Complex array of structs property field",
+              category: "test-category",
+              label: faker.random.words(),
+              type: {
+                typeName: "string[]",
+                valueFormat: "Array",
+                memberType: {
+                  typeName: "SomeClass",
+                  valueFormat: "Struct",
+                  members: [
+                    {
+                      name: faker.random.word(),
+                      label: faker.random.words(),
+                      type: {
+                        typeName: "string",
+                        valueFormat: "Primitive",
+                      },
+                    },
+                    {
+                      name: faker.random.word(),
+                      label: faker.random.words(),
+                      type: {
+                        typeName: "string[]",
+                        valueFormat: "Array",
+                        memberType: {
+                          typeName: "string",
+                          valueFormat: "Primitive",
+                        },
+                      } as ArrayTypeDescription,
+                    },
+                  ],
+                } as StructTypeDescription,
+              } as ArrayTypeDescription,
+              isReadonly: faker.random.boolean(),
+              priority: faker.random.number(),
+              properties: [
+                {
+                  property: {
+                    classInfo: testClassInfo.id,
+                    name: faker.random.word(),
+                    type: "double",
+                    kindOfQuantity: {
+                      name: faker.random.word(),
+                      label: faker.random.words(),
+                      persistenceUnit: faker.random.word(),
+                    } as KindOfQuantityInfo,
+                  } as PropertyInfoJSON<Id64String>,
+                  relatedClassPath: [],
+                } as PropertyJSON<Id64String>,
+              ],
+            } as PropertiesFieldJSON<Id64String>,
+            {
+              name: "Nested content field",
+              category: "test-category",
+              label: faker.random.words(),
+              type: {
+                typeName: faker.random.word(),
+                valueFormat: "Struct",
+                members: [
+                  {
+                    name: faker.random.word(),
+                    label: faker.random.words(),
+                    type: {
+                      typeName: "string",
+                      valueFormat: "Primitive",
+                    },
+                  },
+                ],
+              } as StructTypeDescription,
+              contentClassInfo: testClassInfo.id,
+              pathToPrimaryClass: createRandomRelationshipPath(1).map((step) =>
+                RelatedClassInfo.toCompressedJSON(step, classesMap)
+              ),
+              nestedFields: [
+                {
+                  name: "Simple property field",
+                  category: "test-category",
+                  label: faker.random.words(),
+                  type: {
+                    typeName: "string",
+                    valueFormat: "Primitive",
+                  },
+                  isReadonly: faker.random.boolean(),
+                  priority: faker.random.number(),
+                } as FieldJSON,
+              ],
+              isReadonly: faker.random.boolean(),
+              priority: faker.random.number(),
+              autoExpand: faker.random.boolean(),
+            } as NestedContentFieldJSON<Id64String>,
+          ],
           contentFlags: 0,
         };
         setup(addonResponse);
@@ -1432,14 +1952,15 @@ describe("PresentationManager", () => {
         const result = await manager.getContentDescriptor(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("getContentSetSize", () => {
-
       it("returns content set size", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
         const descriptor = createTestContentDescriptor({ fields: [] });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSetSize,
@@ -1467,8 +1988,14 @@ describe("PresentationManager", () => {
 
       it("returns content set size when descriptor overrides are passed instead of descriptor", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
-        const descriptor = createTestContentDescriptor({ fields: [], displayType: "test" });
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
+        const descriptor = createTestContentDescriptor({
+          fields: [],
+          displayType: "test",
+        });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSetSize,
           params: {
@@ -1485,7 +2012,11 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const options: ContentRequestOptions<
+          IModelDb,
+          Descriptor | DescriptorOverrides,
+          KeySet
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           descriptor: descriptor.createDescriptorOverrides(),
@@ -1494,22 +2025,25 @@ describe("PresentationManager", () => {
         const result = await manager.getContentSetSize(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
-
     });
 
     describe("getContent", () => {
-
       it("returns content", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
         const fieldName = faker.random.word();
         const category = createTestCategoryDescription();
         const descriptor = createTestContentDescriptor({
           categories: [category],
-          fields: [createTestSimpleContentField({
-            category,
-            name: fieldName,
-          })],
+          fields: [
+            createTestSimpleContentField({
+              category,
+              name: fieldName,
+            }),
+          ],
         });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -1524,24 +2058,32 @@ describe("PresentationManager", () => {
         // what the addon returns
         const addonResponse = {
           descriptor: descriptor.toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: faker.random.words(),
-            },
-            displayValues: {
-              [fieldName]: faker.random.words(),
-            },
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: faker.random.words(),
+              },
+              displayValues: {
+                [fieldName]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1554,16 +2096,23 @@ describe("PresentationManager", () => {
 
       it("returns localized content", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
         const fieldName = faker.random.word();
-        const category = createTestCategoryDescription({ label: "@Presentation:label.notSpecified@" });
+        const category = createTestCategoryDescription({
+          label: "@Presentation:label.notSpecified@",
+        });
         const descriptor = createTestContentDescriptor({
           categories: [category],
-          fields: [createTestSimpleContentField({
-            label: "@Presentation:label.notSpecified@",
-            category,
-            name: fieldName,
-          })],
+          fields: [
+            createTestSimpleContentField({
+              label: "@Presentation:label.notSpecified@",
+              category,
+              name: fieldName,
+            }),
+          ],
         });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -1578,28 +2127,36 @@ describe("PresentationManager", () => {
         // what the addon returns
         const addonResponse = {
           descriptor: descriptor.toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: {
-              typeName: "string",
-              rawValue: "@Presentation:label.notSpecified@",
-              displayValue: "@Presentation:label.notSpecified@",
-            },
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: "@Presentation:label.notSpecified@",
-            },
-            displayValues: {
-              [fieldName]: "@Presentation:label.notSpecified@",
-            },
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: {
+                typeName: "string",
+                rawValue: "@Presentation:label.notSpecified@",
+                displayValue: "@Presentation:label.notSpecified@",
+              },
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: "@Presentation:label.notSpecified@",
+              },
+              displayValues: {
+                [fieldName]: "@Presentation:label.notSpecified@",
+              },
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1612,8 +2169,14 @@ describe("PresentationManager", () => {
 
       it("returns content for BisCore:Element instances when concrete key is found", async () => {
         // what the addon receives
-        const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
-        const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
+        const baseClassKey = {
+          className: "BisCore:Element",
+          id: createRandomId(),
+        };
+        const concreteClassKey = {
+          className: faker.random.word(),
+          id: baseClassKey.id,
+        };
         setupIModelForElementKey(imodelMock, concreteClassKey);
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -1631,29 +2194,39 @@ describe("PresentationManager", () => {
         const addonResponse = {
           descriptor: createTestContentDescriptor({
             categories: [category],
-            fields: [createTestSimpleContentField({
-              category,
-              name: fieldName,
-            })],
+            fields: [
+              createTestSimpleContentField({
+                category,
+                name: fieldName,
+              }),
+            ],
           }).toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: faker.random.words(),
-            },
-            displayValues: {
-              [fieldName]: faker.random.words(),
-            },
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: faker.random.words(),
+              },
+              displayValues: {
+                [fieldName]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1666,7 +2239,10 @@ describe("PresentationManager", () => {
 
       it("returns content for BisCore:Element instances when concrete key is not found", async () => {
         // what the addon receives
-        const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
+        const baseClassKey = {
+          className: "BisCore:Element",
+          id: createRandomId(),
+        };
         setupIModelForNoResultStatement(imodelMock);
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -1684,29 +2260,39 @@ describe("PresentationManager", () => {
         const addonResponse = {
           descriptor: createTestContentDescriptor({
             categories: [category],
-            fields: [createTestSimpleContentField({
-              category,
-              name: fieldName,
-            })],
+            fields: [
+              createTestSimpleContentField({
+                category,
+                name: fieldName,
+              }),
+            ],
           }).toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: faker.random.words(),
-            },
-            displayValues: {
-              [fieldName]: faker.random.words(),
-            },
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: faker.random.words(),
+              },
+              displayValues: {
+                [fieldName]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1719,8 +2305,14 @@ describe("PresentationManager", () => {
 
       it("returns content when descriptor overrides are passed instead of descriptor", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
-        const descriptor = createTestContentDescriptor({ fields: [], displayType: "test" });
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
+        const descriptor = createTestContentDescriptor({
+          fields: [],
+          displayType: "test",
+        });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -1737,24 +2329,32 @@ describe("PresentationManager", () => {
         const fieldName = faker.random.word();
         const addonResponse = {
           descriptor: descriptor.toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: faker.random.words(),
-            },
-            displayValues: {
-              [fieldName]: faker.random.words(),
-            },
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: faker.random.words(),
+              },
+              displayValues: {
+                [fieldName]: faker.random.words(),
+              },
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1777,9 +2377,13 @@ describe("PresentationManager", () => {
             createTestPropertiesContentField({
               name: fieldName,
               properties: [{ property: createTestPropertyInfo() }],
-              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+              type: {
+                valueFormat: PropertyValueFormat.Primitive,
+                typeName: "double",
+              },
             }),
-          ], displayType: "test",
+          ],
+          displayType: "test",
         });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -1798,22 +2402,30 @@ describe("PresentationManager", () => {
         const fieldValue = 1.234;
         const addonResponse = {
           descriptor: descriptor.toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: fieldValue,
-            },
-            displayValues: {},
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: fieldValue,
+              },
+              displayValues: {},
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1836,9 +2448,13 @@ describe("PresentationManager", () => {
             createTestPropertiesContentField({
               name: fieldName,
               properties: [{ property: createTestPropertyInfo() }],
-              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+              type: {
+                valueFormat: PropertyValueFormat.Primitive,
+                typeName: "double",
+              },
             }),
-          ], displayType: "test",
+          ],
+          displayType: "test",
         });
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -1857,22 +2473,30 @@ describe("PresentationManager", () => {
         const fieldValue = 1.234;
         const addonResponse = {
           descriptor: descriptor.toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {
-              [fieldName]: fieldValue,
-            },
-            displayValues: {},
-            mergedFieldNames: [],
-          } as ItemJSON],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {
+                [fieldName]: fieldValue,
+              },
+              displayValues: {},
+              mergedFieldNames: [],
+            } as ItemJSON,
+          ],
         } as ContentJSON;
         setup(addonResponse);
 
         // test
-        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+        const options: Paged<
+          ContentRequestOptions<
+            IModelDb,
+            Descriptor | DescriptorOverrides,
+            KeySet
+          >
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1883,14 +2507,15 @@ describe("PresentationManager", () => {
         const result = await manager.getContent(options);
         verifyWithSnapshot(result, expectedParams);
       });
-
     });
 
     describe("getPagedDistinctValues", () => {
-
       it("returns distinct values", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const keys = new KeySet([
+          createRandomECInstancesNodeKey(),
+          createRandomECInstanceKey(),
+        ]);
         const descriptor = createTestContentDescriptor({ fields: [] });
         const fieldDescriptor: FieldDescriptor = {
           type: FieldDescriptorType.Name,
@@ -1914,15 +2539,21 @@ describe("PresentationManager", () => {
         // what the addon returns
         const addonResponse = {
           total: 1,
-          items: [{
-            displayValue: "test",
-            groupedRawValues: ["test"],
-          }],
+          items: [
+            {
+              displayValue: "test",
+              groupedRawValues: ["test"],
+            },
+          ],
         };
         setup(addonResponse);
 
         // test
-        const options: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+        const options: DistinctValuesRequestOptions<
+          IModelDb,
+          Descriptor | DescriptorOverrides,
+          KeySet
+        > = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           descriptor,
@@ -1933,11 +2564,9 @@ describe("PresentationManager", () => {
         const result = await manager.getPagedDistinctValues(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
-
     });
 
     describe("getElementProperties", () => {
-
       it("returns single element properties", async () => {
         // what the addon receives
         const elementKey = { className: "BisCore:Element", id: "0x123" };
@@ -1962,7 +2591,9 @@ describe("PresentationManager", () => {
               createTestSimpleContentField({
                 name: "test",
                 label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
+                category: createTestCategoryDescription({
+                  label: "Test Category",
+                }),
               }),
             ],
           }),
@@ -1978,7 +2609,7 @@ describe("PresentationManager", () => {
                 test: "test display value",
               },
             }),
-          ],
+          ]
         ).toJSON();
         setup(addonContentResponse);
 
@@ -2032,7 +2663,9 @@ describe("PresentationManager", () => {
               createTestSimpleContentField({
                 name: "test",
                 label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
+                category: createTestCategoryDescription({
+                  label: "Test Category",
+                }),
               }),
             ],
           }),
@@ -2048,7 +2681,7 @@ describe("PresentationManager", () => {
                 test: "test display value",
               },
             }),
-          ],
+          ]
         ).toJSON();
         setup(addonContentResponse);
 
@@ -2078,15 +2711,36 @@ describe("PresentationManager", () => {
         expect(result).to.deep.eq(expectedResponse);
       });
 
-      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: idsByClass, lastElementId: undefined }));
+      function setupIModelForElementIds(
+        imodel: moq.IMock<IModelDb>,
+        idsByClass: Map<string, string[]>,
+        idsCount: number
+      ) {
+        imodel
+          .setup((x) =>
+            x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
+          )
+          .returns(() => idsCount);
+        imodel
+          .setup((x) =>
+            x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())
+          )
+          .returns(() => ({ ids: idsByClass, lastElementId: undefined }));
       }
 
       it("returns multiple elements properties", async () => {
         // what the addon receives
-        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
-        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
+        const elementKeys = [
+          { className: "TestSchema:TestClass", id: "0x123" },
+          { className: "TestSchema:TestClass", id: "0x124" },
+        ];
+        setupIModelForElementIds(
+          imodelMock,
+          new Map<string, string[]>([
+            ["TestSchema:TestClass", ["0x123", "0x124"]],
+          ]),
+          2
+        );
         elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
 
         const expectedContentParams = {
@@ -2108,7 +2762,9 @@ describe("PresentationManager", () => {
               createTestSimpleContentField({
                 name: "test",
                 label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
+                category: createTestCategoryDescription({
+                  label: "Test Category",
+                }),
               }),
             ],
           }),
@@ -2135,7 +2791,7 @@ describe("PresentationManager", () => {
                 test: "test display value 2",
               },
             }),
-          ],
+          ]
         ).toJSON();
         setup(addonContentResponse);
 
@@ -2189,8 +2845,17 @@ describe("PresentationManager", () => {
 
       it("returns localized multiple elements properties", async () => {
         // what the addon receives
-        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
-        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
+        const elementKeys = [
+          { className: "TestSchema:TestClass", id: "0x123" },
+          { className: "TestSchema:TestClass", id: "0x124" },
+        ];
+        setupIModelForElementIds(
+          imodelMock,
+          new Map<string, string[]>([
+            ["TestSchema:TestClass", ["0x123", "0x124"]],
+          ]),
+          2
+        );
         elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
 
         const expectedContentParams = {
@@ -2212,7 +2877,9 @@ describe("PresentationManager", () => {
               createTestSimpleContentField({
                 name: "test",
                 label: "Test Field",
-                category: createTestCategoryDescription({ label: "Test Category" }),
+                category: createTestCategoryDescription({
+                  label: "Test Category",
+                }),
               }),
             ],
           }),
@@ -2239,7 +2906,7 @@ describe("PresentationManager", () => {
                 test: "test display value 2",
               },
             }),
-          ],
+          ]
         ).toJSON();
         setup(addonContentResponse);
 
@@ -2290,11 +2957,9 @@ describe("PresentationManager", () => {
           expect(items).to.deep.eq(expectedResponse);
         }
       });
-
     });
 
     describe("getDisplayLabelDefinition", () => {
-
       it("returns label from native addon", async () => {
         // what the addon receives
         const key = createRandomECInstanceKey();
@@ -2352,13 +3017,15 @@ describe("PresentationManager", () => {
           key,
         };
         const result = await manager.getDisplayLabelDefinition(options);
-        verifyWithExpectedResult(result, localizedAddonResponse(), expectedParams);
+        verifyWithExpectedResult(
+          result,
+          localizedAddonResponse(),
+          expectedParams
+        );
       });
-
     });
 
     describe("getDisplayLabelDefinitions", () => {
-
       it("returns labels from list content and localizes them", async () => {
         // what the addon returns
         const addonResponse = (): LabelDefinition => {
@@ -2380,7 +3047,10 @@ describe("PresentationManager", () => {
         // what the addon receives
         const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
         const labels = [addonResponse(), addonResponse()];
-        const labelsLocalized = [localizedAddonResponse(), localizedAddonResponse()];
+        const labelsLocalized = [
+          localizedAddonResponse(),
+          localizedAddonResponse(),
+        ];
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -2389,7 +3059,8 @@ describe("PresentationManager", () => {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+            rulesetId:
+              "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
           },
         };
 
@@ -2407,15 +3078,17 @@ describe("PresentationManager", () => {
             classesMap: {},
           } as DescriptorJSON,
           // note: return in wrong order to verify the resulting labels are still in the right order
-          contentSet: [1, 0].map((index): ItemJSON => ({
-            primaryKeys: [keys[index]],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: labels[index],
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          })),
+          contentSet: [1, 0].map(
+            (index): ItemJSON => ({
+              primaryKeys: [keys[index]],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: labels[index],
+              imageId: faker.random.uuid(),
+              values: {},
+              displayValues: {},
+              mergedFieldNames: [],
+            })
+          ),
         } as ContentJSON;
         setup(addonContentResponse);
 
@@ -2432,7 +3105,10 @@ describe("PresentationManager", () => {
       it("returns labels from list content", async () => {
         // what the addon receives
         const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-        const labels = [createRandomLabelDefinition(), createRandomLabelDefinition()];
+        const labels = [
+          createRandomLabelDefinition(),
+          createRandomLabelDefinition(),
+        ];
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -2441,7 +3117,8 @@ describe("PresentationManager", () => {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+            rulesetId:
+              "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
           },
         };
 
@@ -2459,15 +3136,17 @@ describe("PresentationManager", () => {
             classesMap: {},
           } as DescriptorJSON,
           // note: return in wrong order to verify the resulting labels are still in the right order
-          contentSet: [1, 0].map((index): ItemJSON => ({
-            primaryKeys: [keys[index]],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: labels[index],
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          })),
+          contentSet: [1, 0].map(
+            (index): ItemJSON => ({
+              primaryKeys: [keys[index]],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: labels[index],
+              imageId: faker.random.uuid(),
+              values: {},
+              displayValues: {},
+              mergedFieldNames: [],
+            })
+          ),
         } as ContentJSON;
         setup(addonContentResponse);
 
@@ -2483,8 +3162,14 @@ describe("PresentationManager", () => {
 
       it("returns labels for BisCore:Element instances", async () => {
         // what the addon receives
-        const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
-        const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
+        const baseClassKey = {
+          className: "BisCore:Element",
+          id: createRandomId(),
+        };
+        const concreteClassKey = {
+          className: faker.random.word(),
+          id: baseClassKey.id,
+        };
         setupIModelForElementKey(imodelMock, concreteClassKey);
         const label = createRandomLabelDefinition();
         const expectedContentParams = {
@@ -2495,7 +3180,8 @@ describe("PresentationManager", () => {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+            rulesetId:
+              "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
           },
         };
 
@@ -2513,15 +3199,17 @@ describe("PresentationManager", () => {
             classesMap: {},
           } as DescriptorJSON,
           // note: return in wrong order to verify the resulting labels are still in the right order
-          contentSet: [{
-            primaryKeys: [concreteClassKey],
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: label,
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          }],
+          contentSet: [
+            {
+              primaryKeys: [concreteClassKey],
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: label,
+              imageId: faker.random.uuid(),
+              values: {},
+              displayValues: {},
+              mergedFieldNames: [],
+            },
+          ],
         } as ContentJSON;
         setup(addonContentResponse);
 
@@ -2545,22 +3233,25 @@ describe("PresentationManager", () => {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+            rulesetId:
+              "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
           },
         };
 
         // what the addon returns
         const addonContentResponse = {
           descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKey()], // different than input key
-            classInfo: createRandomECClassInfo(),
-            labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          }],
+          contentSet: [
+            {
+              primaryKeys: [createRandomECInstanceKey()], // different than input key
+              classInfo: createRandomECClassInfo(),
+              labelDefinition: createRandomLabelDefinition(),
+              imageId: faker.random.uuid(),
+              values: {},
+              displayValues: {},
+              mergedFieldNames: [],
+            },
+          ],
         } as ContentJSON;
         setup(addonContentResponse);
 
@@ -2571,7 +3262,9 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getDisplayLabelDefinitions(options);
         verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq([{ displayValue: "", rawValue: "", typeName: "" }]);
+        expect(result).to.deep.eq([
+          { displayValue: "", rawValue: "", typeName: "" },
+        ]);
       });
 
       it("returns empty labels if content is undefined", async () => {
@@ -2584,7 +3277,8 @@ describe("PresentationManager", () => {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+            rulesetId:
+              "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
           },
         };
 
@@ -2598,38 +3292,57 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getDisplayLabelDefinitions(options);
         verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq([{ displayValue: "", rawValue: "", typeName: "" }]);
+        expect(result).to.deep.eq([
+          { displayValue: "", rawValue: "", typeName: "" },
+        ]);
       });
-
     });
 
     it("throws on invalid addon response", async () => {
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(() => (undefined as any));
+      nativePlatformMock
+        .setup(async (x) =>
+          x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)
+        )
+        .returns(() => undefined as any);
       const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
       };
-      return expect(manager.getNodesCount(options)).to.eventually.be.rejectedWith(Error);
+      return expect(
+        manager.getNodesCount(options)
+      ).to.eventually.be.rejectedWith(Error);
     });
 
     describe("getLocalizedString", () => {
-
       it("Passes getLocalizedString to manager and uses it", async () => {
         const getLocalizedStringSpy = sinon.spy();
-        manager = new PresentationManager({ addon: nativePlatformMock.object, getLocalizedString: getLocalizedStringSpy });
-        sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
-        }));
+        manager = new PresentationManager({
+          addon: nativePlatformMock.object,
+          getLocalizedString: getLocalizedStringSpy,
+        });
+        sinon.stub(manager.getDetail(), "rulesets").value(
+          sinon.createStubInstance(RulesetManagerImpl, {
+            add: sinon
+              .stub<[Ruleset], RegisteredRuleset>()
+              .callsFake(
+                (ruleset) => new RegisteredRuleset(ruleset, "", () => {})
+              ),
+          })
+        );
         // what the addon returns
         // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
-          nodes: [{
-            key: {
-              type: "type1",
-              pathFromRoot: ["p1", "p2", "p3"],
+          nodes: [
+            {
+              key: {
+                type: "type1",
+                pathFromRoot: ["p1", "p2", "p3"],
+              },
+              labelDefinition: LabelDefinition.fromLabelString(
+                "@Presentation:label.notSpecified@"
+              ),
             },
-            labelDefinition: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
-          }],
+          ],
           supportsFiltering: true,
         };
         setup(addonResponse);
@@ -2648,7 +3361,6 @@ describe("PresentationManager", () => {
   });
 
   describe("getSelectionScopes", () => {
-
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
     const imodel = moq.Mock.ofType<IModelDb>();
     let manager: PresentationManager;
@@ -2665,16 +3377,18 @@ describe("PresentationManager", () => {
 
     it("requests scopes from `SelectionScopesHelper`", async () => {
       const scopes = new Array<SelectionScope>();
-      const stub = sinon.stub(SelectionScopesHelper, "getSelectionScopes").returns(scopes);
-      const result = await manager.getSelectionScopes({ imodel: imodel.object });
+      const stub = sinon
+        .stub(SelectionScopesHelper, "getSelectionScopes")
+        .returns(scopes);
+      const result = await manager.getSelectionScopes({
+        imodel: imodel.object,
+      });
       expect(stub).to.be.calledOnce;
       expect(result).to.deep.eq(scopes);
     });
-
   });
 
   describe("computeSelection", () => {
-
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
     const imodel = moq.Mock.ofType<IModelDb>();
     let manager: PresentationManager;
@@ -2692,21 +3406,40 @@ describe("PresentationManager", () => {
     it("[deprecated] computes selection using `SelectionScopesHelper`", async () => {
       const ids = [createRandomId()];
       const resultKeys = new KeySet();
-      const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
+      const stub = sinon
+        .stub(SelectionScopesHelper, "computeSelection")
+        .resolves(resultKeys);
       // eslint-disable-next-line deprecation/deprecation
-      const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
+      const result = await manager.computeSelection({
+        imodel: imodel.object,
+        ids,
+        scopeId: "test scope",
+      });
+      expect(stub).to.be.calledOnceWith({
+        imodel: imodel.object,
+        elementIds: ids,
+        scope: { id: "test scope" },
+      });
       expect(result).to.eq(resultKeys);
     });
 
     it("computes element selection using `SelectionScopesHelper`", async () => {
       const elementIds = [createRandomId()];
       const resultKeys = new KeySet();
-      const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
-      const result = await manager.computeSelection({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
+      const stub = sinon
+        .stub(SelectionScopesHelper, "computeSelection")
+        .resolves(resultKeys);
+      const result = await manager.computeSelection({
+        imodel: imodel.object,
+        elementIds,
+        scope: { id: "element", ancestorLevel: 123 },
+      });
+      expect(stub).to.be.calledOnceWith({
+        imodel: imodel.object,
+        elementIds,
+        scope: { id: "element", ancestorLevel: 123 },
+      });
       expect(result).to.eq(resultKeys);
     });
-
   });
 });

@@ -54,19 +54,36 @@ export class ImageGraphicCorners {
   }
 
   public static fromJSON(props: ImageGraphicCornersProps): ImageGraphicCorners {
-    return new ImageGraphicCorners(Point3d.fromJSON(props[0]), Point3d.fromJSON(props[1]), Point3d.fromJSON(props[2]), Point3d.fromJSON(props[3]));
+    return new ImageGraphicCorners(
+      Point3d.fromJSON(props[0]),
+      Point3d.fromJSON(props[1]),
+      Point3d.fromJSON(props[2]),
+      Point3d.fromJSON(props[3])
+    );
   }
 
-  public static from4Points(points: [Point3d, Point3d, Point3d, Point3d]): ImageGraphicCorners {
+  public static from4Points(
+    points: [Point3d, Point3d, Point3d, Point3d]
+  ): ImageGraphicCorners {
     return new ImageGraphicCorners(points[0], points[1], points[2], points[3]);
   }
 
   public clone(): ImageGraphicCorners {
-    return new ImageGraphicCorners(this[0].clone(), this[1].clone(), this[2].clone(), this[3].clone());
+    return new ImageGraphicCorners(
+      this[0].clone(),
+      this[1].clone(),
+      this[2].clone(),
+      this[3].clone()
+    );
   }
 
   public toJSON(): ImageGraphicCornersProps {
-    return [this[0].toJSON(), this[1].toJSON(), this[2].toJSON(), this[3].toJSON()];
+    return [
+      this[0].toJSON(),
+      this[1].toJSON(),
+      this[2].toJSON(),
+      this[3].toJSON(),
+    ];
   }
 }
 
@@ -87,7 +104,11 @@ export class ImageGraphic {
    * @param textureId Identifies a persistent [[Texture]] element defining the image to be mapped onto the quadrilateral.
    * @param hasBorder Whether or not to display a border around the image.
    */
-  public constructor(corners: ImageGraphicCorners, textureId: Id64String, hasBorder = false) {
+  public constructor(
+    corners: ImageGraphicCorners,
+    textureId: Id64String,
+    hasBorder = false
+  ) {
     this.corners = corners;
     this.textureId = textureId;
     this.hasBorder = hasBorder;
@@ -99,7 +120,11 @@ export class ImageGraphic {
   }
 
   public clone(): ImageGraphic {
-    return new ImageGraphic(this.corners.clone(), this.textureId, this.hasBorder);
+    return new ImageGraphic(
+      this.corners.clone(),
+      this.textureId,
+      this.hasBorder
+    );
   }
 
   public cloneTransformed(transform: Transform): ImageGraphic {
@@ -121,12 +146,15 @@ export class ImageGraphic {
    * @returns The computed range.
    */
   public computeRange(result?: Range3d): Range3d {
-    if (undefined === result)
-      result = new Range3d();
-    else
-      result.setNull();
+    if (undefined === result) result = new Range3d();
+    else result.setNull();
 
-    result.extend(this.corners[0], this.corners[1], this.corners[2], this.corners[3]);
+    result.extend(
+      this.corners[0],
+      this.corners[1],
+      this.corners[2],
+      this.corners[3]
+    );
     return result;
   }
 

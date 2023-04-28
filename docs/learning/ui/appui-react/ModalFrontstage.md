@@ -13,7 +13,9 @@ The definition of a modal frontstage is in two parts: a [ModalFrontstageInfo]($a
 ```tsx
 /** Modal frontstage. */
 export class SampleModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:sampleModalFrontstage");
+  public title: string = UiFramework.i18n.translate(
+    "SampleApp:sampleModalFrontstage"
+  );
 
   public get content(): React.ReactNode {
     return <SampleModalPage />;
@@ -23,14 +25,9 @@ export class SampleModalFrontstage implements ModalFrontstageInfo {
 /** SampleModalPage displaying a modal frontstage page. */
 class SampleModalPage extends React.Component {
   public render(): React.ReactNode {
-    return (
-      <div>
-        Hello World!
-      </div>
-    );
+    return <div>Hello World!</div>;
   }
 }
-
 ```
 
 ## Code to Open Modal Frontstage

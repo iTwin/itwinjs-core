@@ -7,12 +7,33 @@
  */
 
 import {
-  assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined,
-  CompressedId64Set, Constructor, Id64, Id64String, OrderedId64Iterable,
+  assert,
+  compareBooleans,
+  compareNumbers,
+  comparePossiblyUndefined,
+  compareStrings,
+  compareStringsOrUndefined,
+  CompressedId64Set,
+  Constructor,
+  Id64,
+  Id64String,
+  OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { EntityReferenceSet } from "./EntityReference";
 import {
-  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
+  ClipPlane,
+  ClipPrimitive,
+  ClipVector,
+  ConvexClipPlaneSet,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point3d,
+  Point4d,
+  Range1d,
+  Transform,
+  UnionOfConvexClipPlaneSets,
+  Vector3d,
+  XYAndZ,
 } from "@itwin/core-geometry";
 import { RgbColor } from "./RgbColor";
 import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
@@ -21,24 +42,43 @@ function interpolate(start: number, end: number, fraction: number): number {
   return start + fraction * (end - start);
 }
 
-function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbColor {
-  return new RgbColor(interpolate(start.r, end.r, fraction), interpolate(start.g, end.g, fraction), interpolate(start.b, end.b, fraction));
+function interpolateRgb(
+  start: RgbColor,
+  end: RgbColor,
+  fraction: number
+): RgbColor {
+  return new RgbColor(
+    interpolate(start.r, end.r, fraction),
+    interpolate(start.g, end.g, fraction),
+    interpolate(start.b, end.b, fraction)
+  );
 }
 
 function compareXYZ(lhs: XYAndZ, rhs: XYAndZ): number {
-  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
+  return (
+    compareNumbers(lhs.x, rhs.x) ||
+    compareNumbers(lhs.y, rhs.y) ||
+    compareNumbers(lhs.z, rhs.z)
+  );
 }
 
 function compare4d(lhs: Point4d, rhs: Point4d): number {
-  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z) || compareNumbers(lhs.w, rhs.w);
+  return (
+    compareNumbers(lhs.x, rhs.x) ||
+    compareNumbers(lhs.y, rhs.y) ||
+    compareNumbers(lhs.z, rhs.z) ||
+    compareNumbers(lhs.w, rhs.w)
+  );
 }
 
 const scratchVec3a = new Vector3d();
 const scratchVec3b = new Vector3d();
 function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
-  return compareXYZ(lhs.columnX(scratchVec3a), rhs.columnX(scratchVec3b))
-    || compareXYZ(lhs.columnY(scratchVec3a), rhs.columnY(scratchVec3b))
-    || compareXYZ(lhs.columnZ(scratchVec3a), rhs.columnZ(scratchVec3b));
+  return (
+    compareXYZ(lhs.columnX(scratchVec3a), rhs.columnX(scratchVec3b)) ||
+    compareXYZ(lhs.columnY(scratchVec3a), rhs.columnY(scratchVec3b)) ||
+    compareXYZ(lhs.columnZ(scratchVec3a), rhs.columnZ(scratchVec3b))
+  );
 }
 
 function compareDurations(lhs: Range1d, rhs: Range1d): number {
@@ -89,7 +129,7 @@ export namespace RenderSchedule {
      * e.g., (0, 0, 0) represents black and (255, 255, 255) represents white.
      * If `undefined`, the geometry is displayed in its actual color.
      */
-    value?: { red: number, green: number, blue: number };
+    value?: { red: number; green: number; blue: number };
   }
 
   /** JSON representation of a [[RenderSchedule.CuttingPlane]]. */
@@ -187,7 +227,10 @@ export namespace RenderSchedule {
 
     public constructor(props: TimelineEntryProps) {
       this.time = props.time;
-      this.interpolation = props.interpolation === Interpolation.Linear ? props.interpolation : Interpolation.Step;
+      this.interpolation =
+        props.interpolation === Interpolation.Linear
+          ? props.interpolation
+          : Interpolation.Step;
     }
 
     public toJSON(): TimelineEntryProps {
@@ -202,7 +245,10 @@ export namespace RenderSchedule {
     }
 
     public compareTo(other: TimelineEntry): number {
-      return compareNumbers(this.interpolation, other.interpolation) || compareNumbers(this.time, other.time);
+      return (
+        compareNumbers(this.interpolation, other.interpolation) ||
+        compareNumbers(this.time, other.time)
+      );
     }
 
     public equals(other: TimelineEntry): boolean {
@@ -219,16 +265,13 @@ export namespace RenderSchedule {
 
     public constructor(props: VisibilityEntryProps) {
       super(props);
-      if (typeof props.value !== "number")
-        this.value = 100;
-      else
-        this.value = Math.max(0, Math.min(100, props.value));
+      if (typeof props.value !== "number") this.value = 100;
+      else this.value = Math.max(0, Math.min(100, props.value));
     }
 
     public override toJSON(): VisibilityEntryProps {
       const props = super.toJSON() as VisibilityEntryProps;
-      if (100 !== this.value)
-        props.value = this.value;
+      if (100 !== this.value) props.value = this.value;
 
       return props;
     }
@@ -247,7 +290,11 @@ export namespace RenderSchedule {
     public constructor(props: ColorEntryProps) {
       super(props);
       if (props.value)
-        this.value = new RgbColor(props.value.red, props.value.green, props.value.blue);
+        this.value = new RgbColor(
+          props.value.red,
+          props.value.green,
+          props.value.blue
+        );
     }
 
     public override toJSON(): ColorEntryProps {
@@ -265,7 +312,14 @@ export namespace RenderSchedule {
 
     public override compareTo(other: ColorEntry): number {
       assert(other instanceof ColorEntry);
-      return super.compareTo(other) || comparePossiblyUndefined((lhs, rhs) => lhs.compareTo(rhs), this.value, other.value);
+      return (
+        super.compareTo(other) ||
+        comparePossiblyUndefined(
+          (lhs, rhs) => lhs.compareTo(rhs),
+          this.value,
+          other.value
+        )
+      );
     }
   }
 
@@ -278,33 +332,55 @@ export namespace RenderSchedule {
     /** Translation - applied after rotation. */
     public readonly position: Vector3d;
 
-    public constructor(position: Vector3d, pivot: Vector3d, orientation: Point4d) {
+    public constructor(
+      position: Vector3d,
+      pivot: Vector3d,
+      orientation: Point4d
+    ) {
       this.position = position;
       this.pivot = pivot;
       this.orientation = orientation;
     }
 
-    public static fromJSON(props: TransformComponentsProps): TransformComponents | undefined {
+    public static fromJSON(
+      props: TransformComponentsProps
+    ): TransformComponents | undefined {
       if (props.pivot && props.position && props.orientation)
-        return new TransformComponents(Vector3d.fromJSON(props.position), Vector3d.fromJSON(props.pivot), Point4d.fromJSON(props.orientation));
-      else
-        return undefined;
+        return new TransformComponents(
+          Vector3d.fromJSON(props.position),
+          Vector3d.fromJSON(props.pivot),
+          Point4d.fromJSON(props.orientation)
+        );
+      else return undefined;
     }
 
     public toJSON(): TransformComponentsProps {
       return {
         position: [this.position.x, this.position.y, this.position.z],
         pivot: [this.pivot.x, this.pivot.y, this.pivot.z],
-        orientation: [this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w],
+        orientation: [
+          this.orientation.x,
+          this.orientation.y,
+          this.orientation.z,
+          this.orientation.w,
+        ],
       };
     }
 
     public compareTo(other: TransformComponents): number {
-      return compareXYZ(this.pivot, other.pivot) || compareXYZ(this.position, other.position) || compare4d(this.orientation, other.orientation);
+      return (
+        compareXYZ(this.pivot, other.pivot) ||
+        compareXYZ(this.position, other.position) ||
+        compare4d(this.orientation, other.orientation)
+      );
     }
 
     public equals(other: TransformComponents): boolean {
-      return this.pivot.isAlmostEqual(other.pivot) && this.position.isAlmostEqual(other.position) && this.orientation.isAlmostEqual(other.orientation);
+      return (
+        this.pivot.isAlmostEqual(other.pivot) &&
+        this.position.isAlmostEqual(other.position) &&
+        this.orientation.isAlmostEqual(other.orientation)
+      );
     }
   }
 
@@ -317,7 +393,9 @@ export namespace RenderSchedule {
 
     public constructor(props: TransformEntryProps) {
       super(props);
-      this.value = props.value ? Transform.fromJSON(props.value.transform) : Transform.identity;
+      this.value = props.value
+        ? Transform.fromJSON(props.value.transform)
+        : Transform.identity;
       if (props.value)
         this.components = TransformComponents.fromJSON(props.value);
     }
@@ -337,8 +415,7 @@ export namespace RenderSchedule {
     public override compareTo(other: TransformEntry): number {
       assert(other instanceof TransformEntry);
       const cmp = super.compareTo(other);
-      if (0 !== cmp)
-        return cmp;
+      if (0 !== cmp) return cmp;
 
       if (this.components || other.components) {
         if (!this.components || !other.components)
@@ -347,7 +424,10 @@ export namespace RenderSchedule {
         return this.components.compareTo(other.components);
       }
 
-      return compareXYZ(this.value.origin, other.value.origin) || compareMatrices(this.value.matrix, other.value.matrix);
+      return (
+        compareXYZ(this.value.origin, other.value.origin) ||
+        compareMatrices(this.value.matrix, other.value.matrix)
+      );
     }
   }
 
@@ -375,17 +455,20 @@ export namespace RenderSchedule {
         direction: [this.direction.x, this.direction.y, this.direction.z],
       };
 
-      if (this.visible)
-        props.visible = true;
+      if (this.visible) props.visible = true;
 
-      if (this.hidden)
-        props.hidden = true;
+      if (this.hidden) props.hidden = true;
 
       return props;
     }
 
     public compareTo(other: CuttingPlane): number {
-      return compareXYZ(this.position, other.position) || compareXYZ(this.direction, other.direction) || compareBooleans(this.visible, other.visible) || compareBooleans(this.hidden, other.hidden);
+      return (
+        compareXYZ(this.position, other.position) ||
+        compareXYZ(this.direction, other.direction) ||
+        compareBooleans(this.visible, other.visible) ||
+        compareBooleans(this.hidden, other.hidden)
+      );
     }
 
     public equals(other: CuttingPlane): boolean {
@@ -400,21 +483,26 @@ export namespace RenderSchedule {
 
     public constructor(props: CuttingPlaneEntryProps) {
       super(props);
-      if (props.value)
-        this.value = new CuttingPlane(props.value);
+      if (props.value) this.value = new CuttingPlane(props.value);
     }
 
     public override toJSON(): CuttingPlaneEntryProps {
       const props = super.toJSON() as CuttingPlaneEntryProps;
-      if (this.value)
-        props.value = this.value.toJSON();
+      if (this.value) props.value = this.value.toJSON();
 
       return props;
     }
 
     public override compareTo(other: CuttingPlaneEntry): number {
       assert(other instanceof CuttingPlaneEntry);
-      return super.compareTo(other) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.value, other.value);
+      return (
+        super.compareTo(other) ||
+        comparePossiblyUndefined(
+          (x, y) => x.compareTo(y),
+          this.value,
+          other.value
+        )
+      );
     }
   }
 
@@ -445,7 +533,12 @@ export namespace RenderSchedule {
    *  - P, the JSON representation from which T is to be constructed.
    *  - V, the type of `T.value`.
    */
-  export class TimelineEntryList<T extends TimelineEntry & { readonly value: V }, P extends TimelineEntryProps, V> implements Iterable<T> {
+  export class TimelineEntryList<
+    T extends TimelineEntry & { readonly value: V },
+    P extends TimelineEntryProps,
+    V
+  > implements Iterable<T>
+  {
     private readonly _entries: ReadonlyArray<T>;
     /** The total time period represented by the entries in this list. */
     public readonly duration: Range1d;
@@ -484,7 +577,9 @@ export namespace RenderSchedule {
     }
 
     public compareTo(other: TimelineEntryList<T, P, V>): number {
-      let cmp = compareNumbers(this._entries.length, other._entries.length) || compareDurations(this.duration, other.duration);
+      let cmp =
+        compareNumbers(this._entries.length, other._entries.length) ||
+        compareDurations(this.duration, other.duration);
       if (0 === cmp) {
         for (let i = 0; i < this.length; i++)
           if (0 !== (cmp = this._entries[i].compareTo(other._entries[i])))
@@ -499,9 +594,11 @@ export namespace RenderSchedule {
     }
 
     /** @internal */
-    public findInterval(time: number, interval?: Interval): Interval | undefined {
-      if (this.length === 0)
-        return undefined;
+    public findInterval(
+      time: number,
+      interval?: Interval
+    ): Interval | undefined {
+      if (this.length === 0) return undefined;
 
       interval = interval ?? new Interval();
       if (time < this._entries[0].time) {
@@ -522,8 +619,7 @@ export namespace RenderSchedule {
           let fraction;
           if (Interpolation.Linear === this._entries[i].interpolation)
             fraction = (time - time0) / (time1 - time0);
-          else
-            fraction = 0;
+          else fraction = 0;
 
           interval.init(i, i + 1, fraction);
           return interval;
@@ -537,7 +633,11 @@ export namespace RenderSchedule {
   const scratchInterval = new Interval();
 
   /** A list of [[RenderSchedule.VisibilityEntry]]s within a [[RenderSchedule.Timeline]]. */
-  export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
+  export class VisibilityTimelineEntries extends TimelineEntryList<
+    VisibilityEntry,
+    VisibilityEntryProps,
+    number
+  > {
     /** Returns the visibility value for the entry at the specified position in the list, or 100 (fully-visible) if no such entry exists. */
     public override getValue(index: number): number {
       return super.getValue(index) ?? 100;
@@ -545,7 +645,11 @@ export namespace RenderSchedule {
   }
 
   /** A list of [[RenderSchedule.TransformEntry]]s within a [[RenderSchedule.Timeline]]. */
-  export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
+  export class TransformTimelineEntries extends TimelineEntryList<
+    TransformEntry,
+    TransformEntryProps,
+    Readonly<Transform>
+  > {
     /** Returns the transform for the entry at the specified position in the list, or an identity transform if no such entry exists. */
     public override getValue(index: number): Readonly<Transform> {
       return super.getValue(index) ?? Transform.identity;
@@ -560,11 +664,19 @@ export namespace RenderSchedule {
     /** Sequence controlling the visibility of the geometry. */
     public readonly visibility?: VisibilityTimelineEntries;
     /** Sequence controlling the color of the geometry. */
-    public readonly color?: TimelineEntryList<ColorEntry, ColorEntryProps, RgbColor | undefined>;
+    public readonly color?: TimelineEntryList<
+      ColorEntry,
+      ColorEntryProps,
+      RgbColor | undefined
+    >;
     /** Sequence controlling the position, orientation, and/or scale of the geometry. */
     public readonly transform?: TransformTimelineEntries;
     /** Sequence controlling how the geometry is clipped. */
-    public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
+    public readonly cuttingPlane?: TimelineEntryList<
+      CuttingPlaneEntry,
+      CuttingPlaneEntryProps,
+      CuttingPlane | undefined
+    >;
     /** The total time period represented by this timeline. */
     public readonly duration: Range1d;
 
@@ -572,7 +684,10 @@ export namespace RenderSchedule {
       this.duration = Range1d.createNull();
 
       if (props.visibilityTimeline) {
-        this.visibility = new VisibilityTimelineEntries(props.visibilityTimeline, VisibilityEntry);
+        this.visibility = new VisibilityTimelineEntries(
+          props.visibilityTimeline,
+          VisibilityEntry
+        );
         this.duration.extendRange(this.visibility.duration);
       }
 
@@ -582,12 +697,18 @@ export namespace RenderSchedule {
       }
 
       if (props.transformTimeline) {
-        this.transform = new TransformTimelineEntries(props.transformTimeline, TransformEntry);
+        this.transform = new TransformTimelineEntries(
+          props.transformTimeline,
+          TransformEntry
+        );
         this.duration.extendRange(this.transform.duration);
       }
 
       if (props.cuttingPlaneTimeline) {
-        this.cuttingPlane = new TimelineEntryList(props.cuttingPlaneTimeline, CuttingPlaneEntry);
+        this.cuttingPlane = new TimelineEntryList(
+          props.cuttingPlaneTimeline,
+          CuttingPlaneEntry
+        );
         this.duration.extendRange(this.cuttingPlane.duration);
       }
     }
@@ -603,21 +724,39 @@ export namespace RenderSchedule {
 
     public compareTo(other: Timeline): number {
       const cmp = compareDurations(this.duration, other.duration);
-      if (0 !== cmp)
-        return cmp;
+      if (0 !== cmp) return cmp;
 
       // Do cheaper checks before iterating through timeline entries
       if (!!this.visibility !== !!other.visibility)
         return this.visibility ? 1 : -1;
-      else if (!!this.color !== !!other.color)
-        return this.color ? 1 : -1;
+      else if (!!this.color !== !!other.color) return this.color ? 1 : -1;
       else if (!!this.transform !== !!other.transform)
         return this.transform ? 1 : -1;
       else if (!!this.cuttingPlane !== !!other.cuttingPlane)
         return this.cuttingPlane ? 1 : -1;
 
-      return comparePossiblyUndefined((x, y) => x.compareTo(y), this.visibility, other.visibility) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.color, other.color)
-        || comparePossiblyUndefined((x, y) => x.compareTo(y), this.transform, other.transform) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.cuttingPlane, other.cuttingPlane);
+      return (
+        comparePossiblyUndefined(
+          (x, y) => x.compareTo(y),
+          this.visibility,
+          other.visibility
+        ) ||
+        comparePossiblyUndefined(
+          (x, y) => x.compareTo(y),
+          this.color,
+          other.color
+        ) ||
+        comparePossiblyUndefined(
+          (x, y) => x.compareTo(y),
+          this.transform,
+          other.transform
+        ) ||
+        comparePossiblyUndefined(
+          (x, y) => x.compareTo(y),
+          this.cuttingPlane,
+          other.cuttingPlane
+        )
+      );
     }
 
     public equals(other: Timeline): boolean {
@@ -627,12 +766,19 @@ export namespace RenderSchedule {
     /** Get the visibility of the geometry at the specified time point. */
     public getVisibility(time: number): number {
       let interval;
-      if (!this.visibility || !(interval = this.visibility.findInterval(time, scratchInterval)))
+      if (
+        !this.visibility ||
+        !(interval = this.visibility.findInterval(time, scratchInterval))
+      )
         return 100;
 
       let visibility = this.visibility.getValue(interval.lowerIndex) ?? 100;
       if (interval.fraction > 0)
-        visibility = interpolate(visibility, this.visibility.getValue(interval.upperIndex) ?? 100, interval.fraction);
+        visibility = interpolate(
+          visibility,
+          this.visibility.getValue(interval.upperIndex) ?? 100,
+          interval.fraction
+        );
 
       return visibility;
     }
@@ -640,14 +786,16 @@ export namespace RenderSchedule {
     /** Get the color of the geometry at the specified time point, or undefined if the color is not overridden at that time point. */
     public getColor(time: number): RgbColor | undefined {
       let interval;
-      if (!this.color || !(interval = this.color.findInterval(time, scratchInterval)))
+      if (
+        !this.color ||
+        !(interval = this.color.findInterval(time, scratchInterval))
+      )
         return undefined;
 
       const start = this.color.getValue(interval.lowerIndex);
       if (start && interval.fraction > 0) {
         const end = this.color.getValue(interval.upperIndex);
-        if (end)
-          return interpolateRgb(start, end, interval.fraction);
+        if (end) return interpolateRgb(start, end, interval.fraction);
       }
 
       return start;
@@ -656,7 +804,10 @@ export namespace RenderSchedule {
     /** Get the transform applied to the geometry at the specified time point. */
     public getAnimationTransform(time: number): Readonly<Transform> {
       let interval;
-      if (!this.transform || !(interval = this.transform.findInterval(time, scratchInterval)))
+      if (
+        !this.transform ||
+        !(interval = this.transform.findInterval(time, scratchInterval))
+      )
         return Transform.identity;
 
       let transform = this.transform.getValue(interval.lowerIndex);
@@ -664,10 +815,16 @@ export namespace RenderSchedule {
         const comp0 = this.transform.getEntry(interval.lowerIndex)?.components;
         const comp1 = this.transform.getEntry(interval.upperIndex)?.components;
         if (comp0 && comp1) {
-          const sum = Point4d.interpolateQuaternions(comp0.orientation, interval.fraction, comp1.orientation);
+          const sum = Point4d.interpolateQuaternions(
+            comp0.orientation,
+            interval.fraction,
+            comp1.orientation
+          );
           const matrix = Matrix3d.createFromQuaternion(sum);
           const pre = Transform.createTranslation(comp0.pivot);
-          const post = Transform.createTranslation(comp0.position.interpolate(interval.fraction, comp1.position));
+          const post = Transform.createTranslation(
+            comp0.position.interpolate(interval.fraction, comp1.position)
+          );
           const product = post.multiplyTransformMatrix3d(matrix);
           product.multiplyTransformTransform(pre, product);
           transform = product;
@@ -676,12 +833,19 @@ export namespace RenderSchedule {
           const q0 = transform.matrix.inverse()?.toQuaternion();
           const q1 = end.matrix.inverse()?.toQuaternion();
           if (q0 && q1) {
-            const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+            const sum = Point4d.interpolateQuaternions(
+              q0,
+              interval.fraction,
+              q1
+            );
             const matrix = Matrix3d.createFromQuaternion(sum);
 
             const origin0 = Vector3d.createFrom(transform.origin);
             const origin1 = Vector3d.createFrom(end.origin);
-            transform = Transform.createRefs(origin0.interpolate(interval.fraction, origin1), matrix);
+            transform = Transform.createRefs(
+              origin0.interpolate(interval.fraction, origin1),
+              matrix
+            );
           }
         }
       }
@@ -690,24 +854,30 @@ export namespace RenderSchedule {
     }
 
     /** Get the clipping plane applied to the geometry at the specified time point, or undefined if the geometry is unclipped at that time point. */
-    public getCuttingPlane(time: number): Plane3dByOriginAndUnitNormal | undefined {
+    public getCuttingPlane(
+      time: number
+    ): Plane3dByOriginAndUnitNormal | undefined {
       let interval;
-      if (!this.cuttingPlane || !(interval = this.cuttingPlane.findInterval(time, scratchInterval)))
+      if (
+        !this.cuttingPlane ||
+        !(interval = this.cuttingPlane.findInterval(time, scratchInterval))
+      )
         return undefined;
 
       const start = this.cuttingPlane.getValue(interval.lowerIndex);
-      if (!start)
-        return undefined;
+      if (!start) return undefined;
 
       const position = Point3d.createFrom(start.position);
       const direction = Vector3d.createFrom(start.direction);
-      const end = interval.fraction > 0 ? this.cuttingPlane.getValue(interval.upperIndex) : undefined;
+      const end =
+        interval.fraction > 0
+          ? this.cuttingPlane.getValue(interval.upperIndex)
+          : undefined;
       if (end) {
         position.interpolate(interval.fraction, end.position, position);
         direction.interpolate(interval.fraction, end.direction, direction);
       } else {
-        if (start.hidden || start.visible)
-          return undefined;
+        if (start.hidden || start.visible) return undefined;
       }
 
       direction.negate(direction);
@@ -719,20 +889,26 @@ export namespace RenderSchedule {
     /** Create a ClipVector from the [[RenderSchedule.CuttingPlane]] applied to the geometry at the specified time point, if any. */
     public getClipVector(time: number): ClipVector | undefined {
       const plane = this.getCuttingPlane(time);
-      if (!plane)
-        return undefined;
+      if (!plane) return undefined;
 
       const cp = ClipPlane.createPlane(plane);
-      const cps = UnionOfConvexClipPlaneSets.createConvexSets([ConvexClipPlaneSet.createPlanes([cp])]);
+      const cps = UnionOfConvexClipPlaneSets.createConvexSets([
+        ConvexClipPlaneSet.createPlanes([cp]),
+      ]);
       const prim = ClipPrimitive.createCapture(cps);
       return ClipVector.createCapture([prim]);
     }
 
     /** @internal */
-    protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined {
-      const transparency = visibility < 100 ? (1 - visibility / 100) : undefined;
+    protected getFeatureAppearance(
+      visibility: number,
+      time: number
+    ): FeatureAppearance | undefined {
+      const transparency = visibility < 100 ? 1 - visibility / 100 : undefined;
       const rgb = this.getColor(time);
-      return undefined !== rgb || undefined !== transparency ? FeatureAppearance.fromJSON({ rgb, transparency }) : undefined;
+      return undefined !== rgb || undefined !== transparency
+        ? FeatureAppearance.fromJSON({ rgb, transparency })
+        : undefined;
     }
   }
 
@@ -766,9 +942,11 @@ export namespace RenderSchedule {
 
     private compareElementIds(other: ElementTimeline): number {
       if (typeof this._elementIds === typeof other._elementIds) {
-        const cmp = compareNumbers(this._elementIds.length, other._elementIds.length);
-        if (0 !== cmp)
-          return cmp;
+        const cmp = compareNumbers(
+          this._elementIds.length,
+          other._elementIds.length
+        );
+        if (0 !== cmp) return cmp;
 
         if (typeof this._elementIds === "string") {
           assert(typeof other._elementIds === "string");
@@ -782,26 +960,28 @@ export namespace RenderSchedule {
       while (true) {
         const a = mine.next();
         const b = theirs.next();
-        if (a.done !== b.done)
-          return compareBooleans(!!a.done, !!b.done);
-        else if (a.done)
-          return 0;
+        if (a.done !== b.done) return compareBooleans(!!a.done, !!b.done);
+        else if (a.done) return 0;
 
         const cmp = compareStrings(a.value, b.value);
-        if (0 !== cmp)
-          return cmp;
+        if (0 !== cmp) return cmp;
       }
     }
 
     public override compareTo(other: ElementTimeline): number {
       assert(other instanceof ElementTimeline);
-      return compareNumbers(this.batchId, other.batchId) || this.compareElementIds(other) || super.compareTo(other);
+      return (
+        compareNumbers(this.batchId, other.batchId) ||
+        this.compareElementIds(other) ||
+        super.compareTo(other)
+      );
     }
 
     /** @internal */
-    public static getElementIds(ids: Id64String[] | CompressedId64Set): Iterable<Id64String> {
-      if (typeof ids === "string")
-        return CompressedId64Set.iterable(ids);
+    public static getElementIds(
+      ids: Id64String[] | CompressedId64Set
+    ): Iterable<Id64String> {
+      if (typeof ids === "string") return CompressedId64Set.iterable(ids);
       else if (Array.isArray(ids)) {
         return ids;
       } else {
@@ -823,10 +1003,12 @@ export namespace RenderSchedule {
      * @internal
      */
     public get requiresBatching(): boolean {
-      if (this.cuttingPlane)
-        return true;
+      if (this.cuttingPlane) return true;
 
-      return this.batchId !== 0 && (undefined !== this.color || undefined !== this.visibility);
+      return (
+        this.batchId !== 0 &&
+        (undefined !== this.color || undefined !== this.visibility)
+      );
     }
 
     /** True if this timeline affects the position, orientation, or scale of the elements. */
@@ -835,7 +1017,10 @@ export namespace RenderSchedule {
     }
 
     /** @internal */
-    public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
+    public addSymbologyOverrides(
+      overrides: FeatureOverrides,
+      time: number
+    ): void {
       assert(0 !== this.batchId);
 
       const vis = this.getVisibility(time);
@@ -845,8 +1030,7 @@ export namespace RenderSchedule {
       }
 
       const appearance = this.getFeatureAppearance(vis, time);
-      if (appearance)
-        overrides.overrideAnimationNode(this.batchId, appearance);
+      if (appearance) overrides.overrideAnimationNode(this.batchId, appearance);
     }
   }
 
@@ -888,7 +1072,8 @@ export namespace RenderSchedule {
       this.realityModelUrl = props.realityModelUrl;
       this.containsModelClipping = undefined !== this.cuttingPlane;
 
-      let containsFeatureOverrides = undefined !== this.visibility || undefined !== this.color;
+      let containsFeatureOverrides =
+        undefined !== this.visibility || undefined !== this.color;
       let requiresBatching = false;
       let containsTransform = false;
 
@@ -903,8 +1088,7 @@ export namespace RenderSchedule {
 
         if (el.containsTransform) {
           containsTransform = true;
-          if (el.batchId)
-            transformBatchIds.push(el.batchId);
+          if (el.batchId) transformBatchIds.push(el.batchId);
         }
 
         containsFeatureOverrides ||= el.containsFeatureOverrides;
@@ -922,7 +1106,9 @@ export namespace RenderSchedule {
     }
 
     public static fromJSON(props?: ModelTimelineProps): ModelTimeline {
-      return new ModelTimeline(props ?? { elementTimelines: [], modelId: Id64.invalid });
+      return new ModelTimeline(
+        props ?? { elementTimelines: [], modelId: Id64.invalid }
+      );
     }
 
     public override toJSON(): ModelTimelineProps {
@@ -935,22 +1121,41 @@ export namespace RenderSchedule {
     }
 
     public override compareTo(other: ModelTimeline): number {
-      if (this === other)
-        return 0;
+      if (this === other) return 0;
 
       const cached = this._cachedComparisons.get(other);
-      if (undefined !== cached)
-        return cached;
+      if (undefined !== cached) return cached;
 
       assert(other instanceof ModelTimeline);
-      let cmp = compareStrings(this.modelId, other.modelId) || compareStringsOrUndefined(this.realityModelUrl, other.realityModelUrl)
-        || compareNumbers(this.elementTimelines.length, other.elementTimelines.length) || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides)
-        || compareBooleans(this.containsModelClipping, other.containsModelClipping) || compareBooleans(this.containsTransform, other.containsTransform)
-        || super.compareTo(other);
+      let cmp =
+        compareStrings(this.modelId, other.modelId) ||
+        compareStringsOrUndefined(
+          this.realityModelUrl,
+          other.realityModelUrl
+        ) ||
+        compareNumbers(
+          this.elementTimelines.length,
+          other.elementTimelines.length
+        ) ||
+        compareBooleans(
+          this.containsFeatureOverrides,
+          other.containsFeatureOverrides
+        ) ||
+        compareBooleans(
+          this.containsModelClipping,
+          other.containsModelClipping
+        ) ||
+        compareBooleans(this.containsTransform, other.containsTransform) ||
+        super.compareTo(other);
 
       if (0 === cmp) {
         for (let i = 0; i < this.elementTimelines.length; i++)
-          if (0 !== (cmp = this.elementTimelines[i].compareTo(other.elementTimelines[i])))
+          if (
+            0 !==
+            (cmp = this.elementTimelines[i].compareTo(
+              other.elementTimelines[i]
+            ))
+          )
             break;
       }
 
@@ -965,17 +1170,25 @@ export namespace RenderSchedule {
     }
 
     /** @internal */
-    public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
-      const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
-      if (appearance)
-        overrides.override({ modelId: this.modelId, appearance });
+    public addSymbologyOverrides(
+      overrides: FeatureOverrides,
+      time: number
+    ): void {
+      const appearance = this.getFeatureAppearance(
+        this.getVisibility(time),
+        time
+      );
+      if (appearance) overrides.override({ modelId: this.modelId, appearance });
 
       for (const timeline of this.elementTimelines)
         timeline.addSymbologyOverrides(overrides, time);
     }
 
     /** Obtain the transform applied to the model at the specified time point, if any. */
-    public getTransform(batchId: number, time: number): Readonly<Transform> | undefined {
+    public getTransform(
+      batchId: number,
+      time: number
+    ): Readonly<Transform> | undefined {
       return this.findByBatchId(batchId)?.getAnimationTransform(time);
     }
 
@@ -994,7 +1207,10 @@ export namespace RenderSchedule {
      * @note The first call to this method populates a mapping for fast lookup.
      * @alpha
      */
-    public getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined {
+    public getTimelineForElement(
+      idLo: number,
+      idHi: number
+    ): ElementTimeline | undefined {
       if (!this._idPairToElementTimeline) {
         this._idPairToElementTimeline = new Id64.Uint32Map<ElementTimeline>();
         for (const timeline of this.elementTimelines) {
@@ -1015,7 +1231,10 @@ export namespace RenderSchedule {
       if (!this._discreteBatchIds) {
         this._discreteBatchIds = new Set<number>(this.transformBatchIds);
         for (const timeline of this.elementTimelines)
-          if (!timeline.containsTransform && undefined !== timeline.cuttingPlane)
+          if (
+            !timeline.containsTransform &&
+            undefined !== timeline.cuttingPlane
+          )
             this._discreteBatchIds.add(timeline.batchId);
       }
 
@@ -1053,20 +1272,34 @@ export namespace RenderSchedule {
     private readonly _cachedComparisons = new WeakMap<Script, number>();
 
     public compareTo(other: Script): number {
-      if (this === other)
-        return 0;
+      if (this === other) return 0;
 
       const cached = this._cachedComparisons.get(other);
-      if (undefined !== cached)
-        return cached;
+      if (undefined !== cached) return cached;
 
-      let cmp = compareNumbers(this.modelTimelines.length, other.modelTimelines.length) || compareBooleans(this.containsModelClipping, other.containsModelClipping)
-        || compareBooleans(this.requiresBatching, other.requiresBatching) || compareBooleans(this.containsTransform, other.containsTransform)
-        || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides) || compareDurations(this.duration, other.duration);
+      let cmp =
+        compareNumbers(
+          this.modelTimelines.length,
+          other.modelTimelines.length
+        ) ||
+        compareBooleans(
+          this.containsModelClipping,
+          other.containsModelClipping
+        ) ||
+        compareBooleans(this.requiresBatching, other.requiresBatching) ||
+        compareBooleans(this.containsTransform, other.containsTransform) ||
+        compareBooleans(
+          this.containsFeatureOverrides,
+          other.containsFeatureOverrides
+        ) ||
+        compareDurations(this.duration, other.duration);
 
       if (0 === cmp) {
         for (let i = 0; i < this.modelTimelines.length; i++)
-          if (0 !== (cmp = this.modelTimelines[i].compareTo(other.modelTimelines[i])))
+          if (
+            0 !==
+            (cmp = this.modelTimelines[i].compareTo(other.modelTimelines[i]))
+          )
             break;
       }
 
@@ -1112,8 +1345,7 @@ export namespace RenderSchedule {
     }
 
     public static fromJSON(props: Readonly<ScriptProps>): Script | undefined {
-      if (!Array.isArray(props) || props.length === 0)
-        return undefined;
+      if (!Array.isArray(props) || props.length === 0) return undefined;
 
       return new Script(props);
     }
@@ -1128,17 +1360,26 @@ export namespace RenderSchedule {
     }
 
     /** @internal */
-    public getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined {
+    public getTransformBatchIds(
+      modelId: Id64String
+    ): ReadonlyArray<number> | undefined {
       return this.find(modelId)?.transformBatchIds;
     }
 
     /** @internal */
-    public getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined {
+    public getTransform(
+      modelId: Id64String,
+      batchId: number,
+      time: number
+    ): Readonly<Transform> | undefined {
       return this.find(modelId)?.getTransform(batchId, time);
     }
 
     /** @internal */
-    public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
+    public addSymbologyOverrides(
+      overrides: FeatureOverrides,
+      time: number
+    ): void {
       for (const timeline of this.modelTimelines)
         timeline.addSymbologyOverrides(overrides, time);
     }
@@ -1150,15 +1391,19 @@ export namespace RenderSchedule {
       for (const model of this.modelTimelines) {
         ids.addModel(model.modelId);
         for (const element of model.elementTimelines)
-          for (const id of element.elementIds)
-            ids.addElement(id);
+          for (const id of element.elementIds) ids.addElement(id);
       }
     }
 
     /** @internal */
     public modelRequiresBatching(modelId: Id64String): boolean {
       // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
-      return this.requiresBatching && this.modelTimelines.some((x) => x.modelId === modelId && x.requiresBatching);
+      return (
+        this.requiresBatching &&
+        this.modelTimelines.some(
+          (x) => x.modelId === modelId && x.requiresBatching
+        )
+      );
     }
   }
 
@@ -1188,10 +1433,16 @@ export namespace RenderSchedule {
     public constructor(sourceId: Id64String, script: Script);
 
     /** @internal Use one of the public constructor overloads which forward to this one. */
-    public constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script);
+    public constructor(
+      sourceIdOrScript: Id64String | Script,
+      scriptIfSourceId?: Script
+    );
 
     /** @internal Use one of the public constructor overloads which forward to this one. */
-    public constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script) {
+    public constructor(
+      sourceIdOrScript: Id64String | Script,
+      scriptIfSourceId?: Script
+    ) {
       if (typeof sourceIdOrScript === "string") {
         assert(scriptIfSourceId instanceof Script);
         this.sourceId = sourceIdOrScript;
@@ -1220,26 +1471,48 @@ export namespace RenderSchedule {
     public cuttingPlane?: CuttingPlaneEntryProps[];
 
     /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. `time` must be more recent than any previously-appended visibility entries. */
-    public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
-      if (!this.visibility)
-        this.visibility = [];
+    public addVisibility(
+      time: number,
+      visibility: number | undefined,
+      interpolation = Interpolation.Linear
+    ): void {
+      if (!this.visibility) this.visibility = [];
 
       this.visibility.push({ time, value: visibility, interpolation });
     }
 
     /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. `time` must be more recent than any previously-appended color entries. */
-    public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
-      if (!this.color)
-        this.color = [];
+    public addColor(
+      time: number,
+      color:
+        | RgbColor
+        | { red: number; green: number; blue: number }
+        | undefined,
+      interpolation = Interpolation.Linear
+    ): void {
+      if (!this.color) this.color = [];
 
-      const value = color instanceof RgbColor ? { red: color.r, green: color.g, blue: color.b } : color;
+      const value =
+        color instanceof RgbColor
+          ? { red: color.r, green: color.g, blue: color.b }
+          : color;
       this.color.push({ time, value, interpolation });
     }
 
     /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline.  `time` must be more recent than any previously-appended cutting plane entries. */
-    public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
-      if (!this.cuttingPlane)
-        this.cuttingPlane = [];
+    public addCuttingPlane(
+      time: number,
+      plane:
+        | {
+            position: XYAndZ;
+            direction: XYAndZ;
+            visible?: boolean;
+            hidden?: boolean;
+          }
+        | undefined,
+      interpolation = Interpolation.Linear
+    ): void {
+      if (!this.cuttingPlane) this.cuttingPlane = [];
 
       let value: CuttingPlaneProps | undefined;
       if (plane) {
@@ -1248,26 +1521,36 @@ export namespace RenderSchedule {
           direction: [plane.direction.x, plane.direction.y, plane.direction.z],
         };
 
-        if (plane.visible)
-          value.visible = true;
+        if (plane.visible) value.visible = true;
 
-        if (plane.hidden)
-          value.hidden = true;
+        if (plane.hidden) value.hidden = true;
       }
 
       this.cuttingPlane.push({ time, value, interpolation });
     }
 
     /** Append a new [[RenderSchedule.TransformEntry]] to the timeline.  `time` must be more recent than any previously-appended transform entries. */
-    public addTransform(time: number, transform: Readonly<Transform> | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
-      if (!this.transform)
-        this.transform = [];
+    public addTransform(
+      time: number,
+      transform: Readonly<Transform> | undefined,
+      components?: { pivot: XYAndZ; orientation: Point4d; position: XYAndZ },
+      interpolation = Interpolation.Linear
+    ): void {
+      if (!this.transform) this.transform = [];
 
       const value: TransformProps = { transform: transform?.toRows() };
       if (components) {
-        value.pivot = [components.pivot.x, components.pivot.y, components.pivot.z];
+        value.pivot = [
+          components.pivot.x,
+          components.pivot.y,
+          components.pivot.z,
+        ];
         value.orientation = components.orientation.toJSON();
-        value.position = [components.position.x, components.position.y, components.position.z];
+        value.position = [
+          components.position.x,
+          components.position.y,
+          components.position.z,
+        ];
       }
 
       this.transform.push({ time, value, interpolation });
@@ -1278,14 +1561,11 @@ export namespace RenderSchedule {
      */
     public finish(): TimelineProps {
       const props: TimelineProps = {};
-      if (this.visibility?.length)
-        props.visibilityTimeline = this.visibility;
+      if (this.visibility?.length) props.visibilityTimeline = this.visibility;
 
-      if (this.color?.length)
-        props.colorTimeline = this.color;
+      if (this.color?.length) props.colorTimeline = this.color;
 
-      if (this.transform?.length)
-        props.transformTimeline = this.transform;
+      if (this.transform?.length) props.transformTimeline = this.transform;
 
       if (this.cuttingPlane?.length)
         props.cuttingPlaneTimeline = this.cuttingPlane;
@@ -1349,7 +1629,9 @@ export namespace RenderSchedule {
      * This function will sort and compress the Ids if they are not already compressed.
      *
      */
-    public addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
+    public addElementTimeline(
+      elementIds: CompressedId64Set | Iterable<Id64String>
+    ): ElementTimelineBuilder {
       const batchId = this._obtainNextBatchId();
       let ids: CompressedId64Set;
 
@@ -1400,7 +1682,10 @@ export namespace RenderSchedule {
 
     /** Add a new [[RenderSchedule.ModelTimeline]] to be applied to the specified model. */
     public addModelTimeline(modelId: Id64String): ModelTimelineBuilder {
-      const builder = new ModelTimelineBuilder(modelId, () => this._nextBatchId++);
+      const builder = new ModelTimelineBuilder(
+        modelId,
+        () => this._nextBatchId++
+      );
       this._models.push(builder);
       return builder;
     }

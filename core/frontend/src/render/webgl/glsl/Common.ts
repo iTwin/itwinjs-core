@@ -9,7 +9,12 @@
 import { RenderType } from "@itwin/webgl-compatibility";
 import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
-import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
+import {
+  ProgramBuilder,
+  ShaderBuilder,
+  ShaderType,
+  VariableType,
+} from "../ShaderBuilder";
 import { System } from "../System";
 import { addModelViewMatrix } from "./Vertex";
 
@@ -54,7 +59,9 @@ const kShaderBitOITScaleOutput = 3;
 const kShaderBitIgnoreNonLocatable = 4;
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  const monochrome = params.target.currentViewFlags.monochrome && params.geometry.wantMonochrome(params.target);
+  const monochrome =
+    params.target.currentViewFlags.monochrome &&
+    params.geometry.wantMonochrome(params.target);
   shaderFlagArray[kShaderBitMonochrome] = monochrome ? 1 : 0;
 
   shaderFlagArray[kShaderBitNonUniformColor] = 0;
@@ -66,8 +73,7 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   if (undefined !== geom) {
     // Could also be RealityMeshGeometry, so only detect non-uniform color if explicitly LUTGeometry.
     const color = geom.getColor(params.target);
-    if (color.isNonUniform)
-      shaderFlagArray[kShaderBitNonUniformColor] = 1;
+    if (color.isNonUniform) shaderFlagArray[kShaderBitNonUniformColor] = 1;
   }
 
   // Certain textures render in the translucent pass but we actually want to maintain true opacity for opaque pixels.
@@ -81,14 +87,16 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
 
   // Finally, the application can put the viewport into "fadeout mode", which explicitly enables flat alpha weight in order to de-emphasize transparent geometry.
   const maxRenderType = System.instance.maxRenderType;
-  let flatAlphaWeight = RenderType.TextureUnsignedByte === maxRenderType || params.target.isFadeOutActive;
+  let flatAlphaWeight =
+    RenderType.TextureUnsignedByte === maxRenderType ||
+    params.target.isFadeOutActive;
   if (!flatAlphaWeight) {
     const surface = params.geometry.asSurface;
-    flatAlphaWeight = undefined !== surface && (surface.isGlyph || surface.isTileSection);
+    flatAlphaWeight =
+      undefined !== surface && (surface.isGlyph || surface.isTileSection);
   }
 
-  if (flatAlphaWeight)
-    shaderFlagArray[kShaderBitOITFlatAlphaWeight] = 1;
+  if (flatAlphaWeight) shaderFlagArray[kShaderBitOITFlatAlphaWeight] = 1;
 
   // If Cesium-style transparency is being used with non-float texture targets, we must scale the output in the shaders to 0-1 range.
   // Otherwise, it will get implicitly clamped to that range and we'll lose any semblance our desired precision (even though it is low).
@@ -107,7 +115,9 @@ export function addShaderFlags(builder: ProgramBuilder) {
   addShaderFlagsConstants(builder.frag);
 
   builder.addUniformArray("u_shaderFlags", VariableType.Boolean, 5, (prog) => {
-    prog.addGraphicUniform("u_shaderFlags", (uniform, params) => setShaderFlags(uniform, params));
+    prog.addGraphicUniform("u_shaderFlags", (uniform, params) =>
+      setShaderFlags(uniform, params)
+    );
   });
 }
 
@@ -119,9 +129,27 @@ export function addFrustum(builder: ProgramBuilder) {
     });
   });
 
-  builder.addGlobal("kFrustumType_Ortho2d", VariableType.Float, ShaderType.Both, "0.0", true);
-  builder.addGlobal("kFrustumType_Ortho3d", VariableType.Float, ShaderType.Both, "1.0", true);
-  builder.addGlobal("kFrustumType_Perspective", VariableType.Float, ShaderType.Both, "2.0", true);
+  builder.addGlobal(
+    "kFrustumType_Ortho2d",
+    VariableType.Float,
+    ShaderType.Both,
+    "0.0",
+    true
+  );
+  builder.addGlobal(
+    "kFrustumType_Ortho3d",
+    VariableType.Float,
+    ShaderType.Both,
+    "1.0",
+    true
+  );
+  builder.addGlobal(
+    "kFrustumType_Perspective",
+    VariableType.Float,
+    ShaderType.Both,
+    "2.0",
+    true
+  );
 }
 
 const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition).rgb;";
@@ -129,7 +157,11 @@ const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition).rgb;";
 /** @internal */
 export function addEyeSpace(builder: ProgramBuilder) {
   addModelViewMatrix(builder.vert);
-  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
+  builder.addInlineComputedVarying(
+    "v_eyeSpace",
+    VariableType.Vec3,
+    computeEyeSpace
+  );
 }
 
 /** @internal */

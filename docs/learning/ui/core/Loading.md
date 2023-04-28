@@ -46,7 +46,12 @@ The following examples show the LoadingPrompt component with different props.
 ### Determinate and Percent Shown
 
 ```tsx
-<LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} />
+<LoadingPrompt
+  title="Title"
+  message="This is the message"
+  isDeterminate={true}
+  percent={50}
+/>
 ```
 
 ![loading promp percent](./images/LoadingPromptPercent.png "LoadingPrompt with Percent")
@@ -54,7 +59,13 @@ The following examples show the LoadingPrompt component with different props.
 ### Cancel Button Shown
 
 ```tsx
-<LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} showCancel={true} />
+<LoadingPrompt
+  title="Title"
+  message="This is the message"
+  isDeterminate={true}
+  percent={50}
+  showCancel={true}
+/>
 ```
 
 ![loading prompt cancel](./images/LoadingPromptCancel.png "LoadingPrompt with Cancel button")
@@ -62,7 +73,14 @@ The following examples show the LoadingPrompt component with different props.
 ### Status Text Shown
 
 ```tsx
-<LoadingPrompt title="Title" message="This is the message" isDeterminate={true} showStatus={true} percent={50} status="Updating..." />
+<LoadingPrompt
+  title="Title"
+  message="This is the message"
+  isDeterminate={true}
+  showStatus={true}
+  percent={50}
+  status="Updating..."
+/>
 ```
 
 ![loading prompt status](./images/LoadingPromptStatus.png "LoadingPrompt with Status Text")

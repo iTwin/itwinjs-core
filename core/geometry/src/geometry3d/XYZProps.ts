@@ -31,8 +31,7 @@ export interface WriteableHasZ {
  * Interface for class with `x`, `y`, `z` as number property.
  * @public
  */
-export interface WritableXYAndZ extends WritableXAndY, WriteableHasZ {
-}
+export interface WritableXYAndZ extends WritableXAndY, WriteableHasZ {}
 /**
  * Interface for class with named properties `low` and `high`, both being `WriteableXAndY`
  * @public
@@ -70,7 +69,8 @@ export type XAndY = Readonly<WritableXAndY>;
 export type XYAndZ = Readonly<WritableXYAndZ>;
 
 /** @public */
-export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace XYAndZ {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   /**
    * Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.
    * @param a The first XYAndZ to compare
@@ -79,9 +79,11 @@ export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
    * @returns true if the difference in each coordinate of `a` and `b` is smaller than `tol`.
    */
   export function almostEqual(a: XYAndZ, b: XYAndZ, tol?: number): boolean {
-    return Geometry.isSameCoordinate(a.x, b.x, tol)
-      && Geometry.isSameCoordinate(a.y, b.y, tol)
-      && Geometry.isSameCoordinate(a.z, b.z, tol);
+    return (
+      Geometry.isSameCoordinate(a.x, b.x, tol) &&
+      Geometry.isSameCoordinate(a.y, b.y, tol) &&
+      Geometry.isSameCoordinate(a.z, b.z, tol)
+    );
   }
 }
 
@@ -101,21 +103,25 @@ export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
  * * number array
  * @public
  */
-export type XYZProps = {
-  x?: number;
-  y?: number;
-  z?: number;
-} | number[];
+export type XYZProps =
+  | {
+      x?: number;
+      y?: number;
+      z?: number;
+    }
+  | number[];
 /**
  * Interface for variant json (one of)
  * * (individually optional) `x`, `y`
  * * number array
  * @public
  */
-export type XYProps = {
-  x?: number;
-  y?: number;
-} | number[];
+export type XYProps =
+  | {
+      x?: number;
+      y?: number;
+    }
+  | number[];
 /**
  * Interface for variant json (one of)
  * * array of number arrays, with one matrix row in each array
@@ -131,37 +137,46 @@ export type Matrix3dProps = number[][] | number[];
  * * `Transform` object
  * @public
  */
-export type TransformProps = number[][] | number[] | {
-  origin: XYZProps;
-  matrix: Matrix3dProps;
-};
+export type TransformProps =
+  | number[][]
+  | number[]
+  | {
+      origin: XYZProps;
+      matrix: Matrix3dProps;
+    };
 /**
  *  Interface for variant json representing a Range3d
  * * pair of `XYZProps` named `low` and `high`
  * * array of `XYZProps`
  * @public
  */
-export type Range3dProps = {
-  low: XYZProps;
-  high: XYZProps;
-} | XYZProps[];
+export type Range3dProps =
+  | {
+      low: XYZProps;
+      high: XYZProps;
+    }
+  | XYZProps[];
 /**
  *  Interface for variant json representing a Range2d
  * * pair of `XYProps` named `low` and `high`
  * * array of `XYProps`
  * @public
  */
-export type Range2dProps = {
-  low: XYProps;
-  high: XYProps;
-} | XYProps[];
+export type Range2dProps =
+  | {
+      low: XYProps;
+      high: XYProps;
+    }
+  | XYProps[];
 /**
  *  Interface for variant json representing a Range1d
  * * pair of `number` named `low` and `high`
  * * array of `number`
  * @public
  */
-export type Range1dProps = {
-  low: number;
-  high: number;
-} | number[];
+export type Range1dProps =
+  | {
+      low: number;
+      high: number;
+    }
+  | number[];

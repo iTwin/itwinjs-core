@@ -5,7 +5,13 @@
 /** @packageDocumentation
  * @module Views
  */
-import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@itwin/core-bentley";
+import {
+  BeEvent,
+  BentleyStatus,
+  BeTimePoint,
+  BeUiEvent,
+  Id64Arg,
+} from "@itwin/core-bentley";
 import { GeometryStreamProps } from "@itwin/core-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -49,7 +55,10 @@ export interface Decorator extends ViewportDecorator {
    * @param ev The BeButtonEvent that identified this decoration.
    * @returns  A Promise that resolves to Yes if event completely handled by decoration and event should not be processed by the calling tool.
    */
-  onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+  onDecorationButtonEvent?(
+    hit: HitDetail,
+    ev: BeButtonEvent
+  ): Promise<EventHandled>;
 
   /** If [[testDecorationHit]] or [[overrideElementHit]] returned true, implement this method to return the snappable geometry for this Decorator. Geometry that changes with every cursor motion isn't valid for snapping.
    * An example would be an InteractiveTool for placing a linestring. It might wish to allow snapping to accepted segments, the segment from the last accepted point to the current cursor position would not be included
@@ -77,7 +86,10 @@ export interface ToolTipProvider {
   /** Augment or replace the tooltip for the specified HitDetail.
    * @note To cooperate with other tooltip providers, prefer to *append* information to the input tooltip instead of replacing it entirely.
    */
-  augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
+  augmentToolTip(
+    hit: HitDetail,
+    tooltip: Promise<HTMLElement | string>
+  ): Promise<HTMLElement | string>;
 }
 
 /** The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
@@ -105,16 +117,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   private _beginIdleWork() {
     const idleWork = () => {
-      if (undefined === this._idleWorkTimer)
-        return;
+      if (undefined === this._idleWorkTimer) return;
       if (this._viewports.length > 0) {
         this._idleWorkTimer = undefined;
         return;
       }
       if (IModelApp.renderSystem.doIdleWork())
         this._idleWorkTimer = setTimeout(idleWork, 1);
-      else
-        this._idleWorkTimer = undefined;
+      else this._idleWorkTimer = undefined;
     };
 
     if (undefined === this._idleWorkTimer)
@@ -131,8 +141,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     const options = IModelApp.renderSystem.options;
     this._doIdleWork = true === options.doIdleWork;
-    if (this._doIdleWork)
-      this._beginIdleWork();
+    if (this._doIdleWork) this._beginIdleWork();
   }
 
   /** @internal */
@@ -158,7 +167,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @param old Previously selected viewport.
    * @param current Currently selected viewport.
    */
-  public readonly onSelectedViewportChanged = new BeUiEvent<SelectedViewportChangedArgs>();
+  public readonly onSelectedViewportChanged =
+    new BeUiEvent<SelectedViewportChangedArgs>();
 
   /** Called after a view is opened. This can happen when the iModel is first opened or when a user opens a new view. */
   public readonly onViewOpen = new BeUiEvent<ScreenViewport>();
@@ -192,26 +202,27 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** @internal */
   public endDynamicsMode(): void {
-    if (!this.inDynamicsMode)
-      return;
+    if (!this.inDynamicsMode) return;
 
     this.inDynamicsMode = false;
 
     const cursorVp = IModelApp.toolAdmin.cursorView;
-    if (cursorVp)
-      cursorVp.changeDynamics(undefined);
+    if (cursorVp) cursorVp.changeDynamics(undefined);
 
     for (const vp of this._viewports) {
-      if (vp !== cursorVp)
-        vp.changeDynamics(undefined);
+      if (vp !== cursorVp) vp.changeDynamics(undefined);
     }
   }
 
   /** @internal */
-  public beginDynamicsMode() { this.inDynamicsMode = true; }
+  public beginDynamicsMode() {
+    this.inDynamicsMode = true;
+  }
 
   /** @internal */
-  public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
+  public get doesHostHaveFocus(): boolean {
+    return document.hasFocus();
+  }
 
   /** Set the selected [[Viewport]] to undefined. */
   public clearSelectedView(): void {
@@ -221,11 +232,13 @@ export class ViewManager implements Iterable<ScreenViewport> {
   }
 
   /** Sets the selected [[Viewport]]. */
-  public async setSelectedView(vp: ScreenViewport | undefined): Promise<BentleyStatus> {
-    if (undefined === vp)
-      vp = this.getFirstOpenView();
+  public async setSelectedView(
+    vp: ScreenViewport | undefined
+  ): Promise<BentleyStatus> {
+    if (undefined === vp) vp = this.getFirstOpenView();
 
-    if (vp === this.selectedView) // already the selected view
+    if (vp === this.selectedView)
+      // already the selected view
       return BentleyStatus.SUCCESS;
 
     if (undefined === vp) {
@@ -238,29 +251,34 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     this.notifySelectedViewportChanged(previousVp, vp);
 
-    if (undefined === previousVp)
-      await IModelApp.toolAdmin.startDefaultTool();
+    if (undefined === previousVp) await IModelApp.toolAdmin.startDefaultTool();
 
     return BentleyStatus.SUCCESS;
   }
 
   /** @internal */
-  public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
-    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);// eslint-disable-line @typescript-eslint/no-floating-promises
+  public notifySelectedViewportChanged(
+    previous: ScreenViewport | undefined,
+    current: ScreenViewport | undefined
+  ) {
+    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current); // eslint-disable-line @typescript-eslint/no-floating-promises
     this.onSelectedViewportChanged.emit({ previous, current });
   }
 
   /** The "selected view" is the default for certain operations.  */
-  public get selectedView(): ScreenViewport | undefined { return this._selectedView; }
+  public get selectedView(): ScreenViewport | undefined {
+    return this._selectedView;
+  }
 
   /** Get the first opened view. */
-  public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
+  public getFirstOpenView(): ScreenViewport | undefined {
+    return this._viewports.length > 0 ? this._viewports[0] : undefined;
+  }
 
   /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
   private updateRenderToScreen() {
     const renderToScreen = 1 === this._viewports.length;
-    for (const vp of this)
-      vp.rendersToScreen = renderToScreen;
+    for (const vp of this) vp.rendersToScreen = renderToScreen;
   }
 
   /** Add a new Viewport to the list of opened views and create an EventController for it.
@@ -269,18 +287,18 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @note raises onViewOpen event with newVp.
    */
   public addViewport(newVp: ScreenViewport): BentleyStatus {
-    if (this.hasViewport(newVp)) // make sure its not already added
+    if (this.hasViewport(newVp))
+      // make sure its not already added
       return BentleyStatus.ERROR;
 
     newVp.onViewManagerAdd();
 
     this._viewports.push(newVp);
     this.updateRenderToScreen();
-    this.setSelectedView(newVp);// eslint-disable-line @typescript-eslint/no-floating-promises
+    this.setSelectedView(newVp); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Start up the render loop if necessary.
-    if (1 === this._viewports.length)
-      IModelApp.startEventLoop();
+    if (1 === this._viewports.length) IModelApp.startEventLoop();
 
     this.onViewOpen.emit(newVp);
 
@@ -299,10 +317,12 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @return SUCCESS if vp was successfully removed, ERROR if it was not present.
    * @note raises onViewClose event with vp.
    */
-  public dropViewport(vp: ScreenViewport, disposeOfViewport: boolean = true): BentleyStatus {
+  public dropViewport(
+    vp: ScreenViewport,
+    disposeOfViewport: boolean = true
+  ): BentleyStatus {
     const index = this._viewports.indexOf(vp);
-    if (index === -1)
-      return BentleyStatus.ERROR;
+    if (index === -1) return BentleyStatus.ERROR;
 
     this.onViewClose.emit(vp);
 
@@ -313,17 +333,16 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     this._viewports.splice(index, 1);
 
-    if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
-      this.setSelectedView(undefined);// eslint-disable-line @typescript-eslint/no-floating-promises
+    if (this.selectedView === vp)
+      // if removed viewport was selectedView, set it to undefined.
+      this.setSelectedView(undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     vp.rendersToScreen = false;
     this.updateRenderToScreen();
 
-    if (disposeOfViewport)
-      vp.dispose();
+    if (disposeOfViewport) vp.dispose();
 
-    if (this._doIdleWork && this._viewports.length === 0)
-      this._beginIdleWork();
+    if (this._doIdleWork && this._viewports.length === 0) this._beginIdleWork();
 
     return BentleyStatus.SUCCESS;
   }
@@ -338,44 +357,40 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @see [[Viewport.invalidateCachedDecorations]] to manually remove a decorator's cached decorations from a viewport, forcing them to be regenerated.
    * @beta
    */
-  public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
+  public invalidateCachedDecorationsAllViews(
+    decorator: ViewportDecorator
+  ): void {
     if (decorator.useCachedDecorations)
-      for (const vp of this)
-        vp.invalidateCachedDecorations(decorator);
+      for (const vp of this) vp.invalidateCachedDecorations(decorator);
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void {
-    for (const vp of this)
-      vp.invalidateDecorations();
+    for (const vp of this) vp.invalidateDecorations();
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[FeatureSymbology.Overrides]] on the next frame.
    * @alpha
    */
   public invalidateSymbologyOverridesAllViews(): void {
-    for (const vp of this)
-      vp.setFeatureOverrideProviderChanged();
+    for (const vp of this) vp.setFeatureOverrideProviderChanged();
   }
 
   /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) {
-    for (const vp of this)
-      vp.markSelectionSetDirty();
+    for (const vp of this) vp.markSelectionSetDirty();
 
     IModelApp.requestNextAnimation();
   }
 
   /** @internal */
   public invalidateViewportScenes(): void {
-    for (const vp of this)
-      vp.invalidateScene();
+    for (const vp of this) vp.invalidateScene();
   }
 
   /** @internal */
   public validateViewportScenes(): void {
-    for (const vp of this)
-      vp.setValidScene();
+    for (const vp of this) vp.setValidScene();
   }
 
   /** @internal */
@@ -384,25 +399,23 @@ export class ViewManager implements Iterable<ScreenViewport> {
     IModelApp.requestNextAnimation();
   }
   /** @internal */
-  public get sceneInvalidated(): boolean { return this._invalidateScenes; }
+  public get sceneInvalidated(): boolean {
+    return this._invalidateScenes;
+  }
 
   /** Invoked by ToolAdmin event loop.
    * @internal
    */
   public renderLoop(): void {
-    if (0 === this._viewports.length)
-      return;
-    if (this._skipSceneCreation)
-      this.validateViewportScenes();
-    else if (this._invalidateScenes)
-      this.invalidateViewportScenes();
+    if (0 === this._viewports.length) return;
+    if (this._skipSceneCreation) this.validateViewportScenes();
+    else if (this._invalidateScenes) this.invalidateViewportScenes();
 
     this._invalidateScenes = false;
 
     this.onBeginRender.raiseEvent();
 
-    for (const vp of this._viewports)
-      vp.renderFrame();
+    for (const vp of this._viewports) vp.renderFrame();
 
     this.onFinishRender.raiseEvent();
   }
@@ -443,7 +456,9 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    * @beta
    */
-  public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+  public async getElementToolTip(
+    hit: HitDetail
+  ): Promise<HTMLElement | string> {
     const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend
     return IModelApp.formatElementToolTip(msg);
   }
@@ -467,8 +482,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
    */
   public dropToolTipProvider(provider: ToolTipProvider) {
     const index = this.toolTipProviders.indexOf(provider);
-    if (index >= 0)
-      this.toolTipProviders.splice(index, 1);
+    if (index >= 0) this.toolTipProviders.splice(index, 1);
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.
@@ -492,8 +506,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
    */
   public dropDecorator(decorator: Decorator): boolean {
     const index = this.decorators.indexOf(decorator);
-    if (index < 0)
-      return false;
+    if (index < 0) return false;
 
     this.invalidateCachedDecorationsAllViews(decorator);
     this.decorators.splice(index, 1);
@@ -504,9 +517,15 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Get the tooltip for a pickable decoration.
    * @internal
    */
-  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+  public async getDecorationToolTip(
+    hit: HitDetail
+  ): Promise<HTMLElement | string> {
     for (const decorator of this.decorators) {
-      if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
+      if (
+        undefined !== decorator.testDecorationHit &&
+        undefined !== decorator.getDecorationToolTip &&
+        decorator.testDecorationHit(hit.sourceId)
+      )
         return decorator.getDecorationToolTip(hit);
     }
     return hit.viewport ? hit.viewport.getToolTip(hit) : "";
@@ -515,9 +534,16 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.
    * @internal
    */
-  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+  public async onDecorationButtonEvent(
+    hit: HitDetail,
+    ev: BeButtonEvent
+  ): Promise<EventHandled> {
     for (const decorator of IModelApp.viewManager.decorators) {
-      if (undefined !== decorator.testDecorationHit && undefined !== decorator.onDecorationButtonEvent && decorator.testDecorationHit(hit.sourceId))
+      if (
+        undefined !== decorator.testDecorationHit &&
+        undefined !== decorator.onDecorationButtonEvent &&
+        decorator.testDecorationHit(hit.sourceId)
+      )
         return decorator.onDecorationButtonEvent(hit, ev);
     }
     return EventHandled.No;
@@ -526,9 +552,15 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Allow a pickable decoration to be snapped to by AccuSnap or TentativePoint.
    * @internal
    */
-  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+  public getDecorationGeometry(
+    hit: HitDetail
+  ): GeometryStreamProps | undefined {
     for (const decorator of IModelApp.viewManager.decorators) {
-      if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationGeometry && decorator.testDecorationHit(hit.sourceId))
+      if (
+        undefined !== decorator.testDecorationHit &&
+        undefined !== decorator.getDecorationGeometry &&
+        decorator.testDecorationHit(hit.sourceId)
+      )
         return decorator.getDecorationGeometry(hit);
     }
     return undefined;
@@ -537,9 +569,15 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Allow a pickable decoration created using a persistent element id to augment or replace the the persistent element's tooltip.
    * @internal
    */
-  public async overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+  public async overrideElementToolTip(
+    hit: HitDetail
+  ): Promise<HTMLElement | string> {
     for (const decorator of this.decorators) {
-      if (undefined !== decorator.overrideElementHit && undefined !== decorator.getDecorationToolTip && decorator.overrideElementHit(hit))
+      if (
+        undefined !== decorator.overrideElementHit &&
+        undefined !== decorator.getDecorationToolTip &&
+        decorator.overrideElementHit(hit)
+      )
         return decorator.getDecorationToolTip(hit);
     }
     return this.getElementToolTip(hit);
@@ -548,9 +586,16 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Allow a pickable decoration created using a persistent element id to handle a button event that identified it for the SelectTool.
    * @internal
    */
-  public async overrideElementButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+  public async overrideElementButtonEvent(
+    hit: HitDetail,
+    ev: BeButtonEvent
+  ): Promise<EventHandled> {
     for (const decorator of IModelApp.viewManager.decorators) {
-      if (undefined !== decorator.overrideElementHit && undefined !== decorator.onDecorationButtonEvent && decorator.overrideElementHit(hit))
+      if (
+        undefined !== decorator.overrideElementHit &&
+        undefined !== decorator.onDecorationButtonEvent &&
+        decorator.overrideElementHit(hit)
+      )
         return decorator.onDecorationButtonEvent(hit, ev);
     }
     return EventHandled.No;
@@ -559,32 +604,52 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Allow a pickable decoration created using a persistent element id to control whether snapping uses the persistent element's geometry.
    * @internal
    */
-  public overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+  public overrideElementGeometry(
+    hit: HitDetail
+  ): GeometryStreamProps | undefined {
     for (const decorator of IModelApp.viewManager.decorators) {
-      if (undefined !== decorator.overrideElementHit && undefined !== decorator.getDecorationGeometry && decorator.overrideElementHit(hit))
+      if (
+        undefined !== decorator.overrideElementHit &&
+        undefined !== decorator.getDecorationGeometry &&
+        decorator.overrideElementHit(hit)
+      )
         return decorator.getDecorationGeometry(hit);
     }
     return undefined;
   }
 
-  public get crossHairCursor(): string { return `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`; }
-  public get dynamicsCursor(): string { return `url(${IModelApp.publicPath}cursors/dynamics.cur), move`; }
-  public get grabCursor(): string { return `url(${IModelApp.publicPath}cursors/openHand.cur), auto`; }
-  public get grabbingCursor(): string { return `url(${IModelApp.publicPath}cursors/closedHand.cur), auto`; }
-  public get walkCursor(): string { return `url(${IModelApp.publicPath}cursors/walk.cur), auto`; }
-  public get rotateCursor(): string { return `url(${IModelApp.publicPath}cursors/rotate.cur), auto`; }
-  public get lookCursor(): string { return `url(${IModelApp.publicPath}cursors/look.cur), auto`; }
-  public get zoomCursor(): string { return `url(${IModelApp.publicPath}cursors/zoom.cur), auto`; }
+  public get crossHairCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`;
+  }
+  public get dynamicsCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/dynamics.cur), move`;
+  }
+  public get grabCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/openHand.cur), auto`;
+  }
+  public get grabbingCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/closedHand.cur), auto`;
+  }
+  public get walkCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/walk.cur), auto`;
+  }
+  public get rotateCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/rotate.cur), auto`;
+  }
+  public get lookCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/look.cur), auto`;
+  }
+  public get zoomCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/zoom.cur), auto`;
+  }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.
    */
   public setViewCursor(cursor: string = "default") {
-    if (cursor === this.cursor)
-      return;
+    if (cursor === this.cursor) return;
     this.cursor = cursor;
-    for (const vp of this._viewports)
-      vp.setCursor(cursor);
+    for (const vp of this._viewports) vp.setCursor(cursor);
   }
 
   /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
@@ -593,8 +658,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @internal
    */
   public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
-    for (const vp of this._viewports)
-      vp.refreshForModifiedModels(modelIds);
+    for (const vp of this._viewports) vp.refreshForModifiedModels(modelIds);
   }
 
   /** Sets the number of [MSAA]($docs/learning/display/MSAA.md) samples for all currently- and subsequently-opened [[ScreenViewport]]s.
@@ -604,8 +668,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @see [[Viewport.antialiasSamples]] to adjust the number of samples for a specific viewport.
    */
   public setAntialiasingAllViews(numSamples: number): void {
-    for (const vp of this)
-      vp.antialiasSamples = numSamples;
+    for (const vp of this) vp.antialiasSamples = numSamples;
 
     System.instance.antialiasSamples = numSamples;
   }

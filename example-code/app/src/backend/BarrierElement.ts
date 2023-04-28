@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LineSegment3d, Point3d } from "@itwin/core-geometry";
-import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
+import {
+  IModelDb,
+  SpatialCategory,
+  SpatialLocationElement,
+} from "@itwin/core-backend";
 import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
@@ -15,17 +19,19 @@ import { RobotWorld } from "./RobotWorldSchema";
  */
 export class Barrier extends SpatialLocationElement {
   /** @internal */
-  public static override get className(): string { return "Barrier"; }
+  public static override get className(): string {
+    return "Barrier";
+  }
   //  Define the properties added by this subclass
-  public length: number = 1.0;                    // The length of the barrier
-  public angle: number = 0.0;                     // The orientation angle of the barrier
+  public length: number = 1.0; // The length of the barrier
+  public angle: number = 0.0; // The orientation angle of the barrier
 
   // Note: Do not re-define the constructor. You must not interfere with the constructor that is
   // already defined by the base Element class.
 
   // You can provide handy methods for creating new Robots
   public static generateGeometry(length: number): GeometryStreamProps {
-    const builder = new GeometryStreamBuilder();  // I know what graphics represent a robot.
+    const builder = new GeometryStreamBuilder(); // I know what graphics represent a robot.
     const p1 = Point3d.createZero();
     const p2 = Point3d.createFrom({ x: length, y: 0.0, z: 0.0 });
     const circle = LineSegment3d.create(p1, p2);

@@ -8,14 +8,40 @@ import * as semver from "semver";
 import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
-  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
-  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
+  ChangesetIdWithIndex,
+  IModelReadRpcInterface,
+  IModelRpcProps,
+  NoContentError,
+  RpcConfiguration,
+  RpcInterface,
+  RpcInterfaceDefinition,
+  RpcManager,
+  RpcOperation,
+  RpcOperationPolicy,
+  RpcProtocol,
+  RpcProtocolEvent,
+  RpcRequest,
+  RpcRequestEvent,
+  RpcRequestStatus,
+  RpcResponseCacheControl,
+  RpcSerializedValue,
+  SerializedRpcActivity,
+  WebAppRpcRequest,
+  WipRpcInterface,
 } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
-  TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
+  AttachedInterface,
+  MultipleClientsInterface,
+  RpcTransportTest,
+  RpcTransportTestImpl,
+  TestNotFoundResponse,
+  TestNotFoundResponseCode,
+  TestOp1Params,
+  TestRpcInterface,
+  TestRpcInterface2,
+  TokenValues,
+  ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
@@ -23,20 +49,33 @@ import { currentEnvironment } from "./_Setup.test";
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 
-const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const testToken: IModelRpcProps = { key: "test", iTwinId: "test", iModelId: "test", changeset: { id: "test" } };
+const timeout = async (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+const testToken: IModelRpcProps = {
+  key: "test",
+  iTwinId: "test",
+  iModelId: "test",
+  changeset: { id: "test" },
+};
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
     public static readonly interfaceName = "LocalInterface";
     public static interfaceVersion = "0.0.0";
-    public async op(): Promise<void> { return this.forward(arguments); }
+    public async op(): Promise<void> {
+      return this.forward(arguments);
+    }
   }
 
   const initializeLocalInterface = () => {
-    RpcManager.registerImpl(LocalInterface, class extends RpcInterface {
-      public async op(): Promise<void> { return undefined as any; }
-    });
+    RpcManager.registerImpl(
+      LocalInterface,
+      class extends RpcInterface {
+        public async op(): Promise<void> {
+          return undefined as any;
+        }
+      }
+    );
 
     RpcManager.initializeInterface(LocalInterface);
   };
@@ -65,8 +104,14 @@ describe("RpcInterface", () => {
     await timeout(10);
 
     const backendAggregate2 = await TestRpcInterface.getClient().op7();
-    assert.isAbove(backendAggregate2.lastRequest, backendAggregate1.lastRequest);
-    assert.isAbove(backendAggregate2.lastResponse, backendAggregate1.lastResponse);
+    assert.isAbove(
+      backendAggregate2.lastRequest,
+      backendAggregate1.lastRequest
+    );
+    assert.isAbove(
+      backendAggregate2.lastResponse,
+      backendAggregate1.lastResponse
+    );
   });
 
   it("should support pending operations", async () => {
@@ -74,15 +119,23 @@ describe("RpcInterface", () => {
 
     let receivedPending = false;
 
-    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
-      if (type !== RpcRequestEvent.PendingUpdateReceived || request.operation !== op8)
-        return;
+    const removeListener = RpcRequest.events.addListener(
+      (type: RpcRequestEvent, request: RpcRequest) => {
+        if (
+          type !== RpcRequestEvent.PendingUpdateReceived ||
+          request.operation !== op8
+        )
+          return;
 
-      request.retryInterval = 1;
-      assert.isFalse(receivedPending);
-      receivedPending = true;
-      assert.equal(request.extendedStatus, TestRpcInterface.OP8_PENDING_MESSAGE);
-    });
+        request.retryInterval = 1;
+        assert.isFalse(receivedPending);
+        receivedPending = true;
+        assert.equal(
+          request.extendedStatus,
+          TestRpcInterface.OP8_PENDING_MESSAGE
+        );
+      }
+    );
 
     op8.policy.retryInterval = () => 1;
 
@@ -97,7 +150,9 @@ describe("RpcInterface", () => {
     assert.isTrue(receivedPending);
     removeListener();
 
-    assert(await executeBackendCallback(BackendTestCallbacks.resetOp8Initializer));
+    assert(
+      await executeBackendCallback(BackendTestCallbacks.resetOp8Initializer)
+    );
   });
 
   it("should support supplied RPC implementation instances", async () => {
@@ -108,17 +163,29 @@ describe("RpcInterface", () => {
       assert(true);
     }
 
-    assert(await executeBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class));
+    assert(
+      await executeBackendCallback(
+        BackendTestCallbacks.registerTestRpcImpl2Class
+      )
+    );
 
     const response1 = await TestRpcInterface2.getClient().op1(1);
     assert.equal(response1, 1);
 
-    assert(await executeBackendCallback(BackendTestCallbacks.replaceTestRpcImpl2Instance));
+    assert(
+      await executeBackendCallback(
+        BackendTestCallbacks.replaceTestRpcImpl2Instance
+      )
+    );
 
     const response2 = await TestRpcInterface2.getClient().op1(2);
     assert.equal(response2, 2);
 
-    assert(await executeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
+    assert(
+      await executeBackendCallback(
+        BackendTestCallbacks.unregisterTestRpcImpl2Class
+      )
+    );
   });
 
   it("should allow access to request and invocation objects and allow a custom request id", async () => {
@@ -191,22 +258,23 @@ describe("RpcInterface", () => {
   });
 
   it("should allow resolving a 'not found' state for a request", async () => {
-    const removeResolver = RpcRequest.notFoundHandlers.addListener((request, _response, resubmit, reject) => {
-      if (!(_response.hasOwnProperty("isTestNotFoundResponse")))
-        return;
+    const removeResolver = RpcRequest.notFoundHandlers.addListener(
+      (request, _response, resubmit, reject) => {
+        if (!_response.hasOwnProperty("isTestNotFoundResponse")) return;
 
-      const response = _response as TestNotFoundResponse;
+        const response = _response as TestNotFoundResponse;
 
-      setTimeout(() => {
-        if (response.code === TestNotFoundResponseCode.CanRecover) {
-          assert.strictEqual("oldvalue", request.parameters[0]);
-          request.parameters[0] = "newvalue";
-          resubmit();
-        } else if (response.code === TestNotFoundResponseCode.Fatal) {
-          reject(response.code);
-        }
-      }, 0);
-    });
+        setTimeout(() => {
+          if (response.code === TestNotFoundResponseCode.CanRecover) {
+            assert.strictEqual("oldvalue", request.parameters[0]);
+            request.parameters[0] = "newvalue";
+            resubmit();
+          } else if (response.code === TestNotFoundResponseCode.Fatal) {
+            reject(response.code);
+          }
+        }, 0);
+      }
+    );
 
     const opResponse = await TestRpcInterface.getClient().op11("oldvalue", 0);
     assert.strictEqual(opResponse, "newvalue");
@@ -227,21 +295,33 @@ describe("RpcInterface", () => {
     //  return;
     // }
 
-    const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
+    const controlChannel =
+      IModelReadRpcInterface.getClient().configuration.controlChannel;
     controlChannel.initialize();
-    const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
+    const controlInterface = (controlChannel as any)
+      ._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;
     const originalVersion = IModelReadRpcInterface.interfaceVersion;
-    const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
+    const controlPolicy = RpcOperation.lookup(
+      controlInterface,
+      "describeEndpoints"
+    ).policy;
 
     const simulateIncompatible = () => {
       const interfaces: string[] = [];
-      ((controlChannel as any)._configuration as RpcConfiguration).interfaces().forEach((definition) => {
-        interfaces.push(definition.interfaceName === "IModelReadRpcInterface" ? `${definition.interfaceName}@0.0.0` : `${definition.interfaceName}@${definition.interfaceVersion}`);
-      });
+      ((controlChannel as any)._configuration as RpcConfiguration)
+        .interfaces()
+        .forEach((definition) => {
+          interfaces.push(
+            definition.interfaceName === "IModelReadRpcInterface"
+              ? `${definition.interfaceName}@0.0.0`
+              : `${definition.interfaceName}@${definition.interfaceVersion}`
+          );
+        });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
+      if (typeof btoa !== "undefined")
+        // eslint-disable-line deprecation/deprecation
         return btoa(id); // eslint-disable-line deprecation/deprecation
       return Buffer.from(id, "binary").toString("base64");
     };
@@ -249,33 +329,58 @@ describe("RpcInterface", () => {
     const endpoints = await RpcManager.describeAvailableEndpoints();
     assert.equal(endpoints[0].interfaceName, "IModelReadRpcInterface");
     assert.equal(endpoints[0].operationNames[0], "getConnectionProps");
-    assert(typeof (endpoints[0].interfaceVersion) === "string");
+    assert(typeof endpoints[0].interfaceVersion === "string");
     assert.isTrue(endpoints[0].compatible);
 
-    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, req: RpcRequest) => {
-      if (type === RpcRequestEvent.StatusChanged && req.status === RpcRequestStatus.Resolved) {
-        Object.defineProperty(controlInterface, "interfaceName", { value: simulateIncompatible() });
-        IModelReadRpcInterface.interfaceVersion = originalVersion;
+    const removeListener = RpcRequest.events.addListener(
+      (type: RpcRequestEvent, req: RpcRequest) => {
+        if (
+          type === RpcRequestEvent.StatusChanged &&
+          req.status === RpcRequestStatus.Resolved
+        ) {
+          Object.defineProperty(controlInterface, "interfaceName", {
+            value: simulateIncompatible(),
+          });
+          IModelReadRpcInterface.interfaceVersion = originalVersion;
+        }
       }
-    });
-    assert(await executeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
+    );
+    assert(
+      await executeBackendCallback(
+        BackendTestCallbacks.setIncompatibleInterfaceVersion
+      )
+    );
 
     const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
     assert.isFalse(endpointsMismatch[0].compatible);
     removeListener();
 
-    controlPolicy.sentCallback = () => { };
-    Object.defineProperty(controlInterface, "interfaceName", { value: originalName });
-    assert(await executeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
+    controlPolicy.sentCallback = () => {};
+    Object.defineProperty(controlInterface, "interfaceName", {
+      value: originalName,
+    });
+    assert(
+      await executeBackendCallback(
+        BackendTestCallbacks.restoreIncompatibleInterfaceVersion
+      )
+    );
 
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
 
     const originalToken = RpcOperation.fallbackToken;
-    RpcOperation.fallbackToken = { key: "test", iTwinId: "test", iModelId: "test", changeset: { id: "test" } };
+    RpcOperation.fallbackToken = {
+      key: "test",
+      iTwinId: "test",
+      iModelId: "test",
+      changeset: { id: "test" },
+    };
     assert.equal(controlPolicy.token(undefined as any)!.iTwinId, "test");
     RpcOperation.fallbackToken = originalToken;
-    assert.equal(controlPolicy.token(undefined as any)!.iTwinId, originalToken ? originalToken.iTwinId : "none");
+    assert.equal(
+      controlPolicy.token(undefined as any)!.iTwinId,
+      originalToken ? originalToken.iTwinId : "none"
+    );
   });
 
   it("should support retrieving binary resources from the backend", async () => {
@@ -301,15 +406,22 @@ describe("RpcInterface", () => {
     const realVersionZ = ZeroMajorRpcInterface.interfaceVersion;
 
     // Wait until after each test request is serialized before resetting the interfaceVersions
-    const originalSerialize = TestRpcInterface.getClient().configuration.protocol.serialize;
-    TestRpcInterface.getClient().configuration.protocol.serialize = async (request) => {
+    const originalSerialize =
+      TestRpcInterface.getClient().configuration.protocol.serialize;
+    TestRpcInterface.getClient().configuration.protocol.serialize = async (
+      request
+    ) => {
       const retVal = await originalSerialize(request);
       TestRpcInterface.interfaceVersion = realVersion;
       ZeroMajorRpcInterface.interfaceVersion = realVersionZ;
       return retVal;
     };
 
-    const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
+    const test = async (
+      code: string | null,
+      expectValid: boolean,
+      c: TestRpcInterface | ZeroMajorRpcInterface
+    ) => {
       assert(code !== null);
 
       TestRpcInterface.interfaceVersion = code;
@@ -322,8 +434,7 @@ describe("RpcInterface", () => {
         err = error;
       }
 
-      if (err && expectValid)
-        assert(false, `Unexpected error: ${err.stack}`);
+      if (err && expectValid) assert(false, `Unexpected error: ${err.stack}`);
 
       if (!err && !expectValid)
         assert(false, "Expected error, but none was thrown.");
@@ -347,8 +458,8 @@ describe("RpcInterface", () => {
     const incMajorZ = semver.parse(realVersionZ)!;
     incMajorZ.inc("major");
 
-    await (test(incMajor.format(), false, client));
-    await (test(incMajorZ.format(), false, clientZ));
+    await test(incMajor.format(), false, client);
+    await test(incMajorZ.format(), false, clientZ);
 
     const incMinor = semver.parse(realVersion)!;
     incMinor.inc("minor");
@@ -356,8 +467,8 @@ describe("RpcInterface", () => {
     const incMinorZ = semver.parse(realVersionZ)!;
     incMinorZ.inc("minor");
 
-    await (test(incMinor.format(), false, client));
-    await (test(incMinorZ.format(), false, clientZ));
+    await test(incMinor.format(), false, client);
+    await test(incMinorZ.format(), false, clientZ);
 
     const incPatch = semver.parse(realVersion)!;
     incPatch.inc("patch");
@@ -365,8 +476,8 @@ describe("RpcInterface", () => {
     const incPatchZ = semver.parse(realVersionZ)!;
     incPatchZ.inc("patch");
 
-    await (test(incPatch.format(), true, client));
-    await (test(incPatchZ.format(), false, clientZ));
+    await test(incPatch.format(), true, client);
+    await test(incPatchZ.format(), false, clientZ);
 
     const incPre = semver.parse(realVersion)!;
     incPre.inc("prerelease");
@@ -374,8 +485,8 @@ describe("RpcInterface", () => {
     const incPreZ = semver.parse(realVersionZ)!;
     incPreZ.inc("prerelease");
 
-    await (test(incPre.format(), false, client));
-    await (test(incPreZ.format(), false, clientZ));
+    await test(incPre.format(), false, client);
+    await test(incPreZ.format(), false, clientZ);
 
     const decMajor = semver.parse(realVersion)!;
     --decMajor.major;
@@ -383,8 +494,8 @@ describe("RpcInterface", () => {
     const decMajorZ = semver.parse(realVersionZ)!;
     --decMajorZ.major;
 
-    await (test(decMajor.format(), false, client));
-    await (test(decMajorZ.format(), false, clientZ));
+    await test(decMajor.format(), false, client);
+    await test(decMajorZ.format(), false, clientZ);
 
     const decMinor = semver.parse(realVersion)!;
     --decMinor.minor;
@@ -392,8 +503,8 @@ describe("RpcInterface", () => {
     const decMinorZ = semver.parse(realVersionZ)!;
     --decMinorZ.minor;
 
-    await (test(decMinor.format(), true, client));
-    await (test(decMinorZ.format(), false, clientZ));
+    await test(decMinor.format(), true, client);
+    await test(decMinorZ.format(), false, clientZ);
 
     const decPatch = semver.parse(realVersion)!;
     --decPatch.patch;
@@ -401,10 +512,11 @@ describe("RpcInterface", () => {
     const decPatchZ = semver.parse(realVersionZ)!;
     --decPatchZ.patch;
 
-    await (test(decPatch.format(), true, client));
-    await (test(decPatchZ.format(), true, clientZ));
+    await test(decPatch.format(), true, client);
+    await test(decPatchZ.format(), true, clientZ);
 
-    TestRpcInterface.getClient().configuration.protocol.serialize = originalSerialize;
+    TestRpcInterface.getClient().configuration.protocol.serialize =
+      originalSerialize;
   });
 
   it("should validate transport method", async () => {
@@ -430,12 +542,24 @@ describe("RpcInterface", () => {
     const client = RpcTransportTest.getClient();
 
     // exercise
-    assert.equal(await client.primitive(abc), RpcTransportTestImpl.mutateString(abc));
-    assert(compareBytes(await client.binary(oneZero), RpcTransportTestImpl.mutateBits(oneZero)));
+    assert.equal(
+      await client.primitive(abc),
+      RpcTransportTestImpl.mutateString(abc)
+    );
+    assert(
+      compareBytes(
+        await client.binary(oneZero),
+        RpcTransportTestImpl.mutateBits(oneZero)
+      )
+    );
     const mixed = await client.mixed(abc, zeroOne);
     assert.equal(mixed[0], RpcTransportTestImpl.mutateString(abc));
     assert(compareBytes(mixed[1], RpcTransportTestImpl.mutateBits(zeroOne)));
-    const nested = await client.nested({ a: { x: oneZero, y: one }, b: abc, c: zeroOne });
+    const nested = await client.nested({
+      a: { x: oneZero, y: one },
+      b: abc,
+      c: zeroOne,
+    });
     assert(compareBytes(nested.a.x, RpcTransportTestImpl.mutateBits(oneZero)));
     assert.equal(nested.a.y, RpcTransportTestImpl.mutateNumber(one));
     assert.equal(nested.b, RpcTransportTestImpl.mutateString(abc));
@@ -443,8 +567,14 @@ describe("RpcInterface", () => {
 
     // stress
     const singleStressTest = async () => {
-      const nested2 = await client.nested({ a: { x: oneZero, y: one }, b: abc, c: zeroOne });
-      assert(compareBytes(nested2.a.x, RpcTransportTestImpl.mutateBits(oneZero)));
+      const nested2 = await client.nested({
+        a: { x: oneZero, y: one },
+        b: abc,
+        c: zeroOne,
+      });
+      assert(
+        compareBytes(nested2.a.x, RpcTransportTestImpl.mutateBits(oneZero))
+      );
       assert.equal(nested2.a.y, RpcTransportTestImpl.mutateNumber(one));
       assert.equal(nested2.b, RpcTransportTestImpl.mutateString(abc));
       assert(compareBytes(nested2.c, RpcTransportTestImpl.mutateBits(zeroOne)));
@@ -461,24 +591,32 @@ describe("RpcInterface", () => {
       return;
     }
 
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let longString = "";
     // Rpc encodes the body using base64, which takes 4 characters to represent every 3 bytes, with potentially 8 bytes of padding.
-    const length = (WebAppRpcRequest.maxUrlComponentSize / 4 * 3) - 8;
+    const length = (WebAppRpcRequest.maxUrlComponentSize / 4) * 3 - 8;
     for (let i = 0; i < length; i++) {
-      longString = longString + characters.charAt(Math.floor(Math.random() * characters.length));
+      longString =
+        longString +
+        characters.charAt(Math.floor(Math.random() * characters.length));
     }
     let request: RpcRequest;
-    TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
-      if (type === RpcProtocolEvent.RequestCreated)
-        request = req as RpcRequest<any>; // we can cast it to Rpcrequest because for requestcreated event, RpcRequest is raised
-    });
+    TestRpcInterface.getClient().configuration.protocol.events.addListener(
+      (type, req) => {
+        if (type === RpcProtocolEvent.RequestCreated)
+          request = req as RpcRequest<any>; // we can cast it to Rpcrequest because for requestcreated event, RpcRequest is raised
+      }
+    );
     const result = await TestRpcInterface.getClient().op2(longString);
     assert.isTrue(result === longString);
     assert.isTrue(request! !== undefined);
     // only the ._request property's method is changed, atleast in WebAppRpcRequest.
     if (request! instanceof WebAppRpcRequest)
-      assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
+      assert.isTrue(
+        (request as any)._request.method === "get",
+        "Expected request to be a get request!"
+      );
   });
 
   it("should set cache-control headers when applicable", async function () {
@@ -487,33 +625,44 @@ describe("RpcInterface", () => {
     }
 
     // Cache-control headers are not applicable to electron apps.
-    if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
+    if (
+      ProcessDetector.isElectronAppFrontend ||
+      ProcessDetector.isElectronAppBackend
+    )
       return this.skip();
     const input = "test";
     let response: any;
-    TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
-      if (type === RpcProtocolEvent.ResponseLoaded) {
-        response = (req as any)._response;
+    TestRpcInterface.getClient().configuration.protocol.events.addListener(
+      (type, req) => {
+        if (type === RpcProtocolEvent.ResponseLoaded) {
+          response = (req as any)._response;
+        }
       }
-    });
+    );
 
     let result = await TestRpcInterface.getClient().op2(input);
     assert.isTrue(result === input);
     let cacheControlHeader: string = response.headers.get("Cache-Control");
     assert.isDefined(cacheControlHeader);
-    assert.isTrue(cacheControlHeader === "s-maxage=86400, max-age=172800, immutable");
+    assert.isTrue(
+      cacheControlHeader === "s-maxage=86400, max-age=172800, immutable"
+    );
 
     // Take off caching
-    RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.None;
+    RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching =
+      () => RpcResponseCacheControl.None;
     result = await TestRpcInterface.getClient().op2(input);
     assert.isTrue(result === input);
     cacheControlHeader = response.headers.get("Cache-Control");
-    assert.isTrue(cacheControlHeader === undefined || cacheControlHeader === null);
+    assert.isTrue(
+      cacheControlHeader === undefined || cacheControlHeader === null
+    );
     return;
   });
 
   it("should support cacheable responses", async () => {
-    RpcOperation.lookup(TestRpcInterface, "op14").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    RpcOperation.lookup(TestRpcInterface, "op14").policy.allowResponseCaching =
+      () => RpcResponseCacheControl.Immutable;
     assert.equal(2, await TestRpcInterface.getClient().op14(1, 1));
   });
 
@@ -525,7 +674,9 @@ describe("RpcInterface", () => {
   it("should send app version to backend", async () => {
     const backupFn = RpcConfiguration.requestContext.serialize;
 
-    RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (
+      _request
+    ): Promise<SerializedRpcActivity> => {
       const serializedContext: SerializedRpcActivity = {
         id: _request.id,
         applicationId: "",
@@ -547,9 +698,15 @@ describe("RpcInterface", () => {
   });
 
   it("should transport imodel tokens correctly", async () => {
-    RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
+    RpcOperation.lookup(TestRpcInterface, "op16").policy.token =
+      new RpcOperationPolicy().token;
 
-    async function check(key: string, iTwinId?: string, iModelId?: string, changeset?: ChangesetIdWithIndex) {
+    async function check(
+      key: string,
+      iTwinId?: string,
+      iModelId?: string,
+      changeset?: ChangesetIdWithIndex
+    ) {
       const token: IModelRpcProps = { key, iTwinId, iModelId, changeset };
       const values: TokenValues = { key, iTwinId, iModelId, changeset };
       assert.isTrue(await TestRpcInterface.getClient().op16(token, values));
@@ -566,17 +723,21 @@ describe("RpcInterface", () => {
     class TestInterface extends RpcInterface {
       public static interfaceName = "TestInterface";
       public static interfaceVersion = "0.0.0";
-      public req1() { }
-      public req2() { }
-      public req3() { }
+      public req1() {}
+      public req2() {}
+      public req3() {}
     }
 
     RpcManager.initializeInterface(TestInterface);
 
     class Resolver<T> {
       public promise: Promise<T>;
-      public resolve() { }
-      constructor(private _value: () => T) { this.promise = new Promise((callback, _) => this.resolve = () => callback(this._value())); }
+      public resolve() {}
+      constructor(private _value: () => T) {
+        this.promise = new Promise(
+          (callback, _) => (this.resolve = () => callback(this._value()))
+        );
+      }
     }
 
     const backend: Map<string, Resolver<number>> = new Map();
@@ -586,7 +747,7 @@ describe("RpcInterface", () => {
     let completed = 0;
 
     class TestRequest extends RpcRequest {
-      protected setHeader(_name: string, _value: string): void { }
+      protected setHeader(_name: string, _value: string): void {}
 
       protected async send(): Promise<number> {
         assert.isFalse(backend.has(this.id));
@@ -599,7 +760,11 @@ describe("RpcInterface", () => {
           resolver.resolve();
           backend.delete(this.id);
         } else if (backend.size === 3) {
-          assert(frontend.has(requests[0].id) && frontend.has(requests[1].id) && frontend.has(requests[2].id));
+          assert(
+            frontend.has(requests[0].id) &&
+              frontend.has(requests[1].id) &&
+              frontend.has(requests[2].id)
+          );
           frontend.forEach((req) => req.cancel());
           backend.forEach((completer) => completer.resolve()); // should be ignored on the frontend...no load call will happen
           backend.clear();
@@ -622,7 +787,11 @@ describe("RpcInterface", () => {
     }
 
     const client = new TestInterface();
-    const requests = [new TestRequest(client, "req1", ["1"]), new TestRequest(client, "req2", ["2"]), new TestRequest(client, "req3", ["3"])];
+    const requests = [
+      new TestRequest(client, "req1", ["1"]),
+      new TestRequest(client, "req2", ["2"]),
+      new TestRequest(client, "req3", ["3"]),
+    ];
 
     assert.equal(replaced, 0);
     assert.equal(frontend.size, 0);

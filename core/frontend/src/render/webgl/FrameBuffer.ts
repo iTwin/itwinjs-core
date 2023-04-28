@@ -14,7 +14,10 @@ import { System } from "./System";
 import { TextureHandle } from "./Texture";
 
 /** @internal */
-export type DepthBuffer = RenderBuffer | RenderBufferMultiSample | TextureHandle;
+export type DepthBuffer =
+  | RenderBuffer
+  | RenderBufferMultiSample
+  | TextureHandle;
 /* eslint-disable no-restricted-syntax */
 
 /** @internal */
@@ -39,36 +42,64 @@ export class FrameBuffer implements WebGLDisposable {
   public readonly depthBuffer?: DepthBuffer;
   public readonly depthBufferMs?: DepthBuffer;
 
-  public get isDisposed(): boolean { return this._fbo === undefined; }
+  public get isDisposed(): boolean {
+    return this._fbo === undefined;
+  }
 
-  public get isBound(): boolean { return FrameBufferBindState.Bound <= this._bindState && FrameBufferBindState.BoundWithAttachmentsMultisampled >= this._bindState; }
+  public get isBound(): boolean {
+    return (
+      FrameBufferBindState.Bound <= this._bindState &&
+      FrameBufferBindState.BoundWithAttachmentsMultisampled >= this._bindState
+    );
+  }
 
-  public get isBoundMultisampled(): boolean { return FrameBufferBindState.BoundMultisampled === this._bindState || FrameBufferBindState.BoundWithAttachmentsMultisampled === this._bindState; }
+  public get isBoundMultisampled(): boolean {
+    return (
+      FrameBufferBindState.BoundMultisampled === this._bindState ||
+      FrameBufferBindState.BoundWithAttachmentsMultisampled === this._bindState
+    );
+  }
 
-  public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
+  public get isSuspended(): boolean {
+    return FrameBufferBindState.Suspended === this._bindState;
+  }
 
-  public get isMultisampled(): boolean { return this._colorMsBuffers.length > 0 || undefined !== this.depthBufferMs; }
+  public get isMultisampled(): boolean {
+    return this._colorMsBuffers.length > 0 || undefined !== this.depthBufferMs;
+  }
 
   public getColor(ndx: number): TextureHandle {
     assert(ndx < this._colorTextures.length);
-    if (ndx < this._colorMsBuffers.length && this._colorMsBuffers[ndx].isDirty) {
+    if (
+      ndx < this._colorMsBuffers.length &&
+      this._colorMsBuffers[ndx].isDirty
+    ) {
       this.blitMsBuffersToTextures(false, ndx);
     }
     return this._colorTextures[ndx];
   }
 
-  public getColorTargets(useMSBuffers: boolean, ndx: number): { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined } {
+  public getColorTargets(
+    useMSBuffers: boolean,
+    ndx: number
+  ): { tex: TextureHandle; msBuf: RenderBufferMultiSample | undefined } {
     let msBuf;
     if (useMSBuffers) {
-      assert (ndx < this._colorMsBuffers.length);
-      msBuf =  this._colorMsBuffers[ndx];
+      assert(ndx < this._colorMsBuffers.length);
+      msBuf = this._colorMsBuffers[ndx];
     }
     assert(ndx < this._colorTextures.length);
     return { tex: this._colorTextures[ndx], msBuf };
   }
 
-  private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer,
-    colorMsBuffers?: RenderBufferMultiSample[], msFilters?: GL.MultiSampling.Filter[], depthBufferMs?: DepthBuffer) {
+  private constructor(
+    fbo: WebGLFramebuffer,
+    colorTextures: TextureHandle[],
+    depthBuffer?: DepthBuffer,
+    colorMsBuffers?: RenderBufferMultiSample[],
+    msFilters?: GL.MultiSampling.Filter[],
+    depthBufferMs?: DepthBuffer
+  ) {
     this._fbo = fbo;
     const gl = System.instance.context;
 
@@ -81,7 +112,13 @@ export class FrameBuffer implements WebGLDisposable {
       this._colorTextures.push(colTex);
       const texHandle = colTex.getHandle();
       if (undefined !== texHandle)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentEnum, gl.TEXTURE_2D, texHandle, 0);
+        gl.framebufferTexture2D(
+          gl.FRAMEBUFFER,
+          attachmentEnum,
+          gl.TEXTURE_2D,
+          texHandle,
+          0
+        );
       i++;
     }
 
@@ -90,20 +127,41 @@ export class FrameBuffer implements WebGLDisposable {
       const dbHandle = depthBuffer.getHandle();
       if (undefined !== dbHandle) {
         if (depthBuffer instanceof RenderBuffer) {
-          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, dbHandle);
+          gl.framebufferRenderbuffer(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_ATTACHMENT,
+            gl.RENDERBUFFER,
+            dbHandle
+          );
         } else if (depthBuffer instanceof RenderBufferMultiSample) {
-          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, dbHandle);
+          gl.framebufferRenderbuffer(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_STENCIL_ATTACHMENT,
+            gl.RENDERBUFFER,
+            dbHandle
+          );
         } else {
           // Looks like we only get a 24 bit depth buffer anyway, so use a 24-8 with a stencil.
           // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, dbHandle, 0);
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_STENCIL_ATTACHMENT,
+            gl.TEXTURE_2D,
+            dbHandle,
+            0
+          );
         }
       }
     }
 
     this.unbind();
 
-    if (undefined !== colorMsBuffers && colorMsBuffers.length === colorTextures.length && undefined !== msFilters && msFilters.length === colorMsBuffers.length) {
+    if (
+      undefined !== colorMsBuffers &&
+      colorMsBuffers.length === colorTextures.length &&
+      undefined !== msFilters &&
+      msFilters.length === colorMsBuffers.length
+    ) {
       // Create a matching FBO with multisampling render buffers.
       const fbo2 = System.instance.context.createFramebuffer();
       if (null !== fbo2) {
@@ -116,7 +174,12 @@ export class FrameBuffer implements WebGLDisposable {
           this._colorMsFilters.push(msFilters[i]);
           const msBuffHandle = colMsBuff.getHandle();
           if (undefined !== msBuffHandle)
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachmentEnum, gl.RENDERBUFFER, msBuffHandle);
+            gl.framebufferRenderbuffer(
+              gl.FRAMEBUFFER,
+              attachmentEnum,
+              gl.RENDERBUFFER,
+              msBuffHandle
+            );
           i++;
         }
 
@@ -124,7 +187,12 @@ export class FrameBuffer implements WebGLDisposable {
           this.depthBufferMs = depthBufferMs;
           const dbHandleMs = depthBufferMs.getHandle();
           if (undefined !== dbHandleMs) {
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, dbHandleMs);
+            gl.framebufferRenderbuffer(
+              gl.FRAMEBUFFER,
+              gl.DEPTH_STENCIL_ATTACHMENT,
+              gl.RENDERBUFFER,
+              dbHandleMs
+            );
           }
         }
         this.unbind();
@@ -132,12 +200,26 @@ export class FrameBuffer implements WebGLDisposable {
     }
   }
 
-  public static create(colorTextures: TextureHandle[], depthBuffer?: DepthBuffer, colorMsBuffers?: RenderBufferMultiSample[], msFilters?: GL.MultiSampling.Filter[], depthBufferMs?: DepthBuffer): FrameBuffer | undefined {
-    const fbo: WebGLFramebuffer | null = System.instance.context.createFramebuffer();
+  public static create(
+    colorTextures: TextureHandle[],
+    depthBuffer?: DepthBuffer,
+    colorMsBuffers?: RenderBufferMultiSample[],
+    msFilters?: GL.MultiSampling.Filter[],
+    depthBufferMs?: DepthBuffer
+  ): FrameBuffer | undefined {
+    const fbo: WebGLFramebuffer | null =
+      System.instance.context.createFramebuffer();
     if (null === fbo) {
       return undefined;
     }
-    return new FrameBuffer(fbo, colorTextures, depthBuffer, colorMsBuffers, msFilters, depthBufferMs);
+    return new FrameBuffer(
+      fbo,
+      colorTextures,
+      depthBuffer,
+      colorMsBuffers,
+      msFilters,
+      depthBufferMs
+    );
   }
 
   public dispose(): void {
@@ -152,12 +234,14 @@ export class FrameBuffer implements WebGLDisposable {
     }
   }
 
-  public bind(bindAttachments: boolean = false, bindMS: boolean = false): boolean {
+  public bind(
+    bindAttachments: boolean = false,
+    bindMS: boolean = false
+  ): boolean {
     assert(undefined !== this._fbo);
     assert(!this.isBound);
 
-    if (undefined === this._fbo)
-      return false;
+    if (undefined === this._fbo) return false;
 
     const gl = System.instance.context;
 
@@ -199,12 +283,11 @@ export class FrameBuffer implements WebGLDisposable {
    * All color attachments are blitted if ndx is undefined, none are blitted if ndx is -1.
    */
   public blitMsBuffersToTextures(blitDepth: boolean, ndx?: number) {
-    if (!this._fboMs)
-      return;
+    if (!this._fboMs) return;
     System.instance.frameBufferStack.suspend();
     const gl2 = System.instance.context;
     const attachments = [];
-    const max = (undefined === ndx ? this._colorMsBuffers.length : ndx + 1);
+    const max = undefined === ndx ? this._colorMsBuffers.length : ndx + 1;
     for (let i = 0; i < max; ++i) {
       if (undefined !== ndx && i < ndx) {
         attachments.push(gl2.NONE); // skip this one, but first add a NONE for it in the attachment list
@@ -218,21 +301,43 @@ export class FrameBuffer implements WebGLDisposable {
         gl2.drawBuffers(attachments);
         attachments.pop();
         attachments.push(gl2.NONE);
-        gl2.blitFramebuffer(0, 0, this._colorTextures[i].width, this._colorTextures[i].height,
-          0, 0, this._colorTextures[i].width, this._colorTextures[i].height,
-          GL.BufferBit.Color, this._colorMsFilters[i]);
+        gl2.blitFramebuffer(
+          0,
+          0,
+          this._colorTextures[i].width,
+          this._colorTextures[i].height,
+          0,
+          0,
+          this._colorTextures[i].width,
+          this._colorTextures[i].height,
+          GL.BufferBit.Color,
+          this._colorMsFilters[i]
+        );
         this._colorMsBuffers[i].markBufferDirty(false);
-        if (undefined !== ndx && i === ndx)
-          break;
+        if (undefined !== ndx && i === ndx) break;
       }
     }
-    if (blitDepth && undefined !== this.depthBuffer && undefined !== this.depthBufferMs && (this.depthBufferMs as RenderBufferMultiSample).isDirty) {
+    if (
+      blitDepth &&
+      undefined !== this.depthBuffer &&
+      undefined !== this.depthBufferMs &&
+      (this.depthBufferMs as RenderBufferMultiSample).isDirty
+    ) {
       const mask = GL.BufferBit.Depth; // (this.depthBuffer instanceof RenderBuffer ? GL.BufferBit.Depth : GL.BufferBit.Depth | GL.BufferBit.Stencil);
       gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs);
       gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, this._fbo!);
-      gl2.blitFramebuffer(0, 0, this.depthBuffer.width, this.depthBuffer.height,
-        0, 0, this.depthBuffer.width, this.depthBuffer.height,
-        mask, GL.MultiSampling.Filter.Nearest);
+      gl2.blitFramebuffer(
+        0,
+        0,
+        this.depthBuffer.width,
+        this.depthBuffer.height,
+        0,
+        0,
+        this.depthBuffer.width,
+        this.depthBuffer.height,
+        mask,
+        GL.MultiSampling.Filter.Nearest
+      );
       (this.depthBufferMs as RenderBufferMultiSample).markBufferDirty(false);
     }
     gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, null);
@@ -244,29 +349,51 @@ export class FrameBuffer implements WebGLDisposable {
    * All color attachments are invalidated if ndx is undefined, none are invalidated if ndx is -1.
    * Set withMultiSampling to true to invalidate the MS buffers.
    */
-  public invalidate(invDepth: boolean, invStencil: boolean, withMultiSampling: boolean, indices?: number[]): void {
+  public invalidate(
+    invDepth: boolean,
+    invStencil: boolean,
+    withMultiSampling: boolean,
+    indices?: number[]
+  ): void {
     const gl = System.instance.context;
-    const attachments: number[] = invDepth ? (invStencil ? [gl.DEPTH_STENCIL_ATTACHMENT] : [System.instance.context.DEPTH_ATTACHMENT]) : (invDepth ? [gl.STENCIL_ATTACHMENT] : []);
+    const attachments: number[] = invDepth
+      ? invStencil
+        ? [gl.DEPTH_STENCIL_ATTACHMENT]
+        : [System.instance.context.DEPTH_ATTACHMENT]
+      : invDepth
+      ? [gl.STENCIL_ATTACHMENT]
+      : [];
     if (undefined !== indices) {
       if (indices.length > 0) {
-        for (const i of indices)
-          attachments.push(gl.COLOR_ATTACHMENT0 + i);
+        for (const i of indices) attachments.push(gl.COLOR_ATTACHMENT0 + i);
       }
     } else {
       attachments.concat(this._colorAttachments);
     }
-    System.instance.frameBufferStack.execute(this, true, withMultiSampling, () => {
-      System.instance.invalidateFrameBuffer(attachments);
-    });
+    System.instance.frameBufferStack.execute(
+      this,
+      true,
+      withMultiSampling,
+      () => {
+        System.instance.invalidateFrameBuffer(attachments);
+      }
+    );
   }
 
   // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
   public get debugPixels(): Uint8Array | undefined {
-    if (!this.isBound || 0 === this._colorTextures.length || !(this._colorTextures[0] instanceof TextureHandle))
+    if (
+      !this.isBound ||
+      0 === this._colorTextures.length ||
+      !(this._colorTextures[0] instanceof TextureHandle)
+    )
       return undefined;
 
     const tex = this._colorTextures[0];
-    if (GL.Texture.Format.Rgba !== tex.format || GL.Texture.DataType.UnsignedByte !== tex.dataType)
+    if (
+      GL.Texture.Format.Rgba !== tex.format ||
+      GL.Texture.DataType.UnsignedByte !== tex.dataType
+    )
       return undefined;
 
     const buffer = new Uint8Array(tex.width * tex.height * 4);
@@ -277,7 +404,15 @@ export class FrameBuffer implements WebGLDisposable {
       buffer[i + 3] = 0x0d;
     }
 
-    System.instance.context.readPixels(0, 0, tex.width, tex.height, tex.format, tex.dataType, buffer);
+    System.instance.context.readPixels(
+      0,
+      0,
+      tex.width,
+      tex.height,
+      tex.format,
+      tex.dataType,
+      buffer
+    );
     return buffer;
   }
 }
@@ -293,9 +428,15 @@ export class FrameBufferStack {
   // FrameBuffers within this array are not owned, as this is only a storage device holding references
   private readonly _stack: Binding[] = [];
 
-  private get _top() { return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined; }
+  private get _top() {
+    return !this.isEmpty ? this._stack[this._stack.length - 1] : undefined;
+  }
 
-  public push(fbo: FrameBuffer, withAttachments: boolean, withMultSampling: boolean): void {
+  public push(
+    fbo: FrameBuffer,
+    withAttachments: boolean,
+    withMultSampling: boolean
+  ): void {
     if (undefined !== this._top) {
       this._top.fbo.suspend();
     }
@@ -339,9 +480,16 @@ export class FrameBufferStack {
     return undefined !== this._top ? this._top.fbo.isBoundMultisampled : false;
   }
 
-  public get isEmpty(): boolean { return 0 === this._stack.length; }
+  public get isEmpty(): boolean {
+    return 0 === this._stack.length;
+  }
 
-  public execute(fbo: FrameBuffer, withAttachments: boolean, withMultSampling: boolean, func: () => void) {
+  public execute(
+    fbo: FrameBuffer,
+    withAttachments: boolean,
+    withMultSampling: boolean,
+    func: () => void
+  ) {
     this.push(fbo, withAttachments, withMultSampling);
     func();
     this.pop();
@@ -349,8 +497,7 @@ export class FrameBufferStack {
 
   public markTargetsDirty(): void {
     const top = this._top;
-    if (undefined !== top)
-      top.fbo.markTargetsDirty();
+    if (undefined !== top) top.fbo.markTargetsDirty();
   }
 
   public suspend(): void {

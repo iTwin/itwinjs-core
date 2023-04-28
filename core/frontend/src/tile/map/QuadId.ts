@@ -36,19 +36,26 @@ export class QuadId {
   public static createFromContentId(stringId: string) {
     const idParts = stringId.split("_");
     assert(idParts.length === 3);
-    if (3 !== idParts.length)
-      return new QuadId(-1, -1, -1);
+    if (3 !== idParts.length) return new QuadId(-1, -1, -1);
 
-    return new QuadId(parseInt(idParts[0], 10), parseInt(idParts[1], 10), parseInt(idParts[2], 10));
+    return new QuadId(
+      parseInt(idParts[0], 10),
+      parseInt(idParts[1], 10),
+      parseInt(idParts[2], 10)
+    );
   }
 
   /** @alpha */
   public get contentId(): string {
-    return  QuadId.getTileContentId(this.level, this.column, this.row);
+    return QuadId.getTileContentId(this.level, this.column, this.row);
   }
 
   /** @alpha */
-  public static getTileContentId(level: number, column: number, row: number): string {
+  public static getTileContentId(
+    level: number,
+    column: number,
+    row: number
+  ): string {
     return `${level}_${column}_${row}`;
   }
 
@@ -87,27 +94,66 @@ export class QuadId {
     return this._getLatLongRange(mapTilingScheme, "radians");
   }
 
-  private _getLatLongRange(mapTilingScheme: MapTilingScheme, units: "radians" | "degrees"): Range2d {
+  private _getLatLongRange(
+    mapTilingScheme: MapTilingScheme,
+    units: "radians" | "degrees"
+  ): Range2d {
     const range = Range2d.createNull();
     const factor = "degrees" === units ? Angle.degreesPerRadian : 1;
 
-    mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, scratchCartographic1);
-    range.extendXY(scratchCartographic1.longitude * factor, scratchCartographic1.latitude * factor);
-    mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, scratchCartographic2);
-    range.extendXY(scratchCartographic2.longitude * factor, scratchCartographic2.latitude * factor);
+    mapTilingScheme.tileXYToCartographic(
+      this.column,
+      this.row,
+      this.level,
+      scratchCartographic1
+    );
+    range.extendXY(
+      scratchCartographic1.longitude * factor,
+      scratchCartographic1.latitude * factor
+    );
+    mapTilingScheme.tileXYToCartographic(
+      this.column + 1,
+      this.row + 1,
+      this.level,
+      scratchCartographic2
+    );
+    range.extendXY(
+      scratchCartographic2.longitude * factor,
+      scratchCartographic2.latitude * factor
+    );
 
     return range;
   }
 
   /** @alpha */
-  public getAngleSweep(mapTilingScheme: MapTilingScheme): { longitude: AngleSweep, latitude: AngleSweep } {
-    mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, scratchCartographic1);
-    mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, scratchCartographic2);
+  public getAngleSweep(mapTilingScheme: MapTilingScheme): {
+    longitude: AngleSweep;
+    latitude: AngleSweep;
+  } {
+    mapTilingScheme.tileXYToCartographic(
+      this.column,
+      this.row,
+      this.level,
+      scratchCartographic1
+    );
+    mapTilingScheme.tileXYToCartographic(
+      this.column + 1,
+      this.row + 1,
+      this.level,
+      scratchCartographic2
+    );
     return {
-      longitude: AngleSweep.createStartEndRadians(scratchCartographic1.longitude, scratchCartographic2.longitude),
+      longitude: AngleSweep.createStartEndRadians(
+        scratchCartographic1.longitude,
+        scratchCartographic2.longitude
+      ),
       latitude: AngleSweep.createStartEndRadians(
-        Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic1.latitude),
-        Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic2.latitude)
+        Cartographic.parametricLatitudeFromGeodeticLatitude(
+          scratchCartographic1.latitude
+        ),
+        Cartographic.parametricLatitudeFromGeodeticLatitude(
+          scratchCartographic2.latitude
+        )
       ),
     };
   }
@@ -124,8 +170,10 @@ export class QuadId {
 
   /** Compares this Id to another according to the conventions of an [OrderedComparator]($bentley). */
   public compare(other: QuadId): number {
-    return compareNumbers(this.level, other.level) ||
+    return (
+      compareNumbers(this.level, other.level) ||
       compareNumbers(this.row, other.row) ||
-      compareNumbers(this.column, other.column);
+      compareNumbers(this.column, other.column)
+    );
   }
 }

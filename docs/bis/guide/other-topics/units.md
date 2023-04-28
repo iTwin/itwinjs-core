@@ -2,7 +2,7 @@
 
 BIS and iModels always use a well defined system of physical units.
 
-## Physical Units must be *SI Base Units* or *SI Derived Units*
+## Physical Units must be _SI Base Units_ or _SI Derived Units_
 
 All physical property values (including geometry) in a BIS schema must be either:
 
@@ -13,7 +13,7 @@ It is therefore possible to perform mathematical operations on physical values w
 
 ```ts
 Mass = Density * Volume; // no unit conversions necessary
-````
+```
 
 > Note: in iModels, all coordinate data is stored in meters.
 
@@ -21,7 +21,8 @@ Mass = Density * Volume; // no unit conversions necessary
 
 ## Angle Units
 
-Angle units are *radians*, as that is the *SI Derived Unit* for angles. Similarly the units for solid angles are *steradians*.
+Angle units are _radians_, as that is the _SI Derived Unit_ for angles. Similarly the units for solid angles are _steradians_.
+
 > This may seem awkward, as "90" is a more recognizable value than "1.5707963267948966192313216916398" However, note that storage units are not directly presented to users.
 
 Radians are used to permit consistent mathematical computations.
@@ -36,7 +37,7 @@ For example:
 
 ## Exception for Roll, Pitch and Yaw
 
-`Roll`, `Pitch` and `Yaw` (in `GeometricElement3d` and `ViewDefinition3d`, `AuxCoordinateSystem3d`) are handled specially. They are defined in *degrees* and declared as unitless in the EC schema.
+`Roll`, `Pitch` and `Yaw` (in `GeometricElement3d` and `ViewDefinition3d`, `AuxCoordinateSystem3d`) are handled specially. They are defined in _degrees_ and declared as unitless in the EC schema.
 
 Similarly, these properties are defined in degrees and declared as unitless in the EC schema:
 
@@ -58,5 +59,6 @@ The SI units requirement only applies to numeric physical and geometry propertie
 -->
 
 ---
+
 | Next: [BIS Schema KindOfQuantities](./kindOfQuantities.md)
 |:---

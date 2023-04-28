@@ -14,7 +14,7 @@ access to it can be controlled by its owner.
 Every iModel has a single [spatial coordinate system](../learning/glossary#spatial-coordinate-system) that may be positioned and oriented somewhere on the earth. In this manner multiple iModels can be oriented relative to one
 another, and relative to external reality models, cartographic and geographic information systems, etc.
 
-iModels have a property called [Project Extents](../learning/glossary#project-extents) that describes the *volume of interest* they occupy. All geometry in the spatial coordinate system of an iModel must be contained inside this volume.
+iModels have a property called [Project Extents](../learning/glossary#project-extents) that describes the _volume of interest_ they occupy. All geometry in the spatial coordinate system of an iModel must be contained inside this volume.
 
 ## The format of information in an iModel is defined by BIS
 
@@ -28,7 +28,7 @@ There are many types of Models, corresponding to the type of information they ho
 ## A Model is comprised of many Elements
 
 [Elements](../bis/guide/fundamentals/element-fundamentals) are the smallest independently addressable building block in BIS.
-Every Element is *owned by* (i.e. *contained in*) one and only one Model.
+Every Element is _owned by_ (i.e. _contained in_) one and only one Model.
 
 There are many types of Elements, corresponding to the type of information they contain. Only [GeometricElement]($backend)s, held in [GeometricModel]($backend)s, are visible in [Views](../learning/frontend/views).
 

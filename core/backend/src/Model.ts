@@ -11,10 +11,24 @@
 import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ElementProps, EntityReferenceSet, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel,
-  InformationPartitionElementProps, ModelProps, RelatedElement,
+  AxisAlignedBox3d,
+  ElementProps,
+  EntityReferenceSet,
+  GeometricModel2dProps,
+  GeometricModel3dProps,
+  GeometricModelProps,
+  IModel,
+  InformationPartitionElementProps,
+  ModelProps,
+  RelatedElement,
 } from "@itwin/core-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
+import {
+  DefinitionPartition,
+  DocumentPartition,
+  InformationRecordPartition,
+  PhysicalPartition,
+  SpatialLocationPartition,
+} from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
@@ -66,9 +80,13 @@ export interface OnElementInModelIdArg extends OnModelIdArg {
  */
 export class Model extends Entity {
   /** @internal */
-  public static override get className(): string { return "Model"; }
+  public static override get className(): string {
+    return "Model";
+  }
   /** @internal */
-  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
+  public static override get protectedOperations() {
+    return ["onInsert", "onUpdate", "onDelete"];
+  }
   public readonly modeledElement!: RelatedElement;
   public readonly name: string;
   public readonly parentModel!: Id64String;
@@ -103,7 +121,8 @@ export class Model extends Entity {
   protected static onInsert(arg: OnModelPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels.verifyChannel(props.modeledElement.id);
-    if (props.parentModel)   // inserting requires shared lock on parent, if present
+    if (props.parentModel)
+      // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
 
@@ -133,8 +152,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(_arg: OnModelIdArg): void {
-  }
+  protected static onUpdated(_arg: OnModelIdArg): void {}
 
   /** Called before a Model is deleted.
    * @note throw an exception to disallow the delete
@@ -152,7 +170,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnModelIdArg): void { }
+  protected static onDeleted(_arg: OnModelIdArg): void {}
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
@@ -160,14 +178,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model to hold the element
    * @beta
    */
-  protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
+  protected static onInsertElement(_arg: OnElementInModelPropsArg): void {}
 
   /** Called after an Element has been inserted into an instance of a Model of this class.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onInsertedElement(_arg: OnElementInModelIdArg): void {}
 
   /** Called when an Element in an instance of a Model of this class is about to be updated.
    * @note throw an exception to disallow the update
@@ -175,14 +193,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
+  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void {}
 
   /** Called after an Element in an instance of a Model of this class has been updated.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void {}
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @note throw an exception to disallow the delete
@@ -190,14 +208,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeleteElement(_arg: OnElementInModelIdArg): void {}
 
   /** Called after an Element in an instance of a Model of this class has been deleted.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeletedElement(_arg: OnElementInModelIdArg): void {}
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
@@ -207,30 +225,47 @@ export class Model extends Entity {
   }
 
   /** Get a set of JSON user properties by namespace */
-  public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
+  public getUserProperties(namespace: string) {
+    return this.getAllUserProperties()[namespace];
+  }
 
   /** Change a set of user JSON properties of this Element by namespace. */
-  public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
+  public setUserProperties(nameSpace: string, value: any) {
+    this.getAllUserProperties()[nameSpace] = value;
+  }
 
   /** Remove a set of JSON user properties, specified by namespace, from this Element */
-  public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
+  public removeUserProperties(nameSpace: string) {
+    delete this.getAllUserProperties()[nameSpace];
+  }
 
-  public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
-  public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
+  public getJsonProperty(name: string): any {
+    return this.jsonProperties[name];
+  }
+  public setJsonProperty(name: string, value: any) {
+    this.jsonProperties[name] = value;
+  }
 
   /** Insert this Model in the iModel */
-  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
+  public insert() {
+    return (this.id = this.iModel.models.insertModel(this.toJSON()));
+  }
   /** Update this Model in the iModel. */
-  public update() { this.iModel.models.updateModel(this.toJSON()); }
+  public update() {
+    this.iModel.models.updateModel(this.toJSON());
+  }
   /** Delete this Model from the iModel. */
-  public delete() { this.iModel.models.deleteModel(this.id); }
+  public delete() {
+    this.iModel.models.deleteModel(this.id);
+  }
 
   // NOTE: non-element entities do not yet have a concept of required references
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (this.parentModel)
-      referenceIds.addModel(this.parentModel);
+    if (this.parentModel) referenceIds.addModel(this.parentModel);
     referenceIds.addElement(this.modeledElement.id);
   }
 }
@@ -242,15 +277,21 @@ export class GeometricModel extends Model {
   public geometryGuid?: GuidString; // Initialized by the Entity constructor
 
   /** @internal */
-  public static override get className(): string { return "GeometricModel"; }
+  public static override get className(): string {
+    return "GeometricModel";
+  }
   /** @internal */
-  constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
+  constructor(props: GeometricModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   /** Query for the union of the extents of the elements contained by this model.
    * @note This function blocks the JavaScript event loop. Consider using [[queryRange]] instead.
    */
   public queryExtents(): AxisAlignedBox3d {
-    const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;
+    const extents = this.iModel.nativeDb.queryModelExtents({
+      id: this.id,
+    }).modelExtents;
     return Range3d.fromJSON(extents);
   }
 
@@ -273,10 +314,14 @@ export abstract class GeometricModel3d extends GeometricModel {
    */
   public readonly isNotSpatiallyLocated: boolean;
   /** If true, then the elements in this GeometricModel3d are in real-world coordinates and will be in the spatial index. */
-  public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
+  public get isSpatiallyLocated(): boolean {
+    return !this.isNotSpatiallyLocated;
+  }
 
   /** @internal */
-  public static override get className(): string { return "GeometricModel3d"; }
+  public static override get className(): string {
+    return "GeometricModel3d";
+  }
   /** @internal */
   constructor(props: GeometricModel3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -286,11 +331,9 @@ export abstract class GeometricModel3d extends GeometricModel {
   /** @internal */
   public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
-    if (this.isNotSpatiallyLocated)
-      val.isNotSpatiallyLocated = true;
+    if (this.isNotSpatiallyLocated) val.isNotSpatiallyLocated = true;
 
-    if (this.isPlanProjection)
-      val.isPlanProjection = true;
+    if (this.isPlanProjection) val.isPlanProjection = true;
 
     return val;
   }
@@ -303,9 +346,13 @@ export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   public globalOrigin?: Point2d; // Initialized by the Entity constructor
   /** @internal */
-  public static override get className(): string { return "GeometricModel2d"; }
+  public static override get className(): string {
+    return "GeometricModel2d";
+  }
   /** @internal */
-  constructor(props: GeometricModel2dProps, iModel: IModelDb) { super(props, iModel); }
+  constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
   /** @internal */
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
@@ -321,7 +368,9 @@ export abstract class GeometricModel2d extends GeometricModel {
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
   /** @internal */
-  public static override get className(): string { return "GraphicalModel2d"; }
+  public static override get className(): string {
+    return "GraphicalModel2d";
+  }
 }
 
 /** A container for persisting GraphicalElement3d instances.
@@ -331,7 +380,9 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
  */
 export abstract class GraphicalModel3d extends GeometricModel3d {
   /** @internal */
-  public static override get className(): string { return "GraphicalModel3d"; }
+  public static override get className(): string {
+    return "GraphicalModel3d";
+  }
 }
 
 /** A container for persisting 3d geometric elements that are spatially located.
@@ -339,7 +390,9 @@ export abstract class GraphicalModel3d extends GeometricModel3d {
  */
 export abstract class SpatialModel extends GeometricModel3d {
   /** @internal */
-  public static override get className(): string { return "SpatialModel"; }
+  public static override get className(): string {
+    return "SpatialModel";
+  }
 }
 
 /** A container for persisting physical elements that model physical space.
@@ -348,7 +401,9 @@ export abstract class SpatialModel extends GeometricModel3d {
  */
 export class PhysicalModel extends SpatialModel {
   /** @internal */
-  public static override get className(): string { return "PhysicalModel"; }
+  public static override get className(): string {
+    return "PhysicalModel";
+  }
   /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
@@ -357,7 +412,12 @@ export class PhysicalModel extends SpatialModel {
    * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentSubjectId: Id64String,
+    name: string,
+    isPlanProjection?: boolean
+  ): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -380,7 +440,9 @@ export class PhysicalModel extends SpatialModel {
  */
 export class SpatialLocationModel extends SpatialModel {
   /** @internal */
-  public static override get className(): string { return "SpatialLocationModel"; }
+  public static override get className(): string {
+    return "SpatialLocationModel";
+  }
   /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
@@ -389,12 +451,21 @@ export class SpatialLocationModel extends SpatialModel {
    * @returns The Id of the newly inserted SpatialLocationPartition and SpatialLocationModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentSubjectId: Id64String,
+    name: string,
+    isPlanProjection?: boolean
+  ): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: SpatialLocationPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: SpatialLocationPartition.createCode(iModelDb, parentSubjectId, name),
+      code: SpatialLocationPartition.createCode(
+        iModelDb,
+        parentSubjectId,
+        name
+      ),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     const modelProps: GeometricModel3dProps = {
@@ -411,7 +482,9 @@ export class SpatialLocationModel extends SpatialModel {
  */
 export class DrawingModel extends GraphicalModel2d {
   /** @internal */
-  public static override get className(): string { return "DrawingModel"; }
+  public static override get className(): string {
+    return "DrawingModel";
+  }
 }
 
 /** A container for persisting section [[DrawingGraphic]]s.
@@ -419,7 +492,9 @@ export class DrawingModel extends GraphicalModel2d {
  */
 export class SectionDrawingModel extends DrawingModel {
   /** @internal */
-  public static override get className(): string { return "SectionDrawingModel"; }
+  public static override get className(): string {
+    return "SectionDrawingModel";
+  }
 }
 
 /** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
@@ -429,7 +504,9 @@ export class SectionDrawingModel extends DrawingModel {
  */
 export class SheetModel extends GraphicalModel2d {
   /** @internal */
-  public static override get className(): string { return "SheetModel"; }
+  public static override get className(): string {
+    return "SheetModel";
+  }
 }
 
 /** A container for persisting role elements.
@@ -437,7 +514,9 @@ export class SheetModel extends GraphicalModel2d {
  */
 export class RoleModel extends Model {
   /** @internal */
-  public static override get className(): string { return "RoleModel"; }
+  public static override get className(): string {
+    return "RoleModel";
+  }
 }
 
 /** A container for persisting information elements.
@@ -445,7 +524,9 @@ export class RoleModel extends Model {
  */
 export abstract class InformationModel extends Model {
   /** @internal */
-  public static override get className(): string { return "InformationModel"; }
+  public static override get className(): string {
+    return "InformationModel";
+  }
 }
 
 /** A container for persisting group information elements.
@@ -454,7 +535,9 @@ export abstract class InformationModel extends Model {
  */
 export abstract class GroupInformationModel extends InformationModel {
   /** @internal */
-  public static override get className(): string { return "GroupInformationModel"; }
+  public static override get className(): string {
+    return "GroupInformationModel";
+  }
 }
 
 /** A container for persisting Information Record Elements
@@ -463,7 +546,9 @@ export abstract class GroupInformationModel extends InformationModel {
  */
 export class InformationRecordModel extends InformationModel {
   /** @internal */
-  public static override get className(): string { return "InformationRecordModel"; }
+  public static override get className(): string {
+    return "InformationRecordModel";
+  }
 
   /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -472,12 +557,20 @@ export class InformationRecordModel extends InformationModel {
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentSubjectId: Id64String,
+    name: string
+  ): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: InformationRecordPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
-      code: InformationRecordPartition.createCode(iModelDb, parentSubjectId, name),
+      code: InformationRecordPartition.createCode(
+        iModelDb,
+        parentSubjectId,
+        name
+      ),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     return iModelDb.models.insertModel({
@@ -493,7 +586,9 @@ export class InformationRecordModel extends InformationModel {
  */
 export class DefinitionModel extends InformationModel {
   /** @internal */
-  public static override get className(): string { return "DefinitionModel"; }
+  public static override get className(): string {
+    return "DefinitionModel";
+  }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -502,7 +597,11 @@ export class DefinitionModel extends InformationModel {
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentSubjectId: Id64String,
+    name: string
+  ): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: DefinitionPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -522,7 +621,9 @@ export class DefinitionModel extends InformationModel {
  */
 export class RepositoryModel extends DefinitionModel {
   /** @internal */
-  public static override get className(): string { return "RepositoryModel"; }
+  public static override get className(): string {
+    return "RepositoryModel";
+  }
 }
 
 /** Contains a list of document elements.
@@ -531,7 +632,9 @@ export class RepositoryModel extends DefinitionModel {
  */
 export class DocumentListModel extends InformationModel {
   /** @internal */
-  public static override get className(): string { return "DocumentListModel"; }
+  public static override get className(): string {
+    return "DocumentListModel";
+  }
   /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
@@ -539,14 +642,19 @@ export class DocumentListModel extends InformationModel {
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentSubjectId: Id64String,
+    name: string
+  ): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: DocumentPartition.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: DocumentPartition.createCode(iModelDb, parentSubjectId, name),
     };
-    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
+    const partitionId: Id64String =
+      iModelDb.elements.insertElement(partitionProps);
     return iModelDb.models.insertModel({
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
@@ -560,7 +668,9 @@ export class DocumentListModel extends InformationModel {
  */
 export class LinkModel extends InformationModel {
   /** @internal */
-  public static override get className(): string { return "LinkModel"; }
+  public static override get className(): string {
+    return "LinkModel";
+  }
 }
 
 /** The singleton container for repository-specific definition elements.
@@ -568,7 +678,9 @@ export class LinkModel extends InformationModel {
  */
 export class DictionaryModel extends DefinitionModel {
   /** @internal */
-  public static override get className(): string { return "DictionaryModel"; }
+  public static override get className(): string {
+    return "DictionaryModel";
+  }
 }
 
 /** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
@@ -576,5 +688,7 @@ export class DictionaryModel extends DefinitionModel {
  */
 export class WebMercatorModel extends SpatialModel {
   /** @internal */
-  public static override get className(): string { return "WebMercatorModel"; }
+  public static override get className(): string {
+    return "WebMercatorModel";
+  }
 }

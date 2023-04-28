@@ -6,7 +6,7 @@ Properly capturing the `PhysicalMaterial` of a `PhysicalElement` is of great imp
 
 ## Physical Material class-hierarchy
 
-Physical materials are modeled in BIS using an abstract subclass of `DefinitionElement` named `PhysicalMaterial`, which is defined in the *BisCore* schema. More specific subclasses of `bis:PhysicalMaterial` are defined in a separate core-layer `PhysicalMaterial` schema, covering the main physical materials used in infrastructure. It includes sealed subclasses such as `Aggregate`, `Aluminum`, `Asphalt` and `Concrete`. The list of physical materials included in the `PhysicalMaterial` schema may grow over time.
+Physical materials are modeled in BIS using an abstract subclass of `DefinitionElement` named `PhysicalMaterial`, which is defined in the _BisCore_ schema. More specific subclasses of `bis:PhysicalMaterial` are defined in a separate core-layer `PhysicalMaterial` schema, covering the main physical materials used in infrastructure. It includes sealed subclasses such as `Aggregate`, `Aluminum`, `Asphalt` and `Concrete`. The list of physical materials included in the `PhysicalMaterial` schema may grow over time.
 
 In some cases, especially while converting legacy data, the software may not know enough about a physical material to be able to classify it in terms of the classes offered by the `PhysicalMaterial` schema. The core-layer `Generic` schema includes a `generic:PhysicalMaterial` class for those cases.
 
@@ -45,5 +45,6 @@ The following instance-diagram shows an example of a composite beam as an hetero
 &nbsp;
 
 ---
+
 | Next: [Quantity takeoffs: Guidelines](./qto-guidelines.md)
 |:---

@@ -5,9 +5,22 @@
 
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import {
+  Angle,
+  AngleSweep,
+  Arc3d,
+  LineString3d,
+  Point3d,
+  YawPitchRollAngles,
+} from "@itwin/core-geometry";
 import { SnapshotDb } from "@itwin/core-backend";
-import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, Placement3dProps } from "@itwin/core-common";
+import {
+  Code,
+  GeometricElement3dProps,
+  GeometryStreamBuilder,
+  IModel,
+  Placement3dProps,
+} from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.
@@ -17,7 +30,9 @@ describe("Wire Format Snippets", () => {
   let iModel: SnapshotDb;
 
   before(() => {
-    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "wire-format.bim" });
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", {
+      copyFilename: "wire-format.bim",
+    });
   });
 
   after(() => {
@@ -33,20 +48,19 @@ describe("Wire Format Snippets", () => {
 
     /* eslint-disable */
     const expectedProps =
-    // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.json
-    {
-      "classFullName": "BisCore:Subject",
-      "code": {
-        "scope": "0x1",
-        "spec": "0x1f",
-        "value": "DgnDbTestUtils"
-      },
-      "description": "",
-      "id": "0x1",
-      "model": "0x1"
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.json
+      {
+        classFullName: "BisCore:Subject",
+        code: {
+          scope: "0x1",
+          spec: "0x1f",
+          value: "DgnDbTestUtils",
+        },
+        description: "",
+        id: "0x1",
+        model: "0x1",
+      };
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
 
     expect(JSON.parse(json)).deep.eq(expectedProps);
@@ -54,29 +68,30 @@ describe("Wire Format Snippets", () => {
 
   it("RepositoryModel", () => {
     // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.code
-    const modelProps = iModel.models.getModel(IModel.repositoryModelId).toJSON();
+    const modelProps = iModel.models
+      .getModel(IModel.repositoryModelId)
+      .toJSON();
     const json = JSON.stringify(modelProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(modelProps);
 
     /* eslint-disable */
     const expectedProps =
-    // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.json
-    {
-      "classFullName": "BisCore:RepositoryModel",
-      "id": "0x1",
-      "isPrivate": false,
-      "isTemplate": false,
-      "jsonProperties": {},
-      "modeledElement": {
-        "id": "0x1",
-        "relClassName": "BisCore:ModelModelsElement",
-      },
-      "parentModel": "0x1",
-      "name": "DgnDbTestUtils"
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.json
+      {
+        classFullName: "BisCore:RepositoryModel",
+        id: "0x1",
+        isPrivate: false,
+        isTemplate: false,
+        jsonProperties: {},
+        modeledElement: {
+          id: "0x1",
+          relClassName: "BisCore:ModelModelsElement",
+        },
+        parentModel: "0x1",
+        name: "DgnDbTestUtils",
+      };
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
 
     expect(JSON.parse(json)).deep.eq(expectedProps);
@@ -89,7 +104,10 @@ describe("Wire Format Snippets", () => {
     // Construct an Arc3d (local coordinates)
     const center = new Point3d(0, 0, 0);
     const radius = 1;
-    const sweep = AngleSweep.createStartEnd(Angle.createDegrees(90), Angle.createDegrees(180));
+    const sweep = AngleSweep.createStartEnd(
+      Angle.createDegrees(90),
+      Angle.createDegrees(180)
+    );
     const arc = Arc3d.createXY(center, radius, sweep);
     const arcJson = JSON.stringify(arc, undefined, 2);
 
@@ -106,7 +124,11 @@ describe("Wire Format Snippets", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(arc);
     builder.appendGeometry(lineString);
-    const geometryStreamJson: string = JSON.stringify(builder.geometryStream, undefined, 2);
+    const geometryStreamJson: string = JSON.stringify(
+      builder.geometryStream,
+      undefined,
+      2
+    );
 
     // Construct a Placement (world coordinates)
     const origin = new Point3d(100, 100, 0);
@@ -129,30 +151,14 @@ describe("Wire Format Snippets", () => {
 
     /* eslint-disable */
     const expectedArcJson =
-    // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Arc.json
-    {
-      "center": [
-        0,
-        0,
-        0
-      ],
-      "sweep": [
-        90,
-        180
-      ],
-      "vector0": [
-        1,
-        0,
-        0
-      ],
-      "vector90": [
-        0,
-        1,
-        0
-      ]
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Arc.json
+      {
+        center: [0, 0, 0],
+        sweep: [90, 180],
+        vector0: [1, 0, 0],
+        vector90: [0, 1, 0],
+      };
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(arcJson)).deep.eq(expectedArcJson);
 
@@ -161,24 +167,11 @@ describe("Wire Format Snippets", () => {
       // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_LineString.json
 
       [
-        [
-          0,
-          0,
-          0
-        ],
-        [
-          1,
-          2,
-          0
-        ],
-        [
-          1,
-          2,
-          4
-        ]
-      ]
-      // __PUBLISH_EXTRACT_END__
-      ;
+        [0, 0, 0],
+        [1, 2, 0],
+        [1, 2, 4],
+      ];
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(lineStringJson)).deep.eq(expectedLineStringJson);
 
@@ -187,142 +180,76 @@ describe("Wire Format Snippets", () => {
       // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_GeometryStream.json
       [
         {
-          "arc": {
-            "center": [
-              0,
-              0,
-              0
-            ],
-            "vectorX": [
-              1,
-              0,
-              0
-            ],
-            "vectorY": [
-              0,
-              1,
-              0
-            ],
-            "sweepStartEnd": [
-              90,
-              180
-            ]
-          }
+          arc: {
+            center: [0, 0, 0],
+            vectorX: [1, 0, 0],
+            vectorY: [0, 1, 0],
+            sweepStartEnd: [90, 180],
+          },
         },
         {
-          "lineString": [
-            [
-              0,
-              0,
-              0
-            ],
-            [
-              1,
-              2,
-              0
-            ],
-            [
-              1,
-              2,
-              4
-            ]
-          ]
-        }
-      ]
-      // __PUBLISH_EXTRACT_END__
-      ;
+          lineString: [
+            [0, 0, 0],
+            [1, 2, 0],
+            [1, 2, 4],
+          ],
+        },
+      ];
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(geometryStreamJson)).deep.eq(expectedGeomStreamJson);
 
     /* eslint-disable */
     const expectedPlacementJson =
-    // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Placement.json
-    {
-      "origin": [
-        100,
-        100,
-        0
-      ],
-      "angles": {
-        "pitch": 90
-      }
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Placement.json
+      {
+        origin: [100, 100, 0],
+        angles: {
+          pitch: 90,
+        },
+      };
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(placementJson)).deep.eq(expectedPlacementJson);
 
     /* eslint-disable */
     const expectedElementJson =
-    // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Element.json
-    {
-      "classFullName": "Generic:PhysicalObject",
-      "model": "0",
-      "code": {
-        "spec": "0x1",
-        "scope": "0x1",
-        "value": ""
-      },
-      "category": "0",
-      "placement": {
-        "origin": [
-          100,
-          100,
-          0
-        ],
-        "angles": {
-          "pitch": 90
-        }
-      },
-      "geom": [
-        {
-          "arc": {
-            "center": [
-              0,
-              0,
-              0
-            ],
-            "vectorX": [
-              1,
-              0,
-              0
-            ],
-            "vectorY": [
-              0,
-              1,
-              0
-            ],
-            "sweepStartEnd": [
-              90,
-              180
-            ]
-          }
+      // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Element.json
+      {
+        classFullName: "Generic:PhysicalObject",
+        model: "0",
+        code: {
+          spec: "0x1",
+          scope: "0x1",
+          value: "",
         },
-        {
-          "lineString": [
-            [
-              0,
-              0,
-              0
+        category: "0",
+        placement: {
+          origin: [100, 100, 0],
+          angles: {
+            pitch: 90,
+          },
+        },
+        geom: [
+          {
+            arc: {
+              center: [0, 0, 0],
+              vectorX: [1, 0, 0],
+              vectorY: [0, 1, 0],
+              sweepStartEnd: [90, 180],
+            },
+          },
+          {
+            lineString: [
+              [0, 0, 0],
+              [1, 2, 0],
+              [1, 2, 4],
             ],
-            [
-              1,
-              2,
-              0
-            ],
-            [
-              1,
-              2,
-              4
-            ]
-          ]
-        }
-      ]
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+          },
+        ],
+      };
+    // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(elementPropsJson)).deep.eq(expectedElementJson);
   });
-
 });

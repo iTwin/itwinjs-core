@@ -27,14 +27,10 @@ class MochaSerializer {
     // Browser side of mocha is webpacked so the constructor name has an added suffix for example `Test` is converted into `Test$4`.
     // This is not the case is node side of mocha, so an error is thrown because of this mismatch. The `.replace()` is there to strip that suffix
     let $$typeName: string;
-    if (raw instanceof Mocha.Suite)
-      $$typeName = "Suite";
-    else if (raw instanceof Mocha.Test)
-      $$typeName = "Test";
-    else if (raw instanceof Mocha.Hook)
-      $$typeName = "Hook";
-    else
-      throw new Error("Unexpected instance of Mocha");
+    if (raw instanceof Mocha.Suite) $$typeName = "Suite";
+    else if (raw instanceof Mocha.Test) $$typeName = "Test";
+    else if (raw instanceof Mocha.Hook) $$typeName = "Hook";
+    else throw new Error("Unexpected instance of Mocha");
 
     if ($$index < 0) {
       $$index = this._registry.push(raw) - 1;
@@ -42,7 +38,9 @@ class MochaSerializer {
       isPrimary = true;
     }
 
-    return (isPrimary) ? { $$index, $$typeName, ...raw } : { $$index, $$typeName };
+    return isPrimary
+      ? { $$index, $$typeName, ...raw }
+      : { $$index, $$typeName };
   }
 
   /**
@@ -53,20 +51,30 @@ class MochaSerializer {
    *             properties (even if it should already exist in the backend's registry).
    */
   public static serialize(root: any) {
-    const isMochaObj = (obj: any): obj is MochaObj => (obj instanceof Mocha.Runnable || obj instanceof Mocha.Suite);
+    const isMochaObj = (obj: any): obj is MochaObj =>
+      obj instanceof Mocha.Runnable || obj instanceof Mocha.Suite;
 
     const replacer = (key: string, value: any): any => {
       // Some pretty important properties of Errors are not enumerable, so we need to special handle them here:
       if (value instanceof Error)
-        return { ...value, name: value.name, message: value.message, stack: value.stack };
+        return {
+          ...value,
+          name: value.name,
+          message: value.message,
+          stack: value.stack,
+        };
 
-      if (key === "" || !isMochaObj(value))
-        return value;
+      if (key === "" || !isMochaObj(value)) return value;
 
-      return JSON.parse(JSON.stringify(this.createHandle(value, false), replacer));
+      return JSON.parse(
+        JSON.stringify(this.createHandle(value, false), replacer)
+      );
     };
 
-    return JSON.stringify(isMochaObj(root) ? this.createHandle(root, true) : root, replacer);
+    return JSON.stringify(
+      isMochaObj(root) ? this.createHandle(root, true) : root,
+      replacer
+    );
   }
 
   /**
@@ -76,7 +84,11 @@ class MochaSerializer {
   public static deserialize(txt: string): any {
     return JSON.parse(txt, (_key, value) => {
       // We only need to special-case our "handle" objects, and we'll assume anything with `$$index` fits the bill.
-      if (typeof value !== "object" || value === null || typeof value.$$index !== "number")
+      if (
+        typeof value !== "object" ||
+        value === null ||
+        typeof value.$$index !== "number"
+      )
         return value;
 
       // Try to lookup this handle's instance in our registry
@@ -90,7 +102,10 @@ class MochaSerializer {
       }
 
       // Set the prototype and add the handle to the registry - we can now treat this as (essentially) the real instance.
-      Object.setPrototypeOf(value, require("mocha")[value.$$typeName].prototype);
+      Object.setPrototypeOf(
+        value,
+        require("mocha")[value.$$typeName].prototype
+      );
       this._registry[value.$$index] = value;
       return value;
     });

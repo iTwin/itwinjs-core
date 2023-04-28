@@ -18,8 +18,7 @@ describe("IModel Elements", () => {
   before(async function () {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
     elements = iModel.elements;
@@ -33,13 +32,18 @@ describe("IModel Elements", () => {
   });
 
   it("should query props", async () => {
-    const elementProps: ElementProps[] = await elements.queryProps({ from: SpatialModelState.classFullName });
+    const elementProps: ElementProps[] = await elements.queryProps({
+      from: SpatialModelState.classFullName,
+    });
 
     expect(elementProps).to.exist.and.be.not.empty;
   });
 
   it("should query ids", async () => {
-    const ids: Id64Set = await elements.queryIds({ limit: 10, from: "BisCore:Subject" });
+    const ids: Id64Set = await elements.queryIds({
+      limit: 10,
+      from: "BisCore:Subject",
+    });
 
     expect(ids).to.exist;
   });
@@ -49,17 +53,18 @@ describe("Operational: Execute Query", () => {
   it("should successfully execute a simple query", async function () {
     const testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     const iModel = await testContext.iModelWithChangesets!.getConnection();
-    const query = "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
+    const query =
+      "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
 
     const rows = [];
-    for await (const row of iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const row of iModel.createQueryReader(query, undefined, {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    }))
       rows.push(row);
 
     expect(rows).to.be.not.empty;
   });
 });
-

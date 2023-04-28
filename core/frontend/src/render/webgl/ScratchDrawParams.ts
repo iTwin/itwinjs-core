@@ -10,7 +10,10 @@ let progParams: ShaderProgramParams | undefined;
 let drawParams: DrawParams | undefined;
 
 /** @internal */
-export function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
+export function getDrawParams(
+  target: Target,
+  geometry: CachedGeometry
+): DrawParams {
   if (undefined === progParams) {
     progParams = new ShaderProgramParams();
     drawParams = new DrawParams();

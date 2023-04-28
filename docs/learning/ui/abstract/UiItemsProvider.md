@@ -10,10 +10,23 @@ Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that s
 ```ts
 export interface UiItemsProvider {
   readonly id: string;
-  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
+  provideToolbarButtonItems?: (
+    stageId: string,
+    stageUsage: string,
+    toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation
+  ) => CommonToolbarItem[];
+  provideStatusBarItems?: (
+    stageId: string,
+    stageUsage: string
+  ) => CommonStatusBarItem[];
   provideBackstageItems?: () => BackstageItem[];
-  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
+  provideWidgets?: (
+    stageId: string,
+    stageUsage: string,
+    location: StagePanelLocation,
+    section?: StagePanelSection
+  ) => ReadonlyArray<AbstractWidgetProps>;
 }
 ```
 
@@ -112,7 +125,7 @@ The [UiItemsManager]($appui-abstract) class has a few responsibilities,
 Below is an example of registering the TestUiProvider defined above.
 
 ```ts
-UiItemsManager.register( new TestUiProvider());
+UiItemsManager.register(new TestUiProvider());
 ```
 
 ### Examples
@@ -123,7 +136,10 @@ The following examples show how an application can allow, disallow and update a 
 
 ```ts
 class ExampleUiItemsApplication implements UiItemsApplication {
-  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
+  public validateToolbarButtonItem(item: CommonToolbarItem): {
+    updatedItem: CommonToolbarItem;
+    action: UiItemsApplicationAction;
+  } {
     return { updatedItem: item, action: UiItemsApplicationAction.Allow };
   }
 }
@@ -133,10 +149,12 @@ class ExampleUiItemsApplication implements UiItemsApplication {
 
 ```ts
 class ExampleUiItemsApplication implements UiItemsApplication {
-  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
+  public validateToolbarButtonItem(item: CommonToolbarItem): {
+    updatedItem: CommonToolbarItem;
+    action: UiItemsApplicationAction;
+  } {
     let action = UiItemsApplicationAction.Allow;
-    if (item.id === "test2")
-      action = UiItemsApplicationAction.Disallow;
+    if (item.id === "test2") action = UiItemsApplicationAction.Disallow;
     return { updatedItem: item, action };
   }
 }
@@ -146,7 +164,10 @@ class ExampleUiItemsApplication implements UiItemsApplication {
 
 ```ts
 class ExampleUiItemsApplication implements UiItemsApplication {
-  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
+  public validateToolbarButtonItem(item: CommonToolbarItem): {
+    updatedItem: CommonToolbarItem;
+    action: UiItemsApplicationAction;
+  } {
     let action = UiItemsApplicationAction.Allow;
     let updatedItem = item;
     if (item.id === "test2") {

@@ -20,12 +20,15 @@ export class ChangedElementsManager {
   /** Maintains a single entry since we will only have a cache per iModel, which means a ChangedElementsDb per backend instance */
   private static _entry: ChangedElementsDbCacheEntry | undefined;
 
-  public static getChangedElementsPathName(iModelId: GuidString): string { return BriefcaseManager.getChangedElementsPathName(iModelId); }
+  public static getChangedElementsPathName(iModelId: GuidString): string {
+    return BriefcaseManager.getChangedElementsPathName(iModelId);
+  }
 
   /** Get changed elements Db */
-  private static getChangedElementsDb(iModelId: GuidString): ChangedElementsDb | undefined {
-    if (this._entry && this._entry.iModelId === iModelId)
-      return this._entry.db;
+  private static getChangedElementsDb(
+    iModelId: GuidString
+  ): ChangedElementsDb | undefined {
+    if (this._entry && this._entry.iModelId === iModelId) return this._entry.db;
     if (this._entry && this._entry.iModelId !== iModelId) {
       this._entry.db.closeDb();
       this._entry.db.cleanCaches();
@@ -33,8 +36,7 @@ export class ChangedElementsManager {
     }
     if (!this._entry) {
       const path = ChangedElementsManager.getChangedElementsPathName(iModelId);
-      if (!IModelJsFs.existsSync(path))
-        return undefined;
+      if (!IModelJsFs.existsSync(path)) return undefined;
 
       const db: ChangedElementsDb = ChangedElementsDb.openDb(path);
       this._entry = {
@@ -62,10 +64,14 @@ export class ChangedElementsManager {
    * @param endChangesetId End changeset Id
    * @returns Changed elements if found
    */
-  public static getChangedElements(iModelId: GuidString, startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
-    const db: ChangedElementsDb | undefined = ChangedElementsManager.getChangedElementsDb(iModelId);
-    if (!db)
-      return undefined;
+  public static getChangedElements(
+    iModelId: GuidString,
+    startChangesetId: string,
+    endChangesetId: string
+  ): ChangedElements | undefined {
+    const db: ChangedElementsDb | undefined =
+      ChangedElementsManager.getChangedElementsDb(iModelId);
+    if (!db) return undefined;
 
     return db.getChangedElements(startChangesetId, endChangesetId);
   }
@@ -76,10 +82,14 @@ export class ChangedElementsManager {
    * @param endChangesetId End changeset Id
    * @returns Changed models if found
    */
-  public static getChangedModels(iModelId: GuidString, startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
-    const db: ChangedElementsDb | undefined = ChangedElementsManager.getChangedElementsDb(iModelId);
-    if (!db)
-      return undefined;
+  public static getChangedModels(
+    iModelId: GuidString,
+    startChangesetId: string,
+    endChangesetId: string
+  ): ChangedModels | undefined {
+    const db: ChangedElementsDb | undefined =
+      ChangedElementsManager.getChangedElementsDb(iModelId);
+    if (!db) return undefined;
 
     return db.getChangedModels(startChangesetId, endChangesetId);
   }
@@ -90,10 +100,14 @@ export class ChangedElementsManager {
    * @param endChangesetId End changeset Id
    * @returns Changed models if found
    */
-  public static getChangeData(iModelId: GuidString, startChangesetId: string, endChangesetId: string): ChangeData | undefined {
-    const db: ChangedElementsDb | undefined = ChangedElementsManager.getChangedElementsDb(iModelId);
-    if (!db)
-      return undefined;
+  public static getChangeData(
+    iModelId: GuidString,
+    startChangesetId: string,
+    endChangesetId: string
+  ): ChangeData | undefined {
+    const db: ChangedElementsDb | undefined =
+      ChangedElementsManager.getChangedElementsDb(iModelId);
+    if (!db) return undefined;
 
     return db.getChangeData(startChangesetId, endChangesetId);
   }
@@ -103,10 +117,13 @@ export class ChangedElementsManager {
    * @param changesetId Changeset to check for
    * @returns true if the changeset has been processed and exists in the cache
    */
-  public static isProcessed(iModelId: GuidString, changesetId: string): boolean {
-    const db: ChangedElementsDb | undefined = ChangedElementsManager.getChangedElementsDb(iModelId);
-    if (!db)
-      return false;
+  public static isProcessed(
+    iModelId: GuidString,
+    changesetId: string
+  ): boolean {
+    const db: ChangedElementsDb | undefined =
+      ChangedElementsManager.getChangedElementsDb(iModelId);
+    if (!db) return false;
 
     return db.isProcessed(changesetId);
   }

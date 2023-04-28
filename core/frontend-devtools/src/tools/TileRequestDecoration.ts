@@ -8,7 +8,15 @@
  */
 
 import { ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@itwin/core-frontend";
+import {
+  DecorateContext,
+  GraphicBuilder,
+  GraphicType,
+  IModelApp,
+  TileTree,
+  Tool,
+  Viewport,
+} from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TileRequestDecoration {
@@ -33,14 +41,16 @@ class TileRequestDecoration {
 
   public decorate(context: DecorateContext): void {
     const tiles = IModelApp.tileAdmin.getRequestsForUser(this._targetVp);
-    if (undefined === tiles)
-      return;
+    if (undefined === tiles) return;
 
     const map = new Map<TileTree, GraphicBuilder>();
     for (const tile of tiles) {
       let builder = map.get(tile.tree);
       if (undefined === builder) {
-        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.tree.iModelTransform);
+        builder = context.createGraphicBuilder(
+          GraphicType.WorldDecoration,
+          tile.tree.iModelTransform
+        );
         map.set(tile.tree, builder);
       }
 
@@ -59,8 +69,7 @@ class TileRequestDecoration {
   public static toggle(vp: Viewport, enabled?: boolean): void {
     const instance = TileRequestDecoration._instance;
     if (undefined !== enabled) {
-      if ((undefined !== instance) === enabled)
-        return;
+      if ((undefined !== instance) === enabled) return;
     }
 
     if (undefined === instance) {
@@ -78,21 +87,23 @@ class TileRequestDecoration {
  */
 export class ToggleTileRequestDecorationTool extends Tool {
   public static override toolId = "ToggleTileRequestDecoration";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      TileRequestDecoration.toggle(vp, enable);
+    if (undefined !== vp) TileRequestDecoration.toggle(vp, enable);
 
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      await this.run(enable);
+    if (typeof enable !== "string") await this.run(enable);
 
     return true;
   }

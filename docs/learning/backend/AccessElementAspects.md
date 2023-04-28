@@ -6,6 +6,6 @@ There can be `[0..1]` instances of [ElementUniqueAspect]($backend) per ElementAs
 
 There can be `[0..N]` instances of [ElementMultiAspect]($backend) per ElementAspect class per Element instance.
 
-``` ts
+```ts
 [[include:Elements.getAspects]]
 ```

@@ -53,7 +53,8 @@ export type StatusBarItemId = CommonStatusBarItem["id"]; // eslint-disable-line 
  * @deprecated in 3.6. Use [CommonStatusBarItem]($appui-react) instead.
  * @public
  */
-export interface AbstractStatusBarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+export interface AbstractStatusBarItem extends ProvidedItem {
+  // eslint-disable-line deprecation/deprecation
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
@@ -76,7 +77,8 @@ export interface AbstractStatusBarItem extends ProvidedItem { // eslint-disable-
  * @deprecated in 3.6. Use [StatusBarActionItem]($appui-react) instead.
  * @public
  */
-export interface AbstractStatusBarActionItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
+export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
+  // eslint-disable-line deprecation/deprecation
   /** method to execute when icon is pressed */
   readonly execute: () => void;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
@@ -91,7 +93,8 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem { // 
  * @deprecated in 3.6. Use [StatusBarLabelItem]($appui-react) instead.
  * @public
  */
-export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
+export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
+  // eslint-disable-line deprecation/deprecation
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
   /** Label. */
@@ -105,7 +108,8 @@ export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem { // e
  * @deprecated in 3.6. Use [StatusBarCustomItem]($appui-react) instead.
  * @public
  */
-export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
+export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem {
+  // eslint-disable-line deprecation/deprecation
   readonly isCustom: true;
 }
 
@@ -113,13 +117,19 @@ export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem { // 
  * @deprecated in 3.6. Use [StatusBarItem]($appui-react) instead.
  * @public
  */
-export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem; // eslint-disable-line deprecation/deprecation
+export type CommonStatusBarItem =
+  | AbstractStatusBarActionItem
+  | AbstractStatusBarLabelItem
+  | AbstractStatusBarCustomItem; // eslint-disable-line deprecation/deprecation
 
 /** AbstractStatusBarActionItem type guard.
  * @deprecated in 3.6. Use [isStatusBarActionItem]($appui-react) instead.
  * @public
  */
-export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item is AbstractStatusBarActionItem => { // eslint-disable-line deprecation/deprecation
+export const isAbstractStatusBarActionItem = (
+  item: CommonStatusBarItem
+): item is AbstractStatusBarActionItem => {
+  // eslint-disable-line deprecation/deprecation
   return (item as AbstractStatusBarActionItem).execute !== undefined; // eslint-disable-line deprecation/deprecation
 };
 
@@ -127,15 +137,24 @@ export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item i
  * @deprecated in 3.6. Use [isStatusBarLabelItem]($appui-react) instead.
  * @public
  */
-export const isAbstractStatusBarLabelItem = (item: CommonStatusBarItem): item is AbstractStatusBarLabelItem => { // eslint-disable-line deprecation/deprecation
-  return (item as AbstractStatusBarLabelItem).label !== undefined && (item as AbstractStatusBarActionItem).execute === undefined; // eslint-disable-line deprecation/deprecation
+export const isAbstractStatusBarLabelItem = (
+  item: CommonStatusBarItem
+): item is AbstractStatusBarLabelItem => {
+  // eslint-disable-line deprecation/deprecation
+  return (
+    (item as AbstractStatusBarLabelItem).label !== undefined &&
+    (item as AbstractStatusBarActionItem).execute === undefined
+  ); // eslint-disable-line deprecation/deprecation
 };
 
 /** AbstractStatusBarCustomItem type guard.
  * @deprecated in 3.6. Use [isStatusBarCustomItem]($appui-react) instead.
  * @public
  */
-export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item is AbstractStatusBarCustomItem => { // eslint-disable-line deprecation/deprecation
+export const isAbstractStatusBarCustomItem = (
+  item: CommonStatusBarItem
+): item is AbstractStatusBarCustomItem => {
+  // eslint-disable-line deprecation/deprecation
   return !!(item as AbstractStatusBarCustomItem).isCustom; // eslint-disable-line deprecation/deprecation
 };
 
@@ -145,17 +164,41 @@ export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item i
  */
 export class AbstractStatusBarItemUtilities {
   /** Creates a StatusBar item to perform an action */
-  public static createActionItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, tooltip: string | ConditionalStringValue, execute: () => void, overrides?: Partial<AbstractStatusBarCustomItem>): AbstractStatusBarActionItem => ({ // eslint-disable-line deprecation/deprecation
-    id, section, itemPriority,
-    icon, tooltip,
+  public static createActionItem = (
+    id: string,
+    section: StatusBarSection,
+    itemPriority: number,
+    icon: string | ConditionalStringValue,
+    tooltip: string | ConditionalStringValue,
+    execute: () => void,
+    overrides?: Partial<AbstractStatusBarCustomItem>
+  ): AbstractStatusBarActionItem => ({
+    // eslint-disable-line deprecation/deprecation
+    id,
+    section,
+    itemPriority,
+    icon,
+    tooltip,
     execute,
     ...overrides,
   });
 
   /** Creates a StatusBar item to display a label */
-  public static createLabelItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide = StatusBarLabelSide.Right, overrides?: Partial<AbstractStatusBarLabelItem>): AbstractStatusBarLabelItem => ({ // eslint-disable-line deprecation/deprecation
-    id, section, itemPriority,
-    icon, label,
+  public static createLabelItem = (
+    id: string,
+    section: StatusBarSection,
+    itemPriority: number,
+    icon: string | ConditionalStringValue,
+    label: string | ConditionalStringValue,
+    labelSide = StatusBarLabelSide.Right,
+    overrides?: Partial<AbstractStatusBarLabelItem>
+  ): AbstractStatusBarLabelItem => ({
+    // eslint-disable-line deprecation/deprecation
+    id,
+    section,
+    itemPriority,
+    icon,
+    label,
     labelSide,
     ...overrides,
   });

@@ -16,8 +16,7 @@ describe("IModel Models", () => {
   before(async function () {
     testContext = await TestContext.instance();
 
-    if (!testContext.settings.runiModelReadRpcTests)
-      this.skip();
+    if (!testContext.settings.runiModelReadRpcTests) this.skip();
 
     iModel = await testContext.iModelWithChangesets!.getConnection();
   });
@@ -30,7 +29,9 @@ describe("IModel Models", () => {
   });
 
   it("should query props", async () => {
-    const modelProps: ModelProps[] = await iModel.models.queryProps({ from: SpatialModelState.classFullName });
+    const modelProps: ModelProps[] = await iModel.models.queryProps({
+      from: SpatialModelState.classFullName,
+    });
 
     expect(modelProps).to.exist.and.be.not.empty;
   });

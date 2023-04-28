@@ -65,24 +65,37 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
 
   /** Creates an Helmert Transform from JSON representation.
    * @public */
-  public static fromJSON(data: Helmert2DWithZOffsetProps): Helmert2DWithZOffset {
+  public static fromJSON(
+    data: Helmert2DWithZOffsetProps
+  ): Helmert2DWithZOffset {
     return new Helmert2DWithZOffset(data);
   }
 
   /** Creates a JSON from the Helmert Transform definition
    * @public */
   public toJSON(): Helmert2DWithZOffsetProps {
-    return { translationX: this.translationX, translationY: this.translationY, translationZ: this.translationZ, rotDeg: this.rotDeg, scale: this.scale };
+    return {
+      translationX: this.translationX,
+      translationY: this.translationY,
+      translationZ: this.translationZ,
+      rotDeg: this.rotDeg,
+      scale: this.scale,
+    };
   }
 
   /** Compares two Helmert2DWithZOffset objects applying a minuscule tolerance.
    *  @public */
   public equals(other: Helmert2DWithZOffset): boolean {
-    return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
-      Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
-      Math.abs(this.translationZ - other.translationZ) < Geometry.smallMetricDistance &&
+    return (
+      Math.abs(this.translationX - other.translationX) <
+        Geometry.smallMetricDistance &&
+      Math.abs(this.translationY - other.translationY) <
+        Geometry.smallMetricDistance &&
+      Math.abs(this.translationZ - other.translationZ) <
+        Geometry.smallMetricDistance &&
       Math.abs(this.rotDeg - other.rotDeg) < Geometry.smallAngleDegrees &&
-      Math.abs(this.scale - other.scale) < Geometry.smallFraction);
+      Math.abs(this.scale - other.scale) < Geometry.smallFraction
+    );
   }
 }
 
@@ -100,15 +113,16 @@ export interface AdditionalTransformProps {
  *  geographic CRS. The transformation is applied after the latitude/longitude have been projected thus the process
  *  is applied to the result Cartesian coordinates of the projection process.
  *  @public
-*/
+ */
 export class AdditionalTransform implements AdditionalTransformProps {
-
   /** The properties of a 2D Helmert transform with Z offset if one is defined. */
   public readonly helmert2DWithZOffset?: Helmert2DWithZOffset;
 
   public constructor(data?: AdditionalTransformProps) {
     if (data)
-      this.helmert2DWithZOffset = data.helmert2DWithZOffset ? Helmert2DWithZOffset.fromJSON(data.helmert2DWithZOffset) : undefined;
+      this.helmert2DWithZOffset = data.helmert2DWithZOffset
+        ? Helmert2DWithZOffset.fromJSON(data.helmert2DWithZOffset)
+        : undefined;
   }
 
   /** Creates an Additional Transform from JSON representation.
@@ -126,13 +140,18 @@ export class AdditionalTransform implements AdditionalTransformProps {
   /** Compares two additional transforms applying a minuscule tolerance to comparing numbers.
    *  @public */
   public equals(other: AdditionalTransform): boolean {
-    if ((this.helmert2DWithZOffset === undefined) !== (other.helmert2DWithZOffset === undefined))
+    if (
+      (this.helmert2DWithZOffset === undefined) !==
+      (other.helmert2DWithZOffset === undefined)
+    )
       return false;
 
-    if (this.helmert2DWithZOffset && !this.helmert2DWithZOffset.equals(other.helmert2DWithZOffset!))
+    if (
+      this.helmert2DWithZOffset &&
+      !this.helmert2DWithZOffset.equals(other.helmert2DWithZOffset!)
+    )
       return false;
 
     return true;
   }
 }
-

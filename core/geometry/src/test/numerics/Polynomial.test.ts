@@ -21,9 +21,23 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
-import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
-  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SmallSystem, SphereImplicit, TorusImplicit,
+  BezierCoffs,
+  Order2Bezier,
+  Order3Bezier,
+  Order4Bezier,
+  Order5Bezier,
+  UnivariateBezier,
+} from "../../numerics/BezierPolynomials";
+import {
+  AnalyticRoots,
+  Degree2PowerPolynomial,
+  Degree3PowerPolynomial,
+  Degree4PowerPolynomial,
+  ImplicitLineXY,
+  SmallSystem,
+  SphereImplicit,
+  TorusImplicit,
   TrigPolynomial,
 } from "../../numerics/Polynomials";
 import { Quadrature } from "../../numerics/Quadrature";
@@ -62,9 +76,18 @@ describe("Bezier.HelloWorld", () => {
     const bez3 = new Order3Bezier(1, 2, 5);
     testBezier(ck, bez3);
     const bez4 = new Order4Bezier(1, 2, 5, 6);
-    ck.testFalse(bez2a.subdivide(0.1, bez2, bez3), "mismatched subdivide order");
-    ck.testFalse(bez2a.subdivide(0.1, bez3, bez2), "mismatched subdivide order");
-    ck.testUndefined(BezierCoffs.maxAbsDiff(bez2, bez3), "mismatch order in maxAbsDiff");
+    ck.testFalse(
+      bez2a.subdivide(0.1, bez2, bez3),
+      "mismatched subdivide order"
+    );
+    ck.testFalse(
+      bez2a.subdivide(0.1, bez3, bez2),
+      "mismatched subdivide order"
+    );
+    ck.testUndefined(
+      BezierCoffs.maxAbsDiff(bez2, bez3),
+      "mismatch order in maxAbsDiff"
+    );
     testBezier(ck, bez4);
 
     const bez5 = new Order5Bezier(1, 2, 5, 6, 8);
@@ -75,7 +98,7 @@ describe("Bezier.HelloWorld", () => {
   });
   it("degenerateCases", () => {
     const ck = new Checker();
-    const nullTorus = new TorusImplicit(0, 0);    // DEGENERATE
+    const nullTorus = new TorusImplicit(0, 0); // DEGENERATE
     ck.testExactNumber(1.0, nullTorus.implicitFunctionScale());
     const data = nullTorus.xyzToThetaPhiDistance(Point3d.create(0, 0, 0));
     ck.testFalse(data.safePhi);
@@ -93,7 +116,6 @@ describe("Bezier.HelloWorld", () => {
     ck.checkpoint("Bezier.rootServices");
     expect(ck.getNumErrors()).equals(0);
   });
-
 });
 
 describe("Cubic.Solutions", () => {
@@ -106,12 +128,21 @@ describe("Cubic.Solutions", () => {
         const root2 = root2a * sign;
         const root1 = root1a * sign;
         const root0 = root0a * sign;
-        const cubic = Degree3PowerPolynomial.fromRootsAndC3(root0, root1, root2, 1.0);
+        const cubic = Degree3PowerPolynomial.fromRootsAndC3(
+          root0,
+          root1,
+          root2,
+          1.0
+        );
         for (const x of [root0, root1, root2]) {
           const f = cubic.evaluate(x);
           ck.testCoordinate(f, 0, "known root");
           const f1 = cubic.evaluate(x + 0.5);
-          ck.testBoolean(false, Geometry.isAlmostEqualNumber(0.0, f1), "known non root");
+          ck.testBoolean(
+            false,
+            Geometry.isAlmostEqualNumber(0.0, f1),
+            "known non root"
+          );
         }
         const df = 2.3;
         cubic.addConstant(df);
@@ -123,9 +154,12 @@ describe("Cubic.Solutions", () => {
         cubic.addSquaredLinearTerm(a, b);
         for (const x of [root0, root1, root2]) {
           const q = a + b * x;
-          ck.testCoordinate(df + q * q, cubic.evaluate(x), "shifted cubic evaluate");
+          ck.testCoordinate(
+            df + q * q,
+            cubic.evaluate(x),
+            "shifted cubic evaluate"
+          );
         }
-
       }
     }
     ck.checkpoint("Cubic3Roots");
@@ -133,20 +167,51 @@ describe("Cubic.Solutions", () => {
   });
 });
 
-function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, ww: Float64Array, n: number, maxDegree: number) {
+function testQuadrature(
+  ck: Checker,
+  xA: number,
+  xB: number,
+  xx: Float64Array,
+  ww: Float64Array,
+  n: number,
+  maxDegree: number
+) {
   if (Checker.noisy.gaussQuadrature)
     GeometryCoreTestIO.consoleLog(`(nGauss ${n}) (interval ${xA} ${xB}`);
   for (let p = 0; p < maxDegree + 3; p++) {
     {
-      const trueIntegral = (Math.pow(xB, p + 1) - Math.pow(xA, p + 1)) / (p + 1.0);
-      const approximateIntegral = Quadrature.sum1(xx, ww, n,
-        (x: number): number => Math.pow(x, p));
-      const isSame = Geometry.isSameCoordinate(trueIntegral, approximateIntegral);
+      const trueIntegral =
+        (Math.pow(xB, p + 1) - Math.pow(xA, p + 1)) / (p + 1.0);
+      const approximateIntegral = Quadrature.sum1(
+        xx,
+        ww,
+        n,
+        (x: number): number => Math.pow(x, p)
+      );
+      const isSame = Geometry.isSameCoordinate(
+        trueIntegral,
+        approximateIntegral
+      );
       if (Checker.noisy.gaussQuadrature) {
-        if (p === maxDegree + 1) GeometryCoreTestIO.consoleLog("    ---------------  end of expected precise integrals");
-        GeometryCoreTestIO.consoleLog(`     (p ${p}) (absErr ${approximateIntegral - trueIntegral}) (relErr ${(approximateIntegral - trueIntegral) / trueIntegral}`);
+        if (p === maxDegree + 1)
+          GeometryCoreTestIO.consoleLog(
+            "    ---------------  end of expected precise integrals"
+          );
+        GeometryCoreTestIO.consoleLog(
+          `     (p ${p}) (absErr ${
+            approximateIntegral - trueIntegral
+          }) (relErr ${(approximateIntegral - trueIntegral) / trueIntegral}`
+        );
       }
-      ck.testBoolean(p <= maxDegree, isSame, "Quadrature Exactness", p, maxDegree, trueIntegral, approximateIntegral);
+      ck.testBoolean(
+        p <= maxDegree,
+        isSame,
+        "Quadrature Exactness",
+        p,
+        maxDegree,
+        trueIntegral,
+        approximateIntegral
+      );
     }
   }
 }
@@ -155,7 +220,10 @@ describe("Quadrature.Gauss", () => {
     const ck = new Checker();
     const xx = new Float64Array(10);
     const ww = new Float64Array(10);
-    for (const interval of [{ xA: 1.4, xB: 3.9 }, { xA: 0, xB: 1 }]) {
+    for (const interval of [
+      { xA: 1.4, xB: 3.9 },
+      { xA: 0, xB: 1 },
+    ]) {
       const xA = interval.xA;
       const xB = interval.xB;
       Quadrature.setupGauss2(xA, xB, xx, ww);
@@ -171,9 +239,33 @@ describe("Quadrature.Gauss", () => {
       testQuadrature(ck, xA, xB, xx, ww, 5, 9);
     }
 
-    testQuadrature(ck, 0, 1, Quadrature.gaussX2Interval01, Quadrature.gaussW2Interval01, 2, 3);
-    testQuadrature(ck, 0, 1, Quadrature.gaussX3Interval01, Quadrature.gaussW3Interval01, 3, 5);
-    testQuadrature(ck, 0, 1, Quadrature.gaussX5Interval01, Quadrature.gaussW5Interval01, 5, 9);
+    testQuadrature(
+      ck,
+      0,
+      1,
+      Quadrature.gaussX2Interval01,
+      Quadrature.gaussW2Interval01,
+      2,
+      3
+    );
+    testQuadrature(
+      ck,
+      0,
+      1,
+      Quadrature.gaussX3Interval01,
+      Quadrature.gaussW3Interval01,
+      3,
+      5
+    );
+    testQuadrature(
+      ck,
+      0,
+      1,
+      Quadrature.gaussX5Interval01,
+      Quadrature.gaussW5Interval01,
+      5,
+      9
+    );
     ck.checkpoint("Quadrature.Gauss");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -187,8 +279,14 @@ describe("TrigPolynomial.DegenerateLinear", () => {
     const as = 0.9;
     const a0 = 0.1;
     TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
-      0, 0, 0,
-      ac, as, a0, angles);
+      0,
+      0,
+      0,
+      ac,
+      as,
+      a0,
+      angles
+    );
     ck.testExactNumber(2, angles.length);
     for (const theta of angles) {
       const q = a0 + ac * Math.cos(theta) + as * Math.sin(theta);
@@ -212,12 +310,28 @@ describe("Ellipse.Intersection", () => {
       const center = Point3d.create(t, 2.0 * t, 0);
       const vectorU = Vector3d.create(majorRadius, 0, 0);
       const vectorV = Vector3d.create(0.1, minorRadius, 0);
-      TrigPolynomial.solveUnitCircleEllipseIntersection(center.x, center.y, vectorU.x, vectorU.y, vectorV.x, vectorV.y, ellipseAngles, circleAngles);
+      TrigPolynomial.solveUnitCircleEllipseIntersection(
+        center.x,
+        center.y,
+        vectorU.x,
+        vectorU.y,
+        vectorV.x,
+        vectorV.y,
+        ellipseAngles,
+        circleAngles
+      );
       if (ck.testExactNumber(ellipseAngles.length, circleAngles.length)) {
         // verify that all returned values are intersections.  This prevents false positives but not false negatives.
         for (let i = 0; i < ellipseAngles.length; i++) {
-          const circlePoint = Point3d.createFrom(Vector3d.createPolar(1.0, Angle.createRadians(circleAngles[i]), 0.0));
-          const ellipsePoint = center.plus2Scaled(vectorU, Math.cos(ellipseAngles[i]), vectorV, Math.sin(ellipseAngles[i]));
+          const circlePoint = Point3d.createFrom(
+            Vector3d.createPolar(1.0, Angle.createRadians(circleAngles[i]), 0.0)
+          );
+          const ellipsePoint = center.plus2Scaled(
+            vectorU,
+            Math.cos(ellipseAngles[i]),
+            vectorV,
+            Math.sin(ellipseAngles[i])
+          );
           ck.testPoint3d(circlePoint, ellipsePoint);
         }
       }
@@ -240,17 +354,37 @@ describe("Ellipse.Intersection", () => {
       const vectorU = Point4d.create(majorRadius, 0, 0, 0.2);
       const vectorV = Point4d.create(0.1, minorRadius, 0, 0.3);
       TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
-        center.x, center.y, center.w,
-        vectorU.x, vectorU.y, vectorU.w,
-        vectorV.x, vectorV.y, vectorV.w,
-        ellipseAngles, circleAngles);
+        center.x,
+        center.y,
+        center.w,
+        vectorU.x,
+        vectorU.y,
+        vectorU.w,
+        vectorV.x,
+        vectorV.y,
+        vectorV.w,
+        ellipseAngles,
+        circleAngles
+      );
       if (ck.testExactNumber(ellipseAngles.length, circleAngles.length)) {
         // verify that all returned values are intersections.  This prevents false positives but not false negatives.
         for (let i = 0; i < ellipseAngles.length; i++) {
-          const circlePoint = Point3d.createFrom(Vector3d.createPolar(1.0, Angle.createRadians(circleAngles[i]), 0.0));
-          const ellipsePoint = center.plus2Scaled(vectorU, Math.cos(ellipseAngles[i]), vectorV, Math.sin(ellipseAngles[i]));
+          const circlePoint = Point3d.createFrom(
+            Vector3d.createPolar(1.0, Angle.createRadians(circleAngles[i]), 0.0)
+          );
+          const ellipsePoint = center.plus2Scaled(
+            vectorU,
+            Math.cos(ellipseAngles[i]),
+            vectorV,
+            Math.sin(ellipseAngles[i])
+          );
           const ellipsePointXYZ = ellipsePoint.realPoint();
-          if (ck.testPointer(ellipsePointXYZ, "expect real point from ellipse ellipse homogeneous intersection")) {
+          if (
+            ck.testPointer(
+              ellipsePointXYZ,
+              "expect real point from ellipse ellipse homogeneous intersection"
+            )
+          ) {
             ck.testPoint3d(circlePoint, ellipsePointXYZ);
           }
         }
@@ -269,36 +403,82 @@ describe("ImplicitSurface", () => {
     const sphere = new SphereImplicit(r);
 
     ck.testExactNumber(sphere.radius, r, "Sphere radius");
-    ck.testCoordinate(0, sphere.evaluateImplicitFunction(r, 0, 0), "evaluate sphere");
-    ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, r, 0), "evaluate sphere");
-    ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, 0, r), "evaluate sphere");
+    ck.testCoordinate(
+      0,
+      sphere.evaluateImplicitFunction(r, 0, 0),
+      "evaluate sphere"
+    );
+    ck.testCoordinate(
+      0,
+      sphere.evaluateImplicitFunction(0, r, 0),
+      "evaluate sphere"
+    );
+    ck.testCoordinate(
+      0,
+      sphere.evaluateImplicitFunction(0, 0, r),
+      "evaluate sphere"
+    );
 
-    for (const xyz of [Point3d.create(1, 2, 4),
-    Point3d.create(0, 0, 0),
-    Point3d.create(r, 0, 0)]) {
+    for (const xyz of [
+      Point3d.create(1, 2, 4),
+      Point3d.create(0, 0, 0),
+      Point3d.create(r, 0, 0),
+    ]) {
       const w = 4.2;
       ck.testCoordinate(
         sphere.evaluateImplicitFunction(xyz.x, xyz.y, xyz.z) * w * w,
         sphere.evaluateImplicitFunctionXYZW(w * xyz.x, w * xyz.y, w * xyz.z, w),
-        "weighted implicit function");
+        "weighted implicit function"
+      );
     }
 
-    for (const thetaPhi of [[0, 0], [0.2, 0.4]]) {
+    for (const thetaPhi of [
+      [0, 0],
+      [0.2, 0.4],
+    ]) {
       const xyz = sphere.evaluateThetaPhi(thetaPhi[0], thetaPhi[1]);
       const vectorX = Vector3d.createFrom(xyz);
       const ddTheta = Vector3d.create();
       const ddPhi = Vector3d.create();
-      sphere.evaluateDerivativesThetaPhi(thetaPhi[0], thetaPhi[1], ddTheta, ddPhi);
-      ck.testPerpendicular(ddTheta, ddPhi, "implicit sphere perpendicular derivatives");
-      ck.testPerpendicular(vectorX, ddTheta, "implicit sphere perpendicular derivatives");
-      ck.testPerpendicular(vectorX, ddPhi, "implicit sphere perpendicular derivatives");
-      ck.testCoordinate(r, vectorX.magnitude(), "implicit sphere distance from origin");
+      sphere.evaluateDerivativesThetaPhi(
+        thetaPhi[0],
+        thetaPhi[1],
+        ddTheta,
+        ddPhi
+      );
+      ck.testPerpendicular(
+        ddTheta,
+        ddPhi,
+        "implicit sphere perpendicular derivatives"
+      );
+      ck.testPerpendicular(
+        vectorX,
+        ddTheta,
+        "implicit sphere perpendicular derivatives"
+      );
+      ck.testPerpendicular(
+        vectorX,
+        ddPhi,
+        "implicit sphere perpendicular derivatives"
+      );
+      ck.testCoordinate(
+        r,
+        vectorX.magnitude(),
+        "implicit sphere distance from origin"
+      );
       const thetaPhiA = sphere.xyzToThetaPhiR(xyz);
-      ck.testCoordinate(thetaPhi[0], thetaPhiA.thetaRadians, "implicit sphere theta inverse");
-      ck.testCoordinate(thetaPhi[1], thetaPhiA.phiRadians, "implicit sphere phi inverse");
+      ck.testCoordinate(
+        thetaPhi[0],
+        thetaPhiA.thetaRadians,
+        "implicit sphere theta inverse"
+      );
+      ck.testCoordinate(
+        thetaPhi[1],
+        thetaPhiA.phiRadians,
+        "implicit sphere phi inverse"
+      );
     }
-    for (const sphereA of [
-      new SphereImplicit(0), new SphereImplicit(1)]) {
+    for (const sphereA of [new SphereImplicit(0), new SphereImplicit(1)]) {
       const thetaPhiB = sphereA.xyzToThetaPhiR(Point3d.create(0, 0, 0));
       const thetaPhiC = sphereA.xyzToThetaPhiR(Point3d.create(0, 0, 1));
       ck.testExactNumber(0.0, thetaPhiB.phiRadians);
@@ -317,14 +497,32 @@ describe("ImplicitSurface", () => {
     ck.testExactNumber(torus.majorRadius, rA, "torus major radius");
     ck.testExactNumber(torus.minorRadius, rB, "torus minor radius");
 
-    ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA + rB, 0, 0), "evaluate torus");
-    ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA - rB, 0, 0), "evaluate torus");
-    ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA, 0, rB), "evaluate torus");
-    ck.testCoordinate(0, torus.evaluateImplicitFunctionXYZ(rA, 0, -rB), "evaluate torus");
+    ck.testCoordinate(
+      0,
+      torus.evaluateImplicitFunctionXYZ(rA + rB, 0, 0),
+      "evaluate torus"
+    );
+    ck.testCoordinate(
+      0,
+      torus.evaluateImplicitFunctionXYZ(rA - rB, 0, 0),
+      "evaluate torus"
+    );
+    ck.testCoordinate(
+      0,
+      torus.evaluateImplicitFunctionXYZ(rA, 0, rB),
+      "evaluate torus"
+    );
+    ck.testCoordinate(
+      0,
+      torus.evaluateImplicitFunctionXYZ(rA, 0, -rB),
+      "evaluate torus"
+    );
 
-    for (const xyz of [Point3d.create(1, 2, 4),
-    Point3d.create(0, 0, 9),
-    Point3d.create(rA, 0, 0)]) {
+    for (const xyz of [
+      Point3d.create(1, 2, 4),
+      Point3d.create(0, 0, 9),
+      Point3d.create(rA, 0, 0),
+    ]) {
       const w = 2.0;
       const fOfX = torus.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
       const f = torus.evaluateImplicitFunctionPoint(xyz);
@@ -332,9 +530,13 @@ describe("ImplicitSurface", () => {
       ck.testCoordinate(
         f * w * w * w * w,
         torus.evaluateImplicitFunctionXYZW(w * xyz.x, w * xyz.y, w * xyz.z, w),
-        "weighted implicit function");
+        "weighted implicit function"
+      );
     }
-    for (const thetaPhi of [[0, 0], [0.2, 0.4]]) {
+    for (const thetaPhi of [
+      [0, 0],
+      [0.2, 0.4],
+    ]) {
       const theta = thetaPhi[0];
       const phi = thetaPhi[1];
       const xyz = torus.evaluateThetaPhi(theta, phi);
@@ -348,35 +550,84 @@ describe("ImplicitSurface", () => {
         torus.evaluateDerivativesThetaPhi(theta, phi, ddTheta, ddPhi);
         const r = factorB * rB;
         const xyzR = torus.evaluateThetaPhiDistance(theta, phi, r);
-        ck.testPerpendicular(ddTheta, ddPhi, "implicit torus perpendicular derivatives");
+        ck.testPerpendicular(
+          ddTheta,
+          ddPhi,
+          "implicit torus perpendicular derivatives"
+        );
         const thetaPhiA = torus.xyzToThetaPhiDistance(xyzR);
-        ck.testCoordinate(thetaPhi[0], thetaPhiA.theta, "implicit sphere theta inverse");
-        ck.testCoordinate(thetaPhi[1], thetaPhiA.phi, "implicit sphere phi inverse");
-        ck.testCoordinate(factorB * rB, thetaPhiA.distance, "implicit sphere inverse distance from major circle");
+        ck.testCoordinate(
+          thetaPhi[0],
+          thetaPhiA.theta,
+          "implicit sphere theta inverse"
+        );
+        ck.testCoordinate(
+          thetaPhi[1],
+          thetaPhiA.phi,
+          "implicit sphere phi inverse"
+        );
+        ck.testCoordinate(
+          factorB * rB,
+          thetaPhiA.distance,
+          "implicit sphere inverse distance from major circle"
+        );
       }
     }
     ck.checkpoint("ImplicitSurface.Torus");
     expect(ck.getNumErrors()).equals(0);
   });
-
 });
 
 describe("PowerPolynomials", () => {
   it("Degree2PowerPolynomial", () => {
     const ck = new Checker();
     let quadratic = new Degree2PowerPolynomial();
-    ck.testUndefined(quadratic.tryGetVertexFactorization(), "000 quadratic vertex factorization fails");
-    ck.testNumberArray(undefined, quadratic.realRoots(), "Expect no roots for 000 quadratic", quadratic);
-    quadratic.addSquaredLinearTerm(1.0, -1.0);   // (1-x)^2 -- double root at 1.  Coefficients are integers, so expect exact double root solution.
-    ck.testNumberArray([1, 1], quadratic.realRoots(), "Expect double root", quadratic);
-    quadratic.addConstant(1);  // This shifts it from double root to no roots.
-    ck.testNumberArray(undefined, quadratic.realRoots(), "expect no roots", quadratic);
-    ck.testNumberArray([0.5], (new Degree2PowerPolynomial(-1, 2, 0)).realRoots(), "degenerate linear quadratic roots");
+    ck.testUndefined(
+      quadratic.tryGetVertexFactorization(),
+      "000 quadratic vertex factorization fails"
+    );
+    ck.testNumberArray(
+      undefined,
+      quadratic.realRoots(),
+      "Expect no roots for 000 quadratic",
+      quadratic
+    );
+    quadratic.addSquaredLinearTerm(1.0, -1.0); // (1-x)^2 -- double root at 1.  Coefficients are integers, so expect exact double root solution.
+    ck.testNumberArray(
+      [1, 1],
+      quadratic.realRoots(),
+      "Expect double root",
+      quadratic
+    );
+    quadratic.addConstant(1); // This shifts it from double root to no roots.
+    ck.testNumberArray(
+      undefined,
+      quadratic.realRoots(),
+      "expect no roots",
+      quadratic
+    );
+    ck.testNumberArray(
+      [0.5],
+      new Degree2PowerPolynomial(-1, 2, 0).realRoots(),
+      "degenerate linear quadratic roots"
+    );
     quadratic = Degree2PowerPolynomial.fromRootsAndC2(3, 4, 5);
-    ck.testNumberArray([3, 4], quadratic.realRoots(), "fromRootsAndC2 construct and solve");
+    ck.testNumberArray(
+      [3, 4],
+      quadratic.realRoots(),
+      "fromRootsAndC2 construct and solve"
+    );
     const vertexData = quadratic.tryGetVertexFactorization()!;
-    ck.testCoordinate(0.0, quadratic.evaluateDerivative(vertexData.x0), "zero derivative at vertex");
-    ck.testCoordinate(vertexData.y0, quadratic.evaluate(vertexData.x0), "zero derivative at vertex");
+    ck.testCoordinate(
+      0.0,
+      quadratic.evaluateDerivative(vertexData.x0),
+      "zero derivative at vertex"
+    );
+    ck.testCoordinate(
+      vertexData.y0,
+      quadratic.evaluate(vertexData.x0),
+      "zero derivative at vertex"
+    );
     ck.checkpoint("PowerPolynomials.Degree2PowerPolynomial");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -389,7 +640,13 @@ describe("PowerPolynomials", () => {
       [0.5, 1, 2, 3],
       // [0.1, 0.1, 0.5, 0.5]
     ]) {
-      const power = Degree4PowerPolynomial.fromRootsAndC4(roots[0], roots[1], roots[2], roots[3], 2);
+      const power = Degree4PowerPolynomial.fromRootsAndC4(
+        roots[0],
+        roots[1],
+        roots[2],
+        roots[3],
+        2
+      );
       const bezier = Order5Bezier.createFromDegree4PowerPolynomial(power);
       const powerRoots = new GrowableFloat64Array(4);
       const bezierRoots = new GrowableFloat64Array(4);
@@ -419,8 +676,15 @@ describe("PowerPolynomials", () => {
       [1, 0, 0, 0, 0],
       [1, -2, 0, 0, 0],
       [1, 2, -3, 0, 0],
-      [0.5, 1, 2, 3, 0]]) {
-      const power = new Degree4PowerPolynomial(coffs[0], coffs[1], coffs[2], coffs[3], coffs[4]);
+      [0.5, 1, 2, 3, 0],
+    ]) {
+      const power = new Degree4PowerPolynomial(
+        coffs[0],
+        coffs[1],
+        coffs[2],
+        coffs[3],
+        coffs[4]
+      );
       const bezier = Order5Bezier.createFromDegree4PowerPolynomial(power);
       const powerRoots = new GrowableFloat64Array(4);
       const bezierRoots = new GrowableFloat64Array(4);
@@ -437,7 +701,6 @@ describe("PowerPolynomials", () => {
         const f = bezier.evaluate(r);
         ck.testCoordinate(0, f);
       }
-
     }
     ck.checkpoint("PowerPolynomials.DegenerateDegree4PowerPolynomial");
     expect(ck.getNumErrors()).equals(0);
@@ -448,8 +711,14 @@ describe("PowerPolynomials", () => {
     /* equivalent Degree4PowerPolynomial ... */
     for (const roots of [
       [0, 0, 0],
-      [1, 2, 3]]) {
-      const power = Degree3PowerPolynomial.fromRootsAndC3(roots[0], roots[1], roots[2], 2);
+      [1, 2, 3],
+    ]) {
+      const power = Degree3PowerPolynomial.fromRootsAndC3(
+        roots[0],
+        roots[1],
+        roots[2],
+        2
+      );
       const bezier = Order4Bezier.createFromDegree3PowerPolynomial(power);
       const powerRoots = new GrowableFloat64Array(4);
       const bezierRoots = new GrowableFloat64Array(4);
@@ -478,15 +747,22 @@ describe("Ellipse.Perpendiculars", () => {
     for (const spacePoint of [
       Point3d.create(4, 5, 0),
       Point3d.create(2, -6, 0),
-      Point3d.create(0, -6, 0)])  // special point of bezier-mapped trig functions
-
+      Point3d.create(0, -6, 0),
+    ]) // special point of bezier-mapped trig functions
       for (const eccentricity of [1.0, 1.01, 1.01, 2.0, 0.5]) {
         for (const skew of [0, 0.0]) {
           // GeometryCoreTestIO.consoleLog("eccentricity ", eccentricity, "skew", skew);
-          const arc = Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(r0, 0, 0), Vector3d.create(skew, eccentricity * r0, 0), AngleSweep.create360());
+          const arc = Arc3d.create(
+            Point3d.create(0, 0, 0),
+            Vector3d.create(r0, 0, 0),
+            Vector3d.create(skew, eccentricity * r0, 0),
+            AngleSweep.create360()
+          );
           let angles = arc.allPerpendicularAngles(spacePoint);
           for (const theta of angles) {
-            const ray = arc.angleToPointAndDerivative(Angle.createRadians(theta));
+            const ray = arc.angleToPointAndDerivative(
+              Angle.createRadians(theta)
+            );
             const dot = ray.dotProductToPoint(spacePoint);
             // if (angles.length > 10)
             ck.testCoordinate(0, dot, "test perpendicular");
@@ -511,7 +787,17 @@ describe("LinearSystems", () => {
     const b0 = Point2d.create(0.2, 3);
     const b1 = b0.interpolate(1.0 / fb, bb);
     const fractions = Vector2d.create();
-    if (ck.testTrue(SmallSystem.lineSegment2dXYTransverseIntersectionUnbounded(a0, a1, b0, b1, fractions))) {
+    if (
+      ck.testTrue(
+        SmallSystem.lineSegment2dXYTransverseIntersectionUnbounded(
+          a0,
+          a1,
+          b0,
+          b1,
+          fractions
+        )
+      )
+    ) {
       ck.testCoordinate(fa, fractions.x, "fraction on line a");
       ck.testCoordinate(fb, fractions.y, "fraction on line b");
     }
@@ -528,10 +814,19 @@ describe("LinearSystems", () => {
     const x = 0.2;
     const y = 1.1;
     const result = Vector2d.create();
-    if (ck.testTrue(SmallSystem.linearSystem2d(
-      ux, vx,
-      uy, vy,
-      ux * x + vx * y, uy * x + vy * y, result))) {
+    if (
+      ck.testTrue(
+        SmallSystem.linearSystem2d(
+          ux,
+          vx,
+          uy,
+          vy,
+          ux * x + vx * y,
+          uy * x + vy * y,
+          result
+        )
+      )
+    ) {
       ck.testCoordinate(x, result.x, "2d linear x part");
       ck.testCoordinate(y, result.y, " 2d linear y part");
     }
@@ -546,7 +841,17 @@ describe("LinearSystems", () => {
     const b0 = Point3d.create(5, 4.5, 4.4);
     const b1 = Point3d.create(5.2, -4, 4.2);
     const fractions = Vector2d.create();
-    if (ck.testTrue(SmallSystem.lineSegment3dClosestApproachUnbounded(a0, a1, b0, b1, fractions))) {
+    if (
+      ck.testTrue(
+        SmallSystem.lineSegment3dClosestApproachUnbounded(
+          a0,
+          a1,
+          b0,
+          b1,
+          fractions
+        )
+      )
+    ) {
       // GeometryCoreTestIO.consoleLog("fractions", fractions);
       const a = a0.interpolate(fractions.x, a1);
       const b = b0.interpolate(fractions.y, b1);
@@ -556,7 +861,9 @@ describe("LinearSystems", () => {
       ck.testPerpendicular(vectorAB, vectorA01);
       ck.testPerpendicular(vectorAB, vectorB01);
     }
-    ck.checkpoint("LinearSystems.lineSegment3dXYTransverseIntersectionUnbounded");
+    ck.checkpoint(
+      "LinearSystems.lineSegment3dXYTransverseIntersectionUnbounded"
+    );
     expect(ck.getNumErrors()).equals(0);
   });
   it("cubeRoot", () => {
@@ -582,7 +889,16 @@ describe("LinearSystems", () => {
     const halfCircle = Math.PI;
     const radiansStep = 0.3;
     const phiRadiansArray = [-pole, -0.4 * pole, 0.0, 0.2 * pole];
-    const thetaRadiansArray = [-halfCircle, -0.6 * halfCircle, -0.2 * halfCircle, 0.0, 0.45 * halfCircle, 0.9 * halfCircle, 1.3 * halfCircle, 2.8 * halfCircle];
+    const thetaRadiansArray = [
+      -halfCircle,
+      -0.6 * halfCircle,
+      -0.2 * halfCircle,
+      0.0,
+      0.45 * halfCircle,
+      0.9 * halfCircle,
+      1.3 * halfCircle,
+      2.8 * halfCircle,
+    ];
     // const phiRadiansArray = [0.0, pole * 0.5];
     // const thetaRadiansArray = [0.0, halfCircle];
     let y0 = 0;
@@ -591,24 +907,67 @@ describe("LinearSystems", () => {
     const yStep = 4.0 * radius;
     for (const theta0Radians of thetaRadiansArray) {
       for (const theta1Radians of thetaRadiansArray) {
-        if (Math.abs(theta1Radians - theta0Radians) > Math.PI * 2.001)
-          continue;
+        if (Math.abs(theta1Radians - theta0Radians) > Math.PI * 2.001) continue;
         y0 = 0;
-        const thetaArray = arraySteps(theta0Radians, theta1Radians, radiansStep);
+        const thetaArray = arraySteps(
+          theta0Radians,
+          theta1Radians,
+          radiansStep
+        );
         for (const phi0Radians of phiRadiansArray) {
           for (const phi1Radians of phiRadiansArray) {
             const phiArray = arraySteps(phi0Radians, phi1Radians, radiansStep);
-            const points = sphereSnakeGridPoints(center, radius, thetaArray, phiArray);
-            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
-            const patchRange = SphereImplicit.patchRangeStartEndRadians(center, radius, theta0Radians, theta1Radians, phi0Radians, phi1Radians);
+            const points = sphereSnakeGridPoints(
+              center,
+              radius,
+              thetaArray,
+              phiArray
+            );
+            GeometryCoreTestIO.captureGeometry(
+              allGeometry,
+              LineString3d.create(points),
+              x0,
+              y0
+            );
+            const patchRange = SphereImplicit.patchRangeStartEndRadians(
+              center,
+              radius,
+              theta0Radians,
+              theta1Radians,
+              phi0Radians,
+              phi1Radians
+            );
             const expandedPatchRange = patchRange.clone();
             expandedPatchRange.expandInPlace(1.0e-12);
-            GeometryCoreTestIO.captureRangeEdges(allGeometry, patchRange, x0, y0);
+            GeometryCoreTestIO.captureRangeEdges(
+              allGeometry,
+              patchRange,
+              x0,
+              y0
+            );
             const pointRange = Range3d.createArray(points);
             const expandedPointRange = pointRange.clone();
-            expandedPointRange.expandInPlace(0.10 * radius);
-            ck.testTrue(expandedPatchRange.containsRange(pointRange), "points in patch range", { theta0: theta0Radians, theta1: theta1Radians, phi0: phi0Radians, phi1: phi1Radians });
-            ck.testTrue(expandedPointRange.containsRange(patchRange), "patch in expanded point range", { theta0: theta0Radians, theta1: theta1Radians, phi0: phi0Radians, phi1: phi1Radians });
+            expandedPointRange.expandInPlace(0.1 * radius);
+            ck.testTrue(
+              expandedPatchRange.containsRange(pointRange),
+              "points in patch range",
+              {
+                theta0: theta0Radians,
+                theta1: theta1Radians,
+                phi0: phi0Radians,
+                phi1: phi1Radians,
+              }
+            );
+            ck.testTrue(
+              expandedPointRange.containsRange(patchRange),
+              "patch in expanded point range",
+              {
+                theta0: theta0Radians,
+                theta1: theta1Radians,
+                phi0: phi0Radians,
+                phi1: phi1Radians,
+              }
+            );
             y0 += yStep;
           }
         }
@@ -616,7 +975,11 @@ describe("LinearSystems", () => {
       }
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "PatchRange");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "SphereImplicit",
+      "PatchRange"
+    );
   });
   it("RayIntersection", () => {
     const ck = new Checker();
@@ -631,35 +994,83 @@ describe("LinearSystems", () => {
     for (const center of [Point3d.createZero(), Point3d.create(1, 2, 3)]) {
       y0 = 0;
       const sphere = Sphere.createCenterRadius(center, radius);
-      for (const ray0 of [Ray3d.createXAxis(),
-      Ray3d.create(center, Vector3d.create(1, 2, 3)),
-      Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
-      Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2)]) {
+      for (const ray0 of [
+        Ray3d.createXAxis(),
+        Ray3d.create(center, Vector3d.create(1, 2, 3)),
+        Ray3d.createXYZUVW(1, 2, 3, 0.5, 0.2, 0.8),
+        Ray3d.createXYZUVW(2, 0, 8, 1, 0, 0.2),
+      ]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere, x0, y0);
         ray0.tryNormalizeInPlaceWithAreaWeight(1);
-        const frame = Transform.createOriginAndMatrix(ray0.origin, Matrix3d.createRigidHeadsUp(ray0.direction));
+        const frame = Transform.createOriginAndMatrix(
+          ray0.origin,
+          Matrix3d.createRigidHeadsUp(ray0.direction)
+        );
         for (const shift of [-6, -4, -2, 0, 1, 3, 5, 7]) {
-          const ray = Ray3d.create(frame.multiplyXYZ(shift, 0, 0), ray0.direction);
-          SphereImplicit.intersectSphereRay(center, radius, ray, rayFractions, xyzIntersections, thetaPhiRadians);
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(ray.fractionToPoint(-b), ray.fractionToPoint(b)), x0, y0);
+          const ray = Ray3d.create(
+            frame.multiplyXYZ(shift, 0, 0),
+            ray0.direction
+          );
+          SphereImplicit.intersectSphereRay(
+            center,
+            radius,
+            ray,
+            rayFractions,
+            xyzIntersections,
+            thetaPhiRadians
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineSegment3d.create(
+              ray.fractionToPoint(-b),
+              ray.fractionToPoint(b)
+            ),
+            x0,
+            y0
+          );
           for (const xyz of xyzIntersections)
-            GeometryCoreTestIO.captureGeometry(allGeometry, Sphere.createCenterRadius(xyz, radius * 0.04), x0, y0);
+            GeometryCoreTestIO.captureGeometry(
+              allGeometry,
+              Sphere.createCenterRadius(xyz, radius * 0.04),
+              x0,
+              y0
+            );
           const closestPoint = ray.projectPointToRay(center);
           const d = center.distance(closestPoint);
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(center, center.interpolate(d < radius ? 3.0 : 1.0, closestPoint)), x0, y0);
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineSegment3d.create(
+              center,
+              center.interpolate(d < radius ? 3.0 : 1.0, closestPoint)
+            ),
+            x0,
+            y0
+          );
           if (Geometry.isSameCoordinate(d, radius)) {
             // ignore the potential tolerance problems . . .
           } else if (d < radius) {
-            ck.testExactNumber(2, xyzIntersections.length, "Expect 2 intersections when ray passes close to center");
+            ck.testExactNumber(
+              2,
+              xyzIntersections.length,
+              "Expect 2 intersections when ray passes close to center"
+            );
           } else
-            ck.testExactNumber(0, xyzIntersections.length, "Expect no intersections when ray is far from center");
+            ck.testExactNumber(
+              0,
+              xyzIntersections.length,
+              "Expect no intersections when ray is far from center"
+            );
         }
         y0 += 6.0 * radius;
       }
       x0 += 6.0 * radius;
     }
     expect(ck.getNumErrors()).equals(0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "RayIntersection");
+    GeometryCoreTestIO.saveGeometry(
+      allGeometry,
+      "SphereImplicit",
+      "RayIntersection"
+    );
   });
   it("ImplicitLine", () => {
     const ck = new Checker();
@@ -679,8 +1090,7 @@ describe("LinearSystems", () => {
 });
 
 function arraySteps(low: number, high: number, step: number): number[] {
-  if (low === high)
-    return [low];
+  if (low === high) return [low];
   const delta = high - low;
   const numInterval = Math.max(1, Math.floor(Math.abs(delta / step)));
   const result = [];
@@ -689,17 +1099,24 @@ function arraySteps(low: number, high: number, step: number): number[] {
   }
   return result;
 }
-function sphereSnakeGridPoints(center: Point3d, radius: number, thetaArray: number[], phiArray: number[]): Point3d[] {
+function sphereSnakeGridPoints(
+  center: Point3d,
+  radius: number,
+  thetaArray: number[],
+  phiArray: number[]
+): Point3d[] {
   const points: Point3d[] = [];
   const sphere = new SphereImplicit(radius);
   for (let iPhi = 0; iPhi < phiArray.length; iPhi += 2) {
     let phiRadians = phiArray[iPhi];
     for (const thetaRadians of thetaArray) {
-      points.push(center.plus(sphere.evaluateThetaPhi(thetaRadians, phiRadians)));
+      points.push(
+        center.plus(sphere.evaluateThetaPhi(thetaRadians, phiRadians))
+      );
     }
     if (iPhi + 1 < phiArray.length) {
       phiRadians = phiArray[iPhi + 1];
-      for (let iTheta = thetaArray.length; iTheta > 0;) {
+      for (let iTheta = thetaArray.length; iTheta > 0; ) {
         iTheta--;
         const uvw = sphere.evaluateThetaPhi(thetaArray[iTheta], phiRadians);
         points.push(center.plus(uvw));

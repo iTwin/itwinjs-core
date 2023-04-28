@@ -45,7 +45,8 @@ export class TransitionConditionalProperties {
     radius1: number | undefined,
     bearing0: Angle | undefined,
     bearing1: Angle | undefined,
-    arcLength: number | undefined) {
+    arcLength: number | undefined
+  ) {
     this.radius0 = radius0;
     this.radius1 = radius1;
     this.bearing0 = bearing0;
@@ -54,11 +55,13 @@ export class TransitionConditionalProperties {
   }
   /** return the number of defined values among the 5 properties. */
   public numDefinedProperties() {
-    return Geometry.defined01(this.radius0)
-      + Geometry.defined01(this.radius1)
-      + Geometry.defined01(this.bearing0)
-      + Geometry.defined01(this.bearing1)
-      + Geometry.defined01(this.curveLength);
+    return (
+      Geometry.defined01(this.radius0) +
+      Geometry.defined01(this.radius1) +
+      Geometry.defined01(this.bearing0) +
+      Geometry.defined01(this.bearing1) +
+      Geometry.defined01(this.curveLength)
+    );
   }
   /** clone with all properties (i.e. preserve undefined states) */
   public clone(): TransitionConditionalProperties {
@@ -67,14 +70,23 @@ export class TransitionConditionalProperties {
       this.radius1,
       this.bearing0 === undefined ? undefined : this.bearing0.clone(),
       this.bearing1 === undefined ? undefined : this.bearing1.clone(),
-      this.curveLength);
+      this.curveLength
+    );
   }
   /** Return true if all components are defined and agree equationally. */
   public getIsValidCompleteSet() {
-    if (this.curveLength !== undefined && this.bearing0 !== undefined && this.bearing1 !== undefined
-      && this.radius0 !== undefined && this.radius1 !== undefined) {
-      const length1 = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(this.radius0, this.radius1,
-        this.bearing1.radians - this.bearing0.radians);
+    if (
+      this.curveLength !== undefined &&
+      this.bearing0 !== undefined &&
+      this.bearing1 !== undefined &&
+      this.radius0 !== undefined &&
+      this.radius1 !== undefined
+    ) {
+      const length1 = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(
+        this.radius0,
+        this.radius1,
+        this.bearing1.radians - this.bearing0.radians
+      );
       return Geometry.isSameCoordinate(this.curveLength, length1);
     }
     return false;
@@ -83,49 +95,97 @@ export class TransitionConditionalProperties {
    * @returns Return true if the input state had precisely one undefined member.
    */
   public tryResolveAnySingleUnknown(): boolean {
-    if (this.getIsValidCompleteSet())
-      return true;
+    if (this.getIsValidCompleteSet()) return true;
     if (this.bearing0 && this.bearing1) {
       const sweepRadians = this.bearing1.radians - this.bearing0.radians;
-      if (this.curveLength === undefined && this.radius0 !== undefined && this.radius1 !== undefined) {
-        this.curveLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(this.radius0, this.radius1, sweepRadians);
+      if (
+        this.curveLength === undefined &&
+        this.radius0 !== undefined &&
+        this.radius1 !== undefined
+      ) {
+        this.curveLength =
+          TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(
+            this.radius0,
+            this.radius1,
+            sweepRadians
+          );
         return true;
       }
-      if (this.curveLength !== undefined && this.radius0 === undefined && this.radius1 !== undefined) {
-        this.radius0 = TransitionSpiral3d.radius1LengthSweepRadiansToRadius0(this.radius1, this.curveLength, sweepRadians);
+      if (
+        this.curveLength !== undefined &&
+        this.radius0 === undefined &&
+        this.radius1 !== undefined
+      ) {
+        this.radius0 = TransitionSpiral3d.radius1LengthSweepRadiansToRadius0(
+          this.radius1,
+          this.curveLength,
+          sweepRadians
+        );
         return true;
       }
-      if (this.curveLength !== undefined && this.radius0 !== undefined && this.radius1 === undefined) {
-        this.radius1 = TransitionSpiral3d.radius0LengthSweepRadiansToRadius1(this.radius0, this.curveLength, sweepRadians);
+      if (
+        this.curveLength !== undefined &&
+        this.radius0 !== undefined &&
+        this.radius1 === undefined
+      ) {
+        this.radius1 = TransitionSpiral3d.radius0LengthSweepRadiansToRadius1(
+          this.radius0,
+          this.curveLength,
+          sweepRadians
+        );
         return true;
       }
       return false;
     }
     // at least one bearing is undefined ...
-    if (this.curveLength === undefined || this.radius0 === undefined || this.radius1 === undefined)
+    if (
+      this.curveLength === undefined ||
+      this.radius0 === undefined ||
+      this.radius1 === undefined
+    )
       return false;
 
-    if (this.bearing0) { // bearing 1 is undefined
-      this.bearing1 = Angle.createRadians(this.bearing0.radians + TransitionSpiral3d.radiusRadiusLengthToSweepRadians(this.radius0, this.radius1, this.curveLength));
+    if (this.bearing0) {
+      // bearing 1 is undefined
+      this.bearing1 = Angle.createRadians(
+        this.bearing0.radians +
+          TransitionSpiral3d.radiusRadiusLengthToSweepRadians(
+            this.radius0,
+            this.radius1,
+            this.curveLength
+          )
+      );
       return true;
     }
 
-    if (this.bearing1) { // bearing 0 is undefined
-      this.bearing0 = Angle.createRadians(this.bearing1.radians - TransitionSpiral3d.radiusRadiusLengthToSweepRadians(this.radius0, this.radius1, this.curveLength));
+    if (this.bearing1) {
+      // bearing 0 is undefined
+      this.bearing0 = Angle.createRadians(
+        this.bearing1.radians -
+          TransitionSpiral3d.radiusRadiusLengthToSweepRadians(
+            this.radius0,
+            this.radius1,
+            this.curveLength
+          )
+      );
       return true;
     }
     return false;
   }
-  private almostEqualCoordinate(a: number | undefined, b: number | undefined): boolean {
-    if (a === undefined && b === undefined)
-      return true;
+  private almostEqualCoordinate(
+    a: number | undefined,
+    b: number | undefined
+  ): boolean {
+    if (a === undefined && b === undefined) return true;
     if (a !== undefined && b !== undefined)
       return Geometry.isSameCoordinate(a, b);
     return false;
   }
-  private almostEqualBearing(a: Angle | undefined, b: Angle | undefined): boolean {
-    if (a === undefined && b === undefined)
-      return true;
+  private almostEqualBearing(
+    a: Angle | undefined,
+    b: Angle | undefined
+  ): boolean {
+    if (a === undefined && b === undefined) return true;
     if (a !== undefined && b !== undefined)
       return a.isAlmostEqualNoPeriodShift(b);
     return false;
@@ -136,32 +196,26 @@ export class TransitionConditionalProperties {
    */
 
   public isAlmostEqual(other?: TransitionConditionalProperties) {
-    if (!other)
-      return false;
-    if (!this.almostEqualCoordinate(this.radius0, other.radius0))
-      return false;
-    if (!this.almostEqualCoordinate(this.radius1, other.radius1))
-      return false;
-    if (!this.almostEqualBearing(this.bearing0, other.bearing0))
-      return false;
-    if (!this.almostEqualBearing(this.bearing1, other.bearing1))
-      return false;
+    if (!other) return false;
+    if (!this.almostEqualCoordinate(this.radius0, other.radius0)) return false;
+    if (!this.almostEqualCoordinate(this.radius1, other.radius1)) return false;
+    if (!this.almostEqualBearing(this.bearing0, other.bearing0)) return false;
+    if (!this.almostEqualBearing(this.bearing1, other.bearing1)) return false;
     if (!this.almostEqualCoordinate(this.curveLength, other.curveLength))
       return false;
     return true;
   }
   /** Apply a NONZERO scale factor to all distances. */
   public applyScaleFactor(a: number) {
-    if (this.radius0 !== undefined)
-      this.radius0 *= a;
-    if (this.radius1 !== undefined)
-      this.radius1 *= a;
-    if (this.curveLength !== undefined)
-      this.curveLength *= a;
+    if (this.radius0 !== undefined) this.radius0 *= a;
+    if (this.radius1 !== undefined) this.radius1 *= a;
+    if (this.curveLength !== undefined) this.curveLength *= a;
   }
-  public static areAlmostEqual(a: TransitionConditionalProperties | undefined, b: TransitionConditionalProperties | undefined): boolean {
-    if (a === undefined)
-      return b === undefined;
+  public static areAlmostEqual(
+    a: TransitionConditionalProperties | undefined,
+    b: TransitionConditionalProperties | undefined
+  ): boolean {
+    if (a === undefined) return b === undefined;
     return a.isAlmostEqual(b);
   }
 }

@@ -34,11 +34,15 @@ export class ECSchemaXmlContext {
     this.nativeContext.addSchemaPath(searchPath);
   }
 
-  public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
+  public setSchemaLocater(
+    locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback
+  ): void {
     this.nativeContext.setSchemaLocater(locater);
   }
 
-  public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
+  public setFirstSchemaLocater(
+    locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback
+  ): void {
     this.nativeContext.setFirstSchemaLocater(locater);
   }
 

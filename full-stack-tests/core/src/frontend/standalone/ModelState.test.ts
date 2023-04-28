@@ -6,7 +6,13 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+  DrawingModelState,
+  GeometricModelState,
+  IModelConnection,
+  ModelSelectorState,
+  SheetModelState,
+  SnapshotConnection,
+  SpatialModelState,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
@@ -37,7 +43,11 @@ describe("ModelState", () => {
     };
 
     const selector = new ModelSelectorState(props, imodel);
-    selector.addModels([Id64.fromLocalAndBriefcaseIds(2, 1), Id64.fromLocalAndBriefcaseIds(2, 1), Id64.fromLocalAndBriefcaseIds(2, 3)]);
+    selector.addModels([
+      Id64.fromLocalAndBriefcaseIds(2, 1),
+      Id64.fromLocalAndBriefcaseIds(2, 1),
+      Id64.fromLocalAndBriefcaseIds(2, 3),
+    ]);
     assert.equal(selector.models.size, 3);
     const out = selector.toJSON();
     assert.isArray(out.models);
@@ -48,7 +58,15 @@ describe("ModelState", () => {
   });
 
   it("should be able to load ModelState", async () => {
-    await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
+    await imodel.models.load([
+      "0x24",
+      "0x28",
+      "0x2c",
+      "0x11",
+      "0x34",
+      "0x24",
+      "nonsense",
+    ]);
     const models = imodel.models.loaded;
     assert.equal(models.size, 5);
     assert.instanceOf(models.get("0x24"), DrawingModelState);
@@ -63,9 +81,19 @@ describe("ModelState", () => {
       expect(geomModel.is2d).to.equal(!geomModel.is3d);
     });
 
-    models.forEach((model) => assert.deepEqual(model.clone(), model, "clone of ModelState should work"));
+    models.forEach((model) =>
+      assert.deepEqual(model.clone(), model, "clone of ModelState should work")
+    );
 
-    await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
+    await imodel.models.load([
+      "0x24",
+      "0x28",
+      "0x2c",
+      "0x11",
+      "0x34",
+      "0x24",
+      "nonsense",
+    ]);
     assert.equal(models.size, 5);
 
     const testDrawing = models.get("0x24") as DrawingModelState;
@@ -78,13 +106,18 @@ describe("ModelState", () => {
     range = await testSpatial.queryModelRange();
     assert.isTrue(range.isNull);
 
-    const modelProps = await imodel.models.queryProps({ from: SpatialModelState.classFullName });
+    const modelProps = await imodel.models.queryProps({
+      from: SpatialModelState.classFullName,
+    });
     assert.isAtLeast(modelProps.length, 2);
     // check modelProps[0] against expected values
     assert.equal(modelProps[0].classFullName, "BisCore:PhysicalModel");
     assert.equal(modelProps[0].id, "0x11");
     assert.equal(modelProps[0].modeledElement.id, "0x11");
-    assert.equal(modelProps[0].modeledElement.relClassName, "BisCore:ModelModelsElement");
+    assert.equal(
+      modelProps[0].modeledElement.relClassName,
+      "BisCore:ModelModelsElement"
+    );
     assert.equal(modelProps[0].name, "DefaultModel");
     assert.equal(modelProps[0].parentModel, IModel.repositoryModelId);
     assert.equal(modelProps[0].jsonProperties.formatter.fmtFlags.angMode, 1);
@@ -94,7 +127,10 @@ describe("ModelState", () => {
     assert.equal(modelProps[1].classFullName, "BisCore:PhysicalModel");
     assert.equal(modelProps[1].id, "0x1c");
     assert.equal(modelProps[1].modeledElement.id, "0x1c");
-    assert.equal(modelProps[1].modeledElement.relClassName, "BisCore:ModelModelsElement");
+    assert.equal(
+      modelProps[1].modeledElement.relClassName,
+      "BisCore:ModelModelsElement"
+    );
     assert.equal(modelProps[1].name, "Physical");
     assert.equal(modelProps[1].parentModel, IModel.repositoryModelId);
     assert.equal(modelProps[1].jsonProperties.formatter.fmtFlags.angMode, 1);
@@ -102,12 +138,20 @@ describe("ModelState", () => {
     assert.isNotTrue(modelProps[1].isTemplate);
 
     let propsCount = 0;
-    for await (const props of imodel.models.query({ from: "BisCore:DictionaryModel", wantPrivate: true, wantTemplate: true, limit: 1 })) {
+    for await (const props of imodel.models.query({
+      from: "BisCore:DictionaryModel",
+      wantPrivate: true,
+      wantTemplate: true,
+      limit: 1,
+    })) {
       propsCount++;
       assert.equal(props.classFullName, "BisCore:DictionaryModel");
       assert.equal(props.id, "0x10");
       assert.equal(props.modeledElement.id, "0x10");
-      assert.equal(props.modeledElement.relClassName, "BisCore:ModelModelsElement");
+      assert.equal(
+        props.modeledElement.relClassName,
+        "BisCore:ModelModelsElement"
+      );
       assert.equal(props.name, "BisCore.DictionaryModel");
       assert.equal(props.parentModel, IModel.repositoryModelId);
       assert.isTrue(props.isPrivate);
@@ -118,13 +162,21 @@ describe("ModelState", () => {
     await imodel2.models.load(["0x28", "0x1c"]);
     assert.equal(imodel2.models.loaded.size, 2);
     const scalableMesh = imodel2.models.getLoaded("0x28");
-    assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");
+    assert.instanceOf(
+      scalableMesh,
+      SpatialModelState,
+      "ScalableMeshModel should be SpatialModel"
+    );
     assert.equal(scalableMesh!.classFullName, "ScalableMesh:ScalableMeshModel");
 
     testSpatial = imodel2.models.getLoaded("0x1c") as SpatialModelState;
     range = await testSpatial.queryModelRange();
-    assert.isTrue(range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 }));
-    assert.isTrue(range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 }));
+    assert.isTrue(
+      range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 })
+    );
+    assert.isTrue(
+      range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 })
+    );
   });
 
   it("view thumbnails", async () => {
@@ -137,12 +189,12 @@ describe("ModelState", () => {
     const image = thumbnail.image;
     assert.equal(image[0], 0x89);
     assert.equal(image[1], 0x50);
-    assert.equal(image[2], 0x4E);
+    assert.equal(image[2], 0x4e);
     assert.equal(image[3], 0x47);
-    assert.equal(image[4], 0x0D);
-    assert.equal(image[5], 0x0A);
-    assert.equal(image[6], 0x1A);
-    assert.equal(image[7], 0x0A);
+    assert.equal(image[4], 0x0d);
+    assert.equal(image[5], 0x0a);
+    assert.equal(image[6], 0x1a);
+    assert.equal(image[7], 0x0a);
 
     // eslint-disable-next-line deprecation/deprecation
     thumbnail = await imodel2.views.getThumbnail("0x24");

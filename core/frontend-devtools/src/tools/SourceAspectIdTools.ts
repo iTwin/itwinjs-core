@@ -9,7 +9,12 @@
 
 import { BentleyError } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  Tool,
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -19,12 +24,19 @@ import { parseArgs } from "./parseArgs";
  * @beta
  */
 export abstract class SourceAspectIdTool extends Tool {
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   protected abstract getECSql(queryId: string): string;
 
-  public override async run(idToQuery?: string, copyToClipboard?: boolean): Promise<boolean> {
+  public override async run(
+    idToQuery?: string,
+    copyToClipboard?: boolean
+  ): Promise<boolean> {
     if (typeof idToQuery === "string")
       await this.doQuery(idToQuery, true === copyToClipboard);
 
@@ -36,27 +48,33 @@ export abstract class SourceAspectIdTool extends Tool {
     return this.run(args.get("i"), args.getBoolean("c"));
   }
 
-  private async doQuery(queryId: string, copyToClipboard: boolean): Promise<void> {
+  private async doQuery(
+    queryId: string,
+    copyToClipboard: boolean
+  ): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
-    if (undefined === imodel)
-      return;
+    if (undefined === imodel) return;
 
     let resultId;
     try {
-      for await (const row of imodel.createQueryReader(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
+      for await (const row of imodel.createQueryReader(
+        this.getECSql(queryId),
+        undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }
+      ))
         resultId = row.resultId;
     } catch (ex) {
       resultId = BentleyError.getErrorMessage(ex);
     }
 
-    if (typeof resultId !== "string")
-      resultId = "NOT FOUND";
+    if (typeof resultId !== "string") resultId = "NOT FOUND";
 
-    if (copyToClipboard)
-      copyStringToClipboard(resultId);
+    if (copyToClipboard) copyStringToClipboard(resultId);
 
     const message = `${queryId} => ${resultId}`;
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(OutputMessagePriority.Info, message)
+    );
   }
 }
 

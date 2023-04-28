@@ -7,10 +7,23 @@
  */
 
 import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
-import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
+import {
+  AngleProps,
+  Range3dProps,
+  TransformProps,
+  XYProps,
+  XYZProps,
+  YawPitchRollProps,
+} from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
+import {
+  DefinitionElementProps,
+  DisplayStyleLoadProps,
+  ElementProps,
+  SheetProps,
+  ViewAttachmentProps,
+} from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ModelProps } from "./ModelProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";

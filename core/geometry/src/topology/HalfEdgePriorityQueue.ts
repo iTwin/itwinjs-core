@@ -23,14 +23,14 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public priorityQueue: PriorityQueue<HalfEdge>;
   public activeEdges: HalfEdge[];
   public constructor(
-    compare: OrderedComparator<HalfEdge> = HalfEdgeGraphOps.compareNodesYXUp) {
+    compare: OrderedComparator<HalfEdge> = HalfEdgeGraphOps.compareNodesYXUp
+  ) {
     this.priorityQueue = new PriorityQueue(compare);
     this.activeEdges = [];
   }
   /** Read a member from the queue and transfer to the active array. */
   public popQueueToArray(): HalfEdge | undefined {
-    if (this.priorityQueue.isEmpty)
-      return undefined;
+    if (this.priorityQueue.isEmpty) return undefined;
     const x = this.priorityQueue.pop()!;
     this.activeEdges.push(x);
     return x;
@@ -60,8 +60,7 @@ export class HalfEdgePriorityQueueWithPartnerArray {
       const yB = q.faceSuccessor.y;
       if (yB >= y) {
         // copy [i] forward to [target]
-        if (numKeep < i)
-          this.activeEdges[numKeep] = q;
+        if (numKeep < i) this.activeEdges[numKeep] = q;
         numKeep++;
       } else {
         // let it go by !!!

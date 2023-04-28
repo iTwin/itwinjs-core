@@ -8,7 +8,11 @@
 
 import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
 import {
-  containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType,
+  containerTypeToString,
+  CustomAttributeContainerType,
+  ECClassModifier,
+  parseCustomAttributeContainerType,
+  SchemaItemType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECClass } from "./Class";
@@ -24,7 +28,10 @@ export class CustomAttributeClass extends ECClass {
 
   public get containerType(): CustomAttributeContainerType {
     if (undefined === this._containerType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidContainerType,
+        `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`
+      );
     return this._containerType;
   }
 
@@ -38,7 +45,10 @@ export class CustomAttributeClass extends ECClass {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): CustomAttributeClassProps {
+  public override toJSON(
+    standalone: boolean = false,
+    includeSchemaVersion: boolean = false
+  ): CustomAttributeClassProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.appliesTo = containerTypeToString(this.containerType);
     return schemaJson as CustomAttributeClassProps;
@@ -47,19 +57,31 @@ export class CustomAttributeClass extends ECClass {
   /** @internal */
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    itemElement.setAttribute("appliesTo", containerTypeToString(this.containerType));
+    itemElement.setAttribute(
+      "appliesTo",
+      containerTypeToString(this.containerType)
+    );
     return itemElement;
   }
 
-  public override fromJSONSync(customAttributeProps: CustomAttributeClassProps) {
+  public override fromJSONSync(
+    customAttributeProps: CustomAttributeClassProps
+  ) {
     super.fromJSONSync(customAttributeProps);
-    const containerType = parseCustomAttributeContainerType(customAttributeProps.appliesTo);
+    const containerType = parseCustomAttributeContainerType(
+      customAttributeProps.appliesTo
+    );
     if (undefined === containerType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${containerType} is not a valid CustomAttributeContainerType.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidContainerType,
+        `${containerType} is not a valid CustomAttributeContainerType.`
+      );
     this._containerType = containerType;
   }
 
-  public override async fromJSON(customAttributeProps: CustomAttributeClassProps) {
+  public override async fromJSON(
+    customAttributeProps: CustomAttributeClassProps
+  ) {
     this.fromJSONSync(customAttributeProps);
   }
 
@@ -75,6 +97,8 @@ export class CustomAttributeClass extends ECClass {
  * An abstract class used for Schema editing.
  */
 export abstract class MutableCAClass extends CustomAttributeClass {
-  public abstract override setContainerType(containerType: CustomAttributeContainerType): void;
+  public abstract override setContainerType(
+    containerType: CustomAttributeContainerType
+  ): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

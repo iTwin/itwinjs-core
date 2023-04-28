@@ -73,7 +73,6 @@ import { ITwinLocalization } from "@itwin/core-i18n";
 const myCustomLocalization: Localization = new ITwinLocalization();
 
 await IModelApp.startup({ localization: myCustomLocalization });
-
 ```
 
 To utilize the localization dictionaries, first initialize the localization instance to register any namespaces. [Localization.initialize]($common) takes in a list of namespaces to register. [Localization.registerNamespace]($common) takes only a single namespace string at a time.
@@ -91,11 +90,16 @@ Registering a namespace starts the process of retrieving the relevant namespace 
 Now, a locale-specific string can be requested with the [Localization.getLocalizedString]($common) method. To specify the value to grab from the localization dictionary, specify its key in the following format: The namespace, followed by a colon, followed by a period-delimited tag that identifies the object within the JSON file. For example, "SafetyBaseMessages:info.login.loggedIn" is the key for the info.login.loggedIn value in the SafetyBaseMessages namespace.
 
 ```ts
-const myUsername = "John_Smith_123"
+const myUsername = "John_Smith_123";
 
-IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.notLoggedIn");
+IModelApp.localization.getLocalizedString(
+  "SafetyBaseMessages:info.login.notLoggedIn"
+);
 // returns "You are not currently logged in."
-IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedIn", { username: myUsername});
+IModelApp.localization.getLocalizedString(
+  "SafetyBaseMessages:info.login.loggedIn",
+  { username: myUsername }
+);
 // returns "You are logged in as John_Smith_123."
 ```
 
@@ -106,9 +110,14 @@ Specific to the [ITwinLocalization]($i18n) class, the browser is used to detect 
 ```ts
 await IModelApp.localization.changeLanguage("de");
 
-IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.notLoggedIn");
+IModelApp.localization.getLocalizedString(
+  "SafetyBaseMessages:info.login.notLoggedIn"
+);
 // returns "Sie sind derzeit nicht eingeloggt."
-IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedIn", { username: myUsername});
+IModelApp.localization.getLocalizedString(
+  "SafetyBaseMessages:info.login.loggedIn",
+  { username: myUsername }
+);
 // returns "Sie sind angemeldet als John_Smith_123."
 ```
 
@@ -117,10 +126,14 @@ To interpolate a value in a custom string (i.e., a string not from a localizatio
 ```ts
 await IModelApp.localization.changeLanguage("en");
 
-IModelApp.localization.getLocalizedKeys("Please be aware: %{SafetyBaseMessages:error.offline}");
+IModelApp.localization.getLocalizedKeys(
+  "Please be aware: %{SafetyBaseMessages:error.offline}"
+);
 // returns "Please be aware: Network connection not available."
 
-IModelApp.localization.getLocalizedKeys("Hello, %{SafetyBaseMessages:info.login.loggedIn}.");
+IModelApp.localization.getLocalizedKeys(
+  "Hello, %{SafetyBaseMessages:info.login.loggedIn}."
+);
 // returns "Hello, You are logged in as {{username}}."
 ```
 
@@ -136,7 +149,7 @@ If you are using React for user interface development, please note that you shou
 
 ## Tool Localization
 
-The primary way of initiating actions in iTwin.js applications is by authoring a subclass of the [Tool](./Tools) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional *namespace* argument that specifies the namespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
+The primary way of initiating actions in iTwin.js applications is by authoring a subclass of the [Tool](./Tools) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional _namespace_ argument that specifies the namespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
 
 The keys for each of those properties are synthesized from the Tool's namespace and toolId. For example, the translation key for the keyin property is \<Namespace\>:tools.\<toolId\>.keyin. Now suppose you author a PlaceSprinkler command in the SafetyBase application. Your Tool class might look like this:
 
@@ -179,7 +192,9 @@ If you omit the "flyover" key, the keyin property is used for the flyover text. 
 In this example, the prompt1 and prompt2 keys are not used by the system - they could be used by your application during the operation of the Place Sprinkler command. They would be retrieved using this code:
 
 ```ts
-const firstPrompt: string = IModelApp.localization.getLocalizedString("SafetyBaseTools:Place.Sprinkler.prompt1");
+const firstPrompt: string = IModelApp.localization.getLocalizedString(
+  "SafetyBaseTools:Place.Sprinkler.prompt1"
+);
 // returns "Enter Sprinkler origin."
 ```
 
