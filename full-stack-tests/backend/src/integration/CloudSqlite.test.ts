@@ -8,7 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { emptyDirSync, existsSync, mkdirsSync, removeSync } from "fs-extra";
 import { basename, join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelDb, IModelHost, IModelJsNative, KnownLocations, SnapshotDb, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -204,16 +204,16 @@ describe("CloudSqlite", () => {
 
     await CloudSqlite.withWriteLock("test", container, async () => {
       await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: basename(testBimFileName)});
-    }
+    });
     container.checkForChanges();
 
-    let db: IModelJsNative.DgnDb = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, {container});
-    const stmt = new SqliteStatement("PRAGMA bcv_client");
-    stmt.prepare(db);
-    stmt.step();
-    expect(stmt.getValueString(0)).equal(containerProps.cloudSqliteLogId);
-    stmt.dispose();
-    db.closeIModel();
+    let db = new SQLiteDb();
+    db.openDb(basename(testBimFileName), OpenMode.Readonly, container);
+    db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
+      stmt.step();
+      expect(stmt.getValueString(0)).equal(containerProps.cloudSqliteLogId);
+    });
+    db.closeDb();
     container.disconnect();
 
     const containerProps2: CloudSqlite.ContainerAccessProps = {
@@ -229,12 +229,13 @@ describe("CloudSqlite", () => {
 
     container2.checkForChanges();
 
-    db = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, { container: container2 });
-    stmt.prepare(db);
-    stmt.step();
-    expect(stmt.getValueString(0)).equal(containerProps2.cloudSqliteLogId);
-    stmt.dispose();
-    db.closeIModel();
+    db = new SQLiteDb();
+    db.openDb(basename(testBimFileName), OpenMode.Readonly, container2);
+    db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
+      stmt.step();
+      expect(stmt.getValueString(0)).equal(containerProps2.cloudSqliteLogId);
+    });
+    db.closeDb();
     container2.disconnect();
 
     const containerProps3: CloudSqlite.ContainerAccessProps = { // No cloudsqlitelogid, so undefined. Should be "" by default.
@@ -249,13 +250,14 @@ describe("CloudSqlite", () => {
 
     container3.checkForChanges();
 
-    db = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, { container: container3 });
-    stmt.prepare(db);
-    stmt.step();
-    expect(stmt.getValueString(0)).equal("");
-    stmt.dispose();
-    db.closeIModel();
-    container3.disconnect();
+    db = new SQLiteDb();
+    db.openDb(basename(testBimFileName), OpenMode.Readonly, container3);
+    db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
+      stmt.step();
+      expect(stmt.getValueString(0)).equal("");
+    });
+    db.closeDb();
+    container.disconnect();
   });
 
   it("cloud containers", async () => {
