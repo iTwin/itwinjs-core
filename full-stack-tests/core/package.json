@@ -86,7 +86,8 @@
     "stream-http": "^3.2.0",
     "typescript": "~5.0.2",
     "webpack": "^5.76.0",
-    "webpack-cli": "^5.0.1"
+    "webpack-cli": "^5.0.1",
+    "prettier": "~2.8.8"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

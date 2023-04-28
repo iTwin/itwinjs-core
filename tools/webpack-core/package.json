@@ -57,7 +57,8 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "memfs": "^3.2.2",
-    "chai-jest-snapshot": "^2.0.0"
+    "chai-jest-snapshot": "^2.0.0",
+    "prettier": "~2.8.8"
   },
   "eslintConfig": {
     "plugins": [

@@ -55,7 +55,8 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.0.2"
+    "typescript": "~5.0.2",
+    "prettier": "~2.8.8"
   },
   "TODO-dependencies": {
     "@bentley/physicalmaterial-schema": "~1.0.1"

@@ -54,7 +54,8 @@
     "eslint": "^8.36.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.0.2"
+    "typescript": "~5.0.2",
+    "prettier": "~2.8.8"
   },
   "peerDependencies": {
     "electron": ">=23.0.0 <25.0.0"

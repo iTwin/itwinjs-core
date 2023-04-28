@@ -86,7 +86,8 @@
     "typemoq": "^2.1.0",
     "typescript": "~5.0.2",
     "typescript-json-schema": "^0.55.0",
-    "yargs": "^17.4.0"
+    "yargs": "^17.4.0",
+    "prettier": "~2.8.8"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

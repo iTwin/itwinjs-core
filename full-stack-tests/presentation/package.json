@@ -74,7 +74,8 @@
     "jsdom-global": "3.0.2",
     "sanitize-filename": "^1.6.3",
     "typescript": "~5.0.2",
-    "i18next-http-backend": "^1.4.4"
+    "i18next-http-backend": "^1.4.4",
+    "prettier": "~2.8.8"
   },
   "eslintConfig": {
     "plugins": [

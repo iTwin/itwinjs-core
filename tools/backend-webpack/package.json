@@ -36,6 +36,7 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "prettier": "~2.8.8"
   }
 }
