@@ -373,7 +373,7 @@ export namespace SQLiteDb {
   export type VersionRange = string;
 
   /**
-   * A pair of semver [[VersionRange]]s, one for read and one for write, required to access a [[VersionedSqliteDb]].
+   * A pair of semver [[SQLiteDb.VersionRange]]s, one for read and one for write, required to access a [[VersionedSqliteDb]].
    * If the version of the software attempting to read or write the database does not satisfy the range, access is denied.
    */
   export interface RequiredVersionRanges {

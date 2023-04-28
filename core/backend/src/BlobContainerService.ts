@@ -22,7 +22,7 @@ export namespace BlobContainer {
   /** the name of the container within its [[Scope]] */
   export type ContainerId = string;
 
-  /** token that authenticates a user. This token is required to obtain a [[ContainerToken]]. */
+  /** token that authenticates a user. This token is required to obtain a `ContainerToken`. */
   export type UserToken = AccessToken;
 
   /** token that authenticates access to a container for either read or write. */
@@ -132,7 +132,7 @@ export namespace BlobContainer {
     delete(props: AccessContainerProps): Promise<void>;
 
     /**
-     * Request a [[ContainerToken]] for a container. Throws on failure.
+     * Request a `ContainerToken` for a container. Throws on failure.
      */
     requestToken(props: RequestTokenProps): Promise<TokenProps>;
   }

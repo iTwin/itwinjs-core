@@ -372,7 +372,7 @@ export namespace CloudSqlite {
   }
 
   /**
-   * Object returned by [[startCloudPrefetch]].
+   * Object returned by [[CloudSqlite.startCloudPrefetch]].
    * It holds a promise that is fulfilled when a Prefetch is completed. May also be used to cancel an in-progress prefetch.
    */
   export interface CloudPrefetch {
@@ -691,7 +691,7 @@ export namespace CloudSqlite {
      * @param operationName the name of the operation. Only used for logging.
      * @param operation a function called with the lock held and the database open for write.
      * @returns A promise that resolves to the the return value of `operation`.
-     * @see [SQLiteDb.withLockedContainer]($backend)
+     * @see `SQLiteDb.withLockedContainer`
      * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
      * do any avoidable or time consuming work in your operation function.
      */

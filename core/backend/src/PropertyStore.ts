@@ -225,7 +225,7 @@ export namespace PropertyStore {
   const defaultDbName = "PropertyDb" as const;
 
   /**
-   * Provides access to a cloud-based [[PropertyDb]] to hold a set of values of type [[PropertyType]], each with a unique [[PropertyName]].
+   * Provides access to a cloud-based `PropertyDb` to hold a set of values of type `PropertyType`, each with a unique `PropertyName`.
    * `PropertyStore.CloudDb`s are stored in cloud containers and require an access token that grants permission to read and/or write them.
    * All write operations will fail without an access token that grants write permission.
    *
