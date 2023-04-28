@@ -202,9 +202,9 @@ describe("CloudSqlite", () => {
     container.initializeContainer();
     container.connect(caches[1]);
 
-    container.acquireWriteLock("test");
-    await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: basename(testBimFileName)});
-    container.releaseWriteLock();
+    await CloudSqlite.withWriteLock("test", container, async () => {
+      await CloudSqlite.uploadDb(container, {localFileName: testBimFileName, dbName: basename(testBimFileName)});
+    }
     container.checkForChanges();
 
     let db: IModelJsNative.DgnDb = IModelDb.openDgnDb({ path: basename(testBimFileName) }, OpenMode.Readonly, undefined, {container});
