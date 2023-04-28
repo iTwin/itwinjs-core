@@ -180,6 +180,8 @@ New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
 
+A new method [Ray3d.intersectionWithTriangle]($core-geometry) is also added which is 2-3 times faster than [BarycentricTriangle.intersectRay3d]($core-geometry). This new method only returns the intersection coordinates of the ray and triangle and no extra data.
+
 ### Abstract base class [Plane3d]($core-geometry)
 
 A new abstract base class [Plane3d]($core-geometry) is defined to provide shared queries and enforce method names in multiple classes that act as 3D "planes" with various representations.
