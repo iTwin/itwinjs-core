@@ -11,30 +11,35 @@ import {
 import {
   AttachToViewportArgs, SpatialViewState, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
+import { BatchedTileTreeId, getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 
 /** @internal */
 export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
-  private readonly _treeOwner: TileTreeOwner;
+  private readonly _baseUrl: URL;
   private readonly _view: SpatialViewState;
   private readonly _viewedModels = new Id64.Uint32Set();
   private readonly _modelRanges = new Map<Id64String, Range3d>();
   private _modelRangePromise?: Promise<void>;
   private _onModelSelectorChanged?: () => void;
 
-  private constructor(treeOwner: TileTreeOwner, view: SpatialViewState) {
+  private constructor(baseUrl: URL, view: SpatialViewState) {
     super();
-    this._treeOwner = treeOwner;
+    this._baseUrl = baseUrl;
     this._view = view;
   }
 
   public static create(view: SpatialViewState, baseUrl: URL): BatchedTileTreeReference {
-    const owner = getBatchedTileTreeOwner(view.iModel, baseUrl);
-    return new BatchedTileTreeReference(owner, view);
+    return new BatchedTileTreeReference(baseUrl, view);
   }
 
   public override get treeOwner(): TileTreeOwner {
-    return this._treeOwner;
+    const script = this._view.displayStyle.scheduleScript;
+    const id: BatchedTileTreeId = {
+      script: script?.requiresBatching ? script : undefined,
+      baseUrl: this._baseUrl,
+    }
+
+    return getBatchedTileTreeOwner(this._view.iModel, id);
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {
@@ -61,7 +66,7 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     if (modelIds.length === 0)
       return;
 
-    const modelRangePromise = this._modelRangePromise = this._treeOwner.iModel.models.queryExtents(modelIds).then((extents: ModelExtentsProps[]) => {
+    const modelRangePromise = this._modelRangePromise = this._view.iModel.models.queryExtents(modelIds).then((extents: ModelExtentsProps[]) => {
       if (modelRangePromise !== this._modelRangePromise)
         return;
 

@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { compareStrings, Logger } from "@itwin/core-bentley";
+import { comparePossiblyUndefined, compareStrings, Logger } from "@itwin/core-bentley";
+import { RenderSchedule } from "@itwin/core-common";
 import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
@@ -12,15 +13,19 @@ import { BatchedTilesetReader } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
 
 /** @internal */
-export type TreeId = URL;
+export interface BatchedTileTreeId {
+  baseUrl: URL;
+  script?: RenderSchedule.Script;
+}
 
 class BatchedTileTreeSupplier implements TileTreeSupplier {
-  public compareTileTreeIds(lhs: TreeId, rhs: TreeId): number {
-    // Currently each iModel has exactly 1 unique tile tree for all spatial models.
-    return compareStrings(lhs.toString(), rhs.toString());
+  public compareTileTreeIds(lhs: BatchedTileTreeId, rhs: BatchedTileTreeId): number {
+    return compareStrings(lhs.toString(), rhs.toString())
+      || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.script, rhs.script);
   }
 
-  public async createTileTree(baseUrl: TreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+  public async createTileTree(treeId: BatchedTileTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    const baseUrl = treeId.baseUrl;
     const url = new URL("tileset.json", baseUrl);
     url.search = baseUrl.search;
     try {
@@ -40,6 +45,6 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 const batchedTileTreeSupplier: TileTreeSupplier = new BatchedTileTreeSupplier();
 
 /** @internal */
-export function getBatchedTileTreeOwner(iModel: IModelConnection, baseUrl: URL): TileTreeOwner {
-  return iModel.tiles.getTileTreeOwner(baseUrl, batchedTileTreeSupplier);
+export function getBatchedTileTreeOwner(iModel: IModelConnection, treeId: BatchedTileTreeId): TileTreeOwner {
+  return iModel.tiles.getTileTreeOwner(treeId, batchedTileTreeSupplier);
 }
