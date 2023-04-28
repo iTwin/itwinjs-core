@@ -18,10 +18,10 @@ import {
   Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
-import { BaseMapLayerSettings, IModel, ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
-export class DefaultMapFeatureInfoTool extends PrimitiveTool {
+export class MapFeatureInfoTool extends PrimitiveTool {
   public static readonly onMapHit = new BeEvent<(hit: HitDetail | undefined) => void>();
 
   public static override toolId = "MapFeatureInfoTool";
@@ -85,7 +85,7 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
         mapRef.forEachLayerTileTreeRef((layerRef: TileTreeReference) => {
           if (layerRef instanceof MapLayerTileTreeReference
             && layerRef.layerSettings instanceof ImageMapLayerSettings
-            && DefaultMapFeatureInfoTool._supportedFormats.includes(layerRef.layerSettings.formatId)
+            && MapFeatureInfoTool._supportedFormats.includes(layerRef.layerSettings.formatId)
             && layerRef.treeOwner.tileTree?.modelId) {
 
             const entry = this._layerSettingsCache.get(layerRef.treeOwner.tileTree?.modelId);
@@ -132,12 +132,12 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
         }
       } finally {
         IModelApp.toolAdmin.setCursor(undefined);
-        DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
+        MapFeatureInfoTool.onMapHit.raiseEvent(hit);
       }
 
       return EventHandled.Yes;
     }
-    DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
+    MapFeatureInfoTool.onMapHit.raiseEvent(hit);
     return EventHandled.No;
   }
 
@@ -150,7 +150,7 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
   }
 
   public async onRestartTool() {
-    const tool = new DefaultMapFeatureInfoTool();
+    const tool = new MapFeatureInfoTool();
     if (!(await tool.run()))
       return this.exitTool();
   }
