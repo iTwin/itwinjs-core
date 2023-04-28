@@ -125,8 +125,9 @@ export class MobileHost {
       this.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
         if (error) {
           reject(error);
+        } else {
+          resolve([tokenString ?? "", expirationDate ?? ""]);
         }
-        resolve([tokenString ?? "", expirationDate ?? ""]);
       });
     });
   }
