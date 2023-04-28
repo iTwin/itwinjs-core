@@ -29,12 +29,12 @@ class DrapeLineStringCollector extends TileGeometryCollector {
 
   private rangeOverlapsLineString(range: Range3d) {
     let inside = false;
-    const clipper = ConvexClipPlaneSet.createRange3dPlanes (range, true, true, true, true, false, false);
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes(range, true, true, true, true, false, false);
     if (this._options.transform)
       clipper.transformInPlace(this._options.transform);
 
     for (let i = 0; i < this._points.length - 1 && !inside; i++)
-      inside = clipper.announceClippedSegmentIntervals (0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i+1));
+      inside = clipper.announceClippedSegmentIntervals(0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i + 1));
 
     return inside;
   }
@@ -89,17 +89,18 @@ class TerrainDraper implements TileUser {
 
 export class MapFeatureInfoDecorator implements Decorator {
 
-  // private _graphicPrimitives: GraphicPrimitive[]|undefined;
+  public readonly useCachedDecorations = true;
+
   private _drapePoints = new GrowableXYZArray();
   private _drapedStrings?: LineString3d[];
   private _draper?: TerrainDraper;
 
-  private _state: MapFeatureInfoDataUpdate|undefined;
-  private _cachedGraphics: RenderGraphic|undefined;
+  private _state: MapFeatureInfoDataUpdate | undefined;
+
   // private readonly _graphicType = GraphicType.WorldDecoration;
   private readonly _graphicType = GraphicType.WorldOverlay;
 
-  private _computeChordTolerance(viewport: Viewport, applyAspectRatioSkew: boolean, computeRange: () => Range3d)  {
+  private _computeChordTolerance(viewport: Viewport, applyAspectRatioSkew: boolean, computeRange: () => Range3d) {
     let pixelSize = 1;
     // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
     pixelSize = viewport.getPixelSizeAtPoint(computeRange().center);
@@ -113,8 +114,8 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   public setState(state: MapFeatureInfoDataUpdate) {
-    this._cachedGraphics = undefined;
-    this._drapedStrings  = undefined;
+
+    this._drapedStrings = undefined;
     // this._graphicPrimitives = graphics;
     this._state = state;
 
@@ -140,18 +141,6 @@ export class MapFeatureInfoDecorator implements Decorator {
 
   }
 
-  // private getGeometryTreeRef(vp: Viewport, modelId: string): GeometryTileTreeReference | undefined {
-  //   let treeRef: GeometryTileTreeReference | undefined;
-  //   vp.forEachTileTreeRef((ref) => {
-  //     if (!treeRef) {
-  //       const tree = ref.treeOwner.load();
-  //       if (tree?.modelId === modelId)
-  //         treeRef = ref.createGeometryTreeReference();
-  //     }
-  //   });
-
-  //   return treeRef;
-  // }
   private getGeometryTreeRef(vp: Viewport): GeometryTileTreeReference | undefined {
     let treeRef: GeometryTileTreeReference | undefined;
     if (vp.backgroundMapSettings.applyTerrain) {
@@ -167,7 +156,7 @@ export class MapFeatureInfoDecorator implements Decorator {
 
   protected renderGraphics(context: DecorateContext) {
     if (this._state?.graphics === undefined) {
-      return;
+      return undefined;
     }
     const graphics = this._state?.graphics;
 
@@ -191,7 +180,7 @@ export class MapFeatureInfoDecorator implements Decorator {
         drapeRange.extendArray(this._drapePoints);
 
         // const tolerance = drapeRange.diagonal().magnitude() / 5000;
-        const tolerance = this._computeChordTolerance(context.viewport, true, ()=>drapeRange) * 10;  // 10 pixels
+        const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 10;  // 10 pixels
         if ("loading" !== this._draper.drapeLineString(drapedStrings, this._drapePoints, tolerance)) {
           console.log("Got draped geometries");
           this._drapedStrings = drapedStrings;
@@ -208,45 +197,27 @@ export class MapFeatureInfoDecorator implements Decorator {
         this._drapedStrings.forEach((line) => builder.addLineString(line.points));
       }
     } else {
-    // builder.addRangeBox(vp.iModel.projectExtents);
-    // builder.setSymbology(ColorDef.blue, ColorDef.blue, 15 /* lineWidth */);
 
       if (graphics.length > 0 && graphics[0].type === "pointstring") {
         lineWidth = 15;
-
       }
       builder.setSymbology(ColorDef.from(0, 255, 255, 100), ColorDef.from(0, 255, 255, 100), lineWidth);
       graphics.forEach((primitive) => builder.addPrimitive(primitive));
     }
 
-    this._cachedGraphics = builder.finish();
+    return builder.finish();
   }
 
   public decorate(context: DecorateContext): void {
     if (this._state?.graphics === undefined)
       return;
 
-    // Render graphics if not already in cache
-    if (this._cachedGraphics === undefined) {
-      this.renderGraphics(context);
-    }
 
-    if (this._cachedGraphics) {
-      context.addDecoration(this._graphicType, this._cachedGraphics);
-      this._cachedGraphics = undefined;
-    }
+    const graphics = this.renderGraphics(context);
+    if (graphics)
+      context.addDecoration(this._graphicType, graphics);
 
-    /*
-    const vp = context.viewport;
-    if (!vp.view.isSpatialView())
-      return;
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
-    // Set edge color to white or black depending on current view background color and set line weight to 2.
-    builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.red, 2);
-    // Add range box edge geometry to builder.
-    builder.addRangeBox(vp.iModel.projectExtents);
-    context.addDecorationFromBuilder(builder);
-    */
+
 
     return;
   }
