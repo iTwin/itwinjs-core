@@ -252,7 +252,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         ...options,
         parentKey: nodeKeyFromJson(options.parentKey),
       };
-      return this.getManager().getDetail().getNodesDescriptor(options);
+      return this.getManager(requestOptions.clientId).getDetail().getNodesDescriptor(options);
     });
   }
 
@@ -292,10 +292,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       if (options.transport === "unparsed-json") {
         // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
         // bypassing unnecessary deserialization and serialization.
-        return Presentation.getManager().getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
+        return Presentation.getManager(requestOptions.clientId).getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
       } else {
         // Support for older frontends that still expect a parsed descriptor
-        const descriptor = await Presentation.getManager().getContentDescriptor(options);
+        const descriptor = await Presentation.getManager(requestOptions.clientId).getContentDescriptor(options);
         return descriptor?.toJSON();
       }
     });

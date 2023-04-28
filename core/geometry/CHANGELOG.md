@@ -1,6 +1,51 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+
+## 3.7.4
+Tue, 25 Apr 2023 17:50:35 GMT
+
+_Version update only_
+
+## 3.7.3
+Thu, 20 Apr 2023 13:19:29 GMT
+
+### Updates
+
+- missing types in core-geometry barrel file
+
+## 3.7.2
+Wed, 12 Apr 2023 13:12:42 GMT
+
+_Version update only_
+
+## 3.7.1
+Mon, 03 Apr 2023 15:15:37 GMT
+
+_Version update only_
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+### Updates
+
+- ray-mesh intersection
+- add merge tolerance to regionBooleanXY
+
+## 3.6.3
+Mon, 27 Mar 2023 16:26:47 GMT
+
+_Version update only_
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+_Version update only_
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -1032,7 +1077,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -1163,7 +1208,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 

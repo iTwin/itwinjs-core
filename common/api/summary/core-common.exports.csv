@@ -17,6 +17,9 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
+beta;Atmosphere
+internal;Wavelengths
+internal;WavelengthsProps
 public;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
@@ -165,6 +168,8 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DbValueFormat
+internal;decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription
+internal;DecodeTileContentDescriptionArgs
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -198,7 +203,7 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-beta;ECSqlReader
+beta;ECSqlReader 
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -597,6 +602,7 @@ public;Rank
 internal;ReadableFormData 
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+deprecated;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
 beta;RealityDataFormat

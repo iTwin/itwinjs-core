@@ -39,35 +39,52 @@ This approach also allows the backend to use request diagnostics for telemetry a
 
 ## Diagnostics and OpenTelemetry
 
-[OpenTelemetry](https://opentelemetry.io/) is a vendor-neutral standard to collect telemetry data - metrics, logs and traces. The `@itwin/presentation-opentelemetry` package provides APIs to easily convert presentation diagnostics objects to OpenTelemetry objects, which makes collecting Presentation-related telemetry much easier.
+[OpenTelemetry](https://opentelemetry.io/) is a vendor-neutral standard to collect telemetry data - metrics, logs and traces. The `@itwin/presentation-opentelemetry` package provides APIs to easily export presentation diagnostics as OpenTelemetry data, which makes collecting Presentation-related telemetry much easier.
+
+The first part is to set up OpenTelemetry tracing, which could look like this:
 
 ```ts
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { context, trace } from "@opentelemetry/api";
-import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
-import { Presentation } from "@itwin/presentation-backend";
+import { Resource } from "@opentelemetry/resources";
+import * as opentelemetry from "@opentelemetry/sdk-node";
+import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-base";
+import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 
-const traceExporter = new OTLPTraceExporter({
-  url: "<OpenTelemetry collector's url>",
+// configure the OpenTelemetry data exporting to the console
+const telemetry = new opentelemetry.NodeSDK({
+  traceExporter: new ConsoleSpanExporter(),
+  resource: new Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: "presentation-test-app",
+  }),
 });
+telemetry.start();
+process.on("SIGTERM", () => {
+  telemetry.shutdown().finally(() => process.exit(0));
+});
+```
 
-Presentation.initialize({
-  diagnostics: {
-    // requesting performance metrics
-    perf: true,
-    // a function to capture current context so it can be used when the handler function is called
-    requestContextSupplier: () => {
-      // get the parent span that our diagnostics should nest under - it'll be supplied
-      // as the second argument to the `handler` function
-      return trace.getSpan(context.active())?.spanContext();
-    },
-    // the handler function is called after every request made through the `Presentation` API
-    handler: (diagnostics, parentSpanContext) => {
-      // convert diagnostics to OpenTelemetry spans
-      const spans = convertToReadableSpans(diagnostics, parentSpanContext);
-      // do export
-      traceExporter.export(spans, () => {});
-    },
+See [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-js#set-up-tracing) for more details on this part.
+
+The second part is to set up presentation diagnostics data exporting as OpenTelemetry traces:
+
+```ts
+import { exportDiagnostics } from "@itwin/presentation-opentelemetry";
+import { context } from "@opentelemetry/api";
+
+const presentationBackendProps: PresentationProps = {};
+presentationBackendProps.diagnostics = {
+  // requesting performance metrics
+  perf: {
+    // only capture spans that take more than 50 ms
+    minimumDuration: 50,
   },
-});
+  // a function to capture current context - it's passed to the `handler` function as the second argument
+  requestContextSupplier: () => context.active(),
+  // the handler function is called after every request made through the `Presentation` APIs
+  handler: (diagnostics, ctx) => {
+    // call `exportDiagnostics` from the `@itwin/presentation-opentelemetry` package to parse diagnostics
+    // data and export it through OpenTelemetry
+    exportDiagnostics(diagnostics, ctx);
+  },
+};
+Presentation.initialize(presentationBackendProps);
 ```

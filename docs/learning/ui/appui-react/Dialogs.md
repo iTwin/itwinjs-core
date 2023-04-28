@@ -3,8 +3,9 @@
 A **Dialog** is a small temporary window of options presented to the user.
 The `@itwin/appui-react` and `@itwin/core-react` packages contain several classes and components for displaying modal and modeless dialogs.
 
-* [ModalDialogManager]($appui-react) - displays and manages multiple modal dialogs
-* [ModelessDialogManager]($appui-react) - displays and manages multiple modeless dialogs
+* [FrameworkDialogs]($appui-react) - an interface accessed through `UiFramework.dialogs` manages dialogs open within the AppUI framework
+  * `UiFramework.dialogs.modal` - displays and manages multiple modal dialogs
+  * `UiFramework.dialogs.modeless` - displays and manages multiple modeless dialogs
 * [ModelessDialog]($appui-react) - Modeless Dialog React component uses the Dialog component with a modal={false} prop.
 It controls the z-index to keep the focused dialog above others.
 * [Dialog]($core-react) - Dialog React component with optional resizing and moving functionality.
@@ -79,10 +80,10 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps, S
 
 ### Opening a Modal Dialog
 
-The `ModalDialogManager.openDialog` function is called to open a modal dialog.
+The `UiFramework.dialogs.modal.open` function is called to open a modal dialog.
 
 ```tsx
-  ModalDialogManager.openDialog(
+  UiFramework.dialogs.modal.open(
     <SampleModalDialog
       onResult={(result) => this._handleModalResult(result)}
     />);
@@ -90,11 +91,11 @@ The `ModalDialogManager.openDialog` function is called to open a modal dialog.
 
 ### Handling Modal Dialog Close
 
-The `ModalDialogManager.closeDialog` function is called to close a modal dialog.
+The `UiFramework.dialogs.modal.close` function is called to close a modal dialog.
 
 ```tsx
   private _handleModalResult(result: DialogButtonType) {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.close();
     IModelApp.notifications.outputMessage(
       new NotifyMessageDetails(OutputMessagePriority.Info, `Modal dialog result: ${result}`)
     );
@@ -168,12 +169,12 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
 
 ### Opening a Modeless Dialog
 
-The `ModelessDialogManager.openDialog` function is called to open a modeless dialog.
+The `UiFramework.dialogs.modeless.open` function is called to open a modeless dialog.
 
 ```tsx
   const dialogId = "sample";
 
-  ModelessDialogManager.openDialog(
+  UiFramework.dialogs.modeless.open(
     <SampleModelessDialog
       opened={true}
       dialogId={dialogId}
@@ -183,11 +184,11 @@ The `ModelessDialogManager.openDialog` function is called to open a modeless dia
 
 ### Handling Modeless Dialog Close
 
-The `ModelessDialogManager.closeDialog` function is called to close a modeless dialog.
+The `UiFramework.dialogs.modeless.close` function is called to close a modeless dialog.
 
 ```tsx
   private _handleModelessClose = (dialogId: string) => {
-    ModelessDialogManager.closeDialog(dialogId);
+    UiFramework.dialogs.modeless.close(dialogId);
     IModelApp.notifications.outputMessage(
       new NotifyMessageDetails(OutputMessagePriority.Info, `Closed modeless dialog: ${dialogId}`)
     );

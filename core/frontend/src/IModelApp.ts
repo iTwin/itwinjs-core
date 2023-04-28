@@ -227,9 +227,7 @@ export class IModelApp {
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
   public static sessionId: GuidString;
-  /** The [[MapLayerProviderRegistry]] for this session.
-   * @internal
-   */
+  /** The [[MapLayerFormatRegistry]] for this session. */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }

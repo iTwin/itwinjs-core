@@ -6,11 +6,13 @@ import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
 } from "@itwin/core-backend";
-import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import {
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ECSqlReader, QueryBinder, QueryRowFormat, QueryRowProxy,
+} from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
@@ -178,17 +180,20 @@ describe("RulesetEmbedder", () => {
   }
 
   function setupMocksForQueryingExistingRulesets(rulesetId: string, rulesets: Array<{ ruleset: Ruleset, elementId: Id64String }>) {
-    async function* asyncIterator(): AsyncIterableIterator<any> {
-      for (const entry of rulesets) {
-        yield {
-          id: entry.elementId,
-          jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
-          normalizedVersion: normalizeVersion(entry.ruleset.version),
-        };
-      }
-    }
-    // eslint-disable-next-line deprecation/deprecation
-    imodelMock.setup((x) => x.query(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => asyncIterator());
+    const results = rulesets.map((entry) => ({
+      id: entry.elementId,
+      jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
+      normalizedVersion: normalizeVersion(entry.ruleset.version),
+    }));
+    let currIndex = -1;
+    const ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
+    ecSqlReaderMock.setup(async (x) => x.step()).returns(async () => ++currIndex < results.length);
+    ecSqlReaderMock.setup((x) => x.current).returns(() => {
+      const queryRowProxyMock = moq.Mock.ofType<QueryRowProxy>();
+      queryRowProxyMock.setup((x) => x.toRow()).returns(() => results[currIndex]);
+      return queryRowProxyMock.object;
+    });
+    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => ecSqlReaderMock.object);
   }
 
   function createRulesetElementProps(ruleset: Ruleset): DefinitionElementProps {

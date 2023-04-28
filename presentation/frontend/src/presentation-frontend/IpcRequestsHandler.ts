@@ -3,23 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
 import {
-  NodeKey, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
-  UnsetRulesetVariableParams, UpdateHierarchyStateParams,
+  PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams, UnsetRulesetVariableParams,
 } from "@itwin/presentation-common";
 
 /** @internal */
 export class IpcRequestsHandler {
+  private _ipcProxy = IpcApp.makeIpcProxy<PresentationIpcInterface>(PRESENTATION_IPC_CHANNEL_NAME);
   public readonly clientId: string;
 
   constructor(clientId: string) {
     this.clientId = clientId;
-  }
-
-  private async call<T extends AsyncMethodsOf<PresentationIpcInterface>>(methodName: T, ...args: Parameters<PresentationIpcInterface[T]>): Promise<PromiseReturnType<PresentationIpcInterface[T]>> {
-    return IpcApp.callIpcChannel(PRESENTATION_IPC_CHANNEL_NAME, methodName, ...args);
   }
 
   public async setRulesetVariable(params: Omit<SetRulesetVariableParams<RulesetVariable>, "clientId">) {
@@ -28,7 +23,7 @@ export class IpcRequestsHandler {
       clientId: this.clientId,
       variable: RulesetVariable.toJSON(params.variable),
     };
-    return this.call("setRulesetVariable", jsonParams);
+    return this._ipcProxy.setRulesetVariable(jsonParams);
   }
 
   public async unsetRulesetVariable(params: Omit<UnsetRulesetVariableParams, "clientId">) {
@@ -36,14 +31,6 @@ export class IpcRequestsHandler {
       ...params,
       clientId: this.clientId,
     };
-    return this.call("unsetRulesetVariable", jsonParams);
-  }
-
-  public async updateHierarchyState(params: Omit<UpdateHierarchyStateParams<NodeKey>, "clientId">) {
-    const jsonParams: UpdateHierarchyStateParams<NodeKey> = {
-      ...params,
-      clientId: this.clientId,
-    };
-    return this.call("updateHierarchyState", jsonParams);
+    return this._ipcProxy.unsetRulesetVariable(jsonParams);
   }
 }

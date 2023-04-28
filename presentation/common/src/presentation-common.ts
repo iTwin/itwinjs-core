@@ -23,7 +23,7 @@ export * from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
 export * from "./presentation-common/InstanceFilterDefinition";
-export * from "./presentation-common/PropertyFormatter";
+export * from "./presentation-common/KoqPropertyValueFormatter";
 
 /**
  * @module RPC
@@ -62,6 +62,7 @@ export * from "./presentation-common/content/Renderer";
 export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
 export * from "./presentation-common/content/ContentTraverser";
+export * from "./presentation-common/content/PropertyValueFormatter";
 
 /**
  * @module Hierarchies

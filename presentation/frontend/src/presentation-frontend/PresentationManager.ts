@@ -9,20 +9,21 @@
 import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
-  ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset,
-  RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentFormatter, ContentInstanceKeysRequestOptions,
+  ContentPropertyValueFormatter, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
+  HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, KoqPropertyValueFormatter, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
+  SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
-import { StateTracker } from "./StateTracker";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -88,14 +89,18 @@ export interface PresentationManagerProps {
    */
   requestTimeout?: number;
 
+  /**
+   * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
+   * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   * @alpha
+   */
+  schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
+
   /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
 
   /** @internal */
   ipcRequestsHandler?: IpcRequestsHandler;
-
-  /** @internal */
-  stateTracker?: StateTracker;
 }
 
 /**
@@ -112,8 +117,8 @@ export class PresentationManager implements IDisposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _connections: Map<IModelConnection, Promise<void>>;
+  private _schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
   private _ipcRequestsHandler?: IpcRequestsHandler;
-  private _stateTracker?: StateTracker;
 
   /**
    * An event raised when hierarchies created using specific ruleset change
@@ -150,12 +155,12 @@ export class PresentationManager implements IDisposable {
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     this._connections = new Map<IModelConnection, Promise<void>>();
+    this._schemaContextProvider = props?.schemaContextProvider;
 
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
       this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
-      this._stateTracker = props?.stateTracker ?? new StateTracker(this._ipcRequestsHandler);
     }
   }
 
@@ -184,9 +189,9 @@ export class PresentationManager implements IDisposable {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUpdate = (_evt: Event, report: UpdateInfoJSON) => {
+  private onUpdate = (_evt: Event, report: UpdateInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.handleUpdateAsync(UpdateInfo.fromJSON(report));
+    this.handleUpdateAsync(report);
   };
 
   /** @note This is only called in native apps after changes in iModels */
@@ -230,9 +235,6 @@ export class PresentationManager implements IDisposable {
 
   /** @internal */
   public get ipcRequestsHandler() { return this._ipcRequestsHandler; }
-
-  /** @internal */
-  public get stateTracker() { return this._stateTracker; }
 
   /**
    * Get rulesets manager
@@ -408,6 +410,7 @@ export class PresentationManager implements IDisposable {
       ...options,
       descriptor: getDescriptorOverrides(requestOptions.descriptor),
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
+      ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
     });
     let descriptor = (requestOptions.descriptor instanceof Descriptor) ? requestOptions.descriptor : undefined;
     const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
@@ -423,10 +426,18 @@ export class PresentationManager implements IDisposable {
     });
     if (!descriptor)
       return undefined;
+
     const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
+    const resultContent = new Content(descriptor, items);
+    if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
+      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel));
+      const contentFormatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), IModelApp.quantityFormatter.activeUnitSystem);
+      await contentFormatter.formatContent(resultContent);
+    }
+
     return {
       size: result.total,
-      content: this._localizationHelper.getLocalizedContent(new Content(descriptor, items)),
+      content: this._localizationHelper.getLocalizedContent(resultContent),
     };
   }
 

@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { EmptyLocalization, IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { EmptyLocalization, RpcInterface, RpcRegistry } from "@itwin/core-common";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { ElectronApp } from "../../ElectronFrontend";
 
@@ -44,22 +43,5 @@ describe("ElectronApp tests.", () => {
 
     await ElectronApp.shutdown();
     assert(!RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
-  });
-
-  it("Should initialize and terminate default RPC interfaces.", async () => {
-    const defaultInterfaces = [
-      IModelReadRpcInterface,
-      IModelTileRpcInterface,
-      SnapshotIModelRpcInterface,
-      PresentationRpcInterface,
-    ];
-
-    await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() } });
-    for (const interfaceDef of defaultInterfaces)
-      assert(RpcRegistry.instance.definitionClasses.has(interfaceDef.interfaceName));
-
-    await ElectronApp.shutdown();
-    for (const interfaceDef of defaultInterfaces)
-      assert(!RpcRegistry.instance.definitionClasses.has(interfaceDef.interfaceName));
   });
 });

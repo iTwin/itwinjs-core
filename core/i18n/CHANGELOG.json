@@ -2,6 +2,54 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "3.7.4",
+      "tag": "@itwin/core-i18n_v3.7.4",
+      "date": "Tue, 25 Apr 2023 17:50:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.3",
+      "tag": "@itwin/core-i18n_v3.7.3",
+      "date": "Thu, 20 Apr 2023 13:19:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.2",
+      "tag": "@itwin/core-i18n_v3.7.2",
+      "date": "Wed, 12 Apr 2023 13:12:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.1",
+      "tag": "@itwin/core-i18n_v3.7.1",
+      "date": "Mon, 03 Apr 2023 15:15:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.0",
+      "tag": "@itwin/core-i18n_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.6.3",
+      "tag": "@itwin/core-i18n_v3.6.3",
+      "date": "Mon, 27 Mar 2023 16:26:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.6.2",
+      "tag": "@itwin/core-i18n_v3.6.2",
+      "date": "Fri, 17 Mar 2023 17:52:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.6.1",
+      "tag": "@itwin/core-i18n_v3.6.1",
+      "date": "Fri, 24 Feb 2023 22:00:48 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.6.0",
       "tag": "@itwin/core-i18n_v3.6.0",
       "date": "Wed, 08 Feb 2023 14:58:40 GMT",

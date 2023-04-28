@@ -680,13 +680,19 @@ export class MapTile extends RealityTile {
    * they apparently intersect view frustum.   To avoid this force loading of terrain tiles if they exceed "_maxParentHightDepth".
    * @internal
    */
-  public override forceSelectRealityTile(): boolean {
+  protected override forceSelectRealityTile(): boolean {
     let parentHeightDepth = 0;
+
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     for (let parent: MapTile = this; parent !== undefined && parent._heightRange === undefined; parent = parent.parent as MapTile)
       parentHeightDepth++;
 
     return parentHeightDepth > MapTile._maxParentHeightDepth;
+  }
+
+  /** @internal */
+  protected override minimumVisibleFactor(): number {
+    return 0.25;
   }
 
   private static _scratchThisDiagonal = Vector2d.create();

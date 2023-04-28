@@ -1,0 +1,53 @@
+{
+  "name": "@itwin/frontend-tiles",
+  "entries": [
+    {
+      "version": "3.7.4",
+      "tag": "@itwin/frontend-tiles_v3.7.4",
+      "date": "Tue, 25 Apr 2023 17:50:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve tile content disposal under memory pressure."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.3",
+      "tag": "@itwin/frontend-tiles_v3.7.3",
+      "date": "Thu, 20 Apr 2023 13:19:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.2",
+      "tag": "@itwin/frontend-tiles_v3.7.2",
+      "date": "Wed, 12 Apr 2023 13:12:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.1",
+      "tag": "@itwin/frontend-tiles_v3.7.1",
+      "date": "Mon, 03 Apr 2023 15:15:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.0",
+      "tag": "@itwin/frontend-tiles_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove y-up-to-z-up display transform."
+          },
+          {
+            "comment": "Ensure fitting the view fits to the extents of the currently-viewed models."
+          },
+          {
+            "comment": "Add new experimental package providing alternate technique for visualizing iModels."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1249,7 +1249,7 @@ describe("iModel", () => {
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), "duplicate name");
+    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), "CodeSpec already exists");
 
     // We should be able to insert another CodeSpec with a different name.
     const codeSpec2 = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);

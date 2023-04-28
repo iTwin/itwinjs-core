@@ -5,6 +5,7 @@
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
+  GpuMemoryLimit,
   IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
@@ -125,6 +126,9 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
 
   if (configuration.disableBRepCache)
     tileAdminProps.optimizeBRepProcessing = false;
+
+  if (undefined !== configuration.gpuMemoryLimit)
+    tileAdminProps.gpuMemoryLimits = configuration.gpuMemoryLimit as GpuMemoryLimit;
 
   tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
   tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
