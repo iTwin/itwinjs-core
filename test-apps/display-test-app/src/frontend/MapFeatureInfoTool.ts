@@ -15,6 +15,7 @@ import {
   MapTileTreeReference,
   PrimitiveTool,
   TileTreeReference,
+  Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
 import { BaseMapLayerSettings, IModel, ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
@@ -46,6 +47,11 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
     // Listen of display style configuration changes, that we don't have to restart the tool to be up to date.
     const vp = this.targetView;
     if (vp) {
+
+      this._detachListeners.push(vp.onChangeView.addListener((vp, _previous) => {
+        this.updateMapLayerSettingsCache(vp);
+      }));
+
       this._detachListeners.push(vp.displayStyle.settings.onMapImageryChanged.addListener((_newImagery: any) => {
         this.updateMapLayerSettingsCache();
       }));
@@ -65,11 +71,14 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
     return this._layerSettingsCache.get(tileTreeId) ?? [];
   }
 
-  private updateMapLayerSettingsCache() {
-    const vp = this.targetView;
-    if (!vp)
-      return;
+  private updateMapLayerSettingsCache(vp?: Viewport) {
 
+    if (!vp) {
+      if (this.targetView)
+        vp = this.targetView;
+      else
+        return;
+    }
     this._layerSettingsCache.clear();
     vp.forEachMapTreeRef((mapRef: TileTreeReference) => {
       if (mapRef instanceof MapTileTreeReference) {
@@ -145,5 +154,4 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
     if (!(await tool.run()))
       return this.exitTool();
   }
-
 }
