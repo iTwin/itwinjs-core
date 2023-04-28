@@ -1058,7 +1058,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTree.map(tree => tree.layerSettings);
   }
 
-  // Utility method that execute the provided function for every *imagery* tiles under a given HotDetail object.
+  // Utility method that execute the provided function for every *imagery* tiles under a given HitDetail object.
   private async forEachImageryTileHit(hit: HitDetail, func: (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => Promise<void>): Promise<void> {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
