@@ -11,6 +11,7 @@ import {
   IModelApp,
   LocateFilterStatus,
   LocateResponse,
+  MapFeatureInfo,
   MapLayerTileTreeReference,
   MapTileTreeReference,
   PrimitiveTool,
@@ -22,7 +23,7 @@ import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
 export class MapFeatureInfoTool extends PrimitiveTool {
-  public static readonly onMapHit = new BeEvent<(hit: HitDetail | undefined) => void>();
+  public readonly onInfoReady = new BeEvent<(hit: HitDetail | undefined, mapInfo: MapFeatureInfo | undefined) => void>();
 
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
@@ -107,9 +108,10 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       ev.inputSource
     );
     if (hit !== undefined && this.getSettingsFromHit(hit).length > 0) {
+      let mapInfo: MapFeatureInfo | undefined;
       IModelApp.toolAdmin.setCursor("wait");
       try {
-        const mapInfo = await hit.viewport.getMapFeatureInfo(hit);
+        mapInfo = await hit.viewport.getMapFeatureInfo(hit);
         if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
           const layerInfo = mapInfo.layerInfo[0];
           if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
@@ -117,12 +119,12 @@ export class MapFeatureInfoTool extends PrimitiveTool {
         }
       } finally {
         IModelApp.toolAdmin.setCursor(undefined);
-        MapFeatureInfoTool.onMapHit.raiseEvent(hit);
       }
 
+      this.onInfoReady.raiseEvent(hit, mapInfo);
       return EventHandled.Yes;
     }
-    MapFeatureInfoTool.onMapHit.raiseEvent(hit);
+    this.onInfoReady.raiseEvent(hit, undefined);
     return EventHandled.No;
   }
 
