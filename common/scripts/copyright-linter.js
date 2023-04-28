@@ -25,7 +25,7 @@ const filePaths = process.argv.reduce((acc, cur) => {
 
 function getCopyrightBanner(useCRLF) {
   const eol = (useCRLF) ? "\r\n" : "\n";
-  return `/*---------------------------------------------------------------------------------------------${eol}* Copyright (c) Bentley Systems, Incorporated. All rights reserved.${eol}* See LICENSE.md in the project root for license terms and full copyright notice.${eol}*--------------------------------------------------------------------------------------------*/${eol}`;
+  return `/*---------------------------------------------------------------------------------------------${eol} * Copyright (c) Bentley Systems, Incorporated. All rights reserved.${eol} * See LICENSE.md in the project root for license terms and full copyright notice.${eol} *--------------------------------------------------------------------------------------------*/${eol}`;
 }
 
 const longCopyright = "/?/[*](.|\n|\r\n)*?Copyright(.|\n|\r\n)*?[*]/(\n|\r\n)";
