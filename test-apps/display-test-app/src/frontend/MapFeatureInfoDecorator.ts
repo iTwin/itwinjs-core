@@ -90,14 +90,16 @@ class TerrainDraper implements TileUser {
 export class MapFeatureInfoDecorator implements Decorator {
 
   public readonly useCachedDecorations = true;
+  public readonly disableTerrainDraper = true;
+  public readonly defaultHighlightColor = ColorDef.from(0, 255, 255, 100);
 
   private _drapePoints = new GrowableXYZArray();
   private _drapedStrings?: LineString3d[];
   private _draper?: TerrainDraper;
 
+
   private _state: MapFeatureInfoDataUpdate | undefined;
 
-  // private readonly _graphicType = GraphicType.WorldDecoration;
   private readonly _graphicType = GraphicType.WorldOverlay;
 
   private _computeChordTolerance(viewport: Viewport, applyAspectRatioSkew: boolean, computeRange: () => Range3d) {
@@ -122,9 +124,8 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     this._drapePoints.clear();
 
-    if (this._state.graphics && state.mapHit.viewport.displayStyle.displayTerrain) {
+    if (!this.disableTerrainDraper && this._state.graphics && state.mapHit.viewport.displayStyle.displayTerrain) {
       const isLineStrings = this._state.graphics.length > 0 && this._state.graphics[0].type === "linestring";
-      // if (state.mapHit.viewport.view.displayStyle.displayTerrain && state.mapHit?.modelId && isLineStrings) {
       if (state.mapHit?.modelId && isLineStrings) {
         const drapeTreeRef = this.getGeometryTreeRef(state.mapHit.viewport);
         if (drapeTreeRef) {
@@ -180,21 +181,17 @@ export class MapFeatureInfoDecorator implements Decorator {
         const drapeRange = Range3d.createNull();
         drapeRange.extendArray(this._drapePoints);
 
-        // const tolerance = drapeRange.diagonal().magnitude() / 5000;
         const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 10;  // 10 pixels
         if ("loading" !== this._draper.drapeLineString(drapedStrings, this._drapePoints, tolerance)) {
-          console.log("Got draped geometries");
           this._drapedStrings = drapedStrings;
           if (drapedStrings.length > 0) {
-            builder.setSymbology(ColorDef.from(0, 255, 255, 100), ColorDef.from(0, 255, 255, 100), lineWidth);
+            builder.setSymbology(this.defaultHighlightColor, this.defaultHighlightColor, lineWidth);
             drapedStrings.forEach((line) => builder.addLineString(line.points));
-          } else {
-            console.log("No draped line string");
           }
         }
 
       } else {
-        builder.setSymbology(ColorDef.from(0, 255, 255, 100), ColorDef.from(0, 255, 255, 100), lineWidth);
+        builder.setSymbology(this.defaultHighlightColor, this.defaultHighlightColor, lineWidth);
         this._drapedStrings.forEach((line) => builder.addLineString(line.points));
       }
     } else {
@@ -202,7 +199,7 @@ export class MapFeatureInfoDecorator implements Decorator {
       if (graphics.length > 0 && graphics[0].type === "pointstring") {
         lineWidth = 15;
       }
-      builder.setSymbology(ColorDef.from(0, 255, 255, 100), ColorDef.from(0, 255, 255, 100), lineWidth);
+      builder.setSymbology(this.defaultHighlightColor, this.defaultHighlightColor, lineWidth);
       graphics.forEach((primitive) => builder.addPrimitive(primitive));
     }
 
