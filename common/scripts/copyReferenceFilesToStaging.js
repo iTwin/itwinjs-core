@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /*
 1. Creates a staging-directory for the docs build
@@ -10,11 +10,11 @@
 4. Provides the ability to modify the default path (itwinjs-core/staging-docs) through CLI arguments
 Usage: node copyReferenceFilesToStaging.js staging-docs-directory.
 */
-const path = require('path');
-const process = require('process');
+const path = require("path");
+const process = require("process");
 const childProcess = require("child_process");
 const options = {
-  encoding: "utf8"
+  encoding: "utf8",
 };
 
 let fse;
@@ -55,10 +55,16 @@ try {
   const folderList = ["core", "domains", "editor", "presentation", "ui"];
 
   fse.copySync(path.resolve(basePath, "docs"), dest);
-  fse.copySync(path.resolve(basePath, "generated-docs", "extract"), extractPath);
+  fse.copySync(
+    path.resolve(basePath, "generated-docs", "extract"),
+    extractPath
+  );
 
-  folderList.forEach(folder => {
-    fse.copySync(path.resolve(basePath, "generated-docs", folder), referencePath);
+  folderList.forEach((folder) => {
+    fse.copySync(
+      path.resolve(basePath, "generated-docs", folder),
+      referencePath
+    );
   });
 
   console.log("Copying finished successfully");

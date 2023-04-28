@@ -1,30 +1,30 @@
 steps:
-- bash: |
-    # All of these variables are,
-    #   1. Set in the "Variables" tab with a slightly different name (dropped "test" from each one)
-    #   2. Use the "Environment Variables" section below, and remapped to a new name
-    #   3. Set as the correct name below
-    #
-    #  This is done so that we can keep the values secret within the build pipeline but then decrypt them in the environment when actually running the tests.
-    #   > A better solution would be to figure out how to decrypt in Node itself
+  - bash: |
+      # All of these variables are,
+      #   1. Set in the "Variables" tab with a slightly different name (dropped "test" from each one)
+      #   2. Use the "Environment Variables" section below, and remapped to a new name
+      #   3. Set as the correct name below
+      #
+      #  This is done so that we can keep the values secret within the build pipeline but then decrypt them in the environment when actually running the tests.
+      #   > A better solution would be to figure out how to decrypt in Node itself
 
-    echo "##vso[task.setvariable variable=imjs_test_regular_user_password;]$test_reg_password"
-    echo "##vso[task.setvariable variable=USER_WITH_ACCESS_PASSWORD;]$test_reg_password"
-    echo "##vso[task.setvariable variable=imjs_test_super_user_password;]$test_super_password"
-    echo "##vso[task.setvariable variable=imjs_test_manager_user_password;]$test_manager_password"
-    echo "##vso[task.setvariable variable=CLIENT_WITH_ACCESS_SECRET;]$agent_client_secret"
-    echo "##vso[task.setvariable variable=imjs_agent_test_client_secret;]$agent_client_secret"
-    echo "##vso[task.setvariable variable=imjs_test_imodelhub_user_password;]$test_hub_password"
-    echo "##vso[task.setvariable variable=test_bing_maps_key;]$bing_key"
-    echo "##vso[task.setvariable variable=test_mapbox_key;]$mapbox_key"
-    echo "##vso[task.setvariable variable=imjs_cesium_ion_key;]$cesium_ion_key"
-  displayName: 'Add config to environment'
-  env:
-    test_reg_password: $(imjs_regular_user_password)
-    test_manager_password: $(imjs_manager_user_password)
-    test_super_password: $(imjs_super_user_password)
-    test_hub_password: $(imjs_imodelhub_user_password)
-    agent_client_secret: $(imjs_agent_client_secret)
-    bing_key: $(bing_maps_key)
-    mapbox_key: $(mapbox_key)
-    cesium_ion_key: $(cesium_ion_key)
+      echo "##vso[task.setvariable variable=imjs_test_regular_user_password;]$test_reg_password"
+      echo "##vso[task.setvariable variable=USER_WITH_ACCESS_PASSWORD;]$test_reg_password"
+      echo "##vso[task.setvariable variable=imjs_test_super_user_password;]$test_super_password"
+      echo "##vso[task.setvariable variable=imjs_test_manager_user_password;]$test_manager_password"
+      echo "##vso[task.setvariable variable=CLIENT_WITH_ACCESS_SECRET;]$agent_client_secret"
+      echo "##vso[task.setvariable variable=imjs_agent_test_client_secret;]$agent_client_secret"
+      echo "##vso[task.setvariable variable=imjs_test_imodelhub_user_password;]$test_hub_password"
+      echo "##vso[task.setvariable variable=test_bing_maps_key;]$bing_key"
+      echo "##vso[task.setvariable variable=test_mapbox_key;]$mapbox_key"
+      echo "##vso[task.setvariable variable=imjs_cesium_ion_key;]$cesium_ion_key"
+    displayName: "Add config to environment"
+    env:
+      test_reg_password: $(imjs_regular_user_password)
+      test_manager_password: $(imjs_manager_user_password)
+      test_super_password: $(imjs_super_user_password)
+      test_hub_password: $(imjs_imodelhub_user_password)
+      agent_client_secret: $(imjs_agent_client_secret)
+      bing_key: $(bing_maps_key)
+      mapbox_key: $(mapbox_key)
+      cesium_ion_key: $(cesium_ion_key)

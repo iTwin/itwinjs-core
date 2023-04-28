@@ -1,4 +1,9 @@
 **/lib/**
 **/build/**
-common/**
+common/temp/**
+common/api/**
+common/autoinstallers/**
+common/config/rush/**
+common/changes/
 **/.rush/**
+

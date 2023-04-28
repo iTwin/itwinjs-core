@@ -20,7 +20,7 @@ steps:
         -derivedDataPath DerivedData \
         -allowProvisioningUpdates
     workingDirectory: ${{ parameters.iosDirectory }}/core-test-runner
-    displayName: 'Build Xcode project for testing'
+    displayName: "Build Xcode project for testing"
     condition: succeeded()
 
   - script: |
@@ -33,12 +33,12 @@ steps:
         --token "$(AppCenterToken)" \
         --output json > "${{ parameters.libDirectory }}/run_output.json"
     failOnStderr: true
-    displayName: 'Run App Center tests of suite ${{ parameters.testSuiteName }}'
+    displayName: "Run App Center tests of suite ${{ parameters.testSuiteName }}"
     condition: succeeded()
 
   - script: node ${{ parameters.iosDirectory }}/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)" "${{ parameters.libDirectory }}"
     failOnStderr: true
-    displayName: 'Process Logs'
+    displayName: "Process Logs"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

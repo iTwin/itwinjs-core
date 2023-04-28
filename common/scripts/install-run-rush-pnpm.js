@@ -11,18 +11,19 @@
 //
 // For more information, see: https://rushjs.io/pages/maintainer/setup_new_repo/
 
-/******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
-var __webpack_exports__ = {};
-/*!*****************************************************!*\
+/******/ (() => {
+  // webpackBootstrap
+  /******/ "use strict";
+  var __webpack_exports__ = {};
+  /*!*****************************************************!*\
   !*** ./lib-esnext/scripts/install-run-rush-pnpm.js ***!
   \*****************************************************/
 
-// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
-// See the @microsoft/rush package's LICENSE file for license information.
-require('./install-run-rush');
-//# sourceMappingURL=install-run-rush-pnpm.js.map
-module.exports = __webpack_exports__;
-/******/ })()
-;
+  // Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
+  // See the @microsoft/rush package's LICENSE file for license information.
+  require("./install-run-rush");
+  //# sourceMappingURL=install-run-rush-pnpm.js.map
+  module.exports = __webpack_exports__;
+  /******/
+})();
 //# sourceMappingURL=install-run-rush-pnpm.js.map

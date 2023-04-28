@@ -32,30 +32,30 @@ parameters:
 
 steps:
   - ${{ if parameters.useCurrentDocsArtifact }}:
-    - download: current
-      artifact: ${{ parameters.artifactName }}
-      displayName: Download ${{ parameters.artifactName }} Artifact
+      - download: current
+        artifact: ${{ parameters.artifactName }}
+        displayName: Download ${{ parameters.artifactName }} Artifact
 
   - ${{ else }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: Download Presentation Docs Artifact
-      inputs:
-        buildType: specific
-        project: ${{ parameters.projectId }}
-        pipeline: ${{ parameters.pipelineId }}
-        buildVersionToDownload: latestFromBranch
-        branchName: ${{ parameters.defaultBranch }}
-        artifactName: ${{ parameters.artifactName }}
-        targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+      - task: DownloadPipelineArtifact@2
+        displayName: Download Presentation Docs Artifact
+        inputs:
+          buildType: specific
+          project: ${{ parameters.projectId }}
+          pipeline: ${{ parameters.pipelineId }}
+          buildVersionToDownload: latestFromBranch
+          branchName: ${{ parameters.defaultBranch }}
+          artifactName: ${{ parameters.artifactName }}
+          targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
 
   - ${{ if eq(length(parameters.stagingSteps), 0) }}:
-    # Run if no staging steps are provided
-    - task: CopyFiles@2
-      displayName: Copy ${{ parameters.artifactName }} to staging
-      inputs:
-        SourceFolder: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-        TargetFolder: ${{ parameters.stagingDir }}
-        OverWrite: true
+      # Run if no staging steps are provided
+      - task: CopyFiles@2
+        displayName: Copy ${{ parameters.artifactName }} to staging
+        inputs:
+          SourceFolder: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+          TargetFolder: ${{ parameters.stagingDir }}
+          OverWrite: true
 
   - ${{ else }}:
-    - ${{ parameters.stagingSteps }}
+      - ${{ parameters.stagingSteps }}
