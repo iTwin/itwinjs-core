@@ -17,7 +17,7 @@ import { AccessToken, Id64String } from "@itwin/core-bentley";
 export namespace BlobContainer {
 
   /** Object that implements the methods to create, delete, and request access to a container. */
-  export let service: BlobContainer.Service | undefined;
+  export let service: BlobContainer.ContainerService | undefined;
 
   /** name of cloud provider for a container. */
   export type Provider = "azure" | "google" | "aws";
@@ -122,7 +122,7 @@ export namespace BlobContainer {
   }
 
   /** Methods to create, delete, and access blob containers. */
-  export interface Service {
+  export interface ContainerService {
     /**
      * Create a new blob container. Throws on failure (e.g. access denied or container already exists.)
      */

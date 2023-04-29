@@ -420,7 +420,7 @@ export class BisCoreSchema extends Schema {
 
 // @beta
 export namespace BlobContainer {
-    let service: BlobContainer.Service | undefined;
+    let service: BlobContainer.ContainerService | undefined;
     export interface AccessContainerProps {
         // (undocumented)
         address: Address;
@@ -434,6 +434,11 @@ export namespace BlobContainer {
         uri: string;
     }
     export type ContainerId = string;
+    export interface ContainerService {
+        create(props: CreateNewContainerProps): Promise<Address>;
+        delete(props: AccessContainerProps): Promise<void>;
+        requestToken(props: RequestTokenProps): Promise<TokenProps>;
+    }
     export type ContainerToken = AccessToken;
     export interface CreateNewContainerProps {
         // @internal
@@ -456,11 +461,6 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
-    }
-    export interface Service {
-        create(props: CreateNewContainerProps): Promise<Address>;
-        delete(props: AccessContainerProps): Promise<void>;
-        requestToken(props: RequestTokenProps): Promise<TokenProps>;
     }
     export interface TokenProps {
         expiration: Date;
