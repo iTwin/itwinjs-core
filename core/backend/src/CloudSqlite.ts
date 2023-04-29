@@ -50,6 +50,11 @@ export namespace CloudSqlite {
     writeable?: boolean;
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
     secure?: boolean;
+    /** An Id which enhances logging provided by CloudSQLite.
+     *  This Id will be used to identify, in log messages, all CloudSQLite client connections (also known as database connections) opened using this CloudContainer.
+     *  This Id is mostly only relevant to give more clarity to logs produced running in daemon mode, where there are usually many active CloudContainers and by extension, many ongoing HTTP requests.
+     */
+    cloudSqliteLogId?: string;
   }
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
@@ -64,6 +69,43 @@ export namespace CloudSqlite {
     readonly transactions: boolean;
     /** the state of this database. Indicates whether the database is new or deleted since last upload */
     readonly state: "" | "copied" | "deleted";
+  }
+
+  /** Filter options passed to CloudContainer.queryHttpLog
+   *  @internal
+  */
+  export interface BcvHttpLogFilterOptions {
+    /** only return rows whose ID is >= the provided id */
+    startFromId?: number;
+    /** only return rows whose endTime is null OR >= the provided endTime. */
+    finishedAtOrAfterTime?: string;
+    /** only return rows with a non-null end_time. */
+    showOnlyFinished?: boolean;
+  }
+
+  /** Returned from 'CloudContainer.queryHttpLog' describing a row in the bcv_http_log table.
+   *  @internal
+  */
+  export interface BcvHttpLog {
+    /** Unique, monotonically increasing id value */
+    readonly id: number;
+    /** Time request was made, as iso-8601 */
+    readonly startTime: string;
+    /** Time reply received, as iso-8601 (or NULL) */
+    readonly endTime: string | undefined;
+    /** "PUT", "GET", etc. */
+    readonly method: string;
+    /** Name of the client that caused this request. Name will be "prefetch" if it is a request triggered by a prefetch.
+     *  Name of client can be configured by passing a 'cloudSqliteLogId' to a CloudContainer's ContainerProps.
+     *  Empty string otherwise.
+     */
+    readonly cloudSqliteLogId: string;
+    /** Log message associated with request */
+    readonly logmsg: string;
+    /** URI of request */
+    readonly uri: string;
+    /** HTTP response code (e.g. 200) */
+    readonly httpcode: number;
   }
 
   /** Properties for accessing a CloudContainer */
@@ -362,6 +404,14 @@ export namespace CloudSqlite {
      * @param dbName the name of the database of interest
      */
     queryDatabase(dbName: string): CachedDbProps | undefined;
+
+    /**
+     * query the bcv_http_log table
+     * @note the bcv_http_log table contains one row for each HTTP request made by the VFS or connected daemon.
+     * @note Entries are automatically removed from the table on a FIFO basis. By default entries which are 1 hr old will be removed.
+     * @internal
+     */
+    queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
 
     /**
      * Get the SHA1 hash of the content of a database.

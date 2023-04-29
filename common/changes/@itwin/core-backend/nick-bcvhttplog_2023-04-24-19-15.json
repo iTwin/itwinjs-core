@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "cloudsqlite: add bcvhttplog and pragma bcv_client support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

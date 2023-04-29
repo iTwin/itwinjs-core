@@ -41,6 +41,8 @@ public;CheckpointProps
 public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
+internal;BcvHttpLog
+internal;BcvHttpLogFilterOptions
 internal;LockAndOpenArgs
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 alpha;CodeService
