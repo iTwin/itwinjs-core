@@ -4,25 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ModelExtentsProps,
 } from "@itwin/core-common";
 import {
-  AttachToViewportArgs, SpatialViewState, TileTreeOwner, TileTreeReference,
+  AnimationNodeId, AttachToViewportArgs, formatAnimationBranchId, SceneContext, SpatialViewState, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedTileTreeId, getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 
 /** @internal */
 export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
   private readonly _baseUrl: URL;
-  private readonly _view: SpatialViewState;
+  protected readonly _view: SpatialViewState;
   private readonly _viewedModels = new Id64.Uint32Set();
   private readonly _modelRanges = new Map<Id64String, Range3d>();
   private _modelRangePromise?: Promise<void>;
   private _onModelSelectorChanged?: () => void;
 
-  private constructor(baseUrl: URL, view: SpatialViewState) {
+  protected constructor(baseUrl: URL, view: SpatialViewState) {
     super();
     this._baseUrl = baseUrl;
     this._view = view;
@@ -103,5 +103,61 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       return undefined;
 
     return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+  }
+
+  public override getAnimationTransformNodeId() {
+    return AnimationNodeId.Untransformed;
+  }
+
+  protected computeBaseTransform(tree: TileTree): Transform {
+    return super.computeTransform(tree);
+  }
+
+  protected override computeTransform(tree: TileTree): Transform {
+    const baseTf = this.computeBaseTransform(tree);
+    // ###TODO this.view.modelDisplayTransformProvider?.getModelDisplayTransform(modelId...)
+    return baseTf;
+  }
+}
+
+class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
+  private readonly _animationTransformNodeId: number;
+  private readonly _modelId: Id64String;
+  private readonly _branchId: string;
+
+  public constructor(baseUrl: URL, view: SpatialViewState, transformNodeId: number, modelId: Id64String) {
+    super(baseUrl, view);
+    this._animationTransformNodeId = transformNodeId;
+    this._modelId = modelId;
+    this._branchId = formatAnimationBranchId(modelId, transformNodeId);
+  }
+
+  public override getAnimationTransformNodeId(): number {
+    return this._animationTransformNodeId;
+  }
+
+  public override computeBaseTransform(tree: TileTree): Transform {
+    const tf = super.computeBaseTransform(tree);
+    const style = this._view.displayStyle;
+    const script = style.scheduleScript;
+    if (!script)
+      return tf;
+
+    const timePoint = style.settings.timePoint ?? script.duration.low;
+    const animTf = script.getTransform(this._modelId, this._animationTransformNodeId, timePoint);
+    if (animTf)
+      animTf.multiplyTransformTransform(tf, tf);
+
+    return tf;
+  }
+
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const animBranch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
+    if (animBranch && animBranch.omit)
+      return undefined;
+
+    const args = super.createDrawArgs(context);
+    // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
+    return args;
   }
 }
