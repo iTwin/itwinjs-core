@@ -570,7 +570,7 @@ export namespace CloudSqlite {
     cacheDir?: string;
   }
 
-  /** The collection of currently extant `CLoudCache`s, by name. */
+  /** The collection of currently extant `CloudCache`s, by name. */
   export class CloudCaches {
     private static readonly cloudCaches = new Map<string, CloudCache>();
 
