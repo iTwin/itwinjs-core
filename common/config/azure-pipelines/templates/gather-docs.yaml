@@ -74,6 +74,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
+      defaultBranch: refs/heads/main
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
   # Download Auth Clients artifact
@@ -83,6 +84,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9108 # iTwin Clients/iTwin.auth-clients docs
       artifactName: iTwin-Auth-Clients Docs
+      defaultBranch: refs/heads/main
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientDocsArtifact }}
 
   # The .updated.json is cached to track when the docs were last updated
