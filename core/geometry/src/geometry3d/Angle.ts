@@ -427,7 +427,7 @@ export class Angle implements BeJSONFunctions {
     }
   }
   /** If value is close to -1, -0.5, 0, 0.5, 1, adjust it to the exact value. */
-  public static cleanupTrigValue(value: number, tolerance: number = 1.0e-15): number {
+  public static cleanupTrigValue(value: number, tolerance: number = Geometry.smallFloatingPoint): number {
     const absValue = Math.abs(value);
     if (absValue <= tolerance)
       return 0;
