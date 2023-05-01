@@ -12,6 +12,7 @@ import { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
  * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
+ * See [CodeService]($docs/learning/backend/CodeService).
  * @alpha
  */
 export interface CodeService {
