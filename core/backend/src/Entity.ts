@@ -115,7 +115,11 @@ export class Entity {
     return referenceIds;
   }
 
-  /** @deprecated @internal kept rename for older transformer versions */
+  /** kept rename for older transformer versions
+   * @deprecated in 3.x . Use [[getReferenceIds]] instead
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   public getReferenceConcreteIds = this.getReferenceIds;
 
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
@@ -130,7 +134,11 @@ export class Entity {
     return; // no references by default
   }
 
-  /** @deprecated @internal kept rename for older transformer versions */
+  /** kept rename for older transformer versions
+   * @deprecated in 3.x . Use [[collectReferenceIds]] instead
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   protected collectReferenceConcreteIds = this.collectReferenceIds;
 }
 
