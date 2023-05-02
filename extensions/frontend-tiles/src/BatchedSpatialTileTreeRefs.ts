@@ -3,38 +3,65 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { RenderSchedule } from "@itwin/core-common";
 import {
   AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { BatchedTileTreeReference } from "./BatchedTileTreeReference";
+import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference, } from "./BatchedTileTreeReference";
+import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
+import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
-  private readonly _treeRef: BatchedTileTreeReference;
+  private readonly _view: SpatialViewState;
+  private readonly _models: BatchedModels;
+  private _currentScript?: RenderSchedule.Script;
+  private _primaryRef: PrimaryBatchedTileTreeReference;
+  private readonly _animatedRefs: AnimatedBatchedTileTreeReference[] = [];
+  private _onModelSelectorChanged?: () => void;
 
-  public constructor(treeRef: BatchedTileTreeReference) {
-    this._treeRef = treeRef;
+  public constructor(baseUrl: URL, view: SpatialViewState) {
+    this._view = view;
+    this._models = new BatchedModels(view);
+
+    const script = view.displayStyle.scheduleScript;
+    this._currentScript = script?.requiresBatching ? script : undefined;
+
+    const treeOwner = getBatchedTileTreeOwner(view.iModel, { baseUrl, script: this._currentScript });
+    this._primaryRef = new PrimaryBatchedTileTreeReference(treeOwner, this._models);
+
+    // ###TODO populate animated references
+
+    // ###TODO listen for changes to script and display style to update tree refs when script changes.
   }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
-    yield this._treeRef;
+    yield this._primaryRef;
+
+    for (const animatedRef of this._animatedRefs)
+      yield animatedRef;
   }
 
   public update(): void {
-    this._treeRef.updateViewedModels();
+    this._models.setViewedModels(this._view.modelSelector.models);
+
+    // ###TODO update animated references
+
+    if (this._onModelSelectorChanged)
+      this._onModelSelectorChanged();
   }
 
   public attachToViewport(args: AttachToViewportArgs): void {
-    this._treeRef.attachToViewport(args);
+    this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides();
   }
 
   public detachFromViewport(): void {
-    this._treeRef.detachFromViewport();
+    this._onModelSelectorChanged = undefined;
   }
 
   public setDeactivated(): void {
-    // This exists chiefly for debugging. Unimplemented here.
+    // ###TODO
   }
 }
 
@@ -79,8 +106,7 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     this._proxyRef = new ProxyTileTreeReference(view.iModel);
     getBaseUrl.then((url: URL | undefined) => {
       if (url) {
-        const ref = BatchedTileTreeReference.create(view, url);
-        this.setTreeRefs(new BatchedSpatialTileTreeReferences(ref));
+        this.setTreeRefs(new BatchedSpatialTileTreeReferences(url, view));
       } else {
         this.setTreeRefs(createFallbackSpatialTileTreeReferences(view));
       }
@@ -155,6 +181,6 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
   if (entry instanceof Promise)
     return new ProxySpatialTileTreeReferences(view, entry);
 
-  const ref = BatchedTileTreeReference.create(view, entry);
-  return new BatchedSpatialTileTreeReferences(ref);
+  return new BatchedSpatialTileTreeReferences(entry, view);
 }
+
