@@ -93,7 +93,7 @@ export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
   }
 
   public override computeBaseTransform(tree: TileTree): Transform {
-    const tf = super.computeTransform(tree);
+    const tf = super.computeBaseTransform(tree);
     const animTf = this._node.timeline.getTransform(this._node.nodeId, this._node.getCurrentTimePoint());
     if (animTf)
       animTf.multiplyTransformTransform(tf, tf);

@@ -31,7 +31,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     const treeOwner = getBatchedTileTreeOwner(view.iModel, { baseUrl, script: this._currentScript });
     this._primaryRef = new PrimaryBatchedTileTreeReference(treeOwner, this._models);
 
-    // ###TODO populate animated references
+    this.populateAnimatedReferences(treeOwner);
 
     // ###TODO listen for changes to script and display style to update tree refs when script changes.
   }
@@ -41,6 +41,25 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
 
     for (const animatedRef of this._animatedRefs)
       yield animatedRef;
+  }
+
+  private populateAnimatedReferences(treeOwner: TileTreeOwner): void {
+    this._animatedRefs.length = 0;
+    const script = this._currentScript;
+    if (!script)
+      return;
+
+    const getCurrentTimePoint = () => this._view.displayStyle.settings.timePoint ?? script.duration.low;
+    for (const timeline of script.modelTimelines) {
+      const nodeIds = timeline.transformBatchIds;
+      for (const nodeId of nodeIds) {
+        this._animatedRefs.push(new AnimatedBatchedTileTreeReference(treeOwner, {
+          timeline,
+          nodeId,
+          getCurrentTimePoint,
+        }));
+      }
+    }
   }
 
   public update(): void {
