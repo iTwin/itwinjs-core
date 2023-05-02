@@ -79,12 +79,21 @@ export class PlanarSubdivision {
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];
       const details = entry[1];
+      // sort details by ascending intersection parameter on p
+      // ASSUME coincident intervals contain no isolated intersection except at an endpoint
+      // ASSUME coincident intervals have no partial overlap, but may be equal or intersect at an endpoint
       details.sort((pairA: CurveLocationDetailPair, pairB: CurveLocationDetailPair) => {
-        const fractionA = getFractionOnCurve(pairA, p);
-        const fractionB = getFractionOnCurve(pairB, p);
-        if (fractionA === undefined || fractionB === undefined)
-          return -1000.0;
-        return fractionA - fractionB;
+        const fractionA = getFractionOnCurve(pairA, p)!;
+        const fractionA1 = getFractionOnCurve(pairA, p, true);
+        const fractionB = getFractionOnCurve(pairB, p)!;
+        const fractionB1 = getFractionOnCurve(pairB, p, true);
+        if (fractionA1 === undefined && fractionB1 === undefined)
+          return fractionA - fractionB;
+        if (fractionA1 === undefined)
+          return (fractionA <= fractionB) ? -1 : 1;
+        if (fractionB1 === undefined)
+          return (fractionA1 <= fractionB) ? -1 : 1;
+        return fractionA + fractionA1 - (fractionB + fractionB1);
       });
       // Lambda function to add a 2-sided edge from a given last point to the intersection.
       // Adds another 2-sided edge for a coincident interval if present in the detail.
@@ -100,12 +109,9 @@ export class PlanarSubdivision {
         }
         return {point: detail.point1 ?? detail.point, fraction: detail.fraction1 ?? detail.fraction};
       };
-      let detail = getDetailOnCurve(details[0], p)!;
-      let last = addGraphEdgeAndUpdateLast(p.startPoint(), 0.0, detail);
-      for (let i = 1; i < details.length; i++) {
-        detail = getDetailOnCurve(details[i], p)!;
-        last = addGraphEdgeAndUpdateLast(last.point, last.fraction, detail);
-      }
+      let last = {point: p.startPoint(), fraction: 0.0};
+      for (let i = 0; i < details.length; i++)
+        last = addGraphEdgeAndUpdateLast(last.point, last.fraction, getDetailOnCurve(details[i], p)!);
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0);
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
@@ -243,11 +249,11 @@ function sortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): n
   return Math.atan2(s * ray.direction.y, s * ray.direction.x);
 }
 
-function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): number | undefined {
+function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive, fraction1?: boolean): number | undefined {
   if (pair.detailA.curve === curve)
-    return pair.detailA.fraction;
+    return fraction1 ? pair.detailA.fraction1 : pair.detailA.fraction;
   if (pair.detailB.curve === curve)
-    return pair.detailB.fraction;
+    return fraction1 ? pair.detailB.fraction1 : pair.detailB.fraction;
   return undefined;
 }
 function getDetailOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail | undefined {
