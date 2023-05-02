@@ -265,8 +265,9 @@ export class BaseSettings implements Settings {
     for (const dict of this._dictionaries) {
       const val = dict.getSetting(name) as T | undefined;
       const resolved = val && resolver(val, dict.name, dict.priority);
-      if (undefined !== resolved)
+      if (undefined !== resolved) {
         return resolved;
+      }
     }
     return defaultValue;
   }

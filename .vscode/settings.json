@@ -1,13 +1,38 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "editor.tabSize": 2,
+  "debug.internalConsoleOptions": "openOnSessionStart",
+  "editor.codeActionsOnSave": {
+    "editor.action.fixAll": true,
+    "source.fixAll.eslint": true,
+    "source.fixAll.markdownlint": true
+  },
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/bower_components": true,
-    "**/.nyc_output": true,
-    "**/.rush": true
+  "editor.tabSize": 2,
+  "eslint.enable": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.options": {
+    "overrideConfigFile": "./package.json",
+    "resolvePluginsRelativeTo": "../../common/temp/node_modules/.pnpm/@itwin+eslint-plugin*/node_modules",
+    "useEslintrc": false
+  },
+  "eslint.packageManager": "pnpm",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "files.associations": {
+    ".nycrc": "json",
+    "*.snap": "javascript",
+    "certa.json": "jsonc"
   },
   "files.exclude": {
     "**/.nyc_output": true,
@@ -24,105 +49,63 @@
     "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
-  "files.associations": {
-    "*.snap": "javascript",
-    ".nycrc": "json",
-    "certa.json": "jsonc"
-  },
-  "cSpell.enableFiletypes": [
-    "c",
-    "cpp",
-    "csharp",
-    "go",
-    "html",
-    "javascript",
-    "javascriptreact",
-    "latex",
-    "markdown",
-    "php",
-    "plaintext",
-    "python",
-    "text",
-    "typescript",
-    "typescriptreact",
-    "xml",
-    "yml"
+  "importSorter.generalConfiguration.sortImportsInDirectory": false,
+  "importSorter.generalConfiguration.sortOnBeforeSave": false,
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 150,
+  "importSorter.importStringConfiguration.quoteMark": "double",
+  "importSorter.importStringConfiguration.tabSize": 2,
+  "importSorter.importStringConfiguration.trailingComma": "multiLine",
+  "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
+  "importSorter.sortConfiguration.customOrderingRules.rules": [
+    {
+      "disableSort": true,
+      "orderLevel": 5,
+      "regex": "^$",
+      "type": "importMember"
+    },
+    {
+      "orderLevel": 10,
+      "regex": "^[^.@]"
+    },
+    {
+      "orderLevel": 15,
+      "regex": "^[@]"
+    },
+    {
+      "orderLevel": 30,
+      "regex": "^[.]"
+    }
   ],
+  "importSorter.sortConfiguration.removeUnusedImports": true,
   "json.schemas": [
     {
       "fileMatch": [
         "certa.json"
       ],
       "url": "./tools/certa/certa.schema.json"
-    },
+    }
   ],
   "markdownlint.config": {
     "MD024": {
       "allow_different_nesting": true
-    },
+    }
   },
   "markdownlint.ignore": [
     "**/CHANGELOG.md"
   ],
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-  ],
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
-  "eslint.options": {
-    "configFile": "./package.json",
-    "useEslintrc": false,
-    "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin"
-  },
-  "importSorter.importStringConfiguration.quoteMark": "double",
-  "importSorter.generalConfiguration.sortImportsInDirectory": false,
-  "importSorter.generalConfiguration.sortOnBeforeSave": false,
-  "importSorter.importStringConfiguration.trailingComma": "multiLine",
-  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 150,
-  "importSorter.importStringConfiguration.tabSize": 2,
-  "importSorter.sortConfiguration.removeUnusedImports": true,
-  "importSorter.sortConfiguration.customOrderingRules.rules": [
-    {
-      "type": "importMember",
-      "regex": "^$",
-      "orderLevel": 5,
-      "disableSort": true
-    },
-    {
-      "regex": "^[^.@]",
-      "orderLevel": 10
-    },
-    {
-      "regex": "^[@]",
-      "orderLevel": 15
-    },
-    {
-      "regex": "^[.]",
-      "orderLevel": 30
-    }
-  ],
-  "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
-  "debug.internalConsoleOptions": "openOnSessionStart",
-  "eslint.format.enable": true,
-  "eslint.lintTask.enable": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.markdownlint": true, // first run the markdown linter
-    "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
-    "source.fixAll.eslint": true // then run ESLint auto-fix
-  },
-  "terminal.integrated.env.windows": {
-    "NODE_ENV": "development"
+  "search.exclude": {
+    "**/.nyc_output": true,
+    "**/.rush": true,
+    "**/bower_components": true,
+    "**/node_modules": true
   },
   "terminal.integrated.env.linux": {
     "NODE_ENV": "development"
   },
   "terminal.integrated.env.osx": {
+    "NODE_ENV": "development"
+  },
+  "terminal.integrated.env.windows": {
     "NODE_ENV": "development"
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib"

@@ -104,7 +104,7 @@ export class CodeSpecs {
       // internal code index via `internalCodes.reserveBisCodeSpecs` prior to calling this function.
       // This ensures that the Ids will be unique, and the property values consistent, even if more than one user
       // adds them without pushing their changes. The call to `verifyBisCodeSpec` will throw otherwise.
-      internalCodes.verifyBisCodeSpec(spec);
+      internalCodes.reader.verifyBisCodeSpec(spec);
     } else {
       // If this iModel doesn't have an internal code index, we have no way of coordinating the Ids for CodeSpecs across multiple users.
       // Just look in this briefcase to find the currently highest used Id and hope for the best.
