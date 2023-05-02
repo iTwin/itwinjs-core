@@ -34,6 +34,8 @@ class BatchedTileTreeSupplier implements TileTreeSupplier {
 
       const reader = new BatchedTilesetReader(json, iModel, baseUrl);
       const params = await reader.readTileTreeParams();
+
+      params.script = treeId.script;
       return new BatchedTileTree(params);
     } catch (err) {
       Logger.logException(loggerCategory, err);
