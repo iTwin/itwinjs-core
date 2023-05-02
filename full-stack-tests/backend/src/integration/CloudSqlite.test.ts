@@ -9,7 +9,7 @@ import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -23,6 +23,7 @@ describe("CloudSqlite", () => {
   let caches: CloudSqlite.CloudCache[];
   let testContainers: AzuriteTest.Sqlite.TestContainer[];
   let testBimGuid: GuidString;
+  let testBimFileName: string;
   const user1 = "CloudSqlite test1";
   const user2 = "CloudSqlite test2";
 
@@ -37,7 +38,7 @@ describe("CloudSqlite", () => {
 
     expect(caches[0].isDaemon).false;
 
-    const testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
+    testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
     const imodel = SnapshotDb.openFile(testBimFileName);
     testBimGuid = imodel.iModelId;
     imodel.close();
@@ -50,8 +51,97 @@ describe("CloudSqlite", () => {
     await azSqlite.uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
     await azSqlite.uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
     await azSqlite.uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
+    await azSqlite.uploadFile(testContainers[1], caches[0], "testBim", testBimFileName);
     await azSqlite.uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
     await azSqlite.uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
+  });
+
+  it("should query bcvHttpLog", async () => {
+    testContainers[0].connect(caches[1]);
+
+    let rows = testContainers[0].queryHttpLog();
+    expect(rows.length).to.equal(2); // manifest and bcv_kv GETs.
+
+    // endTime to exclude these first 2 entries in later queries.
+    await BeDuration.wait(10);
+    const endTime = new Date().toISOString();
+
+    rows = testContainers[0].queryHttpLog({startFromId: 2});
+    expect(rows.length).to.equal(1);
+    expect(rows[0].id).to.equal(2);
+
+    await CloudSqlite.withWriteLock("test", testContainers[0], async () => {
+      await CloudSqlite.uploadDb(testContainers[0], {localFileName: testBimFileName, dbName: "newDbName"});
+    });
+
+    // 6 entries added by uploading db.
+    // 2 entries from before. Expect 6 total entries because we're filtering by endTime from before.
+    rows = testContainers[0].queryHttpLog({finishedAtOrAfterTime: endTime, startFromId: 1});
+    expect(rows.length).to.equal(6);
+    expect(rows.find((value) => {
+      return value.id === 1 || value.id === 2;
+    })).to.equal(undefined);
+
+    rows = testContainers[0].queryHttpLog({finishedAtOrAfterTime: endTime});
+    expect(rows.length).to.equal(6);
+    expect(rows.find((value) => {
+      return value.id === 1 || value.id === 2;
+    })).to.equal(undefined);
+
+    rows = testContainers[0].queryHttpLog({finishedAtOrAfterTime: endTime, startFromId: 1, showOnlyFinished: true});
+    expect(rows.length).to.equal(6);
+    expect(rows.find((value) => {
+      return value.id === 1 || value.id === 2;
+    })).to.equal(undefined);
+
+    rows = testContainers[0].queryHttpLog({showOnlyFinished: true});
+    expect(rows.length).to.equal(8);
+
+    rows = testContainers[0].queryHttpLog({startFromId: 4, showOnlyFinished: true});
+    expect(rows.length).to.equal(5);
+
+    // Clean up.
+    await CloudSqlite.withWriteLock("test", testContainers[0], async () => {
+      await testContainers[0].deleteDatabase("newDbName");
+    });
+
+    testContainers[0].disconnect({detach: true});
+
+  });
+
+  it("should pass cloudSqliteLogId through container to database", async () => {
+    testContainers[0].connect(caches[1]);
+    let db = SnapshotDb.openFile("testBim", {container: testContainers[0]});
+    db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
+      stmt.step();
+      // cloudsqlitelogid of "logId-1" passed to testContainers[0] so expect logId-1
+      expect(stmt.getValueString(0)).equal("logId-1");
+    });
+    db.close();
+    testContainers[0].disconnect({detach: true});
+
+    testContainers[1].connect(caches[1]);
+    db = SnapshotDb.openFile("testBim", {container: testContainers[1]});
+    db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
+      stmt.step();
+      // no cloudsqlitelogid provided to this container so undefined and expect the default of empty string
+      expect(stmt.getValueString(0)).equal("");
+    });
+    db.close();
+    testContainers[1].disconnect({detach: true});
+
+    const containerId = Guid.createValue();
+    const container = azSqlite.makeContainer({containerId, logId: ""});
+    await azSqlite.initializeContainers([container]);
+    await azSqlite.uploadFile(container, caches[1], "testBim", testBimFileName);
+    container.connect(caches[1]);
+    db = SnapshotDb.openFile("testBim", {container});
+    db.withPreparedSqliteStatement("PRAGMA bcv_client", (stmt) => {
+      // empty string provided to container for cloudsqlitelogid so expect empty string
+      expect(stmt.getValueString(0)).equal("");
+    });
+    db.close();
+    container.disconnect({detach: true});
   });
 
   it("cloud containers", async () => {
