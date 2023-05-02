@@ -335,9 +335,6 @@ describe("Class Registry - generated classes", () => {
     assert.isDefined(GeneratedTestElementWithNavProp.prototype["collectReferenceIds"]);
     expect(
       [...elemWithNavProp.getReferenceIds()],
-    ).to.have.members([elemWithNavProp.model, elemWithNavProp.code.scope, testEntityId]);
-    expect(
-      [...elemWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
       EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
       EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
@@ -390,11 +387,6 @@ describe("Class Registry - generated classes", () => {
     // super class here is Element so we should get the code.scope, model and parent as references
     expect(
       [...elemWithNavProp.getReferenceIds()],
-    ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testEntityId].filter((x) => x !== undefined)
-    );
-    expect(
-      [...elemWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
       EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
       EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
@@ -435,12 +427,6 @@ describe("Class Registry - generated classes", () => {
 
     expect(
       [...modelWithNavProp.getReferenceIds()],
-    ).to.have.members(
-      // note that the non element references are not here! This is the currently preserved old behavior that will be replaced
-      [IModelDb.dictionaryId, modelTestEntityIds[0], modelTestEntityIds[1]]
-    );
-    expect(
-      [...modelWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
       EntityReferences.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Element),
       EntityReferences.fromEntityType(IModelDb.dictionaryId, ConcreteEntityTypes.Model),
@@ -482,11 +468,6 @@ describe("Class Registry - generated classes", () => {
 
     expect(
       [...relWithNavProp.getReferenceIds()],
-    ).to.have.members(
-      [...relTestEntityIds, modelWithNavPropId]
-    );
-    expect(
-      [...relWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
       ...relTestEntityIds.map((id) => EntityReferences.fromEntityType(id, ConcreteEntityTypes.Element)),
       EntityReferences.fromEntityType(modelWithNavPropId, ConcreteEntityTypes.Model),
@@ -543,11 +524,6 @@ describe("Class Registry - generated classes", () => {
     assert.isDefined(ActualTestElementWithNavProp.prototype.collectReferenceIds);
     expect(
       [...elemWithNavProp.getReferenceIds()],
-    ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplReferenceId].filter((x) => x !== undefined)
-    );
-    expect(
-      [...elemWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
       EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
       EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
@@ -575,11 +551,6 @@ describe("Class Registry - generated classes", () => {
     // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
       [...derivedElemWithNavProp.getReferenceIds()]
-    ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplReferenceId].filter((x) => x !== undefined)
-    );
-    expect(
-      [...derivedElemWithNavProp.getReferenceConcreteIds()]
     ).to.have.members([
       EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
       EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
@@ -694,13 +665,13 @@ describe("Class Registry - generated classes", () => {
     // instead it will just call the closest non-generated ancestor (Derived4)
     expect([...derived6.getReferenceIds()]).to.have.members(
       [
-        derived6.model,
-        derived6.code.scope,
-        derived6.parent?.id,
+        EntityReferences.fromEntityType(derived6.model, ConcreteEntityTypes.Model),
+        EntityReferences.fromEntityType(derived6.code.scope, ConcreteEntityTypes.Element),
+        derived6.parent?.id && EntityReferences.fromEntityType(derived6.parent.id, ConcreteEntityTypes.Element),
         // "TestGeneratedClasses:Derived4" is MyDerived4 above, which extends the Derived4 class, which extends up
         // without any custom ancestor implementing collectReferenceIds, so Element.collectReferenceIds is called as the
         // super, and no navigation properties or other custom implementations are called so we only get "derived-4"
-        "derived-4",
+        EntityReferences.fromEntityType("derived-4", ConcreteEntityTypes.Element),
       ].filter((x) => x !== undefined)
     );
 

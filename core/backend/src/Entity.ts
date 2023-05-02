@@ -106,12 +106,12 @@ export class Entity {
   /** Get the set of this entity's *entity references*, [EntityReferenceSet]($backend). An *entity reference* is any id
    * stored on the entity, in its EC properties or json fields.
    * This is important for cloning operations but can be useful in other situations as well.
-   * @see collectReferenceIds
+   * @see this.collectReferenceIds
    * @beta
    */
   public getReferenceIds(): EntityReferenceSet {
     const referenceIds = new EntityReferenceSet();
-    this.collectReferenceConcreteIds(referenceIds);
+    this.collectReferenceIds(referenceIds);
     return referenceIds;
   }
 
