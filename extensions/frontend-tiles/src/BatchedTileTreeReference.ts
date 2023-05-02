@@ -25,7 +25,9 @@ export abstract class BatchedTileTreeReference extends TileTreeReference {
     return this._treeOwner;
   }
 
-  protected abstract computeBaseTransform(tree: TileTree): Transform;
+  protected computeBaseTransform(tree: TileTree): Transform {
+    return super.computeTransform(tree);
+  }
 
   protected override computeTransform(tree: TileTree): Transform {
     const baseTf = this.computeBaseTransform(tree);
@@ -40,10 +42,6 @@ export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference im
   public constructor(treeOwner: TileTreeOwner, models: BatchedModels) {
     super(treeOwner);
     this._models = models;
-  }
-
-  protected override computeBaseTransform(tree: TileTree): Transform {
-    return super.computeTransform(tree);
   }
 
   public override unionFitRange(range: Range3d): void {
