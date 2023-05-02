@@ -553,7 +553,7 @@ export class TileAdmin {
     this._users.add(user);
   }
 
-  /** Iterable over all TileUsers registered with TileAdmin. This may include [[OffScreenViewports]].
+  /** Iterable over all TileUsers registered with TileAdmin. This may include [[OffScreenViewport]]s.
    * @alpha
    */
   public get tileUsers(): Iterable<TileUser> {
