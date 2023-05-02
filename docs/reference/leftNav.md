@@ -9,6 +9,7 @@ packageClassification:
           "core-frontend",
           "core-common",
           "core-backend",
+          "core-electron",
           "core-markup",
           "core-mobile",
           "core-i18n",
@@ -63,17 +64,11 @@ packageClassification:
       "header": "Transformer",
       "packages": ["imodel-transformer"],
     },
-    {
-      "order": "7",
-      "header": "Auth",
-      "packages":
-        [
-          "browser-authorization",
-          "electron-authorization",
-          "node-cli-authorization",
-          "service-authorization",
-        ],
-    },
+    { 
+      "order": "7", 
+      "header": "Auth", 
+      "packages": ["browser-authorization"] 
+      },
   ]
 ---
 
