@@ -76,7 +76,13 @@ export class Ray3d implements BeJSONFunctions {
   public isAlmostEqual(other: Ray3d): boolean {
     return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
   }
-  /** Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`. */
+  /**
+   * Return the dot product of the ray's direction vector with a vector from the ray origin
+   * to the `spacePoint`.
+   * * Suppose ray shows the normal vector of a plane. Then this function returns the altitude
+   * of `spacePoint` with respect to the plane.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
+   */
   public dotProductToPoint(spacePoint: Point3d): number {
     return this.direction.dotProductStartEnd(this.origin, spacePoint);
   }
