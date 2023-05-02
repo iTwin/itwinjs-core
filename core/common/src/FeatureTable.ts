@@ -243,6 +243,27 @@ export interface RenderFeatureTable {
 
 const scratchPackedFeature = PackedFeature.create();
 
+function populateAnimationNodeIds(table: RenderFeatureTable, computeNodeId: ComputeNodeId, maxNodeId: number): UintArray | undefined {
+  assert(maxNodeId > 0);
+
+  let nodeIds;
+  const outputFeature = PackedFeature.createWithIndex();
+  for (const feature of table.iterable(outputFeature)) {
+    const nodeId = computeNodeId(feature);
+    assert(nodeId <= maxNodeId);
+    if (0 !== nodeId) {
+      if (!nodeIds) {
+        const size = table.numFeatures;
+        nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
+      }
+
+      nodeIds[feature.index] = nodeId;
+    }
+  }
+
+  return nodeIds;
+}
+
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
  * wherein each feature occupies 3 32-bit integers.
@@ -259,6 +280,12 @@ export class PackedFeatureTable implements RenderFeatureTable {
 
   public get byteLength(): number { return this._data.byteLength; }
   public get animationNodeIds(): Readonly<UintArray> | undefined { return this._animationNodeIds; }
+
+  /** @internal for use by MultiModelPackedFeatureTable */
+  public setAnimationNodeIds(nodeIds: UintArray | undefined): void {
+    assert(undefined === this._animationNodeIds);
+    this._animationNodeIds = nodeIds;
+  }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
@@ -417,26 +444,10 @@ export class PackedFeatureTable implements RenderFeatureTable {
 
     return table;
   }
+
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
     assert(undefined === this._animationNodeIds);
-    assert(maxNodeId > 0);
-
-    const outputFeature = PackedFeature.createWithIndex();
-    let haveNodes = false;
-    const size = this.numFeatures;
-    const nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
-
-    for (const feature of this.iterable(outputFeature)) {
-      const nodeId = computeNodeId(feature);
-      assert(nodeId <= maxNodeId);
-      if (0 !== nodeId) {
-        nodeIds[feature.index] = nodeId;
-        haveNodes = true;
-      }
-    }
-
-    if (haveNodes)
-      this._animationNodeIds = nodeIds;
+    this._animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
   }
 
   public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
@@ -628,6 +639,6 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   }
 
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
-    this._features.populateAnimationNodeIds(computeNodeId, maxNodeId);
+    this._features.setAnimationNodeIds(populateAnimationNodeIds(this, computeNodeId, maxNodeId));
   }
 }
