@@ -2115,12 +2115,12 @@ export class Entity {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal @deprecated (undocumented)
+    // @internal @deprecated
     protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @internal @deprecated (undocumented)
+    // @internal @deprecated
     getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
     getReferenceIds(): EntityReferenceSet;
