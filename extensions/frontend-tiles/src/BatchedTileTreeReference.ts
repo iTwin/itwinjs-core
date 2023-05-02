@@ -111,5 +111,3 @@ export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
     return args;
   }
 }
-
-

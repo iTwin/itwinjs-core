@@ -8,7 +8,7 @@ import { RenderSchedule } from "@itwin/core-common";
 import {
   AttachToViewportArgs, IModelConnection, SpatialTileTreeReferences, SpatialViewState, TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference, } from "./BatchedTileTreeReference";
+import { AnimatedBatchedTileTreeReference, PrimaryBatchedTileTreeReference } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
 import { ComputeSpatialTilesetBaseUrl, createFallbackSpatialTileTreeReferences } from "./FrontendTiles";
