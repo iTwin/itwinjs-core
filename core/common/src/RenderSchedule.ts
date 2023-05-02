@@ -1195,7 +1195,7 @@ export namespace RenderSchedule {
         timeline = prev.timeline;
       } else {
         const modelId = Id64.fromUint32PairObject(feature.modelId);
-        const timeline = this.find(modelId);
+        timeline = this.find(modelId);
         this._lastFeatureModelTimeline = { timeline, idLower: feature.modelId.lower, idUpper: feature.modelId.upper };
       }
 

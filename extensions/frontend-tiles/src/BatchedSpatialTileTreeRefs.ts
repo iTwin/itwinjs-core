@@ -101,7 +101,7 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   public setDeactivated(): void {
-    // ###TODO
+    // Used for debugging. Unimplemented here.
   }
 }
 

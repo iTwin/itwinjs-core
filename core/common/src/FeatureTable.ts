@@ -205,7 +205,7 @@ export class FeatureTable extends IndexMap<Feature> {
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
-/** @alpha */
+/** @internal */
 export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 /** Interface common to PackedFeatureTable and MultiModelPackedFeatureTable.
