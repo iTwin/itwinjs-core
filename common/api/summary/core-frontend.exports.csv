@@ -330,6 +330,7 @@ internal;Imdl
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
+internal;ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script
 public;IModelApp
 public;IModelAppOptions
 public;class IModelConnection 
