@@ -5,7 +5,7 @@ public;AccessToken = string
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition
-public;AsyncFunction = (...args: any) => Promise
+public;AsyncFunction = (...args: any[]) => Promise
 public;AsyncMethodsOf
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
@@ -99,6 +99,8 @@ public;OrderedSet
 public;partitionArray
 public;PerfLogger 
 public;PickAsyncMethods
+public;PickMethods
+public;PickSyncMethods
 public;PriorityQueue
 public;ProcessDetector
 public;PromiseReturnType
