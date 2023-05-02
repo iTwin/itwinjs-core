@@ -3,20 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ModelExtentsProps, RenderSchedule,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, RenderSchedule,
 } from "@itwin/core-common";
 import {
-  AnimationNodeId, AttachToViewportArgs, formatAnimationBranchId, SceneContext, SpatialViewState, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
+  AnimationNodeId, formatAnimationBranchId, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { BatchedTileTreeId, getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
-
-export interface BatchedModels {
-  computeRange(): Range3d;
-  isViewed(modelIdLo: number, modelIdHi: number): boolean;
-}
+import { BatchedModels } from "./BatchedModels";
 
 /** @internal */
 export abstract class BatchedTileTreeReference extends TileTreeReference {
@@ -52,8 +46,8 @@ export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference im
     return super.computeTransform(tree);
   }
 
-  public override unionFitRange(union: Range3d): void {
-    union.extendRange(this._models.computeRange());
+  public override unionFitRange(range: Range3d): void {
+    this._models.unionRange(range);
   }
 
   public override getAppearanceProvider(): FeatureAppearanceProvider | undefined {
@@ -80,17 +74,17 @@ export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference im
   }
 }
 
-export interface AnimatedNode {
+export interface AnimationNode {
   readonly timeline: RenderSchedule.ModelTimeline;
   readonly nodeId: number;
   getCurrentTimePoint(): number;
 }
 
 export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
-  private readonly _node: AnimatedNode;
+  private readonly _node: AnimationNode;
   private readonly _branchId: string;
 
-  public constructor(treeOwner: TileTreeOwner, node: AnimatedNode) {
+  public constructor(treeOwner: TileTreeOwner, node: AnimationNode) {
     super(treeOwner);
     this._node = node;
     this._branchId = formatAnimationBranchId(node.timeline.modelId, node.nodeId);
