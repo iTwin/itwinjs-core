@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module Main
+ */
+
 // Note: only import *types* from electron so this file can be imported by apps that sometimes use Electron and sometimes not.
 import type { BrowserWindow, BrowserWindowConstructorOptions, WebPreferences } from "electron";
 import type * as ElectronModule from "electron";
@@ -53,7 +57,7 @@ export interface ElectronHostOptions {
   frontendPort?: number;
   /** list of RPC interface definitions to register */
   rpcInterfaces?: RpcInterfaceDefinition[];
-  /** list of [IpcHandler]($common) classes to register */
+  /** list of [IpcHandler]($backend) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
 }
 
