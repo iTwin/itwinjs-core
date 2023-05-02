@@ -63,7 +63,6 @@ export class TileStorage {
         metadata,
         IModelHost.compressCachedTiles ? { contentEncoding: "gzip" } : undefined,
       );
-      Logger.logInfo(BackendLoggerCategory.IModelTileStorage, "Tile uploaded", { tileMetadata: metadata });
     } catch (err) {
       this.logException("Failed to upload tile", err);
       throw err;
