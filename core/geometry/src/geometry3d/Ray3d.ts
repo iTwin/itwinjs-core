@@ -79,7 +79,7 @@ export class Ray3d implements BeJSONFunctions {
   /**
    * Return the dot product of the ray's direction vector with a vector from the ray origin
    * to the `spacePoint`.
-   * * Suppose ray shows the normal vector of a plane. Then this function returns the altitude
+   * * If the instance is the unit normal of a plane, then this method returns the (signed) altitude
    * of `spacePoint` with respect to the plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
    */
