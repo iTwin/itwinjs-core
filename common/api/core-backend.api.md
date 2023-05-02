@@ -587,8 +587,8 @@ export class CategorySelector extends DefinitionElement {
     categories: Id64String[];
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
@@ -1413,8 +1413,8 @@ export abstract class DisplayStyle extends DefinitionElement {
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
@@ -1442,8 +1442,8 @@ export class DisplayStyle3d extends DisplayStyle {
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
@@ -1817,9 +1817,9 @@ class Element_2 extends Entity {
     static get className(): string;
     code: Code;
     // @beta @deprecated
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     federationGuid?: GuidString;
     getClassMetaData(): EntityMetaData | undefined;
@@ -1928,8 +1928,8 @@ export class ElementDrivesElement extends Relationship {
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     priority: number;
@@ -2008,8 +2008,8 @@ export class ElementOwnsUniqueAspect extends RelatedElement {
 export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
 }
@@ -2115,15 +2115,15 @@ export class Entity {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal
-    protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void;
+    // @internal @deprecated
+    protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
-    protected collectReferenceIds(referenceIds: Set<Id64String>): void;
+    protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @internal
-    getReferenceConcreteIds(): EntityReferenceSet;
+    // @internal @deprecated
+    getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
-    getReferenceIds(): Set<Id64String>;
+    getReferenceIds(): EntityReferenceSet;
     id: Id64String;
     iModel: IModelDb;
     static is(otherClass: typeof Entity): boolean;
@@ -2313,8 +2313,8 @@ export class ExternalSource extends InformationReferenceElement {
     constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     connectorName?: string;
     connectorVersion?: string;
     static createCode(iModelDb: IModelDb, codeValue: string): Code;
@@ -2331,8 +2331,8 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     checksum?: string;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{
         elementId: Id64String;
         aspectId: Id64String;
@@ -2582,8 +2582,8 @@ export abstract class GeometricElement extends Element_2 {
     category: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @alpha
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
@@ -2604,8 +2604,8 @@ export abstract class GeometricElement2d extends GeometricElement {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     placement: Placement2d;
     // @internal (undocumented)
@@ -2627,8 +2627,8 @@ export abstract class GeometricElement3d extends GeometricElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     placement: Placement3d;
     // @internal (undocumented)
@@ -3958,8 +3958,8 @@ export class Model extends Entity {
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     // (undocumented)
     getJsonProperty(name: string): any;
@@ -4020,8 +4020,8 @@ export class ModelSelector extends DefinitionElement {
     constructor(props: ModelSelectorProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
@@ -4035,7 +4035,7 @@ export class ModelSelectorRefersToModels extends Relationship {
     // (undocumented)
     static get className(): string;
     // (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
 }
 
 // @public
@@ -4483,8 +4483,8 @@ export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(ids: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(ids: EntityReferenceSet): void;
     description: string;
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
@@ -4734,8 +4734,8 @@ export class Sheet extends Document_2 {
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     height: number;
@@ -4773,8 +4773,8 @@ export class SheetTemplate extends Document_2 {
     border?: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     height?: number;
     // (undocumented)
@@ -4892,8 +4892,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
     static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
@@ -5403,8 +5403,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     recipe?: RelatedElement;
 }
@@ -5504,8 +5504,8 @@ export class ViewAttachment extends GraphicalElement2d {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     view: RelatedElement;
 }
@@ -5524,8 +5524,8 @@ export abstract class ViewDefinition extends DefinitionElement {
     categorySelectorId: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
@@ -5555,8 +5555,8 @@ export class ViewDefinition2d extends ViewDefinition {
     baseModelId: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delta: Point2d;
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;

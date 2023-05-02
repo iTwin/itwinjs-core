@@ -158,6 +158,11 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 
 BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
 
+### Entity.getReferenceIds
+
+[Entity.getReferenceIds]($core-backend) no longer returns a set of [Id64String]($core-bentley), but an [EntityReferenceSet]($core-common), because it now supports returning references
+of entities that aren't elements.
+
 ## Geometry
 
 ### Mesh offset
