@@ -27,7 +27,11 @@ describe("CloudSqlite", () => {
   const user2 = "CloudSqlite test2";
 
   before(async () => {
-    testContainers = azSqlite.makeContainers([["test1", false], ["test2", false], ["test3", true]]);
+    testContainers = azSqlite.makeContainers([
+      { containerId: "test1", logId: "logId-1" },
+      { containerId: "test2" },
+      { containerId: "test3", logId: "logId-3", isPublic: true },
+    ]);
     caches = azSqlite.makeCaches(["cache1", "cache2"]);
     await azSqlite.initializeContainers(testContainers);
 
@@ -153,7 +157,7 @@ describe("CloudSqlite", () => {
     expect(contain1.isConnected);
 
     // can't connect two containers with same name
-    const cont2 = azSqlite.makeContainer(contain1.containerId, false);
+    const cont2 = azSqlite.makeContainer({ containerId: contain1.containerId, isPublic: false });
 
     await azSqlite.setSasToken(cont2, true);
 

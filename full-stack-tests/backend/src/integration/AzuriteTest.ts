@@ -76,16 +76,18 @@ export namespace AzuriteTest {
       emptyDirSync(name);
     };
 
-    export const makeContainer = (containerId: string, isPublic: boolean): TestContainer => {
-      const cont = CloudSqlite.createCloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
-      cont.isPublic = isPublic;
+    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean }
+
+    export const makeContainer = (arg: TestContainerProps): TestContainer => {
+      const cont = CloudSqlite.createCloudContainer({ ...storage, containerId: arg.containerId, cloudSqliteLogId: arg.logId, writeable: true, accessToken: "" }) as TestContainer;
+      cont.isPublic = arg.isPublic === true;
       return cont;
     };
 
-    export const makeContainers = (props: [string, boolean][]): TestContainer[] => {
+    export const makeContainers = (props: TestContainerProps[]): TestContainer[] => {
       const containers = [];
       for (const entry of props)
-        containers.push(makeContainer(entry[0], entry[1]));
+        containers.push(makeContainer(entry));
 
       return containers;
     };
