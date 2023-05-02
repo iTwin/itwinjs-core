@@ -14,7 +14,7 @@ const blockSize = 64 * 1024;
 const propContainer = "properties-itwin1";
 
 async function initializeContainer(containerId: string) {
-  await AzuriteTest.Sqlite.createAzContainer(AzuriteTest.Sqlite.makeContainer(containerId, false));
+  await AzuriteTest.Sqlite.createAzContainer(AzuriteTest.Sqlite.makeContainer({ containerId }));
   await PropertyStore.CloudAccess.initializeDb({ props: { ...AzuriteTest.storage, containerId, accessToken: await AzuriteTest.makeSasToken(containerId, true) }, initContainer: { blockSize } });
 }
 

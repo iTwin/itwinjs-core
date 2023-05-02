@@ -15,7 +15,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 describe("Cloud workspace containers", () => {
 
   async function initializeContainer(containerId: string) {
-    const cloudCont1 = AzuriteTest.Sqlite.makeContainer(containerId, false);
+    const cloudCont1 = AzuriteTest.Sqlite.makeContainer({ containerId });
     await AzuriteTest.Sqlite.initializeContainers([cloudCont1]);
   }
   it("cloud workspace", async () => {
