@@ -5,9 +5,8 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { IModelDb } from "@itwin/core-backend";
 import { Guid, Id64, using } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, IModel } from "@itwin/core-common";
+import { IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes, Descriptor, ECInstancesNodeKey, getInstancesCount, GroupingSpecificationTypes, HierarchyRequestOptions, InstanceKey,
@@ -15,7 +14,7 @@ import {
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
-import { buildTestIModelConnection } from "../Utils";
+import { buildTestIModelConnection, insertDocumentPartition } from "../Utils";
 
 describe("Hierarchies", () => {
 
@@ -1267,15 +1266,4 @@ async function validateHierarchy(props: {
   }
 
   return resultHierarchy;
-}
-
-function insertDocumentPartition(db: IModelDb, code: string, label?: string) {
-  const id = db.elements.insertElement({
-    classFullName: "BisCore:DocumentPartition",
-    model: IModel.repositoryModelId,
-    parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
-    code: new Code({ spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id, scope: IModel.rootSubjectId, value: code }),
-    userLabel: label,
-  });
-  return { className: "BisCore:DocumentPartition", id };
 }
