@@ -45,9 +45,8 @@ export class ModelSelector extends DefinitionElement {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     this.models.forEach((modelId: Id64String) => referenceIds.addModel(modelId));
   }
 
@@ -118,9 +117,8 @@ export class CategorySelector extends DefinitionElement {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     this.categories.forEach((categoryId: Id64String) => referenceIds.addElement(categoryId));
   }
 
@@ -212,9 +210,8 @@ export abstract class ViewDefinition extends DefinitionElement {
     return json;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.categorySelectorId);
     referenceIds.addElement(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
@@ -369,9 +366,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     return json;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.modelSelectorId);
   }
 
@@ -545,9 +541,8 @@ export class ViewDefinition2d extends ViewDefinition {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.baseModelId);
   }
 
@@ -724,9 +719,8 @@ export class ViewAttachment extends GraphicalElement2d {
     this.view = new RelatedElement(props.view);
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.view.id);
   }
 }
