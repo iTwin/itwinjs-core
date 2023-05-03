@@ -22,7 +22,8 @@
     "test": "npm run -s webpackTests && certa -r chrome",
     "cover": "npm -s test",
     "test:debug": "certa -r chrome --debug",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
+    "webpackWorkers": "webpack --config ./src/workers/example/webpack.config.js 1>&2"
   },
   "repository": {
     "type": "git",

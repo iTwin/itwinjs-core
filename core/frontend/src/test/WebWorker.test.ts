@@ -10,6 +10,8 @@ import { IModelApp } from "../IModelApp";
 use(chaiAsPromised);
 
 describe.only("WebWorker", () => {
+  // const scriptName = "scripts/worker.js";
+  const scriptName = "scripts/example-worker.js";
   async function callWorker(input: string): Promise<string> {
     const usePublicPath = false;
     const path = usePublicPath ? IModelApp.publicPath : "";
