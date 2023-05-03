@@ -10,9 +10,7 @@ import { IModelApp } from "../IModelApp";
 use(chaiAsPromised);
 
 describe.only("WebWorker", () => {
-  // const scriptName = "worker";
-  const scriptName = "example-worker";
-  async function callWorker(input: string): Promise<string> {
+  async function callWorker(scriptName: string, input: string): Promise<string> {
     const usePublicPath = false;
     const path = usePublicPath ? IModelApp.publicPath : "";
     const worker = new Worker(`${path}scripts/${scriptName}.js`);
@@ -31,12 +29,12 @@ describe.only("WebWorker", () => {
   }
 
   it("receives response", async () => {
-    const response = await callWorker("Hello");
+    const response = await callWorker("example-worker", "Hello");
     expect(response).to.equal("HELLO");
   });
 
   it("receives error", async () => {
-    const promise = callWorker("ERROR");
+    const promise = callWorker("example-worker", "ERROR");
     await expect(promise).to.be.eventually.rejectedWith(ErrorEvent, "worker received ERROR");
   });
 });
