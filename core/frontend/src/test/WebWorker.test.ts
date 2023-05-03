@@ -10,12 +10,12 @@ import { IModelApp } from "../IModelApp";
 use(chaiAsPromised);
 
 describe.only("WebWorker", () => {
-  // const scriptName = "scripts/worker.js";
-  const scriptName = "scripts/example-worker.js";
+  // const scriptName = "worker";
+  const scriptName = "example-worker";
   async function callWorker(input: string): Promise<string> {
     const usePublicPath = false;
     const path = usePublicPath ? IModelApp.publicPath : "";
-    const worker = new Worker(`${path}scripts/worker.js`);
+    const worker = new Worker(`${path}scripts/${scriptName}.js`);
     return new Promise((resolve, reject) => {
       worker.postMessage(input);
       console.log("posted message to worker");
