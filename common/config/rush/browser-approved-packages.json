@@ -535,6 +535,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "ignore-styles",
+      "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
       "name": "internal-tools",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
