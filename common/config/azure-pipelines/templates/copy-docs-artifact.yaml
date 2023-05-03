@@ -38,7 +38,7 @@ steps:
 
   - ${{ else }}:
     - task: DownloadPipelineArtifact@2
-      displayName: Download Presentation Docs Artifact
+      displayName: Download ${{ parameters.artifactName }} Docs Artifact
       inputs:
         buildType: specific
         project: ${{ parameters.projectId }}

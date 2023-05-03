@@ -734,6 +734,23 @@ export namespace CloudSqlite {
         storageType: string;
     }
     export function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler): Promise<void>;
+    // @internal
+    export interface BcvHttpLog {
+        readonly cloudSqliteLogId: string;
+        readonly endTime: string | undefined;
+        readonly httpcode: number;
+        readonly id: number;
+        readonly logmsg: string;
+        readonly method: string;
+        readonly startTime: string;
+        readonly uri: string;
+    }
+    // @internal
+    export interface BcvHttpLogFilterOptions {
+        finishedAtOrAfterTime?: string;
+        showOnlyFinished?: boolean;
+        startFromId?: number;
+    }
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
@@ -803,6 +820,8 @@ export namespace CloudSqlite {
         queryDatabase(dbName: string): CloudSqlite.CachedDbProps | undefined;
         queryDatabaseHash(dbName: string): string;
         queryDatabases(globArg?: string): string[];
+        // @internal
+        queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
         releaseWriteLock(): void;
         uploadChanges(): Promise<void>;
     }
@@ -824,6 +843,7 @@ export namespace CloudSqlite {
     export interface ContainerProps {
         accessToken: string;
         alias?: string;
+        cloudSqliteLogId?: string;
         containerId: string;
         secure?: boolean;
         writeable?: boolean;
