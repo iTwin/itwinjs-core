@@ -69,6 +69,7 @@ import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
+import { UintArray } from '@itwin/core-bentley';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -1566,8 +1567,8 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     isEmpty: boolean;
 }>;
 
-// @alpha (undocumented)
-export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
+// @internal (undocumented)
+export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
@@ -1749,8 +1750,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1966080,
-    Major = 30,
+    Combined = 2031616,
+    Major = 31,
     Minor = 0
 }
 
@@ -1956,6 +1957,25 @@ export enum DbValueFormat {
     ECSqlNames = 0,
     // (undocumented)
     JsNames = 1
+}
+
+// @internal (undocumented)
+export function decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription;
+
+// @internal (undocumented)
+export interface DecodeTileContentDescriptionArgs {
+    // (undocumented)
+    is2d?: boolean;
+    // (undocumented)
+    isLeaf?: boolean;
+    // (undocumented)
+    isVolumeClassifier?: boolean;
+    // (undocumented)
+    options: TileOptions;
+    // (undocumented)
+    sizeMultiplier?: number;
+    // (undocumented)
+    stream: ByteStream;
 }
 
 // @internal
@@ -5712,6 +5732,8 @@ export enum MonochromeMode {
 export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
     // (undocumented)
+    get animationNodeIds(): Readonly<UintArray> | undefined;
+    // (undocumented)
     get batchModelId(): string;
     // (undocumented)
     get batchModelIdPair(): Id64.Uint32Pair;
@@ -5724,6 +5746,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     // (undocumented)
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
+    // (undocumented)
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     // (undocumented)
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
@@ -5735,6 +5759,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
     // (undocumented)
     get numFeatures(): number;
+    // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     get type(): BatchType;
 }
@@ -5811,7 +5837,8 @@ export class NonUniformColor {
 // @public
 export enum NormalMapFlags {
     GreenUp = 1,
-    None = 0
+    None = 0,
+    UseConstantLod = 2
 }
 
 // @beta
@@ -6153,9 +6180,9 @@ export class PackedFeatureModelTable {
 
 // @internal
 export class PackedFeatureTable implements RenderFeatureTable {
-    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray);
     // (undocumented)
-    get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
+    get animationNodeIds(): Readonly<UintArray> | undefined;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
@@ -6192,6 +6219,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     static pack(featureTable: FeatureTable): PackedFeatureTable;
     // (undocumented)
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
+    setAnimationNodeIds(nodeIds: UintArray | undefined): void;
     // (undocumented)
     readonly type: BatchType;
     unpack(): FeatureTable;
@@ -7085,7 +7113,7 @@ export interface ReadableFormData extends BackendReadable {
 // @beta
 export function readElementMeshes(data: Uint8Array): IndexedPolyface[];
 
-// @internal
+// @internal @deprecated
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
 // @beta
@@ -7207,11 +7235,15 @@ export interface RenderFeatureTable {
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
+    // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
 }
@@ -7409,6 +7441,8 @@ export namespace RenderSchedule {
         findByBatchId(batchId: number): ElementTimeline | undefined;
         // (undocumented)
         static fromJSON(props?: ModelTimelineProps): ModelTimeline;
+        // @internal
+        getBatchIdForFeature(feature: PackedFeatureWithIndex): number;
         // @alpha
         getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined;
         getTransform(batchId: number, time: number): Readonly<Transform> | undefined;
@@ -7449,16 +7483,22 @@ export namespace RenderSchedule {
         readonly containsTransform: boolean;
         // @internal
         discloseIds(ids: EntityReferenceSet): void;
+        // @alpha
+        get discreteBatchIds(): Set<number>;
         readonly duration: Range1d;
         // (undocumented)
         equals(other: Script): boolean;
         find(modelId: Id64String): ModelTimeline | undefined;
         // (undocumented)
         static fromJSON(props: Readonly<ScriptProps>): Script | undefined;
+        // @internal
+        getBatchIdForFeature(feature: PackedFeatureWithIndex): number;
         // @internal (undocumented)
         getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined;
         // @internal (undocumented)
         getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined;
+        // @alpha (undocumented)
+        get maxBatchId(): number;
         // @internal (undocumented)
         modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
@@ -9251,7 +9291,7 @@ export namespace TextureMapping {
         Spherical = 5
     }
     export interface ParamProps {
-        constantLodParams?: ConstantLodParamProps;
+        constantLodProps?: ConstantLodParamProps;
         mapMode?: TextureMapping.Mode;
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
@@ -9281,12 +9321,17 @@ export namespace TextureMapping {
 // @public
 export interface TextureMapProps {
     pattern_angle?: number;
+    pattern_constantlod_maxdistanceclamp?: number;
+    pattern_constantlod_mindistanceclamp?: number;
+    pattern_constantlod_offset?: Point2dProps;
+    pattern_constantlod_repetitions?: number;
     pattern_flip?: boolean;
     pattern_mapping?: TextureMapping.Mode;
     pattern_offset?: Point2dProps;
     pattern_scale?: Point2dProps;
     pattern_scalemode?: TextureMapUnits;
     pattern_u_flip?: boolean;
+    pattern_useConstantLod?: boolean;
     pattern_weight?: number;
     TextureId: Id64String;
 }

@@ -133,7 +133,7 @@ export abstract class TileTree {
   public selectTiles(args: TileDrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
-    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, tiles, args.readyTiles);
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, tiles, args.readyTiles, args.touchedTiles);
     args.processSelectedTiles(tiles);
     return tiles;
   }

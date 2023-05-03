@@ -20,6 +20,9 @@ parameters:
   - name: useCurrentTransformerDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentAuthClientDocsArtifact
+    type: boolean
+    default: false
 
 steps:
   # build script exists outside of any project so manually install fs-extra
@@ -49,11 +52,11 @@ steps:
       artifactName: Bis Docs
       useCurrentDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
       stagingSteps:
-      - task: CopyFiles@2
-        displayName: Copy Bis Docs to staging
-        inputs:
-          SourceFolder: $(Pipeline.Workspace)/Bis Docs
-          TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
+        - task: CopyFiles@2
+          displayName: Copy Bis Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/Bis Docs
+            TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # Download Presentation Docs artifact
   - template: ./copy-docs-artifact.yaml
@@ -73,6 +76,7 @@ steps:
       artifactName: Transformer Docs
       defaultBranch: refs/heads/main
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
+
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

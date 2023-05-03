@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "added PickMethods utility type",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
