@@ -224,11 +224,11 @@ function sortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): n
   return Math.atan2(s * ray.direction.y, s * ray.direction.x);
 }
 
-function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive, fraction1?: boolean): number | undefined {
+function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): number | undefined {
   if (pair.detailA.curve === curve)
-    return fraction1 ? pair.detailA.fraction1 : pair.detailA.fraction;
+    return pair.detailA.fraction;
   if (pair.detailB.curve === curve)
-    return fraction1 ? pair.detailB.fraction1 : pair.detailB.fraction;
+    return pair.detailB.fraction;
   return undefined;
 }
 function getDetailOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail | undefined {
