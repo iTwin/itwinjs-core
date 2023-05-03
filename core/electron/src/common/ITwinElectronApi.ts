@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module RpcInterface
+ */
+
 import type { IpcRendererEvent } from "electron";
 
 /** These methods are stored on `window.itwinjs` */

@@ -236,9 +236,8 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (this.scope)
       referenceIds.addElement(this.scope.id);
     referenceIds.addElement(this.element.id);

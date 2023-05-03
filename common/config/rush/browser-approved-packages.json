@@ -512,7 +512,7 @@
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "google-protobuf",

@@ -158,6 +158,11 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 
 BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
 
+### Entity.getReferenceIds
+
+[Entity.getReferenceIds]($core-backend) no longer returns a set of [Id64String]($core-bentley), but an [EntityReferenceSet]($core-common), because it now supports returning references
+of entities that aren't elements.
+
 ## Geometry
 
 ### Mesh offset
@@ -179,6 +184,8 @@ The lower left is the original (smaller, inside) mesh with the (transparent) off
 New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+A new method [Ray3d.intersectionWithTriangle]($core-geometry) is also added which is 2-3 times faster than [BarycentricTriangle.intersectRay3d]($core-geometry). This new method only returns the intersection coordinates of the ray and triangle and no extra data.
 
 ### Abstract base class [Plane3d]($core-geometry)
 

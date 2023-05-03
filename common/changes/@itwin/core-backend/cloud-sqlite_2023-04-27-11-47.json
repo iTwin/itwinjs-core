@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "added support for index of internal codes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

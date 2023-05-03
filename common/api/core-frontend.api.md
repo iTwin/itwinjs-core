@@ -5204,7 +5204,7 @@ export interface ImdlReaderCreateArgs {
     stream: ByteStream;
     // (undocumented)
     system: RenderSystem;
-    timeline?: RenderSchedule.ModelTimeline;
+    timeline?: ImdlTimeline;
     // (undocumented)
     type?: BatchType;
 }
@@ -5214,6 +5214,9 @@ export interface ImdlReaderResult extends IModelTileContent {
     // (undocumented)
     readStatus: TileReadStatus;
 }
+
+// @internal (undocumented)
+export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 // @public
 export class IModelApp {

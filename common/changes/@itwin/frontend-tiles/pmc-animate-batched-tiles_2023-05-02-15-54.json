@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-tiles",
-      "comment": "Improve tile content disposal under memory pressure.",
+      "comment": "Add support for schedule animations.",
       "type": "none"
     }
   ],
