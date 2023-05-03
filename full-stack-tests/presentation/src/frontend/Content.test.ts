@@ -417,7 +417,7 @@ describe("Content", () => {
             propertyOverrides: [{
               name: "FederationGuid",
               isDisplayed: true,
-            }]
+            }],
           }],
         }],
       };
@@ -432,9 +432,9 @@ describe("Content", () => {
       expect(content?.contentSet.length).to.eq(1);
       expect(content?.contentSet[0].values[field.name]).to.eq(guid);
       expect(content?.contentSet[0].displayValues[field.name]).to.eq(guid);
-    })
+    });
 
-  })
+  });
 
   describe("Navigation Properties", () => {
 

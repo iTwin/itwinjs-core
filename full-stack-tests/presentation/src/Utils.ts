@@ -106,7 +106,7 @@ export function insertDocumentPartition(db: IModelDb, code: string, label?: stri
     parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
     code: new Code({ spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id, scope: IModel.rootSubjectId, value: code }),
     userLabel: label,
-    federationGuid
+    federationGuid,
   });
   return { className: "BisCore:DocumentPartition", id };
 }
