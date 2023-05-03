@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { formatAnimationBranchId } from "../../render/GraphicBranch";
+
 onmessage = function(e) {
   if (e.data === "ERROR")
     throw new Error("worker received ERROR");
 
-  postMessage(e.data.toUpperCase());
+  postMessage(formatAnimationBranchId(e.data, 123456));
 }
