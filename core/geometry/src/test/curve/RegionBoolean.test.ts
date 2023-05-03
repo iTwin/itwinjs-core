@@ -9,7 +9,7 @@ import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
-import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
@@ -744,7 +744,7 @@ describe("RegionBoolean", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
-    let delta = 12;
+    const delta = 12;
 
     // data for creating pairs of concentric arcs that intersect
     const center = Point3d.createZero();

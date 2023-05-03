@@ -82,7 +82,7 @@ export class PlanarSubdivision {
       let last = {point: p.startPoint(), fraction: 0.0};
       for (const detailPair of details) {
         const detail = getDetailOnCurve(detailPair, p)!;
-        let detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
+        const detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
         last = this.addHalfEdge(graph, p, last.point, last.fraction, detail.point, detailFraction, mergeTolerance);
       }
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);

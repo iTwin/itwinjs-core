@@ -411,7 +411,7 @@ describe("Polyface.Box", () => {
     ];
     let z = 0;
     for (const testCase of testCases) {
-      let maxRange = Point3d.createZero();
+      const maxRange = Point3d.createZero();
       for (const datum of testCase.data)
         maxRange.set(Math.max(maxRange.x, datum.localRange.xLength()), Math.max(maxRange.y, datum.localRange.yLength()), Math.max(maxRange.z, datum.localRange.zLength()));
       const delta = maxRange.maxAbs();
