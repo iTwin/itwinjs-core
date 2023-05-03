@@ -11,6 +11,7 @@ const frontendLib = path.resolve(__dirname, "../../../lib");
 
 function createConfig() {
   const config = {
+    mode: "production",
     entry: glob.sync(path.resolve(frontendLib, "cjs/workers/example/example-worker.js")), // ###TODO esm?
     output: {
       path: path.resolve(frontendLib, "public/scripts/"),
