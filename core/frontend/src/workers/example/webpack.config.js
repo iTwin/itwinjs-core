@@ -11,7 +11,7 @@ const frontendLib = path.resolve(__dirname, "../../../lib");
 
 module.exports = [{
   mode: "production",
-  entry: glob.sync(path.resolve(frontendLib, "cjs/workers/example/example-worker.js")), // ###TODO esm?
+  entry: glob.sync(path.resolve(frontendLib, "esm/workers/example/example-worker.js")),
   output: {
     path: path.resolve(frontendLib, "public/scripts/"),
     filename: "example-worker.js",
@@ -23,6 +23,7 @@ module.exports = [{
       {
         test: /\.js$/,
         use: "source-map-loader",
+        sideEffects: false,
         enforce: "pre"
       },
     ],
@@ -31,7 +32,7 @@ module.exports = [{
   optimization: {
     nodeEnv: "production"
   },
-  externals: {
-    electron: "commonjs electron",
-  },
+  // externals: {
+  //   electron: "commonjs electron",
+  // },
 }];
