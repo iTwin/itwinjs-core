@@ -171,7 +171,7 @@ export function setupMobileRpc() {
 
   function usePendingSender() {
     const sender = (message: string | Uint8Array, _connectionId: number) => {
-        pendingMessages.push(message);
+      pendingMessages.push(message);
     };
     MobileRpcServer.interop.sendString = sender;
     MobileRpcServer.interop.sendBinary = sender;
