@@ -652,7 +652,7 @@ describe("RegionBoolean", () => {
   });
 
   // cspell:word laurynas
-  it.only("BridgeEdgesAndDegenerateLoops", () => {
+  it("BridgeEdgesAndDegenerateLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -675,7 +675,7 @@ describe("RegionBoolean", () => {
     // * nearly-intersecting edges larger than default tol
     // * island-in-hole
     const testCases: TestInput[] = [
-/*      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2 },
@@ -684,16 +684,17 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasRegion9.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1, tolerance: 0.001 }, // 0.0001 yields 2 neg area loops!
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1 },   // has doglegs of length 0.0001
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
-*/      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
     ];
     if (GeometryCoreTestIO.enableLongTests) {
       testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes

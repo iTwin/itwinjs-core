@@ -253,6 +253,7 @@ export class HalfEdgeGraphOps {
 }
 
 /**
+ * Note: this uses hardcoded micrometer coordinate/cluster tolerance throughout.
  * @internal
  */
 export class HalfEdgeGraphMerge {

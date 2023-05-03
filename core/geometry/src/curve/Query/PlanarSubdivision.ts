@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
@@ -50,69 +49,43 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
       this.insertPrimitiveToPair(primitiveB, pair);
   }
 }
-/*
-  function getDetailString(detail: CurveLocationDetail | undefined): string {
-    if (!detail)
-      return "{}";
-    else return tagString("primitive", this.primitiveToIndex.get(detail.curve!)) + tagString("f0", detail.fraction) + tagString("f1", detail.fraction1);
-  }
-}
-function tagString(name: string, value: number | undefined): string {
-  if (value !== undefined)
-    return "(" + name + " " + value + ")";
-  return "";
-}
-*/
+
 /**
  * @internal
  */
 export class PlanarSubdivision {
   /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. */
-  public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
+  public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[], mergeTolerance: number = Geometry.smallMetricDistance): HalfEdgeGraph {
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
     for (const p of primitives)
       detailByPrimitive.assignPrimitiveIndex(p);
-    for (const pair of allPairs) {
+    for (const pair of allPairs)
       detailByPrimitive.insertPair(pair);
-    }
     const graph = new HalfEdgeGraph();
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];
-      const details = entry[1];
-      // sort details by ascending intersection parameter on p
-      // ASSUME coincident intervals contain no isolated intersection except at an endpoint
-      // ASSUME coincident intervals have no partial overlap, but may be equal or intersect at an endpoint
+      // convert each interval intersection into two isolated intersections
+      const details = entry[1].reduce((accumulator: CurveLocationDetailPair[], detailPair) => {
+        if (!detailPair.detailA.hasFraction1)
+          return [...accumulator, detailPair];
+        const detail = getDetailOnCurve(detailPair, p)!;
+        const detail0 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction, detail.point);
+        const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1!, detail.point1!);
+        return [...accumulator, CurveLocationDetailPair.createCapture(detail0, detail0), CurveLocationDetailPair.createCapture(detail1, detail1)];
+      }, []);
+      // lexical sort on p intersection fraction
       details.sort((pairA: CurveLocationDetailPair, pairB: CurveLocationDetailPair) => {
         const fractionA = getFractionOnCurve(pairA, p)!;
-        const fractionA1 = getFractionOnCurve(pairA, p, true);
         const fractionB = getFractionOnCurve(pairB, p)!;
-        const fractionB1 = getFractionOnCurve(pairB, p, true);
-        if (fractionA1 === undefined && fractionB1 === undefined)
-          return fractionA - fractionB;
-        if (fractionA1 === undefined)
-          return (fractionA <= fractionB) ? -1 : 1;
-        if (fractionB1 === undefined)
-          return (fractionA1 <= fractionB) ? -1 : 1;
-        return fractionA + fractionA1 - (fractionB + fractionB1);
+        return fractionA - fractionB;
       });
-      // Lambda function to add a 2-sided edge from a given last point to the intersection.
-      // Adds another 2-sided edge for a coincident interval if present in the detail.
-      // Returns updated last point for next call.
-      const addGraphEdgeAndUpdateLast = (lastPoint: Point3d, lastFraction: number, detail: CurveLocationDetail): {point: Point3d, fraction: number} => {
-        assert(Geometry.isIn01(detail.fraction));
-        assert(lastFraction <= detail.fraction);
-        this.addHalfEdge(graph, p, lastPoint, lastFraction, detail.point, detail.fraction);
-        if (detail.hasFraction1) {  // add the coincident segment too
-          assert(Geometry.isIn01(detail.fraction1!));
-          assert(detail.fraction <= detail.fraction1!);
-          this.addHalfEdge(graph, p, detail.point, detail.fraction, detail.point1!, detail.fraction1!);
-        }
-        return {point: detail.point1 ?? detail.point, fraction: detail.fraction1 ?? detail.fraction};
-      };
       let last = {point: p.startPoint(), fraction: 0.0};
-      for (let i = 0; i < details.length; i++)
-        last = addGraphEdgeAndUpdateLast(last.point, last.fraction, getDetailOnCurve(details[i], p)!);
-      this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0);
+      for (const detailPair of details) {
+        const detail = getDetailOnCurve(detailPair, p)!;
+        let detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
+        last = this.addHalfEdge(graph, p, last.point, last.fraction, detail.point, detailFraction, mergeTolerance);
+      }
+      this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
     return graph;
@@ -126,19 +99,21 @@ export class PlanarSubdivision {
    * @param point0 start point
    * @param fraction1 end fraction
    * @param point1 end point
+   * @returns end point and fraction, or start point and fraction if no action
    */
-  private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number) {
-    if (!point0.isAlmostEqual (point1)){
-      const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
-      const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
-      const mate = halfEdge.edgeMate;
-      halfEdge.edgeTag = detail01;
-      halfEdge.sortData = 1.0;
-      mate.edgeTag = detail01;
-      mate.sortData = -1.0;
-      halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
-      mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
-      }
+  private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number, mergeTolerance: number = Geometry.smallMetricDistance): {point: Point3d, fraction: number} {
+    if (point0.isAlmostEqual(point1, mergeTolerance))
+      return {point: point0, fraction: fraction0};
+    const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
+    const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
+    const mate = halfEdge.edgeMate;
+    halfEdge.edgeTag = detail01;
+    halfEdge.sortData = 1.0;
+    mate.edgeTag = detail01;
+    mate.sortData = -1.0;
+    halfEdge.sortAngle = sortAngle(p, fraction0, false);
+    mate.sortAngle = sortAngle(p, fraction1, true);
+    return {point: point1, fraction: fraction1};
     }
   /**
    * Based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
