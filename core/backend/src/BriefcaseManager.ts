@@ -13,7 +13,7 @@ import {
   AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
-  BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
+  BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@itwin/core-common";
 import { TelemetryEvent } from "@itwin/core-telemetry";
@@ -365,6 +365,21 @@ export class BriefcaseManager {
     return status;
   }
 
+  /** Query the hub for the properties for a ChangesetIndex or ChangesetId  */
+  public static async queryChangeset(arg: { iModelId: GuidString, changeset: ChangesetIndexOrId }): Promise<ChangesetProps> {
+    return IModelHost.hubAccess.queryChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
+  }
+
+  /** Query the hub for an array of changeset properties given a ChangesetRange */
+  public static async queryChangesets(arg: { iModelId: GuidString, range: ChangesetRange }): Promise<ChangesetProps[]> {
+    return IModelHost.hubAccess.queryChangesets({ ...arg, accessToken: await IModelHost.getAccessToken() });
+  }
+
+  /** Query the hub for the ChangesetProps of the most recent changeset */
+  public static async getLatestChangeset(arg: { iModelId: GuidString }): Promise<ChangesetProps> {
+    return IModelHost.hubAccess.getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
+  }
+
   /** Deletes a folder and all it's contents.
    *  - Does not throw any errors, but logs them.
    *  - returns true if the delete was successful.
@@ -428,12 +443,14 @@ export class BriefcaseManager {
 
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
-    const changesetProps = db.nativeDb.startCreateChangeset();
+    const changesetProps = db.nativeDb.startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
-    changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
-    if (!changesetProps.size) // either undefined or 0 means error
+    const fileSize = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
+    if (!fileSize) // either undefined or 0 means error
       throw new IModelError(IModelStatus.NoContent, "error creating changeset");
+
+    changesetProps.size = fileSize;
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
