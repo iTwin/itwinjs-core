@@ -1,6 +1,11 @@
 # Change Log - @itwin/presentation-opentelemetry
 
-This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+This log was last generated on Thu, 04 May 2023 19:43:18 GMT and should not be manually modified.
+
+## 3.7.5
+Thu, 04 May 2023 19:43:18 GMT
+
+_Version update only_
 
 ## 3.7.4
 Tue, 25 Apr 2023 17:50:35 GMT
