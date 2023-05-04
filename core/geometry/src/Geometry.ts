@@ -996,7 +996,7 @@ export class Geometry {
         // We observed criterion = -2.22e-16 in a rotated tangent system, therefore for negative criteria near
         // zero, return the near-tangency; for tiny positive criteria, fall through to return both solutions.
         result = [Vector2d.create(c0, s0)];
-      } else if (criterion > 0.0) { // nSolution = 2
+      } else { // nSolution = 2
         const s = Math.sqrt(criterion * a2b2r); // sqrt(a^2+b^2-d^2)) / (a^2+b^2)
         result = [
           Vector2d.create(c0 - s * sinCoff, s0 + s * cosCoff),
