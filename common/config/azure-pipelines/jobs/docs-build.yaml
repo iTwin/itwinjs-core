@@ -76,7 +76,7 @@ jobs:
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@4.3.10
+      - script: npm install @bentley/bemetalsmith@4.3.11
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
