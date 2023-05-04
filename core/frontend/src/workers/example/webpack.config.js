@@ -13,7 +13,7 @@ module.exports = [{
   mode: "production",
   entry: glob.sync(path.resolve(frontendLib, "esm/workers/example/example-worker.js")),
   output: {
-    path: path.resolve(frontendLib, "public/scripts/"),
+    path: path.resolve(frontendLib, "workers/webpack/"),
     filename: "example-worker.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
   },

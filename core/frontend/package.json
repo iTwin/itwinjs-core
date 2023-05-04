@@ -14,6 +14,7 @@
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
+    "copy:workers": "cpx \"./lib/workers/webpack/example-worker.js\" ./lib/public/scripts",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
