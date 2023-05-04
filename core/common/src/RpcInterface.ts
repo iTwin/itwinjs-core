@@ -50,7 +50,9 @@ export abstract class RpcInterface {
   }
 
   private static parseVer(version: string): SemverType {
+    // Split the version string into major.minor.path and prerelease tag
     const split = version.split(/[:-]/);
+    // Split the major.minor.path into seperate components
     const prefix = split[0].split(".");
     if (split.length === 1) {
       return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
@@ -64,11 +66,17 @@ export abstract class RpcInterface {
     const backendSemver = this.parseVer(backend);
     const frontendSemver = this.parseVer(frontend);
     const difference = this.findDiff(backendSemver, frontendSemver);
+
+    // If the major versions are different, the versions are not compatible
+    // In the case of prerelease tags, they are compatible if the whole version string matches, otherwise it fails
     if ((backendSemver.prerelease !== undefined || frontendSemver.prerelease !== undefined) || difference === "major") {
       return difference === "same";
     } else if (backendSemver.major === 0 || frontendSemver.major === 0) {
+      // If the major and minor versions match and major versions are 0, compatible as long as backend patch version is greater
       return difference === "same" || (difference === "patch" && frontendSemver.patch < backendSemver.patch);
     } else {
+      // If the strings match exactly, major and minor match but patch differs, versions are compatible
+      // If minor versions differ, compatible as long as backend patch versionn is greater
       return difference === "same" || difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
     }
   }
