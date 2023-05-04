@@ -5,8 +5,6 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-
-import * as semver from "semver";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
@@ -34,20 +32,58 @@ export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
  */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
+interface SemverType {
+  major: number;
+  minor: number;
+  patch: number;
+  prerelease?: string;
+}
+
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
  * in a platform-independent way. TheRpcInterface class is the base class for RPC interface definitions and implementations.
  * @public
  */
 export abstract class RpcInterface {
+
+  private static findDiff(backend: SemverType, frontend: SemverType): string {
+    const isSame = backend.major === frontend.major && backend.minor === frontend.minor && backend.patch === frontend.patch && backend.prerelease === frontend.prerelease;
+    if (isSame) {
+      return "same";
+    }
+    if (backend.major !== frontend.major) {
+      return "major";
+    }
+    if (backend.minor !== frontend.minor) {
+      return "minor";
+    }
+    if (backend.patch !== frontend.patch) {
+      return "patch";
+    }
+    return "prerelease";
+  }
+
+  private static parseVer(version: string): SemverType {
+    const split = version.split(/[:-]/);
+    const prefix = split[0].split(".");
+    if (split.length === 1) {
+      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
+    } else {
+      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]), prerelease: split[1] };
+    }
+  }
+
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
   public static isVersionCompatible(backend: string, frontend: string): boolean {
-    const difference = semver.diff(backend, frontend);
-    if (semver.prerelease(backend) || semver.prerelease(frontend)) {
-      return difference === null;
-    } else if (semver.major(backend) === 0 || semver.major(frontend) === 0) {
-      return difference === null || (difference === "patch" && semver.patch(frontend) < semver.patch(backend));
+    const backendSemver = this.parseVer(backend);
+    const frontendSemver = this.parseVer(frontend);
+    const difference = this.findDiff(backendSemver, frontendSemver);
+    if ((backendSemver.prerelease !== undefined || frontendSemver.prerelease !== undefined) || difference === "major") {
+      return difference === "same";
+    } else if (backendSemver.major === 0 || frontendSemver.major === 0) {
+      return difference === "same" || (difference === "patch" && frontendSemver.patch < backendSemver.patch);
     } else {
-      return difference === null || difference === "patch" || (difference === "minor" && semver.minor(frontend) < semver.minor(backend));
+      console.log()
+      return difference === "same" || difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
     }
   }
 
