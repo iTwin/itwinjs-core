@@ -10,6 +10,7 @@ const glob = require("glob");
 const frontendLib = path.resolve(__dirname, "../../../lib");
 
 module.exports = [{
+  stats: "verbose",
   mode: "production",
   entry: glob.sync(path.resolve(frontendLib, "esm/workers/example/example-worker.js")),
   output: {
@@ -25,6 +26,10 @@ module.exports = [{
         use: "source-map-loader",
         sideEffects: false,
         enforce: "pre"
+      },
+      {
+        test: /@itwin/,
+        sideEffects: false,
       },
     ],
   },
