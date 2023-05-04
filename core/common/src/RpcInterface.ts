@@ -82,7 +82,6 @@ export abstract class RpcInterface {
     } else if (backendSemver.major === 0 || frontendSemver.major === 0) {
       return difference === "same" || (difference === "patch" && frontendSemver.patch < backendSemver.patch);
     } else {
-      console.log()
       return difference === "same" || difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
     }
   }
