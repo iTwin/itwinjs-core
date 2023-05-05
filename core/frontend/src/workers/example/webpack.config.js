@@ -10,15 +10,14 @@ const glob = require("glob");
 const frontendLib = path.resolve(__dirname, "../../../lib");
 
 module.exports = [{
-  stats: "verbose",
+  // stats: "verbose",
   mode: "production",
   entry: glob.sync(path.resolve(frontendLib, "esm/workers/example/example-worker.js")),
   output: {
     path: path.resolve(frontendLib, "workers/webpack/"),
     filename: "example-worker.js",
-    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
+    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
   },
-  // devTool: "nosources-source-map",
   module: {
     rules: [
       {
@@ -33,11 +32,8 @@ module.exports = [{
       },
     ],
   },
-  stats: "errors-only",
+  stats: "verbose", // "errors-only",
   optimization: {
     nodeEnv: "production"
   },
-  // externals: {
-  //   electron: "commonjs electron",
-  // },
 }];
