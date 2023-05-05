@@ -6,12 +6,12 @@
  * @module Rendering
  */
 
-import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
+import { assert, StructuredCloneableObject, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
   IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
 import {
-  OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
+  CloneableQPoint2dBuffer, CloneableQPoint3dBuffer, OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
@@ -46,6 +46,14 @@ export interface RealityMeshParams {
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
   texture?: RenderTexture;
+}
+
+/** @alpha */
+export interface CloneableRealityMeshParams extends StructuredCloneableObject {
+  positions: CloneableQPoint3dBuffer;
+  uvs: CloneableQPoint2dBuffer;
+  normals?: Uint16Array;
+  indices: UintArray;
 }
 
 /** @public */
@@ -114,6 +122,30 @@ export namespace RealityMeshParams {
     });
 
     return polyface;
+  }
+
+  /** @alpha */
+  export function toStructuredCloneable(params: RealityMeshParams, transferables: Transferable[]): CloneableRealityMeshParams {
+    transferables.push(params.indices.buffer);
+    if (params.normals)
+      transferables.push(params.normals.buffer);
+
+    return {
+      positions: QPoint3dBuffer.toStructuredCloneable(params.positions, transferables),
+      uvs: QPoint2dBuffer.toStructuredCloneable(params.uvs, transferables),
+      normals: params.normals,
+      indices: params.indices,
+    };
+  }
+
+  /** @alpha */
+  export function fromStructuredCloneable(src: CloneableRealityMeshParams): RealityMeshParams {
+    return {
+      positions: QPoint3dBuffer.fromStructuredCloneable(src.positions),
+      uvs: QPoint2dBuffer.fromStructuredCloneable(src.uvs),
+      normals: src.normals,
+      indices: src.indices,
+    };
   }
 }
 
