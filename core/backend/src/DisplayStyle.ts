@@ -40,9 +40,8 @@ export abstract class DisplayStyle extends DefinitionElement {
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       referenceIds.addElement(id);
     }
@@ -211,9 +210,8 @@ export class DisplayStyle3d extends DisplayStyle {
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
       referenceIds.addElement(textureId);
 

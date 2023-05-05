@@ -8,19 +8,25 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
-import { CloudSqliteTest } from "./CloudSqlite.test";
+import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
+async function queryBisModelCount(imodel: IModelDb): Promise<number> {
+  const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");
+  if (await reader.step())
+    return reader.current[0] as number;
+  return -1;
+}
+
 describe("Checkpoints", () => {
   let daemon: ChildProcess;
-  let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
   let daemonProps: NativeCloudSqlite.DaemonProps;
   let accessToken: AccessToken;
@@ -40,7 +46,7 @@ describe("Checkpoints", () => {
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
     fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
+    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...AzuriteTest.storage });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
@@ -59,11 +65,6 @@ describe("Checkpoints", () => {
     process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
     IModelJsFs.removeSync(cloudcacheDir);
 
-    // Props for daemon
-    accountProps = {
-      accessName: CloudSqliteTest.storage.accessName,
-      storageType: CloudSqliteTest.storage.storageType,
-    };
     cacheProps = {
       rootDir: cloudcacheDir,
       name: V2CheckpointManager.cloudCacheName,
@@ -154,13 +155,11 @@ describe("Checkpoints", () => {
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-    // eslint-disable-next-line deprecation/deprecation
-    let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+    let numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
     await iModel.refreshContainerSas(accessToken);
-    // eslint-disable-next-line deprecation/deprecation
-    numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
     iModel.close();
@@ -175,8 +174,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-    // eslint-disable-next-line deprecation/deprecation
-    numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel);
     assert.equal(numModels, 32);
 
     // Open multiple imodels from same container
@@ -190,8 +188,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
     assert.equal(iModel2.iTwinId, testITwinId);
     assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
-    // eslint-disable-next-line deprecation/deprecation
-    numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel2);
     assert.equal(numModels, 3);
 
     // Open imodels across multiple containers
@@ -206,8 +203,7 @@ describe("Checkpoints", () => {
     assert.equal(iModel3.changeset.id, testChangeSet2.id);
     assert.equal(iModel3.iTwinId, testITwinId2);
     assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
-    // eslint-disable-next-line deprecation/deprecation
-    numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
+    numModels = await queryBisModelCount(iModel3);
     assert.equal(numModels, 4);
 
     iModel.close();
@@ -235,13 +231,11 @@ describe("Checkpoints", () => {
       assert.equal(iModel.changeset.id, testChangeSet.id);
       assert.equal(iModel.iTwinId, testITwinId);
       assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-      // eslint-disable-next-line deprecation/deprecation
-      let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      let numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       await iModel.refreshContainerSas(accessToken);
-      // eslint-disable-next-line deprecation/deprecation
-      numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       iModel.close();
@@ -256,8 +250,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel.changeset.id, testChangeSet.id);
       assert.equal(iModel.iTwinId, testITwinId);
       assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
-      // eslint-disable-next-line deprecation/deprecation
-      numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
       // Open multiple imodels from same container
@@ -271,8 +264,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
       assert.equal(iModel2.iTwinId, testITwinId);
       assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
-      // eslint-disable-next-line deprecation/deprecation
-      numModels = await iModel2.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel2);
       assert.equal(numModels, 3);
 
       // Open imodels across multiple containers
@@ -287,8 +279,7 @@ describe("Checkpoints", () => {
       assert.equal(iModel3.changeset.id, testChangeSet2.id);
       assert.equal(iModel3.iTwinId, testITwinId2);
       assert.equal(iModel3.rootSubject.name, "ReadOnlyTest");
-      // eslint-disable-next-line deprecation/deprecation
-      numModels = await iModel3.queryRowCount("SELECT * FROM bis.model");
+      numModels = await queryBisModelCount(iModel3);
       assert.equal(numModels, 4);
 
       iModel.close();

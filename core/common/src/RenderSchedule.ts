@@ -16,6 +16,7 @@ import {
 } from "@itwin/core-geometry";
 import { RgbColor } from "./RgbColor";
 import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
+import {PackedFeatureWithIndex} from "./FeatureTable";
 
 function interpolate(start: number, end: number, fraction: number): number {
   return start + fraction * (end - start);
@@ -1021,6 +1022,13 @@ export namespace RenderSchedule {
 
       return this._discreteBatchIds;
     }
+
+    /** @internal see ImdlReader.readAnimationBranches */
+    public getBatchIdForFeature(feature: PackedFeatureWithIndex): number {
+      assert(Id64.fromUint32PairObject(feature.modelId) === this.modelId);
+      const elementTimeline = this.getTimelineForElement(feature.elementId.lower, feature.elementId.upper);
+      return elementTimeline?.batchId ?? 0;
+    }
   }
 
   /** Specifies how to animate the contents of a [ViewState]($frontend) over time. The script contains any number of [[RenderSchedule.ModelTimeline]]s, each describing how
@@ -1051,6 +1059,9 @@ export namespace RenderSchedule {
     public readonly transformBatchIds: ReadonlySet<number>;
     /** Tile tree references perform **very** frequent ordered comparisons of Scripts. They need to be fast. */
     private readonly _cachedComparisons = new WeakMap<Script, number>();
+    private _discreteBatchIds?: Set<number>;
+    private _lastFeatureModelTimeline?: { timeline?: ModelTimeline, idLower: number, idUpper: number };
+    private _maxBatchId?: number;
 
     public compareTo(other: Script): number {
       if (this === other)
@@ -1159,6 +1170,41 @@ export namespace RenderSchedule {
     public modelRequiresBatching(modelId: Id64String): boolean {
       // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
       return this.requiresBatching && this.modelTimelines.some((x) => x.modelId === modelId && x.requiresBatching);
+    }
+
+    /** The batch Ids of the subset of [[elementTimelines]] that apply a transform and/or cutting plane.
+     * @alpha
+     */
+    public get discreteBatchIds(): Set<number> {
+      if (this._discreteBatchIds)
+        return this._discreteBatchIds;
+
+      this._discreteBatchIds = new Set<number>();
+      for (const timeline of this.modelTimelines)
+        for (const batchId of timeline.discreteBatchIds)
+          this._discreteBatchIds.add(batchId);
+
+      return this._discreteBatchIds;
+    }
+
+    /** @internal see ImdlReader.readAnimationBranches. */
+    public getBatchIdForFeature(feature: PackedFeatureWithIndex): number {
+      let timeline;
+      const prev = this._lastFeatureModelTimeline;
+      if (prev && prev.idLower === feature.modelId.lower && prev.idUpper === feature.modelId.upper) {
+        timeline = prev.timeline;
+      } else {
+        const modelId = Id64.fromUint32PairObject(feature.modelId);
+        timeline = this.find(modelId);
+        this._lastFeatureModelTimeline = { timeline, idLower: feature.modelId.lower, idUpper: feature.modelId.upper };
+      }
+
+      return timeline?.getBatchIdForFeature(feature) ?? 0;
+    }
+
+    /** @alpha */
+    public get maxBatchId(): number {
+      return this._maxBatchId ?? (this._maxBatchId = this.modelTimelines.reduce((accum, timeline) => Math.max(accum, timeline.maxBatchId), 0));
     }
   }
 

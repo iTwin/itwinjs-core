@@ -59,9 +59,8 @@ export class ExternalSource extends InformationReferenceElement {
     return new Code({ spec: codeSpec.id, scope: IModel.rootSubjectId, value: codeValue });
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (this.repository)
       referenceIds.addElement(this.repository.id);
   }

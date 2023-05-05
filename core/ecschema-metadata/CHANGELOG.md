@@ -1,6 +1,46 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+
+## 3.7.4
+Tue, 25 Apr 2023 17:50:35 GMT
+
+_Version update only_
+
+## 3.7.3
+Thu, 20 Apr 2023 13:19:29 GMT
+
+_Version update only_
+
+## 3.7.2
+Wed, 12 Apr 2023 13:12:42 GMT
+
+_Version update only_
+
+## 3.7.1
+Mon, 03 Apr 2023 15:15:37 GMT
+
+_Version update only_
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+_Version update only_
+
+## 3.6.3
+Mon, 27 Mar 2023 16:26:47 GMT
+
+_Version update only_
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+_Version update only_
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -856,7 +896,7 @@ Wed, 06 May 2020 13:17:49 GMT
 
 - new EC Rule 501 - CustomAttribute schemas must be referenced by the container's schema.
 - Removing deprecated API. Please see NextVersion.md under the heading 'ecschema-metadata Package' for details.
-- Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency.
+- Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency. 
 - Undefined display labels should equal empty display labels during schema comparison.
 - order imports.
 - Removed unused package dependencies
@@ -982,7 +1022,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
 - Fix broken links
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Added ability to suppress rule violations from being reported during schema validation.
 - Upgrade TypeDoc dependency to 0.14.2
 - Updated BIS and EC schema validation documentation and adjusted diagnostic codes to match documentation.

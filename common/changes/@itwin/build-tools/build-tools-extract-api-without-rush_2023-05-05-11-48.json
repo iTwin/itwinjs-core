@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Support non-rush repositories by allowing to specify output file locations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

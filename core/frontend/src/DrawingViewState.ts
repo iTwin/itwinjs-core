@@ -383,8 +383,7 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of this.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;
         try {

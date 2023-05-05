@@ -237,22 +237,6 @@
         "schemaName": "BisCore",
         "className": "Element"
       },
-      "propertyCategories": [
-        {
-          "id": "source_information",
-          "label": "Source Information",
-          "parentId": {
-            "type": "Root"
-          },
-          "autoExpand": true
-        },
-        {
-          "id": "model_source",
-          "label": "Model Source",
-          "parentId": "source_information",
-          "autoExpand": true
-        }
-      ],
       "relatedProperties": [
         {
           "propertiesSource": {
@@ -277,7 +261,33 @@
           "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "SameInstance",
           "skipIfDuplicate": true
+        }
+      ],
+      "applyOnNestedContent": true
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "Source Information",
+          "parentId": {
+            "type": "Root"
+          },
+          "autoExpand": true
         },
+        {
+          "id": "model_source",
+          "label": "Model Source",
+          "parentId": "source_information",
+          "autoExpand": true
+        }
+      ],
+      "relatedProperties": [
         {
           "propertiesSource": {
             "relationship": {
@@ -496,7 +506,8 @@
                   "categoryId": "source_information",
                   "labelOverride": "Path"
                 }
-              ]
+              ],
+              "skipIfDuplicate": true
             },
             {
               "relationshipMeaning": "SameInstance",
@@ -540,7 +551,8 @@
                   "categoryId": "secondary_sources",
                   "labelOverride": "Path"
                 }
-              ]
+              ],
+              "skipIfDuplicate": true
             }
           ],
           "skipIfDuplicate": true
@@ -564,30 +576,6 @@
           },
           "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
-          "nestedRelatedProperties": [
-            {
-              "propertiesSource": {
-                "relationship": {
-                  "schemaName": "BisCore",
-                  "className": "ElementOwnsUniqueAspect"
-                },
-                "direction": "Forward"
-              },
-              "handleTargetClassPolymorphically": true,
-              "relationshipMeaning": "SameInstance"
-            },
-            {
-              "propertiesSource": {
-                "relationship": {
-                  "schemaName": "BisCore",
-                  "className": "ElementOwnsMultiAspects"
-                },
-                "direction": "Forward"
-              },
-              "handleTargetClassPolymorphically": true,
-              "relationshipMeaning": "SameInstance"
-            }
-          ],
           "skipIfDuplicate": true
         }
       ]
@@ -609,30 +597,6 @@
           },
           "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
-          "nestedRelatedProperties": [
-            {
-              "propertiesSource": {
-                "relationship": {
-                  "schemaName": "BisCore",
-                  "className": "ElementOwnsUniqueAspect"
-                },
-                "direction": "Forward"
-              },
-              "handleTargetClassPolymorphically": true,
-              "relationshipMeaning": "SameInstance"
-            },
-            {
-              "propertiesSource": {
-                "relationship": {
-                  "schemaName": "BisCore",
-                  "className": "ElementOwnsMultiAspects"
-                },
-                "direction": "Forward"
-              },
-              "handleTargetClassPolymorphically": true,
-              "relationshipMeaning": "SameInstance"
-            }
-          ],
           "skipIfDuplicate": true
         }
       ]

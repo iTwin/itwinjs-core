@@ -36,6 +36,7 @@ describe("CodeSpec", () => {
 
     expect(codeSpec.scopeReq).to.be.equal(CodeScopeSpec.ScopeRequirement.ElementId);
     expect(codeSpec.scopeType).to.be.equal(CodeScopeSpec.Type.Model);
+    expect(codeSpec.isExternal).false;
 
     codeSpec.scopeReq = CodeScopeSpec.ScopeRequirement.FederationGuid;
     codeSpec.scopeType = CodeScopeSpec.Type.Repository;
@@ -47,6 +48,8 @@ describe("CodeSpec", () => {
 
     codeSpec = imodel.codeSpecs.getByName("PumpTag");
     expect(codeSpecId).to.be.equal(codeSpec.id);
+    expect(codeSpec.name).equal("PumpTag");
+    expect(codeSpec.isExternal).true;
 
     expect(codeSpec.scopeReq).to.be.equal(CodeScopeSpec.ScopeRequirement.FederationGuid);
     expect(codeSpec.scopeType).to.be.equal(CodeScopeSpec.Type.Repository);

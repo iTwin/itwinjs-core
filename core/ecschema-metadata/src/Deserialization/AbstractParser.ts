@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps,
-  SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps,
+  SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "../Deserialization/JsonProps";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -36,11 +36,11 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract parseEnumeration(data: Readonly<TItem>): EnumerationProps;
   public abstract parseKindOfQuantity(data: Readonly<TItem>): KindOfQuantityProps;
   public abstract parsePropertyCategory(data: Readonly<TItem>): PropertyCategoryProps;
-  public abstract parseUnit(data: Readonly<TItem>): UnitProps;
+  public abstract parseUnit(data: Readonly<TItem>): SchemaItemUnitProps;
   public abstract parseInvertedUnit(data: Readonly<TItem>): InvertedUnitProps;
   public abstract parseConstant(data: Readonly<TItem>): ConstantProps;
   public abstract parsePhenomenon(data: Readonly<TItem>): PhenomenonProps;
-  public abstract parseFormat(data: Readonly<TItem>): FormatProps;
+  public abstract parseFormat(data: Readonly<TItem>): SchemaItemFormatProps;
   public abstract parseUnitSystem(data: Readonly<TItem>): UnitSystemProps;
 
   public abstract getProperties(data: Readonly<TItem>, itemName: string): Iterable<PropertyTuple<TProperty>>;
