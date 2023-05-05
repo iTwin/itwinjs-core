@@ -30,6 +30,7 @@ export * from "./PriorityQueue";
 export * from "./ProcessDetector";
 export * from "./SortedArray";
 export * from "./StringUtils";
+export * from "./StructuredCloneable";
 export * from "./Time";
 export * from "./Tracing";
 export * from "./TupleKeyedMap";
