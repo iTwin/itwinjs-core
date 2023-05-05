@@ -695,6 +695,7 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/testInputs/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/testInputs/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
       { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
     ];
     if (GeometryCoreTestIO.enableLongTests) {
       testCases.push({ jsonFilePath: "./src/test/testInputs/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
@@ -704,10 +705,10 @@ describe("RegionBoolean", () => {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
-        let merged: Loop[] | AnyRegion | undefined = inputs;
-        const range: Range3d = Range3d.createFromVariantData(merged.map((loop: Loop) => { return [loop.range().low, loop.range().high]; }));
+        const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: Loop) => { return [loop.range().low, loop.range().high]; }));
         xDelta = 1.5 * range.xLength();
         yDelta = 1.5 * range.yLength();
+        let merged: Loop[] | AnyRegion | undefined = inputs;
         if (!testCase.skipBoolean) {
           // Do a Boolean union of the inputs. This means holes will be lost! But that's OK, as we're only interested in the outer loop.
           // It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate the loops into arrays

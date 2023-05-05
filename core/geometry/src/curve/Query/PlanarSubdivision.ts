@@ -7,8 +7,11 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Arc3d } from "../Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { RegionOps } from "../RegionOps";
 
@@ -18,7 +21,7 @@ import { RegionOps } from "../RegionOps";
 
 class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
-  // index assigned to this primitive for this calculation.
+  // index assigned to this primitive (for debugging)
   public primitiveToIndex = new Map<CurvePrimitive, number>();
   private _numIndexedPrimitives: number = 0;
   public assignPrimitiveIndex(primitive: CurvePrimitive | undefined) {
@@ -48,6 +51,24 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
     if (primitiveB)
       this.insertPrimitiveToPair(primitiveB, pair);
   }
+  /** Split closed missing primitives in half and add new intersection pairs */
+  public splitAndAppendMissingClosedPrimitives(primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance) {
+    for (const p of primitives) {
+      let closedCurveSplitCandidate = false;
+      if (p instanceof Arc3d)
+        closedCurveSplitCandidate = p.sweep.isFullCircle;
+      else if (!(p instanceof LineSegment3d) && !(p instanceof LineString3d))
+        closedCurveSplitCandidate = p.startPoint().isAlmostEqual(p.endPoint(), tolerance);
+      if (closedCurveSplitCandidate && !this.primitiveToPair.has(p)) {
+        const p0 = p.clonePartialCurve(0.0, 0.5);
+        const p1 = p.clonePartialCurve(0.5, 1.0);
+        if (p0 && p1) {
+          this.insertPair(CurveLocationDetailPair.createCapture(CurveLocationDetail.createCurveEvaluatedFraction(p0, 0.0), CurveLocationDetail.createCurveEvaluatedFraction(p1, 1.0)));
+          this.insertPair(CurveLocationDetailPair.createCapture(CurveLocationDetail.createCurveEvaluatedFraction(p0, 1.0), CurveLocationDetail.createCurveEvaluatedFraction(p1, 0.0)));
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -57,10 +78,10 @@ export class PlanarSubdivision {
   /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. */
   public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[], mergeTolerance: number = Geometry.smallMetricDistance): HalfEdgeGraph {
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
-    for (const p of primitives)
-      detailByPrimitive.assignPrimitiveIndex(p);
     for (const pair of allPairs)
       detailByPrimitive.insertPair(pair);
+    if (primitives.length > detailByPrimitive.primitiveToPair.size)
+      detailByPrimitive.splitAndAppendMissingClosedPrimitives(primitives, mergeTolerance);  // otherwise, these single-primitive loops are missing from the graph
     const graph = new HalfEdgeGraph();
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];
