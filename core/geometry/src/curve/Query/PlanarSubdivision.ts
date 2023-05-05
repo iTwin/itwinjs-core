@@ -58,7 +58,7 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
       if (p instanceof Arc3d)
         closedCurveSplitCandidate = p.sweep.isFullCircle;
       else if (!(p instanceof LineSegment3d) && !(p instanceof LineString3d))
-        closedCurveSplitCandidate = p.startPoint().isAlmostEqual(p.endPoint(), tolerance);
+        closedCurveSplitCandidate = p.startPoint().isAlmostEqualXY(p.endPoint(), tolerance);
       if (closedCurveSplitCandidate && !this.primitiveToPair.has(p)) {
         const p0 = p.clonePartialCurve(0.0, 0.5);
         const p1 = p.clonePartialCurve(0.5, 1.0);
@@ -75,7 +75,7 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
  * @internal
  */
 export class PlanarSubdivision {
-  /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. */
+  /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. Z-coordinates are ignored. */
   public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[], mergeTolerance: number = Geometry.smallMetricDistance): HalfEdgeGraph {
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
     for (const pair of allPairs)
@@ -123,7 +123,7 @@ export class PlanarSubdivision {
    * @returns end point and fraction, or start point and fraction if no action
    */
   private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number, mergeTolerance: number = Geometry.smallMetricDistance): {point: Point3d, fraction: number} {
-    if (point0.isAlmostEqual(point1, mergeTolerance))
+    if (point0.isAlmostEqualXY(point1, mergeTolerance))
       return {point: point0, fraction: fraction0};
     const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
     const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
