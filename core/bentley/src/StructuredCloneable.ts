@@ -10,7 +10,7 @@
  * @see [[StructuredCloneable]].
  * @alpha
  */
-export type StructuredCloneablePrimitive = ArrayBuffer | ArrayBufferView | bigint | boolean | DataView | Date | Error | RegExp | string;
+export type StructuredCloneablePrimitive = ArrayBuffer | ArrayBufferView | bigint | boolean | DataView | Date | Error | number | RegExp | string;
 
 /** A union of the collection types that support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm#supported_types).
  * @see [[StructuredCloneable]].

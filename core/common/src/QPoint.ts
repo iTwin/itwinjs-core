@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder, StructuredCloneableObject } from "@itwin/core-bentley";
 import {
   Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -393,6 +393,14 @@ export class QPoint2dList {
   }
 }
 
+/** Cloneable representation of a [[QParams3d]].
+ * @alpha
+ */
+export interface CloneableQParams3d extends StructuredCloneableObject {
+  origin: XYAndZ;
+  scale: XYAndZ;
+}
+
 /** Parameters used for [[Quantization]] of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
  * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
@@ -507,6 +515,19 @@ export class QParams3d {
     range.extendPoint(this.origin);
     range.extendPoint(this.origin.plus(this.rangeDiagonal));
     return range;
+  }
+
+  /** @alpha */
+  public toStructuredCloneable(_tranferables: Transferable[]): CloneableQParams3d {
+    return {
+      origin: { x: this.origin.x, y: this.origin.y, z: this.origin.z },
+      scale: { x: this.scale.x, y: this.scale.y, z: this.scale.z },
+    };
+  }
+
+  /** @alpha */
+  public static fromStructuredCloneable(src: CloneableQParams3d, out?: QParams3d): QParams3d {
+    return this.fromOriginAndScale(Point3d.fromJSON(src.origin), Point3d.fromJSON(src.scale), out);
   }
 }
 
@@ -650,6 +671,12 @@ export interface QPoint3dBuffer {
   points: Uint16Array;
 }
 
+/** @alpha */
+export interface CloneableQPoint3dBuffer {
+  params: CloneableQParams3d;
+  points: Uint16Array;
+}
+
 /** @public
  * @extensions
  */
@@ -686,6 +713,15 @@ export namespace QPoint3dBuffer {
   export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint3d);
     return qpt.unquantize(buffer.params, result);
+  }
+
+  /** @alpha */
+  export function toStructuredCloneable(buffer: QPoint3dBuffer, transferables: Transferable[]): CloneableQPoint3dBuffer {
+    transferables.push(buffer.points.buffer);
+    return {
+      params: buffer.params.toStructuredCloneable(transferables),
+      points: buffer.points,
+    };
   }
 }
 
