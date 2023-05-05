@@ -39,7 +39,7 @@ const rushCommon = () => {
 };
 
 const apiReportFolder = argv.apiReportFolder ?? path.join(rushCommon(), "/api");
-const apiReportTempFolder = argv.apiReportTempFolder ?? path.join(rushCommon, "/temp/api");
+const apiReportTempFolder = argv.apiReportTempFolder ?? path.join(rushCommon(), "/temp/api");
 const apiSummaryFolder = argv.apiSummaryFolder ?? path.join(rushCommon(), "/api/summary");
 
 const config = {
