@@ -31,7 +31,16 @@ const resolveRoot = relativePath => {
   }
   process.stderr.write("Root of the Rush repository not found.  Missing a rush.json file?");
 };
-const rushCommon = resolveRoot("common");
+const rushCommon = () => {
+  let resolved;
+  if (!resolved)
+    resolved = resolveRoot("common");
+  return resolved;
+};
+
+const apiReportFolder = argv.apiReportFolder ?? path.join(rushCommon(), "/api");
+const apiReportTempFolder = argv.apiReportTempFolder ?? path.join(rushCommon, "/temp/api");
+const apiSummaryFolder = argv.apiSummaryFolder ?? path.join(rushCommon(), "/api/summary");
 
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
@@ -42,8 +51,8 @@ const config = {
   mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
   apiReport: {
     enabled: true,
-    reportFolder: path.resolve(path.join(rushCommon, "/api")),
-    reportTempFolder: path.resolve(path.join(rushCommon, "/temp/api")),
+    reportFolder: path.resolve(apiReportFolder),
+    reportTempFolder: path.resolve(apiReportTempFolder),
   },
   docModel: {
     enabled: false
@@ -94,7 +103,7 @@ const config = {
 };
 
 if (!fs.existsSync("lib")) {
-  process.stderr.write("lib folder not found. Run `rush build` before extract-api");
+  process.stderr.write("`lib` folder not found. Build the package(s) before running `extract-api`");
   process.exit(1);
 }
 
@@ -118,8 +127,8 @@ spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
 
   const extractSummaryArgs = [
     path.resolve(__dirname, "extract-api-summary.js"),
-    "--apiSignature", path.resolve(path.join(rushCommon, `/api/${entryPointFileName}.api.md`)),
-    "--outDir", path.resolve(path.join(rushCommon, "/api/summary")),
+    "--apiSignature", path.resolve(path.join(apiReportFolder, `${entryPointFileName}.api.md`)),
+    "--outDir", path.resolve(apiSummaryFolder),
   ];
 
   spawn("node", extractSummaryArgs).then((code) => {
