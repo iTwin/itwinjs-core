@@ -28,3 +28,16 @@ export type StructuredCloneableObject = { [key: string]: StructuredCloneable | u
  * @alpha
  */
 export type StructuredCloneable = StructuredCloneableCollection | StructuredCloneableObject | StructuredCloneablePrimitive;
+
+/** Interface adopted by an object that can produce a [[StructuredCloneable]] representation of itself.
+ * @alpha
+ */
+export interface ToStructuredCloneable {
+  /** Produces a representation of this object that can be serialized by [structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone) without producing
+   * errors.
+   * Any transferable objects (for example, the backing ArrayBuffer for a Uint32Array property) should be added to `transferables` - they will be transferred instead of copied.
+   * @param transferables An array of transferable objects to be transferred instead of copied.
+   * @returns the cloneable representation.
+   */
+  toStructuredCloneable(transferables: Transferable[]): StructuredCloneable;
+}
