@@ -803,8 +803,11 @@ export class MapTile extends RealityTile {
   }
 }
 
-/** @internal */
+/** A child tile that has no content of its own available. It instead produces content by up-sampling the content of an ancestor tile.
+ * @internal
+  */
 export class UpsampledMapTile extends MapTile {
+  /** The ancestor tile whose content will be up-sampled. */
   private readonly _loadableTile: MapTile;
 
   constructor(params: RealityTileParams, mapTree: MapTileTree, quadId: QuadId, patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, cornerRays: Ray3d[] | undefined, loadableTile: MapTile) {
