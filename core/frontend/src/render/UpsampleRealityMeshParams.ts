@@ -6,13 +6,12 @@
  * @module Rendering
  */
 
-import {
-  Range1d, Range2d, Vector3d,
-} from "@itwin/core-geometry";
+import { StructuredCloneableObject } from "@itwin/core-bentley";
+import { Range1d, Range2d, Vector3d, } from "@itwin/core-geometry";
 import {
   OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization,
 } from "@itwin/core-common";
-import { RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
+import { CloneableRealityMeshParams, RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
 
 class UpsampleIndexMap extends Map<number, number> {
   private _next = 0;
@@ -32,6 +31,14 @@ class UpsampleIndexMap extends Map<number, number> {
 export interface UpsampledRealityMeshParams {
   heightRange: Range1d;
   mesh: RealityMeshParams;
+}
+
+export interface CloneableUpsampledRealityMeshParams extends StructuredCloneableObject {
+  mesh: CloneableRealityMeshParams;
+  heightRange: {
+    low: number;
+    high: number;
+  };
 }
 
 class ClipAxis {
