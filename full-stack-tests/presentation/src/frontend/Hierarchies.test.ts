@@ -32,7 +32,7 @@ describe("Hierarchies", () => {
     it("filters root instance nodes hierarchy level", async function () {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         imodelElementKeys.push(
           insertDocumentPartition(db, "a"),
           insertDocumentPartition(db, "b"),
@@ -115,7 +115,7 @@ describe("Hierarchies", () => {
     it("filters child instance nodes hierarchy level", async function () {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         imodelElementKeys.push(
           insertDocumentPartition(db, "a"),
           insertDocumentPartition(db, "b"),
@@ -234,7 +234,7 @@ describe("Hierarchies", () => {
     it("filters grouped hierarchy levels", async function () {
       // set up imodel with 3 DocumentPartition elements: "a", "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         imodelElementKeys.push(
           insertDocumentPartition(db, "a1", "a"),
           insertDocumentPartition(db, "a2", "a"),
@@ -380,7 +380,7 @@ describe("Hierarchies", () => {
 
     it("throws when attempting to filter non-filterable hierarchy level", async function () {
       // set up an empty imodel - we'll use the root Subject for this test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -435,7 +435,7 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
           expectedInstanceKeys.push(
             insertDocumentPartition(db, "a"),
             insertDocumentPartition(db, "b"),
@@ -495,7 +495,7 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
           expectedInstanceKeys.push(
             insertDocumentPartition(db, "a"),
             insertDocumentPartition(db, "b"),
@@ -579,7 +579,7 @@ describe("Hierarchies", () => {
       before(async function () {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
-        imodel = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+        imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
           expectedInstanceKeys.push(
             insertDocumentPartition(db, "a1", "a"),
             insertDocumentPartition(db, "a2", "a"),
@@ -695,7 +695,7 @@ describe("Hierarchies", () => {
 
     it("creates descriptor for root hierarchy level", async function () {
       // create an "empty" iModel - we'll use the root Subject for our test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -738,7 +738,7 @@ describe("Hierarchies", () => {
 
     it("creates descriptor for child hierarchy level", async function () {
       // create an "empty" iModel - we'll use the root Subject and default Models for our test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
@@ -790,7 +790,7 @@ describe("Hierarchies", () => {
 
     it("throws when attempting to get descriptor non-filterable hierarchy level", async function () {
       // set up an empty imodel - we'll use the root Subject for this test
-      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), (_) => { });
+      const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => { });
 
       // set up ruleset
       const ruleset: Ruleset = {
