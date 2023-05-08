@@ -97,13 +97,13 @@ public;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
-beta;ChangesetFileProps 
+internal;ChangesetFileProps 
 public;ChangesetId = string
 public;ChangesetIdWithIndex
 public;ChangesetIndex = number
 public;ChangesetIndexAndId
 public;ChangesetIndexOrId = ChangesetIndexAndId |
-beta;ChangesetProps
+public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
 alpha;ChannelConstraintError 

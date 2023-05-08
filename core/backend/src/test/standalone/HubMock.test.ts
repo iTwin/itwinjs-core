@@ -72,10 +72,13 @@ describe("HubMock", () => {
     assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1", assigned: true });
     assert.deepEqual(briefcases[1], { id: 5, user: "user4", alias: "user4 (5)", assigned: true });
 
+    let pathname = IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml");
+    let fileSize = IModelJsFs.lstatSync(pathname)!.size;
+
     // try pushing changesets
     const cs1: ChangesetFileProps = {
       id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 5, pushDate: "", index: 0,
-      userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
+      userCreated: "user1", pathname, size: fileSize,
     };
     cs1.index = localHub.addChangeset(cs1); // first changeset
     const changesets1 = localHub.queryChangesets();
@@ -85,14 +88,18 @@ describe("HubMock", () => {
     assert.equal(changesets1[0].changesType, cs1.changesType);
     assert.equal(changesets1[0].index, 1);
     assert.equal(changesets1[0].briefcaseId, 5);
-    assert.isAtLeast(changesets1[0].size!, 1);
+    assert.isAtLeast(changesets1[0].size, 1);
     assert.equal(changesets1[0].parentId, "");
     assert.isDefined(changesets1[0].pushDate);
     assert.equal(cs1.id, localHub.getLatestChangeset().id);
 
+    pathname = IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml");
+    fileSize = IModelJsFs.lstatSync(pathname)!.size;
+
     const cs2: ChangesetFileProps = {
       id: "changeset1", parentId: cs1.id, description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 5, pushDate: "", index: 0,
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
+      size: fileSize,
     };
     cs2.index = localHub.addChangeset(cs2); // second changeset, parent = cs1
     const changesets2 = localHub.queryChangesets();
@@ -104,7 +111,7 @@ describe("HubMock", () => {
     assert.equal(changesets2[1].changesType, cs2.changesType);
     assert.equal(changesets2[1].index, 2);
     assert.equal(changesets2[1].briefcaseId, 5);
-    assert.isAtLeast(changesets2[1].size!, 1);
+    assert.isAtLeast(changesets2[1].size, 1);
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangeset().id);
 
@@ -125,7 +132,11 @@ describe("HubMock", () => {
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
     // test for duplicate changeset id fails
-    const cs3: ChangesetFileProps = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 500, userCreated: "", pushDate: "", index: 0 };
+    const cs3: ChangesetFileProps = {
+      id: "changeset0", parentId: "changeset1",
+      description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 500, userCreated: "", pushDate: "", index: 0,
+      size: fileSize,
+    };
     expect(() => localHub.addChangeset(cs3)).throws("no briefcase with that id");
     cs3.briefcaseId = 5;
     expect(() => localHub.addChangeset(cs3)).throws("can't insert");
@@ -164,6 +175,17 @@ describe("HubMock", () => {
     const downloaded2 = IModelJsFs.readFileSync(cSets[1].pathname);
     assert.deepEqual(orig2, downloaded2);
     assert.notDeepEqual(orig1, orig2);
+
+    const latest = await BriefcaseManager.getLatestChangeset({ iModelId });
+    expect(latest.index).to.equal(cs3.index);
+    expect(latest.id).to.equal(cs3.id);
+    expect(latest.parentId).to.equal(cs3.parentId);
+
+    const cs1q = await BriefcaseManager.queryChangeset({ changeset: { index: cs1.index }, iModelId });
+    expect(cs1q.description).to.equal(cs1.description);
+
+    const changes = await BriefcaseManager.queryChangesets({ range: { first: cs1.index }, iModelId });
+    expect(changes.length).to.equal(3);
 
     // test locks
     const lock1: Mutable<LockProps> = {
@@ -268,12 +290,17 @@ describe("HubMock", () => {
     const localHub = HubMock.findLocalHub(iModelId);
     const briefcaseId = await HubMock.acquireNewBriefcaseId({ iModelId });
 
+    const pathname = IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml");
+    const fileSize = IModelJsFs.lstatSync(pathname)!.size;
+
     const cs1: ChangesetFileProps = {
       id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId, pushDate: "", index: 0,
-      userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
+      size: fileSize,
+      userCreated: "user1", pathname,
     };
     const cs2: ChangesetFileProps = {
       id: "changeset1", parentId: cs1.id, description: "second changeset", changesType: ChangesetType.Schema, briefcaseId, pushDate: "", index: 0,
+      size: fileSize,
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
     cs1.index = localHub.addChangeset(cs1);

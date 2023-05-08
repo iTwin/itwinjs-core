@@ -539,6 +539,9 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
     static getIModelPath(iModelId: GuidString): LocalDirName;
+    static getLatestChangeset(arg: {
+        iModelId: GuidString;
+    }): Promise<ChangesetProps>;
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
@@ -547,6 +550,14 @@ export class BriefcaseManager {
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
+    static queryChangeset(arg: {
+        iModelId: GuidString;
+        changeset: ChangesetIndexOrId;
+    }): Promise<ChangesetProps>;
+    static queryChangesets(arg: {
+        iModelId: GuidString;
+        range: ChangesetRange;
+    }): Promise<ChangesetProps[]>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
 }
 
