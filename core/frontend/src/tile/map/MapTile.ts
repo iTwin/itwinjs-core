@@ -805,14 +805,16 @@ export class MapTile extends RealityTile {
 
 /** @internal */
 export class UpsampledMapTile extends MapTile {
+  private readonly _loadableTile: MapTile;
+
+  constructor(params: RealityTileParams, mapTree: MapTileTree, quadId: QuadId, patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, cornerRays: Ray3d[] | undefined, loadableTile: MapTile) {
+    super(params, mapTree, quadId, patch, rectangle, heightRange, cornerRays);
+    this._loadableTile = loadableTile;
+  }
+
   public override get isUpsampled() { return true; }
   public override get isEmpty() { return false; }
-  public override get loadableTile(): RealityTile {
-    let parent = this.parent as MapTile;
-    for (; parent && parent.isUpsampled; parent = parent.parent as MapTile)
-      ;
-    return parent;
-  }
+  public override get loadableTile(): RealityTile { return this._loadableTile; }
 
   private upsampleFromParent() {
     const parent = this.loadableTerrainTile;
