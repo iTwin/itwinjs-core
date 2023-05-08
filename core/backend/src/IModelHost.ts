@@ -329,6 +329,9 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
+  /** A string that can identify the current user to other users when collaborating. */
+  public static userMoniker = "unknown";
+
   /** Root directory holding files that iTwin.js caches */
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 

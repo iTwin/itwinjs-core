@@ -13,13 +13,13 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
 function createChangeset(imodel: IModelDb): ChangesetFileProps {
-  const changeset = imodel.nativeDb.startCreateChangeset();
+  const changeset = imodel.nativeDb.startCreateChangeset() as ChangesetFileProps;
 
-  // completeCreateChangeset deletes the file that startCreateChangeSet created.
-  // We make a copy of it now, before he does that.
+  // completeCreateChangeset deletes the changeset file. So make a copy of it now, before that happens.
   const csFileName = path.join(KnownTestLocations.outputDir, `${changeset.id}.changeset`);
   IModelJsFs.copySync(changeset.pathname, csFileName);
   changeset.pathname = csFileName;
+  changeset.size = IModelJsFs.lstatSync(csFileName)!.size;
 
   imodel.nativeDb.completeCreateChangeset({ index: 0 });
   return changeset;

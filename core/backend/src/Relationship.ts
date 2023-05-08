@@ -91,9 +91,8 @@ export class ElementRefersToElements extends Relationship {
     return iModel.relationships.insertInstance(relationship.toJSON());
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet,): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet,): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
   }
@@ -411,16 +410,15 @@ export class ElementDrivesElement extends Relationship {
     return props;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet,): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet,): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addElement(this.targetId);
   }
 }
 
 /** The third (and last) possible link-table relationship base class in an iModel.
- * Has no external use, but is included for completeness of the [Entity.collectReferenceConcreteIds]($backend)
+ * Has no external use, but is included for completeness of the [Entity.collectReferenceIds]($backend)
  * implementations for link-table relationships. Generating the types of the source and target automatically would require
  * coupling this package with ecschema-metadata which we do not want to do.
  * @internal
@@ -428,9 +426,8 @@ export class ElementDrivesElement extends Relationship {
 export class ModelSelectorRefersToModels extends Relationship {
   /** @internal */
   public static override get className(): string { return "ModelSelectorRefersToModels"; }
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.sourceId);
     referenceIds.addModel(this.targetId);
   }
