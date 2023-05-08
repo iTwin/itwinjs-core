@@ -328,17 +328,17 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Left].coffs[6] &&
         rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Left].coffs[7] &&
         rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Left].coffs[8])
-        return Face.Left;
+      return Face.Left;
 
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Right].coffs[6] &&
           rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Right].coffs[7] &&
           rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Right].coffs[8])
-          return Face.Right;
+      return Face.Right;
 
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Right].coffs[6] &&
           rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Right].coffs[7] &&
           rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Right].coffs[8])
-          return Face.Right;
+      return Face.Right;
 
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Back].coffs[6] &&
       rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Back].coffs[7] &&
