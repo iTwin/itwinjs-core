@@ -19,16 +19,13 @@ useFromChai(chaiAsPromised);
 
 export namespace CloudSqliteTest {
   export type TestContainer = CloudSqlite.CloudContainer & { isPublic: boolean };
-  export const httpAddr = "127.0.0.1:10000";
-  export const storage: CloudSqlite.AccountAccessProps = {
-    accessName: "devstoreaccount1",
-    storageType: `azure?emulator=${httpAddr}&sas=1`,
-  };
-  const credential = new azureBlob.StorageSharedKeyCredential(storage.accessName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
+  export const storageAccount = "devstoreaccount1";
+  export const baseUri = `http://127.0.0.1:10000/${storageAccount}`;
+  const credential = new azureBlob.StorageSharedKeyCredential(storageAccount, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
 
   export async function createAzureContainer(container: TestContainer) {
     const pipeline = azureBlob.newPipeline(credential);
-    const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accessName}`, pipeline);
+    const blobService = new azureBlob.BlobServiceClient(baseUri, pipeline);
     setSasToken(container, "racwdl");
     try {
       await blobService.deleteContainer(container.containerId);
@@ -48,8 +45,7 @@ export namespace CloudSqliteTest {
   }
 
   export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
-    const cont = CloudSqlite.createCloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
-    cont.isPublic = isPublic;
+    const cont = CloudSqlite.createCloudContainer({ baseUri, storageType: "azure", containerId, writeable: true, accessToken: "", isPublic }) as TestContainer;
     return cont;
   }
 
