@@ -17,11 +17,15 @@ import { SurfaceType } from "../render/primitives/SurfaceParams";
 
 /* eslint-disable no-restricted-syntax */
 
-/** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1]. */
-type ImdlColorDef = number[];
+/** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1].
+ * @alpha
+ */
+export type ImdlColorDef = number[];
 
-/** Describes a [TextureMapping]($common). */
-interface ImdlTextureMapping {
+/** Describes a [TextureMapping]($common).
+ * @alpha
+ */
+export interface ImdlTextureMapping {
   /** Optional name, which may be the Id of a persistent [RenderTexture]($common) or some other name unique among all texture mappings within the tile. */
   name?: string;
   /** Describes the [TextureMapping.Params]($common). */
@@ -53,8 +57,10 @@ interface ImdlTextureMapping {
   };
 }
 
-/** Describes a [RenderTexture]($common) with its image embedded into the tile data. */
-interface ImdlNamedTexture {
+/** Describes a [RenderTexture]($common) with its image embedded into the tile data.
+ * @alpha
+ */
+export interface ImdlNamedTexture {
   /** If true, the image is a texture atlas containing any number of glyphs used for text. */
   isGlyph?: boolean;
   /** If true, the texture should not repeat and should not be mip-mapped. */
@@ -67,8 +73,10 @@ interface ImdlNamedTexture {
   transparency?: TextureTransparency;
 }
 
-/** Describes a [[DisplayParams]]. */
-interface ImdlDisplayParams {
+/** Describes a [[DisplayParams]].
+ * @alpha
+ */
+export interface ImdlDisplayParams {
   type: DisplayParams.Type;
   lineColor?: ColorDefProps;
   fillColor?: ColorDefProps;
@@ -81,8 +89,10 @@ interface ImdlDisplayParams {
   gradient?: Gradient.SymbProps;
 }
 
-/** Describes a [RenderMaterial]($common). */
-interface ImdlRenderMaterial {
+/** Describes a [RenderMaterial]($common).
+ * @alpha
+ */
+export interface ImdlRenderMaterial {
   diffuseColor?: ImdlColorDef;
   diffuse?: number;
   specularColor?: ImdlColorDef;
@@ -100,15 +110,19 @@ interface ImdlRenderMaterial {
   };
 }
 
-/** Describes a [[SurfaceMaterialAtlas]] embedded into an [[ImdlVertexTable]]. */
-interface ImdlMaterialAtlas {
+/** Describes a [[SurfaceMaterialAtlas]] embedded into an [[ImdlVertexTable]].
+ * @alpha
+ */
+export interface ImdlMaterialAtlas {
   readonly numMaterials: number;
   readonly hasTranslucency?: boolean;
   readonly overridesAlpha?: boolean;
 }
 
-/** Describes a [[VertexTable]]. */
-interface ImdlVertexTable {
+/** Describes a [[VertexTable]].
+ * @alpha
+ */
+export interface ImdlVertexTable {
   /** Id of the [[ImdlBufferView]] containing the binary vertex table data. */
   readonly bufferView: string;
   /** The number of vertices in the table. */
@@ -141,8 +155,9 @@ interface ImdlVertexTable {
 
 /** Describes how to draw a single [[ImdlPrimitive]] repeatedly.
  * @see [[InstancedGraphicParams]].
+ * @alpha
  */
-interface ImdlInstances {
+export interface ImdlInstances {
   readonly count: number;
   readonly transformCenter: number[];
   readonly featureIds: string;
@@ -151,7 +166,7 @@ interface ImdlInstances {
 }
 
 /** Describes a unit of geometry within an [[ImdlMesh]]. */
-interface ImdlPrimitive {
+export interface ImdlPrimitive {
   /** The Id of the associated [[ImdlDisplayParams]]. */
   readonly material?: string;
   /** A lookup table containing the primitive's vertices. */
@@ -166,14 +181,16 @@ interface ImdlPrimitive {
 
 /** Per-vertex data used to animate and/or resymbolize a mesh.
  * @see [[AuxChannelTable]].
+ * @alpha
  */
-type ImdlAuxChannelTable = Omit<AuxChannelTableProps, "data"> & { bufferView: string };
+export type ImdlAuxChannelTable = Omit<AuxChannelTableProps, "data"> & { bufferView: string };
 
 /** Describes the "hard" edges of an [[ImdlMeshPrimitive]]. These edges represent simple line segments connecting two vertices of the mesh.
  * They are always visible regardless of view orientation.
  * Each segment is represented as a quad such that it can be expanded to a desired width in pixels.
+ * @alpha
  */
-interface ImdlSegmentEdges {
+export interface ImdlSegmentEdges {
   /** Id of the [[ImdlBufferView]] containing - for each vertex of each quad - the 24-bit index of the vertex in the mesh's [[ImdlVertexTable]]. */
   readonly indices: string;
   /** Id of the [[ImdlBufferView]] containing - for each vertex of each quad - the 24-bit index of the segmnent's other endpoint in the mesh's [[ImdlVertexTable]],
@@ -185,8 +202,9 @@ interface ImdlSegmentEdges {
 /** Describes "hidden" edges of an [[ImdlMeshPrimitive]]. These edges represent simple line segments connecting two vertices of the mesh.
  * A given silhouette is visible when only one of the faces associated with the edge is facing the camera, producing view-dependent outlines for curved
  * geometry like spheres and cones.
+ * @alpha
  */
-interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
+export interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
   /** The Id of the [[ImdlBufferView]] containing - for each vertex - a pair of [OctEncodedNormal]($common)s for the two faces associated with the edge. */
   readonly normalPairs: string;
 }
@@ -194,8 +212,9 @@ interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
 /** A compact alternative representation of [[ImdlSegmentEdges]] and [[ImdlSilhouetteEdges]] consisting of a lookup table containing information about each unique
  * edge, along with indices into that table.
  * @see [[IndexedEdgeParams]].
+ * @alpha
  */
-interface ImdlIndexedEdges {
+export interface ImdlIndexedEdges {
   /** Id of the [[ImdlBufferView]] containing the indices - 6 per segment, forming a quad. */
   readonly indices: string;
   /** Id of the [[ImdlBufferView]] containing the lookup table binary data. */
@@ -210,8 +229,10 @@ interface ImdlIndexedEdges {
   readonly silhouettePadding: number;
 }
 
-/** Describes the edges of an [[ImdlMeshPrimitive]]. */
-interface ImdlMeshEdges {
+/** Describes the edges of an [[ImdlMeshPrimitive]].
+ * @alpha
+ */
+export interface ImdlMeshEdges {
   /** @see [[ImdlSegmentEdges]]. */
   readonly segments?: ImdlSegmentEdges;
   /** @see [[ImdlSilhouetteEdges]]. */
@@ -226,8 +247,9 @@ interface ImdlMeshEdges {
 
 /** Describes a collection of line strings with additional joint triangles inserted to produce wide line strings with rounded corners.
  * @see [[TesselatedPolyline]] and [[PolylineParams]].
+ * @alpha
  */
-interface ImdlPolyline {
+export interface ImdlPolyline {
   /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.indices]]. */
   readonly indices: string;
   /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.prevIndices]]. */
@@ -238,8 +260,9 @@ interface ImdlPolyline {
 
 /** Describes a planar region in which a pattern symbol is repeated in a regular grid.
  * @see [[PatternGraphicParams]].
+ * @alpha
  */
-interface ImdlAreaPattern {
+export interface ImdlAreaPattern {
   readonly type: "areaPattern";
   /** The Id of the [[ImdlAreaPatternSymbol]] containing the pattern geometry. */
   readonly symbolName: string;
@@ -260,8 +283,10 @@ interface ImdlAreaPattern {
   readonly viewIndependentOrigin?: XYZProps;
 }
 
-/** Describes the surface of an [[ImdlMeshPrimitive]] as a collection of triangles. */
-interface ImdlSurface {
+/** Describes the surface of an [[ImdlMeshPrimitive]] as a collection of triangles.
+ * @alpha
+ */
+export interface ImdlSurface {
   /** The type of surface. */
   readonly type: SurfaceType;
   /** The 24-bit indices into the [[ImdlVertexTable]] of each triangle's vertex. */
@@ -275,8 +300,10 @@ interface ImdlSurface {
   };
 }
 
-/** Describes a triangle mesh, optionally including its edges. @see [[MeshParams]]. */
-interface ImdlMeshPrimitive extends ImdlPrimitive {
+/** Describes a triangle mesh, optionally including its edges. @see [[MeshParams]].
+ * @alpha
+ */
+export interface ImdlMeshPrimitive extends ImdlPrimitive {
   /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Mesh;
   readonly surface: ImdlSurface;
@@ -285,24 +312,31 @@ interface ImdlMeshPrimitive extends ImdlPrimitive {
   readonly areaPattern?: ImdlAreaPattern;
 }
 
-/** Describes a collection of line strings. @see [[PolylineParams]]. */
-interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
+/** Describes a collection of line strings. @see [[PolylineParams]].
+ * @alpha
+ */
+export interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
   /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Polyline;
 }
 
-/** Describes a collection of individual points. @see [[PointStringParams. */
-interface ImdlPointStringPrimitive extends ImdlPrimitive {
+/** Describes a collection of individual points. @see [[PointStringParams.
+ * @alpha
+ */
+export interface ImdlPointStringPrimitive extends ImdlPrimitive {
   /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Point;
   /** The Id of the [[ImdlBufferView]] containing - for each point - the 24-bit index of the corresponding vertex in the [[ImdlVertexTable]]. */
   readonly indices: string;
 }
 
-type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
+/** @alpha */
+export type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
-/** A collection of primitive geometry to be rendered. */
-interface ImdlMesh {
+/** A collection of primitive geometry to be rendered.
+ * @alpha
+ */
+export interface ImdlMesh {
   /** The geometry to be rendered. */
   readonly primitives?: Array<AnyImdlPrimitive | ImdlAreaPattern>;
   /** If this mesh defines a layer, the unique Id of that layer.
@@ -311,21 +345,27 @@ interface ImdlMesh {
   readonly layer?: string;
 }
 
-/** A collection of primitive geometry to be rendered as the pattern symbol for an [[ImdlAreaPattern]]. */
-interface ImdlAreaPatternSymbol {
+/** A collection of primitive geometry to be rendered as the pattern symbol for an [[ImdlAreaPattern]].
+ * @alpha
+ */
+export interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
-/** If the tile has an associated [RenderSchedule.Script]($common), an array of Ids of nodes in the script used to group elements. */
-interface ImdlAnimationNodes {
+/** If the tile has an associated [RenderSchedule.Script]($common), an array of Ids of nodes in the script used to group elements.
+ * @alpha
+ */
+export interface ImdlAnimationNodes {
   /** The number of bytes in each integer Id provided by [[bufferView]] - either 1, 2, or 4. */
   bytesPerId: number;
   /** The Id of the [[ImdlBufferView]] containing the tightly-packed array of 1-, 2- or 4-byte unsigned integer node Ids; the number of bytes is specified by [[bytesPerId]]. */
   bufferView: string;
 }
 
-/** Describes a contiguous array of bytes within the binary portion of the tile. */
-interface ImdlBufferView {
+/** Describes a contiguous array of bytes within the binary portion of the tile.
+ * @alpha
+ */
+export interface ImdlBufferView {
   /** The number of bytes in the array. */
   byteLength: number;
   /** The offset from the beginning of the binary portion of the tile data to the first byte in the array. */
@@ -334,19 +374,22 @@ interface ImdlBufferView {
 
 /** A top-level dictionary of resources of a particular type contained in an [[Imdl]] tile.
  * Each resource has a unique name by which it can be referred to by other contents of the tile.
+ * @alpha
  */
-interface ImdlDictionary<T> {
+export interface ImdlDictionary<T> {
   [key: string]: T | undefined;
 }
 
-/** Describes all of the geometry contained in the tile. */
-interface ImdlScene {
+/** Describes all of the geometry contained in the tile.
+ * @alpha
+ */
+export interface ImdlScene {
   /** The Ids of the elements of [[Imdl.nodes]] to be included in the scene. */
   nodes: string[];
 }
 
 /** Describes the top-level contents of a tile.
- * @internal
+ * @alpha
  */
 export interface Imdl {
   /** The Id of the ImdlScene in [[scenes]] that describes the tile's geometry. */
