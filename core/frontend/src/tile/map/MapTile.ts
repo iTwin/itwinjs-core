@@ -692,7 +692,7 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   protected override minimumVisibleFactor(): number {
-    //if minimumVisibleFactor is more than 0, it stops parents from loading when children are not ready, to fill in gaps
+    // if minimumVisibleFactor is more than 0, it stops parents from loading when children are not ready, to fill in gaps
     return 0.0;
   }
 
