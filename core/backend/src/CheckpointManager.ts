@@ -198,7 +198,7 @@ export class V2CheckpointManager {
       if (!v2props)
         throw new Error("no checkpoint");
     } catch (err: any) {
-      throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message} `);
+      throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
 
     try {
@@ -209,7 +209,7 @@ export class V2CheckpointManager {
       container.checkForChanges();
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
         const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
-          const stopwatch = new StopWatch(`[${container.containerId} /${dbName}]`, true);
+          const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
           const done = await prefetch.promise;
           Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
