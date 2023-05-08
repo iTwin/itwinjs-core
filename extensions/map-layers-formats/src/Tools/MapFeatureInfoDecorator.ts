@@ -183,7 +183,7 @@ export class MapFeatureInfoDecorator implements Decorator {
     return pixelSize * 0.25;
   }
 
-  public setState(state: MapFeatureInfoDataUpdate) {
+  public setState = (state: MapFeatureInfoDataUpdate) => {
 
     this._drapedStrings = undefined;
 
