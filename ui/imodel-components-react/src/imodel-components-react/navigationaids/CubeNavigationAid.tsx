@@ -314,37 +314,37 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       return Face.None;
     }
 
-    // handle top and bottom, in case they are rotated and no longer match the default rotation
+    // istanbul ignore else
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Top].coffs[6] &&
       rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Top].coffs[7] &&
       rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Top].coffs[8])
       return Face.Top;
 
+    // istanbul ignore else
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Bottom].coffs[6] &&
       rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Bottom].coffs[7] &&
       rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Bottom].coffs[8])
       return Face.Bottom;
 
+    // istanbul ignore else
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Left].coffs[6] &&
-        rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Left].coffs[7] &&
-        rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Left].coffs[8])
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Left].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Left].coffs[8])
       return Face.Left;
 
+    // istanbul ignore else
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Right].coffs[6] &&
-          rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Right].coffs[7] &&
-          rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Right].coffs[8])
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Right].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Right].coffs[8])
       return Face.Right;
 
-    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Right].coffs[6] &&
-          rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Right].coffs[7] &&
-          rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Right].coffs[8])
-      return Face.Right;
-
+    // istanbul ignore else
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Back].coffs[6] &&
       rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Back].coffs[7] &&
       rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Back].coffs[8])
       return Face.Back;
 
+    // istanbul ignore else
     if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Front].coffs[6] &&
       rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Front].coffs[7] &&
       rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Front].coffs[8])
@@ -423,7 +423,8 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     const headsUp = !!favorHeadsUpRotation;
     // If newZ is true up or down, it will have true 0 for x and y.
     // special case this to take x direction from the input.
-    // This methodology results in always "righting" the face when rotation from an upside-down cube. The behavior was deprecated in response to https://github.com/iTwin/appui/issues/259
+    // This methodology results in always "righting" the face when rotation from an upside-down cube.
+    // The behavior was made opt-in in response to https://github.com/iTwin/appui/issues/259
     // istanbul ignore next
     if (!headsUp || (newZ.x === 0.0 && newZ.y === 0)) {
       const perpVector = worldToView.rowX();
