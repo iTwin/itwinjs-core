@@ -146,208 +146,28 @@ We can extend functionality by adding, for example, adding some decorators repre
 First, we will query for all ceilings, walls, windows, etc, and hide them from the view.
 Then, we will query for all IoT devices, and add a decorator for each one.
 
-```ts
-// src/IotMarkerExtension.ts
-import { ExtensionHost, QueryRowFormat } from "@itwin/core-extension";
-import { SmartDeviceDecorator } from "./SmartDeviceDecorator";
+_IotMarkerExtension.ts:_
 
-export class IotMarkerExtension {
-  public static start = () => {
-    ExtensionHost.viewManager.onViewOpen.addOnce(async (vp) => {
-      vp.overrideDisplayStyle({
-        viewflags: {
-          visEdges: false,
-          shadows: false,
-        },
-      });
-
-      const categoriesToHide = [
-        "'Wall 2nd'",
-        "'Wall 1st'",
-        "'Dry Wall 2nd'",
-        "'Dry Wall 1st'",
-        "'Brick Exterior'",
-        "'WINDOWS 1ST'",
-        "'WINDOWS 2ND'",
-        "'Ceiling 1st'",
-        "'Ceiling 2nd'",
-        "'Callouts'",
-        "'light fixture'",
-        "'Roof'",
-      ];
-
-      const query = `SELECT ECInstanceId FROM Bis.Category WHERE CodeValue IN (${categoriesToHide.toString()})`;
-
-      const result = vp.iModel.query(query, undefined, {
-        rowFormat: QueryRowFormat.UseJsPropertyNames,
-      });
-
-      const categoryIds = [];
-      for await (const row of result) categoryIds.push(row.id);
-
-      vp.changeCategoryDisplay(categoryIds, false);
-
-      ExtensionHost.viewManager.addDecorator(new SmartDeviceDecorator(vp));
-    });
-  };
-}
+``` ts
+[[include:ExtensionSample-IotMarkerExtension.example-code]]
 ```
 
-```ts
-// src/SmartDeviceDecorator.ts
-import {
-  Decorator,
-  IModelConnection,
-  Marker,
-  QueryRowFormat,
-} from "@itwin/core-extension";
-import { SmartDeviceMarker } from "./SmartDeviceMarker";
+_SmartDeviceDecorator.ts:_
 
-export class SmartDeviceDecorator implements Decorator {
-  private _iModel: IModelConnection;
-  private _markerSet: Marker[];
-
-  constructor(vp: any) {
-    this._iModel = vp.iModel;
-    this._markerSet = [];
-    this._addMarkers();
-  }
-
-  private async _getSmartDeviceData() {
-    const query = `
-      SELECT  SmartDeviceId,
-              SmartDeviceType,
-              ECInstanceId,
-              Origin
-              FROM DgnCustomItemTypes_HouseSchema.SmartDevice
-              WHERE Origin IS NOT NULL
-    `;
-
-    const results = this._iModel.query(query, undefined, {
-      rowFormat: QueryRowFormat.UseJsPropertyNames,
-    });
-
-    const values = [];
-    for await (const row of results) values.push(row);
-    return values;
-  }
-
-  private async _addMarkers() {
-    const values = await this._getSmartDeviceData();
-
-    values.forEach((value) => {
-      const smartDeviceMarker = new SmartDeviceMarker(
-        { x: value.origin.x, y: value.origin.y, z: value.origin.z },
-        { x: 40, y: 40 },
-        value.smartDeviceId,
-        value.smartDeviceType,
-        value.id
-      );
-
-      this._markerSet.push(smartDeviceMarker);
-    });
-  }
-
-  public decorate(context: any): void {
-    this._markerSet.forEach((marker) => {
-      marker.addDecoration(context);
-    });
-  }
-}
+``` ts
+[[include:ExtensionSample-SmartDeviceDecorator.example-code]]
 ```
 
-```ts
-// src/SmartDeviceMarker.ts
-import {
-  Marker,
-  BeButtonEvent,
-  ExtensionHost,
-  StandardViewId,
-} from "@itwin/core-extension";
-import { XYAndZ, XAndY } from "@itwin/core-geometry";
+_SmartDeviceMarker.ts:_
 
-import Bed from "../assets/Bed.png";
-import DishWasher from "../assets/DishWasher.png";
-import Garage from "../assets/Garage.png";
-import Jacuzzi from "../assets/Jacuzzi.png";
-import Light from "../assets/Light.png";
-import Lock from "../assets/Lock.png";
-import Oven from "../assets/Oven.png";
-import Speaker from "../assets/Speaker.png";
-import Thermostat from "../assets/Thermostat.png";
-import TV from "../assets/TV.png";
-import Washer from "../assets/Washer.png";
-
-const getIcon = (iotType: string) => {
-  switch (iotType) {
-    case "Bed":
-      return Bed;
-    case "DishWasher":
-      return DishWasher;
-    case "Garage":
-      return Garage;
-    case "Jacuzzi":
-      return Jacuzzi;
-    case "Light":
-      return Light;
-    case "Lock":
-      return Lock;
-    case "Oven":
-      return Oven;
-    case "Speaker":
-      return Speaker;
-    case "Thermostat":
-      return Thermostat;
-    case "TV":
-      return TV;
-    case "Washer":
-      return Washer;
-    default:
-      return "";
-  }
-};
-
-export class SmartDeviceMarker extends Marker {
-  private _elementId: string;
-
-  constructor(
-    location: XYAndZ,
-    size: XAndY,
-    _smartDeviceId: string,
-    smartDeviceType: string,
-    elementId: string
-  ) {
-    super(location, size);
-    this._elementId = elementId;
-
-    const image = new Image();
-    image.src = getIcon(smartDeviceType);
-    this.setImage(image);
-  }
-
-  public override onMouseButton(_ev: BeButtonEvent): boolean {
-    if (!_ev.isDown) return true;
-    const vp = ExtensionHost.viewManager.selectedView;
-    if (!vp) return true;
-    vp.zoomToElements(this._elementId, {
-      animateFrustumChange: true,
-      standardViewId: StandardViewId.RightIso,
-    });
-    return true;
-  }
-}
+``` ts
+[[include:ExtensionSample-SmartDeviceMarker.example-code]]
 ```
 
-```ts
-// src/index.ts
+_index.ts:_
 
-import { IotMarkerExtension } from "./IotMarkerExtension";
-
-export default function main() {
-  console.log("Hello from Extension!");
-  IotMarkerExtension.start();
-  console.log("Custom Markers Registered!");
-}
+``` ts
+[[include:ExtensionSample-main.example-code]]
 ```
 
 The final file structure should look something like this:
