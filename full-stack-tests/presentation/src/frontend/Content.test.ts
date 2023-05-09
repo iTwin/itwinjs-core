@@ -404,7 +404,7 @@ describe("Content", () => {
     it("creates guid fields", async function () {
       const guid = Guid.createValue();
       let instanceKey: InstanceKey;
-      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), (db) => {
+      const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
         instanceKey = insertDocumentPartition(db, "Test", undefined, guid);
       });
 
