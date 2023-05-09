@@ -9,9 +9,10 @@
 import { StructuredCloneableObject, UintArray } from "@itwin/core-bentley";
 import { XYAndZ } from "@itwin/core-geometry";
 import {
-  ColorDefProps, FeatureIndexType, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
+  ColorDefProps, FeatureIndexType, FillFlags, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
 } from "@itwin/core-common";
 import { EdgeTable } from "../render/primitives/EdgeParams";
+import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceParams";
 
 /*
 export type ImdlTextureMapping = Omit<TextureMapping, "texture"> & {
@@ -105,9 +106,41 @@ export namespace ImdlModel {
     indexed?: IndexedEdgeParams;
   }
 
+  export interface SurfaceMaterialParams {
+    alpha?: number;
+    diffuse?: {
+      color?: ColorDefProps;
+      weight?: number;
+    };
+    specular?: {
+      color?: ColorDefProps;
+      weight?: number;
+      exponent?: number;
+    };
+  }
+
+  export interface SurfaceRenderMaterial {
+    isAtlas: false;
+    material: string | SurfaceMaterialParams;
+  }
+
+  export type SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas;
+
+  export interface SurfaceParams {
+    type: SurfaceType;
+    indices: Uint8Array;
+    fillFlags: FillFlags;
+    hasBakedLighting: boolean;
+    material: SurfaceMaterial;
+    textureMapping?: {
+      texture: string;
+      alwaysDisplayed: boolean;
+    };
+  };
+
   export interface MeshParams {
     vertices: VertexTable;
-    // ###TODO surface: SurfaceParams
+    surface: SurfaceParams
     edges?: EdgeParams;
     isPlanar: boolean;
     // ###TODO auxChannels?: AuxChannelTable;
