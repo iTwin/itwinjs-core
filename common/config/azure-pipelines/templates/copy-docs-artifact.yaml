@@ -30,11 +30,12 @@ parameters:
     type: stepList
     default: []
 
-  # if specifying a build which always publish released docs, regardles of branch (i.e. release/* or publish/*)
-  # set to false.
-  - name: useBranch
-    type: boolean
-    default: true
+  # If specifying a pipeline which publishes released docs regardles of branch (i.e. release/* or publish/*)
+  # set a tag on successful docs artifact publish and specify.
+  - name: buildTag
+    type: string
+    default: ""
+
 steps:
   - ${{ if parameters.useCurrentDocsArtifact }}:
       - download: current
@@ -48,13 +49,16 @@ steps:
           buildType: specific
           project: ${{ parameters.projectId }}
           pipeline: ${{ parameters.pipelineId }}
-          ${{ if parameters.useBranch }}:
-            branchName: ${{ parameters.defaultBranch }}
-            buildVersionToDownload: latestFromBranch
-          ${{ else }}:
-            buildVersionToDownload: latest
+          allowPartiallySucceededBuilds: true
+          allowFailedBuilds: true
           artifactName: ${{ parameters.artifactName }}
           targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
+          ${{ if parameters.tag }}:
+            buildVersionToDownload: latest
+            tags: ${{parameters.tag}}
+          ${{ else }}:
+            branchName: ${{ parameters.defaultBranch }}
+            buildVersionToDownload: latestFromBranch
 
   - ${{ if eq(length(parameters.stagingSteps), 0) }}:
       # Run if no staging steps are provided
