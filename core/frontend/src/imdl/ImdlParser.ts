@@ -8,7 +8,7 @@
 
 import { ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import {
-  FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader,
+  FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import { ImdlDocument } from "./ImdlSchema";
@@ -20,6 +20,7 @@ export interface ImdlParserOptions {
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   timeline?: ImdlTimeline;
+  isLeaf?: boolean;
 }
 
 /** Header preceding "glTF" data in iMdl tile. */
@@ -72,67 +73,78 @@ class GltfHeader extends TileHeader {
 type OptionalDocumentProperties = "rtcCenter" | "animationNodes";
 type Document = Required<Omit<ImdlDocument, OptionalDocumentProperties>> & Pick<ImdlDocument, OptionalDocumentProperties>;
 
-export class ImdlParser {
+export type ImdlParseError = Exclude<TileReadStatus, TileReadStatus.Success>;
+
+class ImdlParser {
   private readonly _document: Document;
   private readonly _binaryData: Uint8Array;
   private readonly _options: ImdlParserOptions;
-  private readonly _hasMultiModelFeatureTable: boolean;
+  private readonly _featureTable: Imdl.FeatureTable;
 
-  public static create(options: ImdlParserOptions): ImdlParser | undefined {
-    const stream = options.stream;
-    const imdlHeader = new ImdlHeader(stream);
-    if (!imdlHeader.isValid || !imdlHeader.isReadableVersion)
-      return undefined;
-
-    // Skip the feature table
-    const startPos = stream.curPos;
-    const header = FeatureTableHeader.readFrom(stream);
-    if (!header)
-      return undefined;
-
-    stream.curPos = startPos + header.length;
-
-    // A glTF header follows the feature table
-    const gltfHeader = new GltfHeader(stream);
-    if (!gltfHeader.isValid)
-      return undefined;
-
-    stream.curPos = gltfHeader.scenePosition;
-    const sceneStrData = stream.nextBytes(gltfHeader.sceneStrLength);
-    const sceneStr = utf8ToString(sceneStrData);
-    if (!sceneStr)
-      return undefined;
-
-    try {
-      const sceneValue = JSON.parse(sceneStr);
-      const imdlDoc: Document = {
-        scene: JsonUtils.asString(sceneValue.scene),
-        scenes: JsonUtils.asArray(sceneValue.scenes),
-        animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
-        bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? { },
-        meshes: JsonUtils.asObject(sceneValue.meshes),
-        nodes: JsonUtils.asObject(sceneValue.nodes) ?? { },
-        materials: JsonUtils.asObject(sceneValue.materials) ?? { },
-        renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? { },
-        namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? { },
-        patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? { },
-        rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
-      };
-
-      if (!imdlDoc.meshes)
-        return undefined;
-
-      const binaryData = new Uint8Array(stream.arrayBuffer, gltfHeader.binaryPosition);
-      return new ImdlParser(imdlDoc, binaryData, options, 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable));
-    } catch (_) {
-      return undefined;
-    }
-  }
-
-  private constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, hasMultiModelFeatureTable: boolean) {
+  public constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, featureTable: Imdl.FeatureTable) {
     this._document = doc;
     this._binaryData = binaryData;
     this._options = options;
-    this._hasMultiModelFeatureTable = hasMultiModelFeatureTable;
+    this._featureTable = featureTable;
+  }
+
+  public parse(): Imdl.Document | ImdlParseError {
+    // ###TODO caller is responsible for decodeTileContentDescription, leafness, etc.
+    return TileReadStatus.InvalidTileData; // ###TODO
+  }
+}
+
+function readFeatureTable(stream: ByteStream): Imdl.FeatureTable | undefined {
+  return undefined; // ###TODO
+}
+
+export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
+  const stream = options.stream;
+  const imdlHeader = new ImdlHeader(stream);
+  if (!imdlHeader.isValid)
+    return TileReadStatus.InvalidHeader;
+  else if (!imdlHeader.isReadableVersion)
+    return TileReadStatus.NewerMajorVersion;
+
+  // Read the feature table
+  const featureTable = readFeatureTable(stream);
+  if (!featureTable)
+    return TileReadStatus.InvalidFeatureTable;
+
+  // A glTF header follows the feature table
+  const gltfHeader = new GltfHeader(stream);
+  if (!gltfHeader.isValid)
+    return TileReadStatus.InvalidTileData;
+
+  stream.curPos = gltfHeader.scenePosition;
+  const sceneStrData = stream.nextBytes(gltfHeader.sceneStrLength);
+  const sceneStr = utf8ToString(sceneStrData);
+  if (!sceneStr)
+    return TileReadStatus.InvalidScene;
+
+  try {
+    const sceneValue = JSON.parse(sceneStr);
+    const imdlDoc: Document = {
+      scene: JsonUtils.asString(sceneValue.scene),
+      scenes: JsonUtils.asArray(sceneValue.scenes),
+      animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
+      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? { },
+      meshes: JsonUtils.asObject(sceneValue.meshes),
+      nodes: JsonUtils.asObject(sceneValue.nodes) ?? { },
+      materials: JsonUtils.asObject(sceneValue.materials) ?? { },
+      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? { },
+      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? { },
+      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? { },
+      rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
+    };
+
+    if (!imdlDoc.meshes)
+      return TileReadStatus.InvalidTileData;
+
+    const binaryData = new Uint8Array(stream.arrayBuffer, gltfHeader.binaryPosition);
+    const parser = new ImdlParser(imdlDoc, binaryData, options, featureTable);
+    return parser.parse();
+  } catch (_) {
+    return TileReadStatus.InvalidTileData;
   }
 }
