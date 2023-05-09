@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, using } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

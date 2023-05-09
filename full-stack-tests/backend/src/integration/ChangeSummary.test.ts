@@ -437,7 +437,7 @@ describe("ChangeSummary", () => {
 
     // Validate that the second change summary captures the change to the parent correctly
     try {
-      const changeSummaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModelId, range: { first: 0 }});
+      const changeSummaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId: iModel.iTwinId, iModelId, range: { first: 0 }});
       assert.strictEqual(2, changeSummaryIds.length);
 
       ChangeSummaryManager.attachChangeCache(iModel);
