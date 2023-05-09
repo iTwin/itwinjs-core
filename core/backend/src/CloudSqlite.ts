@@ -16,7 +16,6 @@ import { IModelJsFs } from "./IModelJsFs";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
 
-
 // spell:ignore logmsg httpcode
 
 /**
