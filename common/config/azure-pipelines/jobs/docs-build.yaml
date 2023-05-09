@@ -26,7 +26,7 @@ parameters:
   - name: useCurrentTransformerDocsArtifact
     type: boolean
     default: false
-  - name: useAuthClientsDocsArtifact
+  - name: useCurrentAuthClientsDocsArtifact
     type: boolean
     default: false
   - name: shouldPublish
@@ -89,7 +89,7 @@ jobs:
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
           useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
           useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
-          useAuthClientsDocsArtifact: ${{parameters.useAuthClientsDocsArtifact}}
+          useCurrentAuthClientsDocsArtifact: ${{parameters.useCurrentAuthClientsDocsArtifact}}
 
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@5.0.x --legacy-peer-deps
