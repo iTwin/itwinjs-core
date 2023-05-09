@@ -29,6 +29,15 @@ export type StructuredCloneableObject = { [key: string]: StructuredCloneable | u
  */
 export type StructuredCloneable = StructuredCloneableCollection | StructuredCloneableObject | StructuredCloneablePrimitive;
 
+/** Interface that collects objects that can be [transfered](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) when using
+ * structured cloning.
+ * @see [[ToStructureCloneable.toStructuredCloneable]].
+ * @alpha
+ */
+export interface Transferables extends Iterable<Transferable> {
+  add(transferable: Transferable): void;
+}
+
 /** Interface adopted by an object that can produce a [[StructuredCloneable]] representation of itself.
  * @alpha
  */
@@ -39,5 +48,5 @@ export interface ToStructuredCloneable {
    * @param transferables An array of transferable objects to be transferred instead of copied.
    * @returns the cloneable representation.
    */
-  toStructuredCloneable(transferables: Transferable[]): StructuredCloneable;
+  toStructuredCloneable(transferables: Transferables): StructuredCloneable;
 }

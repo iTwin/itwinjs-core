@@ -6,7 +6,9 @@
  * @module Rendering
  */
 
-import { assert, StructuredCloneableObject, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
+import {
+  assert, StructuredCloneableObject, Transferables, Uint16ArrayBuilder, UintArray, UintArrayBuilder,
+} from "@itwin/core-bentley";
 import {
   IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -125,10 +127,10 @@ export namespace RealityMeshParams {
   }
 
   /** @alpha */
-  export function toStructuredCloneable(params: RealityMeshParams, transferables: Transferable[]): CloneableRealityMeshParams {
-    transferables.push(params.indices.buffer);
+  export function toStructuredCloneable(params: RealityMeshParams, transferables: Transferables): CloneableRealityMeshParams {
+    transferables.add(params.indices.buffer);
     if (params.normals)
-      transferables.push(params.normals.buffer);
+      transferables.add(params.normals.buffer);
 
     return {
       positions: QPoint3dBuffer.toStructuredCloneable(params.positions, transferables),

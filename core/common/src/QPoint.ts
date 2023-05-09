@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { assert, Uint16ArrayBuilder, StructuredCloneableObject } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder, StructuredCloneableObject, Transferables } from "@itwin/core-bentley";
 import {
   Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -152,7 +152,7 @@ export class QParams2d {
   }
 
   /** @alpha */
-  public toStructuredCloneable(_transferables: Transferable[]): CloneableQParams2d {
+  public toStructuredCloneable(_transferables: Transferables): CloneableQParams2d {
     return {
       origin: { x: this.origin.x, y: this.origin.y },
       scale: { x: this.scale.x, y: this.scale.y },
@@ -310,8 +310,8 @@ export namespace QPoint2dBuffer {
   }
 
   /** @alpha */
-  export function toStructuredCloneable(buffer: QPoint2dBuffer, transferables: Transferable[]): CloneableQPoint2dBuffer {
-    transferables.push(buffer.points.buffer);
+  export function toStructuredCloneable(buffer: QPoint2dBuffer, transferables: Transferables): CloneableQPoint2dBuffer {
+    transferables.add(buffer.points.buffer);
     return {
       params: buffer.params.toStructuredCloneable(transferables),
       points: buffer.points,
@@ -560,7 +560,7 @@ export class QParams3d {
   }
 
   /** @alpha */
-  public toStructuredCloneable(_tranferables: Transferable[]): CloneableQParams3d {
+  public toStructuredCloneable(_tranferables: Transferables): CloneableQParams3d {
     return {
       origin: { x: this.origin.x, y: this.origin.y, z: this.origin.z },
       scale: { x: this.scale.x, y: this.scale.y, z: this.scale.z },
@@ -758,8 +758,8 @@ export namespace QPoint3dBuffer {
   }
 
   /** @alpha */
-  export function toStructuredCloneable(buffer: QPoint3dBuffer, transferables: Transferable[]): CloneableQPoint3dBuffer {
-    transferables.push(buffer.points.buffer);
+  export function toStructuredCloneable(buffer: QPoint3dBuffer, transferables: Transferables): CloneableQPoint3dBuffer {
+    transferables.add(buffer.points.buffer);
     return {
       params: buffer.params.toStructuredCloneable(transferables),
       points: buffer.points,

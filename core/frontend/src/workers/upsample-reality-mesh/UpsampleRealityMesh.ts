@@ -10,7 +10,7 @@ import { CloneableUpsampledRealityMeshParams, UpsampledRealityMeshParams } from 
 
 onmessage = function(e) {
   const upsampled = upsampleRealityMeshParams(e.data);
-  const transfer: Transferable[] = [];
+  const transfer = new Set<Transferable>();
   const mesh = RealityMeshParams.toStructuredCloneable(upsampled.mesh, transfer);
   const result: CloneableUpsampledRealityMeshParams = {
     mesh,
@@ -20,7 +20,7 @@ onmessage = function(e) {
     },
   };
 
-  postMessage(result, transfer as any); // ###TODO compiler error on second arg because it thinks Window not worker...
+  postMessage(result, Array.from(transfer) as any); // ###TODO compiler error on second arg because it thinks Window not worker...
 };
 
 export interface UpsampleRealityMeshArgs {
