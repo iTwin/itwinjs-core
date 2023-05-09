@@ -31,7 +31,7 @@ export namespace AzuriteTest {
   };
 
   export namespace Sqlite {
-    export type TestContainer = CloudSqlite.CloudContainer & { isPublic: boolean };
+    export type TestContainer = CloudSqlite.CloudContainer;
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, requestWriteAccess: boolean) => {
       container.accessToken = await makeSasToken(container.containerId, requestWriteAccess);
@@ -79,9 +79,7 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean }
 
     export const makeContainer = (arg: TestContainerProps): TestContainer => {
-      const cont = CloudSqlite.createCloudContainer({ containerId: arg.containerId, logId: arg.logId, writeable: true, baseUri, storageType: "azure", accessToken: "" }) as TestContainer;
-      cont.isPublic = arg.isPublic === true;
-      return cont;
+      return CloudSqlite.createCloudContainer({ ...arg, writeable: true, baseUri, storageType: "azure", accessToken: "" });
     };
 
     export const makeContainers = (props: TestContainerProps[]): TestContainer[] => {
