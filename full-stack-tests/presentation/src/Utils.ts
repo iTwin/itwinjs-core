@@ -6,9 +6,10 @@
 import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
-import { LocalFileName } from "@itwin/core-common";
+import { BisCodeSpec, Code, IModel, LocalFileName } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
+import { GuidString } from "@itwin/core-bentley";
 
 /**
  * Simplified type for `sinon.SinonSpy`.
@@ -95,6 +96,19 @@ export async function buildTestIModelConnection(name: string, cb: (db: IModelDb)
   const { db, fileName } = await buildTestIModelDb(name, cb);
   db.close();
   return SnapshotConnection.openFile(fileName);
+}
+
+/** Insert a document partition element into created imodel. Return created element's className and Id. */
+export function insertDocumentPartition(db: IModelDb, code: string, label?: string, federationGuid?: GuidString) {
+  const id = db.elements.insertElement({
+    classFullName: "BisCore:DocumentPartition",
+    model: IModel.repositoryModelId,
+    parent: { relClassName: "BisCore:SubjectOwnsPartitionElements", id: IModel.rootSubjectId },
+    code: new Code({ spec: db.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id, scope: IModel.rootSubjectId, value: code }),
+    userLabel: label,
+    federationGuid,
+  });
+  return { className: "BisCore:DocumentPartition", id };
 }
 
 function setupOutputFileLocation(fileName: string): LocalFileName {

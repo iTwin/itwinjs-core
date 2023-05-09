@@ -45,8 +45,8 @@ describe("Checkpoints", () => {
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
-    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...AzuriteTest.storage });
+    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);
+    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
@@ -65,6 +65,7 @@ describe("Checkpoints", () => {
     process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
     IModelJsFs.removeSync(cloudcacheDir);
 
+    // Props for daemon
     cacheProps = {
       rootDir: cloudcacheDir,
       name: V2CheckpointManager.cloudCacheName,
