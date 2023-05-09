@@ -541,7 +541,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
     //    const range = RegionOps.curveArrayRange(allPrimitives);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
     this.graph = graph;
     this.faceAreaFunction = faceAreaFromCurvedEdgeData;
   }

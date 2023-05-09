@@ -68,17 +68,17 @@ export function getFieldsByLabel(rootFields: Field[], label: string): Field[] {
 }
 
 function createValidIModelFileName(imodelName: string) {
-  return sanitize(imodelName.replace(" ", "-")).toLocaleLowerCase();
+  return sanitize(imodelName.replace(/[ ]+/g, "-").replaceAll("`", "").replaceAll("'", "")).toLocaleLowerCase();
 }
 
 /**
  * Create an imodel with given name and invoke a callback to fill it with data required for a test.
  */
-export function buildTestIModelDb(name: string, cb: (db: IModelDb) => void) {
+export async function buildTestIModelDb(name: string, cb: (db: IModelDb) => Promise<void>) {
   const outputFile = setupOutputFileLocation(createValidIModelFileName(name));
   const db = SnapshotDb.createEmpty(outputFile, { rootSubject: { name } });
   try {
-    cb(db);
+    await cb(db);
   } catch (e) {
     db.close();
     throw e;
@@ -91,8 +91,8 @@ export function buildTestIModelDb(name: string, cb: (db: IModelDb) => void) {
  * Create an imodel with given name and invoke a callback to fill it with data required for a test. Return a
  * frontend connection to the imodel.
  */
-export async function buildTestIModelConnection(name: string, cb: (db: IModelDb) => void): Promise<IModelConnection> {
-  const { db, fileName } = buildTestIModelDb(name, cb);
+export async function buildTestIModelConnection(name: string, cb: (db: IModelDb) => Promise<void>): Promise<IModelConnection> {
+  const { db, fileName } = await buildTestIModelDb(name, cb);
   db.close();
   return SnapshotConnection.openFile(fileName);
 }
@@ -101,9 +101,22 @@ function setupOutputFileLocation(fileName: string): LocalFileName {
   const testOutputDir = path.join(__dirname, ".imodels");
   !IModelJsFs.existsSync(testOutputDir) && IModelJsFs.mkdirSync(testOutputDir);
 
-  const outputFile = path.join(testOutputDir, `${fileName}.bim`);
-  IModelJsFs.existsSync(outputFile) && IModelJsFs.unlinkSync(outputFile);
-  return outputFile;
+  const ext = ".bim";
+  let allowedFileNameLength: number | undefined;
+  if (process.platform === "win32") {
+    allowedFileNameLength = 260 - 12 - 1 - ext.length - (testOutputDir.length + 1);
+  }
+  if (allowedFileNameLength) {
+    if (allowedFileNameLength <= 0)
+      throw new Error("Trying to create an iModel too deep in the directory structure, file name is going to be too long");
+
+    const pieceLength = (allowedFileNameLength - 3) / 2;
+    fileName = `${fileName.slice(0, pieceLength)}...${fileName.slice(fileName.length - pieceLength)}`;
+  }
+  const outputFilePath = path.join(testOutputDir, `${fileName}${ext}`);
+
+  IModelJsFs.existsSync(outputFilePath) && IModelJsFs.unlinkSync(outputFilePath);
+  return outputFilePath;
 }
 
 /** Get path to a directory that is safe to use for read-write scenarios when running the tests */
