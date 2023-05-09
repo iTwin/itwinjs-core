@@ -290,8 +290,7 @@ describe("Content", () => {
           ruleType: RuleTypes.Content,
           specifications: [{
             specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-            classes: { schemaName: "BisCore", classNames: ["Element"] },
-            handleInstancesPolymorphically: true,
+            classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
             instanceFilter: `this.ECInstanceId = 1`,
           }],
         }],
@@ -328,8 +327,7 @@ describe("Content", () => {
           ruleType: RuleTypes.Content,
           specifications: [{
             specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-            classes: { schemaName: "BisCore", classNames: ["Element"] },
-            handleInstancesPolymorphically: true,
+            classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
             instanceFilter: `this.ECInstanceId = 1`,
           }],
         }],
@@ -370,8 +368,7 @@ describe("Content", () => {
           ruleType: RuleTypes.Content,
           specifications: [{
             specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-            classes: { schemaName: "BisCore", classNames: ["Element"] },
-            handleInstancesPolymorphically: true,
+            classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
             instanceFilter: `this.ECInstanceId = 1`,
           }],
         }, {
@@ -510,8 +507,8 @@ describe("Content", () => {
             classes: {
               schemaName,
               classNames: [className],
+              arePolymorphic: true,
             },
-            handleInstancesPolymorphically: true,
             handlePropertiesPolymorphically: true,
           }],
         }],
