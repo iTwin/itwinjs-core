@@ -67,6 +67,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -98,6 +99,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -129,6 +131,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -160,6 +163,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -191,6 +195,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -222,6 +227,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -253,6 +259,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -284,6 +291,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -315,6 +323,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -346,6 +355,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -377,6 +387,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -408,6 +419,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:MyClass",
         label: "My Class",
+        arePolymorphic: true,
       };
       const property: Property = {
         property: {
@@ -439,6 +451,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:PrimaryClass",
         label: "Primary Class",
+        arePolymorphic: true,
       };
       const propertyClass: ClassInfo = {
         id: createRandomId(),
@@ -513,6 +526,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:PrimaryClass",
         label: "Primary Class",
+        arePolymorphic: true,
       };
       const propertyClass: ClassInfo = {
         id: createRandomId(),
@@ -587,6 +601,7 @@ describe("RulesetsFactory", () => {
         id: createRandomId(),
         name: "MySchema:SelectClass",
         label: "Select Class",
+        arePolymorphic: true,
       };
       const intermediateClass: ClassInfo = {
         id: createRandomId(),
