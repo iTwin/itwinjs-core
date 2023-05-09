@@ -53,9 +53,9 @@ steps:
           allowFailedBuilds: true
           artifactName: ${{ parameters.artifactName }}
           targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-          ${{ if parameters.tag }}:
+          ${{ if parameters.buildTag }}:
             buildVersionToDownload: latest
-            tags: ${{parameters.tag}}
+            tags: ${{parameters.buildTag}}
           ${{ else }}:
             branchName: ${{ parameters.defaultBranch }}
             buildVersionToDownload: latestFromBranch

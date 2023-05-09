@@ -84,7 +84,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 6189 # iTwin.js/clients/iTwin.auth-clients.publish build
       artifactName: iTwin-Auth-Clients Docs
-      useTag: hasDocs
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
 
   # The .updated.json is cached to track when the docs were last updated
