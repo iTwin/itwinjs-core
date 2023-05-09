@@ -48,11 +48,11 @@ steps:
           buildType: specific
           project: ${{ parameters.projectId }}
           pipeline: ${{ parameters.pipelineId }}
-          - ${{ if parameters.useBranch }}:
-              branchName: ${{ parameters.defaultBranch }}
-              buildVersionToDownload: latest
-          - ${{ else }}:
-              buildVersionToDownload: latestFromBranch
+          ${{ if parameters.useBranch }}:
+            branchName: ${{ parameters.defaultBranch }}
+            buildVersionToDownload: latest
+          ${{ else }}:
+            buildVersionToDownload: latestFromBranch
           artifactName: ${{ parameters.artifactName }}
           targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
 
