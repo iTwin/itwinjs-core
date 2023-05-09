@@ -24,28 +24,18 @@
         "cat 2",
         "vital2"
     ],
-    "cloud/accounts": [
-        {
-            "name": "gcs/data",
-            "accessName": "devstoreaccount1",
-            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
-        },
-        {
-            "name": "other/data",
-            "accessName": "devstoreaccount1",
-            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
-        }
-    ],
     "cloud/containers": [
         {
             "name": "gcs/container",
             "containerId": "gcs",
-            "accountName": "gcs/data"
+            "baseUri": "http://127.0.0.1:10000/gcs-data",
+            "storageType": "azure"
         },
         {
             "name": "fonts/public",
             "containerId": "fonts",
-            "accountName": ""
+            "baseUri": "http://127.0.0.1:10000/other/data",
+            "storageType": "azure"
         }
     ],
     "workspace/databases": [

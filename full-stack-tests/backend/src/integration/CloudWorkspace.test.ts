@@ -23,7 +23,6 @@ describe("Cloud workspace containers", () => {
     const testDbName = "testDb";
     const containerId = "test-1-2-3";
     const containerDict = {
-      "cloudSqlite/accountProps": CloudSqliteTest.storage,
       "cloudSqlite/containerId": containerId,
     };
 
@@ -44,7 +43,7 @@ describe("Cloud workspace containers", () => {
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
     await initializeContainer(containerId);
-    const wsCont1 = workspace1.getContainer({ containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") }, CloudSqliteTest.storage);
+    const wsCont1 = workspace1.getContainer({ containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl"), baseUri: CloudSqliteTest.baseUri, storageType: "azure" });
 
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
@@ -52,8 +51,6 @@ describe("Cloud workspace containers", () => {
         const wsDbEdit = new EditableWorkspaceDb({ dbName: testDbName }, wsCont1);
         try {
           await wsDbEdit.createDb(version);
-          const account1 = settings.getObject<CloudSqlite.AccountAccessProps>("cloudSqlite/accountProps")!;
-          expect(account1).deep.equals(CloudSqliteTest.storage);
           const contain1 = settings.getString("cloudSqlite/containerId")!;
           expect(contain1).equals(containerId);
 
@@ -75,7 +72,7 @@ describe("Cloud workspace containers", () => {
 
     expect(wsCont1.cloudContainer?.hasWriteLock).false;
 
-    const wsCont2 = workspace2.getContainer({ containerId, accessToken: CloudSqliteTest.makeSasToken(containerId, "rl") }, CloudSqliteTest.storage);
+    const wsCont2 = workspace2.getContainer({ containerId, accessToken: CloudSqliteTest.makeSasToken(containerId, "rl"), baseUri: CloudSqliteTest.baseUri, storageType: "azure" });
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);
 
@@ -120,17 +117,11 @@ describe("Cloud workspace containers", () => {
     workspace2.close();
 
     const dict = {
-      "cloud/accounts": [
-        {
-          name: "test/account",
-          accessName: "devstoreaccount1",
-          storageType: "azure?emulator=127.0.0.1:10000&sas=1",
-        },
-      ],
       "cloud/containers": [
         {
           name: "test/container1",
-          accountName: "test/account",
+          baseUri: "http://127.0.0.1:10000/devstoreaccount1",
+          storageType: "azure",
           containerId,
         },
       ],
@@ -145,9 +136,8 @@ describe("Cloud workspace containers", () => {
     };
     const workspace3 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace3"), testCloudCache: makeCloudCache("test3") });
     workspace3.settings.addDictionary("testDict", SettingsPriority.application, dict);
-    const db = await workspace3.getWorkspaceDb("test/test1", async (props, account) => {
+    const db = await workspace3.getWorkspaceDb("test/test1", async (props) => {
       expect(props.containerId).equal(containerId);
-      expect(account.accessName).equal("devstoreaccount1");
       return CloudSqliteTest.makeSasToken(props.containerId, "r");
     });
     expect(db.dbFileName).equal("testDb:1.2.4");
