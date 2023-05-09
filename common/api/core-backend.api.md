@@ -423,19 +423,13 @@ export namespace BlobContainer {
     let service: BlobContainer.ContainerService | undefined;
     export interface AccessContainerProps {
         // (undocumented)
-        address: Address;
+        address: UriAndId;
         // (undocumented)
         userToken: UserToken;
     }
-    export interface Address {
-        // (undocumented)
-        id: ContainerId;
-        // (undocumented)
-        uri: string;
-    }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<Address>;
+        create(props: CreateNewContainerProps): Promise<UriAndId>;
         delete(props: AccessContainerProps): Promise<void>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
     }
@@ -468,6 +462,12 @@ export namespace BlobContainer {
         provider: Provider;
         scope: Scope;
         token: ContainerToken;
+    }
+    export interface UriAndId {
+        // (undocumented)
+        baseUri: string;
+        // (undocumented)
+        id: ContainerId;
     }
     export type UserToken = AccessToken;
 }
