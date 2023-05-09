@@ -14,7 +14,6 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
-import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
