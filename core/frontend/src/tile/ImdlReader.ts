@@ -30,26 +30,8 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
 import {
-  ImdlColorDef,
-  ImdlTextureMapping,
-  ImdlNamedTexture,
-  ImdlDisplayParams,
-  ImdlRenderMaterial,
-  ImdlPrimitive,
-  ImdlSegmentEdges,
-  ImdlSilhouetteEdges,
-  ImdlIndexedEdges,
-  ImdlMeshEdges,
-  ImdlPolyline,
-  ImdlAreaPattern,
-  ImdlMeshPrimitive,
-  AnyImdlPrimitive,
-  ImdlMesh,
-  ImdlAreaPatternSymbol,
-  ImdlAnimationNodes,
-  ImdlBufferView,
-  ImdlDictionary,
-  Imdl,
+  AnyImdlPrimitive, ImdlAnimationNodes, ImdlAreaPattern, ImdlAreaPatternSymbol, ImdlBufferView, ImdlColorDef, ImdlDictionary, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges,
+  ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlPrimitive, ImdlRenderMaterial, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "../imdl/ImdlSchema";
 import { IModelTileContent } from "./internal";
 
@@ -241,7 +223,7 @@ export class ImdlReader {
 
     try {
       const sceneValue = JSON.parse(sceneStr);
-      const imdl: Imdl = {
+      const imdl: ImdlDocument = {
         scene: JsonUtils.asString(sceneValue.scene),
         scenes: JsonUtils.asArray(sceneValue.scenes),
         animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
@@ -261,7 +243,7 @@ export class ImdlReader {
     }
   }
 
-  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs, hasMultiModelFeatureTable: boolean) {
+  private constructor(imdl: ImdlDocument, binaryPosition: number, args: ImdlReaderCreateArgs, hasMultiModelFeatureTable: boolean) {
     this._buffer = args.stream;
     this._binaryData = new Uint8Array(this._buffer.arrayBuffer, binaryPosition);
     this._hasMultiModelFeatureTable = hasMultiModelFeatureTable;

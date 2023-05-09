@@ -391,7 +391,7 @@ export interface ImdlScene {
 /** Describes the top-level contents of a tile.
  * @alpha
  */
-export interface Imdl {
+export interface ImdlDocument {
   /** The Id of the ImdlScene in [[scenes]] that describes the tile's geometry. */
   scene: string;
   /** The collection of ImdlScenes included in the tile. */
