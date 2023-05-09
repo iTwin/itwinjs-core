@@ -138,7 +138,7 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
       const typename = getStandardTypeName(fieldType);
       propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-      return new MapFeatureInfoRecord (propertyValue, {name: fieldName, displayLabel: fieldName,  typename});
+      return new MapFeatureInfoRecord(propertyValue, { name: fieldName, displayLabel: fieldName, typename });
     };
 
     const readRingsOrPaths = responseObj?.geometryType === "esriGeometryPolyline" || responseObj?.geometryType === "esriGeometryPolygon";
@@ -150,27 +150,27 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
       const subLayerInfo: MapSubLayerFeatureInfo = {
         subLayerName: this._layerMetadata.name,
         displayFieldName: this._layerMetadata.name,
-        records : [],
+        records: [],
       };
 
       for (const [key, value] of Object.entries(feature.attributes))
-        subLayerInfo.records?.push(getRecordInfo(key,value));
+        subLayerInfo.records?.push(getRecordInfo(key, value));
 
-      if (layerInfo.info === undefined)
-        layerInfo.info = [];
+      if (layerInfo.subLayerInfos === undefined)
+        layerInfo.subLayerInfos = [];
 
       if (renderer) {
         if (readRingsOrPaths) {
           await this.readRingsAndPaths(feature, renderer, fill, false);
           subLayerInfo.graphics = renderer.moveGraphics();
-        } else if (readPoints){
+        } else if (readPoints) {
           await this.readPoints(feature, renderer, false);
           subLayerInfo.graphics = renderer.moveGraphics();
         }
       }
 
-      if (!(layerInfo.info instanceof HTMLElement))
-        layerInfo.info.push(subLayerInfo);
+      if (!(layerInfo.subLayerInfos instanceof HTMLElement))
+        layerInfo.subLayerInfos.push(subLayerInfo);
     }
 
     featureInfos.push(layerInfo);

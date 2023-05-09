@@ -82,7 +82,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, info: [] };
+    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
@@ -216,11 +216,11 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
 
         fieldIdx++;
       }
-      if (layerInfo.info === undefined) {
-        layerInfo.info = [];
+      if (layerInfo.subLayerInfos === undefined) {
+        layerInfo.subLayerInfos = [];
       }
-      if (!(layerInfo.info instanceof HTMLElement)) {
-        layerInfo.info.push(subLayerInfo);
+      if (!(layerInfo.subLayerInfos instanceof HTMLElement)) {
+        layerInfo.subLayerInfos.push(subLayerInfo);
 
       }
     }
