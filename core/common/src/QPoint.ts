@@ -62,7 +62,7 @@ export namespace Quantization {
 }
 
 /** @alpha */
-export interface CloneableQParams2d extends StructuredCloneableObject {
+export type QParams2dProps = {
   origin: XAndY;
   scale: XAndY;
 }
@@ -152,7 +152,7 @@ export class QParams2d {
   }
 
   /** @alpha */
-  public toStructuredCloneable(_transferables: Transferables): CloneableQParams2d {
+  public toJSON(): QParams2dProps {
     return {
       origin: { x: this.origin.x, y: this.origin.y },
       scale: { x: this.scale.x, y: this.scale.y },
@@ -160,7 +160,7 @@ export class QParams2d {
   }
 
   /** @alpha */
-  public static fromStructuredCloneable(src: CloneableQParams2d): QParams2d {
+  public static fromJSON(src: QParams2dProps): QParams2d {
     return this.fromOriginAndScale(src.origin.x, src.origin.y, src.scale.x, src.scale.y);
   }
 }
@@ -268,7 +268,7 @@ export interface QPoint2dBuffer {
 
 /** @alpha */
 export interface CloneableQPoint2dBuffer extends StructuredCloneableObject {
-  params: CloneableQParams2d;
+  params: QParams2dProps;
   points: Uint16Array;
 }
 
@@ -313,7 +313,7 @@ export namespace QPoint2dBuffer {
   export function toStructuredCloneable(buffer: QPoint2dBuffer, transferables: Transferables): CloneableQPoint2dBuffer {
     transferables.add(buffer.points.buffer);
     return {
-      params: buffer.params.toStructuredCloneable(transferables),
+      params: buffer.params.toJSON(),
       points: buffer.points,
     };
   }
@@ -321,7 +321,7 @@ export namespace QPoint2dBuffer {
   /** @alpha */
   export function fromStructuredCloneable(src: CloneableQPoint2dBuffer): QPoint2dBuffer {
     return {
-      params: QParams2d.fromStructuredCloneable(src.params),
+      params: QParams2d.fromJSON(src.params),
       points: src.points,
     };
   }
@@ -435,10 +435,8 @@ export class QPoint2dList {
   }
 }
 
-/** Cloneable representation of a [[QParams3d]].
- * @alpha
- */
-export interface CloneableQParams3d extends StructuredCloneableObject {
+/** @alpha */
+export type QParams3dProps = {
   origin: XYAndZ;
   scale: XYAndZ;
 }
@@ -560,7 +558,7 @@ export class QParams3d {
   }
 
   /** @alpha */
-  public toStructuredCloneable(_tranferables: Transferables): CloneableQParams3d {
+  public toJSON(): QParams3dProps {
     return {
       origin: { x: this.origin.x, y: this.origin.y, z: this.origin.z },
       scale: { x: this.scale.x, y: this.scale.y, z: this.scale.z },
@@ -568,7 +566,7 @@ export class QParams3d {
   }
 
   /** @alpha */
-  public static fromStructuredCloneable(src: CloneableQParams3d, out?: QParams3d): QParams3d {
+  public static fromJSON(src: QParams3dProps, out?: QParams3d): QParams3d {
     return this.fromOriginAndScale(Point3d.fromJSON(src.origin), Point3d.fromJSON(src.scale), out);
   }
 }
@@ -715,7 +713,7 @@ export interface QPoint3dBuffer {
 
 /** @alpha */
 export interface CloneableQPoint3dBuffer extends StructuredCloneableObject {
-  params: CloneableQParams3d;
+  params: QParams3dProps;
   points: Uint16Array;
 }
 
@@ -761,7 +759,7 @@ export namespace QPoint3dBuffer {
   export function toStructuredCloneable(buffer: QPoint3dBuffer, transferables: Transferables): CloneableQPoint3dBuffer {
     transferables.add(buffer.points.buffer);
     return {
-      params: buffer.params.toStructuredCloneable(transferables),
+      params: buffer.params.toJSON(),
       points: buffer.points,
     };
   }
@@ -769,7 +767,7 @@ export namespace QPoint3dBuffer {
   /** @alpha */
   export function fromStructuredCloneable(src: CloneableQPoint3dBuffer): QPoint3dBuffer {
     return {
-      params: QParams3d.fromStructuredCloneable(src.params),
+      params: QParams3d.fromJSON(src.params),
       points: src.points,
     };
   }

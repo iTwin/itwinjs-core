@@ -9,7 +9,7 @@
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable } from "@itwin/core-common";
 import {
-  computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
+  computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableParams, VertexTableWithIndices,
 } from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
@@ -99,7 +99,7 @@ class VertexBuffer {
     if (materialAtlasTable instanceof Uint32Array)
       rgbaData.set(materialAtlasTable, tableSize);
 
-    const tableProps: VertexTableProps = {
+    const tableProps: VertexTableParams = {
       data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
       usesUnquantizedPositions: source.usesUnquantizedPositions,
       qparams: source.qparams,
