@@ -50,9 +50,9 @@ steps:
           pipeline: ${{ parameters.pipelineId }}
           ${{ if parameters.useBranch }}:
             branchName: ${{ parameters.defaultBranch }}
-            buildVersionToDownload: latest
-          ${{ else }}:
             buildVersionToDownload: latestFromBranch
+          ${{ else }}:
+            buildVersionToDownload: latest
           artifactName: ${{ parameters.artifactName }}
           targetPath: $(Pipeline.Workspace)/${{ parameters.artifactName }}
 
