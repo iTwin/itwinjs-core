@@ -208,6 +208,8 @@ export type ClassId = Id64String;
 
 // @public
 export interface ClassInfo {
+    // (undocumented)
+    arePolymorphic?: boolean;
     id: ClassId;
     label: string;
     name: string;
@@ -223,6 +225,8 @@ export namespace ClassInfo {
 
 // @public @deprecated
 export interface ClassInfoJSON {
+    // (undocumented)
+    arePolymorphic?: boolean;
     // (undocumented)
     id: string;
     // (undocumented)
@@ -271,6 +275,8 @@ export function compareDiagnosticsSeverities(lhs: undefined | boolean | Diagnost
 
 // @public
 export interface CompressedClassInfoJSON {
+    // (undocumented)
+    arePolymorphic?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)
