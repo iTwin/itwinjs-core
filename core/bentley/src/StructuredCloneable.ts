@@ -19,6 +19,7 @@ export type StructuredCloneablePrimitive = ArrayBuffer | ArrayBufferView | bigin
 export type StructuredCloneableCollection = Map<StructuredCloneable, StructuredCloneable> | Set<StructuredCloneable> | StructuredCloneable[][];
 
 /** Interface describing an object that consists solely of properties that support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm#supported_types).
+ * ###TODO this isn't really what we want - we want to constrain the types of properties permitted in an interface, not permit the getting/setting of arbitrarily-named properties...
  * @see [[StructuredCloneable]].
  * @alpha
  */
