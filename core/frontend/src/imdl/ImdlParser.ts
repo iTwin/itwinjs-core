@@ -6,9 +6,10 @@
  * @module Tiles
  */
 
-import { ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import {
-  FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
+  BatchType, FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, MultiModelPackedFeatureTable, PackedFeatureTable, RenderFeatureTable,
+  RenderSchedule, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import { ImdlDocument } from "./ImdlSchema";
@@ -17,6 +18,8 @@ export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 export interface ImdlParserOptions {
   stream: ByteStream;
+  batchModelId: Id64String;
+  batchType?: BatchType;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   timeline?: ImdlTimeline;
@@ -75,27 +78,86 @@ type Document = Required<Omit<ImdlDocument, OptionalDocumentProperties>> & Pick<
 
 export type ImdlParseError = Exclude<TileReadStatus, TileReadStatus.Success>;
 
+interface FeatureTableInfo {
+  startPos: number;
+  multiModel: boolean;
+}
+
 class ImdlParser {
   private readonly _document: Document;
   private readonly _binaryData: Uint8Array;
   private readonly _options: ImdlParserOptions;
-  private readonly _featureTable: Imdl.FeatureTable;
+  private readonly _featureTableInfo: FeatureTableInfo;
 
-  public constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, featureTable: Imdl.FeatureTable) {
+  private get stream(): ByteStream {
+    return this._options.stream;
+  }
+
+  public constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, featureTableInfo: FeatureTableInfo) {
     this._document = doc;
     this._binaryData = binaryData;
     this._options = options;
-    this._featureTable = featureTable;
+    this._featureTableInfo = featureTableInfo;
   }
 
   public parse(): Imdl.Document | ImdlParseError {
     // ###TODO caller is responsible for decodeTileContentDescription, leafness, etc.
+    const featureTable = this.parseFeatureTable();
+    if (!featureTable)
+      return TileReadStatus.InvalidFeatureTable;
+
     return TileReadStatus.InvalidTileData; // ###TODO
   }
-}
 
-function readFeatureTable(stream: ByteStream): Imdl.FeatureTable | undefined {
-  return undefined; // ###TODO
+  private parseFeatureTable(): RenderFeatureTable | undefined {
+    this.stream.curPos = this._featureTableInfo.startPos;
+    const header = FeatureTableHeader.readFrom(this.stream);
+    if (!header || 0 !== header.length % 4)
+      return undefined;
+
+    // NB: We make a copy of the sub-array because we don't want to pin the entire data array in memory.
+    const numUint32s = (header.length - FeatureTableHeader.sizeInBytes) / 4;
+    const packedFeatureArray = new Uint32Array(this.stream.nextUint32s(numUint32s));
+    if (this.stream.isPastTheEnd)
+      return undefined;
+
+    const batchType = this._options.batchType ?? BatchType.Primary;
+    let featureTable: RenderFeatureTable;
+    if (this._featureTableInfo.multiModel) {
+      featureTable = MultiModelPackedFeatureTable.create(packedFeatureArray, this._options.batchModelId, header.count, batchType, header.numSubCategories);
+    } else {
+      let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
+      const animationNodes = this._document.animationNodes;
+      if (undefined !== animationNodes) {
+        const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
+        const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
+        const bufferViewJson = this._document.bufferViews[bufferViewId];
+        if (undefined !== bufferViewJson) {
+          const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+          const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+          const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+          switch (bytesPerId) {
+            case 1:
+              animNodesArray = new Uint8Array(bytes);
+              break;
+            case 2:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint16Array.from(new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2));
+              break;
+            case 4:
+              // NB: A *copy* of the subarray.
+              animNodesArray = Uint32Array.from(new Uint32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 4));
+              break;
+          }
+        }
+      }
+
+      featureTable = new PackedFeatureTable(packedFeatureArray, this._options.batchModelId, header.count, batchType, animNodesArray);
+    }
+
+    this.stream.curPos = this._featureTableInfo.startPos + header.length;
+    return featureTable;
+  }
 }
 
 export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
@@ -106,10 +168,13 @@ export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | I
   else if (!imdlHeader.isReadableVersion)
     return TileReadStatus.NewerMajorVersion;
 
-  // Read the feature table
-  const featureTable = readFeatureTable(stream);
-  if (!featureTable)
+  // Skip the feature table - we need to parse the JSON segment first to access its animationNodeIds.
+  const ftStartPos = stream.curPos;
+  const ftHeader = FeatureTableHeader.readFrom(stream);
+  if (!ftHeader)
     return TileReadStatus.InvalidFeatureTable;
+
+  stream.curPos = ftStartPos + ftHeader.length;
 
   // A glTF header follows the feature table
   const gltfHeader = new GltfHeader(stream);
@@ -142,6 +207,11 @@ export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | I
       return TileReadStatus.InvalidTileData;
 
     const binaryData = new Uint8Array(stream.arrayBuffer, gltfHeader.binaryPosition);
+    const featureTable = {
+      startPos: ftStartPos,
+      multiModel: 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable),
+    };
+
     const parser = new ImdlParser(imdlDoc, binaryData, options, featureTable);
     return parser.parse();
   } catch (_) {
