@@ -69,7 +69,15 @@ class GltfHeader extends TileHeader {
   }
 }
 
+type OptionalDocumentProperties = "rtcCenter" | "animationNodes";
+type Document = Required<Omit<ImdlDocument, OptionalDocumentProperties>> & Pick<ImdlDocument, OptionalDocumentProperties>;
+
 export class ImdlParser {
+  private readonly _document: Document;
+  private readonly _binaryData: Uint8Array;
+  private readonly _options: ImdlParserOptions;
+  private readonly _hasMultiModelFeatureTable: boolean;
+
   public static create(options: ImdlParserOptions): ImdlParser | undefined {
     const stream = options.stream;
     const imdlHeader = new ImdlHeader(stream);
@@ -97,17 +105,17 @@ export class ImdlParser {
 
     try {
       const sceneValue = JSON.parse(sceneStr);
-      const imdlDoc: ImdlDocument = {
+      const imdlDoc: Document = {
         scene: JsonUtils.asString(sceneValue.scene),
         scenes: JsonUtils.asArray(sceneValue.scenes),
         animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
-        bufferViews: JsonUtils.asObject(sceneValue.bufferViews),
+        bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? { },
         meshes: JsonUtils.asObject(sceneValue.meshes),
-        nodes: JsonUtils.asObject(sceneValue.nodes),
-        materials: JsonUtils.asObject(sceneValue.materials),
-        renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials),
-        namedTextures: JsonUtils.asObject(sceneValue.namedTextures),
-        patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols),
+        nodes: JsonUtils.asObject(sceneValue.nodes) ?? { },
+        materials: JsonUtils.asObject(sceneValue.materials) ?? { },
+        renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? { },
+        namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? { },
+        patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? { },
         rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
       };
 
@@ -121,6 +129,10 @@ export class ImdlParser {
     }
   }
 
-  private constructor(doc: ImdlDocument, binaryData: Uint8Array, options: ImdlParserOptions, hasMultiModelFeatureTable: boolean) {
+  private constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, hasMultiModelFeatureTable: boolean) {
+    this._document = doc;
+    this._binaryData = binaryData;
+    this._options = options;
+    this._hasMultiModelFeatureTable = hasMultiModelFeatureTable;
   }
 }

@@ -172,6 +172,7 @@ export namespace ImdlModel {
 
   export interface Document {
     featureTable: FeatureTable;
+    rtcCenter?: XYAndZ;
     nodes: Node[];
   }
 }
