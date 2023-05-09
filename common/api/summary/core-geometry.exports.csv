@@ -83,6 +83,7 @@ alpha;Constant
 public;ConstructCurveBetweenCurves 
 public;ConvexClipPlaneSet 
 public;ConvexClipPlaneSetProps = ClipPlaneProps[]
+public;ConvexFacetLocationDetail 
 internal;ConvexPolygon2d
 public;CoordinateXYZ 
 public;class CurveChain 
@@ -117,6 +118,9 @@ public;DuplicateFacetClusterSelector
 public;Ellipsoid 
 public;EllipsoidPatch 
 public;FacetFaceData
+public;FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean
+public;FacetIntersectOptions
+public;FacetLocationDetail
 public;FacetProjectedVolumeSums
 public;FrameBuilder
 internal;GaussMapper
@@ -185,6 +189,7 @@ internal;class NewtonEvaluatorRtoR
 internal;class NewtonEvaluatorRtoRD
 internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
+public;NonConvexFacetLocationDetail 
 public;NullGeometryHandler 
 public;NumberArray
 public;OffsetMeshOptions
@@ -281,6 +286,7 @@ public;Transform
 public;TransformProps = number[][] | number[] |
 public;class TransitionSpiral3d 
 public;TriangleLocationDetail
+public;TriangularFacetLocationDetail 
 internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial

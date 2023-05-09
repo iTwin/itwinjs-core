@@ -8,34 +8,34 @@ import * as fs from "fs-extra";
 import { join } from "path";
 import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
-import { CloudSqliteTest } from "./CloudSqlite.test";
+import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("Cloud workspace containers", () => {
 
   async function initializeContainer(containerId: string) {
-    const cloudCont1 = CloudSqliteTest.makeCloudSqliteContainer(containerId, false);
-    await CloudSqliteTest.initializeContainers([cloudCont1]);
+    const cloudCont1 = AzuriteTest.Sqlite.makeContainer({ containerId });
+    await AzuriteTest.Sqlite.initializeContainers([cloudCont1]);
   }
   it("cloud workspace", async () => {
 
     const testDbName = "testDb";
     const containerId = "test-1-2-3";
     const containerDict = {
-      "cloudSqlite/accountProps": CloudSqliteTest.storage,
+      "cloudSqlite/accountProps": AzuriteTest.storage,
       "cloudSqlite/containerId": containerId,
     };
 
-    const makeCloudCache = (name: string) => {
+    const makeCloudCache = (cacheName: string) => {
       const cacheProps = {
-        rootDir: join(IModelHost.cacheDir, "cloud", name),
+        cacheDir: join(IModelHost.cacheDir, "cloud", cacheName),
         cacheSize: "20G",
-        name,
+        cacheName,
       };
-      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
-      fs.emptyDirSync(cacheProps.rootDir);
-      return CloudSqlite.createCloudCache(cacheProps);
+      IModelJsFs.recursiveMkDirSync(cacheProps.cacheDir);
+      fs.emptyDirSync(cacheProps.cacheDir);
+      return CloudSqlite.CloudCaches.getCache(cacheProps);
     };
 
     const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
@@ -44,7 +44,7 @@ describe("Cloud workspace containers", () => {
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
     await initializeContainer(containerId);
-    const wsCont1 = workspace1.getContainer({ containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") }, CloudSqliteTest.storage);
+    const wsCont1 = workspace1.getContainer({ containerId, writeable: true, accessToken: await AzuriteTest.makeSasToken(containerId, true) }, AzuriteTest.storage);
 
     const makeVersion = async (version?: string) => {
       expect(wsCont1.cloudContainer).not.undefined;
@@ -53,7 +53,7 @@ describe("Cloud workspace containers", () => {
         try {
           await wsDbEdit.createDb(version);
           const account1 = settings.getObject<CloudSqlite.AccountAccessProps>("cloudSqlite/accountProps")!;
-          expect(account1).deep.equals(CloudSqliteTest.storage);
+          expect(account1).deep.equals(AzuriteTest.storage);
           const contain1 = settings.getString("cloudSqlite/containerId")!;
           expect(contain1).equals(containerId);
 
@@ -75,7 +75,7 @@ describe("Cloud workspace containers", () => {
 
     expect(wsCont1.cloudContainer?.hasWriteLock).false;
 
-    const wsCont2 = workspace2.getContainer({ containerId, accessToken: CloudSqliteTest.makeSasToken(containerId, "rl") }, CloudSqliteTest.storage);
+    const wsCont2 = workspace2.getContainer({ containerId, accessToken: await AzuriteTest.makeSasToken(containerId, false) }, AzuriteTest.storage);
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);
 
@@ -123,8 +123,8 @@ describe("Cloud workspace containers", () => {
       "cloud/accounts": [
         {
           name: "test/account",
-          accessName: "devstoreaccount1",
-          storageType: "azure?emulator=127.0.0.1:10000&sas=1",
+          accessName: AzuriteTest.storage.accessName,
+          storageType: AzuriteTest.storage.storageType,
         },
       ],
       "cloud/containers": [
@@ -147,8 +147,8 @@ describe("Cloud workspace containers", () => {
     workspace3.settings.addDictionary("testDict", SettingsPriority.application, dict);
     const db = await workspace3.getWorkspaceDb("test/test1", async (props, account) => {
       expect(props.containerId).equal(containerId);
-      expect(account.accessName).equal("devstoreaccount1");
-      return CloudSqliteTest.makeSasToken(props.containerId, "r");
+      expect(account.accessName).equal(AzuriteTest.storage.accessName);
+      return AzuriteTest.makeSasToken(props.containerId, false);
     });
     expect(db.dbFileName).equal("testDb:1.2.4");
     expect(db.dbName).equal(testDbName);

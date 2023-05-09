@@ -6,13 +6,13 @@
  * @module iModelHub
  */
 
-import * as fs from "fs";
-import * as https from "https";
-import * as path from "path";
+import { Buffer } from "node:buffer";
+import * as fs from "node:fs";
+import * as https from "node:https";
+import * as path from "node:path";
 import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
 import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
-import { Base64 } from "js-base64";
 
 const loggerCategory: string = "mobile.filehandler";
 
@@ -159,7 +159,7 @@ export class MobileFileHandler {
   }
   /** Get encoded block id from its number. */
   private getBlockId(blockId: number) {
-    return Base64.encode(blockId.toString(16).padStart(5, "0"));
+    return Buffer.from(blockId.toString(16).padStart(5, "0")).toString("base64");
   }
 
   private async uploadChunk(_accessToken: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {

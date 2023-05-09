@@ -88,7 +88,7 @@ jobs:
           useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@4.3.x --legacy-peer-deps
+      - script: npm install @bentley/bemetalsmith@5.0.2 --legacy-peer-deps
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 

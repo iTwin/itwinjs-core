@@ -56,7 +56,7 @@ export enum ChangesetType {
 }
 
 /** Properties of a changeset
- * @beta
+ * @public
  */
 export interface ChangesetProps {
   /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
@@ -76,11 +76,11 @@ export interface ChangesetProps {
   /** The identity of the user that created this changeset */
   userCreated: string;
   /** The size, in bytes, of this changeset */
-  size?: number;
+  size: number;
 }
 
 /** Properties of a changeset file
- * @beta
+ * @internal
  */
 export interface ChangesetFileProps extends ChangesetProps {
   /** The full pathname of the local file holding this changeset. */

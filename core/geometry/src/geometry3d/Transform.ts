@@ -203,7 +203,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Create a Transform with translation provided by x,y,z parts.
    * * Translation Transform maps any vector `v` to `v + p` where `p = (x,y,z)`
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/MoveCube
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeMove
    * @param x x part of translation
    * @param y y part of translation
    * @param z z part of translation
@@ -216,7 +216,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Create a Transform with specified `translation` part.
    * * Translation Transform maps any vector `v` to `v + translation`
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/MoveCube
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeMove
    * @param translation x,y,z parts of the translation
    * @param result optional pre-allocated Transform
    * @returns new or updated transform
@@ -355,7 +355,7 @@ export class Transform implements BeJSONFunctions {
    * Create a Transform which leaves the fixedPoint unchanged and scales everything else around it by
    * a single scale factor. The returned Transform maps a point `p` to `M*p + (f - M*f)`
    * where `f` is the fixedPoint and M is the scale matrix (i.e., `Tp = M*(p-f) + f`).
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ScaleCube
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeScale
    */
   public static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform {
     const matrix = Matrix3d.createScale(scale, scale, scale);

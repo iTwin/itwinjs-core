@@ -39,7 +39,7 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     const getIModelListParams: GetIModelListParams = {
       authorization: AccessTokenAdapter.toAuthorizationCallback(arg.accessToken),
       urlParams: {
-        projectId: arg.iTwinId,
+        iTwinId: arg.iTwinId,
         name: arg.iModelName,
       },
     };

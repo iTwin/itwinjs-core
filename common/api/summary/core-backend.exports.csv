@@ -7,11 +7,12 @@ public;AuxCoordSystem2d
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorageCredentials
-beta;BackendHubAccess
+internal;BackendHubAccess
 public;BackendLoggerCategory
 internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
+beta;BlobContainer
 public;BriefcaseDb 
 public;BriefcaseDbArg 
 public;BriefcaseIdArg 
@@ -38,20 +39,21 @@ public;CheckpointProps
 public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
-internal;CloudPrefetch
+internal;BcvHttpLog
+internal;BcvHttpLogFilterOptions
 internal;LockAndOpenArgs
-internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
-alpha;CodeIndex
 alpha;CodeService
 alpha;CodeService
+internal;BisCodeSpecIndexProps
+internal;FontIndexProps
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
 alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
 alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
-alpha;CrashReportingConfig
-alpha;CrashReportingConfigNameValuePair
+internal;CrashReportingConfig
+internal;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
 public;CreateNewIModelProps 
 public;DefinitionContainer 
@@ -290,8 +292,7 @@ public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
-alpha;PropertyStore
-alpha;PropertyStore
+beta;PropertyStore
 public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -346,7 +347,7 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
-public;SQLiteDb 
+public;SQLiteDb
 public;SQLiteDb
 internal;BlobIO
 public;SqliteStatement 
@@ -385,6 +386,7 @@ internal;V1CheckpointManager
 internal;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
+beta;class VersionedSqliteDb 
 public;ViewAttachment 
 public;ViewAttachmentLabel 
 public;class ViewDefinition 

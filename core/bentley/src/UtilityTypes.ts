@@ -86,7 +86,7 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
  * @see [[PromiseReturnType]] to extract the type to which the Promise resolves.
  * @public
  */
-export type AsyncFunction = (...args: any) => Promise<any>;
+export type AsyncFunction = (...args: any[]) => Promise<unknown>;
 
 /** The members of `T` that are async functions (functions that return a promise), and no other properties
  * @public
@@ -102,6 +102,16 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  * @public
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+/** The members of `T` that are functions and no other properties
+ * @public
+ */
+export type PickMethods<T> = { [P in keyof T]: T[P] extends Function ? T[P] : never; };
+
+/** The members of `T` that are functions that do not return a Promise
+ * @public
+ */
+export type PickSyncMethods<T> = Omit<PickMethods<T>, AsyncMethodsOf<T>>;
 
 /** A runtime property omitter, makes a shallow copy of the given object without the specified properties
  * Compatible with the typescript `Omit` mapped type:

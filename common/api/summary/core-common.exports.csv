@@ -17,6 +17,9 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
+beta;Atmosphere
+internal;Wavelengths
+internal;WavelengthsProps
 public;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
@@ -94,13 +97,13 @@ public;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
-beta;ChangesetFileProps 
+internal;ChangesetFileProps 
 public;ChangesetId = string
 public;ChangesetIdWithIndex
 public;ChangesetIndex = number
 public;ChangesetIndexAndId
 public;ChangesetIndexOrId = ChangesetIndexAndId |
-beta;ChangesetProps
+public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
 alpha;ChannelConstraintError 
@@ -124,7 +127,7 @@ public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
+internal;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
@@ -165,6 +168,8 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DbValueFormat
+internal;decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription
+internal;DecodeTileContentDescriptionArgs
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -597,6 +602,7 @@ public;Rank
 internal;ReadableFormData 
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+deprecated;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
 beta;RealityDataFormat

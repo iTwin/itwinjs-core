@@ -8,7 +8,7 @@
 
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
 import { ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcManager, RpcPendingResponse, TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo } from "@itwin/core-common";
-import type { TransferConfig } from "@itwin/object-storage-core";
+import type { Metadata, TransferConfig } from "@itwin/object-storage-core";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -133,11 +133,14 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
   if (IModelHost.usingExternalTileCache) {
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, {
+    const tileMetadata: Metadata = {
       backendName: IModelHost.applicationId,
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
-    });
+    };
+    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    const { accessToken: _, ...safeProps } = props;
+    Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 
     return TileContentSource.ExternalCache;
   }
@@ -198,6 +201,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       modelIds = undefined;
 
     const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    if (!db.isOpen) {
+      return;
+    }
+
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 

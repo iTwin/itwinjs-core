@@ -43,9 +43,11 @@ import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
+import { CodeSpecProperties } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
 import { ConcreteEntityTypes } from '@itwin/core-common';
+import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
@@ -118,6 +120,7 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { IpcWebSocketBackend } from '@itwin/core-common';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
@@ -153,6 +156,8 @@ import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
 import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
+import { PickAsyncMethods } from '@itwin/core-bentley';
+import { PickMethods } from '@itwin/core-bentley';
 import { Placement2d } from '@itwin/core-common';
 import { Placement3d } from '@itwin/core-common';
 import { Point2d } from '@itwin/core-geometry';
@@ -298,16 +303,15 @@ export interface AzureBlobStorageCredentials {
     baseUrl?: string;
 }
 
-// @beta
+// @internal
 export interface BackendHubAccess {
-    // @internal
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @internal @deprecated
+    // @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -320,14 +324,11 @@ export interface BackendHubAccess {
     pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
     }) => Promise<ChangesetIndex>;
-    // @internal
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-    // @internal
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
@@ -417,6 +418,60 @@ export class BisCoreSchema extends Schema {
     static get schemaName(): string;
 }
 
+// @beta
+export namespace BlobContainer {
+    let service: BlobContainer.ContainerService | undefined;
+    export interface AccessContainerProps {
+        // (undocumented)
+        address: Address;
+        // (undocumented)
+        userToken: UserToken;
+    }
+    export interface Address {
+        // (undocumented)
+        id: ContainerId;
+        // (undocumented)
+        uri: string;
+    }
+    export type ContainerId = string;
+    export interface ContainerService {
+        create(props: CreateNewContainerProps): Promise<Address>;
+        delete(props: AccessContainerProps): Promise<void>;
+        requestToken(props: RequestTokenProps): Promise<TokenProps>;
+    }
+    export type ContainerToken = AccessToken;
+    export interface CreateNewContainerProps {
+        // @internal
+        id?: ContainerId;
+        metadata: Metadata;
+        scope: Scope;
+        userToken: UserToken;
+    }
+    export interface Metadata {
+        [propertyName: string]: string;
+        application: string;
+        description: string;
+        format: string;
+    }
+    export type Provider = "azure" | "google" | "aws";
+    export interface RequestTokenProps extends AccessContainerProps {
+        durationSeconds?: number;
+        forWriteAccess?: boolean;
+    }
+    export interface Scope {
+        iModelId?: Id64String;
+        iTwinId: Id64String;
+    }
+    export interface TokenProps {
+        expiration: Date;
+        metadata: Metadata;
+        provider: Provider;
+        scope: Scope;
+        token: ContainerToken;
+    }
+    export type UserToken = AccessToken;
+}
+
 // @public
 export class BriefcaseDb extends IModelDb {
     protected constructor(args: {
@@ -432,7 +487,7 @@ export class BriefcaseDb extends IModelDb {
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
     // @alpha (undocumented)
-    static readonly onCodeServiceCreated: BeEvent<(service: CodeService) => void>;
+    static readonly onCodeServiceCreated: BeEvent<(briefcase: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
     static readonly onOpened: BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>;
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
@@ -484,6 +539,9 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
     static getIModelPath(iModelId: GuidString): LocalDirName;
+    static getLatestChangeset(arg: {
+        iModelId: GuidString;
+    }): Promise<ChangesetProps>;
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
@@ -492,6 +550,14 @@ export class BriefcaseManager {
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
+    static queryChangeset(arg: {
+        iModelId: GuidString;
+        changeset: ChangesetIndexOrId;
+    }): Promise<ChangesetProps>;
+    static queryChangesets(arg: {
+        iModelId: GuidString;
+        range: ChangesetRange;
+    }): Promise<ChangesetProps[]>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
 }
 
@@ -532,8 +598,8 @@ export class CategorySelector extends DefinitionElement {
     categories: Id64String[];
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
@@ -728,6 +794,23 @@ export namespace CloudSqlite {
         storageType: string;
     }
     export function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler): Promise<void>;
+    // @internal
+    export interface BcvHttpLog {
+        readonly cloudSqliteLogId: string;
+        readonly endTime: string | undefined;
+        readonly httpcode: number;
+        readonly id: number;
+        readonly logmsg: string;
+        readonly method: string;
+        readonly startTime: string;
+        readonly uri: string;
+    }
+    // @internal
+    export interface BcvHttpLogFilterOptions {
+        finishedAtOrAfterTime?: string;
+        showOnlyFinished?: boolean;
+        startFromId?: number;
+    }
     export interface CachedDbProps {
         readonly dirtyBlocks: number;
         readonly localBlocks: number;
@@ -742,12 +825,21 @@ export namespace CloudSqlite {
         rootDir: string;
     }
     export interface CloudCache {
+        // @internal
         destroy(): void;
         get guid(): GuidString;
         get isDaemon(): boolean;
         get name(): string;
         get rootDir(): LocalDirName;
         setLogMask(mask: number): void;
+    }
+    export class CloudCaches {
+        // @internal
+        static destroy(): void;
+        // @internal (undocumented)
+        static dropCache(cacheName: string): CloudCache | undefined;
+        static findCache(cacheName: string): CloudCache | undefined;
+        static getCache(args: CreateCloudCacheArg): CloudCache;
     }
     export interface CloudContainer {
         abandonChanges(): void;
@@ -765,8 +857,9 @@ export namespace CloudSqlite {
         get containerId(): string;
         copyDatabase(dbName: string, toAlias: string): Promise<void>;
         deleteDatabase(dbName: string): Promise<void>;
-        detach(): void;
-        disconnect(): void;
+        disconnect(args?: {
+            detach?: boolean;
+        }): void;
         get garbageBlocks(): number;
         get hasLocalChanges(): boolean;
         get hasWriteLock(): boolean;
@@ -776,9 +869,19 @@ export namespace CloudSqlite {
         }): void;
         get isConnected(): boolean;
         get isWriteable(): boolean;
-        queryDatabase(dbName: string): CloudSqlite.CachedDbProps | undefined;
+        // (undocumented)
+        onConnect?: (container: CloudContainer, cache: CloudCache) => void;
+        // (undocumented)
+        onConnected?: (container: CloudContainer) => void;
+        // (undocumented)
+        onDisconnect?: (container: CloudContainer, detach: boolean) => void;
+        // (undocumented)
+        onDisconnected?: (container: CloudContainer, detach: boolean) => void;
+        queryDatabase(dbName: string): CachedDbProps | undefined;
         queryDatabaseHash(dbName: string): string;
         queryDatabases(globArg?: string): string[];
+        // @internal
+        queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
         releaseWriteLock(): void;
         uploadChanges(): Promise<void>;
     }
@@ -786,7 +889,6 @@ export namespace CloudSqlite {
     export interface CloudHttpProps {
         nRequests?: number;
     }
-    // @internal (undocumented)
     export interface CloudPrefetch {
         cancel(): void;
         // (undocumented)
@@ -801,14 +903,58 @@ export namespace CloudSqlite {
     export interface ContainerProps {
         accessToken: string;
         alias?: string;
+        cloudSqliteLogId?: string;
         containerId: string;
         secure?: boolean;
         writeable?: boolean;
     }
-    // (undocumented)
-    export function createCloudCache(args: CloudSqlite.CacheProps): CloudSqlite.CloudCache;
+    export interface CreateCloudCacheArg {
+        cacheDir?: string;
+        cacheName: string;
+        cacheSize?: string;
+    }
     // (undocumented)
     export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
+    export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
+        constructor(args: {
+            dbType: Constructor<DbType>;
+            props: ContainerAccessProps;
+            dbName: string;
+        });
+        // (undocumented)
+        protected static _cacheName: string;
+        close(): void;
+        closeDb(): void;
+        // (undocumented)
+        protected _cloudDb: DbType;
+        get container(): CloudContainer;
+        // (undocumented)
+        protected _container: CloudContainer;
+        readonly dbName: string;
+        // @internal (undocumented)
+        getCache(): CloudCache;
+        // @internal (undocumented)
+        static getCacheForClass(): CloudCache;
+        // @internal (undocumented)
+        getCloudDb(): DbType;
+        protected static _initializeDb(args: {
+            dbType: typeof VersionedSqliteDb;
+            props: ContainerAccessProps;
+            dbName: string;
+            blockSize?: number;
+        }): Promise<void>;
+        readonly lockParams: ObtainLockParams;
+        openForRead(): DbType;
+        get reader(): PickMethods<ReadMethods>;
+        get sasToken(): AccessToken;
+        set sasToken(token: AccessToken);
+        // @internal
+        setCache(cache: CloudCache): void;
+        startPrefetch(): CloudPrefetch;
+        synchronizeWithCloud(): void;
+        withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T>;
+        get writeLocker(): PickAsyncMethods<WriteMethods>;
+    }
     export interface DbNameProp {
         dbName: string;
     }
@@ -821,7 +967,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
         container: CloudContainer;
         dbName: string;
-        user: string;
+        moniker: string;
     }
     export enum LoggingMask {
         AddToDelete = 4,
@@ -831,20 +977,18 @@ export namespace CloudSqlite {
         LifecycleEvents = 8,
         None = 0
     }
-    // @internal
     export interface ObtainLockParams {
+        moniker?: string;
         nRetries: number;
         onFailure?: WriteLockBusyHandler;
         retryDelayMs: number;
-        user?: string;
     }
     // (undocumented)
     export interface PrefetchProps extends CloudHttpProps {
         minRequests?: number;
         timeout?: number;
     }
-    // (undocumented)
-    export function startCloudPrefetch(container: CloudSqlite.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
+    export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
     // (undocumented)
@@ -856,54 +1000,38 @@ export namespace CloudSqlite {
         onProgress?: (loaded: number, total: number) => number;
     }
     export function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
-    export function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler): Promise<T>;
+    export function withWriteLock<T>(user: string, container: CloudContainer, operation: () => Promise<T>, busyHandler?: WriteLockBusyHandler): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
 }
 
 // @alpha
-export interface CodeIndex {
-    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
-    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
-    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
-    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
-    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
-    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
-    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
-    isCodePresent(guid: CodeService.CodeGuid): boolean;
-}
-
-// @alpha
 export interface CodeService {
-    addAllCodes(iModel: IModelDb): Promise<number>;
-    // @internal (undocumented)
-    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
-    addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
     readonly appParams: CodeService.AuthorAndOrigin;
     // @internal (undocumented)
     close: () => void;
-    readonly codeIndex: CodeIndex;
-    deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
-    readonly lockParams: CloudSqlite.ObtainLockParams;
-    reserveCode(code: CodeService.ProposedCode): Promise<void>;
-    reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
-    reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
-    reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
-    sasToken: AccessToken;
-    synchronizeWithCloud(): void;
-    updateCode(props: CodeService.UpdatedCode): Promise<void>;
-    updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+    readonly externalCodes?: CloudSqlite.DbAccess<CodeService.CodesDb, CodeService.ReadMethods, CodeService.WriteMethods>;
+    // (undocumented)
+    initialize(iModel: IModelDb): Promise<void>;
+    readonly internalCodes?: CloudSqlite.DbAccess<CodeService.InternalCodes, CodeService.InternalReadMethods, CodeService.InternalWriteMethods>;
     verifyCode(props: CodeService.ElementCodeProps): void;
 }
 
 // @alpha (undocumented)
 export namespace CodeService {
-    let // @internal (undocumented)
-    createForIModel: ((db: IModelDb) => CodeService) | undefined;
     export interface AuthorAndOrigin {
         readonly author: Mutable<NameAndJson>;
         readonly origin: Mutable<NameAndJson>;
     }
     export type AuthorName = string;
+    // @internal (undocumented)
+    export interface BisCodeSpecIndexProps {
+        // (undocumented)
+        id?: number;
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        props: string;
+    }
     export interface CodeEntry {
         readonly author?: AuthorName;
         readonly guid: CodeGuid;
@@ -920,6 +1048,8 @@ export namespace CodeService {
         readonly specName?: CodeSpecName;
     }
     export type CodeGuid = GuidString;
+    let // @internal (undocumented)
+    createForIModel: ((db: IModelDb) => Promise<CodeService>) | undefined;
     export interface CodeGuidStateJson {
         readonly guid: CodeGuid;
         readonly json?: SettingObject;
@@ -927,6 +1057,8 @@ export namespace CodeService {
     }
     export type CodeIteration = (guid: GuidString) => IterationReturn;
     export type CodeOriginName = string;
+    // (undocumented)
+    export type CodesDb = VersionedSqliteDb & WriteMethods & ReadMethods;
     export interface CodeSequence {
         getFirstValue(): CodeValue;
         getLastValue(): CodeValue;
@@ -950,8 +1082,31 @@ export namespace CodeService {
         readonly errorId: ErrorId;
         readonly problems?: ReserveProblem[] | UpdateProblem[];
     }
-    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    // @internal (undocumented)
+    export interface FontIndexProps {
+        // (undocumented)
+        fontName: string;
+        // (undocumented)
+        fontType: FontType;
+        // (undocumented)
+        id?: number;
+    }
     export function getSequence(name: string): CodeSequence;
+    // (undocumented)
+    export type InternalCodes = CodesDb & InternalWriteMethods & InternalReadMethods;
+    // (undocumented)
+    export interface InternalReadMethods extends ReadMethods {
+        // @internal (undocumented)
+        verifyBisCodeSpec(spec: CodeService.BisCodeSpecIndexProps): void;
+    }
+    // (undocumented)
+    export interface InternalWriteMethods extends WriteMethods {
+        // @internal (undocumented)
+        reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
+        // @internal (undocumented)
+        reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+    }
     export type IterationReturn = void | "stop";
     export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
     export interface MakeProposedCodeArgs {
@@ -973,6 +1128,18 @@ export namespace CodeService {
     export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
     export interface ProposedCodeProps extends CodeGuidStateJson {
         value?: CodeValue;
+    }
+    // (undocumented)
+    export interface ReadMethods {
+        findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+        findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+        findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
+        forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+        forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+        getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
+        getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
+        isCodePresent(guid: CodeService.CodeGuid): boolean;
+        verifyCode(specName: string, arg: CodeService.ElementCodeProps): void;
     }
     export function registerSequence(seq: CodeSequence): void;
     export interface ReserveCodesArgs {
@@ -1024,6 +1191,18 @@ export namespace CodeService {
         readonly value?: string;
         readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
     }
+    // (undocumented)
+    export interface WriteMethods {
+        addAllCodes(iModel: IModelDb): Promise<number>;
+        addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
+        deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+        reserveCode(code: CodeService.ProposedCode): Promise<void>;
+        reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
+        reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
+        reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
+        updateCode(props: CodeService.UpdatedCode): Promise<void>;
+        updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+    }
 }
 
 // @public
@@ -1034,7 +1213,7 @@ export class CodeSpecs {
     hasId(codeSpecId: Id64String): boolean;
     hasName(name: string): boolean;
     insert(codeSpec: CodeSpec): Id64String;
-    insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
+    insert(name: string, properties: CodeSpecProperties | CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
     updateProperties(codeSpec: CodeSpec): void;
@@ -1059,7 +1238,7 @@ export type ConcreteEntity = Element_2 | Model | ElementAspect | Relationship;
 // @alpha
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
-// @alpha
+// @internal
 export interface CrashReportingConfig {
     crashDir: string;
     dumpProcessorScriptFileName?: string;
@@ -1071,7 +1250,7 @@ export interface CrashReportingConfig {
     wantFullMemoryDumps?: boolean;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export interface CrashReportingConfigNameValuePair {
     // (undocumented)
     name: string;
@@ -1237,8 +1416,8 @@ export abstract class DisplayStyle extends DefinitionElement {
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
@@ -1266,8 +1445,8 @@ export class DisplayStyle3d extends DisplayStyle {
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
@@ -1641,9 +1820,9 @@ class Element_2 extends Entity {
     static get className(): string;
     code: Code;
     // @beta @deprecated
-    protected collectPredecessorIds(predecessorIds: Id64Set): void;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     federationGuid?: GuidString;
     getClassMetaData(): EntityMetaData | undefined;
@@ -1752,8 +1931,8 @@ export class ElementDrivesElement extends Relationship {
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     priority: number;
@@ -1832,8 +2011,8 @@ export class ElementOwnsUniqueAspect extends RelatedElement {
 export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
 }
@@ -1939,15 +2118,15 @@ export class Entity {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal
-    protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void;
+    // @internal @deprecated
+    protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
-    protected collectReferenceIds(referenceIds: Set<Id64String>): void;
+    protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @internal
-    getReferenceConcreteIds(): EntityReferenceSet;
+    // @internal @deprecated
+    getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
-    getReferenceIds(): Set<Id64String>;
+    getReferenceIds(): EntityReferenceSet;
     id: Id64String;
     iModel: IModelDb;
     static is(otherClass: typeof Entity): boolean;
@@ -2137,8 +2316,8 @@ export class ExternalSource extends InformationReferenceElement {
     constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     connectorName?: string;
     connectorVersion?: string;
     static createCode(iModelDb: IModelDb, codeValue: string): Code;
@@ -2155,8 +2334,8 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     checksum?: string;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{
         elementId: Id64String;
         aspectId: Id64String;
@@ -2406,8 +2585,8 @@ export abstract class GeometricElement extends Element_2 {
     category: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @alpha
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
@@ -2428,8 +2607,8 @@ export abstract class GeometricElement2d extends GeometricElement {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     placement: Placement2d;
     // @internal (undocumented)
@@ -2451,8 +2630,8 @@ export abstract class GeometricElement3d extends GeometricElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     placement: Placement3d;
     // @internal (undocumented)
@@ -2740,6 +2919,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
@@ -2756,8 +2936,6 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
-    // @internal (undocumented)
-    insertCodeSpec(codeSpec: CodeSpec): Id64String;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -2986,15 +3164,13 @@ export class IModelHost {
     // @internal (undocumented)
     static flushLog(): void;
     static getAccessToken(): Promise<AccessToken>;
-    // @alpha
+    // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
-    // @beta
+    // @internal
     static getHubAccess(): BackendHubAccess | undefined;
-    // @beta
+    // @internal
     static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
-    // @internal (undocumented)
-    static loadNative(): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -3002,7 +3178,11 @@ export class IModelHost {
     static readonly onWorkspaceStartup: BeEvent<() => void>;
     // @internal (undocumented)
     static get platform(): typeof IModelJsNative;
-    // @alpha
+    // @beta
+    static get profileDir(): LocalDirName;
+    // @beta
+    static get profileName(): string;
+    // @internal
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
@@ -3010,7 +3190,7 @@ export class IModelHost {
     static readonly session: Mutable<SessionProps>;
     static get sessionId(): GuidString;
     static set sessionId(id: GuidString);
-    // @alpha
+    // @internal
     static setCrashReportProperty(name: string, value: string): void;
     // @internal (undocumented)
     static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
@@ -3025,6 +3205,7 @@ export class IModelHost {
     static tileStorage?: TileStorage;
     // @internal
     static get tileTreeRequestTimeout(): number;
+    static userMoniker: string;
     // @internal
     static get usingExternalTileCache(): boolean;
 }
@@ -3038,7 +3219,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     cacheDir?: LocalDirName;
     // (undocumented)
     compressCachedTiles?: boolean;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     crashReportingConfig?: CrashReportingConfig;
     // (undocumented)
     static defaultLogTileLoadTimeThreshold: number;
@@ -3048,7 +3229,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
     static defaultTileRequestTimeout: number;
-    // @beta (undocumented)
+    // @internal (undocumented)
     hubAccess?: BackendHubAccess;
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
@@ -3072,10 +3253,10 @@ export interface IModelHostOptions {
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
-    // @alpha
+    // @internal
     crashReportingConfig?: CrashReportingConfig;
     enableOpenTelemetry?: boolean;
-    // @beta
+    // @internal
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -3083,6 +3264,8 @@ export interface IModelHostOptions {
     logTileSizeThreshold?: number;
     // @beta
     maxTileCacheDbSize?: number;
+    // @beta
+    profileName?: string;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -3280,13 +3463,11 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     close(): void;
     // (undocumented)
-    get cloudCache(): CloudSqlite.CloudCache;
-    // (undocumented)
     readonly containerDir: LocalDirName;
     // (undocumented)
-    static finalize(): void;
-    // (undocumented)
     findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
+    // (undocumented)
+    getCloudCache(): CloudSqlite.CloudCache;
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     // (undocumented)
@@ -3381,9 +3562,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
 // @public
 export class KnownLocations {
-    static get nativeAssetsDir(): string;
-    static get packageAssetsDir(): string;
-    static get tmpdir(): string;
+    static get nativeAssetsDir(): LocalDirName;
+    static get packageAssetsDir(): LocalDirName;
+    static get tmpdir(): LocalDirName;
 }
 
 // @internal
@@ -3582,6 +3763,8 @@ export class LocalhostIpcHost {
     // (undocumented)
     static connect(connection: ws): void;
     // (undocumented)
+    static socket: IpcWebSocketBackend;
+    // (undocumented)
     static startup(opts?: {
         localhostIpcHost?: LocalhostIpcHostOpts;
         iModelHost?: IModelHostOptions;
@@ -3778,8 +3961,8 @@ export class Model extends Entity {
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     // (undocumented)
     getJsonProperty(name: string): any;
@@ -3840,8 +4023,8 @@ export class ModelSelector extends DefinitionElement {
     constructor(props: ModelSelectorProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
@@ -3855,7 +4038,7 @@ export class ModelSelectorRefersToModels extends Relationship {
     // (undocumented)
     static get className(): string;
     // (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
 }
 
 // @public
@@ -4102,8 +4285,6 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @internal (undocumented)
-    static load(): typeof IModelJsNative;
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
 }
 
@@ -4142,39 +4323,27 @@ export enum ProgressStatus {
     Continue = 0
 }
 
-// @alpha
-export interface PropertyStore {
-    deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
-    deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
-    readonly lockParams: CloudSqlite.ObtainLockParams;
-    sasToken: AccessToken;
-    saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
-    saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
-    // @internal
-    startPrefetch(): CloudSqlite.CloudPrefetch;
-    synchronizeWithCloud(): void;
-    readonly values: PropertyStore.Values;
-}
-
-// @alpha (undocumented)
+// @beta (undocumented)
 export namespace PropertyStore {
-    let // @internal (undocumented)
-    openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
+    export class CloudAccess extends CloudSqlite.DbAccess<PropertyDb> {
+        constructor(props: CloudSqlite.ContainerAccessProps);
+        static initializeDb(args: {
+            props: CloudSqlite.ContainerAccessProps;
+            initContainer?: {
+                blockSize?: number;
+            };
+        }): Promise<void>;
+    }
     export type IterationReturn = void | "stop";
     export type PropertyArray = {
         name: PropertyName;
         value: PropertyType;
     }[];
-    export interface PropertyFilter {
-        readonly orderBy?: "ASC" | "DESC";
-        readonly sqlExpression?: string;
-        readonly value?: string;
-        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-    }
-    export type PropertyIteration = (name: string) => IterationReturn;
-    export type PropertyName = string;
-    export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
-    export interface Values {
+    export class PropertyDb extends VersionedSqliteDb {
+        // (undocumented)
+        protected createDDL(): void;
+        deleteProperties(propNames: PropertyName[]): Promise<void>;
+        deleteProperty(propName: PropertyName): Promise<void>;
         forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
         getBlob(name: PropertyName): Uint8Array | undefined;
         getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
@@ -4182,12 +4351,25 @@ export namespace PropertyStore {
         getBoolean(name: PropertyName, defaultValue: boolean): boolean;
         getNumber(name: PropertyName): number | undefined;
         getNumber(name: PropertyName, defaultValue: number): number;
-        getObject<T extends SettingObject>(name: PropertyName): T | undefined;
-        getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
+        getObject(name: PropertyName): SettingObject | undefined;
+        getObject(name: PropertyName, defaultValue: SettingObject): SettingObject;
         getProperty(name: PropertyName): PropertyType | undefined;
-        getString(name: PropertyName): string | undefined;
         getString(name: PropertyName, defaultValue: string): string;
+        getString(name: PropertyName): string | undefined;
+        // (undocumented)
+        readonly myVersion = "3.0.0";
+        saveProperties(props: PropertyArray): Promise<void>;
+        saveProperty(name: PropertyName, value: PropertyType): Promise<void>;
     }
+    export interface PropertyFilter {
+        readonly orderBy?: "ASC" | "DESC";
+        readonly sqlExpression?: string;
+        readonly value?: string;
+        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "!=" | "<" | ">";
+    }
+    export type PropertyIteration = (name: string) => IterationReturn;
+    export type PropertyName = string;
+    export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
 }
 
 // @public
@@ -4304,8 +4486,8 @@ export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(ids: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(ids: EntityReferenceSet): void;
     description: string;
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
@@ -4555,8 +4737,8 @@ export class Sheet extends Document_2 {
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     height: number;
@@ -4594,8 +4776,8 @@ export class SheetTemplate extends Document_2 {
     border?: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     height?: number;
     // (undocumented)
@@ -4713,8 +4895,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
     static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
@@ -4728,7 +4910,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 }
 
 // @public
-export class SQLiteDb implements IDisposable {
+export class SQLiteDb {
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
     // @internal (undocumented)
@@ -4736,6 +4918,13 @@ export class SQLiteDb implements IDisposable {
     createDb(dbName: string): void;
     // @beta (undocumented)
     createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+    protected createTable(args: {
+        tableName: string;
+        columns: string;
+        constraints?: string;
+        addTimestamp?: boolean;
+    }): void;
+    // @deprecated
     dispose(): void;
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
@@ -4747,10 +4936,11 @@ export class SQLiteDb implements IDisposable {
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    readLastModTime(tableName: string, rowId: number): Date;
     saveChanges(): void;
     vacuum(args?: SQLiteDb.VacuumDbArgs): void;
     // @internal
-    withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => T): Promise<T>;
+    withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => Promise<T>): Promise<T>;
     withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
     withSavePoint(savePointName: string, operation: () => void): void;
@@ -4804,9 +4994,14 @@ export namespace SQLiteDb {
     export interface PageSize {
         pageSize?: number;
     }
+    export interface RequiredVersionRanges {
+        readonly readVersion: VersionRange;
+        readonly writeVersion: VersionRange;
+    }
     export interface VacuumDbArgs extends PageSize {
         into?: LocalFileName;
     }
+    export type VersionRange = string;
     export interface WithOpenDbArgs {
         // @internal (undocumented)
         container?: CloudSqlite.CloudContainer;
@@ -5211,8 +5406,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     recipe?: RelatedElement;
 }
@@ -5282,13 +5477,38 @@ export interface ValidationError {
     message?: string;
 }
 
+// @beta
+export abstract class VersionedSqliteDb extends SQLiteDb {
+    protected abstract createDDL(): void;
+    static createNewDb(fileName: LocalFileName): void;
+    getRequiredVersions(): SQLiteDb.RequiredVersionRanges;
+    abstract myVersion: string;
+    openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+    setRequiredVersions(versions: SQLiteDb.RequiredVersionRanges): void;
+    // (undocumented)
+    upgradeSchema(arg: {
+        dbName: string;
+        lockContainer?: {
+            container: CloudSqlite.CloudContainer;
+            moniker: string;
+        };
+        upgradeFn: () => void;
+    }): Promise<void | (() => void)>;
+    protected verifyVersions(): void;
+    // (undocumented)
+    protected static _versionProps: {
+        readonly namespace: "SQLiteDb";
+        readonly name: "versions";
+    };
+}
+
 // @public
 export class ViewAttachment extends GraphicalElement2d {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
     view: RelatedElement;
 }
@@ -5307,8 +5527,8 @@ export abstract class ViewDefinition extends DefinitionElement {
     categorySelectorId: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
@@ -5338,8 +5558,8 @@ export class ViewDefinition2d extends ViewDefinition {
     baseModelId: Id64String;
     // @internal (undocumented)
     static get className(): string;
-    // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delta: Point2d;
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
@@ -5382,9 +5602,9 @@ export class WebMercatorModel extends SpatialModel {
 // @beta
 export interface Workspace {
     close(): void;
-    readonly cloudCache?: CloudSqlite.CloudCache;
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
+    getCloudCache(): CloudSqlite.CloudCache;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
