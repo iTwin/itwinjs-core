@@ -16,15 +16,15 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 export namespace AzuriteTest {
 
   export const httpAddr = "127.0.0.1:10000";
-  export const storage: CloudSqlite.AccountAccessProps = { accessName: "devstoreaccount1", storageType: `azure?emulator=${httpAddr}&sas=1` };
-  const accountSasKey = new azureBlob.StorageSharedKeyCredential(storage.accessName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
+  export const accountName = "devstoreaccount1";
+  const accountSasKey = new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
   const pipeline = azureBlob.newPipeline(accountSasKey);
-  export const getRootUri = () => `http://${httpAddr}/${storage.accessName}`;
-  export const getContainerUri = (id: string) => `${getRootUri()}/${id}`;
+  export const baseUri = `http://${httpAddr}/${accountName}`;
+  export const getContainerUri = (id: string) => `${baseUri}/${id}`;
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
   export const makeSasToken = async (containerId: string, forWriteAccess: boolean) => {
-    const address = { id: containerId, uri: getRootUri() };
+    const address = { id: containerId, baseUri };
     const userToken = forWriteAccess ? service.userToken.readWrite : service.userToken.readOnly;
     const access = await BlobContainer.service!.requestToken({ address, userToken, forWriteAccess });
     return access.token;
@@ -57,7 +57,7 @@ export namespace AzuriteTest {
 
       const containerService = BlobContainer.service!;
       try {
-        await containerService.delete({ address: { id: createProps.id!, uri: getRootUri() }, userToken: createProps.userToken });
+        await containerService.delete({ address: { id: createProps.id!, baseUri }, userToken: createProps.userToken });
       } catch (e) {
       }
 
@@ -79,7 +79,7 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean }
 
     export const makeContainer = (arg: TestContainerProps): TestContainer => {
-      const cont = CloudSqlite.createCloudContainer({ ...storage, containerId: arg.containerId, cloudSqliteLogId: arg.logId, writeable: true, accessToken: "" }) as TestContainer;
+      const cont = CloudSqlite.createCloudContainer({ containerId: arg.containerId, logId: arg.logId, writeable: true, baseUri, storageType: "azure", accessToken: "" }) as TestContainer;
       cont.isPublic = arg.isPublic === true;
       return cont;
     };
@@ -128,7 +128,7 @@ export namespace AzuriteTest {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may create containers");
 
-      const address: BlobContainer.Address = { id: arg.id ?? Guid.createValue(), uri: getRootUri() };
+      const address = { id: arg.id ?? Guid.createValue(), baseUri };
       const azCont = createAzClient(address.id);
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {
