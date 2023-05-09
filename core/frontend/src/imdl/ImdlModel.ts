@@ -6,45 +6,14 @@
  * @module Tiles
  */
 
-import { StructuredCloneableObject, UintArray } from "@itwin/core-bentley";
+import { NonFunctionPropertiesOf, StructuredCloneableObject, UintArray } from "@itwin/core-bentley";
 import { XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDefProps, FeatureIndexType, FillFlags, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
 } from "@itwin/core-common";
 import { EdgeTable } from "../render/primitives/EdgeParams";
 import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceParams";
-
-/*
-export type ImdlTextureMapping = Omit<TextureMapping, "texture"> & {
-  // The name of the texture as defined in ImdlDocument.namedTextures, or a gradient.
-  texture: string | Gradient.Symb;
-};
-
-export type ImdlRenderMaterial = Omit<RenderMaterial.Params, "textureMapping"> & {
-  textureMapping?: ImdlTextureMapping;
-};
-
-export interface ImdlSurfaceRenderMaterial {
-  isAtlas: false;
-  readonly material: ImdlRenderMaterial;
-}
-
-export type ImdlSurfaceMaterial = ImdlSurfaceRenderMaterial | SurfaceMaterialAtlas;
-
-export type ImdlSurfaceParams = Omit<SurfaceParams, "textureMapping" | "material"> & {
-  material?: ImdlSurfaceMaterial;
-  textureMapping?: {
-    texture: string | Gradient.Symb;
-    alwaysDisplayed: boolean;
-  };
-};
-
-export type ImdlMeshParams = Omit<MeshParams, "surface"> & {
-  surface: ImdlSurfaceParams;
-};
-
-export type ImdlPrimitiveParams = ImdlMeshParams | PointStringParams | PolylineParams;
-*/
+import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
 export namespace ImdlModel {
   export interface VertexTable extends StructuredCloneableObject {
@@ -138,12 +107,14 @@ export namespace ImdlModel {
     };
   };
 
+  export type AuxChannelTableParams = NonFunctionPropertiesOf<AuxChannelTable>;
+
   export interface MeshParams {
     vertices: VertexTable;
     surface: SurfaceParams
     edges?: EdgeParams;
     isPlanar: boolean;
-    // ###TODO auxChannels?: AuxChannelTable;
+    auxChannels?: AuxChannelTableParams;
   }
 
   export type PrimitiveParams = {
