@@ -6,10 +6,9 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import {
-  BatchType, FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, MultiModelPackedFeatureTable, PackedFeatureTable, RenderFeatureTable,
-  RenderSchedule, TileFormat, TileHeader, TileReadStatus,
+  FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import { ImdlDocument } from "./ImdlSchema";
@@ -18,12 +17,9 @@ export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 export interface ImdlParserOptions {
   stream: ByteStream;
-  batchModelId: Id64String;
-  batchType?: BatchType;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   timeline?: ImdlTimeline;
-  isLeaf?: boolean;
 }
 
 /** Header preceding "glTF" data in iMdl tile. */
@@ -106,10 +102,21 @@ class ImdlParser {
     if (!featureTable)
       return TileReadStatus.InvalidFeatureTable;
 
-    return TileReadStatus.InvalidTileData; // ###TODO
+    const rtcCenter = this._document.rtcCenter ? {
+      x: this._document.rtcCenter[0] ?? 0,
+      y: this._document.rtcCenter[1] ?? 0,
+      z: this._document.rtcCenter[2] ?? 0,
+    } : undefined;
+
+    const nodes = this.parseNodes(featureTable);
+    return {
+      featureTable,
+      nodes,
+      rtcCenter,
+    };
   }
 
-  private parseFeatureTable(): RenderFeatureTable | undefined {
+  private parseFeatureTable(): Imdl.FeatureTable | undefined {
     this.stream.curPos = this._featureTableInfo.startPos;
     const header = FeatureTableHeader.readFrom(this.stream);
     if (!header || 0 !== header.length % 4)
@@ -121,10 +128,14 @@ class ImdlParser {
     if (this.stream.isPastTheEnd)
       return undefined;
 
-    const batchType = this._options.batchType ?? BatchType.Primary;
-    let featureTable: RenderFeatureTable;
+    let featureTable: Imdl.FeatureTable;
     if (this._featureTableInfo.multiModel) {
-      featureTable = MultiModelPackedFeatureTable.create(packedFeatureArray, this._options.batchModelId, header.count, batchType, header.numSubCategories);
+      featureTable = {
+        multiModel: true,
+        data: packedFeatureArray,
+        numFeatures: header.count,
+        numSubCategories: header.numSubCategories,
+      };
     } else {
       let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
       const animationNodes = this._document.animationNodes;
@@ -152,11 +163,21 @@ class ImdlParser {
         }
       }
 
-      featureTable = new PackedFeatureTable(packedFeatureArray, this._options.batchModelId, header.count, batchType, animNodesArray);
+      featureTable = {
+        multiModel: false,
+        data: packedFeatureArray,
+        numFeatures: header.count,
+        animationNodeIds: animNodesArray,
+      };
     }
 
+    // ###TODO populateAnimationNodeIds if we have a timeline.
     this.stream.curPos = this._featureTableInfo.startPos + header.length;
     return featureTable;
+  }
+
+  private parseNodes(featureTable: Imdl.FeatureTable): Imdl.Node[] {
+    return []; // ###TODO
   }
 }
 

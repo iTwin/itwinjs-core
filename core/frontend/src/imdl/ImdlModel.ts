@@ -159,6 +159,7 @@ export namespace ImdlModel {
     data: Uint32Array;
     numFeatures: number;
     animationNodeIds?: UintArray;
+    numSubCategories?: never;
   }
 
   export interface MultiModelFeatureTable {
@@ -166,6 +167,7 @@ export namespace ImdlModel {
     data: Uint32Array;
     numFeatures: number;
     numSubCategories: number;
+    animationNodeIds?: UintArray;
   }
 
   export type FeatureTable = SingleModelFeatureTable | MultiModelFeatureTable;
