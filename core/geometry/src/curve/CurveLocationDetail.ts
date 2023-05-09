@@ -53,7 +53,7 @@ function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | u
   return undefined;
 }
 /**
- * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
+ * CurveLocationDetail carries point and parameter data about a point evaluated on a curve.
  * * These are returned by a variety of queries.
  * * Particular contents can vary among the queries.
  * @public
