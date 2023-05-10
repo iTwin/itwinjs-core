@@ -20,6 +20,9 @@ Table of contents:
   - [Deprecated API removals](#deprecated-api-removals)
   - [Deprecated API replacements](#deprecated-api-replacements)
     - [Querying ECSql](#querying-ecsql)
+  - [Interfaces changed](#interfaces-changed)
+    - [Core Quantity](#itwincore-quantity)
+    - [ECSchema Metadata](#itwinecschema-metadata)
 - [Backend](#backend)
   - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
@@ -156,6 +159,21 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
   const jsRow = row.toRow();
 }
 ```
+
+### Interfaces changed
+
+#### @itwin/core-quantity
+
+- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+
+#### @itwin/ecschema-metadata
+
+- Renamed Interfaces
+  - The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+  - The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+- ISchemaLocater
+  - `getSchema` and `getSchemaSync` methods not take a `Readonly<SchemaKey>` instead of a `SchemaKey` and the `SchemaContext` parameter is required
+  - Added `getSchemaInfo` method to facilitate asynchronous schema loading
 
 ## Backend
 
@@ -305,15 +323,3 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 ### ContentInstancesOfSpecificClassesSpecification
 
 The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
-
-## Interfaces renamed
-
-**@itwin/core-quantity**
-
-- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
-
-**@itwin/ecschema-metadata**
-
-- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
-
-- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).

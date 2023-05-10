@@ -5,7 +5,7 @@
 
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { LazyLoadedSchema, SchemaInfo } from "./Interfaces";
+import { SchemaInfo } from "./Interfaces";
 import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";

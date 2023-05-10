@@ -12,7 +12,7 @@ import { SchemaKey } from "../SchemaKey";
 
 /**
  * A schema and it's reference that make up part of a schema cycle
- * @beta
+ * @internal
  */
 export interface ReferenceCycle {
   schema: SchemaInfo;
@@ -21,7 +21,7 @@ export interface ReferenceCycle {
 
 /**
  * Utility class for detecting cyclic references in a Schema graph.
- * @beta
+ * @internal
  */
 export class SchemaGraph {
   private _schemas: SchemaInfo[] = [];
