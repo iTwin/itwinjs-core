@@ -248,7 +248,8 @@ class ImdlParser {
   }
 
   private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.PrimitiveParams | undefined{
-    return undefined; // ###TODO
+    if (docPrimitive.type === "areaPattern")
+      return undefined; // ###TODO
   }
 }
 

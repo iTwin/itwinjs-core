@@ -7,7 +7,7 @@
  */
 
 import { NonFunctionPropertiesOf, StructuredCloneableObject, UintArray } from "@itwin/core-bentley";
-import { XYAndZ } from "@itwin/core-geometry";
+import { LowAndHighXYZ, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDefProps, FeatureIndexType, FillFlags, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
 } from "@itwin/core-common";
@@ -117,17 +117,34 @@ export namespace ImdlModel {
     auxChannels?: AuxChannelTableParams;
   }
 
+  export interface Instances {
+    type: "instances";
+    count: number;
+    transforms: Float32Array;
+    transformCenter: XYAndZ;
+    featureIds?: Uint8Array;
+    symbologyOverrides?: Uint8Array;
+    range?: LowAndHighXYZ;
+  }
+
+  export interface ViewIndependentOrigin {
+    type: "viewIndependentOrigin";
+    origin: XYAndZ;
+  }
+
+  export type PrimitiveModifier = Instances | ViewIndependentOrigin;
+
   export type PrimitiveParams = {
     params: MeshParams;
-    viOrigin?: XYAndZ;
+    modifier?: PrimitiveModifier;
     type: "mesh";
   } | {
     params: PointStringParams;
-    viOrigin: XYAndZ;
+    modifier?: PrimitiveModifier;
     type: "point";
   } | {
     params: PolylineParams;
-    viOrigin?: XYAndZ;
+    modifier?: PrimitiveModifier;
     type: "polyline";
   };
 
