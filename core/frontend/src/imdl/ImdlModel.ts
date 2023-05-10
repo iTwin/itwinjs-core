@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { NonFunctionPropertiesOf, StructuredCloneableObject, UintArray } from "@itwin/core-bentley";
+import { NonFunctionPropertiesOf, UintArray } from "@itwin/core-bentley";
 import { LowAndHighXYZ, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDefProps, FeatureIndexType, FillFlags, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
@@ -16,7 +16,7 @@ import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceP
 import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
 export namespace ImdlModel {
-  export interface VertexTable extends StructuredCloneableObject {
+  export interface VertexTable {
     data: Uint8Array;
     usesUnquantizedPositions?: boolean;
     qparams: QParams3dProps;
@@ -134,7 +134,7 @@ export namespace ImdlModel {
 
   export type PrimitiveModifier = Instances | ViewIndependentOrigin;
 
-  export type PrimitiveParams = {
+  export type Primitive = {
     params: MeshParams;
     modifier?: PrimitiveModifier;
     type: "mesh";
@@ -149,21 +149,21 @@ export namespace ImdlModel {
   };
 
   export interface BasicNode {
-    primitives: PrimitiveParams[];
+    primitives: Primitive[];
     animationNodeId?: never;
     animationId?: never;
     layerId?: never;
   }
 
   export interface AnimationNode {
-    primitives: PrimitiveParams[];
+    primitives: Primitive[];
     animationNodeId: number;
     animationId?: string;
     layerId?: never;
   }
 
   export interface Layer {
-    primitives: PrimitiveParams[];
+    primitives: Primitive[];
     layerId: string;
     animationNodeId?: never;
     animationId?: never;

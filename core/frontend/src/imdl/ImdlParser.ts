@@ -7,12 +7,13 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
+import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
+  ColorDef, FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, QParams2d, QParams3d, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import { AnyImdlPrimitive, ImdlAreaPattern, ImdlDocument, ImdlMesh } from "./ImdlSchema";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { AnimationNodeId } from "../render/GraphicBranch";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
@@ -20,6 +21,7 @@ export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 export interface ImdlParserOptions {
   stream: ByteStream;
   batchModelId: Id64String;
+  is3d: boolean;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   timeline?: ImdlTimeline;
@@ -237,7 +239,7 @@ class ImdlParser {
   private parseBranch(output: Imdl.Node[], docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
   }
 
-  private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.PrimitiveParams[] {
+  private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.Primitive[] {
     const primitives = [];
     for (const docPrimitive of docPrimitives) {
       const primitive = this.parsePrimitive(docPrimitive);
@@ -248,7 +250,7 @@ class ImdlParser {
     return primitives;
   }
 
-  private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.PrimitiveParams | undefined {
+  private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.Primitive | undefined {
     if (docPrimitive.type === "areaPattern")
       return undefined; // ###TODO
 
@@ -260,6 +262,88 @@ class ImdlParser {
         origin: { x: origin.x, y: origin.y, z: origin.z },
       };
     }
+
+    const materialName = docPrimitive.material ?? "";
+    const material = materialName.length ? JsonUtils.asObject(this._document.materials[materialName]) : undefined;
+    if (!material)
+      return undefined;
+
+    const vertices = this.parseVertexTable(docPrimitive);
+    if (!vertices)
+      return undefined;
+
+    let primitive: Imdl.Primitive | undefined;
+    const isPlanar = !this._options.is3d || JsonUtils.asBool(docPrimitive.isPlanar);
+    switch (docPrimitive.type) {
+      case Mesh.PrimitiveType.Mesh: {
+        // ###TODO
+        break;
+      }
+      case Mesh.PrimitiveType.Polyline: {
+        // ###TODO
+        break;
+      }
+      case Mesh.PrimitiveType.Point: {
+        const indices = this.findBuffer(docPrimitive.indices);
+        const weight = JsonUtils.asInt(material.lineWidth);
+        if (indices) {
+          primitive = {
+            type: "point",
+            params: { vertices, indices, weight },
+          };
+        }
+
+        break;
+      }
+    }
+
+    if (primitive)
+      primitive.modifier = modifier;
+
+    return primitive;
+  }
+
+  private parseVertexTable(primitive: AnyImdlPrimitive): Imdl.VertexTable | undefined {
+    const json = primitive.vertices;
+    if (!json)
+      return undefined;
+
+    const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
+    if (!bytes)
+      return undefined;
+
+    const uniformFeatureID = undefined !== json.featureID ? JsonUtils.asInt(json.featureID) : undefined;
+
+    const rangeMin = JsonUtils.asArray(json.params.decodedMin);
+    const rangeMax = JsonUtils.asArray(json.params.decodedMax);
+    if (undefined === rangeMin || undefined === rangeMax)
+      return undefined;
+
+    const qparams = QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2])));
+
+    const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
+    let uvParams: QParams2d | undefined;
+    if (Mesh.PrimitiveType.Mesh === primitive.type && primitive.surface && primitive.surface.uvParams) {
+      const uvMin = primitive.surface.uvParams.decodedMin;
+      const uvMax = primitive.surface.uvParams.decodedMax;
+      const uvRange = new Range2d(uvMin[0], uvMin[1], uvMax[0], uvMax[1]);
+      uvParams = QParams2d.fromRange(uvRange);
+    }
+
+    return {
+      data: bytes,
+      usesUnquantizedPositions: true === json.usesUnquantizedPositions,
+      qparams: qparams.toJSON(),
+      width: json.width,
+      height: json.height,
+      hasTranslucency: json.hasTranslucency,
+      uniformColor: uniformColor?.toJSON(),
+      featureIndexType: json.featureIndexType,
+      uniformFeatureID,
+      numVertices: json.count,
+      numRgbaPerVertex: json.numRgbaPerVertex,
+      uvParams: uvParams?.toJSON(),
+    };
   }
 
   private parseInstances(primitive: AnyImdlPrimitive): Imdl.Instances | undefined {
