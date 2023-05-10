@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export default function activate() {
-  console.log("hello world");
+declare module "*.png" {
+  const value: any;
+  export = value;
 }
