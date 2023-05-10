@@ -313,8 +313,9 @@ class ImdlParser {
     }
 
     const materialName = docPrimitive.material ?? "";
-    const material = materialName.length ? JsonUtils.asObject(this._document.materials[materialName]) : undefined;
-    if (!material)
+    const dpMaterial = materialName.length ? JsonUtils.asObject(this._document.materials[materialName]) : undefined;
+    const displayParams = dpMaterial ? this.parseDisplayParams(dpMaterial) : undefined;
+    if (!displayParams)
       return undefined;
 
     const vertices = this.parseVertexTable(docPrimitive);
@@ -334,7 +335,7 @@ class ImdlParser {
       }
       case Mesh.PrimitiveType.Point: {
         const indices = this.findBuffer(docPrimitive.indices);
-        const weight = JsonUtils.asInt(material.lineWidth);
+        const weight = displayParams.width;
         if (indices) {
           primitive = {
             type: "point",
@@ -555,7 +556,7 @@ class ImdlParser {
     return textureMapping;
   }
 
-  private createDisplayParams(json: ImdlDisplayParams): DisplayParams | undefined {
+  private parseDisplayParams(json: ImdlDisplayParams): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
     const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
     const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
