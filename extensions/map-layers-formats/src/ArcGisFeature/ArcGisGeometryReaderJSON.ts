@@ -2,20 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { Transform } from "@itwin/core-geometry";
-
 import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
-
 
 /** @internal */
 export class ArcGisGeometryReaderJSON {
-
   private _ringsOrPaths:boolean;
   private _points:boolean;
   private _fill:boolean;
   private _relativeCoords:boolean;
   private _renderer: ArcGisGeometryRenderer;
+
   public constructor(geometryType:string, renderer: ArcGisGeometryRenderer, relativeCoords = false) {
     this._ringsOrPaths = geometryType === "esriGeometryPolyline" || geometryType === "esriGeometryPolygon";
     this._points = geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultiPoint";
@@ -52,7 +48,7 @@ export class ArcGisGeometryReaderJSON {
     await renderer.renderPath(lengths, coords, fill, 2, relativeCoords);
   }
 
-  public async readPoints(geometry: any, renderer: ArcGisGeometryRenderer, relativeCoords: boolean) {
+  private async readPoints(geometry: any, renderer: ArcGisGeometryRenderer, relativeCoords: boolean) {
     if (geometry) {
       const lengths: number[] = [];
       const coords: number[] = [geometry.x, geometry.y];
@@ -72,5 +68,4 @@ export class ArcGisGeometryReaderJSON {
 
     return offset;
   }
-
 }
