@@ -136,7 +136,7 @@ export class ClassRegistry {
     // the above creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
-    // a class only gets an automatic `collectReferenceConcreteIds` implementation if:
+    // a class only gets an automatic `collectReferenceIds` implementation if:
     // - it is not in the `BisCore` schema
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
     if (!generatedClassHasNonGeneratedNonCoreAncestor) {
@@ -159,11 +159,11 @@ export class ClassRegistry {
 
       Object.defineProperty(
         generatedClass.prototype,
-        "collectReferenceConcreteIds",
+        "collectReferenceIds",
         {
           value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl = superclass.prototype["collectReferenceConcreteIds"];
+            const superImpl = superclass.prototype["collectReferenceIds"];
             superImpl.call(this, referenceIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions

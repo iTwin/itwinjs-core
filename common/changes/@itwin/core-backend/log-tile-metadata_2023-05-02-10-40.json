@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "log metadata when uploading tiles",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

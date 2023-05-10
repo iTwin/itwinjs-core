@@ -17,6 +17,7 @@ import { Range1d, Range3d } from "./Range";
 import { Transform } from "./Transform";
 import { XYAndZ } from "./XYZProps";
 
+// cspell:word Cramer
 /**
  * A Ray3d contains
  * * an `origin` point.
@@ -31,6 +32,11 @@ export class Ray3d implements BeJSONFunctions {
   public direction: Vector3d;
   /** Numeric annotation. */
   public a?: number; // optional (e.g. weight)
+  private static _workVector0?: Vector3d;
+  private static _workVector1?: Vector3d;
+  private static _workVector2?: Vector3d;
+  private static _workVector3?: Vector3d;
+  private static _workVector4?: Vector3d;
   // constructor (captures references)
   private constructor(origin: Point3d, direction: Vector3d) {
     this.origin = origin;
@@ -70,7 +76,13 @@ export class Ray3d implements BeJSONFunctions {
   public isAlmostEqual(other: Ray3d): boolean {
     return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
   }
-  /** Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`. */
+  /**
+   * Return the dot product of the ray's direction vector with a vector from the ray origin
+   * to the `spacePoint`.
+   * * If the instance is the unit normal of a plane, then this method returns the (signed) altitude
+   * of `spacePoint` with respect to the plane.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
+   */
   public dotProductToPoint(spacePoint: Point3d): number {
     return this.direction.dotProductStartEnd(this.origin, spacePoint);
   }
@@ -213,19 +225,25 @@ export class Ray3d implements BeJSONFunctions {
     }
     return new Ray3d(this.origin.clone(), this.direction.clone());
   }
-  /** Create a clone and return the transform of the clone. */
-  public cloneTransformed(transform: Transform): Ray3d {
-    return new Ray3d(transform.multiplyPoint3d(this.origin), transform.multiplyVector(this.direction));
+  /** Return a clone of the transformed instance */
+  public cloneTransformed(transform: Transform, result?: Ray3d): Ray3d {
+    return Ray3d.create(
+      transform.multiplyPoint3d(this.origin, result?.origin),
+      transform.multiplyVector(this.direction, result?.direction),
+      result
+    );
   }
   /** Create a clone and return the inverse transform of the clone. */
-  public cloneInverseTransformed(transform: Transform): Ray3d | undefined {
-    const origin = transform.multiplyInversePoint3d(this.origin);
-    const direction = transform.matrix.multiplyInverseXYZAsVector3d(
-      this.direction.x, this.direction.y, this.direction.z
+  public cloneInverseTransformed(transform: Transform, result?: Ray3d): Ray3d | undefined {
+    if (!transform.computeCachedInverse(true))
+      return undefined;
+    return Ray3d.create(
+      transform.multiplyInversePoint3d(this.origin, result?.origin)!,
+      transform.matrix.multiplyInverseXYZAsVector3d(
+        this.direction.x, this.direction.y, this.direction.z, result?.direction
+      )!,
+      result
     );
-    if (undefined !== origin && undefined !== direction)
-      return new Ray3d(origin, direction);
-    return undefined;
   }
   /** Apply a transform in place. */
   public transformInPlace(transform: Transform) {
@@ -360,6 +378,101 @@ export class Ray3d implements BeJSONFunctions {
     )
       return interval;
     return interval;
+  }
+  /**
+   * Compute the intersection of the ray with a triangle.
+   * @param vertex0 first vertex of the triangle
+   * @param vertex1 second vertex of the triangle
+   * @param vertex2 third vertex of the triangle
+   * @param distanceTol optional tolerance used to check if ray is parallel to the triangle or if we have line
+   * intersection but not ray intersection (if tolerance is not provided, Geometry.smallMetricDistance is used)
+   * @param parameterTol optional tolerance used to snap barycentric coordinates of the intersection point to
+   * a triangle edge or vertex (if tolerance is not provided, Geometry.smallFloatingPoint is used)
+   * @param result optional pre-allocated object to fill and return
+   * @returns the intersection point if ray intersects the triangle. Otherwise, return undefined.
+  */
+  public intersectionWithTriangle(
+    vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d
+  ): Point3d | undefined {
+    /**
+     * Suppose ray is shown by "rayOrigin + t*rayVector" and barycentric coordinate of point
+     * P = w*v0 + u*v1 + v*v2 = (1-u-v)*v0 + u*v1 + v*v2 = v0 + u*(v1-v0) + v*(v2-v0)
+     *
+     * Then if ray intersects triangle at a point we have
+     * v0 + u*(v1-v0) + v*(v2-v0) = rayOrigin + t*rayVector
+     * or
+     * -t*rayVector + u*(v1-v0) + v*(v2-v0) = rayOrigin - v0
+     *
+     * This equation can be reformulated as the following linear system:
+     *
+     * [    |          |      |  ] [t]   [      |       ]
+     * [-rayVector  v1-v0   v2-v0] [u] = [rayOrigin - v0]
+     * [   |          |      |   ] [v]   [      |       ]
+     *
+     * Then to find t, u, and v use Cramer's Rule and also the fact that if matrix A = [c1,c2,c3], then
+     * det(A) = c1.(c2 x c3) which leads to
+     *
+     * t = [(rayOrigin - v0).((v1-v0) x (v2-v0))] / [-rayVector.((v1-v0) x (v2-v0))]
+     * u = [-rayVector.((rayOrigin - v0) x (v2-v0))] / [-rayVector.((v1-v0) x (v2-v0))]
+     * v = [-rayVector.((v1-v0) x (rayOrigin - v0))] / [-rayVector.((v1-v0) x (v2-v0))]
+     *
+     * Now note that swapping any 2 vectors c_i and c_j in formula c1.(c2 x c3) negates it. For example:
+     * c1.(c2 x c3) = -c3.(c2 x c1) = c2.(c3 x c1)
+     *
+     * This leads to the final formulas used in the following code:
+     * t = [(v2-v0).((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
+     * u = [(rayOrigin - v0).(rayVector x (v2-v0))] / [(v1-v0).(rayVector x (v2-v0))]
+     * v = [-rayVector.((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
+     *
+     * Note that we should verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1.
+     * That's because w = 1-(u+v) and if we have those 4 checks, it's guaranteed that v <= 1 and 0 <= u+v and so
+     * 0 <= w <= 1.
+     *
+     * More info be found at
+     * https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+     */
+    if (distanceTol === undefined || distanceTol < 0) // we explicitly allow zero tolerance
+      distanceTol = Geometry.smallMetricDistance;
+    if (parameterTol === undefined || parameterTol < 0) // we explicitly allow zero tolerance
+      parameterTol = Geometry.smallFloatingPoint;
+    const edge1 = Ray3d._workVector0 = Vector3d.createStartEnd(vertex0, vertex1, Ray3d._workVector0);
+    const edge2 = Ray3d._workVector1 = Vector3d.createStartEnd(vertex0, vertex2, Ray3d._workVector1);
+    const h = Ray3d._workVector2 = this.direction.crossProduct(edge2, Ray3d._workVector2);
+    const a = edge1.dotProduct(h);
+    if (a >= -distanceTol && a <= distanceTol)
+      return undefined; // ray is parallel to the triangle (includes coplanar case)
+    const f = 1.0 / a;
+    const s = Ray3d._workVector3 = Vector3d.createStartEnd(vertex0, this.origin, Ray3d._workVector3);
+    let u = f * s.dotProduct(h);
+    if (u < 0.0) {
+      if (u > -parameterTol)
+        u = 0.0;
+      else
+        return undefined; // ray does not intersect the triangle
+    } else if (u > 1.0) {
+      if (u < 1.0 + parameterTol)
+        u = 1.0;
+      else
+        return undefined; // ray does not intersect the triangle
+    }
+    const q = Ray3d._workVector4 = s.crossProduct(edge1, Ray3d._workVector4);
+    let v = f * this.direction.dotProduct(q);
+    if (v < 0.0) {
+      if (v > -parameterTol)
+        v = 0.0;
+      else
+        return undefined;  // ray does not intersect the triangle
+    } else if (u + v > 1.0) {
+      if (u + v < 1.0 + parameterTol)
+        v = 1.0 - u;
+      else
+        return undefined;  // ray does not intersect the triangle
+    }
+    // at this stage, we know the line (parameterized as the ray) intersects the triangle
+    const t = f * edge2.dotProduct(q);
+    if (t <= distanceTol) // line intersection but not ray intersection
+      return undefined;
+    return this.origin.plusScaled(this.direction, t, result); // ray intersection
   }
   /**
    * Return the shortest vector `v` to `targetPoint` from the line defined by this ray.

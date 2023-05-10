@@ -28,7 +28,7 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
 export function assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition;
 
 // @public
-export type AsyncFunction = (...args: any) => Promise<any>;
+export type AsyncFunction = (...args: any[]) => Promise<unknown>;
 
 // @public
 export type AsyncMethodsOf<T> = {
@@ -1361,6 +1361,14 @@ export class PerfLogger implements IDisposable {
 export type PickAsyncMethods<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
 };
+
+// @public
+export type PickMethods<T> = {
+    [P in keyof T]: T[P] extends Function ? T[P] : never;
+};
+
+// @public
+export type PickSyncMethods<T> = Omit<PickMethods<T>, AsyncMethodsOf<T>>;
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {

@@ -29,6 +29,7 @@ Table of contents:
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
   - [Atmospheric Scattering](#atmospheric-scattering)
+  - [Constant LOD mapping mode](#constant-load-mapping-mode)
 - [Presentation](#presentation-1)
   - [Active unit system](#active-unit-system)
   - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
@@ -157,6 +158,11 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 
 BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
 
+### Entity.getReferenceIds
+
+[Entity.getReferenceIds]($core-backend) no longer returns a set of [Id64String]($core-bentley), but an [EntityReferenceSet]($core-common), because it now supports returning references
+of entities that aren't elements.
+
 ## Geometry
 
 ### Mesh offset
@@ -178,6 +184,8 @@ The lower left is the original (smaller, inside) mesh with the (transparent) off
 New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
 
 There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+A new method [Ray3d.intersectionWithTriangle]($core-geometry) is also added which is 2-3 times faster than [BarycentricTriangle.intersectRay3d]($core-geometry). This new method only returns the intersection coordinates of the ray and triangle and no extra data.
 
 ### Abstract base class [Plane3d]($core-geometry)
 
@@ -217,6 +225,22 @@ The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettin
 ![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
 ![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
 ![Atmospheric Scattering at Sunset](.\assets\atmosphere_sunset.jpg)
+
+### Constant LOD mapping mode
+
+Constant level-of-detail ("LOD") mapping mode is a technique that dynamically calculates texture cordinates to keep the texture near a certain size on the screen, thus preserving the level of detail no matter what the zoom level. It blends from one size of the texture to another as the view is zoomed in or out so that the change is smooth.
+
+You can create a [RenderMaterial]($common) that uses this mode on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting `useConstantLod` to `true` in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via `constantLodProps` (see [TextureMapping.ConstantLodParamProps]($common)).
+
+You can also have a normal map use constant LOD mapping by setting `useConstantLod` in its properties via [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend). It is thus possible to have a pattern map which uses constant lod mapping and a normal map which uses some other texture mapping mode or visa versa.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD pattern map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass in a `patternMap` with a [TextureMapProps]($common) which has `pattern_useConstantLod` set to true and optionally specify any or all of the `pattern_constantLod_*` properties.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend) and turn on the `useConstantLod` flag in its `NormalFlags` property.
+
+The image below illustrates the effects of constant LOD mapping.
+
+![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.")     ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
 
 ## Presentation
 
