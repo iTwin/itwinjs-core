@@ -280,7 +280,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
+      ],
+      "env": {
+        "NODE_ENV": "development" // needed for asserts to fire
+      }
     },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for HyperModeling Tests",

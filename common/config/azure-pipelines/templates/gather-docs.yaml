@@ -20,7 +20,7 @@ parameters:
   - name: useCurrentTransformerDocsArtifact
     type: boolean
     default: false
-  - name: useCurrentAuthClientDocsArtifact
+  - name: useCurrentAuthClientsDocsArtifact
     type: boolean
     default: false
 
@@ -77,6 +77,15 @@ steps:
       defaultBranch: refs/heads/main
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
+  # Download Auth Clients artifact
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 6189 # iTwin.js/clients/iTwin.auth-clients.publish build
+      artifactName: iTwin-Auth-Clients Docs
+      buildTag: hasDocs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

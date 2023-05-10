@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.0.6
+      '@bentley/imodeljs-native': 4.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^1.5.0
       '@itwin/core-bentley': workspace:*
@@ -51,7 +51,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.0.6
+      '@bentley/imodeljs-native': 4.0.8
       '@itwin/cloud-agnostic-core': 1.6.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.6.0
@@ -139,7 +139,6 @@ importers:
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
-      '@types/semver': 7.3.10
       chai: ^4.1.2
       eslint: ^8.36.0
       flatbuffers: ~1.12.0
@@ -147,13 +146,11 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      semver: ^7.3.5
       typescript: ~5.0.2
     dependencies:
       '@itwin/object-storage-core': 1.6.0
       flatbuffers: 1.12.0
       js-base64: 3.7.5
-      semver: 7.5.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -163,7 +160,6 @@ importers:
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/semver': 7.3.10
       chai: 4.3.7
       eslint: 8.39.0
       mocha: 10.2.0
@@ -1270,6 +1266,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-extension': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-editing': workspace:*
@@ -1297,6 +1294,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-extension': link:../../core/extension
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
@@ -5036,8 +5034,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.0.6:
-    resolution: {integrity: sha512-EIdXQO1ZE4Lw48VsAkIpn8SOkQf30Al2bvuiraVxrHoeUzJcN0QV2xwOeuylTmfMq0Bmfof3OFXnivvg/a+3/Q==}
+  /@bentley/imodeljs-native/4.0.8:
+    resolution: {integrity: sha512-EeC8ooHXyJfheuuQazT1UVkKMcj5FfCy0lfUkbo7hCr2DklaQlbhQuYk4h/5SK21JUnVOgdmLxezpFmcKGyYKg==}
     requiresBuild: true
     dev: false
 

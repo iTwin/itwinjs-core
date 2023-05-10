@@ -3,9 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-const path = require("path");
-const fs = require("fs");
-const pkgJson = require("../package.json");
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
+
+import pkgJson from "../package.json" assert { type: "json" };
 
 const declarationFilePath = "index.d.ts";
 const declarationFilePathPreview = "preview.d.ts";
@@ -24,14 +26,14 @@ const codeGenBlock = RegExp(
 // Convert extension linter's output file to a set of lists separated by export type
 function interpretCsv(csvString) {
   const apiByType = {
-    public: {
+    publicApi: {
       // property names to match the type names from extension eslint rule output
       enum: new Set(),
       interface: new Set(),
       type: new Set(),
       real: new Set(),
     },
-    preview: {
+    previewApi: {
       enum: new Set(),
       interface: new Set(),
       type: new Set(),
@@ -45,8 +47,8 @@ function interpretCsv(csvString) {
       if (line.length === 0) {
         return;
       }
-      [exportName, exportType, releaseTag] = line.split(",");
-      apiByType[releaseTag][exportType].add(exportName);
+      const [exportName, exportType, releaseTag] = line.split(",");
+      apiByType[`${releaseTag}Api`][exportType].add(exportName);
     });
   } catch (error) {
     console.log("Provided csv with Extension API was malformed.", error);
@@ -214,10 +216,10 @@ function addGeneratedExports(packages) {
   let exportList = {};
   let exportListPreview = {};
 
-  packages.forEach((package) => {
-    const { public, preview } = collectExports(package.path);
-    exportList[package.name] = public;
-    exportListPreview[package.name] = preview;
+  packages.forEach((pkg) => {
+    const { publicApi, previewApi } = collectExports(pkg.path);
+    exportList[pkg.name] = publicApi;
+    exportListPreview[pkg.name] = previewApi;
   });
 
   // Generate declaration code
@@ -241,6 +243,7 @@ function addGeneratedExports(packages) {
   addToFile(runtimeFilePath, runtimeCode);
 }
 
+const require = createRequire(import.meta.url);
 const packages = Object.keys(pkgJson.dependencies).map((name) => {
   const path = require.resolve(name);
   return { name, path };
