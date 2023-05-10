@@ -136,6 +136,7 @@ export class ArcGisFeatureGraphicsRenderer extends ArcGisFeatureBaseRenderer {
           Logger.logError(loggerCategory, "ArcGisFeatureGraphicsRenderer: Could not reproject points");
         }
       }
+      this._scratchPointsArray.clear();
     }
   }
 

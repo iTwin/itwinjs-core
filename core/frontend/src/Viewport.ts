@@ -1066,11 +1066,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     for (const result of results)
       if (result !== undefined) {
 
-        if (featureInfo.layerInfo === undefined) {
-          featureInfo.layerInfo = [];
+        if (featureInfo.layerInfos === undefined) {
+          featureInfo.layerInfos = [];
         }
 
-        featureInfo.layerInfo.push(...result);
+        featureInfo.layerInfos.push(...result);
       }
     return featureInfo;
   }

@@ -246,36 +246,36 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
+  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
     if (!this._querySupported)
       return;
 
-    const json = await this.getIdentifyData(quadId, carto,5 );
+    const json = await this.getIdentifyData(quadId, carto, 5);
     if (json && Array.isArray(json.results)) {
-      const layerInfo: MapLayerFeatureInfo = {layerName: this._settings.name};
+      const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name };
 
       for (const result of json.results) {
 
         const subLayerInfo: MapSubLayerFeatureInfo = {
           subLayerName: result.layerName ?? "",
           displayFieldName: result.displayFieldName,
-          records : [],
+          records: [],
         };
         for (const [key, value] of Object.entries(result.attributes)) {
           // Convert everything to string for now
           const strValue = String(value);
-          subLayerInfo.records?.push(new MapFeatureInfoRecord (
-            {valueFormat:PropertyValueFormat.Primitive, value:strValue, displayValue: strValue},
-            {name: key, displayLabel: key, typename:StandardTypeNames.String}
+          subLayerInfo.records?.push(new MapFeatureInfoRecord(
+            { valueFormat: PropertyValueFormat.Primitive, value: strValue, displayValue: strValue },
+            { name: key, displayLabel: key, typename: StandardTypeNames.String }
           ));
         }
 
-        if (layerInfo.info === undefined) {
-          layerInfo.info = [];
+        if (layerInfo.subLayerInfos === undefined) {
+          layerInfo.subLayerInfos = [];
         }
 
-        if (!(layerInfo.info instanceof HTMLElement)) {
-          layerInfo.info.push(subLayerInfo);
+        if (!(layerInfo.subLayerInfos instanceof HTMLElement)) {
+          layerInfo.subLayerInfos.push(subLayerInfo);
         }
 
       }

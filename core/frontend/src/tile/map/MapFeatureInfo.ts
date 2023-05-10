@@ -18,14 +18,14 @@ export class MapFeatureInfoRecord extends PropertyRecord {
 
 /** @alpha */
 export interface MapFeatureInfo {
-  layerInfo?: MapLayerFeatureInfo[];
+  layerInfos?: MapLayerFeatureInfo[];
   hitPoint?: Cartographic;
 }
 
 /** @alpha */
 export interface MapLayerFeatureInfo {
   layerName: string;
-  info?: MapSubLayerFeatureInfo[] | HTMLElement;
+  subLayerInfos?: MapSubLayerFeatureInfo[] | HTMLElement;
 }
 
 /** @alpha */

@@ -108,15 +108,13 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       ev.inputSource
     );
     if (hit !== undefined) {
-      let mapInfo: MapFeatureInfo | undefined;
+      let info: MapFeatureInfo | undefined;
       if (this.getSettingsFromHit(hit).length > 0) {
         IModelApp.toolAdmin.setCursor("wait");
         try {
-          mapInfo = await hit.viewport.getMapFeatureInfo(hit);
-          if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
-            const layerInfo = mapInfo.layerInfo[0];
-            if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
-              this._decorator.setState({ mapHit: hit, graphics: layerInfo.info[0].graphics });
+        info = await hit.viewport.getMapFeatureInfo(hit);
+        if (info) {
+          this._decorator.setState({ hit, info });
           }
         }
         finally {
@@ -124,7 +122,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
         }
       }
 
-      this.onInfoReady.raiseEvent({ hit, mapInfo });
+      this.onInfoReady.raiseEvent(hit, mapInfo);
       return EventHandled.Yes;
     }
     return EventHandled.No;

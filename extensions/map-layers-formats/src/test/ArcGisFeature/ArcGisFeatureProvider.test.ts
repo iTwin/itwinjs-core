@@ -97,7 +97,7 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
     Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
     (undefined as unknown) as ImageryMapTileTree, makeHitDetail(noGcsDefined));
   expect(featureInfos.length).to.equals(1);
-  const info = featureInfos[0].info;
+  const info = featureInfos[0].subLayerInfos;
   if (info && !(info instanceof HTMLElement)) {
     expect(info.length).to.equals(1);
     const graphics = info[0].graphics;
