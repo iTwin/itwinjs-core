@@ -16,6 +16,8 @@ import { IModelJsFs } from "./IModelJsFs";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
 
+// spell:ignore logmsg httpcode
+
 /**
  * Types for accessing SQLite databases stored in cloud containers.
  * @beta
@@ -30,16 +32,12 @@ export namespace CloudSqlite {
     return new NativeLibrary.nativeLib.CloudPrefetch(container, dbName, args);
   }
 
-  /** Properties that specify how to access the account for a cloud blob-store container. */
-  export interface AccountAccessProps {
-    /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
-    storageType: string;
-    /** blob store account name, or a URI for custom domains. */
-    accessName: string;
-  }
-
   /** Properties of a CloudContainer. */
   export interface ContainerProps {
+    /** blob storage module */
+    storageType: "azure" | "google" | "aws";
+    /** base URI for container. */
+    baseUri: string;
     /** the name of the container. */
     containerId: string;
     /** an alias for the container. Defaults to `containerId` */
@@ -50,11 +48,10 @@ export namespace CloudSqlite {
     writeable?: boolean;
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
     secure?: boolean;
-    /** An Id which enhances logging provided by CloudSQLite.
-     *  This Id will be used to identify, in log messages, all CloudSQLite client connections (also known as database connections) opened using this CloudContainer.
-     *  This Id is mostly only relevant to give more clarity to logs produced running in daemon mode, where there are usually many active CloudContainers and by extension, many ongoing HTTP requests.
-     */
-    cloudSqliteLogId?: string;
+    /** true if the container is public (doesn't require authorization) */
+    isPublic?: boolean;
+    /** string attached to log messages from CloudSQLite. This is most useful for identifying usage from daemon mode. */
+    logId?: string;
   }
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
@@ -95,11 +92,8 @@ export namespace CloudSqlite {
     readonly endTime: string | undefined;
     /** "PUT", "GET", etc. */
     readonly method: string;
-    /** Name of the client that caused this request. Name will be "prefetch" if it is a request triggered by a prefetch.
-     *  Name of client can be configured by passing a 'cloudSqliteLogId' to a CloudContainer's ContainerProps.
-     *  Empty string otherwise.
-     */
-    readonly cloudSqliteLogId: string;
+    /** Name of the client that caused this request. Name will be "prefetch" if it is a request triggered by a prefetch. */
+    readonly logId: string;
     /** Log message associated with request */
     readonly logmsg: string;
     /** URI of request */
@@ -109,9 +103,9 @@ export namespace CloudSqlite {
   }
 
   /** Properties for accessing a CloudContainer */
-  export type ContainerAccessProps = AccountAccessProps & ContainerProps & {
+  export type ContainerAccessProps = ContainerProps & {
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
-    durationSeconds?: number;
+    lockExpireSeconds?: number;
   };
 
   /** The name of a CloudSqlite database within a CloudContainer. */
@@ -269,14 +263,18 @@ export namespace CloudSqlite {
     onDisconnected?: (container: CloudContainer, detach: boolean) => void;
 
     readonly cache?: CloudCache;
-    /** The ContainerId within the storage account. */
+    /** The ContainerId within a storage account. */
     get containerId(): string;
     /** The *alias* to identify this CloudContainer in a CloudCache. Usually just the ContainerId. */
     get alias(): string;
+    /** The logId. */
+    get logId(): string;
     /** true if this CloudContainer is currently connected to a CloudCache via the `connect` method. */
     get isConnected(): boolean;
     /** true if this CloudContainer was created with the `writeable` flag (and its `accessToken` supplies write access). */
     get isWriteable(): boolean;
+    /** true if this container is public (doesn't require authorization ). */
+    get isPublic(): boolean;
     /** true if this CloudContainer currently holds the write lock for its container in the cloud. */
     get hasWriteLock(): boolean;
     /** true if this CloudContainer has local changes that have not be uploaded to its container in the cloud. */
