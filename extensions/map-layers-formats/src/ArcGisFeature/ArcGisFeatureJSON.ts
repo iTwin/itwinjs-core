@@ -16,26 +16,19 @@ import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
 /** @internal */
 export class ArcGisFeatureJSON extends ArcGisFeatureReader {
   public transform: Transform | undefined;
-  private _geomReader = new ArcGisGeometryReaderJSON();
 
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
     super(settings, layerMetadata);
 
   }
 
-
   public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
     const responseObj = response.data;
+    if (responseObj.geometryType) {
+      const geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer, renderer.transform === undefined);
 
-    if (responseObj?.geometryType === "esriGeometryPolyline" || responseObj?.geometryType === "esriGeometryPolygon") {
-      const fill = (responseObj.geometryType === "esriGeometryPolygon");
       for (const feature of responseObj.features) {
-        await this._geomReader.readRingsAndPaths(feature.geometry, renderer, fill, renderer.transform === undefined);
-      }
-    } else if (responseObj?.geometryType === "esriGeometryPoint" || responseObj?.geometryType === "esriGeometryMultiPoint") {
-      for (const feature of responseObj.features) {
-        // TODO: Add support for multipoint
-        await this._geomReader.readPoints(feature.geometry, renderer, renderer.transform === undefined);
+        await geomReader.readGeometry(feature.geometry);
       }
     }
   }
@@ -105,9 +98,11 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
       return new MapFeatureInfoRecord(propertyValue, { name: fieldName, displayLabel: fieldName, typename });
     };
 
-    const readRingsOrPaths = responseObj?.geometryType === "esriGeometryPolyline" || responseObj?.geometryType === "esriGeometryPolygon";
-    const readPoints = responseObj?.geometryType === "esriGeometryPoint" || responseObj?.geometryType === "esriGeometryMultiPoint";
-    const fill = (responseObj.geometryType === "esriGeometryPolygon");
+
+    let geomReader: ArcGisGeometryReaderJSON|undefined;
+    if (renderer && responseObj?.geometryType) {
+      geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer)
+    }
 
     // Read feature values
     for (const feature of responseObj.features) {
@@ -123,14 +118,9 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
       if (layerInfo.subLayerInfos === undefined)
         layerInfo.subLayerInfos = [];
 
-      if (renderer) {
-        if (readRingsOrPaths) {
-          await this._geomReader.readRingsAndPaths(feature.geometry, renderer, fill, false);
-          subLayerInfo.graphics = renderer.moveGraphics();
-        } else if (readPoints) {
-          await this._geomReader.readPoints(feature.geometry, renderer, false);
-          subLayerInfo.graphics = renderer.moveGraphics();
-        }
+      if (geomReader) {
+        await geomReader.readGeometry(feature.geometry);
+        subLayerInfo.graphics = renderer!.moveGraphics();
       }
 
       if (!(layerInfo.subLayerInfos instanceof HTMLElement))

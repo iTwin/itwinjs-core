@@ -10,13 +10,30 @@ import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
 
 /** @internal */
 export class ArcGisGeometryReaderJSON {
-  public transform: Transform | undefined;
 
-  public constructor() {
-
+  private _ringsOrPaths:boolean;
+  private _points:boolean;
+  private _fill:boolean;
+  private _relativeCoords:boolean;
+  private _renderer: ArcGisGeometryRenderer;
+  public constructor(geometryType:string, renderer: ArcGisGeometryRenderer, relativeCoords = false) {
+    this._ringsOrPaths = geometryType === "esriGeometryPolyline" || geometryType === "esriGeometryPolygon";
+    this._points = geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultiPoint";
+    this._fill = geometryType === "esriGeometryPolygon";
+    this._renderer = renderer;
+    this._relativeCoords = relativeCoords;
   }
 
-  public async readRingsAndPaths(geometry: any, renderer: ArcGisGeometryRenderer, fill: boolean, relativeCoords: boolean) {
+  public async readGeometry(geometry: any) {
+    if (this._ringsOrPaths) {
+      await this.readRingsAndPaths(geometry, this._renderer, this._fill, this._relativeCoords);
+
+    } else if (this._points) {
+      await this.readPoints(geometry, this._renderer, this._relativeCoords);
+    }
+  }
+
+  private async readRingsAndPaths(geometry: any, renderer: ArcGisGeometryRenderer, fill: boolean, relativeCoords: boolean) {
     let offset = 0;
     const lengths: number[] = [];
     const coords: number[] = [];
