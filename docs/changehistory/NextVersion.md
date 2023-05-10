@@ -304,7 +304,7 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 
 ### ContentInstancesOfSpecificClassesSpecification
 
-The deprecated field `handleInstancesPolymorphically?` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
+The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
 
 ## Interfaces renamed
 
