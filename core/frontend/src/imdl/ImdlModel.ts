@@ -141,7 +141,7 @@ export namespace ImdlModel {
   export interface AnimationNode {
     primitives: PrimitiveParams[];
     animationNodeId: number;
-    animationId: string;
+    animationId?: string;
     layerId?: never;
   }
 

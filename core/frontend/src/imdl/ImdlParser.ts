@@ -6,17 +6,19 @@
  * @module Tiles
  */
 
-import { ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import {
   FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
-import { ImdlDocument } from "./ImdlSchema";
+import { AnyImdlPrimitive, ImdlAreaPattern, ImdlDocument, ImdlMesh } from "./ImdlSchema";
+import { AnimationNodeId } from "../render/GraphicBranch";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 export interface ImdlParserOptions {
   stream: ByteStream;
+  batchModelId: Id64String;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   timeline?: ImdlTimeline;
@@ -77,6 +79,18 @@ export type ImdlParseError = Exclude<TileReadStatus, TileReadStatus.Success>;
 interface FeatureTableInfo {
   startPos: number;
   multiModel: boolean;
+}
+
+const nodeIdRegex = /Node_(.*)/;
+function extractNodeId(nodeName: string): number {
+  const match = nodeName.match(nodeIdRegex);
+  assert(!!match && match.length === 2);
+  if (!match || match.length !== 2)
+    return 0;
+
+  const nodeId = Number.parseInt(match[1], 10);
+  assert(!Number.isNaN(nodeId));
+  return Number.isNaN(nodeId) ? 0 : nodeId;
 }
 
 class ImdlParser {
@@ -177,7 +191,64 @@ class ImdlParser {
   }
 
   private parseNodes(featureTable: Imdl.FeatureTable): Imdl.Node[] {
-    return []; // ###TODO
+    const nodes: Imdl.Node[] = [];
+    const docNodes = this._document.nodes;
+    const docMeshes = this._document.meshes;
+    if (undefined === docNodes.Node_Root) {
+      // A veeeery early version of the tile format (prior to introduction of schedule animation support) just supplied a flat list of meshes.
+      // We shall never encounter such tiles again.
+      return nodes;
+    }
+
+    for (const nodeKey of Object.keys(docNodes)) {
+      const docNode = this._document.nodes[nodeKey];
+      assert(undefined !== docNode); // we're iterating the keys...
+      const docMesh = docMeshes[docNode];
+      const docPrimitives = docMesh?.primitives;
+      if (!docPrimitives)
+        continue;
+
+      const layerId = docMesh.layer;
+      if ("Node_Root" === nodeKey) {
+        if (this._options.timeline) {
+          // Split up the root node into transform nodes.
+          this.parseAnimationBranches(nodes, docMesh, featureTable, this._options.timeline);
+        } else if (this._options.createUntransformedRootNode) {
+          // If transform nodes exist in the tile tree, then we need to create a branch for the root node so that elements not associated with
+          // any node in the schedule script can be grouped together.
+          this.parseBranch(nodes, docPrimitives, AnimationNodeId.Untransformed, undefined);
+        } else {
+          nodes.push({ primitives: this.parsePrimitives(docPrimitives) });
+        }
+      } else if (undefined === layerId) {
+        this.parseBranch(nodes, docPrimitives, extractNodeId(nodeKey), `${this._options.batchModelId}_${nodeKey}`);
+      } else {
+        nodes.push({ layerId, primitives: this.parsePrimitives(docPrimitives) });
+      }
+    }
+
+    return nodes;
+  }
+
+  private parseAnimationBranches(output: Imdl.Node[], docMesh: ImdlMesh, featureTable: Imdl.FeatureTable, timeline: ImdlTimeline): void {
+  }
+
+  private parseBranch(output: Imdl.Node[], docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
+  }
+
+  private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.PrimitiveParams[] {
+    const primitives = [];
+    for (const docPrimitive of docPrimitives) {
+      const primitive = this.parsePrimitive(docPrimitive);
+      if (primitive)
+        primitives.push(primitive);
+    }
+
+    return primitives;
+  }
+
+  private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.PrimitiveParams | undefined{
+    return undefined; // ###TODO
   }
 }
 
