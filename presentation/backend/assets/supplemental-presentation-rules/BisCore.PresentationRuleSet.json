@@ -453,6 +453,12 @@
           "label": "Secondary Sources",
           "parentId": "source_information",
           "autoExpand": true
+        },
+        {
+          "id": "document_link",
+          "label": "Document Link",
+          "parentId": "source_information",
+          "autoExpand": true
         }
       ],
       "relatedProperties": [
@@ -494,17 +500,25 @@
                   "direction": "Forward"
                 }
               ],
+              "handleTargetClassPolymorphically": true,
               "properties": [
                 {
+                  "name": "*",
+                  "categoryId": "document_link"
+                },
+                {
                   "name": "UserLabel",
-                  "categoryId": "source_information",
                   "labelOverride": "Name",
-                  "isDisplayed": true
+                  "isDisplayed": true,
+                  "doNotHideOtherPropertiesOnDisplayOverride": true
                 },
                 {
                   "name": "Url",
-                  "categoryId": "source_information",
                   "labelOverride": "Path"
+                },
+                {
+                  "name": "Model",
+                  "isDisplayed": false
                 }
               ],
               "skipIfDuplicate": true
@@ -676,49 +690,6 @@
         {
           "name": "PhysicalMaterial",
           "labelOverride": "Physical Material"
-        }
-      ]
-    },
-    {
-      "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "LinkElement"
-      },
-      "propertyOverrides": [
-        {
-          "isDisplayed": false,
-          "name": "CodeValue"
-        },
-        {
-          "name": "UserLabel",
-          "isDisplayed": false
-        }
-      ]
-    },
-    {
-      "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "UrlLink"
-      },
-      "propertyOverrides": [
-        {
-          "isDisplayed": false,
-          "name": "Description"
-        }
-      ]
-    },
-    {
-      "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "EmbeddedFileLink"
-      },
-      "propertyOverrides": [
-        {
-          "isDisplayed": false,
-          "name": "Description"
         }
       ]
     }
