@@ -270,14 +270,24 @@ class ImdlParser {
         } else if (this._options.createUntransformedRootNode) {
           // If transform nodes exist in the tile tree, then we need to create a branch for the root node so that elements not associated with
           // any node in the schedule script can be grouped together.
-          this.parseBranch(nodes, docPrimitives, AnimationNodeId.Untransformed, undefined);
+          nodes.push({
+            animationNodeId: AnimationNodeId.Untransformed,
+            primitives: this.parsePrimitives(docPrimitives),
+          });
         } else {
           nodes.push({ primitives: this.parsePrimitives(docPrimitives) });
         }
       } else if (undefined === layerId) {
-        this.parseBranch(nodes, docPrimitives, extractNodeId(nodeKey), `${this._options.batchModelId}_${nodeKey}`);
+        nodes.push({
+          animationNodeId: extractNodeId(nodeKey),
+          animationId: `${this._options.batchModelId}_${nodeKey}`,
+          primitives: this.parsePrimitives(docPrimitives),
+        });
       } else {
-        nodes.push({ layerId, primitives: this.parsePrimitives(docPrimitives) });
+        nodes.push({
+          layerId,
+          primitives: this.parsePrimitives(docPrimitives),
+        });
       }
     }
 
@@ -285,9 +295,6 @@ class ImdlParser {
   }
 
   private parseAnimationBranches(output: Imdl.Node[], docMesh: ImdlMesh, featureTable: Imdl.FeatureTable, timeline: ImdlTimeline): void {
-  }
-
-  private parseBranch(output: Imdl.Node[], docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
   }
 
   private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.Primitive[] {
