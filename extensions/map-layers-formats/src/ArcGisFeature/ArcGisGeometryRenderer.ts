@@ -5,28 +5,28 @@
 import { Transform } from "@itwin/core-geometry";
 
 /** @internal */
-export interface ArcGisFeatureRenderer  {
-  transform:  Transform | undefined;
+export interface ArcGisGeometryRenderer {
+  transform: Transform | undefined;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
 }
 
 /** @internal */
-export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer {
-  private _transform: Transform|undefined;
+export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
+  private _transform: Transform | undefined;
 
   constructor(world2PixelTransform?: Transform) {
     this._transform = world2PixelTransform;
   }
 
-  public get transform() {return this._transform;}
+  public get transform() { return this._transform; }
 
   protected abstract beginPath(): void;
   protected abstract closePath(): void;
   protected abstract lineTo(x: number, y: number): void;
   protected abstract moveTo(x: number, y: number): void;
-  protected abstract stroke(): Promise<void> ;
-  protected abstract fill(): Promise<void> ;
+  protected abstract stroke(): Promise<void>;
+  protected abstract fill(): Promise<void>;
   protected abstract drawPoint(x: number, y: number): void;
   protected abstract finishPoints(): Promise<void>;
 
@@ -54,9 +54,9 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
     this.beginPath();
     for (const vertexCount of geometryLengths) {
       let lastPtX = 0, lastPtY = 0;
-      for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-        let pX = geometryCoords[coordsOffset+(vertexIdx*stride)];
-        let pY = geometryCoords[coordsOffset+(vertexIdx*stride)+1];
+      for (let vertexIdx = 0; vertexIdx < vertexCount; vertexIdx++) {
+        let pX = geometryCoords[coordsOffset + (vertexIdx * stride)];
+        let pY = geometryCoords[coordsOffset + (vertexIdx * stride) + 1];
         if (vertexIdx === 0) {
           // first vertex is always "absolute" and must be drawn as 'moveTo' (i.e. not lineTo)
           if (relativeCoords) {
@@ -65,7 +65,7 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
           }
 
           if (this._transform) {
-            const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
+            const transformedPoint = this._transform.multiplyPoint2d({ x: pX, y: pY });
             pX = transformedPoint.x;
             pY = transformedPoint.y;
           }
@@ -76,12 +76,12 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
           // Following vertices are relative to the previous one (sadly not really well documented by ESRI)
           // typically this happens when 'coordinates quantization' is active (i.e. no client side transformation is needed)
           if (relativeCoords) {
-            pX = lastPtX = lastPtX+pX;
-            pY = lastPtY = lastPtY+pY;
+            pX = lastPtX = lastPtX + pX;
+            pY = lastPtY = lastPtY + pY;
           }
 
           if (this._transform) {
-            const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
+            const transformedPoint = this._transform.multiplyPoint2d({ x: pX, y: pY });
             pX = transformedPoint.x;
             pY = transformedPoint.y;
           }
@@ -89,7 +89,7 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
         }
 
       }
-      coordsOffset+=stride*vertexCount;
+      coordsOffset += stride * vertexCount;
       if (fill) {
         // ClosePath but do not 'fill' here, only at the very end (otherwise it will mess up holes)
         this.closePath();
@@ -110,7 +110,7 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
    * @param geometryCoords Array that linearly encodes vertices.
    * @param stride Dimension of each vertices (i.e. 2 or 3.  3 could be X,Y,Z, X,YM) Currently 3rd dimension is ignored.
   */
-  public async renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean)  {
+  public async renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean) {
 
     if (stride < 2 || stride > 3) {
       return;
@@ -121,7 +121,7 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
       if (geometryCoords.length >= stride) {
 
         if (this._transform) {
-          const transformedPoint = this._transform.multiplyPoint2d({x: geometryCoords[0], y:geometryCoords[1]});
+          const transformedPoint = this._transform.multiplyPoint2d({ x: geometryCoords[0], y: geometryCoords[1] });
           this.drawPoint(transformedPoint.x, transformedPoint.y);
         } else {
           this.drawPoint(geometryCoords[0], geometryCoords[1]);
@@ -132,17 +132,17 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
       // I assume 'lengths' array will get populated and 'coords' array will look similar to line/polygons.
       for (const vertexCount of geometryLengths) {
         let lastPtX = 0, lastPtY = 0;
-        for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-          let pX = geometryCoords[coordsOffset+(vertexIdx*stride)];
-          let pY = geometryCoords[coordsOffset+(vertexIdx*stride)+1];
+        for (let vertexIdx = 0; vertexIdx < vertexCount; vertexIdx++) {
+          let pX = geometryCoords[coordsOffset + (vertexIdx * stride)];
+          let pY = geometryCoords[coordsOffset + (vertexIdx * stride) + 1];
 
           if (relativeCoords) {
-            pX = lastPtX = lastPtX+pX;
-            pY = lastPtY = lastPtY+pY;
+            pX = lastPtX = lastPtX + pX;
+            pY = lastPtY = lastPtY + pY;
           }
 
           if (this._transform) {
-            const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
+            const transformedPoint = this._transform.multiplyPoint2d({ x: pX, y: pY });
             pX = transformedPoint.x;
             pY = transformedPoint.y;
           }
@@ -150,7 +150,7 @@ export abstract class ArcGisFeatureBaseRenderer implements ArcGisFeatureRenderer
           this.drawPoint(pX, pY);
 
         }
-        coordsOffset+=stride*vertexCount;
+        coordsOffset += stride * vertexCount;
       }
     }
     await this.finishPoints();

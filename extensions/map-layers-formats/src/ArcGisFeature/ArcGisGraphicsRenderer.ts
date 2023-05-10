@@ -6,11 +6,11 @@ import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GraphicPrimitive, IModelConnection } from "@itwin/core-frontend";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { ArcGisFeatureBaseRenderer } from "./ArcGisFeatureRenderer";
 import { WebMercator } from "../Utils/WebMercator";
+import { ArcGisGeometryBaseRenderer } from "./ArcGisGeometryRenderer";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
-export class ArcGisFeatureGraphicsRenderer extends ArcGisFeatureBaseRenderer {
+export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
 
   private _scratchPointsArray = new GrowableXYZArray();
   private _scratchPaths: Point3d[][] = [];

@@ -13,8 +13,8 @@ import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
 import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
-import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
-import { ArcGisFeatureCanvasRenderer } from "./ArcGisFeatureCanvasRenderer";
+import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
+import { ArcGisCanvasRenderer } from "./ArcGisCanvasRenderer";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**
@@ -328,7 +328,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
       const featureReader = new ArcGisFeatureJSON(this._settings, this._layerMetadata);
 
-      const renderer = new ArcGisFeatureGraphicsRenderer(hit.iModel);
+      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {
@@ -417,7 +417,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         }
       }
 
-      const renderer = new ArcGisFeatureCanvasRenderer(ctx, this._symbologyRenderer, transfo);
+      const renderer = new ArcGisCanvasRenderer(ctx, this._symbologyRenderer, transfo);
       const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {

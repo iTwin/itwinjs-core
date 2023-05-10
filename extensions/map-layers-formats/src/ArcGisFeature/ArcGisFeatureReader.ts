@@ -6,9 +6,9 @@
 import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
+import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
+import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
 
 /** @internal */
 export abstract class ArcGisFeatureReader  {
@@ -27,9 +27,9 @@ export abstract class ArcGisFeatureReader  {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisFeatureRenderer): Promise<void>;
+  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisGeometryRenderer): Promise<void>;
 
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], _renderer: ArcGisFeatureGraphicsRenderer): Promise<void>;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], _renderer: ArcGisGraphicsRenderer): Promise<void>;
 
   protected  toFixedWithoutPadding = (value: number) => {
     return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));

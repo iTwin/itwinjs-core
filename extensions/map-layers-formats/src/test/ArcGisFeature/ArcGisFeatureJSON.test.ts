@@ -11,10 +11,11 @@ import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
 import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
-import { ArcGisFeatureCanvasRenderer } from "../../ArcGisFeature/ArcGisFeatureCanvasRenderer";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
+import { ArcGisGeometryReaderJSON } from "../../ArcGisFeature/ArcGisGeometryReaderJSON";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 
@@ -64,26 +65,26 @@ describe("ArcGisFeatureJSON", () => {
     // Simple deflate stride = 2
     let doubleArray = [[1, 2], [3, 4]];
     let deflated: number[] = [];
-    let offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 2, 0);
+    let offset = (ArcGisGeometryReaderJSON as any).deflateCoordinates(doubleArray, deflated, 2, 0);
     expect(offset).to.equals(4);
     expect(deflated).to.eql([1, 2, 3, 4]);
 
     /// Check offset with stride = 2
     doubleArray = [[5, 6]];
-    offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 2, offset);
+    offset = (ArcGisGeometryReaderJSON as any).deflateCoordinates(doubleArray, deflated, 2, offset);
     expect(offset).to.equals(6);
     expect(deflated).to.eql([1, 2, 3, 4, 5, 6]);
 
     // Simple deflate stride = 3
     doubleArray = [[1, 2, 3], [4, 5, 6]];
     deflated = [];
-    offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 3, 0);
+    offset = (ArcGisGeometryReaderJSON as any).deflateCoordinates(doubleArray, deflated, 3, 0);
     expect(offset).to.equals(6);
     expect(deflated).to.eql([1, 2, 3, 4, 5, 6]);
 
     /// Check offset with stride = 3
     doubleArray = [[7, 8, 9]];
-    offset = (ArcGisFeatureJSON as any).deflateCoordinates(doubleArray, deflated, 3, offset);
+    offset = (ArcGisGeometryReaderJSON as any).deflateCoordinates(doubleArray, deflated, 3, offset);
     expect(offset).to.equals(9);
     expect(deflated).to.eql([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
@@ -95,7 +96,7 @@ describe("ArcGisFeatureJSON", () => {
 
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
-    const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
@@ -114,7 +115,7 @@ describe("ArcGisFeatureJSON", () => {
 
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
-    const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
@@ -132,7 +133,7 @@ describe("ArcGisFeatureJSON", () => {
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType,
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
-    const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
@@ -150,7 +151,7 @@ describe("ArcGisFeatureJSON", () => {
     const data = PhillyLandmarksDataset.phillyMultiPathQueryJson;
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
-    const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
@@ -170,7 +171,7 @@ describe("ArcGisFeatureJSON", () => {
       data.geometryType as ArcGisFeatureGeometryType,
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
-    const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(spy.calledOnce);
@@ -189,7 +190,7 @@ describe("ArcGisFeatureJSON", () => {
       "esriGeometryAny",
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
-    const featureRenderer = new ArcGisFeatureCanvasRenderer(fakeContext, symbolRenderer);
+    const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const logErrorSpy = sandbox.spy(Logger, "logError");
     await featureJson.readAndRender({ data: { test: "test" }, exceedTransferLimit: false }, featureRenderer);
     expect(logErrorSpy.calledOnce);

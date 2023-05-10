@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisFeatureBaseRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisGeometryBaseRenderer } from "./ArcGisGeometryRenderer";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 
-export class ArcGisFeatureCanvasRenderer extends ArcGisFeatureBaseRenderer {
+export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyRenderer;
 
@@ -26,11 +26,11 @@ export class ArcGisFeatureCanvasRenderer extends ArcGisFeatureBaseRenderer {
   }
 
   protected lineTo(x: number, y: number) {
-    this._context.lineTo(x,y);
+    this._context.lineTo(x, y);
   }
 
   protected moveTo(x: number, y: number) {
-    this._context.moveTo(x,y);
+    this._context.moveTo(x, y);
   }
 
   protected async fill() {

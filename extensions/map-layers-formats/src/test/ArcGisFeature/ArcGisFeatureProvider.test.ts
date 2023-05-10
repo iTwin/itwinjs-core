@@ -18,7 +18,7 @@ import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
-import { ArcGisFeatureGraphicsRenderer } from "../../ArcGisFeature/ArcGisFeatureGraphicsRenderer";
+import { ArcGisGraphicsRenderer } from "../../ArcGisFeature/ArcGisGraphicsRenderer";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -89,10 +89,10 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
   await provider.initialize();
   const featureInfos: MapLayerFeatureInfo[] = [];
   const logErrorSpy = sandbox.spy(Logger, "logError");
-  const toSpatialFromEcfSpy = sandbox.stub((ArcGisFeatureGraphicsRenderer.prototype as any), "toSpatialFromEcf").callsFake(function _(geoPoints: unknown) {
+  const toSpatialFromEcfSpy = sandbox.stub((ArcGisGraphicsRenderer.prototype as any), "toSpatialFromEcf").callsFake(function _(geoPoints: unknown) {
     return geoPoints;
   });
-  const toSpatialFromGcs = sandbox.spy(ArcGisFeatureGraphicsRenderer.prototype as any, "toSpatialFromGcs");
+  const toSpatialFromGcs = sandbox.spy(ArcGisGraphicsRenderer.prototype as any, "toSpatialFromGcs");
   await provider.getFeatureInfo(featureInfos, new QuadId(0, 0, 0),
     Cartographic.fromDegrees({ latitude: 46, longitude: -71 }),
     (undefined as unknown) as ImageryMapTileTree, makeHitDetail(noGcsDefined));

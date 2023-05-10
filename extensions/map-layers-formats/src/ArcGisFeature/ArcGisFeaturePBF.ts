@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
 import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -12,10 +12,11 @@ import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { Logger } from "@itwin/core-bentley";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
-import { ArcGisFeatureGraphicsRenderer } from "./ArcGisFeatureGraphicsRenderer";
+import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
+import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
-const loggerCategory =  "MapLayersFormats.ArcGISFeature";
+const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 interface PbfFieldInfo {
   name: string;
@@ -28,7 +29,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     super(settings, layerMetadata);
   }
 
-  public static getArcGisFeatureGeometryType(geomType: esriPBuffer.FeatureCollectionPBuffer.GeometryType): ArcGisFeatureGeometryType  {
+  public static getArcGisFeatureGeometryType(geomType: esriPBuffer.FeatureCollectionPBuffer.GeometryType): ArcGisFeatureGeometryType {
     switch (geomType) {
       case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch:
         return "esriGeometryMultiPatch";
@@ -45,7 +46,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     }
   }
 
-  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
+  public async readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
       Logger.logError(loggerCategory, msg);
@@ -72,7 +73,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     }
   }
 
-  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisFeatureGraphicsRenderer) {
+  public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: ArcGisGraphicsRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
 
       Logger.logError(loggerCategory, "Response was not in PBF format");
