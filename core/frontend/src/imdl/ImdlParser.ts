@@ -23,7 +23,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../render/GraphicBranch";
-import {ComputeAnimationNodeId, VertexIndices, VertexTable} from "../render-primitives";
+import { ComputeAnimationNodeId, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
@@ -385,6 +385,37 @@ class ImdlParser {
               },
             });
           }
+
+          break;
+        }
+        case "polyline": {
+          const params = {
+            ...primitive.params,
+            vertices: toVertexTable(primitive.params.vertices),
+            polyline: {
+              indices: new VertexIndices(primitive.params.polyline.indices),
+              prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
+              nextIndicesAndParams: primitive.params.polyline.nextIndicesAndParams,
+            },
+          };
+
+          const split = splitPolylineParams({ ...splitArgs, params });
+          for (const [nodeId, params] of split) {
+            getNode(nodeId).primitives.push({
+              type: "polyline",
+              params: {
+                ...params,
+                vertices: fromVertexTable(params.vertices),
+                polyline: {
+                  indices: params.polyline.indices.data,
+                  prevIndices: params.polyline.prevIndices.data,
+                  nextIndicesAndParams: params.polyline.nextIndicesAndParams,
+                },
+              },
+            });
+          }
+
+          break;
         }
       }
     }
