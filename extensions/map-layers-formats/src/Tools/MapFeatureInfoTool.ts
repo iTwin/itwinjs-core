@@ -5,25 +5,25 @@
 
 import {
   BeButtonEvent,
-  DecorateContext,
   EventHandled,
   HitDetail,
   IModelApp,
   LocateFilterStatus,
   LocateResponse,
   MapFeatureInfo,
-  MapLayerTileTreeReference,
-  MapTileTreeReference,
   PrimitiveTool,
-  TileTreeReference,
-  Viewport,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
+export interface MapFeatureInfoToolData {
+  hit: HitDetail;
+  mapInfo?: MapFeatureInfo;
+}
+
 export class MapFeatureInfoTool extends PrimitiveTool {
-  public readonly onInfoReady = new BeEvent<(hit: HitDetail | undefined, mapInfo: MapFeatureInfo | undefined) => void>();
+  public readonly onInfoReady = new BeEvent<(data: MapFeatureInfoToolData) => void>();
 
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
@@ -107,24 +107,26 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       ev.viewport,
       ev.inputSource
     );
-    if (hit !== undefined && this.getSettingsFromHit(hit).length > 0) {
+    if (hit !== undefined) {
       let mapInfo: MapFeatureInfo | undefined;
-      IModelApp.toolAdmin.setCursor("wait");
-      try {
-        mapInfo = await hit.viewport.getMapFeatureInfo(hit);
-        if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
-          const layerInfo = mapInfo.layerInfo[0];
-          if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
-            this._decorator.setState({ mapHit: hit, graphics: layerInfo.info[0].graphics });
+      if (this.getSettingsFromHit(hit).length > 0) {
+        IModelApp.toolAdmin.setCursor("wait");
+        try {
+          mapInfo = await hit.viewport.getMapFeatureInfo(hit);
+          if (mapInfo.layerInfo && mapInfo.layerInfo.length > 0) {
+            const layerInfo = mapInfo.layerInfo[0];
+            if (layerInfo.info && !(layerInfo.info instanceof HTMLElement) && layerInfo.info && layerInfo.info.length > 0)
+              this._decorator.setState({ mapHit: hit, graphics: layerInfo.info[0].graphics });
+          }
         }
-      } finally {
-        IModelApp.toolAdmin.setCursor(undefined);
+        finally {
+          IModelApp.toolAdmin.setCursor(undefined);
+        }
       }
 
-      this.onInfoReady.raiseEvent(hit, mapInfo);
+      this.onInfoReady.raiseEvent({ hit, mapInfo });
       return EventHandled.Yes;
     }
-    this.onInfoReady.raiseEvent(hit, undefined);
     return EventHandled.No;
   }
 
@@ -136,7 +138,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onRestartTool() {
+  public override async onRestartTool() {
     const tool = new MapFeatureInfoTool();
     if (!(await tool.run()))
       return this.exitTool();
