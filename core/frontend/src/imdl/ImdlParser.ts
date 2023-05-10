@@ -294,7 +294,8 @@ class ImdlParser {
     return nodes;
   }
 
-  private parseAnimationBranches(output: Imdl.Node[], docMesh: ImdlMesh, featureTable: Imdl.FeatureTable, timeline: ImdlTimeline): void {
+  private parseAnimationBranches(_output: Imdl.Node[], _docMesh: ImdlMesh, _featureTable: Imdl.FeatureTable, _timeline: ImdlTimeline): void {
+    // ###TODO
   }
 
   private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.Primitive[] {
