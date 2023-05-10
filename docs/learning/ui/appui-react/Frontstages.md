@@ -154,7 +154,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getLeftPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: Widget[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -200,7 +200,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getRightPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: Widget[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -246,7 +246,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getTopPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: Widget[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -291,7 +291,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getBottomPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: Widget[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -335,7 +335,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
     return widgets;
   }
 
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<Widget> {
     const allowedStages = ["Ui2"];
     if (allowedStages.includes(stageId)) {
       switch (location) {
@@ -353,18 +353,18 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
     return [];
   }
 
-  public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): ToolbarItem[] {
     const allowedStages = ["Ui2"];
     if (allowedStages.includes(stageId)) {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-        const items: CommonToolbarItem[] = [];
+        const items: ToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }));
         items.push(ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.splitSingleViewportCommandDef, { groupPriority: 3000 }));
         if (!this.toolWidgetDisplayCornerButton)
           items.push(ToolbarHelper.createToolbarItemFromItemDef(20, BackstageManager.getBackstageToggleCommand("icon-bentley-systems"), { groupPriority: 3000 }));
         return items;
       } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
-        const items: CommonToolbarItem[] = [];
+        const items: ToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.saveContentLayout, { groupPriority: 3000 }));
         items.push(ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.restoreSavedContentLayout, { groupPriority: 3000 }));
         return items;
@@ -382,11 +382,11 @@ Note `contentGroup` can reference a ContentGroup or a ContentGroupProvider See [
 ### Usage
 
 The Stage usage prop is a way to designate the type of tasks that will be performed in the stage and can be used by UiItemsProviders to
-determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($appui-abstract) for a default set of usages.
+determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($appui-react) for a default set of usages.
 
 ## Defining an 'empty' frontstage
 
-It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($appui-abstract) instances. The
+It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($appui-react) instances. The
 
 ```tsx
     const ui2StageProps: StandardFrontstageProps = {
