@@ -138,10 +138,10 @@ The following previously-deprecated APIs have been removed:
 
 #### Querying ECSql
 
-[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
-Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+[ECSqlReader]($common) can be used as an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods that exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
 
-`createQueryReader` can now be used like below:
+`createQueryReader` can now be used as shown below:
 
 ```ts
 for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
@@ -149,7 +149,7 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 }
 ```
 
-It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+It is important to note that the object returned by `createQueryReader` is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
 
 ```ts
 for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
