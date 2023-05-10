@@ -9,7 +9,7 @@
 import { NonFunctionPropertiesOf, UintArray } from "@itwin/core-bentley";
 import { LowAndHighXYZ, XYAndZ } from "@itwin/core-geometry";
 import {
-  ColorDefProps, FeatureIndexType, FillFlags, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
+  ColorDefProps, FeatureIndexType, FillFlags, Gradient, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
 } from "@itwin/core-common";
 import { EdgeTable } from "../render/primitives/EdgeParams";
 import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceParams";
@@ -102,7 +102,7 @@ export namespace ImdlModel {
     hasBakedLighting: boolean;
     material: SurfaceMaterial;
     textureMapping?: {
-      texture: string;
+      texture: string | Gradient.SymbProps;
       alwaysDisplayed: boolean;
     };
   };

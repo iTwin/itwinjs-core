@@ -9,11 +9,15 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorDef, FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, QParams2d, QParams3d, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
+  ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, QParams2d, QParams3d,
+  RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
-import { AnyImdlPrimitive, ImdlAreaPattern, ImdlDocument, ImdlMesh } from "./ImdlSchema";
+import {
+  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlMesh, ImdlNamedTexture, ImdlTextureMapping,
+} from "./ImdlSchema";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AnimationNodeId } from "../render/GraphicBranch";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
@@ -94,6 +98,51 @@ function extractNodeId(nodeName: string): number {
   const nodeId = Number.parseInt(match[1], 10);
   assert(!Number.isNaN(nodeId));
   return Number.isNaN(nodeId) ? 0 : nodeId;
+}
+
+class NamedTexture extends RenderTexture {
+  public readonly name: string;
+
+  public constructor(name: string, type: RenderTexture.Type) {
+    super(type);
+    this.name = name;
+  }
+
+  public override dispose() { }
+  public override get bytesUsed() { return 0; }
+}
+
+class GradientTexture extends RenderTexture {
+  public readonly gradient: Gradient.SymbProps;
+
+  public constructor(gradient: Gradient.SymbProps) {
+    super(RenderTexture.Type.Normal);
+    this.gradient = gradient;
+  }
+
+  public override dispose() { }
+  public override get bytesUsed() { return 0; }
+}
+
+class Material extends RenderMaterial {
+  public readonly materialParams: Imdl.SurfaceMaterialParams;
+
+  public constructor(params: RenderMaterial.Params) {
+    super(params);
+
+    this.materialParams = {
+      alpha: params.alpha,
+      diffuse: {
+        color: params.diffuseColor?.toJSON(),
+        weight: params.diffuse,
+      },
+      specular: {
+        color: params.specularColor?.toJSON(),
+        weight: params.specular,
+        exponent: params.specularExponent,
+      },
+    };
+  }
 }
 
 class ImdlParser {
@@ -404,6 +453,140 @@ class ImdlParser {
       return undefined;
 
     return this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+  }
+
+  private colorDefFromMaterialJson(json: ImdlColorDef | undefined): ColorDef | undefined {
+    return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
+  }
+
+  private materialFromJson(key: string): RenderMaterial | undefined {
+    const materialJson = this._document.renderMaterials[key];
+    if (!materialJson)
+      return undefined;
+
+    // eslint-disable-next-line deprecation/deprecation
+    const materialParams = new RenderMaterial.Params(key);
+    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
+    if (materialJson.diffuse !== undefined)
+      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
+
+    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
+    if (materialJson.specular !== undefined)
+      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
+
+    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+    if (materialJson.reflect !== undefined)
+      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+
+    if (materialJson.specularExponent !== undefined)
+      materialParams.specularExponent = materialJson.specularExponent;
+
+    if (undefined !== materialJson.transparency)
+      materialParams.alpha = 1.0 - materialJson.transparency;
+
+    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+
+    if (undefined !== materialJson.textureMapping)
+      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+
+    // eslint-disable-next-line deprecation/deprecation
+    return new Material(materialParams);
+  }
+
+  private parseNamedTexture(namedTex: ImdlNamedTexture, name: string): RenderTexture | undefined {
+    const textureType = JsonUtils.asBool(namedTex.isGlyph) ? RenderTexture.Type.Glyph :
+      (JsonUtils.asBool(namedTex.isTileSection) ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal);
+
+    return new NamedTexture(name, textureType);
+  }
+
+  private parseConstantLodProps(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+    if (undefined === propsJson)
+      return undefined;
+
+    return {
+      repetitions: JsonUtils.asDouble(propsJson.repetitions, 1.0),
+      offset: { x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0, y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0 },
+      minDistClamp: JsonUtils.asDouble(propsJson.minDistClamp, 1.0),
+      maxDistClamp: JsonUtils.asDouble(propsJson.maxDistClamp, 4096.0 * 1024.0 * 1024.0),
+    };
+  }
+
+  private textureMappingFromJson(json: ImdlTextureMapping | undefined): TextureMapping | undefined {
+    if (!json)
+      return undefined;
+
+    const name = JsonUtils.asString(json.name);
+    const namedTex = 0 !== name.length ? this._document.namedTextures[name] : undefined;
+    const texture = namedTex ? this.parseNamedTexture(namedTex, name) : undefined;
+    if (!texture)
+      return undefined;
+
+    const paramsJson = json.params;
+    const tf = paramsJson.transform;
+    const paramProps: TextureMapping.ParamProps = {
+      textureMat2x3: new TextureMapping.Trans2x3(tf[0][0], tf[0][1], tf[0][2], tf[1][0], tf[1][1], tf[1][2]),
+      textureWeight: JsonUtils.asDouble(paramsJson.weight, 1.0),
+      mapMode: JsonUtils.asInt(paramsJson.mode),
+      worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
+      useConstantLod: JsonUtils.asBool(paramsJson.useConstantLod),
+      constantLodProps: this.parseConstantLodProps(paramsJson.constantLodParams),
+    };
+
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
+
+    const normalMapJson = json.normalMapParams;
+    if (normalMapJson) {
+      const normalTexName = JsonUtils.asString(normalMapJson.textureName);
+      const namedNormalTex = normalTexName.length > 0 ? this._document.namedTextures[normalTexName] : undefined;
+      const normalMap = namedNormalTex ? this.parseNamedTexture(namedNormalTex, normalTexName) : undefined;
+      if (normalMap) {
+        textureMapping.normalMapParams = {
+          normalMap,
+          greenUp: JsonUtils.asBool(normalMapJson.greenUp),
+          scale: JsonUtils.asDouble(normalMapJson.scale, 1),
+          useConstantLod: JsonUtils.asBool(normalMapJson.useConstantLod),
+        };
+      }
+    }
+
+    return textureMapping;
+  }
+
+  private createDisplayParams(json: ImdlDisplayParams): DisplayParams | undefined {
+    const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
+    const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
+    const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
+    const width = JsonUtils.asInt(json.lineWidth);
+    const linePixels = JsonUtils.asInt(json.linePixels, LinePixels.Solid);
+    const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
+    const ignoreLighting = JsonUtils.asBool(json.ignoreLighting);
+
+    // Material will always contain its own texture if it has one
+    const materialKey = json.materialId;
+    const material = undefined !== materialKey ? this.materialFromJson(materialKey) : undefined;
+
+    // We will only attempt to include the texture if material is undefined
+    let textureMapping;
+    let gradient: Gradient.Symb | undefined;
+    if (!material) {
+      const textureJson = json.texture;
+      textureMapping = undefined !== textureJson ? this.textureMappingFromJson(textureJson) : undefined;
+
+      if (undefined === textureMapping) {
+        const gradientProps = json.gradient;
+        gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
+        if (gradient) {
+          assert(undefined !== gradientProps);
+          const texture = new GradientTexture(gradientProps);
+          textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureMat2x3: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0) }));
+        }
+      }
+    }
+
+    return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, gradient, ignoreLighting, textureMapping);
   }
 }
 
