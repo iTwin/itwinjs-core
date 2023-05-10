@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import { EdgeTable } from "../render/primitives/EdgeParams";
 import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceParams";
-import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
+import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 
 export namespace ImdlModel {
   export interface VertexTable {
@@ -100,21 +100,19 @@ export namespace ImdlModel {
     indices: Uint8Array;
     fillFlags: FillFlags;
     hasBakedLighting: boolean;
-    material: SurfaceMaterial;
+    material?: SurfaceMaterial;
     textureMapping?: {
       texture: string | Gradient.SymbProps;
       alwaysDisplayed: boolean;
     };
   };
 
-  export type AuxChannelTableParams = NonFunctionPropertiesOf<AuxChannelTable>;
-
   export interface MeshParams {
     vertices: VertexTable;
     surface: SurfaceParams
     edges?: EdgeParams;
     isPlanar: boolean;
-    auxChannels?: AuxChannelTableParams;
+    auxChannels?: AuxChannelTableProps;
   }
 
   export interface Instances {

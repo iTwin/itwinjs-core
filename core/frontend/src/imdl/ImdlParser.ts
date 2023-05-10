@@ -14,10 +14,12 @@ import {
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
-  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlMesh, ImdlNamedTexture, ImdlPolyline, ImdlTextureMapping,
+  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlMesh, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { createSurfaceMaterial, isValidSurfaceType } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
+import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { AnimationNodeId } from "../render/GraphicBranch";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
@@ -334,7 +336,20 @@ class ImdlParser {
     const isPlanar = !this._options.is3d || JsonUtils.asBool(docPrimitive.isPlanar);
     switch (docPrimitive.type) {
       case Mesh.PrimitiveType.Mesh: {
-        // ###TODO
+        const surface = this.parseSurface(docPrimitive, displayParams);
+        if (surface) {
+          // ###TODO edges
+          primitive = {
+            type: "mesh",
+            params: {
+              vertices,
+              surface,
+              isPlanar,
+              auxChannels: this.parseAuxChannelTable(docPrimitive),
+            },
+          };
+        }
+
         break;
       }
       case Mesh.PrimitiveType.Polyline: {
@@ -377,6 +392,86 @@ class ImdlParser {
       primitive.modifier = modifier;
 
     return primitive;
+  }
+
+  private parseSurface(mesh: ImdlMeshPrimitive, displayParams: DisplayParams): Imdl.SurfaceParams | undefined {
+    const surf = mesh.surface;
+    if (!surf)
+      return undefined;
+
+    const indices = this.findBuffer(surf.indices);
+    if (!indices)
+      return undefined;
+
+    const type = surf.type;
+    if (!isValidSurfaceType(type))
+      return undefined;
+
+    const texture = displayParams.textureMapping?.texture;
+    let material: Imdl.SurfaceMaterial | undefined;
+    const atlas = mesh.vertices.materialAtlas;
+    const numColors = mesh.vertices.numColors;
+    if (atlas && numColors) {
+      material = {
+        isAtlas: true,
+        hasTranslucency: JsonUtils.asBool(atlas.hasTranslucency),
+        overridesAlpha: JsonUtils.asBool(atlas.overridesAlpha, false),
+        vertexTableOffset: JsonUtils.asInt(numColors),
+        numMaterials: JsonUtils.asInt(atlas.numMaterials),
+      };
+    } else if (displayParams.material) {
+      assert(displayParams.material instanceof Material);
+      material = {
+        isAtlas: false,
+        material: displayParams.material.key ? displayParams.material.key : displayParams.material.materialParams,
+      };
+    }
+
+    let textureMapping;
+    if (texture) {
+      let mappedTexture;
+      if (texture instanceof NamedTexture) {
+        mappedTexture = texture.name;
+      } else {
+        assert(texture instanceof GradientTexture);
+        mappedTexture = texture.gradient;
+      }
+
+      textureMapping = {
+        texture: mappedTexture,
+        alwaysDisplayed: JsonUtils.asBool(surf.alwaysDisplayTexture),
+      };
+    }
+
+    return {
+      type,
+      indices,
+      fillFlags: displayParams.fillFlags,
+      hasBakedLighting: false,
+      material,
+      textureMapping,
+    };
+  }
+
+  private parseAuxChannelTable(primitive: ImdlMeshPrimitive): AuxChannelTableProps | undefined {
+    const json = primitive.auxChannels;
+    if (undefined === json)
+      return undefined;
+
+    const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
+    if (undefined === bytes)
+      return undefined;
+
+    return {
+      data: bytes,
+      width: json.width,
+      height: json.height,
+      count: json.count,
+      numBytesPerVertex: json.numBytesPerVertex,
+      displacements: json.displacements,
+      normals: json.normals,
+      params: json.params,
+    };
   }
 
   private parseVertexTable(primitive: AnyImdlPrimitive): Imdl.VertexTable | undefined {
