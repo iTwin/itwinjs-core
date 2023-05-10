@@ -9,12 +9,12 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, QParams2d, QParams3d,
+  ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, PolylineTypeFlags, QParams2d, QParams3d,
   RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
-  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlMesh, ImdlNamedTexture, ImdlTextureMapping,
+  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlMesh, ImdlNamedTexture, ImdlPolyline, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
@@ -299,6 +299,14 @@ class ImdlParser {
     return primitives;
   }
 
+  private parseTesselatedPolyline(json: ImdlPolyline): Imdl.TesselatedPolyline | undefined {
+    const indices = this.findBuffer(json.indices);
+    const prevIndices = this.findBuffer(json.prevIndices);
+    const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
+
+    return indices && prevIndices && nextIndicesAndParams ? { indices, prevIndices, nextIndicesAndParams } : undefined;
+  }
+
   private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.Primitive | undefined {
     if (docPrimitive.type === "areaPattern")
       return undefined; // ###TODO
@@ -330,7 +338,25 @@ class ImdlParser {
         break;
       }
       case Mesh.PrimitiveType.Polyline: {
-        // ###TODO
+        const polyline = this.parseTesselatedPolyline(docPrimitive);
+        if (polyline) {
+          let type = PolylineTypeFlags.Normal;
+          if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
+            type = (!displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
+
+          primitive = {
+            type: "polyline",
+            params: {
+              vertices,
+              polyline,
+              isPlanar,
+              type,
+              weight: displayParams.width,
+              linePixels: displayParams.linePixels,
+            },
+          };
+        }
+
         break;
       }
       case Mesh.PrimitiveType.Point: {
