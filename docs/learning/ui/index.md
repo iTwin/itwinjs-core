@@ -1,8 +1,8 @@
 # Learning iTwin.js UI
 
-## AppUi
+## AppUI
 
-AppUi is a framework for writing iTwin.js apps. For details, see this [overview](./appui/index).
+AppUI is a framework for writing iTwin.js apps. For details, see this [overview](./appui/index).
 
 For a quick-start approach to creating an iTwin.js app with App UI, see [Quick Start to an App UI user interface](./QuickStartUi.md).
 
