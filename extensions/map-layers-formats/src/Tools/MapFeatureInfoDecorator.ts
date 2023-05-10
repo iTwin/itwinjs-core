@@ -6,12 +6,8 @@
 import { Base64EncodedString, ColorDef } from "@itwin/core-common";
 import { BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet, GeometryTileTreeReference, GraphicPrimitive, GraphicType, HitDetail, IModelApp, MapFeatureInfo, MapTileTreeReference, Marker, MarkerImage, MarkerSet, Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
 import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
-// import { MapFeatureInfoDataUpdate } from "./widget/FeatureInfoDataProvider";
+import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 
-export interface MapFeatureInfoDataUpdate {
-  hit: HitDetail;
-  info: MapFeatureInfo;
-}
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string. */
 class DrapeLineStringCollector extends TileGeometryCollector {
@@ -168,7 +164,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   private _markerImage: HTMLImageElement;
   private _markerSet = new PinMarkerSet();
 
-  private _state: MapFeatureInfoDataUpdate | undefined;
+  private _state: MapFeatureInfoToolData | undefined;
 
   private readonly _graphicType = GraphicType.WorldOverlay;
 
@@ -194,7 +190,7 @@ export class MapFeatureInfoDecorator implements Decorator {
     return pixelSize * 0.25;
   }
 
-  public setState = (state: MapFeatureInfoDataUpdate) => {
+  public setState = (state: MapFeatureInfoToolData) => {
 
     this._drapedStrings = undefined;
     this._allGeomDraped = false;
@@ -205,7 +201,7 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._drapePoints.clear();
     this._drapePointsStates = [];
 
-    if (!this.disableTerrainDraper && this._state.info.layerInfos && state.hit.viewport.displayStyle.displayTerrain) {
+    if (!this.disableTerrainDraper && this._state.mapInfo?.layerInfos && state.hit.viewport.displayStyle.displayTerrain) {
 
       if (state.hit?.modelId) {
         const drapeTreeRef = this.getGeometryTreeRef(state.hit.viewport);
@@ -240,7 +236,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   protected renderGraphics(context: DecorateContext) {
     this._markerSet.markers.clear();
 
-    if (this._state?.info.layerInfos == undefined) {
+    if (this._state?.mapInfo?.layerInfos == undefined) {
       return undefined;
     }
 
@@ -248,9 +244,9 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     let lineWidth = 3;
     if (this._draper) {
-      if (this._drapePoints.length === 0 && this._state.info.layerInfos) {
+      if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
 
-        for (const layerInfo of this._state.info.layerInfos) {
+        for (const layerInfo of this._state.mapInfo.layerInfos) {
           if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
             for (const subLayerInfo of layerInfo.subLayerInfos) {
               if (subLayerInfo.graphics) {
@@ -306,7 +302,7 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     } else {
       builder.setSymbology(this.highlightColor, this.highlightColor, lineWidth);
-      for (const layerInfo of this._state.info.layerInfos) {
+      for (const layerInfo of this._state.mapInfo.layerInfos) {
         if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
           for (const subLayerInfo of layerInfo.subLayerInfos) {
             if (subLayerInfo.graphics) {
