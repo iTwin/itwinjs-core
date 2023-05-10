@@ -423,19 +423,13 @@ export namespace BlobContainer {
     let service: BlobContainer.ContainerService | undefined;
     export interface AccessContainerProps {
         // (undocumented)
-        address: Address;
+        address: UriAndId;
         // (undocumented)
         userToken: UserToken;
     }
-    export interface Address {
-        // (undocumented)
-        id: ContainerId;
-        // (undocumented)
-        uri: string;
-    }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<Address>;
+        create(props: CreateNewContainerProps): Promise<UriAndId>;
         delete(props: AccessContainerProps): Promise<void>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
     }
@@ -468,6 +462,12 @@ export namespace BlobContainer {
         provider: Provider;
         scope: Scope;
         token: ContainerToken;
+    }
+    export interface UriAndId {
+        // (undocumented)
+        baseUri: string;
+        // (undocumented)
+        id: ContainerId;
     }
     export type UserToken = AccessToken;
 }
@@ -789,17 +789,13 @@ export interface CloudContainerArgs {
 
 // @beta
 export namespace CloudSqlite {
-    export interface AccountAccessProps {
-        accessName: string;
-        storageType: string;
-    }
     export function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler): Promise<void>;
     // @internal
     export interface BcvHttpLog {
-        readonly cloudSqliteLogId: string;
         readonly endTime: string | undefined;
         readonly httpcode: number;
         readonly id: number;
+        readonly logId: string;
         readonly logmsg: string;
         readonly method: string;
         readonly startTime: string;
@@ -868,7 +864,9 @@ export namespace CloudSqlite {
             blockSize?: number;
         }): void;
         get isConnected(): boolean;
+        get isPublic(): boolean;
         get isWriteable(): boolean;
+        get logId(): string;
         // (undocumented)
         onConnect?: (container: CloudContainer, cache: CloudCache) => void;
         // (undocumented)
@@ -897,15 +895,18 @@ export namespace CloudSqlite {
         readonly dbName: string;
         promise: Promise<boolean>;
     }
-    export type ContainerAccessProps = AccountAccessProps & ContainerProps & {
-        durationSeconds?: number;
+    export type ContainerAccessProps = ContainerProps & {
+        lockExpireSeconds?: number;
     };
     export interface ContainerProps {
         accessToken: string;
         alias?: string;
-        cloudSqliteLogId?: string;
+        baseUri: string;
         containerId: string;
+        isPublic?: boolean;
+        logId?: string;
         secure?: boolean;
+        storageType: "azure" | "google" | "aws";
         writeable?: boolean;
     }
     export interface CreateCloudCacheArg {
@@ -3469,17 +3470,15 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getCloudCache(): CloudSqlite.CloudCache;
     // (undocumented)
-    getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
+    getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
     // (undocumented)
     getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     // (undocumented)
-    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
+    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
     // (undocumented)
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     // (undocumented)
-    resolveAccount(accountName: string): WorkspaceAccount.Props;
-    // (undocumented)
-    resolveContainer(containerName: string): WorkspaceContainer.Props & WorkspaceAccount.Alias;
+    resolveContainer(containerName: string): WorkspaceContainer.Props;
     // (undocumented)
     resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias;
     // (undocumented)
@@ -3488,7 +3487,7 @@ export class ITwinWorkspace implements Workspace {
 
 // @internal (undocumented)
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
-    constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props);
+    constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props);
     // (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
     // (undocumented)
@@ -5605,24 +5604,13 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getCloudCache(): CloudSqlite.CloudCache;
-    getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
+    getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
     getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
-    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
+    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
-    resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
-    resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props & WorkspaceAccount.Alias;
+    resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;
     resolveDatabase(databaseAlias: WorkspaceDb.Name): WorkspaceDb.Props & WorkspaceContainer.Alias;
     readonly settings: Settings;
-}
-
-// @beta
-export namespace WorkspaceAccount {
-    export interface Alias {
-        // (undocumented)
-        accountName: string;
-    }
-    export type Name = string;
-    export type Props = CloudSqlite.AccountAccessProps;
 }
 
 // @beta
@@ -5639,10 +5627,9 @@ export namespace WorkspaceContainer {
     export type Id = string;
     export type Name = string;
     export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
-        isPublic?: boolean;
         syncOnConnect?: boolean;
     }
-    export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
+    export type TokenFunc = (props: Props) => Promise<AccessToken>;
 }
 
 // @beta

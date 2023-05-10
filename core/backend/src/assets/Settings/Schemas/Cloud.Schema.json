@@ -6,33 +6,6 @@
   "type": "object",
   "groupName": "cloud",
   "properties": {
-    "cloud/accounts": {
-      "type": "array",
-      "description": "array of cloud accounts",
-      "cumulative": true,
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "accessName",
-          "storageType"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "the alias name of the cloud account used in `cloud/container.containerId` values"
-          },
-          "accessName": {
-            "type": "string",
-            "description": "the accessName for the cloud account"
-          },
-          "storageType": {
-            "type": "string",
-            "description": "the storageType of the cloud account"
-          }
-        }
-      }
-    },
     "cloud/containers": {
       "type": "array",
       "description": "array of cloud containers",
@@ -48,13 +21,17 @@
             "type": "string",
             "description": "the alias name of this cloud container"
           },
+          "baseUri": {
+            "type": "string",
+            "description": "the baseUri for the container, without trailing slash (e.g., https://myAcct.blob.core.windows.net)"
+          },
           "containerId": {
             "type": "string",
             "description": "the containerId of this cloud container"
           },
-          "accountName": {
+          "storageType": {
             "type": "string",
-            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\" or empty string for local (non-cloud) containers."
+            "description": "one of: 'azure', 'aws', 'google'"
           },
           "isPublic": {
             "type": "boolean",

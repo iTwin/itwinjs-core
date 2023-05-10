@@ -395,7 +395,6 @@ public;class ViewDefinition3d
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
-beta;WorkspaceAccount
 beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
 beta;WorkspaceContainer

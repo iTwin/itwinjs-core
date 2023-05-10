@@ -83,14 +83,14 @@ export namespace BlobContainer {
   }
 
   /** The URI and Id of the container. */
-  export interface Address {
-    uri: string;
+  export interface UriAndId {
+    baseUri: string;
     id: ContainerId;
   }
 
   /** Information required to access an existing container. */
   export interface AccessContainerProps {
-    address: Address;
+    address: UriAndId;
     userToken: UserToken;
   }
 
@@ -126,7 +126,7 @@ export namespace BlobContainer {
     /**
      * Create a new blob container. Throws on failure (e.g. access denied or container already exists.)
      */
-    create(props: CreateNewContainerProps): Promise<Address>;
+    create(props: CreateNewContainerProps): Promise<UriAndId>;
 
     /**
      * Delete an existing blob container.
