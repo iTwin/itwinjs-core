@@ -9,8 +9,9 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, PolylineTypeFlags, QParams2d, QParams3d,
-  RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TileFormat, TileHeader, TileReadStatus,
+  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TileFormat,
+  TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
@@ -20,7 +21,9 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
+import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../render/GraphicBranch";
+import {ComputeAnimationNodeId, VertexIndices, VertexTable} from "../render-primitives";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
@@ -28,6 +31,7 @@ export interface ImdlParserOptions {
   stream: ByteStream;
   batchModelId: Id64String;
   is3d: boolean;
+  maxVertexTableSize: number;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
   timeline?: ImdlTimeline;
@@ -145,6 +149,24 @@ class Material extends RenderMaterial {
       },
     };
   }
+}
+
+function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
+  return new VertexTable({
+    ...imdl,
+    uniformColor: imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
+    qparams: QParams3d.fromJSON(imdl.qparams),
+    uvParams: imdl.uvParams ? QParams2d.fromJSON(imdl.uvParams) : undefined,
+  });
+}
+
+function fromVertexTable(table: VertexTable): Imdl.VertexTable {
+  return {
+    ...table,
+    uniformColor: table.uniformColor?.toJSON(),
+    qparams: table.qparams.toJSON(),
+    uvParams: table.uvParams?.toJSON(),
+  };
 }
 
 class ImdlParser {
@@ -302,18 +324,70 @@ class ImdlParser {
     const getNode = (nodeId: number): Imdl.AnimationNode => {
       let node = nodesById.get(nodeId);
       if (!node) {
-        nodesById.set(nodeId, node = {
+        node =  {
           animationNodeId: nodeId,
           animationId: `${this._options.batchModelId}_Node_${nodeId}`,
           primitives: [],
-        });
+        };
+
+        nodesById.set(nodeId, node);
+        output.push(node);
       }
 
       return node;
     };
 
-    // ###TODO need a PackedFeatureTable or MultiModelPackedFeatureTable...
-    // featureTable.populateAnimationNodeIds((feature) => timeline.getBatchIdForFeature(feature), timeline.maxBatchId);
+    // NB: The BatchType is irrelevant - just use Primary.
+    assert(undefined === imdlFeatureTable.animationNodeIds);
+    let featureTable: RenderFeatureTable;
+    if (imdlFeatureTable.multiModel)
+      featureTable = MultiModelPackedFeatureTable.create(imdlFeatureTable.data, this._options.batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories);
+    else
+      featureTable = new PackedFeatureTable(imdlFeatureTable.data, this._options.batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary);
+
+    featureTable.populateAnimationNodeIds((feature) => timeline.getBatchIdForFeature(feature), timeline.maxBatchId);
+    imdlFeatureTable.animationNodeIds = featureTable.animationNodeIds;
+
+    const discreteNodeIds = timeline.discreteBatchIds;
+    const computeNodeId: ComputeAnimationNodeId = (featureIndex) => {
+      const nodeId = featureTable.getAnimationNodeId(featureIndex);
+      return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;
+    };
+
+    const splitArgs = {
+      maxDimension: this._options.maxVertexTableSize,
+      computeNodeId,
+      featureTable,
+    };
+
+    for (const docPrimitive of docPrimitives) {
+      const primitive = this.parsePrimitive(docPrimitive);
+      if (!primitive)
+        continue;
+
+      switch (primitive.type) {
+        // ###TODO area patterns
+        case "point": {
+          const params = {
+            vertices: toVertexTable(primitive.params.vertices),
+            indices: new VertexIndices(primitive.params.indices),
+            weight: primitive.params.weight,
+          };
+
+          const split = splitPointStringParams({ ...splitArgs, params });
+          for (const [nodeId, params] of split) {
+            getNode(nodeId).primitives.push({
+              type: "point",
+              params: {
+                vertices: fromVertexTable(params.vertices),
+                indices: params.indices.data,
+                weight: params.weight,
+              },
+            });
+          }
+        }
+      }
+    }
   }
 
   private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.Primitive[] {
