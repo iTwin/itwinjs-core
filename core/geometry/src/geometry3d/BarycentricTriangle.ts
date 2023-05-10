@@ -280,6 +280,7 @@ export class BarycentricTriangle {
    * * `d.isValid` returns true if and only if `this.normal()` is defined.
    * * `d.classify` can be used to determine where P lies with respect to the triangle.
    * * `d.a` is the signed projection distance: `P = p + a * this.normal()`.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/BarycentricTriangle
    * @see [[fractionToPoint]]
    */
   public pointToFraction(point: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail {
@@ -514,6 +515,7 @@ export class BarycentricTriangle {
    * * The ray intersects the triangle if and only if `d.isValid` returns true, `d.a` >= 0, and `d.isInsideOrOn`
    * returns true.
    * * `d.classify` can be used to determine where the intersection lies with respect to the triangle.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/RayTriangleIntersection
    * @see [[pointToFraction]]
   */
   public intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail {

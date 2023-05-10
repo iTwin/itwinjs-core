@@ -36,7 +36,7 @@ export class MobileRpcServer {
   private _port: number;
   private _connectionId: number;
   private _pingTimer: NodeJS.Timeout;
-  public constructor() {
+  public constructor(private _pendingMessages: Array<string | Uint8Array> | undefined = undefined) {
     /* _pingTime is a fix for ios/mobile case where when the app moves into foreground from
      * background backend restart ws.Server and then notify frontend to reconnect. But ws.Server
      * listening event is not fired as node yield to kevent and wait for some io event to happen.
@@ -81,6 +81,7 @@ export class MobileRpcServer {
       this._connection = connection;
       this._connection.on("message", (data) => this._onConnectionMessage(data));
       this._createSender();
+      this._sendPending();
       (global as any).__iTwinJsRpcReady = true;
     });
   }
@@ -100,6 +101,20 @@ export class MobileRpcServer {
 
     MobileRpcServer.interop.sendString = sender;
     MobileRpcServer.interop.sendBinary = sender;
+  }
+
+  private _sendPending() {
+    if (this._pendingMessages === undefined)
+      return;
+
+    for (const message of this._pendingMessages) {
+      this._connection!.send(message, (err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    }
+    this._pendingMessages.length = 0;
   }
 
   private _onConnectionMessage(data: ws.Data) {
@@ -152,6 +167,15 @@ export function setupMobileRpc() {
      Thus, we install a temporary timer on suspend to prevent the loop from exiting prematurely.
   */
   let retainUvLoop: NodeJS.Timer | undefined;
+  const pendingMessages: Array<string | Uint8Array> = [];
+
+  function usePendingSender() {
+    const sender = (message: string | Uint8Array, _connectionId: number) => {
+      pendingMessages.push(message);
+    };
+    MobileRpcServer.interop.sendString = sender;
+    MobileRpcServer.interop.sendBinary = sender;
+  }
 
   MobileHost.onEnterBackground.addListener(() => {
     hasSuspended = true;
@@ -162,6 +186,7 @@ export function setupMobileRpc() {
 
     retainUvLoop = setInterval(() => { }, 1000);
     server.dispose();
+    usePendingSender();
     server = null;
   });
 
@@ -170,7 +195,7 @@ export function setupMobileRpc() {
       return;
     }
 
-    server = new MobileRpcServer();
+    server = new MobileRpcServer(pendingMessages);
     clearInterval(retainUvLoop);
     retainUvLoop = undefined;
   });
