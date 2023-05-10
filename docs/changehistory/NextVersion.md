@@ -349,6 +349,7 @@ const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
 
 ### Other minor API changes
 
+- Added `SchemaInfo` interface with schema keys for a schema and it's references.  `Schema` implicitly supports this interface.
 - Some beta components had breaking changes and were moved to internal:
   - `SchemaGraph`
     - Now supports working with a `SchemaInfo` and a `SchemaContext` necessitating the init be made async.
@@ -356,4 +357,5 @@ const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
     - Use `Array<Schema>` in it's place.
   - `SchemaCache`
     - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
-- Added helper method to `SchemaFileUtility` to write schema xml to a string `writeSchemaToXmlString`
+- Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string ``
+- Added `Schema.startLoadingFromJson` to partially load a schema and return as soon as the `SchemaInfo` could be loaded.

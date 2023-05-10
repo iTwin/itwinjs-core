@@ -73,7 +73,6 @@ export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCa
 /** @beta */
 export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;
 
-
 /**
  *  Holds the SchemaKeys for a schema and it's references.  Designed so that Schema fulfills this interface.
  * @beta

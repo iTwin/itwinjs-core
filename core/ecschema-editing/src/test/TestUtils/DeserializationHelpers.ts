@@ -66,14 +66,14 @@ export async function deserializeInfoXml(schemaXml: string, context: SchemaConte
   const parser = new DOMParser();
   const document = parser.parseFromString(schemaXml);
   const reader = new SchemaReadHelper(XmlParser, context);
-  return await reader.readSchemaInfo(new Schema(context), document);
+  return reader.readSchemaInfo(new Schema(context), document);
 }
 
 export async function deserializeXml(schemaXml: string, context: SchemaContext) {
   const parser = new DOMParser();
   const document = parser.parseFromString(schemaXml);
   const reader = new SchemaReadHelper(XmlParser, context);
-  return await reader.readSchema(new Schema(context), document);
+  return reader.readSchema(new Schema(context), document);
 }
 
 export function deserializeXmlSync(schemaXml: string, context: SchemaContext) {

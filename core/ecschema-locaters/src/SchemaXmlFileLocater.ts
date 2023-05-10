@@ -64,9 +64,9 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
-    let schema: Schema = new Schema(context);
+    const schema = new Schema(context);
 
-    return await reader.readSchemaInfo(schema, document);
+    return reader.readSchemaInfo(schema, document);
   }
 
   /**

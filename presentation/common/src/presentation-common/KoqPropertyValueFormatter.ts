@@ -8,7 +8,7 @@
 
 import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import {
-  getFormatProps, InvertedUnit, ISchemaLocater, KindOfQuantity, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
+  getFormatProps, InvertedUnit, KindOfQuantity, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
   Unit,
 } from "@itwin/ecschema-metadata";
 

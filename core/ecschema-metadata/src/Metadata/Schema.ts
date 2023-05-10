@@ -610,11 +610,11 @@ export class Schema implements CustomAttributeContainerProps {
    * schema context using the getCachedSchema method
    */
   public static async startLoadingFromJson(jsonObj: object | string, context: SchemaContext): Promise<SchemaInfo> {
-    let schema: Schema = new Schema(context);
+    const schema = new Schema(context);
 
     const reader = new SchemaReadHelper(JsonParser, context);
     const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
-    return await reader.readSchemaInfo(schema, rawSchema);
+    return reader.readSchemaInfo(schema, rawSchema);
   }
 
   public static async fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema> {

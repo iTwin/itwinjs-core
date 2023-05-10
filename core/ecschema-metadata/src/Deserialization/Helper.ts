@@ -75,9 +75,9 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    const schemaInfo: SchemaInfo = { schemaKey: schema.schemaKey, references: [] }
+    const schemaInfo: SchemaInfo = { schemaKey: schema.schemaKey, references: [] };
     for (const reference of this._parser.getReferences()) {
-      const refKey = new SchemaKey(reference.name, ECVersion.fromString(reference.version))
+      const refKey = new SchemaKey(reference.name, ECVersion.fromString(reference.version));
       schemaInfo.references.push({ schemaKey: refKey });
     }
 

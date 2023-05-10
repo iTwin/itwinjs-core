@@ -26,7 +26,7 @@ export class TestSchemaLocater implements ISchemaLocater {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
-    return (await Schema.startLoadingFromJson(testFormatSchema, context));
+    return Schema.startLoadingFromJson(testFormatSchema, context);
   }
 
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {

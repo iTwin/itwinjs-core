@@ -72,7 +72,7 @@ export class SchemaGraph {
         const refSchema = this.find(refKey.schemaKey);
         if (undefined === refSchema)
           throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not find the schema info for ref schema ${refKey.schemaKey.toString()} for schema ${schema.schemaKey.toString()}`);
-        if (!visited[refKey.schemaKey.name] && this.detectCycleUtil(refSchema!, visited, recStack, cycles)) {
+        if (!visited[refKey.schemaKey.name] && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
           cycles.push({ schema, refSchema });
           cycleFound = true;
         } else if (recStack[refKey.schemaKey.name]) {
@@ -104,7 +104,7 @@ export class SchemaGraph {
 
       for (const refSchema of s.references) {
         if (!graph.find(refSchema.schemaKey)) {
-          let refInfo = await context.getSchemaInfo(refSchema.schemaKey, SchemaMatchType.LatestWriteCompatible);
+          const refInfo = await context.getSchemaInfo(refSchema.schemaKey, SchemaMatchType.LatestWriteCompatible);
           if (undefined === refInfo) {
             throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,
               `Could not locate the referenced schema, ${refSchema.schemaKey.name}.${refSchema.schemaKey.version.toString()}, of ${s.schemaKey.name} when populating the graph for ${schema.schemaKey.name}`);
@@ -112,7 +112,7 @@ export class SchemaGraph {
           await genGraph(refInfo);
         }
       }
-    }
+    };
 
     await genGraph(schema);
     return graph;
@@ -136,7 +136,7 @@ export class SchemaGraph {
         if (!graph.find(refSchema.schemaKey))
           genGraph(refSchema);
       }
-    }
+    };
 
     genGraph(schema);
     return graph;

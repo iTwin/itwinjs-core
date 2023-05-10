@@ -81,7 +81,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   private schemaPromiseExists(schemaKey: Readonly<SchemaKey>): boolean {
-    return undefined !== this._schema.find((entry: SchemaEntry) => entry.schemaInfo.schemaKey.matches(schemaKey, SchemaMatchType.Latest) && entry.schemaPromise);
+    return undefined !== this._schema.find((entry: SchemaEntry) => entry.schemaInfo.schemaKey.matches(schemaKey, SchemaMatchType.Latest) && undefined !== entry.schemaPromise);
   }
 
   private findEntry(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): SchemaEntry | undefined {
@@ -273,7 +273,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   /**
    * Adds the given SchemaItem to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaItem The SchemaItem to add
-   * @deprecated use ecschema-editing package
+   * @deprecated in 4.0 use ecschema-editing package
    */
   public async addSchemaItem(schemaItem: SchemaItem) {
     const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
