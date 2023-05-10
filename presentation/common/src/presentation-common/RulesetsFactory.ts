@@ -223,9 +223,7 @@ const createComparison = (type: PrimitiveTypeDescription, name: string, operator
 
 const createMultiClassSpecification = (classInfo: Readonly<ClassInfo>): MultiSchemaClassesSpecification => {
   const [schemaName, className] = classInfo.name.split(":");
-  return classInfo.arePolymorphic !== undefined ?
-    { schemaName, classNames: [className], arePolymorphic: classInfo.arePolymorphic } :
-    { schemaName, classNames: [className] };
+  return { schemaName, classNames: [className], arePolymorphic: true };
 };
 
 const createSingleClassSpecification = (classInfo: Readonly<ClassInfo>): SingleSchemaClassSpecification => {

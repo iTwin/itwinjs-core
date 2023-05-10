@@ -85,7 +85,6 @@ export interface ClassInfo {
   name: string;
   /** ECClass label */
   label: string;
-  arePolymorphic?: boolean;
 }
 
 /** @public */
@@ -120,7 +119,6 @@ export interface ClassInfoJSON {
   id: string;
   name: string;
   label: string;
-  arePolymorphic?: boolean;
 }
 
 /**
@@ -130,7 +128,6 @@ export interface ClassInfoJSON {
 export interface CompressedClassInfoJSON {
   name: string;
   label: string;
-  arePolymorphic?: boolean;
 }
 
 /**
