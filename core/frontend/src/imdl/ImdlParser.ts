@@ -7,6 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
 import {
   FeatureTableHeader, GltfV2ChunkTypes, GltfVersions, ImdlFlags, ImdlHeader, RenderSchedule, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
@@ -247,9 +248,78 @@ class ImdlParser {
     return primitives;
   }
 
-  private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.PrimitiveParams | undefined{
+  private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.PrimitiveParams | undefined {
     if (docPrimitive.type === "areaPattern")
       return undefined; // ###TODO
+
+    let modifier: Imdl.PrimitiveModifier | undefined = this.parseInstances(docPrimitive);
+    if (!modifier && docPrimitive.viewIndependentOrigin) {
+      const origin = Point3d.fromJSON(docPrimitive.viewIndependentOrigin);
+      modifier = {
+        type: "viewIndependentOrigin",
+        origin: { x: origin.x, y: origin.y, z: origin.z },
+      };
+    }
+  }
+
+  private parseInstances(primitive: AnyImdlPrimitive): Imdl.Instances | undefined {
+    const json = primitive.instances;
+    if (!json)
+      return undefined;
+
+    const count = JsonUtils.asInt(json.count, 0);
+    if (count <= 0)
+      return undefined;
+
+    const centerComponents = JsonUtils.asArray(json.transformCenter);
+    if (undefined === centerComponents || 3 !== centerComponents.length)
+      return undefined;
+
+    const transformCenter = Point3d.create(centerComponents[0], centerComponents[1], centerComponents[2]);
+
+    const featureIds = this.findBuffer(JsonUtils.asString(json.featureIds));
+    if (undefined === featureIds)
+      return undefined;
+
+    const transformBytes = this.findBuffer(JsonUtils.asString(json.transforms));
+    if (undefined === transformBytes)
+      return undefined;
+
+    // 1 transform = 3 rows of 4 floats = 12 floats per instance
+    const numFloats = transformBytes.byteLength / 4;
+    assert(Math.floor(numFloats) === numFloats);
+    assert(0 === numFloats % 12);
+
+    const transforms = new Float32Array(transformBytes.buffer, transformBytes.byteOffset, numFloats);
+
+    let symbologyOverrides: Uint8Array | undefined;
+    if (undefined !== json.symbologyOverrides)
+      symbologyOverrides = this.findBuffer(JsonUtils.asString(json.symbologyOverrides));
+
+    return {
+      type: "instances",
+      count,
+      transforms,
+      transformCenter,
+      featureIds,
+      symbologyOverrides,
+    };
+  }
+
+  private findBuffer(bufferViewId: string): Uint8Array | undefined {
+    if (typeof bufferViewId !== "string" || 0 === bufferViewId.length)
+      return undefined;
+
+    const bufferViewJson = this._document.bufferViews[bufferViewId];
+    if (undefined === bufferViewJson)
+      return undefined;
+
+    const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+    const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+    if (0 === byteLength)
+      return undefined;
+
+    return this._binaryData.subarray(byteOffset, byteOffset + byteLength);
   }
 }
 
