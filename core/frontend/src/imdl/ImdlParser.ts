@@ -239,7 +239,6 @@ class ImdlParser {
       };
     }
 
-    // ###TODO populateAnimationNodeIds if we have a timeline.
     this.stream.curPos = this._featureTableInfo.startPos + header.length;
     return featureTable;
   }
@@ -294,8 +293,27 @@ class ImdlParser {
     return nodes;
   }
 
-  private parseAnimationBranches(_output: Imdl.Node[], _docMesh: ImdlMesh, _featureTable: Imdl.FeatureTable, _timeline: ImdlTimeline): void {
-    // ###TODO
+  private parseAnimationBranches(output: Imdl.Node[], docMesh: ImdlMesh, imdlFeatureTable: Imdl.FeatureTable, timeline: ImdlTimeline): void {
+    const docPrimitives = docMesh.primitives;
+    if (!docPrimitives)
+      return;
+
+    const nodesById = new Map<number, Imdl.AnimationNode>();
+    const getNode = (nodeId: number): Imdl.AnimationNode => {
+      let node = nodesById.get(nodeId);
+      if (!node) {
+        nodesById.set(nodeId, node = {
+          animationNodeId: nodeId,
+          animationId: `${this._options.batchModelId}_Node_${nodeId}`,
+          primitives: [],
+        });
+      }
+
+      return node;
+    };
+
+    // ###TODO need a PackedFeatureTable or MultiModelPackedFeatureTable...
+    // featureTable.populateAnimationNodeIds((feature) => timeline.getBatchIdForFeature(feature), timeline.maxBatchId);
   }
 
   private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.Primitive[] {
