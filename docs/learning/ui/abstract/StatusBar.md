@@ -1,15 +1,15 @@
 # StatusBar
 
-The [StatusBar]($appui-abstract:StatusBar) classes and interfaces are used for creating and managing items in the Status Bar/Footer.
+The [StatusBar]($appui-react:StatusBar) classes and interfaces are used for creating and managing items in the Status Bar/Footer.
 
 ## Abstract StatusBar Item Utilities
 
-[AbstractStatusBarItemUtilities]($appui-abstract) is a utility class for creating abstract StatusBar items definitions.
+[StatusBarItemUtilities]($appui-react) is a utility class for creating abstract StatusBar items definitions.
 
 The following example defines a StatusBar item that executes an action when pressed. In this simple example it just write a message to the console.
 
 ```ts
-AbstractStatusBarItemUtilities.createActionItem("Sample:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "Test tool-tip",
+StatusBarItemUtilities.createActionItem("Sample:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "Test tool-tip",
   () => {
     console.log("Got Here!");
   }));
@@ -26,4 +26,4 @@ See [StatusBarItemUtilities]($appui-react) for React specific StatusBar item def
 
 ## API Reference
 
-- [StatusBar]($appui-abstract:StatusBar)
+- [StatusBar]($appui-react:StatusBar)
