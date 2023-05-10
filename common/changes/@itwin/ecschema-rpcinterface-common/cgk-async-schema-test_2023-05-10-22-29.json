@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-common",
+      "comment": "Updated to support changes to async schema loading and ISchemaLocater",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-common"
+}
