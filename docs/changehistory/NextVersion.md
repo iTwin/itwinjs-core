@@ -130,6 +130,10 @@ The following previously-deprecated APIs have been removed:
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
 
+**@itwin/presentation-common**
+
+- `ContentInstancesOfSpecificClassesSpecification.handlePropertiesPolymorphically`
+
 ### Deprecated API replacements
 
 #### Querying ECSql
@@ -298,9 +302,9 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
 - `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
 
-### Removed deprecated items
+### ContentInstancesOfSpecificClassesSpecification
 
-The deprecated field `handleInstancesPolymorphically?` of [ContentInstancesOfSpecificClassesSpecification](../../presentation/common/src//presentation-common/rules/content/ContentInstancesOfSpecificClassesSpecification.ts) has been removed. To specify handling polymorphicly, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
+The deprecated field `handleInstancesPolymorphically?` of [ContentInstancesOfSpecificClassesSpecification](../../presentation/common/src/presentation-common/rules/content/ContentInstancesOfSpecificClassesSpecification.ts) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
 
 ## Interfaces renamed
 
