@@ -720,7 +720,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "sinon",

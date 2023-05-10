@@ -26,6 +26,7 @@ Table of contents:
   - [Mesh offset](#mesh-offset)
   - [Mesh intersection with ray](#mesh-intersection-with-ray)
   - [Abstract base class Plane3d](#abstract-base-class-plane3d)
+  - [Intersect local ranges](#intersect-local-ranges)
 - [Display](#display)
   - [glTF bounding boxes](#gltf-bounding-boxes)
   - [Atmospheric Scattering](#atmospheric-scattering)
@@ -129,14 +130,18 @@ The following previously-deprecated APIs have been removed:
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
 
+**@itwin/presentation-common**
+
+- `ContentInstancesOfSpecificClassesSpecification.handlePropertiesPolymorphically`
+
 ### Deprecated API replacements
 
 #### Querying ECSql
 
-[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
-Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+[ECSqlReader]($common) can be used as an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods that exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
 
-`createQueryReader` can now be used like below:
+`createQueryReader` can now be used as shown below:
 
 ```ts
 for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
@@ -144,7 +149,7 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 }
 ```
 
-It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+It is important to note that the object returned by `createQueryReader` is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
 
 ```ts
 for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
@@ -204,6 +209,18 @@ This will provide more consistency and functionality than previously provided by
 - Classes that _extend_ [Plane3d]($core-geometry) inherit the various _abstract_ method obligations and (non-abstract) method implementations from the base class (compatibility "by collected list of methods").
 
 With these changes the [PlaneAltitudeEvaluator]($core-geometry) can be deprecated.
+
+### Intersect local ranges
+
+A new method [ClipUtilities.doLocalRangesIntersect]($core-geometry) is added for determining whether two [Range3d]($core-geometry) objects in different local coordinates clash. This method performs an intersection of the ranges in the same coordinate system, _without_ expanding their volumes, as can happen when a `Range3d` is rotated. An optional `margin` signed distance can be used to shrink or expand the second range before the intersection, allowing for proximity testing. This can be used, for example, to efficiently test whether two elements in an iModel are approximately within 50cm of each other:
+
+```ts
+  // first element data, e.g. from iModel query
+  const range0 = Range3d.create(Point3d.fromJSON(el.bBoxLow), Point3d.fromJSON(el.bBoxHigh));
+  const placement0 = Placement3d.fromJSON({ origin: el.origin, angles: { pitch: el.pitch, roll: el.roll, yaw: el.yaw } });
+  // [...] second element data similarly
+  const isClash = ClipUtilities.doLocalRangesIntersect(range0, placement0.transform, range1, placement1.transform, 0.5);
+```
 
 ## Display
 
@@ -284,6 +301,10 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 - Support for React 18 (keep support of React 17 too).
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
 - `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
+
+### ContentInstancesOfSpecificClassesSpecification
+
+The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
 
 ## Interfaces renamed
 

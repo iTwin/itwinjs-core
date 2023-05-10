@@ -351,8 +351,6 @@ export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    // @deprecated
-    handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
     specType: "ContentInstancesOfSpecificClasses";

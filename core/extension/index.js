@@ -1,14 +1,12 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-const ext = globalThis[globalSymbol].getExtensionApi("import.meta.url");
+const ext = globalThis[globalSymbol].getExtensionApi(import.meta.url);
 
-// export extension stuff
-export const { registerTool } = ext.api;
 // exception for ExtensionHost
 export const { ExtensionHost } = ext.exports;
 
