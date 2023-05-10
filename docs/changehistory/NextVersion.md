@@ -40,6 +40,7 @@ Table of contents:
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
+- [Schemas](#schemas)
 
 ## Breaking Changes
 
@@ -323,3 +324,36 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 ### ContentInstancesOfSpecificClassesSpecification
 
 The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
+
+## Schemas
+
+### Asynchronous schema loading
+
+Added proper support for loading multiple schemas asynchronously and the ability to get information about a schema that is partially loaded.
+
+```ts
+const context = new SchemaContext();
+const locater = new SchemaXmlFileLocater();
+locater.addSchemaSearchPath("/Users/me/schemas/");
+context.addLocater(locater);
+
+const schemaKey = new SchemaKey("MySchemaWithManyReferences", 1, 0, 42);
+
+// Start loading the schema but return as soon as we have loaded the name and version of the schema and it's references
+const schemaInfo = await context.getSchemaInfo(schemaKey, SchemaMatchType.Exact);
+// Get the whole schema either awaiting the schema promise created by getSchemaInfo or start loading if not already started
+const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+// Await the schema promise created by getSchemaInfo or return undefined if not already started
+const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
+```
+
+### Other minor API changes
+
+- Some beta components had breaking changes and were moved to internal:
+  - `SchemaGraph`
+    - Now supports working with a `SchemaInfo` and a `SchemaContext` necessitating the init be made async.
+  - `SchemaMap`
+    - Use `Array<Schema>` in it's place.
+  - `SchemaCache`
+    - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
+- Added helper method to `SchemaFileUtility` to write schema xml to a string `writeSchemaToXmlString`
