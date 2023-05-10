@@ -224,11 +224,6 @@
           ],
           "description": "Defines a set of multi schema classes that prevents specified\nECClasses and subclasses from being selected by `classes` attribute."
         },
-        "handleInstancesPolymorphically": {
-          "deprecated": "in 2.x. Specify polymorphism value inside `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.",
-          "description": "Tells whether selecting instances from ECClasses specified in `classes` and `excludedClasses`\nattributes should be polymorphic or not.",
-          "type": "boolean"
-        },
         "handlePropertiesPolymorphically": {
           "description": "Specifies whether properties of derived `classes` should be included in the content.",
           "type": "boolean"

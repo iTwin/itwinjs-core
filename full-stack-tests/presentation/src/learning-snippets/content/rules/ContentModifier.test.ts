@@ -39,8 +39,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               // load content for all `bis.SpatialCategory` and `bis.GeometricModel` instances
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory", "GeometricModel"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory", "GeometricModel"], arePolymorphic: true },
             }],
           }, {
             ruleType: "ContentModifier",
@@ -136,8 +135,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               // load content of all `bis.SpatialCategory` instances
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"], arePolymorphic: true },
             }],
           }, {
             ruleType: "ContentModifier",
