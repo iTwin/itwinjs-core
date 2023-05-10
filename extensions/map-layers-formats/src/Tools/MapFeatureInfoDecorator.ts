@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable no-console */
 import { Base64EncodedString, ColorDef } from "@itwin/core-common";
-import { BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet, GeometryTileTreeReference, GraphicPrimitive, GraphicType, HitDetail, IModelApp, MapFeatureInfo, MapTileTreeReference, Marker, MarkerImage, MarkerSet, Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
+import {
+  BeButtonEvent, Cluster, CollectTileStatus, DecorateContext, Decorator, DisclosedTileTreeSet,
+  GeometryTileTreeReference, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
+  Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport } from "@itwin/core-frontend";
 import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
-
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string. */
 class DrapeLineStringCollector extends TileGeometryCollector {
@@ -83,8 +85,6 @@ class TerrainDraper implements TileUser {
   }
 }
 
-
-
 class PinMarker extends Marker {
   public constructor(worldLocation: XYAndZ, size: XAndY, image: MarkerImage) {
     super(worldLocation, size);
@@ -140,22 +140,20 @@ export class MapFeatureInfoDecorator implements Decorator {
 
   public readonly useCachedDecorations = true;
   public readonly disableTerrainDraper = true;
-
-
   public markerSize = new Point2d(32, 32);
-
+  public lineWidth =  3;
   private _highlightColor = ColorDef.from(0, 255, 255, 127);
 
+  public get highlightColor() { return this._highlightColor;}
+  public set highlightColor(color: ColorDef) {
+    this.updateMarkerImage();
+    this._highlightColor = color;
+  }
 
-  public get highlightColor() { return this._highlightColor; this.updateMarkerImage(); }
-  public set highlightColor(color: ColorDef) { this._highlightColor = color; }
-
-
-  public get defaultMarkerIconSvgXml() { return `<svg class="indicator" viewBox="0 0 22 22" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><path d="m11 0a7.44506 7.44506 0 0 0 -7.5 7.2875c0 1.65 1.132 4.2625 3.25477 8.1125 1.55652 2.75 4.24523 6.6 4.24523 6.6s2.68865-3.9875 4.24528-6.7375c2.12272-3.85 3.25472-6.4625 3.25472-8.1125a7.4215 7.4215 0 0 0 -7.5-7.15z" fill="black"/><path d="m11 1.01715a6.46476 6.46476 0 0 0 -6.48285 6.27033c0 1.72619 1.67181 4.97973 3.12836 7.62139.97564 1.7237 2.42828 3.92176 3.34118 5.27161.91413-1.39148 2.385-3.673 3.37336-5.41907 1.451-2.63171 3.1228-5.88525 3.1228-7.61139a6.39982 6.39982 0 0 0 -6.48285-6.13287zm.00183 8.98285a3 3 0 1 1 3-3 3 3 0 0 1 -3 3z" fill="${this.highlightColor.toRgbString()}"/></svg>` };
-
+  public get defaultMarkerIconSvgXml() { return `<svg class="indicator" viewBox="0 0 22 22" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><path d="m11 0a7.44506 7.44506 0 0 0 -7.5 7.2875c0 1.65 1.132 4.2625 3.25477 8.1125 1.55652 2.75 4.24523 6.6 4.24523 6.6s2.68865-3.9875 4.24528-6.7375c2.12272-3.85 3.25472-6.4625 3.25472-8.1125a7.4215 7.4215 0 0 0 -7.5-7.15z" fill="black"/><path d="m11 1.01715a6.46476 6.46476 0 0 0 -6.48285 6.27033c0 1.72619 1.67181 4.97973 3.12836 7.62139.97564 1.7237 2.42828 3.92176 3.34118 5.27161.91413-1.39148 2.385-3.673 3.37336-5.41907 1.451-2.63171 3.1228-5.88525 3.1228-7.61139a6.39982 6.39982 0 0 0 -6.48285-6.13287zm.00183 8.98285a3 3 0 1 1 3-3 3 3 0 0 1 -3 3z" fill="${this.highlightColor.toRgbString()}"/></svg>`; }
 
   private _drapePoints = new GrowableXYZArray();
-  private _scatchPoints = new GrowableXYZArray();
+  private _scratchPoints = new GrowableXYZArray();
 
   private _drapePointsStates: DrapePointState[] = [];
   private _drapedStrings?: LineString3d[];
@@ -174,7 +172,8 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   private updateMarkerImage() {
-    this._markerImage.src = "data:image/svg+xml;base64," + Base64EncodedString.encode(this.defaultMarkerIconSvgXml);
+    const base64 = Base64EncodedString.encode(this.defaultMarkerIconSvgXml);
+    this._markerImage.src = `data:image/svg+xml;base64,${base64}`;
   }
 
   private _computeChordTolerance(viewport: Viewport, applyAspectRatioSkew: boolean, computeRange: () => Range3d) {
@@ -217,8 +216,7 @@ export class MapFeatureInfoDecorator implements Decorator {
       this._draper.dispose();
       this._draper = undefined;
     }
-
-  }
+  };
 
   private getGeometryTreeRef(vp: Viewport): GeometryTileTreeReference | undefined {
     let treeRef: GeometryTileTreeReference | undefined;
@@ -236,13 +234,12 @@ export class MapFeatureInfoDecorator implements Decorator {
   protected renderGraphics(context: DecorateContext) {
     this._markerSet.markers.clear();
 
-    if (this._state?.mapInfo?.layerInfos == undefined) {
+    if (this._state?.mapInfo?.layerInfos === undefined) {
       return undefined;
     }
 
     const builder = context.createGraphicBuilder(this._graphicType);
 
-    let lineWidth = 3;
     if (this._draper) {
       if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
 
@@ -270,20 +267,20 @@ export class MapFeatureInfoDecorator implements Decorator {
         let drapePointsOffset = 0;
         for (const state of this._drapePointsStates) {
 
-          if (state.collectorState == "loading") {
-            this._scatchPoints.clear();
-            this._scatchPoints.resize(state.count);
+          if (state.collectorState === "loading") {
+            this._scratchPoints.clear();
+            this._scratchPoints.resize(state.count);
 
             let dstIdx = 0;
             for (let srcIdx = drapePointsOffset; srcIdx < drapePointsOffset + state.count; srcIdx++) {
-              this._scatchPoints.transferFromGrowableXYZArray(dstIdx++, this._drapePoints, srcIdx);
+              this._scratchPoints.transferFromGrowableXYZArray(dstIdx++, this._drapePoints, srcIdx);
             }
 
             const drapeRange = Range3d.createNull();
-            drapeRange.extendArray(this._scatchPoints);
+            drapeRange.extendArray(this._scratchPoints);
             const drapedStrings: LineString3d[] = [];
             const tolerance = this._computeChordTolerance(context.viewport, true, () => drapeRange) * 10;  // 10 pixels
-            if ("loading" == this._draper.drapeLineString(drapedStrings, this._scatchPoints, tolerance)) {
+            if ("loading" === this._draper.drapeLineString(drapedStrings, this._scratchPoints, tolerance)) {
               hasMissingLineStrings = true;
             } else {
               this.addDrapedStrings(drapedStrings);
@@ -296,12 +293,12 @@ export class MapFeatureInfoDecorator implements Decorator {
       }
 
       if (this._drapedStrings) {
-        builder.setSymbology(this.highlightColor, this.highlightColor, lineWidth);
+        builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
         this._drapedStrings.forEach((line) => builder.addLineString(line.points));
       }
 
     } else {
-      builder.setSymbology(this.highlightColor, this.highlightColor, lineWidth);
+      builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
       for (const layerInfo of this._state.mapInfo.layerInfos) {
         if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
           for (const subLayerInfo of layerInfo.subLayerInfos) {
@@ -310,8 +307,7 @@ export class MapFeatureInfoDecorator implements Decorator {
                 if (graphic.type === "pointstring") {
                   for (const point of graphic.points)
                     this._markerSet.markers.add(new PinMarker(point, this.markerSize, this._markerImage));
-                }
-                else {
+                } else {
                   builder.addPrimitive(graphic);
                 }
 
@@ -331,8 +327,8 @@ export class MapFeatureInfoDecorator implements Decorator {
     if (!this._drapedStrings) {
       this._drapedStrings = [];
     }
-    for (const string of drapedStrings)
-      this._drapedStrings.push(string)
+    for (const ds of drapedStrings)
+      this._drapedStrings.push(ds);
   }
 
   public decorate(context: DecorateContext): void {
@@ -341,8 +337,6 @@ export class MapFeatureInfoDecorator implements Decorator {
       context.addDecoration(this._graphicType, graphics);
 
     this._markerSet.addDecoration(context);
-
-
     return;
   }
 

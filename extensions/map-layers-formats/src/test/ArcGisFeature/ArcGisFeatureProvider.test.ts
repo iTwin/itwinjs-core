@@ -552,7 +552,6 @@ describe("ArcGisFeatureProvider", () => {
     await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
   });
 
-
   it("should process linestring data in getFeatureInfo (ECF)", async () => {
     await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillySimplePathQueryJson);
   });

@@ -6,13 +6,13 @@ import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
 
 /** @internal */
 export class ArcGisGeometryReaderJSON {
-  private _ringsOrPaths:boolean;
-  private _points:boolean;
-  private _fill:boolean;
-  private _relativeCoords:boolean;
+  private _ringsOrPaths: boolean;
+  private _points: boolean;
+  private _fill: boolean;
+  private _relativeCoords: boolean;
   private _renderer: ArcGisGeometryRenderer;
 
-  public constructor(geometryType:string, renderer: ArcGisGeometryRenderer, relativeCoords = false) {
+  public constructor(geometryType: string, renderer: ArcGisGeometryRenderer, relativeCoords = false) {
     this._ringsOrPaths = geometryType === "esriGeometryPolyline" || geometryType === "esriGeometryPolygon";
     this._points = geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultiPoint";
     this._fill = geometryType === "esriGeometryPolygon";

@@ -98,10 +98,9 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
       return new MapFeatureInfoRecord(propertyValue, { name: fieldName, displayLabel: fieldName, typename });
     };
 
-
     let geomReader: ArcGisGeometryReaderJSON|undefined;
     if (renderer && responseObj?.geometryType) {
-      geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer)
+      geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer);
     }
 
     // Read feature values
