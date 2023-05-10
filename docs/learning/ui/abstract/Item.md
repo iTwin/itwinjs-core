@@ -1,6 +1,6 @@
 # Item
 
-The [AbstractItemProps]($appui-abstract:AbstractItemProps) classes and interfaces are used when working with items in a Toolbar, Widget, Backstage or Context Menu.
+The [Item]($appui-abstract:Item) classes and interfaces are used when working with items in a Toolbar, Widget, Backstage or Context Menu.
 
 ## ConditionalBooleanValue
 
