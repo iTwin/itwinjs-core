@@ -10,9 +10,9 @@ import { JsonUtils } from "@itwin/core-bentley";
 import { ImageSource, RenderMaterial, RenderTexture, TileReadStatus } from "@itwin/core-common";
 import { ImdlDocument, ImdlNamedTexture } from "../imdl/ImdlSchema";
 import { ImdlModel as Imdl } from "../imdl/ImdlModel";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { IModelConnection } from "../IModelConnection";
-import { IModelTileContent } from "./internal";
 
 export interface ImdlDecodeOptions {
   source: ImdlDocument;
@@ -96,10 +96,12 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
   return result;
 }
 
-export async function decodeImdlContent(options: ImdlDecodeOptions): Promise<IModelTileContent | ImdlDecodeError> {
-  const { source, document } = options;
-
+export async function decodeImdlContent(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined | ImdlDecodeError> {
   const namedTextures = await loadNamedTextures(options);
 
-  return TileReadStatus.InvalidTileData; // ###TODO
+  const graphics: RenderGraphic[] = [];
+  for (const node of options.document.nodes) {
+  }
+
+  return undefined; // ###TODO
 }
