@@ -172,7 +172,7 @@ export interface ExportGraphicsOptions {
    * like screws and screw holes.
    */
   minBRepFeatureSize?: number;
-  /** Export raw uv-parameters, overriding all parameter scaling and v-inversion controlled by texture properties. */
+  /** Export raw uv-parameters, overriding all texture-controlled parameter scaling and v-inversion. */
   exportRawParameters?: boolean;
 }
 
@@ -265,7 +265,7 @@ export interface ExportPartGraphicsOptions {
    * like screws and screw holes.
    */
   minBRepFeatureSize?: number;
-  /** Export raw uv-parameters, overriding all parameter scaling and v-inversion controlled by texture properties. */
+  /** Export raw uv-parameters, overriding all texture-controlled parameter scaling and v-inversion. */
   exportRawParameters?: boolean;
 }
 

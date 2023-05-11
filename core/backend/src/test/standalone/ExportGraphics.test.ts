@@ -11,7 +11,7 @@ import {
   ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
@@ -39,7 +39,7 @@ describe("exportGraphics", () => {
 
   function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const props: TextureMapProps = { TextureId: textureId };
+    const props: TextureMapProps = { TextureId: textureId, pattern_offset: [0.0, 0.0] };
     if (patternScale)
       props.pattern_scale = patternScale;
     if (patternScaleMode)
@@ -251,21 +251,101 @@ describe("exportGraphics", () => {
   });
 
   it("creates meshes with raw parameters as requested", () => {
-    const rawUVParams = new Float32Array([1, 1, 0, 0, 0, 1]);
-    const rawUVParamsGrowable = GrowableXYArray.create([]);
-    for (let i = 0; i + 1 < rawUVParams.length; i += 2)
-      rawUVParamsGrowable.pushXY(rawUVParams[i], rawUVParams[i + 1]);
-
-    const polyfaceBuilder = PolyfaceBuilder.create();
-    polyfaceBuilder.options.needParams = polyfaceBuilder.options.needNormals = true;
-    polyfaceBuilder.addFacetFromGrowableArrays(
+    const triangleBuilder = PolyfaceBuilder.create();
+    triangleBuilder.options.needParams = triangleBuilder.options.needNormals = true;
+    triangleBuilder.addFacetFromGrowableArrays(
       GrowableXYZArray.create([[1, 0, 1], [0, 0, -1], [-1, 0, 1]]), // xyz
       GrowableXYZArray.create([[0, 1, 0], [0, 1, 0], [0, 1, 0]]),   // normals
-      rawUVParamsGrowable,
+      GrowableXYArray.create([{x: 1, y: 1}, {x: 0, y: 0}, {x: 0, y: 1}]), // uv
       undefined // no colors
     );
+    const triangle = triangleBuilder.claimPolyface();
+    const triangleRawUVParams = new Float32Array([1, 1, 0, 0, 0, 1]);
+    const triangleScaledUVParams = new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]);
+    const triangleUnscaledUVParams = Float32Array.from(triangleRawUVParams, (param: number, index: number) => { return (index % 2) + param; }); // 1, 2, 0, 1, 0, 2
 
-    const testUVParamExport = (geomId: Id64String, expectedParams: Float32Array, assertMessage: string, rawParams: boolean) => {
+    const cubeBuilder = PolyfaceBuilder.create();
+    cubeBuilder.options.needParams = cubeBuilder.options.needNormals = true;
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[-1,1,-1],[-1,1,1],[1,1,-1]]),
+      GrowableXYZArray.create([[0,1,0],[0,1,0],[0,1,0]]),
+      GrowableXYArray.create([{x:0.875,y:0.5},{x:0.875,y:0.25},{x:0.625,y:0.5}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1,1,-1],[-1,1,1],[1,1,1]]),
+      GrowableXYZArray.create([[0,1,0],[0,1,0],[0,1,0]]),
+      GrowableXYArray.create([{x:0.625,y:0.5},{x:0.875,y:0.25},{x:0.625,y:0.25}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1,1,1],[-1,1,1],[1,-1,1]]),
+      GrowableXYZArray.create([[0,0,1],[0,0,1],[0,0,1]]),
+      GrowableXYArray.create([{x:0.625,y:0.25},{x:0.625,y:0},{x:0.375,y:0.25}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1,-1,1],[-1,1,1],[-1,-1,1]]),
+      GrowableXYZArray.create([[0,0,1],[0,0,1],[0,0,1]]),
+      GrowableXYArray.create([{x:0.375,y:0.25},{x:0.625,y:0},{x:0.375,y:0}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[-1,1,1],[-1,1,-1],[-1,-1,1]]),
+      GrowableXYZArray.create([[-1,0,0],[-1,0,0],[-1,0,0]]),
+      GrowableXYArray.create([{x:0.625,y:1},{x:0.625,y:0.75},{x:0.375,y:1}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[-1,-1,1],[-1,1,-1],[-1,-1,-1]]),
+      GrowableXYZArray.create([[-1,0,0],[-1,0,0],[-1,0,0]]),
+      GrowableXYArray.create([{x:0.375,y:1},{x:0.625,y:0.75},{x:0.375,y:0.75}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1,-1,-1],[1,-1,1],[-1,-1,-1]]),
+      GrowableXYZArray.create([[0,-1,0],[0,-1,0],[0,-1,0]]),
+      GrowableXYArray.create([{x:0.375,y:0.5},{x:0.375,y:0.25},{x:0.125,y:0.5}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[-1,-1,-1],[1,-1,1],[-1,-1,1]]),
+      GrowableXYZArray.create([[0,-1,0],[0,-1,0],[0,-1,0]]),
+      GrowableXYArray.create([{x:0.125,y:0.5},{x:0.375,y:0.25},{x:0.125,y:0.25}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1,1,-1],[1,1,1],[1,-1,-1]]),
+      GrowableXYZArray.create([[1,0,0],[1,0,0],[1,0,0]]),
+      GrowableXYArray.create([{x:0.625,y:0.5},{x:0.625,y:0.25},{x:0.375,y:0.5}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[1,-1,-1],[1,1,1],[1,-1,1]]),
+      GrowableXYZArray.create([[1,0,0],[1,0,0],[1,0,0]]),
+      GrowableXYArray.create([{x:0.375,y:0.5},{x:0.625,y:0.25},{x:0.375,y:0.25}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[-1,1,-1],[1,1,-1],[-1,-1,-1]]),
+      GrowableXYZArray.create([[0,0,-1],[0,0,-1],[0,0,-1]]),
+      GrowableXYArray.create([{x:0.625,y:0.75},{x:0.625,y:0.5},{x:0.375,y:0.75}]), undefined
+    );
+    cubeBuilder.addFacetFromGrowableArrays(
+      GrowableXYZArray.create([[-1,-1,-1],[1,1,-1],[1,-1,-1]]),
+      GrowableXYZArray.create([[0,0,-1],[0,0,-1],[0,0,-1]]),
+      GrowableXYArray.create([{x:0.375,y:0.75},{x:0.625,y:0.5},{x:0.375,y:0.5}]), undefined
+    );
+    const cube = cubeBuilder.claimPolyface();
+    const cubeRawUVParams = new Float32Array([0.875, 0.5, 0.875, 0.25, 0.625, 0.5, 0.625, 0.25, 0.625, 0.25, 0.625, 0, 0.375, 0.25, 0.375, 0, 0.625, 1, 0.625, 0.75, 0.375, 1, 0.375, 0.75, 0.375, 0.5, 0.375, 0.25, 0.125, 0.5, 0.125, 0.25, 0.625, 0.5, 0.625, 0.25, 0.375, 0.5, 0.375, 0.25, 0.625, 0.75, 0.625, 0.5, 0.375, 0.75, 0.375, 0.5]);
+    const cubeScaledUVParams = new Float32Array([5.25, -3, 5.25, -1, 3.75, -3, 3.75, -1, 3.75, -1, 3.75, 1, 2.25, -1, 2.25, 1, 3.75, -7, 3.75, -5, 2.25, -7, 2.25, -5, 2.25, -3, 2.25, -1, 0.75, -3, 0.75, -1, 3.75, -3, 3.75, -1, 2.25, -3, 2.25, -1, 3.75, -5, 3.75, -3, 2.25, -5, 2.25, -3]);
+    const cubeUnscaledUVParams = Float32Array.from(cubeRawUVParams, (param: number, index: number) => { return (index % 2) + param; });
+
+    let scaledMaterial: undefined | Id64String;
+    const getScaledMaterial = (): Id64String => {
+    if (scaledMaterial !== undefined)
+      return scaledMaterial;
+    return scaledMaterial = insertRenderMaterialWithTexture("test-material-scaled", getTextureId(), [1, -1], TextureMapUnits.Meters);
+    }
+
+    let unscaledMaterial: undefined | Id64String;
+    const getUnscaledMaterial = (): Id64String => {
+    if (unscaledMaterial !== undefined)
+      return unscaledMaterial;
+    return unscaledMaterial = insertRenderMaterialWithTexture("test-material-unscaled", getTextureId(), [1, 1], TextureMapUnits.Relative);
+    }
+
+    const testUVParamExport = (geomId: Id64String, expectedParams: Float32Array, rawParams: boolean) => {
       const infos: ExportGraphicsInfo[] = [];
       const exportGraphicsOptions: ExportGraphicsOptions = {
         elementIdArray: [geomId],
@@ -276,35 +356,34 @@ describe("exportGraphics", () => {
       const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
       assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
       assert.strictEqual(infos.length, 1);
-      assert.strictEqual(infos[0].mesh.params.length, 6);
-      assert.deepStrictEqual(infos[0].mesh.params, expectedParams, assertMessage);
+      assert.strictEqual(infos[0].mesh.params.length, expectedParams.length);
+      assert.deepStrictEqual(infos[0].mesh.params, expectedParams, rawParams ? "export raw params" : "export params");
     };
 
-    const textureId = getTextureId();
-
-    if ("scaled texture") {
-      const scaledTexture = insertRenderMaterialWithTexture("test-material-scaled", textureId, [1, -1], TextureMapUnits.Meters);
+    const testMeshWithTexture = (geom: GeometryQuery, expectedUV: Float32Array, expectedRawUV: Float32Array, scaledMaterial: boolean) => {
+      const material = scaledMaterial ? getScaledMaterial() : getUnscaledMaterial();
       const streamBuilder = new GeometryStreamBuilder();
       const geometryParams = new GeometryParams(seedCategory);
-      geometryParams.materialId = scaledTexture;
+      geometryParams.materialId = material;
       streamBuilder.appendGeometryParamsChange(geometryParams);
-      streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
-      const scaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
-      testUVParamExport(scaledGeom, new Float32Array([2, 1 - Math.sqrt(5), 0, 1, 0, 1 - Math.sqrt(5)]), "export scaled, v-inverted params", false);
-      testUVParamExport(scaledGeom, rawUVParams, "export scaled texture with rawParams override", true);
-    }
+      streamBuilder.appendGeometry(geom);
+      const geomId = insertPhysicalElement(streamBuilder.geometryStream);
+      testUVParamExport(geomId, expectedUV, false);
+      testUVParamExport(geomId, expectedRawUV, true);
+    };
 
-    if ("unscaled texture") {
-      const unscaledTexture = insertRenderMaterialWithTexture("test-material-unscaled", textureId, [1, 1], TextureMapUnits.Relative);
-      const streamBuilder = new GeometryStreamBuilder();
-      const geometryParams = new GeometryParams(seedCategory);
-      geometryParams.materialId = unscaledTexture;
-      streamBuilder.appendGeometryParamsChange(geometryParams);
-      streamBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
-      const unscaledGeom = insertPhysicalElement(streamBuilder.geometryStream);
-      testUVParamExport(unscaledGeom, new Float32Array([1, 2, 0, 1, 0, 2]), "export unscaled, v-inverted params", false);
-      testUVParamExport(unscaledGeom, rawUVParams, "export unscaled texture with rawParams override", true);
-    }
+    /**
+     * @param expectedScaledUV uv scaled to facet size, with v inverted (v -> 1-v)
+     * @param expectedUnscaledUV uv unscaled, with v negated and inverted (v -> 1+v)
+     * @param expectedRawUV uv untouched
+     */
+    const testMesh = (geom: GeometryQuery, expectedScaledUV: Float32Array, expectedUnscaledUV: Float32Array, expectedRawUV: Float32Array) => {
+      testMeshWithTexture(geom, expectedScaledUV, expectedRawUV, true);
+      testMeshWithTexture(geom, expectedUnscaledUV, expectedRawUV, false);
+    };
+
+    testMesh(triangle, triangleScaledUVParams, triangleUnscaledUVParams, triangleRawUVParams);
+    testMesh(cube, cubeScaledUVParams, cubeUnscaledUVParams, cubeRawUVParams);
   });
 
   it("creates meshes with vertices shared as expected", () => {
