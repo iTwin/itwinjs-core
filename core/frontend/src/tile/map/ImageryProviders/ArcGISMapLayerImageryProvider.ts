@@ -212,13 +212,13 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
   // tolerance is in pixels
-  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number): Promise<any>   {
+  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number, maxAllowableOffset?:number): Promise<any>   {
     const returnGeometry = "true;";
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}&maxAllowableOffset=${100*tolerance}`;
+    const maxAllowableOffsetStr = maxAllowableOffset ? `&maxAllowableOffset=${maxAllowableOffset}` : "";
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}${maxAllowableOffsetStr}`;
     const urlObj = new URL(tmpUrl);
 
     const response = await this.fetch(urlObj, { method: "GET" } );
@@ -253,7 +253,13 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     if (!this._querySupported)
       return;
 
-    const json = await this.getIdentifyData(quadId, carto, 5);
+      const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
+      const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
+
+      const maxAllowableOffsetFactor = 2;
+      const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
+
+    const json = await this.getIdentifyData(quadId, carto, 5, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
       const renderer = new ArcGisGraphicsRenderer(hit.iModel);
 
