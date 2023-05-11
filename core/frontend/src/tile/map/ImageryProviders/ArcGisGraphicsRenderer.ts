@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
-import { GraphicPrimitive, IModelConnection } from "@itwin/core-frontend";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { WebMercator } from "../Utils/WebMercator";
-import { ArcGisGeometryBaseRenderer } from "./ArcGisGeometryRenderer";
-const loggerCategory = "MapLayersFormats.ArcGISFeature";
+import { ArcGisGeometryBaseRenderer, WebMercator } from "../../internal";
+import { GraphicPrimitive, IModelConnection } from "../../../core-frontend";
+const loggerCategory = "MapLayerImageryProvider.ArcGisGraphicsRenderer";
 
+/** @internal */
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
-
   private _scratchPointsArray = new GrowableXYZArray();
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
@@ -72,8 +71,13 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
           loops.push(Loop.create(LineString3d.create(pointsArray)));
         }
       }
+      /*
+      for (const loop of loops)
+        this._graphics.push({ type: "loop", loop });
+        */
 
       const mergedLoops = RegionOps.constructAllXYRegionLoops(loops);
+
       for (const loop of mergedLoops) {
         for (const negativeLoop of loop.negativeAreaLoops) {
           this._graphics.push({ type: "loop", loop: negativeLoop });
@@ -87,8 +91,10 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
         // polyBuilder.addGeometryQuery(region);
         // this._graphics.push({type: "polyface", polyface:polyBuilder.claimPolyface(), filled:true});
 
-        this._scratchPaths = [];
+
       }
+
+      this._scratchPaths = [];
     }
   }
 

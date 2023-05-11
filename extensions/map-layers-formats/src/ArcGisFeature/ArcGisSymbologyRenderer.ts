@@ -216,7 +216,7 @@ export class ArcGisSymbologyRenderer {
     if (sls) {
       if (sls.color)
         context.strokeStyle = sls.color.toRgbaString();
-      context.lineWidth = sls.width;     // TODO: Should we scale this value here?
+      context.lineWidth = sls.width * 2;     // TODO: Should we scale this value here?
     }
   }
 

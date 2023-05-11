@@ -9,7 +9,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { ArcGisFeatureProvider } from "../../map-layers-formats";
 import * as sinon from "sinon";
-import { ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { NewYorkDataset } from "./NewYorkDataset";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
@@ -18,7 +18,7 @@ import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
-import { ArcGisGraphicsRenderer } from "../../ArcGisFeature/ArcGisGraphicsRenderer";
+
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

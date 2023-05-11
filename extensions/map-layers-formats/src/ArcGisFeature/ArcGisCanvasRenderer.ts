@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisGeometryBaseRenderer } from "./ArcGisGeometryRenderer";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
+import { ArcGisGeometryBaseRenderer } from "@itwin/core-frontend";
 
 export class ArcGisCanvasRenderer extends ArcGisGeometryBaseRenderer {
   private _context: CanvasRenderingContext2D;

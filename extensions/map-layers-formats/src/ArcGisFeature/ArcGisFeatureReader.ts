@@ -5,10 +5,8 @@
 
 import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
-import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
 
 /** @internal */
 export abstract class ArcGisFeatureReader  {

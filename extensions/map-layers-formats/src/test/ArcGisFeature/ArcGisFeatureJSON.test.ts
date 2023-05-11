@@ -5,7 +5,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { ArcGisGeometryReaderJSON, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
@@ -15,7 +15,6 @@ import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRend
 import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
-import { ArcGisGeometryReaderJSON } from "../../ArcGisFeature/ArcGisGeometryReaderJSON";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 

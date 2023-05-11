@@ -17,6 +17,8 @@ import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
+import { ArcGisGeometryReaderJSON } from "./ArcGisGeometryReaderJSON";
+import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
@@ -215,7 +217,8 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=${returnGeometry}&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}&maxAllowableOffset=${100*tolerance}`;
     const urlObj = new URL(tmpUrl);
 
     const response = await this.fetch(urlObj, { method: "GET" } );
@@ -246,12 +249,18 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   }
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
-  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void> {
+  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void> {
     if (!this._querySupported)
       return;
 
     const json = await this.getIdentifyData(quadId, carto, 5);
     if (json && Array.isArray(json.results)) {
+      const renderer = new ArcGisGraphicsRenderer(hit.iModel);
+
+
+
+
+
       const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name };
 
       for (const result of json.results) {
@@ -269,6 +278,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
             { name: key, displayLabel: key, typename: StandardTypeNames.String }
           ));
         }
+
+        let geomReader = new ArcGisGeometryReaderJSON(result.geometryType, renderer);
+        await geomReader.readGeometry(result.geometry);
+        subLayerInfo.graphics = renderer!.moveGraphics();
 
         if (layerInfo.subLayerInfos === undefined) {
           layerInfo.subLayerInfos = [];

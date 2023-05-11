@@ -5,13 +5,10 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { ArcGisGraphicsRenderer, ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
-import { ArcGisGeometryReaderJSON } from "./ArcGisGeometryReaderJSON";
-import { ArcGisGeometryRenderer } from "./ArcGisGeometryRenderer";
 
 /** @internal */
 export class ArcGisFeatureJSON extends ArcGisFeatureReader {
