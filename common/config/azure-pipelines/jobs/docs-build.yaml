@@ -16,7 +16,7 @@ parameters:
     default: $(Pipeline.Workspace)/tempDocsBuild
   - name: useCoreDocsArtifact
     type: boolean
-    default: false
+    default: true
   - name: useCurrentAppUIDocsArtifact
     type: boolean
     default: false
