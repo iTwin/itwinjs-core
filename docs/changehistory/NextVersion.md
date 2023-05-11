@@ -172,8 +172,8 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 - Renamed Interfaces
   - The interface `FormatProps` has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
   - The interface `UnitProps` has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
-- ISchemaLocater
-  - `getSchema` and `getSchemaSync` methods not take a `Readonly<SchemaKey>` instead of a `SchemaKey` and the `SchemaContext` parameter is required
+- `ISchemaLocater`
+  - `getSchema` and `getSchemaSync` methods now take a `Readonly<SchemaKey>` instead of a `SchemaKey` and the `SchemaContext` parameter is required
   - Added `getSchemaInfo` method to facilitate asynchronous schema loading
 
 ## Backend
@@ -357,5 +357,5 @@ const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
     - Use `Array<Schema>` in it's place.
   - `SchemaCache`
     - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
-- Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string ``
+- Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string
 - Added `Schema.startLoadingFromJson` to partially load a schema and return as soon as the `SchemaInfo` could be loaded.
