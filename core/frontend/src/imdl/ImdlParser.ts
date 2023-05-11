@@ -393,15 +393,19 @@ class ImdlParser {
 
       switch (primitive.type) {
         // ###TODO area patterns
-        // case "mesh": { ###TODO
-        //   const params: MeshParams = {
-        //     vertices: toVertexTable(primitive.params.vertices),
-        //     surface: primitive.params.surface,
-        //     // ###TODO edges
-        //     isPlanar: primitive.params.isPlanar,
-        //     auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
-        //     createMaterial: (args) => Material.create(args),
-        //   };
+        case "mesh": {
+          // ###TODO
+          // const params: MeshParams = {
+          //   vertices: toVertexTable(primitive.params.vertices),
+          //   surface: {
+          //     ...primitive.params.surface,
+          //     indices: new VertexIndices(primitive.params.surface.indices),
+          //   },
+          //   // ###TODO edges
+          //   isPlanar: primitive.params.isPlanar,
+          //   auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
+          break;
+          };
         case "point": {
           const params = {
             vertices: toVertexTable(primitive.params.vertices),
