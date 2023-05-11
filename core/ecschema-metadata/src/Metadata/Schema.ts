@@ -568,7 +568,7 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * Loads the schema header (name, version alias, label an description) from the input SchemaProps
+   * Loads the schema header (name, version alias, label and description) from the input SchemaProps
    */
   public fromJSONSync(schemaProps: SchemaProps) {
     if (undefined === this._schemaKey) {
@@ -599,7 +599,7 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * Loads the schema header (name, version alias, label an description) from the input SchemaProps
+   * Loads the schema header (name, version alias, label and description) from the input SchemaProps
    */
   public async fromJSON(schemaProps: SchemaProps) {
     this.fromJSONSync(schemaProps);
@@ -628,7 +628,7 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * Completely loads the Schema from the input json a.  The schema is cached in the schema context.
+   * Completely loads the Schema from the input json. The schema is cached in the schema context.
    */
   public static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema {
     let schema: Schema = new Schema(context);

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Fixed improper use of ISchemaLocater interface",
+      "comment": "Fixed improper use of `ISchemaLocater` interface",
       "type": "none"
     }
   ],
