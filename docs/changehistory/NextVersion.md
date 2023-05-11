@@ -165,7 +165,7 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 
 #### @itwin/core-quantity
 
-- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+- The interface `UnitConversion` has been renamed to [UnitConversionProps]($quantity).
 
 #### @itwin/ecschema-metadata
 
