@@ -169,12 +169,9 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 
 #### @itwin/ecschema-metadata
 
-- Renamed Interfaces
-  - The interface `FormatProps` has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
-  - The interface `UnitProps` has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
-- `ISchemaLocater`
-  - `getSchema` and `getSchemaSync` methods now take a `Readonly<SchemaKey>` instead of a `SchemaKey` and the `SchemaContext` parameter is required
-  - Added `getSchemaInfo` method to facilitate asynchronous schema loading
+- The `FormatProps` interface has been replaced with the [SchemaItemFormatProps]($ecschema-metadata) type alias.
+- The `UnitProps` interface has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+- [ISchemaLocater.getSchema]($ecschema-metadata) and [ISchemaLocater.getSchemaSync]($ecschema-metadata) now take a `Readonly<SchemaKey>` instead of a [SchemaKey]($ecschema-metadata) and the [SchemaContext]($ecschema-metadata) parameter is no longer optional.
 
 ## Backend
 
