@@ -437,7 +437,7 @@ describe("ChangeSummary", () => {
 
     // Validate that the second change summary captures the change to the parent correctly
     try {
-      const changeSummaryIds = await ChangeSummaryManager.extractChangeSummaries(accessToken, iModel); // eslint-disable-line deprecation/deprecation
+      const changeSummaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId: iModel.iTwinId, iModelId, range: { first: 0 }});
       assert.strictEqual(2, changeSummaryIds.length);
 
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -495,7 +495,7 @@ describe("ChangeSummary", () => {
     // User2 applies the change set and extracts the change summary
     await iModel.pullChanges({ accessToken: userContext2 });
 
-    const changeSummariesIds = await ChangeSummaryManager.extractChangeSummaries(userContext2, iModel, { currentVersionOnly: true }); // eslint-disable-line deprecation/deprecation
+    const changeSummariesIds = await ChangeSummaryManager.createChangeSummaries({ accessToken: userContext2, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, range: { first: 0 }});
     if (changeSummariesIds.length !== 1)
       throw new Error("ChangeSet summary extraction returned invalid ChangeSet summary IDs.");
 

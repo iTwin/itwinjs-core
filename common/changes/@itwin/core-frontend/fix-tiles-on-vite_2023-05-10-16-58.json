@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Patch how dynamic import for packages are resolved in Vite based apps so tiles render\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

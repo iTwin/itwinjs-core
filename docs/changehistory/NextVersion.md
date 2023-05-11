@@ -20,6 +20,9 @@ Table of contents:
   - [Deprecated API removals](#deprecated-api-removals)
   - [Deprecated API replacements](#deprecated-api-replacements)
     - [Querying ECSql](#querying-ecsql)
+  - [Interfaces changed](#interfaces-changed)
+    - [Core Quantity](#itwincore-quantity)
+    - [ECSchema Metadata](#itwinecschema-metadata)
 - [Backend](#backend)
   - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
@@ -37,6 +40,7 @@ Table of contents:
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
+- [Schemas](#schemas)
 
 ## Breaking Changes
 
@@ -130,14 +134,18 @@ The following previously-deprecated APIs have been removed:
 - `IModelTileRpcInterface.getTileCacheContainerUrl`
 - `IModelTileRpcInterface.isUsingExternalTileCache`
 
+**@itwin/presentation-common**
+
+- `ContentInstancesOfSpecificClassesSpecification.handlePropertiesPolymorphically`
+
 ### Deprecated API replacements
 
 #### Querying ECSql
 
-[ECSqlReader]($common) can be used an an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
-Both of these are methods exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+[ECSqlReader]($common) can be used as an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods that exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
 
-`createQueryReader` can now be used like below:
+`createQueryReader` can now be used as shown below:
 
 ```ts
 for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
@@ -145,13 +153,25 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
 }
 ```
 
-It is important to note that the object returned is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+It is important to note that the object returned by `createQueryReader` is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
 
 ```ts
 for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
   const jsRow = row.toRow();
 }
 ```
+
+### Interfaces changed
+
+#### @itwin/core-quantity
+
+- The interface `UnitConversion` has been renamed to [UnitConversionProps]($quantity).
+
+#### @itwin/ecschema-metadata
+
+- The `FormatProps` interface has been replaced with the [SchemaItemFormatProps]($ecschema-metadata) type alias.
+- The `UnitProps` interface has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+- [ISchemaLocater.getSchema]($ecschema-metadata) and [ISchemaLocater.getSchemaSync]($ecschema-metadata) now take a `Readonly<SchemaKey>` instead of a [SchemaKey]($ecschema-metadata) and the [SchemaContext]($ecschema-metadata) parameter is no longer optional.
 
 ## Backend
 
@@ -298,14 +318,41 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 - Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
 - `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
 
-## Interfaces renamed
+### ContentInstancesOfSpecificClassesSpecification
 
-**@itwin/core-quantity**
+The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
 
-- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+## Schemas
 
-**@itwin/ecschema-metadata**
+### Asynchronous schema loading
 
-- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+Added proper support for loading multiple schemas asynchronously and the ability to get information about a schema that is partially loaded.
 
-- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+```ts
+const context = new SchemaContext();
+const locater = new SchemaXmlFileLocater();
+locater.addSchemaSearchPath("/Users/me/schemas/");
+context.addLocater(locater);
+
+const schemaKey = new SchemaKey("MySchemaWithManyReferences", 1, 0, 42);
+
+// Start loading the schema but return as soon as we have loaded the name and version of the schema and it's references
+const schemaInfo = await context.getSchemaInfo(schemaKey, SchemaMatchType.Exact);
+// Get the whole schema either awaiting the schema promise created by getSchemaInfo or start loading if not already started
+const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+// Await the schema promise created by getSchemaInfo or return undefined if not already started
+const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
+```
+
+### Other minor API changes
+
+- Added `SchemaInfo` interface with schema keys for a schema and it's references.  `Schema` implicitly supports this interface.
+- Some beta components had breaking changes and were moved to internal:
+  - `SchemaGraph`
+    - Now supports working with a `SchemaInfo` and a `SchemaContext` necessitating the init be made async.
+  - `SchemaMap`
+    - Use `Array<Schema>` in its place.
+  - `SchemaCache`
+    - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
+- Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string
+- Added `Schema.startLoadingFromJson` to partially load a schema and return as soon as the `SchemaInfo` could be loaded.

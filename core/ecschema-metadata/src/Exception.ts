@@ -39,6 +39,7 @@ export enum ECObjectsStatus {
   InvalidSchemaComparisonArgument = ECOBJECTS_ERROR_BASE + 25,
   InvalidSchemaAlias = ECOBJECTS_ERROR_BASE + 26,
   InvalidSchemaKey = ECOBJECTS_ERROR_BASE + 27,
+  UnableToLoadSchema = ECOBJECTS_ERROR_BASE + 28,
 }
 
 /** @internal */

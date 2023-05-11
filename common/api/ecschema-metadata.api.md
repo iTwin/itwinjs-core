@@ -424,6 +424,8 @@ export enum ECObjectsStatus {
     // (undocumented)
     Success = 0,
     // (undocumented)
+    UnableToLoadSchema = 35080,
+    // (undocumented)
     UnableToLocateSchema = 35071
 }
 
@@ -731,8 +733,9 @@ export interface ISchemaItemLocater {
 
 // @beta
 export interface ISchemaLocater {
-    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
-    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
+    getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
 
 // @beta
@@ -1578,13 +1581,10 @@ export class Schema implements CustomAttributeContainerProps {
     get description(): string | undefined;
     // (undocumented)
     protected _description?: string;
-    // (undocumented)
     fromJSON(schemaProps: SchemaProps): Promise<void>;
     // (undocumented)
     static fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema>;
-    // (undocumented)
     fromJSONSync(schemaProps: SchemaProps): void;
-    // (undocumented)
     static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema;
     get fullName(): string;
     // (undocumented)
@@ -1624,60 +1624,74 @@ export class Schema implements CustomAttributeContainerProps {
     // @alpha
     protected setContext(context: SchemaContext): void;
     setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
+    static startLoadingFromJson(jsonObj: object | string, context: SchemaContext): Promise<SchemaInfo>;
     toJSON(): SchemaProps;
     toXml(schemaXml: Document): Promise<Document>;
     // (undocumented)
     get writeVersion(): number;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class SchemaCache implements ISchemaLocater {
     constructor();
     addSchema<T extends Schema>(schema: T): Promise<void>;
+    addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync<T extends Schema>(schema: T): void;
     // (undocumented)
     get count(): number;
     getAllSchemas(): Schema[];
-    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<SchemaInfo | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
-    // (undocumented)
-    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): T | undefined;
+    schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
 }
 
 // @beta
-export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
+export class SchemaContext implements ISchemaItemLocater {
     constructor();
     // (undocumented)
     addLocater(locater: ISchemaLocater): void;
     addSchema(schema: Schema): Promise<void>;
+    // @deprecated
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
+    addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
     // @internal
-    getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getCachedSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined>;
     // @internal
-    getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
+    getCachedSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): T | undefined;
     getKnownSchemas(): Schema[];
     // (undocumented)
-    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
-    // (undocumented)
+    getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
     getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
-    // (undocumented)
     getSchemaItems(): IterableIterator<SchemaItem>;
-    // (undocumented)
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
 }
 
-// @beta
+// @internal
 export class SchemaGraph {
-    constructor(schema: Schema);
     detectCycles(): ReferenceCycle[] | undefined;
+    static generateGraph(schema: SchemaInfo, context: SchemaContext): Promise<SchemaGraph>;
+    static generateGraphSync(schema: Schema): SchemaGraph;
+    throwIfCycles(): void;
 }
 
 // @internal
 export class SchemaGraphUtil {
     static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
+}
+
+// @beta
+export interface SchemaInfo {
+    // (undocumented)
+    references: WithSchemaKey[];
+    // (undocumented)
+    schemaKey: Readonly<SchemaKey>;
 }
 
 // @beta
@@ -1825,8 +1839,9 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 // @alpha
 export class SchemaJsonLocater implements ISchemaLocater {
     constructor(_getSchema: SchemaPropsGetter);
-    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
-    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+    getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
 
 // @beta
@@ -1837,7 +1852,7 @@ export class SchemaKey {
     compareByVersion(rhs: SchemaKey): number;
     static fromJSON(props: SchemaKeyProps): SchemaKey;
     // (undocumented)
-    matches(rhs: SchemaKey, matchType?: SchemaMatchType): boolean;
+    matches(rhs: Readonly<SchemaKey>, matchType?: SchemaMatchType): boolean;
     // (undocumented)
     get minorVersion(): number;
     // (undocumented)
@@ -1869,10 +1884,6 @@ export class SchemaLoader {
     constructor(getSchema: SchemaPropsGetter);
     getSchema<T extends Schema>(schemaName: string): T;
     tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
-}
-
-// @beta (undocumented)
-export class SchemaMap extends Array<Schema> {
 }
 
 // @beta
@@ -1931,6 +1942,7 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
+    readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
 }
 
@@ -2111,6 +2123,12 @@ export class UnitSystem extends SchemaItem {
 
 // @beta (undocumented)
 export type UnitSystemProps = SchemaItemProps;
+
+// @beta (undocumented)
+export interface WithSchemaKey {
+    // (undocumented)
+    schemaKey: Readonly<SchemaKey>;
+}
 
 // @internal (undocumented)
 export class XmlParser extends AbstractParser<Element> {
