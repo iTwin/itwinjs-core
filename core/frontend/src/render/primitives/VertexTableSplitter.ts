@@ -15,7 +15,6 @@ import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
 import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
 import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
-import { IModelApp } from "../../IModelApp";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
 
 /** Builds up a [[VertexIndices]].
@@ -584,7 +583,7 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
   }
 }
 
-function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, EdgeParams> {
+function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: number): Map<number, EdgeParams> {
   const edges = new Map<number, RemappedEdges>();
   remapSegmentEdges("segments", source, nodes, edges);
   remapSegmentEdges("silhouettes", source, nodes, edges);
@@ -605,7 +604,7 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
     if (remappedEdges.indexed) {
       const numSegmentEdges = remappedEdges.indexed.edges.length / 6;
       const numSilhouettes = remappedEdges.indexed.silhouettes.length / 10;
-      const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(numSegmentEdges, numSilhouettes, IModelApp.renderSystem.maxTextureSize);
+      const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(numSegmentEdges, numSilhouettes, maxDimension);
       const data = new Uint8Array(width * height * 4);
       data.set(remappedEdges.indexed.edges.toTypedArray(), 0);
       if (numSilhouettes > 0)
@@ -672,7 +671,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
     atlasInfo,
   }, args.computeNodeId);
 
-  const edges = args.params.edges ? splitEdges(args.params.edges, nodes) : undefined;
+  const edges = args.params.edges ? splitEdges(args.params.edges, nodes, args.maxDimension) : undefined;
 
   for (const [id, node] of nodes) {
     const { vertices, indices, material } = node.buildOutput(args.maxDimension);
