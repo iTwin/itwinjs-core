@@ -85,6 +85,8 @@ The source code for the following packages was moved to the new [AppUi repositor
 - @itwin/core-react
 - @itwin/imodel-components-react
 
+Previously deprecated AppUI related APIs from `@itwin/appui-abstract` package have been removed. Please refer to the [@itwin/appui-abstract changes](https://github.com/iTwin/appui/blob/master/docs/changehistory/4.0.0.md#itwinappui-abstract) if you have not updated yet.
+
 #### Presentation
 
 The source code for the following packages was moved to the new [Presentation repository](https://github.com/iTwin/presentation).
