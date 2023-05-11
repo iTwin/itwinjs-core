@@ -7,7 +7,7 @@
  */
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
-import { ColorDef, RenderFeatureTable } from "@itwin/core-common";
+import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableParams, VertexTableWithIndices,
 } from "./VertexTable";
@@ -159,15 +159,19 @@ class ColorTableRemapper {
 
 type MaterialAtlasTable = Uint32Array | SurfaceMaterial | undefined;
 
+type CreateRenderMaterial = (args: CreateRenderMaterialArgs) => RenderMaterial | undefined;
+
 class MaterialAtlasRemapper {
   private readonly _remappedIndices = new Map<number, number>();
   private readonly _atlasTable: Uint32Array;
+  private readonly _createMaterial: CreateRenderMaterial;
   public readonly materials: number[] = [];
   private readonly _32 = new Uint32Array(1);
   private readonly _8 = new Uint8Array(this._32.buffer);
 
-  public constructor(_atlasTable: Uint32Array) {
+  public constructor(_atlasTable: Uint32Array, createMaterial: CreateRenderMaterial) {
     this._atlasTable = _atlasTable;
+    this._createMaterial = createMaterial;
   }
 
   /** Extract the mat index stored in `vertex`, ensure it is present in the remapped atlas table, and return its index in that table. */
@@ -218,7 +222,8 @@ class MaterialAtlasRemapper {
         exponent: this.unpackFloat(entry[3]),
       },
     };
-    const material = IModelApp.renderSystem.createRenderMaterial(args);
+
+    const material = this._createMaterial(args);
     return createSurfaceMaterial(material);
   }
 
@@ -240,14 +245,14 @@ class Node {
   public readonly usesUnquantizedPositions?: boolean;
 
   /** `vertexTable` is the source table containing vertex data for all nodes, from which this node will extract the vertices belong to it. */
-  public constructor(vertexTable: VertexTable, numColorsPrecedingAtlas: number | undefined) {
+  public constructor(vertexTable: VertexTable, atlas?: AtlasInfo) {
     this.vertices = new VertexBuffer(vertexTable);
     if (undefined === vertexTable.uniformColor)
       this.colors = new ColorTableRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex));
 
-    if (undefined !== numColorsPrecedingAtlas) {
-      const atlasOffset = (vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColorsPrecedingAtlas) * 4;
-      this.atlas = new MaterialAtlasRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + atlasOffset));
+    if (atlas) {
+      const atlasOffset = (vertexTable.numVertices * vertexTable.numRgbaPerVertex + atlas.offset) * 4;
+      this.atlas = new MaterialAtlasRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + atlasOffset), atlas.createMaterial);
     }
 
     this.usesUnquantizedPositions = vertexTable.usesUnquantizedPositions;
@@ -278,9 +283,14 @@ class Node {
   }
 }
 
+interface AtlasInfo {
+  offset: number;
+  createMaterial: CreateRenderMaterial;
+}
+
 interface VertexTableSplitArgs extends VertexTableWithIndices {
   featureTable: RenderFeatureTable;
-  atlasOffset?: number;
+  atlasInfo?: AtlasInfo;
 }
 
 export type ComputeAnimationNodeId = (featureIndex: number) => number;
@@ -327,7 +337,7 @@ class VertexTableSplitter {
         const nodeId = this._computeNodeId(featureIndex);
         let node = this._nodes.get(nodeId);
         if (undefined === node)
-          this._nodes.set(nodeId, node = new Node(this._input.vertices, this._input.atlasOffset));
+          this._nodes.set(nodeId, node = new Node(this._input.vertices, this._input.atlasInfo));
 
         curState.node = node;
       }
@@ -645,6 +655,7 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
 
 export interface SplitMeshArgs extends SplitVertexTableArgs {
   params: MeshParams;
+  createMaterial: CreateRenderMaterial;
 }
 
 export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
@@ -652,12 +663,13 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
 
   const mat = args.params.surface.material;
   const atlasOffset = undefined !== mat && mat.isAtlas ? mat.vertexTableOffset : undefined;
+  const atlasInfo = atlasOffset ? { offset: atlasOffset, createMaterial: args.createMaterial } : undefined;
 
   const nodes = VertexTableSplitter.split({
     indices: args.params.surface.indices,
     vertices: args.params.vertices,
     featureTable: args.featureTable,
-    atlasOffset,
+    atlasInfo,
   }, args.computeNodeId);
 
   const edges = args.params.edges ? splitEdges(args.params.edges, nodes) : undefined;

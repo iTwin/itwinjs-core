@@ -9,7 +9,7 @@ import { IModelApp } from "../IModelApp";
 
 use(chaiAsPromised);
 
-describe.only("WebWorker", () => {
+describe("WebWorker", () => {
   async function callWorker(scriptName: string, input: string): Promise<string> {
     const usePublicPath = false;
     const path = usePublicPath ? IModelApp.publicPath : "";

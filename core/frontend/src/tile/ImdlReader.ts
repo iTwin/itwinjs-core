@@ -1025,7 +1025,12 @@ export class ImdlReader {
         const viOrigin = prim.viOrigin;
         switch (prim.type) {
           case "mesh": {
-            const split = splitMeshParams({ ...splitArgs, params: prim.params });
+            const split = splitMeshParams({
+              ...splitArgs,
+              params: prim.params,
+              createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
+            });
+
             for (const [nodeId, params] of split) {
               const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "mesh" });
               const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
