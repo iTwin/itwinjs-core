@@ -20,6 +20,9 @@ Table of contents:
   - [Deprecated API removals](#deprecated-api-removals)
   - [Deprecated API replacements](#deprecated-api-replacements)
     - [Querying ECSql](#querying-ecsql)
+  - [Interfaces changed](#interfaces-changed)
+    - [Core Quantity](#itwincore-quantity)
+    - [ECSchema Metadata](#itwinecschema-metadata)
 - [Backend](#backend)
   - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
@@ -37,6 +40,7 @@ Table of contents:
   - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
   - [Handling of long-running requests](#handling-of-long-running-requests)
   - [Dependency updates](#dependency-updates)
+- [Schemas](#schemas)
 
 ## Breaking Changes
 
@@ -156,6 +160,18 @@ for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
   const jsRow = row.toRow();
 }
 ```
+
+### Interfaces changed
+
+#### @itwin/core-quantity
+
+- The interface `UnitConversion` has been renamed to [UnitConversionProps]($quantity).
+
+#### @itwin/ecschema-metadata
+
+- The `FormatProps` interface has been replaced with the [SchemaItemFormatProps]($ecschema-metadata) type alias.
+- The `UnitProps` interface has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+- [ISchemaLocater.getSchema]($ecschema-metadata) and [ISchemaLocater.getSchemaSync]($ecschema-metadata) now take a `Readonly<SchemaKey>` instead of a [SchemaKey]($ecschema-metadata) and the [SchemaContext]($ecschema-metadata) parameter is no longer optional.
 
 ## Backend
 
@@ -306,14 +322,37 @@ In addition to upgrading iTwin.js core dependencies to `4.0`, there are some oth
 
 The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
 
-## Interfaces renamed
+## Schemas
 
-**@itwin/core-quantity**
+### Asynchronous schema loading
 
-- The interface 'UnitConversion' has been renamed to [UnitConversionProps]($quantity).
+Added proper support for loading multiple schemas asynchronously and the ability to get information about a schema that is partially loaded.
 
-**@itwin/ecschema-metadata**
+```ts
+const context = new SchemaContext();
+const locater = new SchemaXmlFileLocater();
+locater.addSchemaSearchPath("/Users/me/schemas/");
+context.addLocater(locater);
 
-- The interface 'FormatProps' has been changed to a type alias [SchemaItemFormatProps]($ecschema-metadata).
+const schemaKey = new SchemaKey("MySchemaWithManyReferences", 1, 0, 42);
 
-- The interface 'UnitProps' has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+// Start loading the schema but return as soon as we have loaded the name and version of the schema and it's references
+const schemaInfo = await context.getSchemaInfo(schemaKey, SchemaMatchType.Exact);
+// Get the whole schema either awaiting the schema promise created by getSchemaInfo or start loading if not already started
+const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+// Await the schema promise created by getSchemaInfo or return undefined if not already started
+const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
+```
+
+### Other minor API changes
+
+- Added `SchemaInfo` interface with schema keys for a schema and it's references.  `Schema` implicitly supports this interface.
+- Some beta components had breaking changes and were moved to internal:
+  - `SchemaGraph`
+    - Now supports working with a `SchemaInfo` and a `SchemaContext` necessitating the init be made async.
+  - `SchemaMap`
+    - Use `Array<Schema>` in its place.
+  - `SchemaCache`
+    - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
+- Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string
+- Added `Schema.startLoadingFromJson` to partially load a schema and return as soon as the `SchemaInfo` could be loaded.

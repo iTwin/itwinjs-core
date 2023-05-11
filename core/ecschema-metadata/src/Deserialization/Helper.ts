@@ -6,7 +6,7 @@
 import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem } from "../Interfaces";
+import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECClass, MutableClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -44,6 +44,7 @@ export class SchemaReadHelper<T = unknown> {
   // Cache of the schema currently being loaded. This schema is in the _context but to
   // avoid going back to the context every time, the cache is used.
   private _schema?: Schema;
+  private _schemaInfo?: SchemaInfo;
 
   constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor) {
     this._context = (undefined !== context) ? context : new SchemaContext();
@@ -52,11 +53,13 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Populates the given Schema from a serialized representation.
+   * Creates a complete SchemaInfo and starts parsing the schema from a serialized representation.
+   * The info and schema promise will be registered with the SchemaContext.  The complete schema can be retrieved by
+   * calling getCachedSchema on the context.
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+  public async readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo> {
     // Ensure context matches schema context
     if (schema.context) {
       if (this._context !== schema.context)
@@ -72,13 +75,45 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema);
-
-    // Load schema references first
-    // Need to figure out if other schemas are present.
+    const schemaInfo: SchemaInfo = { schemaKey: schema.schemaKey, references: [] };
     for (const reference of this._parser.getReferences()) {
-      await this.loadSchemaReference(reference);
+      const refKey = new SchemaKey(reference.name, ECVersion.fromString(reference.version));
+      schemaInfo.references.push({ schemaKey: refKey });
+    }
+
+    this._schemaInfo = schemaInfo;
+
+    // Need to add this schema to the context to be able to locate schemaItems within the context.
+    if (!this._context.schemaExists(schema.schemaKey)) {
+      await this._context.addSchemaPromise(schemaInfo, schema, this.loadSchema(schemaInfo, schema));
+    }
+    return schemaInfo;
+  }
+
+  /**
+   * Populates the given Schema from a serialized representation.
+   * @param schema The Schema to populate
+   * @param rawSchema The serialized data to use to populate the Schema.
+   */
+  public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+    if (!this._schemaInfo) {
+      await this.readSchemaInfo(schema, rawSchema);
+    }
+
+    const cachedSchema = await this._context.getCachedSchema<U>(this._schemaInfo!.schemaKey, SchemaMatchType.Latest);
+    if (undefined === cachedSchema)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
+
+    return cachedSchema;
+  }
+
+  /* Finish loading the rest of the schema */
+  private async loadSchema<U extends Schema>(schemaInfo: SchemaInfo, schema: U): Promise<U> {
+    // Verify that there are no schema reference cycles, this will start schema loading by loading their headers
+    (await SchemaGraph.generateGraph(schemaInfo, this._context)).throwIfCycles();
+
+    for (const reference of schemaInfo.references) {
+      await this.loadSchemaReference(schemaInfo, reference.schemaKey);
     }
 
     if (this._visitorHelper)
@@ -155,11 +190,10 @@ export class SchemaReadHelper<T = unknown> {
    * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */
-  private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
-    const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    const refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+  private async loadSchemaReference(schemaInfo: SchemaInfo, refKey: Readonly<SchemaKey>): Promise<void> {
+    const refSchema = await this._context.getSchema(refKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${refKey.name}.${refKey.version.toString()}, of ${schemaInfo.schemaKey.name}`);
 
     await (this._schema as MutableSchema).addReference(refSchema);
     const results = this.validateSchemaReferences(this._schema!);
@@ -185,6 +219,8 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     (this._schema as MutableSchema).addReferenceSync(refSchema);
+
+    SchemaGraph.generateGraphSync(this._schema!).throwIfCycles();
     const results = this.validateSchemaReferences(this._schema!);
 
     let errorMessage: string = "";
@@ -216,13 +252,6 @@ export class SchemaReadHelper<T = unknown> {
       } else {
         aliases.set(schemaRef.alias, schemaRef);
       }
-    }
-
-    const graph = new SchemaGraph(schema);
-    const cycles = graph.detectCycles();
-    if (cycles) {
-      const result = cycles.map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`).join(", ");
-      yield `Schema '${schema.name}' has reference cycles: ${result}`;
     }
   }
 
@@ -419,7 +448,11 @@ export class SchemaReadHelper<T = unknown> {
     if (undefined === schemaName || 0 === schemaName.length)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
-    if (isInThisSchema && undefined === await this._schema!.getItem(itemName)) {
+    if (isInThisSchema) {
+      schemaItem = await this._schema!.getItem(itemName);
+      if (schemaItem)
+        return schemaItem;
+
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
