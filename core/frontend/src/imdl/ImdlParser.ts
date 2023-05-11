@@ -229,6 +229,7 @@ class ImdlParser {
       featureTable,
       nodes,
       rtcCenter,
+      binaryData: this._binaryData,
     };
   }
 

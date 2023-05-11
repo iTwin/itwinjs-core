@@ -191,5 +191,6 @@ export namespace ImdlModel {
     featureTable: FeatureTable;
     rtcCenter?: XYAndZ;
     nodes: Node[];
+    binaryData: Uint8Array;
   }
 }
