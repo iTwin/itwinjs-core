@@ -1,7 +1,8 @@
 {
   "name": "@itwin/core-extension",
-  "version": "4.0.0-dev.101",
+  "version": "4.0.0-dev.103",
   "description": "iTwin.js Extension API",
+  "type": "module",
   "typings": "index.d.ts",
   "license": "MIT",
   "repository": {

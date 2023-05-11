@@ -1,5 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-const ext = globalThis[globalSymbol].getExtensionApi("import.meta.url");
+const ext = globalThis[globalSymbol].getExtensionApi(import.meta.url);
 
 // BEGIN GENERATED CODE
 export const {

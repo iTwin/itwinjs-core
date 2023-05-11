@@ -15,7 +15,7 @@ const propContainer = "properties-itwin1";
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer(AzuriteTest.Sqlite.makeContainer({ containerId }));
-  await PropertyStore.CloudAccess.initializeDb({ props: { ...AzuriteTest.storage, containerId, accessToken: await AzuriteTest.makeSasToken(containerId, true) }, initContainer: { blockSize } });
+  await PropertyStore.CloudAccess.initializeDb({ props: { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, accessToken: await AzuriteTest.makeSasToken(containerId, true) }, initContainer: { blockSize } });
 }
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
@@ -27,7 +27,7 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
 }
 
 async function makePropertyStore(moniker: string) {
-  const accessProps = { ...AzuriteTest.storage, containerId: propContainer, accessToken: await AzuriteTest.makeSasToken(propContainer, true) };
+  const accessProps: CloudSqlite.ContainerAccessProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: propContainer, accessToken: await AzuriteTest.makeSasToken(propContainer, true) };
   const propStore = new PropertyStore.CloudAccess(accessProps);
   propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
   propStore.lockParams.moniker = moniker;

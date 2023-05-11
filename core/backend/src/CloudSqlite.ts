@@ -16,6 +16,8 @@ import { IModelJsFs } from "./IModelJsFs";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
 
+// spell:ignore logmsg httpcode
+
 /**
  * Types for accessing SQLite databases stored in cloud containers.
  * @beta
@@ -30,16 +32,12 @@ export namespace CloudSqlite {
     return new NativeLibrary.nativeLib.CloudPrefetch(container, dbName, args);
   }
 
-  /** Properties that specify how to access the account for a cloud blob-store container. */
-  export interface AccountAccessProps {
-    /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
-    storageType: string;
-    /** blob store account name, or a URI for custom domains. */
-    accessName: string;
-  }
-
   /** Properties of a CloudContainer. */
   export interface ContainerProps {
+    /** blob storage module */
+    storageType: "azure" | "google" | "aws";
+    /** base URI for container. */
+    baseUri: string;
     /** the name of the container. */
     containerId: string;
     /** an alias for the container. Defaults to `containerId` */
@@ -105,9 +103,9 @@ export namespace CloudSqlite {
   }
 
   /** Properties for accessing a CloudContainer */
-  export type ContainerAccessProps = AccountAccessProps & ContainerProps & {
+  export type ContainerAccessProps = ContainerProps & {
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
-    durationSeconds?: number;
+    lockExpireSeconds?: number;
   };
 
   /** The name of a CloudSqlite database within a CloudContainer. */
@@ -265,7 +263,7 @@ export namespace CloudSqlite {
     onDisconnected?: (container: CloudContainer, detach: boolean) => void;
 
     readonly cache?: CloudCache;
-    /** The ContainerId within the storage account. */
+    /** The ContainerId within a storage account. */
     get containerId(): string;
     /** The *alias* to identify this CloudContainer in a CloudCache. Usually just the ContainerId. */
     get alias(): string;
