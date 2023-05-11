@@ -10,7 +10,7 @@ import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TileFormat,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
   TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
@@ -20,10 +20,11 @@ import {
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
+import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../render/GraphicBranch";
-import { ComputeAnimationNodeId, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
+import { ComputeAnimationNodeId, MeshParams, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
+import {CreateRenderMaterialArgs} from "../core-frontend";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
@@ -148,6 +149,31 @@ class Material extends RenderMaterial {
         exponent: params.specularExponent,
       },
     };
+  }
+
+  public static create(args: CreateRenderMaterialArgs): Material {
+    const params = new RenderMaterial.Params();
+    params.alpha = args.alpha;
+    if (args.diffuse) {
+      if (undefined !== args.diffuse.weight)
+        params.diffuse = args.diffuse?.weight;
+
+      if (args.diffuse?.color)
+        params.diffuseColor = args.diffuse.color instanceof ColorDef ? args.diffuse.color : RgbColor.fromJSON(args.diffuse.color).toColorDef();
+    }
+
+    if (args.specular) {
+      if (undefined !== args.specular.weight)
+        params.specular = args.specular.weight;
+
+      if (undefined !== args.specular.exponent)
+        params.specularExponent = args.specular.exponent;
+
+      if (args.specular.color)
+        params.specularColor = args.specular.color instanceof ColorDef ? args.specular.color : RgbColor.fromJSON(args.specular.color).toColorDef();
+    }
+
+    return new Material(params);
   }
 }
 
@@ -367,6 +393,15 @@ class ImdlParser {
 
       switch (primitive.type) {
         // ###TODO area patterns
+        // case "mesh": { ###TODO
+        //   const params: MeshParams = {
+        //     vertices: toVertexTable(primitive.params.vertices),
+        //     surface: primitive.params.surface,
+        //     // ###TODO edges
+        //     isPlanar: primitive.params.isPlanar,
+        //     auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
+        //     createMaterial: (args) => Material.create(args),
+        //   };
         case "point": {
           const params = {
             vertices: toVertexTable(primitive.params.vertices),
