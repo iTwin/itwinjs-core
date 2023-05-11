@@ -13,6 +13,7 @@ import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logg
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { BlobContainer } from "./BlobContainerService";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
 
@@ -23,6 +24,10 @@ import type { VersionedSqliteDb } from "./SQLiteDb";
  * @beta
  */
 export namespace CloudSqlite {
+  export async function requestToken(args: ContainerTokenProps): Promise<AccessToken | undefined> {
+    const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken: await IModelHost.getAccessToken(), forWriteAccess: args.writeable });
+    return response?.token;
+  }
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
     return new NativeLibrary.nativeLib.CloudContainer(args);
   }
@@ -34,8 +39,8 @@ export namespace CloudSqlite {
 
   /** Properties of a CloudContainer. */
   export interface ContainerProps {
-    /** blob storage module */
-    storageType: "azure" | "google" | "aws";
+    /** blob storage provider */
+    storageType: "azure" | "google";
     /** base URI for container. */
     baseUri: string;
     /** the name of the container. */
@@ -53,6 +58,8 @@ export namespace CloudSqlite {
     /** string attached to log messages from CloudSQLite. This is most useful for identifying usage from daemon mode. */
     logId?: string;
   }
+
+  export type ContainerTokenProps = Omit<ContainerProps, "accessToken">;
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
   export interface CachedDbProps {
@@ -92,7 +99,7 @@ export namespace CloudSqlite {
     readonly endTime: string | undefined;
     /** "PUT", "GET", etc. */
     readonly method: string;
-    /** Name of the client that caused this request. Name will be "prefetch" if it is a request triggered by a prefetch. */
+    /** LogId of client that caused this request. Will be "prefetch" for prefetch requests. */
     readonly logId: string;
     /** Log message associated with request */
     readonly logmsg: string;
