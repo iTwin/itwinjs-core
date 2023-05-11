@@ -354,7 +354,7 @@ const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
   - `SchemaGraph`
     - Now supports working with a `SchemaInfo` and a `SchemaContext` necessitating the init be made async.
   - `SchemaMap`
-    - Use `Array<Schema>` in it's place.
+    - Use `Array<Schema>` in its place.
   - `SchemaCache`
     - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
 - Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string
