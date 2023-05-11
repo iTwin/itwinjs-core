@@ -96,6 +96,128 @@ describe("Learning Snippets", () => {
         }]);
       });
 
+      it("uses `categoryId` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.CategoryId.Ruleset
+        // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
+        // additionally have a calculated "My Calculated Property" property that is placed into a custom category by
+        // assigning it a `categoryId`.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+              propertyCategories: [{
+                id: "custom-category",
+                label: "Custom",
+              }],
+              calculatedProperties: [{
+                label: "My Calculated Property",
+                value: "123",
+                categoryId: "custom-category",
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that the calculated property is assigned a custom category
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        });
+        content;
+        expect(content!.descriptor.fields).to.containSubset([{
+          label: "My Calculated Property",
+          category: {
+            label: "Custom",
+          },
+        }]);
+      });
+
+      it("uses `renderer` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Renderer.Ruleset
+        // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
+        // additionally have a calculated "My Calculated Property" property with a custom "my-renderer" renderer.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+              calculatedProperties: [{
+                label: "Calculated property",
+                value: "123",
+                renderer: {
+                  rendererName: "my-renderer",
+                },
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Renderer.Result
+        // Ensure the calculated property field is assigned the "my-renderer" renderer
+        const content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.containSubset([{
+          label: "Calculated property",
+          renderer: {
+            name: "my-renderer",
+          },
+        }]);
+        // __PUBLISH_EXTRACT_END__
+      });
+
+      it.only("uses `editor` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Ruleset
+        // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
+        // additionally have a calculated "My Calculated Property" property with a custom "my-editor" editor.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              specType: "SelectedNodeInstances",
+              calculatedProperties: [{
+                label: "Calculated property",
+                value: "123",
+                editor: {
+                  editorName: "my-editor",
+                },
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Result
+        // Ensure the calculated property field is assigned the "my-editor" editor
+        const content = (await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        }))!;
+        expect(content.descriptor.fields).to.containSubset([{
+          label: "Calculated property",
+          editor: {
+            name: "my-editor",
+          },
+        }]);
+        // __PUBLISH_EXTRACT_END__
+      });
+
       it("uses `priority` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Priority.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to

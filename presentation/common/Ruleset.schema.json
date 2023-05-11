@@ -17,6 +17,31 @@
         "value": {
           "description": "Defines an expression to calculate the value. The expression can use ECInstance\nand Ruleset Variables symbol contexts.",
           "type": "string"
+        },
+        "renderer": {
+          "$ref": "#/definitions/CustomRendererSpecification",
+          "description": "Custom property renderer specification that allows assigning a\ncustom value renderer to be used in UI. The specification is used to set up `Field.renderer` for\nthis property and it's up to the UI component to make sure appropriate renderer is used to render the property."
+        },
+        "categoryId": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ParentCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/RootCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The attribute allows moving the property into a different category."
+        },
+        "editor": {
+          "$ref": "#/definitions/PropertyEditorSpecification",
+          "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         }
       },
       "required": [
