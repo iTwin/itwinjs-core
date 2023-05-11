@@ -149,13 +149,13 @@ jobs:
             Write-Host `'$commitMsg`'` is not a version bump
           }
         displayName: Tag release if version bump
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false)
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
 
       - task: tagBuildOrRelease@0
         displayName: Tag release if externally triggered
         inputs:
           type: "Build"
           tags: "iTwinJsDocsRelease"
-        condition: and(succeeded(), ${{ parameters.shouldPublish }}, eq('${{ parameters.isExternalBuild }}', true)
+        condition: and(succeeded(), ${{ parameters.shouldPublish }}, eq('${{ parameters.isExternalBuild }}', true))
 
 
