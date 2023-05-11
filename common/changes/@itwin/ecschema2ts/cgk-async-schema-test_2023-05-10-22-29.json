@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema2ts",
+      "comment": "Updated to support changes to async schema location",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema2ts"
+}
