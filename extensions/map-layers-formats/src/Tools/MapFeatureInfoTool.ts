@@ -29,10 +29,10 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public static override iconSpec = "icon-map";
 
   private _decorator: MapFeatureInfoDecorator = new MapFeatureInfoDecorator();
-  private _layerSettingsCache = new Map<string, MapLayerSettings[]>;
+  private _layerSettingsCache = new Map<string, MapLayerSettings[]>();
   private readonly _detachListeners: VoidFunction[] = [];
 
-  private static readonly _supportedFormats = ['ArcGISFeature'];
+  private static readonly _supportedFormats = ["ArcGISFeature", "ArcGIS"];
 
   public override requireWriteableTarget(): boolean {
     return false;
@@ -69,27 +69,24 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   }
 
   private getSettingsFromHit(hit: HitDetail) {
-    let settings: MapLayerSettings[] = [];
+    let settingsFromHit: MapLayerSettings[] = [];
     const fromCache = this._layerSettingsCache.get(hit.sourceId);
     if (fromCache) {
-      settings = fromCache;
+      settingsFromHit = fromCache;
     } else if (this.targetView) {
-      settings = this.targetView?.mapLayerFromHit(hit).filter((settings => settings instanceof ImageMapLayerSettings && MapFeatureInfoTool._supportedFormats.includes(settings.formatId)));
-      this._layerSettingsCache.set(hit.sourceId, settings);
+      settingsFromHit = this.targetView?.mapLayerFromHit(hit).filter(((settings) => settings instanceof ImageMapLayerSettings && MapFeatureInfoTool._supportedFormats.includes(settings.formatId)));
+      this._layerSettingsCache.set(hit.sourceId, settingsFromHit);
     }
 
-    return settings;
+    return settingsFromHit;
   }
 
-
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
-
     const settings = this.getSettingsFromHit(hit);
     if (settings.length > 0) {
-      const names = settings.map(setting => setting.name);
-      return `Layer${names.length > 1 ? 's' : ''}: ${names.join(', ')}`
+      const names = settings.map((setting) => setting.name);
+      return `Layer${names.length > 1 ? "s" : ""}: ${names.join(", ")}`;
     }
-
     return "";
   }
 
@@ -116,8 +113,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
           if (mapInfo) {
             this._decorator.setState({ hit, mapInfo });
           }
-        }
-        finally {
+        } finally {
           IModelApp.toolAdmin.setCursor(undefined);
         }
       }
