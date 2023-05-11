@@ -1648,7 +1648,7 @@ export class SchemaCache implements ISchemaLocater {
 }
 
 // @beta
-export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
+export class SchemaContext implements ISchemaItemLocater {
     constructor();
     // (undocumented)
     addLocater(locater: ISchemaLocater): void;
