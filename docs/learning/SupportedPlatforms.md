@@ -4,6 +4,7 @@
 
 iTwin.js **backends** are built and tested on the following:
 
+- Arch Linux
 - Debian 11 "Bullseye"
 - Windows 10 version 1803 (or greater)
 - MacOS 10.15 (or greater)
@@ -28,7 +29,7 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 | Operating System | Architectures | Versions                                                                                                           | Notes           |
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
-| Linux            | all           | GLIBC >= 2.27, GLIBCXX >= 3.4.22                                                                                   |                 |
+| Linux            | all           | GLIBC >= 2.31, GLIBCXX >= 3.4.28                                                                                   |                 |
 | Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |                 |
 | macOS            | x64           | >= 10.15                                                                                                           |                 |
 | macOS            | arm64         | >= 11                                                                                                              | >= iTwin.js 3.3 |
