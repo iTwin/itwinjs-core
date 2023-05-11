@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-locaters",
-      "comment": "Updated to support changes to async schema loading and ISchemaLocater",
+      "comment": "Updated to support changes to async schema loading and `ISchemaLocater`",
       "type": "none"
     }
   ],
