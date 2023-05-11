@@ -764,6 +764,26 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
+  /** @internal */
+  public set sharedChannelDefaultUri(channelUri: string) {
+    this.nativeDb.sharedChannelSetDefaultUri(channelUri);
+  }
+
+  /** @internal */
+  public get sharedChannelDefaultUri(): string {
+    return this.nativeDb.sharedChannelGetDefaultUri();
+  }
+
+  /** @internal */
+  public sharedChannelInit(channelUri: string): void {
+    this.nativeDb.sharedChannelInit(channelUri);
+  }
+
+  /** @internal */
+  public sharedChannelPull(channelUri?: string): void {
+    this.nativeDb.sharedChannelPull(channelUri);
+  }
+
   /** Abandon pending changes in this iModel. */
   public abandonChanges(): void {
     this.nativeDb.abandonChanges();
@@ -808,13 +828,14 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
+  public async importSchemas(schemaFileNames: LocalFileName[], sharedChannelUri?: string, options?: SchemaImportOptions): Promise<void> {
     if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
       await this.acquireSchemaLock();
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
       schemaLockHeld: true,
+      sharedSchemaChannelUri: sharedChannelUri,
       ecSchemaXmlContext: maybeCustomNativeContext,
     };
 
@@ -835,11 +856,15 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    * @alpha
    */
-  public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
+  public async importSchemaStrings(serializedXmlSchemas: string[], sharedChannelUri?: string): Promise<void> {
     if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
       await this.acquireSchemaLock();
 
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+      schemaLockHeld: true,
+      sharedSchemaChannelUri: sharedChannelUri,
+    };
+    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, nativeImportOptions);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema");
 
