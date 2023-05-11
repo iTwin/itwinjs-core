@@ -118,7 +118,7 @@ export interface IModelHostOptions {
 
   /**
    * The kind of iModel hub server to use.
-   * @beta
+   * @internal
    */
   hubAccess?: BackendHubAccess;
 
@@ -200,7 +200,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
   /** @beta */
   public workspace?: WorkspaceOpts;
-  /** @beta */
+  /** @internal */
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
@@ -329,6 +329,9 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
+  /** A string that can identify the current user to other users when collaborating. */
+  public static userMoniker = "unknown";
+
   /** Root directory holding files that iTwin.js caches */
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
@@ -405,12 +408,12 @@ export class IModelHost {
   public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
 
   /** get the current hubAccess, if present.
-   * @beta
+   * @internal
    */
   public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
 
   /** Provides access to the IModelHub for this IModelHost
-   * @beta
+   * @internal
    * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
    * To determine whether one is present, use [[getHubAccess]].
    */

@@ -321,8 +321,9 @@ export class TileAdmin {
     // start dynamically loading default implementation and save the promise to avoid duplicate instances
     this._tileStoragePromise = (async () => {
       await import("reflect-metadata");
+      const objectStorage = await import(/* webpackChunkName: "object-storage-azure" */ "@itwin/object-storage-azure/lib/frontend");
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
+      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = objectStorage.default ?? objectStorage;
       const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
       this._tileStorage = new TileStorage(azureStorage);
       return this._tileStorage;
@@ -494,11 +495,13 @@ export class TileAdmin {
    * The TileAdmin takes ownership of the `ready` set - do not modify it after passing it in.
    * @internal
    */
-  public addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>): void {
+  public addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>, touched: Set<Tile>): void {
     // "selected" are tiles we are drawing.
     this._lruList.markUsed(user.tileUserId, selected);
     // "ready" are tiles we want to draw but can't yet because, for example, their siblings are not yet ready to be drawn.
     this._lruList.markUsed(user.tileUserId, ready);
+    // "touched" are tiles whose contents we want to keep in memory regardless of whether they are "selected" or "ready".
+    this._lruList.markUsed(user.tileUserId, touched);
 
     const entry = this.getTilesForUser(user);
     if (undefined === entry) {
@@ -551,7 +554,7 @@ export class TileAdmin {
     this._users.add(user);
   }
 
-  /** Iterable over all TileUsers registered with TileAdmin. This may include [[OffScreenViewports]].
+  /** Iterable over all TileUsers registered with TileAdmin. This may include [[OffScreenViewport]]s.
    * @alpha
    */
   public get tileUsers(): Iterable<TileUser> {

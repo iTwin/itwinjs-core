@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { FormatProps, InvertedUnit, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
@@ -45,11 +45,11 @@ export class Formats {
   }
 
   /**
-   * Creates a format through a FormatProps.
+   * Creates a format through a SchemaItemFormatProps.
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, formatProps: FormatProps): Promise<SchemaItemEditResults> {
+  public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined)
       return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };

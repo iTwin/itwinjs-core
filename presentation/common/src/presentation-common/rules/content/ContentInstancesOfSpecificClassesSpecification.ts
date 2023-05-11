@@ -32,14 +32,6 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
   excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
-   * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]
-   * attributes should be polymorphic or not.
-   *
-   * @deprecated in 2.x. Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
-   */
-  handleInstancesPolymorphically?: boolean;
-
-  /**
    * Specifies whether properties of derived [[classes]] should be included in the content.
    */
   handlePropertiesPolymorphically?: boolean;

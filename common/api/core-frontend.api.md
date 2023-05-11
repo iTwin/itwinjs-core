@@ -318,7 +318,7 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
 import { UintArrayBuilder } from '@itwin/core-bentley';
-import { UnitConversion } from '@itwin/core-quantity';
+import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { UnitSystemKey } from '@itwin/core-quantity';
@@ -5191,6 +5191,7 @@ export interface ImdlReaderCreateArgs {
     is3d: boolean;
     // (undocumented)
     isCanceled?: ShouldAbortImdlReader;
+    isLeaf?: boolean;
     // (undocumented)
     loadEdges?: boolean;
     // (undocumented)
@@ -5203,7 +5204,7 @@ export interface ImdlReaderCreateArgs {
     stream: ByteStream;
     // (undocumented)
     system: RenderSystem;
-    timeline?: RenderSchedule.ModelTimeline;
+    timeline?: ImdlTimeline;
     // (undocumented)
     type?: BatchType;
 }
@@ -5213,6 +5214,9 @@ export interface ImdlReaderResult extends IModelTileContent {
     // (undocumented)
     readStatus: TileReadStatus;
 }
+
+// @internal (undocumented)
+export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 // @public
 export class IModelApp {
@@ -5236,7 +5240,6 @@ export class IModelApp {
     static getAccessToken(): Promise<AccessToken>;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
-    // @internal
     static get hubAccess(): FrontendHubAccess | undefined;
     static get initialized(): boolean;
     static get localization(): Localization;
@@ -7047,10 +7050,12 @@ export interface MaterialSpecularProps {
 
 // @public
 export interface MaterialTextureMappingProps {
+    constantLodProps?: TextureMapping.ConstantLodParamProps;
     mode?: TextureMapping.Mode;
     normalMapParams?: NormalMapParams;
     texture: RenderTexture;
     transform?: TextureMapping.Trans2x3;
+    useConstantLod?: boolean;
     weight?: number;
     // @internal (undocumented)
     worldMapping?: boolean;
@@ -8554,7 +8559,7 @@ export class QuantityFormatter implements UnitsProvider {
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
-    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
@@ -11577,7 +11582,7 @@ export class TileAdmin {
     addExternalTilesForUser(user: TileUser, statistics: ExternalTileStatistics): void;
     addLoadListener(callback: (imodel: IModelConnection) => void): () => void;
     // @internal
-    addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>): void;
+    addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>, touched: Set<Tile>): void;
     // @internal (undocumented)
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
@@ -11926,6 +11931,8 @@ export class TileDrawArgs {
     get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     get tileSizeModifier(): number;
+    // @internal
+    readonly touchedTiles: Set<Tile>;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
     get viewFlagOverrides(): ViewFlagOverrides;
