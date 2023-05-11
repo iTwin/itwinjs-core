@@ -25,7 +25,11 @@ interface SchemaEntry {
 }
 
 /**
- * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
+ * The interface defines what is needed to be an `ISchemaLocater`.
+ * A Schema Locater loads the requested schema if it can or returns undefined.
+ * Schema Locaters should always load the schema on each request and should not hold a cache of schemas.
+ * Schema locaters should never be used directly to load a schema, they should be added to a `SchemaContext`
+ * and the context should be used to load schemas.  The `SchemaContext` caches schemas and manages schema life time.
  * @beta
  */
 export interface ISchemaLocater {
@@ -242,7 +246,7 @@ export class SchemaCache implements ISchemaLocater {
  * The context is made up of a group of Schema Locators.
  * @beta
  */
-export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
+export class SchemaContext implements ISchemaItemLocater {
   private _locaters: ISchemaLocater[];
 
   private _knownSchemas: SchemaCache;
