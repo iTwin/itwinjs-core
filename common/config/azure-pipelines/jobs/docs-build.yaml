@@ -99,7 +99,7 @@ jobs:
           source: 'specific'
           project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
           pipeline: 7436 # iTwin.js Docs (docs-ci.yaml)
-          artifact: 'Core Generated Docs'
+          artifact: Core Generated Docs Test
           path: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', true))
 
@@ -125,9 +125,9 @@ jobs:
 
         # if publishing and not using the core artifact, publish the new core artifact
       - publish: ${{ parameters.workingDir }}/generated-docs
-        artifact: Core Generated Docs
+        artifact: Core Generated Docs Test
         displayName: Publish Core Generated Docs Artifact
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
+        # condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
       - publish: ${{ parameters.stagingDir }}/config/.updated.json
         artifact: .updated.json
