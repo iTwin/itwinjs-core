@@ -17,11 +17,21 @@ import { BeEvent } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
+/** Data provided every time [[MapFeatureInfoTool]] retrieve feature information.
+ * @see [[MapFeatureInfoToolData]]
+ * @alpha
+ */
 export interface MapFeatureInfoToolData {
   hit: HitDetail;
   mapInfo?: MapFeatureInfo;
 }
 
+/** Tools that allow extracting feature information from map-layers.
+ * Simulate feature highlight by drawing overlay decorations.  It also
+ * fire an event that provide further feature information meant to be displayed in a UI / Widget.
+ * @see [[MapFeatureInfoToolData]]
+ * @alpha
+ */
 export class MapFeatureInfoTool extends PrimitiveTool {
   public readonly onInfoReady = new BeEvent<(data: MapFeatureInfoToolData) => void>();
 
@@ -68,6 +78,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     IModelApp.viewManager.dropDecorator(this._decorator);
   }
 
+    /** @internal */
   private getSettingsFromHit(hit: HitDetail) {
     let settingsFromHit: MapLayerSettings[] = [];
     const fromCache = this._layerSettingsCache.get(hit.sourceId);

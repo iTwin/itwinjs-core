@@ -1,4 +1,6 @@
 sep=;
 Release Tag;API Item
 internal;ArcGisFeatureProvider 
+alpha;MapFeatureInfoTool 
+alpha;MapFeatureInfoToolData
 beta;MapLayersFormats

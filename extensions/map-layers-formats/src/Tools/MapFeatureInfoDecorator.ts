@@ -11,7 +11,9 @@ import {
 import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point2d, Point3d, PolyfaceQuery, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 
-/** A TileGeometryCollector that restricts collection to tiles that overlap a line string. */
+/** A TileGeometryCollector that restricts collection to tiles that overlap a line string.
+/* @internal
+*/
 class DrapeLineStringCollector extends TileGeometryCollector {
   constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, private _points: GrowableXYZArray) {
     super({ user, chordTolerance, range, transform });
@@ -38,6 +40,7 @@ class DrapeLineStringCollector extends TileGeometryCollector {
   }
 }
 
+  /** @internal */
 class TerrainDraper implements TileUser {
   public readonly tileUserId: number;
 
@@ -85,6 +88,7 @@ class TerrainDraper implements TileUser {
   }
 }
 
+  /** @internal */
 class PinMarker extends Marker {
   public constructor(worldLocation: XYAndZ, size: XAndY, image: MarkerImage) {
     super(worldLocation, size);
@@ -93,6 +97,7 @@ class PinMarker extends Marker {
   }
 }
 
+  /** @internal */
 class PinMarkerCluster extends Marker {
   /** Create a new cluster marker */
   constructor(location: XYAndZ, size: XAndY, cluster: Cluster<PinMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
@@ -124,6 +129,7 @@ class PinMarkerCluster extends Marker {
   public override onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
 }
 
+  /** @internal */
 class PinMarkerSet extends MarkerSet<PinMarker> {
   protected getClusterMarker(cluster: Cluster<PinMarker>): Marker {
     // No image passed to the cluster, we prefer to have the circle only
@@ -131,11 +137,13 @@ class PinMarkerSet extends MarkerSet<PinMarker> {
   }
 }
 
+  /** @internal */
 interface DrapePointState {
   count: number;
   collectorState: string;
 }
 
+  /** @internal */
 export class MapFeatureInfoDecorator implements Decorator {
 
   public readonly useCachedDecorations = true;

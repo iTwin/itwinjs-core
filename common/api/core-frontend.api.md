@@ -5490,7 +5490,9 @@ export abstract class IModelConnection extends IModel {
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    // @beta
     spatialToWGS84Cartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    // @beta
     spatialToWGS84CartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
     get subcategories(): SubCategoriesCache;
@@ -14882,8 +14884,6 @@ export class WalkViewTool extends ViewManip {
 
 // @internal (undocumented)
 export class WebMercator {
-    // (undocumented)
-    protected static readonly earthRadius = 6378137;
     // (undocumented)
     static getEPSG4326Lat(y3857: number): number;
     // (undocumented)

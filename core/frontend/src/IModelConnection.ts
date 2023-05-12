@@ -438,6 +438,7 @@ export abstract class IModelConnection extends IModel {
  * @returns A Cartographic location (WGS84 horizontal datum)
  * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
  * @see [[spatialToCartographicFromEcef]]
+ * @beta
  */
   public async spatialToWGS84CartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return this.toCartographicFromGcs(spatial, "WGS84", result);
@@ -481,6 +482,7 @@ export abstract class IModelConnection extends IModel {
  * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
  * @see [[spatialToCartographicFromGcs]]
  * @see [[spatialToCartographicFromEcef]]
+ * @beta
  */
   public async spatialToWGS84Cartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToWGS84CartographicFromGcs(spatial, result));
