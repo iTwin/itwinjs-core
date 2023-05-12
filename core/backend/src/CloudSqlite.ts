@@ -28,7 +28,24 @@ export namespace CloudSqlite {
     const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken: await IModelHost.getAccessToken(), forWriteAccess: args.writeable });
     return response?.token;
   }
+
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
+    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { refreshInterval?: NodeJS.Timeout };
+    if (!args.isPublic) {
+      const refreshFn = args.tokenRefresh ??
+        (async () => (await BlobContainer.service?.requestToken({ address: { id: args.containerId, uri: "" }, userToken: await IModelHost.getAccessToken() }))?.token ?? "");
+
+      // set an interval timer to refresh the access token. The default is 1 hour.
+      container.refreshInterval = setInterval(async () => container.accessToken = await refreshFn(), (args.refreshSeconds ?? 60 * 60) * 1000);
+
+      // clear the refresh interval when the container is disconnected
+      container.onDisconnect = () => {
+        if (container.refreshInterval) {
+          clearInterval(container.refreshInterval);
+          container.refreshInterval = undefined;
+        }
+      };
+    }
     return new NativeLibrary.nativeLib.CloudContainer(args);
   }
 
