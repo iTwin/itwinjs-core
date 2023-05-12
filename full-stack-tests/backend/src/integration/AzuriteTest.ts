@@ -8,7 +8,7 @@ import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
 import { BlobContainer, CloudSqlite, IModelHost } from "@itwin/core-backend";
-import { Guid } from "@itwin/core-bentley";
+import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
@@ -23,21 +23,20 @@ export namespace AzuriteTest {
   export const getContainerUri = (id: string) => `${baseUri}/${id}`;
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
-  export const makeSasToken = async (containerId: string, forWriteAccess: boolean) => {
-    const address = { id: containerId, baseUri };
-    const userToken = forWriteAccess ? service.userToken.readWrite : service.userToken.readOnly;
-    const access = await BlobContainer.service!.requestToken({ address, userToken, forWriteAccess });
-    return access.token;
-  };
-
+  export let userToken: AccessToken;
+  export class AuthorizationClient {
+    public async getAccessToken(): Promise<string> {
+      return userToken;
+    }
+  }
   export namespace Sqlite {
     export type TestContainer = CloudSqlite.CloudContainer;
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, requestWriteAccess: boolean) => {
-      container.accessToken = await makeSasToken(container.containerId, requestWriteAccess);
+      container.accessToken = (await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, storageType: "azure", writeable: requestWriteAccess }))!;
     };
 
-    export const createAzContainer = async (container: TestContainer) => {
+    export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
       const createProps: BlobContainer.CreateNewContainerProps = {
         metadata: {
           application: IModelHost.applicationId,
@@ -61,13 +60,11 @@ export namespace AzuriteTest {
       } catch (e) {
       }
 
-      const address = await containerService.create(createProps);
-      const access = await containerService.requestToken({ address, userToken: createProps.userToken, forWriteAccess: true });
-      container.accessToken = access.token;
+      return containerService.create(createProps);
     };
+
     export const initializeContainers = async (containers: TestContainer[]) => {
       for (const container of containers) {
-        await createAzContainer(container);
         container.initializeContainer({ checksumBlockNames: true });
       }
     };
@@ -76,16 +73,20 @@ export namespace AzuriteTest {
       emptyDirSync(name);
     };
 
-    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean }
+    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
-    export const makeContainer = (arg: TestContainerProps): TestContainer => {
-      return CloudSqlite.createCloudContainer({ ...arg, writeable: true, baseUri, storageType: "azure", accessToken: "" });
+    export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
+      const containerProps: CloudSqlite.ContainerTokenProps = { ...arg, writeable: true, baseUri, storageType: "azure" };
+      const accessToken = await CloudSqlite.requestToken(containerProps);
+      return CloudSqlite.createCloudContainer({ ...containerProps, accessToken: accessToken! });
     };
 
-    export const makeContainers = (props: TestContainerProps[]): TestContainer[] => {
+    export const createContainers = async (props: TestContainerProps[]): Promise<TestContainer[]> => {
       const containers = [];
-      for (const entry of props)
-        containers.push(makeContainer(entry));
+      for (const entry of props) {
+        await createAzContainer(entry);
+        containers.push(await makeContainer(entry));
+      }
 
       return containers;
     };
@@ -114,12 +115,12 @@ export namespace AzuriteTest {
     };
   }
 
-  const fakeToken = () => `token ${Guid.createValue()}`;
+  const fakeUser = () => `token ${Guid.createValue()}`;
   export const service = {
     userToken: {
-      admin: fakeToken(), // just unique strings
-      readOnly: fakeToken(),
-      readWrite: fakeToken(),
+      admin: fakeUser(), // just unique strings
+      readOnly: fakeUser(),
+      readWrite: fakeUser(),
     },
 
     create: async (arg: BlobContainer.CreateNewContainerProps & { isPublic?: true }) => {

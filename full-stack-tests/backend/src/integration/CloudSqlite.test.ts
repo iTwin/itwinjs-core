@@ -7,7 +7,7 @@ import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -18,7 +18,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 
 useFromChai(chaiAsPromised);
 
-describe("CloudSqlite", () => {
+describe.only("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
   let caches: CloudSqlite.CloudCache[];
   let testContainers: AzuriteTest.Sqlite.TestContainer[];
@@ -28,7 +28,10 @@ describe("CloudSqlite", () => {
   const user2 = "CloudSqlite test2";
 
   before(async () => {
-    testContainers = azSqlite.makeContainers([
+    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+    AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+    testContainers = await azSqlite.createContainers([
       { containerId: "test1", logId: "logId-1" },
       { containerId: "test2" },
       { containerId: "test3", logId: "logId-3", isPublic: true },
@@ -54,6 +57,9 @@ describe("CloudSqlite", () => {
     await azSqlite.uploadFile(testContainers[1], caches[0], "testBim", testBimFileName);
     await azSqlite.uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
     await azSqlite.uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
+  });
+  after(async () => {
+    IModelHost.authorizationClient = undefined;
   });
 
   it("should query bcvHttpLog", async () => {
@@ -131,7 +137,7 @@ describe("CloudSqlite", () => {
     testContainers[1].disconnect({ detach: true });
 
     const containerId = Guid.createValue();
-    const container = azSqlite.makeContainer({ containerId, logId: "" });
+    const container = (await azSqlite.createContainers([{ containerId, logId: "" }]))[0];
     await azSqlite.initializeContainers([container]);
     await azSqlite.uploadFile(container, caches[1], "testBim", testBimFileName);
     container.connect(caches[1]);
@@ -247,8 +253,7 @@ describe("CloudSqlite", () => {
     expect(contain1.isConnected);
 
     // can't connect two containers with same name
-    const cont2 = azSqlite.makeContainer({ containerId: contain1.containerId, isPublic: false });
-
+    const cont2 = await azSqlite.makeContainer({ containerId: contain1.containerId, isPublic: false });
     await azSqlite.setSasToken(cont2, true);
 
     expect(() => cont2.connect(caches[1])).throws("container with that name already attached");
