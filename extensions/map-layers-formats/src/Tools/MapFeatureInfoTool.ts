@@ -11,6 +11,7 @@ import {
   LocateFilterStatus,
   LocateResponse,
   MapFeatureInfo,
+  MapLayerInfoFromTileTree,
   PrimitiveTool,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
@@ -39,10 +40,8 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public static override iconSpec = "icon-map";
 
   private _decorator: MapFeatureInfoDecorator = new MapFeatureInfoDecorator();
-  private _layerSettingsCache = new Map<string, MapLayerSettings[]>();
+  private _layerSettingsCache = new Map<string, MapLayerInfoFromTileTree[]>();
   private readonly _detachListeners: VoidFunction[] = [];
-
-  private static readonly _supportedFormats = ["ArcGISFeature", "ArcGIS"];
 
   public override requireWriteableTarget(): boolean {
     return false;
@@ -79,30 +78,30 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   }
 
     /** @internal */
-  private getSettingsFromHit(hit: HitDetail) {
-    let settingsFromHit: MapLayerSettings[] = [];
+  private getMapLayerInfoFromHit(hit: HitDetail) {
+    let mapLayerFromHit: MapLayerInfoFromTileTree[] = [];
     const fromCache = this._layerSettingsCache.get(hit.sourceId);
     if (fromCache) {
-      settingsFromHit = fromCache;
+      mapLayerFromHit = fromCache;
     } else if (this.targetView) {
-      settingsFromHit = this.targetView?.mapLayerFromHit(hit).filter(((settings) => settings instanceof ImageMapLayerSettings && MapFeatureInfoTool._supportedFormats.includes(settings.formatId)));
-      this._layerSettingsCache.set(hit.sourceId, settingsFromHit);
+      mapLayerFromHit = this.targetView?.mapLayerFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
+      this._layerSettingsCache.set(hit.sourceId, mapLayerFromHit);
     }
 
-    return settingsFromHit;
+    return mapLayerFromHit;
   }
 
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
-    const settings = this.getSettingsFromHit(hit);
-    if (settings.length > 0) {
-      const names = settings.map((setting) => setting.name);
+    const infos = this.getMapLayerInfoFromHit(hit);
+    if (infos.length > 0) {
+      const names = infos.map((info) => info.settings.name);
       return `Layer${names.length > 1 ? "s" : ""}: ${names.join(", ")}`;
     }
     return "";
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
-    return this.getSettingsFromHit(hit).length > 0 ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    return this.getMapLayerInfoFromHit(hit).length > 0 ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onDataButtonDown(
@@ -117,7 +116,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     );
     if (hit !== undefined) {
       let mapInfo: MapFeatureInfo | undefined;
-      if (this.getSettingsFromHit(hit).length > 0) {
+      if (this.getMapLayerInfoFromHit(hit).length > 0) {
         IModelApp.toolAdmin.setCursor("wait");
         try {
           mapInfo = await hit.viewport.getMapFeatureInfo(hit);

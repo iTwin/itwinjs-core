@@ -25,7 +25,7 @@ import { SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile,
   MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -59,6 +59,15 @@ export enum MapTileTreeScaleRangeVisibility {
 
   /** currently selected tree tiles are partially visible (i.e some tiles are within the scale range, and some are outside.) */
   Partial
+}
+
+/**
+* Provided Map layer information from its underlying tile tree.
+* @internal
+*/
+export interface MapLayerInfoFromTileTree {
+  settings: MapLayerSettings;
+  provider?: MapLayerImageryProvider;
 }
 
 /** A [quad tree](https://en.wikipedia.org/wiki/Quadtree) consisting of [[MapTile]]s representing the map imagery draped onto the surface of the Earth.
@@ -1053,9 +1062,11 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTrees;
   }
 
-  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings[] {
+  public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
-    return imageryTree.map((tree) => tree.layerSettings);
+    return imageryTree.map((tree) => {
+      return {settings: tree.layerSettings, provider: tree.imageryProvider};
+    });
   }
 
   // Utility method that execute the provided function for every *imagery* tiles under a given HitDetail object.

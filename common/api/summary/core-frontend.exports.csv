@@ -407,6 +407,7 @@ public;MapLayerFormatType = typeof MapLayerFormat
 beta;class MapLayerImageryProvider
 public;MapLayerImageryProviderStatus
 public;MapLayerIndex
+internal;MapLayerInfoFromTileTree
 public;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource

@@ -34,7 +34,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   private _debugFeatureGeom = false;
 
   private _supportsCoordinatesQuantization = false;
-  private _querySupported = false;
+
   private _layerId = 0;
   private _layerMetadata: any;
   private _format: ArcGisFeatureFormat | undefined;

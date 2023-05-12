@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
-  Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -1576,13 +1576,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this._tiledGraphicsProviders.has(provider);
   }
 
-  /** @beta */
-  public mapLayerFromHit(hit: HitDetail): MapLayerSettings[] {
+  /** @internal */
+  public mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[] {
     return undefined === hit.modelId ? [] : this.mapLayerFromIds(hit.modelId, hit.sourceId);
   }
 
   /** @internal */
-  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[] {
+  public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[] {
     return this._mapTiledGraphicsProvider === undefined ? [] : this._mapTiledGraphicsProvider.mapLayerFromIds(mapTreeId, layerTreeId);
   }
 

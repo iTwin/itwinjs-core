@@ -25,7 +25,6 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
   private _copyrightText = "Copyright";
-  private _querySupported = false;
   private _tileMapSupported = false;
   private _mapSupported = false;
   private _tilesOnly = false;

@@ -1220,6 +1220,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     protected _lastAccessToken: MapLayerAccessToken | undefined;
     protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
+    // (undocumented)
+    protected _querySupported: boolean;
+    // (undocumented)
+    get supportsMapFeatureInfo(): boolean;
 }
 
 // @internal (undocumented)
@@ -6460,6 +6464,8 @@ export abstract class MapLayerImageryProvider {
     protected readonly _settings: ImageMapLayerSettings;
     // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
+    // @alpha (undocumented)
+    get supportsMapFeatureInfo(): boolean;
     // @internal (undocumented)
     get tileSize(): number;
     // (undocumented)
@@ -6488,6 +6494,14 @@ export enum MapLayerImageryProviderStatus {
 export interface MapLayerIndex {
     index: number;
     isOverlay: boolean;
+}
+
+// @internal
+export interface MapLayerInfoFromTileTree {
+    // (undocumented)
+    provider?: MapLayerImageryProvider;
+    // (undocumented)
+    settings: MapLayerSettings;
 }
 
 // @public
@@ -6743,7 +6757,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[];
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[];
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
@@ -6955,7 +6969,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     isOverlay: boolean;
     // (undocumented)
-    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings[];
+    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[];
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
@@ -14148,10 +14162,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     isSubCategoryVisible(id: Id64String): boolean;
     get lastFlashedElementId(): Id64String | undefined;
     get lightSettings(): LightSettings | undefined;
-    // @beta (undocumented)
-    mapLayerFromHit(hit: HitDetail): MapLayerSettings[];
     // @internal (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[];
+    mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[];
+    // @internal (undocumented)
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[];
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
