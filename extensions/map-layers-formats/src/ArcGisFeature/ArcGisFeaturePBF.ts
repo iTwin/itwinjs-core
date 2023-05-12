@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { ArcGisGraphicsRenderer, ArcGisGeometryRenderer, MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo, MapLayerFeature } from "@itwin/core-frontend";
+import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
@@ -184,7 +184,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     const subLayerInfo: MapSubLayerFeatureInfo = {
       subLayerName: this._layerMetadata.name,
       displayFieldName: this._layerMetadata.name,
-      features: []
+      features: [],
     };
 
     // Read feature values
@@ -222,9 +222,6 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       layerInfo.subLayerInfos = [];
     }
     layerInfo.subLayerInfos.push(subLayerInfo);
-
-
-
     featureInfos.push(layerInfo);
   }
 }

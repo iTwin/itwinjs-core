@@ -40,7 +40,7 @@ class DrapeLineStringCollector extends TileGeometryCollector {
   }
 }
 
-  /** @internal */
+/** @internal */
 class TerrainDraper implements TileUser {
   public readonly tileUserId: number;
 
@@ -88,7 +88,7 @@ class TerrainDraper implements TileUser {
   }
 }
 
-  /** @internal */
+/** @internal */
 class PinMarker extends Marker {
   public constructor(worldLocation: XYAndZ, size: XAndY, image: MarkerImage) {
     super(worldLocation, size);
@@ -97,7 +97,7 @@ class PinMarker extends Marker {
   }
 }
 
-  /** @internal */
+/** @internal */
 class PinMarkerCluster extends Marker {
   /** Create a new cluster marker */
   constructor(location: XYAndZ, size: XAndY, cluster: Cluster<PinMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
@@ -129,7 +129,7 @@ class PinMarkerCluster extends Marker {
   public override onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
 }
 
-  /** @internal */
+/** @internal */
 class PinMarkerSet extends MarkerSet<PinMarker> {
   protected getClusterMarker(cluster: Cluster<PinMarker>): Marker {
     // No image passed to the cluster, we prefer to have the circle only
@@ -137,13 +137,13 @@ class PinMarkerSet extends MarkerSet<PinMarker> {
   }
 }
 
-  /** @internal */
+/** @internal */
 interface DrapePointState {
   count: number;
   collectorState: string;
 }
 
-  /** @internal */
+/** @internal */
 export class MapFeatureInfoDecorator implements Decorator {
 
   public readonly useCachedDecorations = true;

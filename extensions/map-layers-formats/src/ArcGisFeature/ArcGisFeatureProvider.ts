@@ -216,7 +216,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     return "";
   }
 
-  public constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, resultType: ArcGisFeatureResultType, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean, maxAllowableOffset?:number): ArcGisFeatureUrl | undefined {
+  public constructFeatureUrl(row: number, column: number, zoomLevel: number, format: ArcGisFeatureFormat, resultType: ArcGisFeatureResultType, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean, maxAllowableOffset?: number): ArcGisFeatureUrl | undefined {
 
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     const tileEnvelope = {
@@ -261,7 +261,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         outFields,
         returnGeometry,
         distance: (tolerance ? tolerance * toleranceWorld : undefined),
-        maxAllowableOffset
+        maxAllowableOffset,
       });
 
     let envelope: ArcGisExtent | undefined;
@@ -287,17 +287,11 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     };
 
     const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
-    const tileEnvelope = {
-      xmin: tileExtent.left, ymin: tileExtent.bottom,
-      xmax: tileExtent.right, ymax: tileExtent.top,
-      spatialReference: { wkid: 102100, latestWkid: 3857 },
-    };
     const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
-
 
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
       const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", { geom: cartoPoint, type: "esriGeometryPoint" },
-      outFields, 3 /* tolerance in pixel*/, returnGeometry, 2*toleranceWorld);
+        outFields, 3 /* tolerance in pixel*/, returnGeometry, 2*toleranceWorld);
 
       if (!infoUrl || infoUrl.url.length === 0) {
         Logger.logError(loggerCategory, `Could not construct feature info query URL`);

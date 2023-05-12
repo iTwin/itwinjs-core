@@ -19,7 +19,6 @@ import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
 
-
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
@@ -100,7 +99,7 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
   const info = featureInfos[0].subLayerInfos;
   if (info) {
     expect(info.length).to.equals(1);
-    const features = info[0].features
+    const features = info[0].features;
     expect(features.length).to.equals(1);
     const graphics = features[0].graphics;
     expect(graphics).to.not.undefined;

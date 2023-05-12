@@ -5,7 +5,7 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGraphicsRenderer, ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo, MapLayerFeature } from "@itwin/core-frontend";
+import { ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -104,7 +104,7 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
     const subLayerInfo: MapSubLayerFeatureInfo = {
       subLayerName: this._layerMetadata.name,
       displayFieldName: this._layerMetadata.name,
-      features: []
+      features: [],
     };
 
     // Read all features attributes / geometries
@@ -122,9 +122,8 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
     }
 
     if (layerInfo.subLayerInfos === undefined)
-    layerInfo.subLayerInfos = [];
-    if (!(layerInfo.subLayerInfos instanceof HTMLElement))
-      layerInfo.subLayerInfos.push(subLayerInfo);
+      layerInfo.subLayerInfos = [];
+    layerInfo.subLayerInfos.push(subLayerInfo);
 
     featureInfos.push(layerInfo);
   }

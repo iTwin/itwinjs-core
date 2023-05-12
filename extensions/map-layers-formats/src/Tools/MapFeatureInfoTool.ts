@@ -15,7 +15,7 @@ import {
   PrimitiveTool,
 } from "@itwin/core-frontend";
 import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
 /** Data provided every time [[MapFeatureInfoTool]] retrieve feature information.
@@ -77,7 +77,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     IModelApp.viewManager.dropDecorator(this._decorator);
   }
 
-    /** @internal */
+  /** @internal */
   private getMapLayerInfoFromHit(hit: HitDetail) {
     let mapLayerFromHit: MapLayerInfoFromTileTree[] = [];
     const fromCache = this._layerSettingsCache.get(hit.sourceId);

@@ -44,7 +44,9 @@ describe("ArcGisFeatureJSON", () => {
     featureJson.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
     await featureJson.readFeatureInfo({ data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false }, results);
-    expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef));
+    const resultsStr = JSON.stringify(results);
+
+    expect(resultsStr).equals(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
   });
 
   it("should read FeatureInfo in JSON (phillyAirport)", async () => {
@@ -56,8 +58,8 @@ describe("ArcGisFeatureJSON", () => {
     const results: MapLayerFeatureInfo[] = [];
     const data = JSON.parse(PhillyLandmarksDataset.phillyAirportGetFeatureInfoQueryJson);
     await featureJson.readFeatureInfo({ data, exceedTransferLimit: false }, results);
-    const _test = JSON.stringify(results);
-    expect(_test).equals(JSON.stringify(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef));
+    const resultsStr = JSON.stringify(results);
+    expect(resultsStr).equals(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
   });
 
   it("should deflate coordinates array", async () => {

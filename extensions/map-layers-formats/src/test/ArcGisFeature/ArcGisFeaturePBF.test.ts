@@ -76,7 +76,8 @@ describe("ArcGisFeaturePBF", () => {
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
 
     // Make deep comparison by using JSON.stringify
-    expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef));
+    const resultStr = JSON.stringify(results);
+    expect(resultStr).equals(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
 
   });
 
@@ -93,7 +94,8 @@ describe("ArcGisFeaturePBF", () => {
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
 
     // Make deep comparison by using JSON.stringify
-    expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef));
+    const resultsStr = JSON.stringify(results);
+    expect(resultsStr).equals(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
 
   });
 
