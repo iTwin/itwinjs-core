@@ -1055,7 +1055,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings[] {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
-    return imageryTree.map(tree => tree.layerSettings);
+    return imageryTree.map((tree) => tree.layerSettings);
   }
 
   // Utility method that execute the provided function for every *imagery* tiles under a given HitDetail object.
@@ -1085,7 +1085,7 @@ export class MapTileTreeReference extends TileTreeReference {
         const terrainTile = tree.tileFromQuadId(terrainQuadId);
 
         for (const treeRef of imageryTreeRef) {
-          const processedTileIds: string[] = []
+          const processedTileIds: string[] = [];
           if (terrainTile && terrainTile.imageryTiles) {
             const imageryTree = treeRef.treeOwner.tileTree as ImageryMapTileTree;
             if (imageryTree) {

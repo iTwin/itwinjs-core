@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { ArcGisGeometryRenderer } from "../../internal";
 
-
 /** @internal */
 export class ArcGisGeometryReaderJSON {
   private _ringsOrPaths: boolean;

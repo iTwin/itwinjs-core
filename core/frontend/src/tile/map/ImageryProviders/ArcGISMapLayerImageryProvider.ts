@@ -8,7 +8,7 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
   ArcGisUtilities,
   ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
@@ -17,8 +17,6 @@ import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
-import { ArcGisGeometryReaderJSON } from "./ArcGisGeometryReaderJSON";
-import { ArcGisGraphicsRenderer } from "./ArcGisGraphicsRenderer";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
@@ -212,7 +210,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
   // tolerance is in pixels
-  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number, maxAllowableOffset?:number): Promise<any>   {
+  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number, maxAllowableOffset?: number): Promise<any>   {
     const returnGeometry = "true;";
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
@@ -253,11 +251,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     if (!this._querySupported)
       return;
 
-      const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
-      const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
-
-      const maxAllowableOffsetFactor = 2;
-      const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
+    const tileExtent = this.getEPSG3857Extent(quadId.row, quadId.column, quadId.level);
+    const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
+    const maxAllowableOffsetFactor = 2;
+    const maxAllowableOffset = maxAllowableOffsetFactor*toleranceWorld;
 
     const json = await this.getIdentifyData(quadId, carto, 5, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
@@ -294,9 +291,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         }
 
         // Read feature geometries
-        let geomReader = new ArcGisGeometryReaderJSON(result.geometryType, renderer);
+        const geomReader = new ArcGisGeometryReaderJSON(result.geometryType, renderer);
         await geomReader.readGeometry(result.geometry);
-        feature.graphics = renderer!.moveGraphics();
+        feature.graphics = renderer.moveGraphics();
 
         subLayerInfo.features.push(feature);
 
@@ -304,7 +301,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
       for ( const value of subLayers.values()) {
         layerInfo.subLayerInfos!.push(value);
-        }
+      }
 
       featureInfos.push(layerInfo);
     }
