@@ -297,7 +297,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
     const doFeatureInfoQuery = async (format: ArcGisFeatureFormat, outFields?: string, returnGeometry?: boolean,) => {
       const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, format, "standard", { geom: cartoPoint, type: "esriGeometryPoint" },
-      outFields, 3 /* tolerance in pixel*/, returnGeometry, 5*toleranceWorld);
+      outFields, 3 /* tolerance in pixel*/, returnGeometry, 2*toleranceWorld);
 
       if (!infoUrl || infoUrl.url.length === 0) {
         Logger.logError(loggerCategory, `Could not construct feature info query URL`);
