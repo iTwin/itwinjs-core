@@ -10,7 +10,7 @@ import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
   ArcGisUtilities,
-  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
+  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -263,41 +263,48 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     if (json && Array.isArray(json.results)) {
       const renderer = new ArcGisGraphicsRenderer(hit.iModel);
 
+      const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 
-
-
-
-      const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name };
+      // The 'identify' service returns us a flat/unordered list of records..
+      // results may represent features for the a common subLayer.
+      // For simplicity, we group together features for a given sub-layer.
+      const subLayers = new Map<string, MapSubLayerFeatureInfo> ();
 
       for (const result of json.results) {
 
-        const subLayerInfo: MapSubLayerFeatureInfo = {
-          subLayerName: result.layerName ?? "",
-          displayFieldName: result.displayFieldName,
-          records: [],
-        };
+        let subLayerInfo = subLayers.get(result.layerName);
+        if (!subLayerInfo) {
+          subLayerInfo = {
+            subLayerName: result.layerName ?? "",
+            displayFieldName: result.displayFieldName,
+            features: [],
+          };
+          subLayers.set(result.layerName, subLayerInfo);
+        }
+        const feature: MapLayerFeature = {graphics: [], records: []};
+
+        // Read all feature attributes
         for (const [key, value] of Object.entries(result.attributes)) {
           // Convert everything to string for now
           const strValue = String(value);
-          subLayerInfo.records?.push(new MapFeatureInfoRecord(
+          feature.records.push(new MapFeatureInfoRecord(
             { valueFormat: PropertyValueFormat.Primitive, value: strValue, displayValue: strValue },
             { name: key, displayLabel: key, typename: StandardTypeNames.String }
           ));
         }
 
+        // Read feature geometries
         let geomReader = new ArcGisGeometryReaderJSON(result.geometryType, renderer);
         await geomReader.readGeometry(result.geometry);
-        subLayerInfo.graphics = renderer!.moveGraphics();
+        feature.graphics = renderer!.moveGraphics();
 
-        if (layerInfo.subLayerInfos === undefined) {
-          layerInfo.subLayerInfos = [];
-        }
-
-        if (!(layerInfo.subLayerInfos instanceof HTMLElement)) {
-          layerInfo.subLayerInfos.push(subLayerInfo);
-        }
+        subLayerInfo.features.push(feature);
 
       }
+
+      for ( const value of subLayers.values()) {
+        layerInfo.subLayerInfos!.push(value);
+        }
 
       featureInfos.push(layerInfo);
     }

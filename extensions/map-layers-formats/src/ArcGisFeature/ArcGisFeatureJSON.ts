@@ -5,7 +5,7 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGraphicsRenderer, ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { ArcGisGraphicsRenderer, ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo, MapLayerFeature } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -100,28 +100,31 @@ export class ArcGisFeatureJSON extends ArcGisFeatureReader {
       geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer);
     }
 
-    // Read feature values
-    for (const feature of responseObj.features) {
-      const subLayerInfo: MapSubLayerFeatureInfo = {
-        subLayerName: this._layerMetadata.name,
-        displayFieldName: this._layerMetadata.name,
-        records: [],
-      };
+    // Each feature response represent a single sub-layer, no need to check for existing entry.
+    const subLayerInfo: MapSubLayerFeatureInfo = {
+      subLayerName: this._layerMetadata.name,
+      displayFieldName: this._layerMetadata.name,
+      features: []
+    };
 
-      for (const [key, value] of Object.entries(feature.attributes))
-        subLayerInfo.records?.push(getRecordInfo(key, value));
+    // Read all features attributes / geometries
+    for (const responseFeature of responseObj.features) {
+      const feature: MapLayerFeature = {records: []};
 
-      if (layerInfo.subLayerInfos === undefined)
-        layerInfo.subLayerInfos = [];
+      for (const [key, value] of Object.entries(responseFeature.attributes))
+        feature.records?.push(getRecordInfo(key, value));
 
       if (geomReader) {
-        await geomReader.readGeometry(feature.geometry);
-        subLayerInfo.graphics = renderer!.moveGraphics();
+        await geomReader.readGeometry(responseFeature.geometry);
+        feature.graphics = renderer!.moveGraphics();
       }
-
-      if (!(layerInfo.subLayerInfos instanceof HTMLElement))
-        layerInfo.subLayerInfos.push(subLayerInfo);
+      subLayerInfo.features.push(feature);
     }
+
+    if (layerInfo.subLayerInfos === undefined)
+    layerInfo.subLayerInfos = [];
+    if (!(layerInfo.subLayerInfos instanceof HTMLElement))
+      layerInfo.subLayerInfos.push(subLayerInfo);
 
     featureInfos.push(layerInfo);
   }

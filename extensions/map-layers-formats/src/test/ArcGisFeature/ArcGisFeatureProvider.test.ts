@@ -98,9 +98,11 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
     (undefined as unknown) as ImageryMapTileTree, makeHitDetail(noGcsDefined));
   expect(featureInfos.length).to.equals(1);
   const info = featureInfos[0].subLayerInfos;
-  if (info && !(info instanceof HTMLElement)) {
+  if (info) {
     expect(info.length).to.equals(1);
-    const graphics = info[0].graphics;
+    const features = info[0].features
+    expect(features.length).to.equals(1);
+    const graphics = features[0].graphics;
     expect(graphics).to.not.undefined;
     expect(graphics!.length).to.equals(nbGraphics);
     expect(graphics![0].type).to.equals(expectedPrimitiveType);

@@ -244,17 +244,18 @@ export class MapFeatureInfoDecorator implements Decorator {
       if (this._drapePoints.length === 0 && this._state.mapInfo.layerInfos) {
 
         for (const layerInfo of this._state.mapInfo.layerInfos) {
-          if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
+          if (layerInfo.subLayerInfos) {
             for (const subLayerInfo of layerInfo.subLayerInfos) {
-              if (subLayerInfo.graphics) {
-                for (const graphic of subLayerInfo.graphics) {
-                  if (graphic.type === "linestring") {
-                    this._drapePointsStates.push({ count: graphic.points.length, collectorState: "loading" });
-                    this._drapePoints.pushAll(graphic.points);
+              for (const feature of subLayerInfo.features) {
+                if (feature.graphics) {
+                  for (const graphic of feature.graphics) {
+                    if (graphic.type === "linestring") {
+                      this._drapePointsStates.push({ count: graphic.points.length, collectorState: "loading" });
+                      this._drapePoints.pushAll(graphic.points);
+                    }
                   }
                 }
               }
-
             }
 
           }
@@ -302,15 +303,17 @@ export class MapFeatureInfoDecorator implements Decorator {
       for (const layerInfo of this._state.mapInfo.layerInfos) {
         if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
           for (const subLayerInfo of layerInfo.subLayerInfos) {
-            if (subLayerInfo.graphics) {
-              for (const graphic of subLayerInfo.graphics) {
-                if (graphic.type === "pointstring") {
-                  for (const point of graphic.points)
-                    this._markerSet.markers.add(new PinMarker(point, this.markerSize, this._markerImage));
-                } else {
-                  builder.addPrimitive(graphic);
-                }
+            for (const feature of subLayerInfo.features) {
+              if (feature.graphics) {
+                for (const graphic of feature.graphics) {
+                  if (graphic.type === "pointstring") {
+                    for (const point of graphic.points)
+                      this._markerSet.markers.add(new PinMarker(point, this.markerSize, this._markerImage));
+                  } else {
+                    builder.addPrimitive(graphic);
+                  }
 
+                }
               }
             }
           }
