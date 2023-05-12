@@ -4,7 +4,7 @@ The [Backstage]($appui-abstract:Backstage) is a menu used to open frontstages, l
 
 ## Backstage Item Utilities
 
-[BackstageItemUtilities]($appui-abstract) is a utility class to create abstract Backstage item definitions that define entries in the Backstage menu.
+[BackstageItemUtilities]($appui-react) is a utility class to create abstract Backstage item definitions that define entries in the Backstage menu.
 
 The following shows an example of defining an item to create an item that opens a primary stage.
 
