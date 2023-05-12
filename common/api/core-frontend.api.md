@@ -1142,6 +1142,73 @@ export enum ArcGisErrorCode {
     UnknownError = 1000
 }
 
+// @internal (undocumented)
+export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
+    constructor(world2PixelTransform?: Transform);
+    // (undocumented)
+    protected abstract beginPath(): void;
+    // (undocumented)
+    protected abstract closePath(): void;
+    // (undocumented)
+    protected abstract drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected abstract fill(): Promise<void>;
+    // (undocumented)
+    protected abstract finishPoints(): Promise<void>;
+    // (undocumented)
+    protected abstract lineTo(x: number, y: number): void;
+    // (undocumented)
+    protected abstract moveTo(x: number, y: number): void;
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    protected abstract stroke(): Promise<void>;
+    // (undocumented)
+    get transform(): Transform | undefined;
+}
+
+// @internal (undocumented)
+export class ArcGisGeometryReaderJSON {
+    constructor(geometryType: string, renderer: ArcGisGeometryRenderer, relativeCoords?: boolean);
+    // (undocumented)
+    protected static deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
+    // (undocumented)
+    readGeometry(geometry: any): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface ArcGisGeometryRenderer {
+    // (undocumented)
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    transform: Transform | undefined;
+}
+
+// @internal (undocumented)
+export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
+    constructor(iModel: IModelConnection);
+    // (undocumented)
+    protected beginPath(): void;
+    // (undocumented)
+    protected closePath(): void;
+    // (undocumented)
+    protected drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected fill(): Promise<void>;
+    // (undocumented)
+    protected finishPoints(): Promise<void>;
+    // (undocumented)
+    protected lineTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    moveGraphics(): GraphicPrimitive[];
+    // (undocumented)
+    protected moveTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    protected stroke(): Promise<void>;
+}
+
 // @internal
 export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
@@ -1167,7 +1234,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     // (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
     // (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
@@ -1381,6 +1448,8 @@ export class BackgroundMapGeometry {
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
     // (undocumented)
     dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    // (undocumented)
+    dbToWGS84CartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -5421,9 +5490,13 @@ export abstract class IModelConnection extends IModel {
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    spatialToWGS84Cartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    spatialToWGS84CartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
     get subcategories(): SubCategoriesCache;
     readonly tiles: Tiles;
+    // (undocumented)
+    toSpatialFromGcs(geoPoints: XYZProps[], datumOrGCRS?: string | GeographicCRSProps): Promise<XYZProps[]>;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
 }
@@ -6187,15 +6260,15 @@ export class MapCartoRectangle extends Range2d {
     set west(x: number);
 }
 
-// @alpha (undocumented)
+// @alpha
 export interface MapFeatureInfo {
     // (undocumented)
     hitPoint?: Cartographic;
     // (undocumented)
-    layerInfo?: MapLayerFeatureInfo[];
+    layerInfos?: MapLayerFeatureInfo[];
 }
 
-// @alpha (undocumented)
+// @alpha
 export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
@@ -6237,12 +6310,20 @@ export interface MapLayerAuthenticationInfo {
 // @internal (undocumented)
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
-// @alpha (undocumented)
+// @alpha
+export interface MapLayerFeature {
+    // (undocumented)
+    graphics?: GraphicPrimitive[];
+    // (undocumented)
+    records: MapFeatureInfoRecord[];
+}
+
+// @alpha
 export interface MapLayerFeatureInfo {
     // (undocumented)
-    info?: MapSubLayerFeatureInfo[] | HTMLElement;
-    // (undocumented)
     layerName: string;
+    // (undocumented)
+    subLayerInfos?: MapSubLayerFeatureInfo[];
 }
 
 // @public
@@ -6337,7 +6418,7 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     getEPSG4326Lon(x3857: number): number;
     // @internal (undocumented)
-    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail): Promise<void>;
     // @internal (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
@@ -6532,12 +6613,12 @@ export interface MapLayerTokenEndpoint {
     getUrl(): string;
 }
 
-// @alpha (undocumented)
+// @alpha
 export interface MapSubLayerFeatureInfo {
     // (undocumented)
     displayFieldName?: string;
     // (undocumented)
-    records?: MapFeatureInfoRecord[];
+    features: MapLayerFeature[];
     // (undocumented)
     subLayerName: string;
 }
@@ -6660,7 +6741,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[];
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
@@ -6849,6 +6930,8 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
+    forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void;
+    // (undocumented)
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
@@ -6860,7 +6943,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     protected getViewFlagOverrides(_tree: TileTree): Partial<Mutable<NonFunctionPropertiesOf<ViewFlags>>>;
     // (undocumented)
-    imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined;
+    imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[];
     // (undocumented)
     initializeLayers(context: SceneContext): boolean;
     // (undocumented)
@@ -6870,7 +6953,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     isOverlay: boolean;
     // (undocumented)
-    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings | undefined;
+    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerSettings[];
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
@@ -14063,10 +14146,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     isSubCategoryVisible(id: Id64String): boolean;
     get lastFlashedElementId(): Id64String | undefined;
     get lightSettings(): LightSettings | undefined;
+    // @beta (undocumented)
+    mapLayerFromHit(hit: HitDetail): MapLayerSettings[];
     // @internal (undocumented)
-    mapLayerFromHit(hit: HitDetail): MapLayerSettings | undefined;
-    // @internal (undocumented)
-    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings[];
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
@@ -14795,6 +14878,16 @@ export class WalkViewTool extends ViewManip {
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @internal (undocumented)
+export class WebMercator {
+    // (undocumented)
+    protected static readonly earthRadius = 6378137;
+    // (undocumented)
+    static getEPSG4326Lat(y3857: number): number;
+    // (undocumented)
+    static getEPSG4326Lon(x3857: number): number;
 }
 
 // @alpha (undocumented)

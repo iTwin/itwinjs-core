@@ -37,6 +37,10 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
+internal;class ArcGisGeometryBaseRenderer 
+internal;ArcGisGeometryReaderJSON
+internal;ArcGisGeometryRenderer
+internal;ArcGisGraphicsRenderer 
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISServiceMetadata
@@ -394,6 +398,7 @@ beta;MapLayerAccessToken
 beta;MapLayerAccessTokenParams
 beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
+alpha;MapLayerFeature
 alpha;MapLayerFeatureInfo
 public;MapLayerFormat
 internal;MapLayerFormatEntry
@@ -808,6 +813,7 @@ public;ViewUndoEvent
 public;ViewUndoTool 
 public;VisibleFeature
 public;WalkViewTool 
+internal;WebMercator
 alpha;WebMercatorProjection
 beta;WebMercatorTilingScheme 
 internal;WheelEventProcessor
