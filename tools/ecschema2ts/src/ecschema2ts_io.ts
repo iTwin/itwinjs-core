@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaXmlContext, IModelHost } from "@itwin/core-backend";
@@ -33,8 +33,12 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     return this.getSchemaSync(key, matchType, context) as T;
+  }
+
+  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+    return this.getSchema(schemaKey, matchType, context);
   }
 
   /**
@@ -43,7 +47,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     const localPath: Set<string> = new Set<string>();
     return this.getSchemaRecursively(key, matchType, context, localPath);
   }
@@ -79,7 +83,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param context The schema context used to parse schema
    * @param localPath The path of the recursion is following used to detect cyclic dependency
    */
-  private getSchemaRecursively<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
+  private getSchemaRecursively<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
     // load the schema file
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
     if (0 === candidates.length)

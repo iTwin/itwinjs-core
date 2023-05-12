@@ -7,6 +7,7 @@
 import { ISchemaLocater } from '@itwin/ecschema-metadata';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaInfo } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
 
@@ -29,7 +30,7 @@ export abstract class SchemaFileLocater {
     fileExists(filePath: string): Promise<boolean | undefined>;
     // (undocumented)
     fileExistsSync(filePath: string): boolean | undefined;
-    protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[];
+    protected findEligibleSchemaKeys(desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string): FileSchemaKey[];
     // (undocumented)
     abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     // (undocumented)
@@ -45,6 +46,7 @@ export abstract class SchemaFileLocater {
 // @beta
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     protected getSchemaKey(data: string): SchemaKey;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
@@ -52,6 +54,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
 // @beta
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaKey(data: string): SchemaKey;
     getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
 }
@@ -59,11 +62,11 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 // @internal
 export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaInfo(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaKey(schemaXml: string): SchemaKey;
     getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
     loadSchema(schemaPath: string, schemaText?: string): Schema;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

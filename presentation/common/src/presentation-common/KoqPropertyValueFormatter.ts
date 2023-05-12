@@ -8,7 +8,7 @@
 
 import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import {
-  getFormatProps, InvertedUnit, ISchemaLocater, KindOfQuantity, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
+  getFormatProps, InvertedUnit, KindOfQuantity, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
   Unit,
 } from "@itwin/ecschema-metadata";
 
@@ -59,7 +59,7 @@ interface FormattingProps {
   persistenceUnitName: string;
 }
 
-async function getFormattingProps(schemaLocater: ISchemaLocater, options: FormatOptions): Promise<FormattingProps | undefined> {
+async function getFormattingProps(schemaLocater: SchemaContext, options: FormatOptions): Promise<FormattingProps | undefined> {
   const { koqName, unitSystem } = options;
 
   const koq = await getKoq(schemaLocater, koqName);
@@ -78,7 +78,7 @@ async function getFormattingProps(schemaLocater: ISchemaLocater, options: Format
   return { formatProps, persistenceUnitName: persistenceUnit.fullName };
 }
 
-async function getKoq(schemaLocater: ISchemaLocater, fullName: string) {
+async function getKoq(schemaLocater: SchemaContext, fullName: string) {
   const [schemaName, propKoqName] = fullName.split(":");
   const schema = await schemaLocater.getSchema(new SchemaKey(schemaName), SchemaMatchType.Latest);
   if (!schema)
