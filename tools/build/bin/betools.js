@@ -71,7 +71,7 @@ yargs.strict(true)
       })
     },
     (argv) => { extractCommand(argv) })
-  .command("extract-api", "Extracts the API of the Typescript library starting from an entry file with a default presets.  Powered by @microsoft/api-extractor (https://api-extractor.com)",
+  .command("extract-api", "Extracts the API of the Typescript library starting from an entry file with a default presets. Powered by @microsoft/api-extractor (https://api-extractor.com)",
     function (yargs) {
       return yargs.options({
         "entry": {
@@ -79,6 +79,15 @@ yargs.strict(true)
         },
         "ignoreMissingTags": {
           describe: "Turns off the 'ae-missing-release-tag' option which returns an error when a missing release tag is detected"
+        },
+        "apiReportFolder": {
+          describe: "Directory for the API report. Defaults to `<Rush repository root>/common/api`."
+        },
+        "apiReportTempFolder": {
+          describe: "Directory for the API report. Defaults to `<Rush repository root>/temp/api`."
+        },
+        "apiSummaryFolder": {
+          describe: "Directory for the API summary. Defaults to `<Rush repository root>/common/api/summary`."
         }
       })
     },
@@ -149,7 +158,10 @@ function extractCommand(options) {
 function extractApiCommand(options) {
   const entryOpt = options.entry ? ["--entry", options.entry] : [];
   const ignoreTagsOpt = options.ignoreMissingTags ? ["--ignoreMissingTags"] : [];
-  exec(["node", getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt]);
+  const apiReportFolderOpt = options.apiReportFolder ? ["--apiReportFolder", options.apiReportFolder] : [];
+  const apiReportTempFolderOpt = options.apiReportTempFolder ? ["--apiReportTempFolder", options.apiReportTempFolder] : [];
+  const apiSummaryFolderOpt = options.apiSummaryFolder ? ["--apiSummaryFolder", options.apiSummaryFolder] : [];
+  exec(["node", getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt]);
 }
 
 function pseudolocalizeCommand(options) {

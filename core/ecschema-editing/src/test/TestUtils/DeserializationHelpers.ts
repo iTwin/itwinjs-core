@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DOMParser } from "@xmldom/xmldom";
-import { ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
@@ -20,17 +20,33 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
 export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _schemaList: Map<string, Object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;
+  private readonly _asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>;
 
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema) {
+  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema, asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>) {
     this._schemaList = new Map();
     this._parser = parser;
+    this._asyncParser = asyncParser;
   }
 
   public addSchema(schemaName: string, schema: any) {
     this._schemaList.set(schemaName, schema);
   }
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(schemaKey, matchType, context) as T;
+    if (this._schemaList.has(schemaKey.name)) {
+      const schemaBody = this._schemaList.get(schemaKey.name);
+      await this._asyncParser(schemaBody, context);
+      return await context.getCachedSchema(schemaKey, matchType) as T;
+    }
+    return undefined;
+  }
+
+  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+    if (this._schemaList.has(schemaKey.name)) {
+      const schemaBody = this._schemaList.get(schemaKey.name);
+      const schemaInfo = this._asyncParser(schemaBody, context);
+      return schemaInfo;
+    }
+    return undefined;
   }
 
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
@@ -46,8 +62,18 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   }
 }
 
+export async function deserializeInfoXml(schemaXml: string, context: SchemaContext) {
+  const parser = new DOMParser();
+  const document = parser.parseFromString(schemaXml);
+  const reader = new SchemaReadHelper(XmlParser, context);
+  return reader.readSchemaInfo(new Schema(context), document);
+}
+
 export async function deserializeXml(schemaXml: string, context: SchemaContext) {
-  return Promise.resolve(deserializeXmlSync(schemaXml, context));
+  const parser = new DOMParser();
+  const document = parser.parseFromString(schemaXml);
+  const reader = new SchemaReadHelper(XmlParser, context);
+  return reader.readSchema(new Schema(context), document);
 }
 
 export function deserializeXmlSync(schemaXml: string, context: SchemaContext) {

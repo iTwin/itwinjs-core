@@ -69,6 +69,7 @@ import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
+import { UintArray } from '@itwin/core-bentley';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -1084,7 +1085,7 @@ export enum ChangeOpCode {
     Update = 2
 }
 
-// @beta
+// @internal
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -1120,7 +1121,7 @@ export type ChangesetIndexOrId = ChangesetIndexAndId | {
     readonly index?: never;
 };
 
-// @beta
+// @public
 export interface ChangesetProps {
     briefcaseId: number;
     changesType: ChangesetType;
@@ -1129,7 +1130,7 @@ export interface ChangesetProps {
     index: ChangesetIndex;
     parentId: ChangesetId;
     pushDate: string;
-    size?: number;
+    size: number;
     userCreated: string;
 }
 
@@ -1566,8 +1567,8 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     isEmpty: boolean;
 }>;
 
-// @alpha (undocumented)
-export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
+// @internal (undocumented)
+export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
@@ -5731,6 +5732,8 @@ export enum MonochromeMode {
 export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
     // (undocumented)
+    get animationNodeIds(): Readonly<UintArray> | undefined;
+    // (undocumented)
     get batchModelId(): string;
     // (undocumented)
     get batchModelIdPair(): Id64.Uint32Pair;
@@ -5743,6 +5746,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     // (undocumented)
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
+    // (undocumented)
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     // (undocumented)
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
@@ -5754,6 +5759,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex>;
     // (undocumented)
     get numFeatures(): number;
+    // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     get type(): BatchType;
 }
@@ -6173,9 +6180,9 @@ export class PackedFeatureModelTable {
 
 // @internal
 export class PackedFeatureTable implements RenderFeatureTable {
-    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray);
     // (undocumented)
-    get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
+    get animationNodeIds(): Readonly<UintArray> | undefined;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
@@ -6212,6 +6219,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     static pack(featureTable: FeatureTable): PackedFeatureTable;
     // (undocumented)
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
+    setAnimationNodeIds(nodeIds: UintArray | undefined): void;
     // (undocumented)
     readonly type: BatchType;
     unpack(): FeatureTable;
@@ -7227,11 +7235,15 @@ export interface RenderFeatureTable {
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
+    // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
 }
@@ -7429,6 +7441,8 @@ export namespace RenderSchedule {
         findByBatchId(batchId: number): ElementTimeline | undefined;
         // (undocumented)
         static fromJSON(props?: ModelTimelineProps): ModelTimeline;
+        // @internal
+        getBatchIdForFeature(feature: PackedFeatureWithIndex): number;
         // @alpha
         getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined;
         getTransform(batchId: number, time: number): Readonly<Transform> | undefined;
@@ -7469,16 +7483,22 @@ export namespace RenderSchedule {
         readonly containsTransform: boolean;
         // @internal
         discloseIds(ids: EntityReferenceSet): void;
+        // @alpha
+        get discreteBatchIds(): Set<number>;
         readonly duration: Range1d;
         // (undocumented)
         equals(other: Script): boolean;
         find(modelId: Id64String): ModelTimeline | undefined;
         // (undocumented)
         static fromJSON(props: Readonly<ScriptProps>): Script | undefined;
+        // @internal
+        getBatchIdForFeature(feature: PackedFeatureWithIndex): number;
         // @internal (undocumented)
         getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined;
         // @internal (undocumented)
         getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined;
+        // @alpha (undocumented)
+        get maxBatchId(): number;
         // @internal (undocumented)
         modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;

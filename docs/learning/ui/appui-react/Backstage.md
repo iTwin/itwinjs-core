@@ -6,7 +6,7 @@ These overlays are an implementation of a modal frontstage. The backstage is ope
 
 ## Defining the Backstage
 
-To ensure that an extension can supply items for the Backstage menu, it should be created using the [BackstageComposer]($appui-react) component. The example below shows how to provide [BackstageActionItem]($appui-abstract) and [BackstageStageLauncher]($appui-abstract) item to the BackstageComposer.
+To ensure that an extension can supply items for the Backstage menu, it should be created using the [BackstageComposer]($appui-react) component. The example below shows how to provide [BackstageActionItem]($appui-react) and [BackstageStageLauncher]($appui-react) item to the BackstageComposer.
 
 ```tsx
 import stageIconSvg from "@bentley/icons-generic/icons/imodeljs.svg";
@@ -38,5 +38,4 @@ Below is an example of defining the ConfigurableUiContent and specifying the bac
 
 ## API Reference
 
-- [Backstage in appui-react]($appui-react:Backstage)
-- [Backstage in appui-abstract]($appui-abstract:Backstage)
+- [Backstage]($appui-react:Backstage)

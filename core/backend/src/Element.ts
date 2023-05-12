@@ -356,13 +356,12 @@ export class Element extends Entity {
    * @deprecated in 3.x. use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    * @beta
    */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void {
     return this.collectReferenceIds(predecessorIds);
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
     if (this.code.scope && Id64.isValidId64(this.code.scope))
       referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
@@ -496,9 +495,8 @@ export abstract class GeometricElement extends Element {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.category);
     // TODO: GeometryPartIds?
   }
@@ -540,9 +538,8 @@ export abstract class GeometricElement3d extends GeometricElement {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (undefined !== this.typeDefinition)
       referenceIds.addElement(this.typeDefinition.id);
   }
@@ -585,9 +582,8 @@ export abstract class GeometricElement2d extends GeometricElement {
     return val;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (undefined !== this.typeDefinition)
       referenceIds.addElement(this.typeDefinition.id);
   }
@@ -953,9 +949,8 @@ export class SheetTemplate extends Document {
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (undefined !== this.border)
       referenceIds.addElement(this.border);
   }
@@ -981,9 +976,8 @@ export class Sheet extends Document {
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (undefined !== this.sheetTemplate)
       referenceIds.addElement(this.sheetTemplate);
   }
@@ -1127,9 +1121,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (undefined !== this.recipe)
       referenceIds.addElement(this.recipe.id);
   }
@@ -1634,9 +1627,8 @@ export class RenderTimeline extends InformationRecordElement {
     }
   }
 
-  /** @internal */
-  protected override collectReferenceConcreteIds(ids: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(ids);
+  protected override collectReferenceIds(ids: EntityReferenceSet): void {
+    super.collectReferenceIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids); // eslint-disable-line deprecation/deprecation
   }

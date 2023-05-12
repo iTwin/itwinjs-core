@@ -592,7 +592,7 @@ export class MapTile extends RealityTile {
       this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
     }
 
-    if (this.rangeCorners &&  this._patch instanceof PlanarTilePatch)
+    if (this.rangeCorners && this._patch instanceof PlanarTilePatch)
       this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
 
@@ -692,7 +692,8 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   protected override minimumVisibleFactor(): number {
-    return 0.25;
+    // if minimumVisibleFactor is more than 0, it stops parents from loading when children are not ready, to fill in gaps
+    return 0.0;
   }
 
   private static _scratchThisDiagonal = Vector2d.create();
@@ -781,7 +782,7 @@ export class MapTile extends RealityTile {
 
     if (this.mapTree.produceGeometry) {
       const iModelTransform = this.mapTree.iModelTransform;
-      const geometryTransform =  content.terrain?.renderGeometry?.transform;
+      const geometryTransform = content.terrain?.renderGeometry?.transform;
       const transform = geometryTransform ? iModelTransform.multiplyTransformTransform(geometryTransform) : iModelTransform;
       const polyface = content.terrain?.mesh ? RealityMeshParams.toPolyface(content.terrain.mesh, { transform }) : undefined;
       this._geometry = polyface ? { polyfaces: [polyface] } : undefined;

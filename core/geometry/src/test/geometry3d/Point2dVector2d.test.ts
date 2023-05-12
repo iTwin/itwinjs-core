@@ -347,6 +347,15 @@ describe("Point2d", () => {
     ck.testUndefined(carrier.crossProductIndexIndexIndex(10, 1, 0));
     ck.testUndefined(carrier.crossProductIndexIndexIndex(0, 21, 2));
 
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(0), 0);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(0), 0);
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(1), 1);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(1), 0);
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(2), 1);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(2), 1);
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(3), 0);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(3), 1);
+
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -5277,7 +5277,7 @@ export interface ImdlReaderCreateArgs {
     stream: ByteStream;
     // (undocumented)
     system: RenderSystem;
-    timeline?: RenderSchedule.ModelTimeline;
+    timeline?: ImdlTimeline;
     // (undocumented)
     type?: BatchType;
 }
@@ -5287,6 +5287,9 @@ export interface ImdlReaderResult extends IModelTileContent {
     // (undocumented)
     readStatus: TileReadStatus;
 }
+
+// @internal (undocumented)
+export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 // @public
 export class IModelApp {
@@ -5310,7 +5313,6 @@ export class IModelApp {
     static getAccessToken(): Promise<AccessToken>;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
-    // @internal
     static get hubAccess(): FrontendHubAccess | undefined;
     static get initialized(): boolean;
     static get localization(): Localization;

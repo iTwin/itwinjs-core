@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.0.5
+      '@bentley/imodeljs-native': 4.0.8
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^1.5.0
       '@itwin/core-bentley': workspace:*
@@ -51,7 +51,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.3
     dependencies:
-      '@bentley/imodeljs-native': 4.0.5
+      '@bentley/imodeljs-native': 4.0.8
       '@itwin/cloud-agnostic-core': 1.6.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.6.0
@@ -139,7 +139,6 @@ importers:
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
       '@types/node': ^18.11.5
-      '@types/semver': 7.3.10
       chai: ^4.1.2
       eslint: ^8.36.0
       flatbuffers: ~1.12.0
@@ -147,13 +146,11 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      semver: ^7.3.5
       typescript: ~5.0.2
     dependencies:
       '@itwin/object-storage-core': 1.6.0
       flatbuffers: 1.12.0
       js-base64: 3.7.5
-      semver: 7.5.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -163,7 +160,6 @@ importers:
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
       '@types/node': 18.16.1
-      '@types/semver': 7.3.10
       chai: 4.3.7
       eslint: 8.39.0
       mocha: 10.2.0
@@ -227,6 +223,22 @@ importers:
 
   ../../core/ecschema-locaters:
     specifiers:
+      '@bentley/aec-units-schema': ^1.0.3
+      '@bentley/architectural-physical-schema': ^1.0.3
+      '@bentley/bis-core-schema': ^1.0.15
+      '@bentley/bis-custom-attributes-schema': ^1.0.0
+      '@bentley/construction-schema': ^1.0.4
+      '@bentley/core-custom-attributes-schema': ^1.0.3
+      '@bentley/ecdb-map-schema': ^2.0.1
+      '@bentley/ecdb-schema-policies-schema': ^1.0.1
+      '@bentley/formats-schema': ^1.0.0
+      '@bentley/linear-referencing-schema': ^2.0.3
+      '@bentley/physical-material-schema': ^1.0.2
+      '@bentley/plant-custom-attributes-schema': ^1.0.1
+      '@bentley/quantity-takeoffs-aspects-schema': ^1.0.1
+      '@bentley/spatial-composition-schema': ^1.0.1
+      '@bentley/structural-physical-schema': ^1.0.1
+      '@bentley/units-schema': ^1.0.5
       '@itwin/build-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
@@ -254,6 +266,22 @@ importers:
       fs-extra: 8.1.0
       glob: 7.2.3
     devDependencies:
+      '@bentley/aec-units-schema': 1.0.3
+      '@bentley/architectural-physical-schema': 1.0.3
+      '@bentley/bis-core-schema': 1.0.15
+      '@bentley/bis-custom-attributes-schema': 1.0.0
+      '@bentley/construction-schema': 1.0.4
+      '@bentley/core-custom-attributes-schema': 1.0.3
+      '@bentley/ecdb-map-schema': 2.0.1
+      '@bentley/ecdb-schema-policies-schema': 1.0.1
+      '@bentley/formats-schema': 1.0.0
+      '@bentley/linear-referencing-schema': 2.0.3
+      '@bentley/physical-material-schema': 1.0.2
+      '@bentley/plant-custom-attributes-schema': 1.0.1
+      '@bentley/quantity-takeoffs-aspects-schema': 1.0.2
+      '@bentley/spatial-composition-schema': 1.0.1
+      '@bentley/structural-physical-schema': 1.0.1
+      '@bentley/units-schema': 1.0.7
       '@itwin/build-tools': link:../../tools/build
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': 4.0.0-dev.36_iacogk7kkaymxepzhgcbytyi7q
@@ -1270,6 +1298,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-extension': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-editing': workspace:*
@@ -1297,6 +1326,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-extension': link:../../core/extension
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
@@ -4991,7 +5021,18 @@ packages:
 
   /@bentley/aec-units-schema/1.0.3:
     resolution: {integrity: sha512-Rpc+g75LZfDaapej3OBUOx67p5vOi9xF34gAhfWlmdm2cWeMZzjkjzVLR/Fn8NMdvhn/QS8HRAVLlXLSOtm6kg==}
-    dev: false
+
+  /@bentley/architectural-physical-schema/1.0.3:
+    resolution: {integrity: sha512-KwOyb8anB6W/FCywiRX54nRDFy5o9wDb1zUr3CJvtsDhGuOpBvqsHVRkTGLqkW1gyIbZxn6LUmeW4z5ggd9Zvg==}
+    dev: true
+
+  /@bentley/bis-core-schema/1.0.15:
+    resolution: {integrity: sha512-pMvGqPgc3HiV+thKE0t0F9XxiReRnvSU9X7zoIEnXz1nryAjmSEVrxr5n+mJ14Kkfabmbd7R26hyGf1XaqfX0Q==}
+    dev: true
+
+  /@bentley/bis-custom-attributes-schema/1.0.0:
+    resolution: {integrity: sha512-AKhv7Y6CDR+p9yvwlgqjR82OsSexeCpeIZbGmjUA6WG36Jq/Jq/aHFdwvE8xU9ff41bMSn8qxWmUcqmCstDf9g==}
+    dev: true
 
   /@bentley/cif-bridge-schema/1.0.8:
     resolution: {integrity: sha512-0pUaJm7/O5g68tblkxAus+bNsTaq+XXBqNCgOaS+AcezpfelFBvtgRLaSBctYWe71CKchAYDqVFFBowDaQ9G5Q==}
@@ -5037,6 +5078,26 @@ packages:
     resolution: {integrity: sha512-XlaWsIvaRgxXvbTXyOVe6FReYcpVC5Yq4MNPwmIOPijtNH5KwKscn/RKgvu8WLrcKSVbxzNcCZAxVbq9fJ564w==}
     dev: false
 
+  /@bentley/construction-schema/1.0.4:
+    resolution: {integrity: sha512-VuR/K6odSLBXPtUoyX0v4m1l0MLw/pyeX2b1DuMHlnOMS9/Ub9oi6BgMbwOYUslWP8Bxw4HcFoiR8F4aPasmaw==}
+    dev: true
+
+  /@bentley/core-custom-attributes-schema/1.0.3:
+    resolution: {integrity: sha512-FrKkgkuMgc85o8Ag8/5YGh7MnwCD19tgJiAmktjlZo43ZxfsiwE+iu+SJzfLsYCDYb6Z3KcRb5O5l4dA0Dp6uA==}
+    dev: true
+
+  /@bentley/ecdb-map-schema/2.0.1:
+    resolution: {integrity: sha512-0bCFSwZ8y04faGm+QNGnau4ivzupXjbjL0rp4Q9l7JQ5ymzh12iNevaxq9Yv0MvFldJNCgBDWlb7tHvAlo6o5w==}
+    dev: true
+
+  /@bentley/ecdb-schema-policies-schema/1.0.1:
+    resolution: {integrity: sha512-R5edmcpJVKYCf0+8/phDS5Uf0CxZPVj7gc3MEW+uZ8O+Z2O7ezS1HWlYfZ8WdN+SyDUSBf6jVAwLqn0cgqatXw==}
+    dev: true
+
+  /@bentley/formats-schema/1.0.0:
+    resolution: {integrity: sha512-uaKHwBnVGQ7UCROAgOg+h+IFYkBEwShi4yD7AIb2DrdG3dw77MrFJfiALKk1MTvDo6TNjPE5wB6JlMYsNRbWhg==}
+    dev: true
+
   /@bentley/icons-generic-webfont/1.0.34:
     resolution: {integrity: sha512-5zZgs+himE2vjf39CVlDXMHCFAwSfcoORqJBk3Vji8QVCF8AIX4IX2DO6HlsIAM7szxMNqhz1kd07Xfppro6MA==}
     dev: false
@@ -5045,14 +5106,21 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.0.5:
-    resolution: {integrity: sha512-ikgqFknEmPyJePdsZ/XPe3lqGgFG5bUqM9OfgVVz9/U+vM9BU66hBw5Jhv4f4V54bkDbvWlpDgD6vBxviW+7zA==}
+  /@bentley/imodeljs-native/4.0.8:
+    resolution: {integrity: sha512-EeC8ooHXyJfheuuQazT1UVkKMcj5FfCy0lfUkbo7hCr2DklaQlbhQuYk4h/5SK21JUnVOgdmLxezpFmcKGyYKg==}
     requiresBuild: true
     dev: false
 
+  /@bentley/linear-referencing-schema/2.0.3:
+    resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
+    dev: true
+
+  /@bentley/physical-material-schema/1.0.2:
+    resolution: {integrity: sha512-QKebFqgzInISjge3ljUgopsP+3ZCttHMDHast/mxwNvu9oNkFFdfa7RmhkeRrpSQ9TuiDDF8Ax+wRYVdx/7tdA==}
+    dev: true
+
   /@bentley/plant-custom-attributes-schema/1.0.1:
     resolution: {integrity: sha512-RS45hmfj2Tz7HPTkSfxL9J3VWAyKMFyFNkThr4C/aL2dz3dBx5xmFtI8J+ngQncRNjN21jitDRxVV7bj91qNnQ==}
-    dev: false
 
   /@bentley/process-functional-schema/1.0.1:
     resolution: {integrity: sha512-3vGBu2TcLwH5ZONzLPdAA1BH+usowxneSgldbawya6fLEvuhuqyUmrm3eCqhxo1SM9wolF/BFdclRd5Ktb7W9w==}
@@ -5064,7 +5132,6 @@ packages:
 
   /@bentley/quantity-takeoffs-aspects-schema/1.0.2:
     resolution: {integrity: sha512-VN4q2W6hQ7NbEdPmfkD8/dH4xT81lN4PFx5QVUvtvGCdsoNVqy/KHaD3s6hGERnN4Y5nKkVOKjK8dkT1ca+F5Q==}
-    dev: false
 
   /@bentley/react-scripts/5.0.4_m3lhcrciu7aqbgollylw2zkvnm:
     resolution: {integrity: sha512-eRwAHDMYOmV03ZrjxgGxfKFvqwk2k6+bxDg2wW2rK+o+vHn6/r2MB8FFg7sNvpK1eFx3E9Opku6NTaK8GMsFWw==}
@@ -5271,6 +5338,14 @@ packages:
   /@bentley/road-rail-units-schema/1.0.1:
     resolution: {integrity: sha512-7vHunp5SZrxiCErMhibOmbO1DYCx1Fm3pJZ4SYBAJBtEDbmkdI8yrhcNf6PRYHBpTsfbzdWeOWCcG1A4zulY/A==}
     dev: false
+
+  /@bentley/spatial-composition-schema/1.0.1:
+    resolution: {integrity: sha512-ldAGnxs2zsjzCWG2jFtcZ0IMuNvTUM5e9JV38EsFMWbdIjXmZaX+Tx/t2vDEUgOqfCvo4Fb98YKpdclJcnSDrw==}
+    dev: true
+
+  /@bentley/structural-physical-schema/1.0.1:
+    resolution: {integrity: sha512-ND+R4BwoZlOhq0nNgF82v87LhtVW9Oydl6+ExezqPn3G3CdBjoPkTzT7LDVyXX7cOOIQOD3efvwOWBiGh3sShQ==}
+    dev: true
 
   /@bentley/units-schema/1.0.7:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
@@ -10542,7 +10617,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.59.1_2utyh6gct5glvuz6qwradubqqa
       '@typescript-eslint/experimental-utils': 5.59.1_iacogk7kkaymxepzhgcbytyi7q
       eslint: 8.39.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -13085,7 +13160,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -17960,7 +18035,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.21.4
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2
