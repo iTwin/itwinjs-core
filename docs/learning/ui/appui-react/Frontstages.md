@@ -2,11 +2,11 @@
 
 A **Frontstage** is a full-screen configuration designed to enable the user to accomplish a task. There are three types of frontstages:
 
-|Type|Description
-|-----|-----
-|**Primary** | may use all zones and stage panels and the Tool Widget contains the App button that opens the App menu
-|**Nested** | is accessed from a primary frontstage. It may use all zones and panels, but instead of the App button, the Tool Widget contains a Back button to return to the primary frontstage.
-|**Modal** | is accessed from another frontstage or the Backstage. It may contain any content along with a Back button. It does not use zones or stage panels. It is useful for application settings and data management user interfaces.
+| Type        | Description                                                                                                                                                                                                                  |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Primary** | may use all zones and stage panels and the Tool Widget contains the App button that opens the App menu                                                                                                                       |
+| **Nested**  | is accessed from a primary frontstage. It may use all zones and panels, but instead of the App button, the Tool Widget contains a Back button to return to the primary frontstage.                                           |
+| **Modal**   | is accessed from another frontstage or the Backstage. It may contain any content along with a Back button. It does not use zones or stage panels. It is useful for application settings and data management user interfaces. |
 
 ## Frontstages in App UI
 
@@ -382,11 +382,11 @@ Note `contentGroup` can reference a ContentGroup or a ContentGroupProvider See [
 ### Usage
 
 The Stage usage prop is a way to designate the type of tasks that will be performed in the stage and can be used by UiItemsProviders to
-determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($appui-abstract) for a default set of usages.
+determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($appui-react) for a default set of usages.
 
 ## Defining an 'empty' frontstage
 
-It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($appui-abstract) instances. The
+It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($appui-react) instances. The
 
 ```tsx
     const ui2StageProps: StandardFrontstageProps = {

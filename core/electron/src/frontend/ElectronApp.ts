@@ -2,6 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/** @packageDocumentation
+ * @module Renderer
+ */
+
 import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";

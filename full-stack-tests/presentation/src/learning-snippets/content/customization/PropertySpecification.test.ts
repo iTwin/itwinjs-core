@@ -201,25 +201,20 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // note: need to re-create the ruleset with different ID for each verification
-        // due to https://github.com/iTwin/imodel-native/issues/206
-
         // Ensure the property is not displayed when value is not set
-        let contentRuleset = { ...ruleset, id: `${ruleset.id}-no-variable` };
         let content = (await Presentation.presentation.getContent({
           imodel,
-          rulesetOrId: contentRuleset,
+          rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.be.empty;
 
         // Ensure the property is displayed when value is set to `true`
-        contentRuleset = { ...ruleset, id: `${ruleset.id}-truthy-variable` };
-        await Presentation.presentation.vars(contentRuleset.id).setBool("SHOW_LABEL", true);
+        await Presentation.presentation.vars(ruleset.id).setBool("SHOW_LABEL", true);
         content = (await Presentation.presentation.getContent({
           imodel,
-          rulesetOrId: contentRuleset,
+          rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;
@@ -228,11 +223,10 @@ describe("Learning Snippets", () => {
         }]);
 
         // Ensure the property is not displayed when value is set to `false`
-        contentRuleset = { ...ruleset, id: `${ruleset.id}-falsy-variable` };
-        await Presentation.presentation.vars(contentRuleset.id).setBool("SHOW_LABEL", false);
+        await Presentation.presentation.vars(ruleset.id).setBool("SHOW_LABEL", false);
         content = (await Presentation.presentation.getContent({
           imodel,
-          rulesetOrId: contentRuleset,
+          rulesetOrId: ruleset,
           keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
           descriptor: {},
         }))!;

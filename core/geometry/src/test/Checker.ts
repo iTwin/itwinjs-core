@@ -133,7 +133,7 @@ export class Checker {
     return this.announceOK();
   }
   /**
-   * Test if number arrays (either or  both possibly undefined) match.
+   * Test if number arrays (either or both possibly undefined) match.
    */
   public testNumberArray(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, ...params: any[]): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;
@@ -152,7 +152,7 @@ export class Checker {
     return this.announceOK();
   }
   /**
-   * Test if number arrays (either or  both possibly undefined) match.
+   * Test if number arrays (either or both possibly undefined) match.
    */
   public testNumberArrayG(dataA: number[] | undefined, dataB: GrowableFloat64Array | undefined, ...params: any[]): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;
@@ -171,7 +171,7 @@ export class Checker {
     return this.announceOK();
   }
   /**
-   * Test if number arrays (either or  both possibly undefined) match.
+   * Test if number arrays (either or both possibly undefined) match.
    */
   public testNumberArrayGG(dataA: GrowableFloat64Array | undefined, dataB: GrowableFloat64Array | undefined, ...params: any[]): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;

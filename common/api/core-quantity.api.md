@@ -239,7 +239,7 @@ export const formatStringRgx: RegExp;
 // @beta
 export class Formatter {
     static formatQuantity(magnitude: number, spec: FormatterSpec): string;
-    }
+}
 
 // @beta
 export class FormatterSpec {
@@ -380,7 +380,7 @@ export class Parser {
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
     static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
-    }
+}
 
 // @beta
 export class ParserSpec {
@@ -411,7 +411,7 @@ export interface PotentialParseUnit {
 // @beta
 export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
-    convertTo(toUnit: UnitProps, conversion: UnitConversion): Quantity | undefined;
+    convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
@@ -527,7 +527,7 @@ export enum ShowSignOption {
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta
-export interface UnitConversion {
+export interface UnitConversionProps {
     // (undocumented)
     factor: number;
     // (undocumented)
@@ -536,7 +536,7 @@ export interface UnitConversion {
 
 // @beta
 export interface UnitConversionSpec {
-    conversion: UnitConversion;
+    conversion: UnitConversionProps;
     label: string;
     name: string;
     parseLabels?: string[];
@@ -567,14 +567,13 @@ export interface UnitsProvider {
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
-    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }
 
 // @beta
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
-
 
 // (No @packageDocumentation comment for this package)
 

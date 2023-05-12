@@ -32,20 +32,6 @@ export const WorkspaceSetting = {
   Databases: "workspace/databases",
 };
 
-/** Types used to identify cloud accounts for Workspaces.
- *  @beta
- */
-export namespace WorkspaceAccount {
-  /** The name of a WorkspaceAccount in a "cloud/accounts" setting. */
-  export type Name = string;
-
-  /** A member named `accountName` that specifies by an entry in a "cloud/accounts" setting */
-  export interface Alias { accountName: string }
-
-  /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting. */
-  export type Props = CloudSqlite.AccountAccessProps;
-}
-
 /** @beta */
 export namespace WorkspaceContainer {
   /** The name of a WorkspaceContainer in a "cloud/containers" setting. */
@@ -65,18 +51,15 @@ export namespace WorkspaceContainer {
 
   /** Properties that specify a WorkspaceContainer. */
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
-    /** true if the container is public (doesn't require authentication) */
-    isPublic?: boolean;
     /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
     syncOnConnect?: boolean;
   }
 
   /** A function to supply an [AccessToken]($bentley) for a `WorkspaceContainer`.
    * @param props The properties of the WorkspaceContainer necessary to obtain the access token
-   * @param account The properties of the account for the container
    * @returns a Promise that resolves to the AccessToken for the container.
    */
-  export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
+  export type TokenFunc = (props: Props) => Promise<AccessToken>;
 }
 
 /** @beta */
@@ -218,8 +201,9 @@ export interface Workspace {
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
-  /** The CloudCache for cloud-based WorkspaceContainers */
-  readonly cloudCache?: CloudSqlite.CloudCache;
+
+  /** Get The CloudCache for cloud-based WorkspaceContainers */
+  getCloudCache(): CloudSqlite.CloudCache;
 
   /** search for a previously opened container.
    * @param containerId the id of the container
@@ -232,13 +216,10 @@ export interface Workspace {
    * Otherwise it is created.
    * @param account If present, the properties for this container if it is to be opened from the cloud. If not present, the container is just a local directory.
   */
-  getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-
-  /** get the properties for the supplied account name by searching for an entry with that name in a `cloud/accounts` setting. */
-  resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
+  getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
 
   /** get the properties for the supplied container name by searching for an entry with that name in a `cloud/containers` setting. */
-  resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props & WorkspaceAccount.Alias;
+  resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;
 
   /** get the properties for the supplied workspace database name by searching for an entry with that name in a `workspace/databases` setting. */
   resolveDatabase(databaseAlias: WorkspaceDb.Name): WorkspaceDb.Props & WorkspaceContainer.Alias;
@@ -247,7 +228,7 @@ export interface Workspace {
    * Get an opened [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
    * If `cloudProps` are supplied, a CloudContainer will be used to open the WorkspaceDb.
    */
-  getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
+  getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
 
   /** Get an opened [[WorkspaceDb]] from a WorkspaceDb alias.
    * @param dbAlias the database alias, resolved via [[resolveDatabase]].
@@ -301,26 +282,9 @@ export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-  private static _sharedCloudCache?: CloudSqlite.CloudCache;
   private _cloudCache?: CloudSqlite.CloudCache;
-  public get cloudCache(): CloudSqlite.CloudCache {
-    if (undefined === this._cloudCache)
-      this._cloudCache = ITwinWorkspace.getSharedCloudCache();
-    return this._cloudCache;
-  }
-  private static getSharedCloudCache(): CloudSqlite.CloudCache {
-    if (undefined === this._sharedCloudCache) {
-      const rootDir = join(IModelHost.cacheDir, "Workspace", "cloud");
-      IModelJsFs.recursiveMkDirSync(rootDir);
-      this._sharedCloudCache = CloudSqlite.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
-    }
-    return this._sharedCloudCache;
-  }
-  public static finalize() {
-    if (this._sharedCloudCache) {
-      this._sharedCloudCache.destroy();
-      this._sharedCloudCache = undefined;
-    }
+  public getCloudCache(): CloudSqlite.CloudCache {
+    return this._cloudCache ??= CloudSqlite.CloudCaches.getCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
@@ -345,23 +309,22 @@ export class ITwinWorkspace implements Workspace {
     return this._containers.get(containerId);
   }
 
-  public getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer {
-    return this.findContainer(props.containerId) ?? new ITwinWorkspaceContainer(this, props, account);
+  public getContainer(props: WorkspaceContainer.Props): WorkspaceContainer {
+    return this.findContainer(props.containerId) ?? new ITwinWorkspaceContainer(this, props);
   }
 
-  public getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb {
-    return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
+  public getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb {
+    return this.getContainer(containerProps).getWorkspaceDb(dbProps);
   }
 
   public async getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
-    const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
     let container: WorkspaceContainer | undefined = this.findContainer(containerProps.containerId);
     if (undefined === container) {
-      if (tokenFunc && account)
-        containerProps.accessToken = await tokenFunc(containerProps, account);
-      container = this.getContainer(containerProps, account);
+      if (tokenFunc)
+        containerProps.accessToken = await tokenFunc(containerProps);
+      container = this.getContainer(containerProps);
     }
     return container?.getWorkspaceDb(dbProps);
   }
@@ -381,24 +344,8 @@ export class ITwinWorkspace implements Workspace {
     this._containers.clear();
   }
 
-  public resolveAccount(accountName: string): WorkspaceAccount.Props {
-    const resolved = this.settings.resolveSetting<WorkspaceAccount.Props>(WorkspaceSetting.Accounts, (val) => {
-      if (Array.isArray(val)) {
-        for (const entry of val) {
-          if (typeof entry === "object" && entry.name === accountName)
-            return SettingsSchemas.validateArrayObject(entry, WorkspaceSetting.Accounts, accountName);
-        }
-      }
-      return undefined; // keep going through all settings dictionaries
-    });
-    if (resolved === undefined)
-      throw new Error(`no setting "${WorkspaceSetting.Accounts}" entry for "${accountName}"`);
-
-    return resolved;
-  }
-
-  public resolveContainer(containerName: string): WorkspaceContainer.Props & WorkspaceAccount.Alias {
-    const resolved = this.settings.resolveSetting<WorkspaceContainer.Props & WorkspaceAccount.Alias>(WorkspaceSetting.Containers, (val) => {
+  public resolveContainer(containerName: string): WorkspaceContainer.Props {
+    const resolved = this.settings.resolveSetting<WorkspaceContainer.Props>(WorkspaceSetting.Containers, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === containerName)
@@ -462,13 +409,13 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.noLeadingOrTrailingSpaces(dbName, "dbName");
   }
 
-  public constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props) {
+  public constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props) {
     ITwinWorkspaceContainer.validateContainerId(props.containerId);
     this.workspace = workspace;
     this.id = props.containerId;
 
-    if (account?.accessName && account.storageType)
-      this.cloudContainer = CloudSqlite.createCloudContainer({ accessToken: "", ...props, ...account });
+    if (props.baseUri !== "")
+      this.cloudContainer = CloudSqlite.createCloudContainer({ accessToken: "", ...props });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -477,7 +424,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return;
 
-    cloudContainer.connect(this.workspace.cloudCache);
+    cloudContainer.connect(this.workspace.getCloudCache());
     if (false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();

@@ -27,6 +27,7 @@
     },
     "CheckBoxRule": {
       "additionalProperties": false,
+      "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
       "description": "CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.",
       "properties": {
         "condition": {
@@ -223,10 +224,6 @@
           ],
           "description": "Defines a set of multi schema classes that prevents specified\nECClasses and subclasses from being selected by `classes` attribute."
         },
-        "handleInstancesPolymorphically": {
-          "description": "Tells whether selecting instances from ECClasses specified in `classes` and `excludedClasses`\nattributes should be polymorphic or not.",
-          "type": "boolean"
-        },
         "handlePropertiesPolymorphically": {
           "description": "Specifies whether properties of derived `classes` should be included in the content.",
           "type": "boolean"
@@ -272,6 +269,7 @@
           "type": "array"
         },
         "showImages": {
+          "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
           "type": "boolean"
         },
@@ -293,6 +291,10 @@
       "additionalProperties": false,
       "description": "Content modifiers are used to modify how instances of specified ECClasses are displayed in content which is\nproduced using content rules. They do not produce any content\nby themselves.",
       "properties": {
+        "applyOnNestedContent": {
+          "description": "Specifies whether `calculatedProperties` and\n`relatedProperties` specifications should also be applied on\nnested content.",
+          "type": "boolean"
+        },
         "calculatedProperties": {
           "description": "Specifications of calculated properties whose values are\ngenerated using provided ECExpressions.",
           "items": {
@@ -412,6 +414,7 @@
           "type": "array"
         },
         "showImages": {
+          "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
           "type": "boolean"
         },
@@ -936,6 +939,7 @@
     },
     "ImageIdOverride": {
       "additionalProperties": false,
+      "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
       "description": "ImageId override rules allow setting an image ID to specific types of ECInstances.",
       "properties": {
         "condition": {
@@ -1248,6 +1252,7 @@
       "description": "Returns nodes for instances of specific ECClasses.",
       "properties": {
         "arePolymorphic": {
+          "deprecated": "in 3.x. The attribute was replaced by `arePolymorphic` attribute specified individually for each class definition\nunder `classes` and `excludedClasses` attributes. At the moment, to keep backwards compatibility, this attribute acts\nas a fallback value in case the flag is not specified individually for a class definition.",
           "description": "Tells whether selecting instances from ECClasses specified in `classes` and `excludedClasses`\nattributes should be polymorphic or not.",
           "type": "boolean"
         },
@@ -1354,6 +1359,7 @@
     },
     "LabelOverride": {
       "additionalProperties": false,
+      "deprecated": "in 3.x. Use `InstanceLabelOverride` rule instead.",
       "description": "Label override rules provide advanced ways to override instance labels and descriptions in\nexchange of some performance penalty.",
       "properties": {
         "condition": {
@@ -1713,6 +1719,7 @@
           "type": "boolean"
         },
         "groupingValue": {
+          "deprecated": "in 3.x. Display value should always be used for grouping.",
           "description": "Specifies whether instances should be grouped using property's display or raw value.",
           "enum": [
             "DisplayLabel",
@@ -1738,6 +1745,7 @@
           "type": "array"
         },
         "sortingValue": {
+          "deprecated": "in 3.x. Property grouping nodes should always be sorted by display label.",
           "description": "Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result\nis the same, unless a label override rule is used to change node's display label.",
           "enum": [
             "DisplayLabel",
@@ -2469,6 +2477,7 @@
           "type": "array"
         },
         "showImages": {
+          "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
           "type": "boolean"
         },
@@ -2535,6 +2544,7 @@
     },
     "StyleOverride": {
       "additionalProperties": false,
+      "deprecated": "in 3.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
       "description": "Style override rules allow customizing display style of specific types of ECInstances.",
       "properties": {
         "backColor": {

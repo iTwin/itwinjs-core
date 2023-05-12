@@ -46,5 +46,5 @@ FrontstageManager.openModalFrontstage(modalFrontstage);
 
 - [ModalFrontstage]($appui-react)
 - [ModalFrontstageInfo]($appui-react)
-- [FrontstageManager]($appui-react)
+- [FrameworkFrontstages]($appui-react)
 - [Frontstage]($appui-react:Frontstage)

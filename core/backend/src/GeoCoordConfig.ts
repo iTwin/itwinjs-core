@@ -10,7 +10,7 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
-import { WorkspaceAccount, WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
+import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
 
@@ -32,14 +32,12 @@ export class GeoCoordConfig {
     if (IModelHost.appWorkspace.settings.getBoolean("gcs/disableWorkspaces", false))
       return;
 
-    let account: CloudSqlite.AccountAccessProps | undefined;
-    let containerProps: WorkspaceContainer.Props & WorkspaceAccount.Alias | undefined;
+    let containerProps: WorkspaceContainer.Props | undefined;
     try {
       const ws = IModelHost.appWorkspace;
       const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
       containerProps = ws.resolveContainer(dbProps.containerName);
-      account = ws.resolveAccount(containerProps.accountName);
-      const container = ws.getContainer(containerProps, account);
+      const container = ws.getContainer(containerProps);
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
         Logger.logError("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
@@ -57,15 +55,15 @@ export class GeoCoordConfig {
       if (IModelHost.appWorkspace.settings.getBoolean("gcs/noLocalData", false))
         IModelHost.platform.enableLocalGcsFiles(false);
 
-      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${account.accessName}/${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${containerProps.baseUri}/${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
         this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
 
     } catch (e: any) {
       let msg = `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`;
-      if (account && containerProps)
-        msg += `,container=${account.accessName}/${containerProps.containerId}, storage=${account.storageType}, public=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
+      if (containerProps)
+        msg += `,container=${containerProps.baseUri}/${containerProps.containerId}, storage=${containerProps.storageType}, public=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
       Logger.logError(loggerCat, msg);
     }
   }

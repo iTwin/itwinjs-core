@@ -1,11 +1,11 @@
 # UiItemsProvider
 
-The [UiItemsProvider]($appui-abstract:UiItemsProvider) classes and interfaces are used for specifying UI items to be provided at runtime.
+The [UiProvider]($appui-react:UiProvider) classes and interfaces are used for specifying UI items to be provided at runtime.
 Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage. Widgets may also be provided at runtime.
 
 ## UiItemsProvider Interface
 
-Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface. The class [BaseUiItemsProvider]($appui-abstract) is a base class that implements the UiItemsProvider interface and allows the user to determine if the provider is to be used within a specific stage.
+Below is an excerpt from the [UiItemsProvider]($appui-react) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface. The class [BaseUiItemsProvider]($appui-react) is a base class that implements the UiItemsProvider interface and allows the user to determine if the provider is to be used within a specific stage.
 
 ```ts
 export interface UiItemsProvider {
@@ -103,7 +103,7 @@ The [StandardContentToolsProvider]($appui-react) class serves as a good example 
 
 ## UiItemsManager Class
 
-The [UiItemsManager]($appui-abstract) class has a few responsibilities,
+The [UiItemsManager]($appui-react) class has a few responsibilities,
 
 1. Used to register UiItemsProviders
 2. Informs listeners that the list of registered UiItemsProviders has changed when a provider is registered or unregistered.
@@ -160,4 +160,4 @@ class ExampleUiItemsApplication implements UiItemsApplication {
 
 ## API Reference
 
-- [UiItemsProvider]($appui-abstract:UiItemsProvider)
+- [UiProvider]($appui-react:UiProvider)

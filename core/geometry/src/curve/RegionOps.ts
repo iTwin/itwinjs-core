@@ -20,6 +20,7 @@ import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
+import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
 import { ChainCollectorContext } from "./ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "./CurveChain";
@@ -27,21 +28,21 @@ import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, Cur
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
+import { GeometryQuery } from "./GeometryQuery";
+import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
 import { CurveChainWireOffsetContext, JointOptions, OffsetOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
+import { ParityRegion } from "./ParityRegion";
 import { Path } from "./Path";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
-import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
-import { GeometryQuery } from "./GeometryQuery";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { UnionRegion } from "./UnionRegion";
-import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { ParityRegion } from "./ParityRegion";
+
 /**
  * Possible return types from [[splitToPathsBetweenBreaks]], [[collectInsideAndOutsideOffsets]] and [[collectChains]].
  * @public
@@ -260,7 +261,7 @@ export class RegionOps {
    * @param loopsB second set of loops
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
    * @param mergeTolerance absolute distance tolerance for merging loops
-   * @returns a region resulting from merging input loops and the boolean operation. May contain bridge edges connecting interior loops to exterior loops.
+   * @returns a region resulting from merging input loops and the boolean operation. May contain bridge edges added to connect interior loops to exterior loops.
    */
   public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance: number = Geometry.smallMetricDistance): AnyRegion | undefined {
     const result = UnionRegion.create();
@@ -268,7 +269,7 @@ export class RegionOps {
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
     const range = context.groupA.range().union(context.groupB.range());
-    const areaTol = this.computeXYAreaTolerance(range);
+    const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
       // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
       if (face.countEdgesAroundFace() < 2)
@@ -591,23 +592,24 @@ export class RegionOps {
   }
   /**
    * Find all areas bounded by the unstructured, possibly intersecting curves.
-   * * This method performs no merging of nearly coincident edges and vertices, which can lead to unexpected results
-   * given sufficiently imprecise input. Input geometry consisting of regions can be merged for better results: call
-   * [[regionBooleanXY]](regions, undefined, RegionBinaryOpType.Union) and pass the merged region into [[constructAllXYRegionLoops]].
+   * * A common use case of this method is to assemble the bounding "exterior" loop (or loops) containing the input curves.
+   * * This method does not add bridge edges to connect outer loops to inner loops. Each disconnected loop, regardless
+   * of its containment, is returned as its own SignedLoops object. Pre-process with [[regionBooleanXY]] to add bridge edges so that
+   * [[constructAllXYRegionLoops]] will return outer and inner loops in the same SignedLoops object.
    * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve primitives.
+   * @param tolerance optional distance tolerance for coincidence
    * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have positive area and counterclockwise orientation.
    *    * `negativeAreaLoops` contains (probably just one) "exterior" loop which is ordered clockwise.
    *    * `slivers` contains sliver loops that have zero area, such as appear between coincident curves.
    *    * `edges` contains a [[LoopCurveLoopCurve]] object for each component edge, collecting both loops adjacent to the edge and a constituent curve in each.
    */
-  public static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[] {
-    const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
-    const primitivesB = this.expandLineStrings(primitivesA);
-    const range = this.curveArrayRange(primitivesB);
-    const areaTol = this.computeXYAreaTolerance(range);
-    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitivesB, intersections);
+  public static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance): SignedLoops[] {
+    const primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
+    const range = this.curveArrayRange(primitives);
+    const areaTol = this.computeXYAreaTolerance(range, tolerance);
+    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
     return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
   }
 

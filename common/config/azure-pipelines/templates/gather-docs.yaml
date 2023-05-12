@@ -17,6 +17,12 @@ parameters:
   - name: useCurrentPresentationDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentTransformerDocsArtifact
+    type: boolean
+    default: false
+  - name: useCurrentAuthClientsDocsArtifact
+    type: boolean
+    default: false
 
 steps:
   # build script exists outside of any project so manually install fs-extra
@@ -29,78 +35,63 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   # Download AppUI Docs artifact
-  - ${{ if eq(parameters.useCurrentAppUIDocsArtifact, true) }}:
-    - download: current
-      artifact: AppUI Docs
-      displayName: Download AppUI Docs Artifact
-
-  - ${{ else }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: Download AppUI Docs Artifact
-      inputs:
-        buildType: specific
-        project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-        pipeline: 8594 # iTwin AppUI/AppUI Docs CI
-        buildVersionToDownload: latestFromBranch
-        branchName: refs/heads/master
-        artifactName: AppUI Docs
-        targetPath: $(Pipeline.Workspace)/AppUI Docs
-
-  - task: CopyFiles@2
-    displayName: Copy AppUI Docs to staging
-    inputs:
-      SourceFolder: $(Pipeline.Workspace)/AppUI Docs
-      TargetFolder: ${{ parameters.stagingDir }}
-      OverWrite: true
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
+      artifactName: AppUI Docs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # Download BIS Docs artifact
-  - ${{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
-    - download: current
-      artifact: Bis Docs
-      displayName: Download Bis Docs Artifact
-
-  - ${{ else }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: Download Bis Docs Artifact
-      inputs:
-        buildType: specific
-        project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-        pipeline: 6075 # BIS/Generate-Schema-Markdown-(GitHub)
-        buildVersionToDownload: latestFromBranch
-        branchName: refs/heads/master
-        artifactName: Bis Docs
-        targetPath: $(Pipeline.Workspace)/Bis Docs
-
-  - task: CopyFiles@2
-    displayName: Copy Bis Docs to staging
-    inputs:
-      SourceFolder: $(Pipeline.Workspace)/Bis Docs
-      TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 6075 # BIS/Generate-Schema-Markdown-(GitHub)
+      artifactName: Bis Docs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
+      stagingSteps:
+        - task: CopyFiles@2
+          displayName: Copy Bis Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/Bis Docs
+            TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # Download Presentation Docs artifact
-  - ${{ if eq(parameters.useCurrentPresentationDocsArtifact, true) }}:
-    - download: current
-      artifact: Presentation Docs
-      displayName: Download Presentation Docs Artifact
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 8602 # iTwin Presentation/iTwin Presentation Docs
+      artifactName: Presentation Docs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
-  - ${{ else }}:
-    - task: DownloadPipelineArtifact@2
-      displayName: Download Presentation Docs Artifact
-      inputs:
-        buildType: specific
-        project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-        pipeline: 8602 # iTwin Presentation/iTwin Presentation Docs
-        buildVersionToDownload: latestFromBranch
-        branchName: refs/heads/master
-        artifactName: Presentation Docs
-        targetPath: $(Pipeline.Workspace)/Presentation Docs
+  # Download Transformer Docs artifact
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
+      artifactName: Transformer Docs
+      defaultBranch: refs/heads/main
+      useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
-  - task: CopyFiles@2
-    displayName: Copy Presentation Docs to staging
-    inputs:
-      SourceFolder: $(Pipeline.Workspace)/Presentation Docs
-      TargetFolder: ${{ parameters.stagingDir }}
-      OverWrite: true
+  # Download Auth Clients artifact
+  - template: ./copy-docs-artifact.yaml
+    parameters:
+      workingDir: ${{ parameters.workingDir }}
+      stagingDir: ${{ parameters.stagingDir }}
+      pipelineId: 6189 # iTwin.js/clients/iTwin.auth-clients.publish build
+      artifactName: iTwin-Auth-Clients Docs
+      buildTag: hasDocs
+      useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+      stagingSteps:
+        - task: CopyFiles@2
+          displayName: Copy Auth Clients Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/iTwin-Auth-Clients Docs
+            TargetFolder: ${{ parameters.stagingDir }}/reference/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2
