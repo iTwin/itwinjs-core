@@ -2,6 +2,7 @@
 publish: false
 ---
 # NextVersion
+<<<<<<< HEAD
 
 Table of contents:
 
@@ -356,3 +357,5 @@ const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
     - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
 - Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string
 - Added `Schema.startLoadingFromJson` to partially load a schema and return as soon as the `SchemaInfo` could be loaded.
+=======
+>>>>>>> 5677996b2e (Remove APIs that were deprecated and moved to AppUI repo (#5503))

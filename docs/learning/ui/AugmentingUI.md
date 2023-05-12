@@ -32,13 +32,13 @@ A recommended technique is for a package to have an initialize() method that reg
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
-A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When App UI is constructing the stage, item definitions are requested from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. An application's stageId names may not be useful unless the stage names are already known to the UiItemsProvider. The stageUsage value is also provided. This string is typically set to one of the standard [StageUsage]($appui-abstract) enum values. Each provider also receives the stage's applicationData. This allows the frontstage to specify a list of features that it is intended to support.
+A [UiItemsProvider]($appui-react) is used to provide items to insert into the UI of an existing stage. When App UI is constructing the stage, item definitions are requested from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. An application's stageId names may not be useful unless the stage names are already known to the UiItemsProvider. The stageUsage value is also provided. This string is typically set to one of the standard [StageUsage]($appui-react) enum values. Each provider also receives the stage's applicationData. This allows the frontstage to specify a list of features that it is intended to support.
 
 One important note. When specifying an item via a UiItemsProvider please ensure that its Id is uniquely specified across all applications that may use items from the provider. One way to do this is to prefix the id with a string that represents the package. A common pattern is `package-name:item-id`.
 
 ### Adding a ToolButton
 
-A UiItemsProvider can return an array of [CommonToolbarItem]($appui-abstract) that are used when populating the four different toolbars supported by App UI. The [ToolbarUsage]($appui-abstract) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-abstract) specifies if the toolbar is horizontal or vertical. The item priority determines the order of the tool button items within a group. A group priority can optionally be defined for the tools. If the group priority is defined, tools are placed into groups with a separator displayed when the group priority changes. The default value for group priority is zero.
+A UiItemsProvider can return an array of [ToolbarItem]($appui-react) that are used when populating the four different toolbars supported by App UI. The [ToolbarUsage]($appui-react) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-react) specifies if the toolbar is horizontal or vertical. The item priority determines the order of the tool button items within a group. A group priority can optionally be defined for the tools. If the group priority is defined, tools are placed into groups with a separator displayed when the group priority changes. The default value for group priority is zero.
 
 Below is the UiItemsProvider function called when appui-react is populating toolbars.
 
@@ -49,7 +49,7 @@ public provideToolbarButtonItems(stageId: string, stageUsage: string,
 
 ### Status Bar Item
 
-A UiItemsProvider can return an array of [CommonStatusBarItem]($appui-abstract) to insert into the StatusBar. The item's definition includes the StatusBar section to be placed in and a priority defining its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
+A UiItemsProvider can return an array of [StatusBarItem]($appui-react) to insert into the StatusBar. The item's definition includes the StatusBar section to be placed in and a priority defining its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
 
 ```ts
 public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[]
@@ -57,7 +57,7 @@ public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusB
 
 ### Widget Item
 
-The UiItemsProvider function called when appui-react is populating StagePanels is detailed below. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
+The UiItemsProvider function called when appui-react is populating StagePanels is detailed below. The [StagePanelLocation]($appui-react) will be the default location for the widget. The [StagePanelSection]($appui-react) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
 
 ```ts
     provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
@@ -121,7 +121,7 @@ One last thing to point out in the above example. We specified default size for 
 
 ## UiItemProviderOverrides
 
-When registering a [UiItemsProvider]($appui-abstract) with the [UiItemsManager]($appui-abstract) it is possible to pass an additional argument to limit when the provider is allowed to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) defines the parameters that can be used to limit when the provider is called to provide its items.
+When registering a [UiItemsProvider]($appui-react) with the [UiItemsManager]($appui-react) it is possible to pass an additional argument to limit when the provider is allowed to provide its items. The interface [UiItemsProviderOverrides]($appui-react) defines the parameters that can be used to limit when the provider is called to provide its items.
 
 In the example registration below the `commonToolSetProvider` is limited to be called to when the active stage has a StageUsage: `StageUsage.General`, `StageUsage.Edit`, or `StageUsage.ViewOnly`. Remember the StageUsage is defined by the FrontStageProvider that has been registered.  Since we want the same provider to provide a different set of tools to different stages we assign an override providerId for this instance of the provider. This is needed since the UiItemsManager does not allow providers with duplicate Ids. The `redlineToolSetProvider` is then registered to show only a subset of tools when the active stage has a StageUsage of `StageUsage.Redline`.
 
