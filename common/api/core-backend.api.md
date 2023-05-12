@@ -698,6 +698,11 @@ export class ChannelAdmin implements ChannelControl {
         description?: string;
     }): Id64String;
     // (undocumented)
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+    }): void;
+    // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
     static readonly sharedChannel = "shared";
     // (undocumented)
@@ -715,6 +720,10 @@ export interface ChannelControl {
         parentSubjectId?: Id64String;
         description?: string;
     }): Id64String;
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+    }): void;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
