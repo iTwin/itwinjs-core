@@ -6,19 +6,13 @@
  * @module RpcInterface
  */
 
-<<<<<<< HEAD
-import type { TransferConfig } from "@itwin/object-storage-core";
+import type { Metadata, TransferConfig } from "@itwin/object-storage-core";
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
   IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileContentIdentifier,
   TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@itwin/core-common";
-=======
-import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
-import { ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcManager, RpcPendingResponse, TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo } from "@itwin/core-common";
-import type { Metadata, TransferConfig } from "@itwin/object-storage-core";
->>>>>>> e5a8845aa2 (Log metadata when uploading tiles (#5469))
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
