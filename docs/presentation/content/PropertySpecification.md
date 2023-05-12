@@ -70,8 +70,8 @@ This is an attribute that allows overriding the property label. May be [localize
 The attribute allows moving the property into a different category. There are several options:
 
 - Reference a category by ID used in [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) in the current context.
-  The current context contains categories specified in the same [content specification](./index.md#specifications) or the same
-  [content modifier](./contentModifier.md), depending on where the property override is used.
+  The current context contains categories specified in the same [content specification](./index.md#specifications) or
+  [content modifiers](./contentModifier.md) that are applied on the same content class as this rule.
 
 - Move to `DefaultParent` category. This is useful when using with [related properties](./RelatedPropertiesSpecification.md), to
   avoid putting them inside a special related class category and instead show them next to properties of the source class.

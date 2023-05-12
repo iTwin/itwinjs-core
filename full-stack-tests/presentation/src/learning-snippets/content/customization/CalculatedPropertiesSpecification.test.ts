@@ -149,7 +149,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               specType: "SelectedNodeInstances",
               calculatedProperties: [{
-                label: "Calculated property",
+                label: "My Calculated property",
                 value: "123",
                 renderer: {
                   rendererName: "my-renderer",
@@ -170,7 +170,7 @@ describe("Learning Snippets", () => {
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.containSubset([{
-          label: "Calculated property",
+          label: "My Calculated property",
           renderer: {
             name: "my-renderer",
           },
@@ -178,7 +178,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
       });
 
-      it.only("uses `editor` attribute", async () => {
+      it("uses `editor` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally have a calculated "My Calculated Property" property with a custom "my-editor" editor.
@@ -189,7 +189,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               specType: "SelectedNodeInstances",
               calculatedProperties: [{
-                label: "Calculated property",
+                label: "My Calculated property",
                 value: "123",
                 editor: {
                   editorName: "my-editor",
@@ -210,7 +210,7 @@ describe("Learning Snippets", () => {
           descriptor: {},
         }))!;
         expect(content.descriptor.fields).to.containSubset([{
-          label: "Calculated property",
+          label: "My Calculated property",
           editor: {
             name: "my-editor",
           },
