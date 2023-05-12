@@ -7,7 +7,7 @@
  */
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
-import { ColorDef, ComputeNodeId, PackedFeatureTable } from "@itwin/core-common";
+import { ColorDef, RenderFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
 } from "./VertexTable";
@@ -279,22 +279,24 @@ class Node {
 }
 
 interface VertexTableSplitArgs extends VertexTableWithIndices {
-  featureTable: PackedFeatureTable;
+  featureTable: RenderFeatureTable;
   atlasOffset?: number;
 }
 
+export type ComputeAnimationNodeId = (featureIndex: number) => number;
+
 class VertexTableSplitter {
   private readonly _input: VertexTableSplitArgs;
-  private readonly _computeNodeId: ComputeNodeId;
+  private readonly _computeNodeId: ComputeAnimationNodeId;
   private readonly _nodes = new Map<number, Node>();
 
-  private constructor(input: VertexTableSplitArgs, computeNodeId: ComputeNodeId) {
+  private constructor(input: VertexTableSplitArgs, computeNodeId: ComputeAnimationNodeId) {
     this._input = input;
     this._computeNodeId = computeNodeId;
   }
 
   /** Split the source into one or more output nodes, returning a mapping of integer node Id to node. */
-  public static split(source: VertexTableSplitArgs, computeNodeId: ComputeNodeId): Map<number, Node> {
+  public static split(source: VertexTableSplitArgs, computeNodeId: ComputeAnimationNodeId): Map<number, Node> {
     const splitter = new VertexTableSplitter(source, computeNodeId);
     splitter.split();
     return splitter._nodes;
@@ -312,7 +314,6 @@ class VertexTableSplitter {
     const vertex = new Uint32Array(vertSize);
     const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.numVertices * vertSize);
 
-    const elemIdPair = { lower: 0, upper: 0 };
     for (const index of this._input.indices) {
       // Extract the data for this vertex without allocating new typed arrays.
       const vertexOffset = index * vertSize;
@@ -323,8 +324,7 @@ class VertexTableSplitter {
       const featureIndex = vertex[2] & 0x00ffffff;
       if (curState.featureIndex !== featureIndex) {
         curState.featureIndex = featureIndex;
-        this._input.featureTable.getElementIdPair(featureIndex, elemIdPair);
-        const nodeId = this._computeNodeId(elemIdPair, featureIndex);
+        const nodeId = this._computeNodeId(featureIndex);
         let node = this._nodes.get(nodeId);
         if (undefined === node)
           this._nodes.set(nodeId, node = new Node(this._input.vertices, this._input.atlasOffset));
@@ -339,9 +339,9 @@ class VertexTableSplitter {
 }
 
 export interface SplitVertexTableArgs {
-  featureTable: PackedFeatureTable;
+  featureTable: RenderFeatureTable;
   maxDimension: number;
-  computeNodeId: ComputeNodeId;
+  computeNodeId: ComputeAnimationNodeId;
 }
 
 export interface SplitPointStringArgs extends SplitVertexTableArgs {

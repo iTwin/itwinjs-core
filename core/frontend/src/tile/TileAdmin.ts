@@ -321,8 +321,9 @@ export class TileAdmin {
     // start dynamically loading default implementation and save the promise to avoid duplicate instances
     this._tileStoragePromise = (async () => {
       await import("reflect-metadata");
+      const objectStorage = await import(/* webpackChunkName: "object-storage-azure" */ "@itwin/object-storage-azure/lib/frontend");
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
+      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = objectStorage.default ?? objectStorage;
       const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
       this._tileStorage = new TileStorage(azureStorage);
       return this._tileStorage;

@@ -39,7 +39,7 @@ describe("WorkspaceFile", () => {
   it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((containerId) => {
-        expect(() => new ITwinWorkspaceContainer(workspace, { containerId }), containerId).to.throw("containerId");
+        expect(() => new ITwinWorkspaceContainer(workspace, { containerId, baseUri: "", storageType: "azure" }), containerId).to.throw("containerId");
       });
     };
 
@@ -62,11 +62,11 @@ describe("WorkspaceFile", () => {
       "-leading-dash",
       "trailing-dash-"]);
 
-    new ITwinWorkspaceContainer(workspace, { containerId: Guid.createValue() }); // guids should be valid
+    new ITwinWorkspaceContainer(workspace, { containerId: Guid.createValue(), baseUri: "", storageType: "azure" }); // guids should be valid
   });
 
   it("WorkspaceDbNames", () => {
-    const container = new ITwinWorkspaceContainer(workspace, { containerId: "test" });
+    const container = new ITwinWorkspaceContainer(workspace, { containerId: "test", baseUri: "", storageType: "azure" });
     const expectBadName = (names: string[]) => {
       names.forEach((dbName) => {
         expect(() => new ITwinWorkspaceDb({ dbName }, container)).to.throw("dbName");
@@ -97,7 +97,7 @@ describe("WorkspaceFile", () => {
   });
 
   it("create new WorkspaceDb", async () => {
-    const wsFile = makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1" });
+    const wsFile = makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1", baseUri: "", storageType: "azure" });
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
     let blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
@@ -148,17 +148,17 @@ describe("WorkspaceFile", () => {
 
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
+    const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultDb.close();
 
     const settings = workspace.settings;
-    const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default" });
+    const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default", baseUri: "", storageType: "azure" });
     workspace.loadSettingsDictionary("default-settings", wsDb, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts" });
+    const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
@@ -180,10 +180,6 @@ describe("WorkspaceFile", () => {
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
     const gcsDb = workspace.resolveDatabase("gcs/entire-world");
     const gcsContainer = workspace.resolveContainer(gcsDb.containerName);
-    const gcsAccount = workspace.resolveAccount(gcsContainer.accountName);
-
-    expect(gcsAccount.accessName).equals("devstoreaccount1");
-    expect(gcsAccount.storageType).equals("azure?emulator=127.0.0.1:10000&sas=1");
     expect(gcsContainer.containerId).equals("gcs");
     expect(gcsDb.dbName).equals("entireEarth");
     expect(gcsDb.version).equals("^1");

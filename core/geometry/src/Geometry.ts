@@ -253,6 +253,8 @@ export class Geometry {
   public static readonly smallAngleSeconds = 2e-7;
   /** Numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
+  /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
+  public static readonly smallFloatingPoint = 1.0e-15;
   /** Radians value for full circle 2PI radians minus `smallAngleRadians`. */
   public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - Geometry.smallAngleRadians;
   /**
@@ -985,16 +987,19 @@ export class Geometry {
     if (a2b2 > 0.0) {
       const a2b2r = 1.0 / a2b2; // 1/(a^2+b^2)
       const d2a2b2 = d2 * a2b2r; // d^2/(a^2+b^2)
-      const criteria = 1.0 - d2a2b2; // 1 - d^2/(a^2+b^2); the criteria to specify how many solutions we got
-      if (criteria < -Geometry.smallMetricDistanceSquared) // nSolution = 0
+      const criterion = 1.0 - d2a2b2; // 1 - d^2/(a^2+b^2);
+      if (criterion < -Geometry.smallMetricDistanceSquared) // nSolution = 0
         return result;
       const da2b2 = -constCoff * a2b2r; // -d/(a^2+b^2)
+      // (c0,s0) is the closest approach of the line to the circle center (origin)
       const c0 = da2b2 * cosCoff; // -ad/(a^2+b^2)
       const s0 = da2b2 * sinCoff; // -bd/(a^2+b^2)
-      if (criteria <= 0.0) { // nSolution = 1 (observed criteria = -2.22e-16 in rotated system)
+      if (criterion <= 0.0) { // nSolution = 1
+        // We observed criterion = -2.22e-16 in a rotated tangent system, therefore for negative criteria near
+        // zero, return the near-tangency; for tiny positive criteria, fall through to return both solutions.
         result = [Vector2d.create(c0, s0)];
-      } else if (criteria > 0.0) { // nSolution = 2
-        const s = Math.sqrt(criteria * a2b2r); // sqrt(a^2+b^2-d^2)) / (a^2+b^2)
+      } else { // nSolution = 2
+        const s = Math.sqrt(criterion * a2b2r); // sqrt(a^2+b^2-d^2)) / (a^2+b^2)
         result = [
           Vector2d.create(c0 - s * sinCoff, s0 + s * cosCoff),
           Vector2d.create(c0 + s * sinCoff, s0 - s * cosCoff),

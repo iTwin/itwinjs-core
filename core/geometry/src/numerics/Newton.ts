@@ -284,7 +284,12 @@ export class SimpleNewton {
    *    normally moves to full machine precision.
    * * This is an open-loop newton -- it just runs, and returns undefined if anything bad happens.
    */
-  public static runNewton1D(x: number, func: (x: number) => number | undefined, derivative: (x: number) => number | undefined, absoluteTolerance: number = 1.0e-15): number | undefined {
+  public static runNewton1D(
+    x: number,
+    func: (x: number) => number | undefined,
+    derivative: (x: number) => number | undefined,
+    absoluteTolerance: number = Geometry.smallFloatingPoint
+  ): number | undefined {
     let numConverged = 0;
     let tolerance: number;
     const relTol = 1.0e-11;

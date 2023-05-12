@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+
 import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";

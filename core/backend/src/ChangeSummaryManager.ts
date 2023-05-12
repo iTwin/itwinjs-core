@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, using } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -46,21 +46,6 @@ export interface InstanceChange {
   changedInstance: { id: Id64String, className: string };
   opCode: ChangeOpCode;
   isIndirect: boolean;
-}
-
-/** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
- * @beta
- * @deprecated in 2.x. Use [CreateChangeSummaryArgs]($core-backend) instead
- */
-export interface ChangeSummaryExtractOptions {
-  /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
-   *  was opened. If undefined, the extraction starts at the first version of the iModel.
-   */
-  startVersion?: IModelVersion;
-  /** If specified, the change summary will be extracted only for current version as of which the iModel
-   *  was opened.
-   */
-  currentVersionOnly?: boolean;
 }
 
 /** Options for [ChangeSummaryManager.createChangeSummaries]($backend).
@@ -139,123 +124,6 @@ export class ChangeSummaryManager {
     const res: DbResult = iModel.nativeDb.detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.pathName}.`);
-  }
-
-  /** Extracts change summaries from the specified iModel.
-   * Change summaries are extracted from the version the iModel was opened with up through the specified start version.
-   * If no start version has been specified, the first version will be used.
-   * @param accessToken A valid access token string
-   * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel.
-   * Note: For every version to extract a summary from, the method moves the iModel to that version before extraction. After
-   * the extraction has completed, the iModel is moved back to the original version.
-   * @param options Extraction options
-   * @return the Ids of the extracted change summaries.
-   * @throws [IModelError]($common) if the iModel is standalone
-   * @deprecated in 2.x. Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
-   */
-  public static async extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
-    if (!iModel?.isOpen)
-      throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
-
-    const iModelId = iModel.iModelId;
-    const endChangeSetId = iModel.changeset.id;
-    assert(endChangeSetId.length !== 0);
-
-    let startChangeSetId = "";
-    if (options) {
-      if (options.startVersion) {
-        startChangeSetId = (await IModelHost.hubAccess.getChangesetFromVersion({ version: options.startVersion, accessToken, iModelId })).id;
-      } else if (options.currentVersionOnly) {
-        startChangeSetId = endChangeSetId;
-      }
-    }
-
-    Logger.logInfo(loggerCategory, "Started Change Summary extraction...", () => ({ iModelId, startChangeSetId, endChangeSetId }));
-    const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [ChangeSets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
-
-    // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
-    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download Changesets from Hub");
-
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: startChangeSetId }, accessToken })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endChangeSetId }, accessToken })).index;
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
-    perfLogger.dispose();
-    Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
-
-    // Ensure change cache is detached as it's being written to during the extraction
-    if (this.isChangeCacheAttached(iModel)) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Change cache must be detached before extraction");
-    }
-
-    perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
-    const changesFile = ChangeSummaryManager.openOrCreateChangesFile(iModel);
-    assert(changesFile.nativeDb !== undefined, "Should not happen as an exception should have been thrown in that case");
-    perfLogger.dispose();
-    Logger.logTrace(loggerCategory, "Opened or created Changes Cachefile.", () => ({ iModelId, startChangeSetId, endChangeSetId }));
-
-    try {
-      // extract summaries from end changeset through start changeset, so that we only have to go back in history
-      const changeSetCount: number = changeSetInfos.length;
-      const endChangeSetIx: number = changeSetCount - 1;
-      const summaries: Id64String[] = [];
-      for (let i = endChangeSetIx; i >= 0; i--) {
-        const currentChangeSetInfo = changeSetInfos[i];
-        const currentChangeSetId = currentChangeSetInfo.id;
-        Logger.logInfo(loggerCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-
-        const existingSummaryId: Id64String | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
-        if (!!existingSummaryId) {
-          Logger.logInfo(loggerCategory, `Change Summary for changeset #${i + 1} already exists. It is not extracted again.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-          summaries.push(existingSummaryId);
-          continue;
-        }
-
-        // iModel is at end changeset, so no need to reverse for it.
-        if (i !== endChangeSetIx) {
-          perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
-
-          await iModel.pullChanges({ accessToken, toIndex: currentChangeSetInfo.index });
-          perfLogger.dispose();
-          Logger.logTrace(loggerCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-        }
-
-        const changeSetFilePath = currentChangeSetInfo.pathname;
-        if (!IModelJsFs.existsSync(changeSetFilePath))
-          throw new IModelError(IModelStatus.FileNotFound, `Failed to extract change summary: ChangeSet file "${changeSetFilePath}" does not exist.`);
-
-        perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
-        const stat = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
-        perfLogger.dispose();
-        if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
-          throw new IModelError(stat.error.status, stat.error.message);
-
-        Logger.logTrace(loggerCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-
-        perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
-        assert(undefined !== stat.result);
-        const changeSummaryId = stat.result;
-        summaries.push(changeSummaryId);
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
-        perfLogger.dispose();
-        Logger.logTrace(loggerCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-
-        Logger.logInfo(loggerCategory, `Finished Change Summary extraction for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-      }
-
-      changesFile.saveChanges();
-      return summaries;
-    } finally {
-      changesFile.dispose();
-
-      perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-      if (iModel.changeset.id !== endChangeSetId)
-        await iModel.pullChanges({ accessToken });
-      perfLogger.dispose();
-      Logger.logTrace(loggerCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModelId, startChangeSetId, endChangeSetId }));
-
-      totalPerf.dispose();
-      Logger.logInfo(loggerCategory, "Finished Change Summary extraction.", () => ({ iModelId, startChangeSetId, endChangeSetId }));
-    }
   }
 
   private static openOrCreateChangesFile(iModel: BriefcaseDb): ECDb {
