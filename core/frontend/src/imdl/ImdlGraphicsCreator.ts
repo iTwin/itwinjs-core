@@ -7,10 +7,12 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { ImageSource, RenderMaterial, RenderTexture, TileReadStatus } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
+import { ImageSource, RenderTexture } from "@itwin/core-common";
 import { ImdlDocument, ImdlNamedTexture } from "../imdl/ImdlSchema";
 import { ImdlModel as Imdl } from "../imdl/ImdlModel";
 import { RenderGraphic } from "../render/RenderGraphic";
+import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { IModelConnection } from "../IModelConnection";
 
@@ -20,8 +22,6 @@ export interface ImdlDecodeOptions {
   system: RenderSystem;
   iModel: IModelConnection;
 }
-
-export type ImdlDecodeError = Exclude<TileReadStatus, TileReadStatus.Success>;
 
 async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, options: ImdlDecodeOptions): Promise<RenderTexture | undefined> {
   // Reasons a texture could be embedded in the tile content instead of requested separately from the backend:
@@ -96,12 +96,37 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
   return result;
 }
 
-export async function decodeImdlContent(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined | ImdlDecodeError> {
+function createNodeGraphics(node: Imdl.Node, options: ImdlDecodeOptions): RenderGraphic[] {
+  return []; // ###TODO
+}
+
+export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
   const namedTextures = await loadNamedTextures(options);
 
+  const system = options.system;
   const graphics: RenderGraphic[] = [];
   for (const node of options.document.nodes) {
+    const nodeGraphics = createNodeGraphics(node, options);
+    if (nodeGraphics.length === 0)
+      continue;
+
+    if (undefined !== node.layerId) {
+      const layerGraphic = 1 === nodeGraphics.length ? nodeGraphics[0] : system.createGraphicList(nodeGraphics);
+      graphics.push(system.createGraphicLayer(layerGraphic, node.layerId));
+    } else if (undefined !== node.animationNodeId) {
+      const branch = new GraphicBranch(true);
+      branch.animationId = node.animationId;
+      branch.animationNodeId = node.animationNodeId;
+      branch.entries.push(...nodeGraphics);
+      graphics.push(system.createBranch(branch, Transform.createIdentity()));
+    } else {
+      graphics.push(...nodeGraphics);
+    }
   }
 
-  return undefined; // ###TODO
+  switch (graphics.length) {
+    case 0: return undefined;
+    case 1: return graphics[0];
+    default: return system.createGraphicList(graphics);
+  }
 }
