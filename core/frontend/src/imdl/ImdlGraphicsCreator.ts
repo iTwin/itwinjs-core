@@ -7,14 +7,18 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { ImageSource, RenderTexture } from "@itwin/core-common";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import {
+  ColorDef, ImageSource, QParams2d, QParams3d, RenderTexture,
+} from "@itwin/core-common";
 import { ImdlDocument, ImdlNamedTexture } from "../imdl/ImdlSchema";
 import { ImdlModel as Imdl } from "../imdl/ImdlModel";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
-import { IModelConnection } from "../IModelConnection";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import type { IModelConnection } from "../IModelConnection";
+import { VertexIndices, VertexTable } from "../render-primitives";
 
 export interface ImdlDecodeOptions {
   source: ImdlDocument;
@@ -96,17 +100,91 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
   return result;
 }
 
-function createNodeGraphics(node: Imdl.Node, options: ImdlDecodeOptions): RenderGraphic[] {
-  return []; // ###TODO
+interface GraphicsOptions {
+  textures: Map<string, RenderTexture>;
+  system: RenderSystem;
+}
+
+function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
+  const mod = primitive.modifier;
+  switch (mod?.type) {
+    case "instances":
+      return {
+        instances: {
+          ...mod,
+          transformCenter: Point3d.fromJSON(mod.transformCenter),
+          range: mod.range ? Range3d.fromJSON(mod.range) : undefined,
+        },
+      };
+    case "viewIndependentOrigin":
+      return {
+        viOrigin: Point3d.fromJSON(mod.origin),
+      };
+    default:
+      return { };
+  }
+}
+
+function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
+  return new VertexTable({
+    ...imdl,
+    qparams: QParams3d.fromJSON(imdl.qparams),
+    uniformColor: imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
+    uvParams: imdl.uvParams ? QParams2d.fromJSON(imdl.uvParams) : undefined,
+  });
+}
+
+function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
+  const graphics = [];
+  for (const primitive of node.primitives) {
+    const mods = getModifiers(primitive);
+
+    // ###TODO area patterns...
+    let geometry;
+    switch (primitive.type) {
+      case "point":
+        geometry = options.system.createPointStringGeometry({
+          ...primitive.params,
+          vertices: toVertexTable(primitive.params.vertices),
+          indices: new VertexIndices(primitive.params.indices),
+        }, mods.viOrigin);
+        break;
+      case "polyline":
+        geometry = options.system.createPolylineGeometry({
+          ...primitive.params,
+          vertices: toVertexTable(primitive.params.vertices),
+          polyline: {
+            ...primitive.params.polyline,
+            indices: new VertexIndices(primitive.params.polyline.indices),
+            prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
+          },
+        }, mods.viOrigin);
+        break;
+      // ###TODO mesh
+    }
+
+    if (!geometry)
+      continue;
+
+    const graphic = options.system.createRenderGraphic(geometry, mods.instances);
+    if (graphic)
+      graphics.push(graphic);
+  }
+
+  return graphics;
 }
 
 export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
-  const namedTextures = await loadNamedTextures(options);
+  const textures = await loadNamedTextures(options);
+  const graphicsOptions = {
+    textures,
+    system: options.system,
+  };
 
   const system = options.system;
   const graphics: RenderGraphic[] = [];
   for (const node of options.document.nodes) {
-    const nodeGraphics = createNodeGraphics(node, options);
+    const nodeGraphics = createNodeGraphics(node, graphicsOptions);
     if (nodeGraphics.length === 0)
       continue;
 
