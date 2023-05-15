@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
 
-/** Interface defining the minimal implementation for create an ArcGIS geometry renderer,
+/** Interface defining minimal implementation needed to create an ArcGIS geometry renderer,
  * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
  * @internal
  */

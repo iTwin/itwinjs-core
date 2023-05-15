@@ -22,7 +22,7 @@ const loggerCategory = "MapLayersFormats.ArcGISFeature";
 */
 interface ArcGisFeatureUrl {
   url: string;
-  envelope?: ArcGisExtent;    // envelope representing the current computed URL, requiered to refine request.
+  envelope?: ArcGisExtent;    // envelope representing the current computed URL, required to refine request.
 }
 
 /**  Provide tiles from a ESRI ArcGIS Feature service

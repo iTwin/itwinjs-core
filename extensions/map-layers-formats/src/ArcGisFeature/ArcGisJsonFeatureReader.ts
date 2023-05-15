@@ -7,11 +7,11 @@ import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/a
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 /** @internal */
-export class ArcGisJsonFeatureReader extends ArcGisFeatureReader {
+export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
   public transform: Transform | undefined;
 
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {

@@ -1142,7 +1142,7 @@ export enum ArcGisErrorCode {
     UnknownError = 1000
 }
 
-// @internal (undocumented)
+// @internal
 export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
     constructor(world2PixelTransform?: Transform);
     // (undocumented)
@@ -1176,7 +1176,7 @@ export class ArcGisGeometryReaderJSON {
     readGeometry(geometry: any): Promise<void>;
 }
 
-// @internal (undocumented)
+// @internal
 export interface ArcGisGeometryRenderer {
     // (undocumented)
     renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;

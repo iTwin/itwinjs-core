@@ -6,7 +6,7 @@ import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
 import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { Logger } from "@itwin/core-bentley";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
@@ -20,7 +20,7 @@ interface PbfFieldInfo {
 }
 
 /** @internal */
-export class ArcGisPbfFeatureReader extends ArcGisFeatureReader {
+export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
     super(settings, layerMetadata);
   }

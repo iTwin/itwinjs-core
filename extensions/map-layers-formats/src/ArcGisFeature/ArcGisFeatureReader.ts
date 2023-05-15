@@ -8,8 +8,19 @@ import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 
-/** @internal */
-export abstract class ArcGisFeatureReader  {
+/** Interface defining minimal implementation needed to create an ArcGIS geometry reader,
+ * needed by the [[ArcGisFeatureProvider]].
+ * @internal
+ */
+export interface ArcGisFeatureReader {
+  readAndRender: (response: ArcGisResponseData, renderer: ArcGisGeometryRenderer) => Promise<void>;
+  readFeatureInfo: (response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer) => Promise<void>;
+}
+
+/** Internal implementation of [[ArcGisFeatureReader]]
+ * @internal
+ */
+export abstract class ArcGisBaseFeatureReader implements ArcGisFeatureReader {
   // Optionally you can set the floating precision
   public floatPrecision: number|undefined;
 
@@ -26,7 +37,6 @@ export abstract class ArcGisFeatureReader  {
   }
 
   public abstract readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer): Promise<void>;
-
   public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer): Promise<void>;
 
   protected  toFixedWithoutPadding = (value: number) => {
