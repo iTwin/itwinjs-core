@@ -10,7 +10,7 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 
 ## Frontstages in App UI
 
-With the release of the `iTwin.js 2.0`, new UI components are available that provide a new look and feel for iTwin Apps. The new look and feel was initially referred to as `UI 2.0` and now has the more formal name of a `App UI`. The two primary goals of `App UI` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
+With the release of the `AppUI`, new UI components are available that provide a new look and feel for iTwin Apps. The two primary goals of `App UI` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
 
 Below is an example frontstage that shows the different areas/zones.
 

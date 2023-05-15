@@ -69,7 +69,7 @@ The following example defines a StatusBar item that just displays an icon and a 
 
 ```ts
 const labelCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "Active" : "Inactive", ["SampleApp.SET_EXTENSION_UI_VISIBLE"]);
-AbstractStatusBarItemUtilities.createLabelItem("Sample:StatusBarLabel1", StatusBarSection.Center, 200, "icon-hand-2", labelCondition, undefined);
+StatusBarItemUtilities.createLabelItem("Sample:StatusBarLabel1", StatusBarSection.Center, 200, "icon-hand-2", labelCondition, undefined);
 ```
 
 See [StatusBarItemUtilities]($appui-react) for React specific StatusBar item definitions.
