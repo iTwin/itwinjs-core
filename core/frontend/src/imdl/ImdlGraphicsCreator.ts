@@ -19,7 +19,7 @@ import type { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 import type { RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { createSurfaceMaterial, VertexIndices, VertexTable } from "../render-primitives";
+import { createSurfaceMaterial, EdgeParams, VertexIndices, VertexTable } from "../render-primitives";
 import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
 export interface ImdlDecodeOptions {
@@ -250,6 +250,29 @@ function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   });
 }
 
+function convertEdges(imdl: Imdl.EdgeParams): EdgeParams | undefined {
+  return {
+    ...imdl,
+    segments: imdl.segments ? {
+      ...imdl.segments,
+      indices: new VertexIndices(imdl.segments.indices),
+    } : undefined,
+    silhouettes: imdl.silhouettes ? {
+      ...imdl.silhouettes,
+      indices: new VertexIndices(imdl.silhouettes.indices),
+    } : undefined,
+    polylines: imdl.polylines ? {
+      ...imdl.polylines,
+      indices: new VertexIndices(imdl.polylines.indices),
+      prevIndices: new VertexIndices(imdl.polylines.prevIndices),
+    } : undefined,
+    indexed: imdl.indexed ? {
+      indices: new VertexIndices(imdl.indexed.indices),
+      edges: imdl.indexed.edges,
+    } : undefined,
+  };
+}
+
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
   const graphics = [];
   for (const primitive of node.primitives) {
@@ -302,7 +325,7 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
 
         geometry = options.system.createMeshGeometry({
           ...primitive.params,
-          edges: undefined, // ###TODO edges
+          edges: primitive.params.edges ? convertEdges(primitive.params.edges) : undefined,
           vertices: toVertexTable(primitive.params.vertices),
           auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
           surface: {
