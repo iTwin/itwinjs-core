@@ -23,7 +23,6 @@ import { createSurfaceMaterial, VertexIndices, VertexTable } from "../render-pri
 import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
 export interface ImdlDecodeOptions {
-  source: ImdlDocument;
   document: Imdl.Document;
   system: RenderSystem;
   iModel: IModelConnection;
@@ -53,7 +52,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     const ownership = cacheable ? { iModel: options.iModel, key: name } : undefined;
 
     const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-    const bufferViewJson = 0 !== bufferViewId.length ? options.source.bufferViews[bufferViewId] : undefined;
+    const bufferViewJson = 0 !== bufferViewId.length ? options.document.json.bufferViews[bufferViewId] : undefined;
 
     if (undefined !== bufferViewJson) { // presence of bufferViewJson signifies we should read the texture from the tile content
       const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
@@ -78,7 +77,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
 
 async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string, RenderTexture>> {
   const result = new Map<string, RenderTexture>();
-  const namedTextures = options.source.namedTextures;
+  const namedTextures = options.document.json.namedTextures;
   if (!namedTextures)
     return result;
 
@@ -180,10 +179,10 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
   }
 
   const material = options.system.findMaterial(mat, options.iModel);
-  if (material || !options.source.renderMaterials)
+  if (material || !options.document.json.renderMaterials)
     return material;
 
-  const json = options.source.renderMaterials[mat];
+  const json = options.document.json.renderMaterials[mat];
   if (!json)
     return undefined;
 

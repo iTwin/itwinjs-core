@@ -213,7 +213,6 @@ class ImdlParser {
   }
 
   public parse(): Imdl.Document | ImdlParseError {
-    // ###TODO caller is responsible for decodeTileContentDescription, leafness, etc.
     const featureTable = this.parseFeatureTable();
     if (!featureTable)
       return TileReadStatus.InvalidFeatureTable;

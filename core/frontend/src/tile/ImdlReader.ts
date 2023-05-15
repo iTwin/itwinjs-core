@@ -1218,7 +1218,6 @@ export async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlR
     system: args.system,
     iModel: args.iModel,
     document,
-    source: document.json, // ###TODO redundant, remove
   });
 
   if (graphic && false !== args.options) {
