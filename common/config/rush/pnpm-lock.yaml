@@ -3016,7 +3016,6 @@ importers:
       eslint: ^8.36.0
       ignore-styles: ^5.0.1
       mocha: ^10.0.0
-      nyc: ^15.1.0
       raf: ^3.4.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -3041,7 +3040,6 @@ importers:
       eslint: 8.39.0
       ignore-styles: 5.0.1
       mocha: 10.2.0
-      nyc: 15.1.0
       raf: 3.4.1
       rimraf: 3.0.2
       sinon: 9.2.4

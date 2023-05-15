@@ -435,6 +435,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
+      "name": "chai-spies",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "chai-string",
       "allowedCategories": [ "tools" ]
     },
@@ -465,6 +469,10 @@
     {
       "name": "copy-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "coverage",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "cpx2",
@@ -619,6 +627,54 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "karma",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-babel-preprocessor",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chai-plugins",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chrome-launcher",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-instrumenter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-jasmine",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-junit-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-mocha",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-sourcemap-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-webpack",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
     },
@@ -760,7 +816,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "typedoc",
@@ -813,6 +869,10 @@
     {
       "name": "wtfnode",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "xmlhttprequest",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "yargonaut",

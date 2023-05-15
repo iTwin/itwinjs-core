@@ -18,7 +18,7 @@
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm -s test",
+    "cover": "npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "extract-api": "betools extract-api --entry=appui-abstract",
@@ -60,7 +60,6 @@
     "eslint": "^8.36.0",
     "ignore-styles": "^5.0.1",
     "mocha": "^10.0.0",
-    "nyc": "^15.1.0",
     "raf": "^3.4.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
@@ -73,20 +72,6 @@
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "require": [
-      "ignore-styles",
-      "jsdom-global/register",
-      "source-map-support/register",
-      "ts-node/register"
-    ],
-    "check-coverage": true,
-    "statements": 99,
-    "branches": 99,
-    "functions": 97,
-    "lines": 99
-  },
   "eslintConfig": {
     "plugins": [
       "@itwin"
