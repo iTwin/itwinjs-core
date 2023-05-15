@@ -269,7 +269,7 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "Element"
+        "className": "RepositoryLink"
       },
       "propertyCategories": [
         {
@@ -410,6 +410,16 @@
         "schemaName": "BisCore",
         "className": "Element"
       },
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "Source Information",
+          "parentId": {
+            "type": "Root"
+          },
+          "autoExpand": true
+        }
+      ],
       "relatedProperties": [
         {
           "relationshipMeaning": "SameInstance",
