@@ -9,16 +9,18 @@
 import { JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ImageSource, QParams2d, QParams3d, RenderTexture,
+  ColorDef, Gradient, ImageSource, QParams2d, QParams3d, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
-import { ImdlDocument, ImdlNamedTexture } from "../imdl/ImdlSchema";
-import { ImdlModel as Imdl } from "../imdl/ImdlModel";
-import { RenderGraphic } from "../render/RenderGraphic";
+import type { ImdlColorDef, ImdlDocument, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
+import type { ImdlModel as Imdl } from "../imdl/ImdlModel";
+import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderSystem } from "../render/RenderSystem";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import type { CreateRenderMaterialArgs } from "../render/RenderMaterial";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { VertexIndices, VertexTable } from "../render-primitives";
+import { createSurfaceMaterial, VertexIndices, VertexTable } from "../render-primitives";
+import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
 export interface ImdlDecodeOptions {
   source: ImdlDocument;
@@ -100,9 +102,124 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
   return result;
 }
 
-interface GraphicsOptions {
+interface GraphicsOptions extends ImdlDecodeOptions {
   textures: Map<string, RenderTexture>;
-  system: RenderSystem;
+}
+
+function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+  if (undefined === propsJson)
+    return undefined;
+
+  const constantLodPops: TextureMapping.ConstantLodParamProps = {
+    repetitions: JsonUtils.asDouble(propsJson.repetitions, 1.0),
+    offset: { x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0, y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0 },
+    minDistClamp: JsonUtils.asDouble(propsJson.minDistClamp, 1.0),
+    maxDistClamp: JsonUtils.asDouble(propsJson.maxDistClamp, 4096.0 * 1024.0 * 1024.0),
+  };
+  return constantLodPops;
+}
+
+function textureMappingFromJson(json: ImdlTextureMapping | undefined, options: GraphicsOptions): TextureMapping | undefined {
+  if (!json)
+    return undefined;
+
+  const texture = options.textures.get(JsonUtils.asString(json.name));
+  if (!texture)
+    return undefined;
+
+  const paramsJson = json.params;
+  const tf = paramsJson.transform;
+
+  const paramProps: TextureMapping.ParamProps = {
+    textureMat2x3: new TextureMapping.Trans2x3(tf[0][0], tf[0][1], tf[0][2], tf[1][0], tf[1][1], tf[1][2]),
+    textureWeight: JsonUtils.asDouble(paramsJson.weight, 1.0),
+    mapMode: JsonUtils.asInt(paramsJson.mode),
+    worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
+    useConstantLod: JsonUtils.asBool(paramsJson.useConstantLod),
+    constantLodProps: constantLodParamPropsFromJson(paramsJson.constantLodParams),
+  };
+
+  const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
+
+  const normalMapJson = json.normalMapParams;
+  if (normalMapJson) {
+    let normalMap;
+    const normalTexName = JsonUtils.asString(normalMapJson.textureName);
+    if (normalTexName.length === 0 || undefined !== (normalMap = options.textures.get(normalTexName))) {
+      textureMapping.normalMapParams = {
+        normalMap,
+        greenUp: JsonUtils.asBool(normalMapJson.greenUp),
+        scale: JsonUtils.asDouble(normalMapJson.scale, 1),
+        useConstantLod: JsonUtils.asBool(normalMapJson.useConstantLod),
+      };
+    }
+  }
+
+  return textureMapping;
+}
+
+function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: GraphicsOptions): RenderMaterial | undefined {
+  if (typeof mat !== "string") {
+    const args: CreateRenderMaterialArgs = { alpha: mat.alpha };
+    if (mat.diffuse) {
+      args.diffuse = {
+        weight: mat.diffuse.weight,
+        color: undefined !== mat.diffuse.color ? ColorDef.fromJSON(mat.diffuse.color) : undefined,
+      };
+    }
+
+    if (mat.specular) {
+      args.specular = {
+        weight: mat.specular.weight,
+        exponent: mat.specular.exponent,
+        color: undefined !== mat.specular.color ? ColorDef.fromJSON(mat.specular.color) : undefined,
+      };
+    }
+
+    return options.system.createRenderMaterial(args);
+  }
+
+  const material = options.system.findMaterial(mat, options.iModel);
+  if (material || !options.source.renderMaterials)
+    return material;
+
+  const json = options.source.renderMaterials[mat];
+  if (!json)
+    return undefined;
+
+  function colorDefFromJson(json: ImdlColorDef | undefined): ColorDef | undefined {
+    return json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
+  }
+
+  // eslint-disable-next-line deprecation/deprecation
+  const params = new RenderMaterial.Params
+  params.diffuseColor = colorDefFromJson(json.diffuseColor);
+  if (json.diffuse !== undefined)
+    params.diffuse = JsonUtils.asDouble(json.diffuse);
+
+  params.specularColor = colorDefFromJson(json.specularColor);
+  if (json.specular !== undefined)
+    params.specular = JsonUtils.asDouble(json.specular);
+
+  params.reflectColor = colorDefFromJson(json.reflectColor);
+  if (json.reflect !== undefined)
+    params.reflect = JsonUtils.asDouble(json.reflect);
+
+  if (json.specularExponent !== undefined)
+    params.specularExponent = json.specularExponent;
+
+  if (undefined !== json.transparency)
+    params.alpha = 1.0 - json.transparency;
+
+  params.refract = JsonUtils.asDouble(json.refract);
+  params.shadows = JsonUtils.asBool(json.shadows);
+  params.ambient = JsonUtils.asDouble(json.ambient);
+
+  if (undefined !== json.textureMapping)
+    params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
+
+  // eslint-disable-next-line deprecation/deprecation
+  return options.system.createMaterial(params, options.iModel);
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
@@ -160,7 +277,44 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
           },
         }, mods.viOrigin);
         break;
-      // ###TODO mesh
+      case "mesh": {
+        const surf = primitive.params.surface;
+        let material;
+        if (surf.material) {
+          if (!surf.material.isAtlas)
+            material = createSurfaceMaterial(getMaterial(surf.material.material, options));
+          else
+            material = surf.material;
+        }
+
+        let textureMapping;
+        if (surf.textureMapping) {
+          let texture;
+          if (typeof surf.textureMapping.texture === "string") {
+            texture = options.textures.get(surf.textureMapping.texture);
+          } else {
+            const gradient = Gradient.Symb.fromJSON(surf.textureMapping.texture);
+            texture = options.system.getGradientTexture(gradient, options.iModel);
+          }
+
+          if (texture)
+            textureMapping = { texture, alwaysDisplayed: surf.textureMapping.alwaysDisplayed };
+        }
+
+        geometry = options.system.createMeshGeometry({
+          ...primitive.params,
+          edges: undefined, // ###TODO edges
+          vertices: toVertexTable(primitive.params.vertices),
+          auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
+          surface: {
+            ...primitive.params.surface,
+            material,
+            textureMapping,
+            indices: new VertexIndices(primitive.params.surface.indices),
+          },
+        }, mods.viOrigin);
+        break;
+      }
     }
 
     if (!geometry)
@@ -176,10 +330,7 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
 
 export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
   const textures = await loadNamedTextures(options);
-  const graphicsOptions = {
-    textures,
-    system: options.system,
-  };
+  const graphicsOptions = { ...options, textures };
 
   const system = options.system;
   const graphics: RenderGraphic[] = [];
