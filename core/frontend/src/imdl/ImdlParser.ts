@@ -224,7 +224,7 @@ function fromVertexTable(table: VertexTable): Imdl.VertexTable {
   };
 }
 
-export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams | undefined {
+export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
   return {
     ...imdl,
     segments: imdl.segments ? {
@@ -243,6 +243,29 @@ export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams | undefine
     indexed: imdl.indexed ? {
       indices: new VertexIndices(imdl.indexed.indices),
       edges: imdl.indexed.edges,
+    } : undefined,
+  };
+}
+
+function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
+  return {
+    ...params,
+    segments: params.segments ? {
+      ...params.segments,
+      indices: params.segments.indices.data,
+    } : undefined,
+    silhouettes: params.silhouettes ? {
+      ...params.silhouettes,
+      indices: params.silhouettes.indices.data,
+    } : undefined,
+    polylines: params.polylines ? {
+      ...params.polylines,
+      indices: params.polylines.indices.data,
+      prevIndices: params.polylines.prevIndices.data,
+    } : undefined,
+    indexed: params.indexed ? {
+      indices: params.indexed.indices.data,
+      edges: params.indexed.edges,
     } : undefined,
   };
 }
@@ -467,13 +490,28 @@ class ImdlParser {
             params,
             createMaterial: (args) => UnnamedMaterial.fromArgs(args),
           });
-          // for (const [nodeId, params] of split) {
-          //   getNode(nodeId).primitives.push({
-          //     type: "mesh",
-          //     params: {
-          //       vertices: fromVertexTable(params.vertices),
-          //       
-          // }
+          for (const [nodeId, params] of split) {
+            assert(params.surface.material === undefined || params.surface.material instanceof Material);
+            assert(params.surface.textureMapping === undefined || params.surface.textureMapping.texture instanceof Texture);
+            getNode(nodeId).primitives.push({
+              type: "mesh",
+              params: {
+                vertices: fromVertexTable(params.vertices),
+                surface: {
+                  ...params.surface,
+                  indices: params.surface.indices.data,
+                  material: params.surface.material?.toImdl(),
+                  textureMapping: params.surface.textureMapping?.texture instanceof Texture ? {
+                    texture: params.surface.textureMapping.texture.toImdl(),
+                    alwaysDisplayed: params.surface.textureMapping.alwaysDisplayed,
+                  } : undefined,
+                },
+                edges: params.edges ? edgeParamsToImdl(params.edges) : undefined,
+                isPlanar: params.isPlanar,
+                auxChannels: params.auxChannels?.toJSON(),
+              }
+            });
+          }
 
           break;
         }

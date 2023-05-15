@@ -37,6 +37,14 @@ export class AuxChannel implements AuxChannelProps {
     this.inputs = props.inputs;
     this.indices = props.indices;
   }
+
+  public toJSON(): AuxChannelProps {
+    return {
+      name: this.name,
+      inputs: this.inputs,
+      indices: this.indices,
+    };
+  }
 }
 
 /** @internal */
@@ -49,6 +57,14 @@ export class AuxDisplacementChannel extends AuxChannel {
     this.qOrigin = Float32Array.from(props.qOrigin);
     this.qScale = Float32Array.from(props.qScale);
   }
+
+  public override toJSON(): QuantizedAuxChannelProps {
+    return {
+      ...super.toJSON(),
+      qOrigin: Array.from(this.qOrigin),
+      qScale: Array.from(this.qScale),
+    };
+  }
 }
 
 /** @internal */
@@ -60,6 +76,14 @@ export class AuxParamChannel extends AuxChannel {
     super(props);
     this.qOrigin = props.qOrigin[0];
     this.qScale = props.qScale[0];
+  }
+
+  public override toJSON(): QuantizedAuxChannelProps {
+    return {
+      ...super.toJSON(),
+      qOrigin: [this.qOrigin],
+      qScale: [this.qScale],
+    };
   }
 }
 
@@ -144,6 +168,19 @@ export class AuxChannelTable {
     }
 
     return undefined !== displacements || undefined !== normals || undefined !== params ? new AuxChannelTable(props, displacements, normals, params) : undefined;
+  }
+
+  public toJSON(): AuxChannelTableProps {
+    return {
+      data: this.data,
+      width: this.width,
+      height: this.height,
+      count: this.numVertices,
+      numBytesPerVertex: this.numBytesPerVertex,
+      displacements: this.displacements?.map((x) => x.toJSON()),
+      normals: this.normals?.map((x) => x.toJSON()),
+      params: this.params?.map((x) => x.toJSON()),
+    };
   }
 
   public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
