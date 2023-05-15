@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// import { formatAnimationBranchId } from "../../render/GraphicBranch";
-import { formatAnimationBranchId } from "../../render/formatAnimationBranchId";
+import { formatAnimationBranchId } from "../../render/GraphicBranch";
+// import { formatAnimationBranchId } from "../../render/formatAnimationBranchId";
 
 // ###TODO delete this file and its parent directory
 
