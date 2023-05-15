@@ -1,6 +1,6 @@
 # UiItemsProvider
 
-The [UiItemsProvider]($appui-react:UiItemsProvider) classes and interfaces are used for specifying UI items to be provided at runtime.
+The [UiItemsProvider]($appui-react) classes and interfaces are used for specifying UI items to be provided at runtime.
 Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage. Widgets may also be provided at runtime.
 
 ## UiItemsProvider Interface
@@ -121,4 +121,4 @@ The following examples show how an application can allow, disallow and update a 
 
 ## API Reference
 
-- [UiItemsProvider]($appui-react:UiItemsProvider)
+- [UiItemsProvider]($appui-react)

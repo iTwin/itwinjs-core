@@ -20,7 +20,7 @@ const simpleAction2Spec = ToolbarItemUtilities.createActionButton("simple-action
   });
 ```
 
-Example of creating a group button definition and will allow access to multiple action buttons. In this example we place the two buttons defined above into a single group button. The last object passed in below contain any override values for any available property of a [GroupItem]($appui-react).
+Example of creating a group button definition and will allow access to multiple action buttons. In this example we place the two buttons defined above into a single group button. The last object passed in below contain any override values for any available property of a [GroupItem]($appui-react:Toolbar).
 
 ```ts
 const groupSpec = ToolbarItemUtilities.createGroupItem("test-tool-group", 100, "icon-developer", "test group", [simpleActionSpec, simpleAction2Spec], { badgeType: BadgeType.TechnicalPreview });
