@@ -33,6 +33,8 @@ import {
   AnyImdlPrimitive, ImdlAnimationNodes, ImdlAreaPattern, ImdlAreaPatternSymbol, ImdlBufferView, ImdlColorDef, ImdlDictionary, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges,
   ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlPrimitive, ImdlRenderMaterial, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "../imdl/ImdlSchema";
+import { convertFeatureTable, parseImdlDocument } from "../imdl/ImdlParser";
+import { decodeImdlGraphics } from "../imdl/ImdlGraphicsCreator";
 import { IModelTileContent } from "./internal";
 
 /** @internal */
@@ -1179,3 +1181,63 @@ export class ImdlReader {
     };
   }
 }
+
+export async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlReaderResult> {
+  let content;
+  try {
+    content = decodeTileContentDescription({
+      stream: args.stream,
+      sizeMultiplier: args.sizeMultiplier,
+      is2d: !args.is3d,
+      options: IModelApp.tileAdmin,
+      isVolumeClassifier: BatchType.VolumeClassifier === args.type,
+      isLeaf: args.isLeaf,
+    });
+  } catch (e) {
+    if (e instanceof TileReadError)
+      return { isLeaf: true, readStatus: e.errorNumber };
+    else
+      throw e;
+  }
+
+  const document = parseImdlDocument({
+    stream: args.stream,
+    batchModelId: args.modelId,
+    is3d: args.is3d,
+    maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
+    omitEdges: false === args.loadEdges,
+    timeline: args.timeline,
+    createUntransformedRootNode: args.containsTransformNodes,
+  });
+
+  if (typeof document === "number")
+    return { isLeaf: true, readStatus: document };
+
+  let graphic = await decodeImdlGraphics({
+    system: args.system,
+    iModel: args.iModel,
+    document,
+    source: document.json, // ###TODO redundant, remove
+  });
+
+  if (graphic && false !== args.options) {
+    const featureTable = convertFeatureTable(document.featureTable, args.modelId);
+    graphic = args.system.createBatch(graphic, featureTable, content.contentRange, args.options);
+  }
+
+  if (graphic && document.rtcCenter) {
+    const rtcBranch = new GraphicBranch(true);
+    rtcBranch.add(graphic);
+    graphic = args.system.createBranch(rtcBranch, Transform.createTranslation(Point3d.fromJSON(document.rtcCenter)));
+  }
+
+  return {
+    readStatus: TileReadStatus.Success,
+    isLeaf: content.isLeaf,
+    sizeMultiplier: content.sizeMultiplier,
+    contentRange: content.contentRange.isNull ? undefined : content.contentRange,
+    graphic,
+    emptySubRangeMask: content.emptySubRangeMask,
+  };
+}
+

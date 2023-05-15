@@ -230,6 +230,7 @@ class ImdlParser {
       nodes,
       rtcCenter,
       binaryData: this._binaryData,
+      json: this._document,
     };
   }
 
@@ -366,12 +367,7 @@ class ImdlParser {
 
     // NB: The BatchType is irrelevant - just use Primary.
     assert(undefined === imdlFeatureTable.animationNodeIds);
-    let featureTable: RenderFeatureTable;
-    if (imdlFeatureTable.multiModel)
-      featureTable = MultiModelPackedFeatureTable.create(imdlFeatureTable.data, this._options.batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories);
-    else
-      featureTable = new PackedFeatureTable(imdlFeatureTable.data, this._options.batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary);
-
+    const featureTable = convertFeatureTable(imdlFeatureTable, this._options.batchModelId);
     featureTable.populateAnimationNodeIds((feature) => timeline.getBatchIdForFeature(feature), timeline.maxBatchId);
     imdlFeatureTable.animationNodeIds = featureTable.animationNodeIds;
 
@@ -881,6 +877,13 @@ class ImdlParser {
 
     return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, gradient, ignoreLighting, textureMapping);
   }
+}
+
+export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchModelId: Id64String): RenderFeatureTable {
+  if (!imdlFeatureTable.multiModel)
+    return new PackedFeatureTable(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary);
+
+  return MultiModelPackedFeatureTable.create(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories);
 }
 
 export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
