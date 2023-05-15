@@ -56,7 +56,7 @@ UI and Quantity Settings as well as other settings can be present to the user fo
 
 #### Adding a backstage item
 
-The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($appui-abstract) to construct the backstage. Below is an example of how to set up a backstage menu component to display the 'Settings' entry if `SettingsTabEntry` items are provided.
+The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($appui-react) to construct the backstage. Below is an example of how to set up a backstage menu component to display the 'Settings' entry if `SettingsTabEntry` items are provided.
 
 ```tsx
 export function AppBackstageComposerComponent() {
