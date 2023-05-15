@@ -1186,7 +1186,7 @@ export interface ArcGisGeometryRenderer {
     transform: Transform | undefined;
 }
 
-// @internal (undocumented)
+// @internal
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
     constructor(iModel: IModelConnection);
     // (undocumented)

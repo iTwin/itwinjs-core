@@ -11,22 +11,25 @@ import { IModelConnection } from "../../../IModelConnection";
 
 const loggerCategory = "MapLayerImageryProvider.ArcGisGraphicsRenderer";
 
-/** @internal */
+/** ArcGIS geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
+ * This renderer initial objective is to read geometries when a call to [[MapLayerImageryProvider.getFeatureInfo]] is performed.
+ * @internal
+ */
 export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
   private _scratchPointsArray = new GrowableXYZArray();
   private _scratchPaths: Point3d[][] = [];
   private _graphics: GraphicPrimitive[] = [];
   private _iModel: IModelConnection;
 
+  constructor(iModel: IModelConnection) {
+    super();
+    this._iModel = iModel;
+  }
+
   public moveGraphics() {
     const graphics = this._graphics;
     this._graphics = [];
     return graphics;
-  }
-
-  constructor(iModel: IModelConnection) {
-    super();
-    this._iModel = iModel;
   }
 
   protected beginPath() {
@@ -144,7 +147,5 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
       spatials.push(this._iModel.cartographicToSpatialFromEcef(Cartographic.fromDegrees(carto)));
     }
     return spatials;
-
   }
-
 }
