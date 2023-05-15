@@ -15,7 +15,8 @@ import {
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
-  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlMesh, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlTextureMapping,
+  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline,
+  ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType } from "../render/primitives/SurfaceParams";
@@ -24,7 +25,7 @@ import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxC
 import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../render/GraphicBranch";
 import { ComputeAnimationNodeId, MeshParams, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
-import {CreateRenderMaterialArgs} from "../core-frontend";
+import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
@@ -475,6 +476,58 @@ class ImdlParser {
     return indices && prevIndices && nextIndicesAndParams ? { indices, prevIndices, nextIndicesAndParams } : undefined;
   }
 
+  private parseSegmentEdges(imdl: ImdlSegmentEdges): Imdl.SegmentEdgeParams | undefined {
+    const indices = this.findBuffer(imdl.indices);
+    const endPointAndQuadIndices = this.findBuffer(imdl.endPointAndQuadIndices);
+    return indices && endPointAndQuadIndices ? { indices, endPointAndQuadIndices } : undefined;
+  }
+
+  private parseSilhouetteEdges(imdl: ImdlSilhouetteEdges): Imdl.SilhouetteParams | undefined {
+    const segments = this.parseSegmentEdges(imdl);
+    const normalPairs = this.findBuffer(imdl.normalPairs);
+    return segments && normalPairs ? { ...segments, normalPairs } : undefined;
+  }
+
+  private parseIndexedEdges(imdl: ImdlIndexedEdges) : Imdl.IndexedEdgeParams | undefined {
+    const indices = this.findBuffer(imdl.indices);
+    const edgeTable = this.findBuffer(imdl.edges);
+    if (!indices || !edgeTable)
+      return undefined;
+
+    return {
+      indices,
+      edges: {
+        data: edgeTable,
+        width: imdl.width,
+        height: imdl.height,
+        silhouettePadding: imdl.silhouettePadding,
+        numSegments: imdl.numSegments,
+      },
+    };
+  }
+
+  private parseEdges(imdl: ImdlMeshEdges | undefined, displayParams: DisplayParams): Imdl.EdgeParams | undefined {
+    if (!imdl)
+      return undefined;
+
+    const segments = imdl.segments ? this.parseSegmentEdges(imdl.segments) : undefined;
+    const silhouettes = imdl.silhouettes ? this.parseSilhouetteEdges(imdl.silhouettes) : undefined;
+    const indexed = imdl.indexed ? this.parseIndexedEdges(imdl.indexed) : undefined;
+    const polylines = imdl.polylines ? this.parseTesselatedPolyline(imdl.polylines) : undefined;
+
+    if (!segments && !silhouettes && !indexed &&!polylines)
+      return undefined;
+
+    return {
+      segments,
+      silhouettes,
+      polylines,
+      indexed,
+      weight: displayParams.width,
+      linePixels: displayParams.linePixels,
+    };
+  }
+
   private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.Primitive | undefined {
     if (docPrimitive.type === "areaPattern")
       return undefined; // ###TODO
@@ -504,7 +557,6 @@ class ImdlParser {
       case Mesh.PrimitiveType.Mesh: {
         const surface = this.parseSurface(docPrimitive, displayParams);
         if (surface) {
-          // ###TODO edges
           primitive = {
             type: "mesh",
             params: {
@@ -512,6 +564,7 @@ class ImdlParser {
               surface,
               isPlanar,
               auxChannels: this.parseAuxChannelTable(docPrimitive),
+              edges: this.parseEdges(docPrimitive.edges, displayParams),
             },
           };
         }
