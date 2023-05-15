@@ -9,8 +9,8 @@ import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
-import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
+import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
+import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
 import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 
@@ -331,7 +331,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         return;
       }
 
-      const featureReader = new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+      const featureReader = new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const renderer = new ArcGisGraphicsRenderer(hit.iModel);
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
@@ -423,7 +423,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       }
 
       const renderer = new ArcGisCanvasRenderer(ctx, this._symbologyRenderer, transfo);
-      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata) : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
         const dx = (envelope.xmax - envelope.xmin) * 0.5;

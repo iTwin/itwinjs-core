@@ -4,14 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
 
-/** @internal */
+/** Interface defining the minimal implementation for create an ArcGIS geometry renderer,
+ * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
+ * @internal
+ */
 export interface ArcGisGeometryRenderer {
   transform: Transform | undefined;
   renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
   renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
 }
 
-/** @internal */
+/** Internal implementation of [[ArcGisGeometryRenderer]]
+ * @internal
+ */
 export abstract class ArcGisGeometryBaseRenderer implements ArcGisGeometryRenderer {
   private _transform: Transform | undefined;
 

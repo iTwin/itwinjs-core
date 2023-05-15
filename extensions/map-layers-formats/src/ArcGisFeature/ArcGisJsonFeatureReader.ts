@@ -11,7 +11,7 @@ import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 /** @internal */
-export class ArcGisFeatureJSON extends ArcGisFeatureReader {
+export class ArcGisJsonFeatureReader extends ArcGisFeatureReader {
   public transform: Transform | undefined;
 
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {

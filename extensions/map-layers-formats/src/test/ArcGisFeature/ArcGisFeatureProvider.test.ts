@@ -16,8 +16,8 @@ import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureResultType, ArcGisGeome
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse";
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
-import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
+import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -762,7 +762,7 @@ describe("ArcGisFeatureProvider", () => {
     });
 
     //    toDataURL string;
-    const readAndRenderSpy = sandbox.spy(ArcGisFeaturePBF.prototype, "readAndRender");
+    const readAndRenderSpy = sandbox.spy(ArcGisPbfFeatureReader.prototype, "readAndRender");
     const computeTransfoSpy = sandbox.spy(ArcGisFeatureProvider.prototype as any, "computeTileWorld2CanvasTransform");
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -811,7 +811,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    const readAndRenderSpy = sandbox.spy(ArcGisFeatureJSON.prototype, "readAndRender");
+    const readAndRenderSpy = sandbox.spy(ArcGisJsonFeatureReader.prototype, "readAndRender");
     const computeTransfoSpy = sandbox.spy(ArcGisFeatureProvider.prototype as any, "computeTileWorld2CanvasTransform");
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -874,7 +874,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    const readAndRenderSpy = sandbox.spy(ArcGisFeatureJSON.prototype, "readAndRender");
+    const readAndRenderSpy = sandbox.spy(ArcGisJsonFeatureReader.prototype, "readAndRender");
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
     await provider.loadTile(0, 0, 0);

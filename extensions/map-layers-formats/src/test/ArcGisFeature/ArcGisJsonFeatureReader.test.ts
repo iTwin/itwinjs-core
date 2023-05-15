@@ -5,22 +5,23 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryReaderJSON, MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { ArcGisGeometryReaderJSON, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
-import { ArcGisFeatureJSON } from "../../ArcGisFeature/ArcGisFeatureJSON";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 
 const createFeatureJSON = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-  const featurePbf = new ArcGisFeatureJSON(settings, { name: "SampleLayer" });
+  const featurePbf = new ArcGisJsonFeatureReader(settings, { name: "SampleLayer" });
 
   // Locale configuration depends on the testing machine (i.e. linux vs windows),
   // so we need to force date display to Iso to get a consistent value.
@@ -29,7 +30,7 @@ const createFeatureJSON = () => {
   return featurePbf;
 };
 
-describe("ArcGisFeatureJSON", () => {
+describe("ArcGisJsonFeatureReader", () => {
 
   const sandbox = sinon.createSandbox();
 
@@ -49,9 +50,15 @@ describe("ArcGisFeatureJSON", () => {
     expect(resultsStr).equals(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
   });
 
+  // it.only("test test", async () => {
+  //   // const feature: MapLayerFeature = {records: []};
+  //   const record: MapFeatureInfoRecord = {value: {valueFormat: PropertyValueFormat.Primitive, value: 123}, property: {name: "Test", displayLabel:"test", typename: "integer"}};
+  //   console.log(JSON.stringify(record));
+  // });
+
   it("should read FeatureInfo in JSON (phillyAirport)", async () => {
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, { name: "SampleLayer" });
+    const featureJson = new ArcGisJsonFeatureReader(settings, { name: "SampleLayer" });
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;

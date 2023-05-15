@@ -20,7 +20,7 @@ interface PbfFieldInfo {
 }
 
 /** @internal */
-export class ArcGisFeaturePBF extends ArcGisFeatureReader {
+export class ArcGisPbfFeatureReader extends ArcGisFeatureReader {
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
     super(settings, layerMetadata);
   }

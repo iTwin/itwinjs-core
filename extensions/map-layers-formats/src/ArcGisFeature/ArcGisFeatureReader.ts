@@ -25,9 +25,9 @@ export abstract class ArcGisFeatureReader  {
     this._layerMetadata = layerMetadata;
   }
 
-  public abstract readAndRender(response: ArcGisResponseData, _renderer: ArcGisGeometryRenderer): Promise<void>;
+  public abstract readAndRender(response: ArcGisResponseData, renderer: ArcGisGeometryRenderer): Promise<void>;
 
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], _renderer: ArcGisGraphicsRenderer): Promise<void>;
+  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: ArcGisGraphicsRenderer): Promise<void>;
 
   protected  toFixedWithoutPadding = (value: number) => {
     return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));

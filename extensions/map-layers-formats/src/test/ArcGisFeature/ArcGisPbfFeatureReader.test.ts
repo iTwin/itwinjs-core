@@ -8,7 +8,7 @@ import { Base64EncodedString, ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ArcGisFeaturePBF } from "../../ArcGisFeature/ArcGisFeaturePBF";
+import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
 import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
@@ -17,7 +17,7 @@ import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
 const createFeaturePBF = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-  const featurePbf = new ArcGisFeaturePBF(settings, { name: "SampleLayer" });
+  const featurePbf = new ArcGisPbfFeatureReader(settings, { name: "SampleLayer" });
 
   // Locale configuration depends on the testing machine (i.e. linux vs windows),
   // so we need to force date display to Iso to get a consistent value.
@@ -26,7 +26,7 @@ const createFeaturePBF = () => {
   return featurePbf;
 };
 
-describe("ArcGisFeaturePBF", () => {
+describe("ArcGisPbfFeatureReader", () => {
 
   const sandbox = sinon.createSandbox();
 
@@ -37,27 +37,27 @@ describe("ArcGisFeaturePBF", () => {
   it("should convert pbf geometry type to Esri types", async () => {
 
     expect(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch))
       .to.equals("esriGeometryMultiPatch");
 
     expect(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipoint))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipoint))
       .to.equals("esriGeometryMultipoint");
 
     expect(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint))
       .to.equals("esriGeometryPoint");
 
     expect(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon))
       .to.equals("esriGeometryPolygon");
 
     expect(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline))
       .to.equals("esriGeometryPolyline");
 
     expect(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType("" as unknown as esriPBuffer.FeatureCollectionPBuffer.GeometryType))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType("" as unknown as esriPBuffer.FeatureCollectionPBuffer.GeometryType))
       .to.equals("esriGeometryNull");
 
   });
@@ -67,7 +67,7 @@ describe("ArcGisFeaturePBF", () => {
     const featureCollection = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
 
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featurePbf = new ArcGisFeaturePBF(settings, { name: "SampleLayer" });
+    const featurePbf = new ArcGisPbfFeatureReader(settings, { name: "SampleLayer" });
 
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
@@ -118,7 +118,7 @@ describe("ArcGisFeaturePBF", () => {
     const featurePbf = createFeaturePBF();
 
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePolyQueryPbf);
-    const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.geometryType);
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
@@ -136,7 +136,7 @@ describe("ArcGisFeaturePBF", () => {
   it("should readAndRender multiple ring polygon feature", async () => {
     const featurePbf = createFeaturePBF();
 
-    const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.geometryType);
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf);
 
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
@@ -157,7 +157,7 @@ describe("ArcGisFeaturePBF", () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePathQueryPbf);
     const symbolRenderer = new ArcGisSymbologyRenderer(
-      ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.geometryType),
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.geometryType),
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
@@ -176,7 +176,7 @@ describe("ArcGisFeaturePBF", () => {
   it("should readAndRender multi path", async () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyMultiPathQueryPbf);
-    const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -193,7 +193,7 @@ describe("ArcGisFeaturePBF", () => {
   it("should readAndRender simple point", async () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePointQueryPbf);
-    const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisCanvasRenderer(fakeContext, symbolRenderer);
