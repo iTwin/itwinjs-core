@@ -4,7 +4,8 @@
 
 iTwin.js **backends** are built and tested on the following:
 
-- Debian 10 "Buster" and Debian 11 "Bullseye"
+- Arch Linux
+- Debian 11 "Bullseye"
 - Windows 10 version 1803 (or greater)
 - MacOS 10.15 (or greater)
 
@@ -18,17 +19,17 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 | iTwin.js - Node Support | iTwin.js 1.x | iTwin.js 2.x | iTwin.js 3.x | iTwin.js 4.x |
 | ----------------------- | ------------ | ------------ | ------------ | ------------ |
-| Node 18                 | ❌           | ❌           | ✅ (>= 3.5) | ✅          |
-| Node 16 (>=16.13)       | ❌           | ❌           | ✅          | ❌          |
-| Node 14 (>=14.17)       | ❌           | ✅ (>= 2.13) | ✅          | ❌          |
-| Node 12 (>=12.22)       | ✅           | ✅           | ✅          | ❌          |
-| Node 10                 | ❌           | ❌           | ❌          | ❌          |
+| Node 18 (>=18.12)       | ❌           | ❌           | ✅ (>= 3.5)  | ✅           |
+| Node 16 (>=16.13)       | ❌           | ❌           | ✅           | ❌           |
+| Node 14 (>=14.17)       | ❌           | ✅ (>= 2.13) | ✅           | ❌           |
+| Node 12 (>=12.22)       | ✅           | ✅           | ✅           | ❌           |
+| Node 10                 | ❌           | ❌           | ❌           | ❌           |
 
 ### Backend Prerequisites
 
 | Operating System | Architectures | Versions                                                                                                           | Notes           |
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
-| Linux            | all           | GLIBC >= 2.24, GLIBCXX >= 3.4.22                                                                                   |                 |
+| Linux            | all           | GLIBC >= 2.31, GLIBCXX >= 3.4.28                                                                                   |                 |
 | Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |                 |
 | macOS            | x64           | >= 10.15                                                                                                           |                 |
 | macOS            | arm64         | >= 11                                                                                                              | >= iTwin.js 3.3 |

@@ -6,7 +6,7 @@
 import * as path from "path";
 import { DOMParser } from "@xmldom/xmldom";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
+  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
@@ -28,7 +28,21 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
   public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    await this.getSchemaInfo(key, matchType, context);
+
+    const schema = await context.getCachedSchema(key, matchType);
+    return schema as T;
+  }
+
+  /**
+    * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
+    * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
+    * @param schemaKey The SchemaKey describing the schema to get from the cache.
+    * @param matchType The match type to use when locating the schema
+    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+    */
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "xml");
 
     if (0 === candidates.length)
       return undefined;
@@ -50,10 +64,9 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
-    let schema: Schema = new Schema(context);
-    schema = await reader.readSchema(schema, document);
+    const schema = new Schema(context);
 
-    return schema as T;
+    return reader.readSchemaInfo(schema, document);
   }
 
   /**
