@@ -116,6 +116,7 @@ export interface CubeNavigationAidProps extends CommonProps {
   onAnimationEnd?: () => void;
   /** @internal */
   animationTime?: number;
+  favorHeadsUpRotation?: boolean;
 }
 
 /** @public */
@@ -313,20 +314,43 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       return Face.None;
     }
 
-    let matrixFace = Face.None;
+    // istanbul ignore else
+    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Top].coffs[6] &&
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Top].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Top].coffs[8])
+      return Face.Top;
 
-    for (const face in cubeNavigationFaceRotations) {
-      // istanbul ignore else
-      if (face in cubeNavigationFaceRotations) {
-        const loc = cubeNavigationFaceRotations[face];
-        if (rotMatrix.isAlmostEqual(loc)) {
-          matrixFace = face as Face;
-          break;
-        }
-      }
-    }
+    // istanbul ignore else
+    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Bottom].coffs[6] &&
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Bottom].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Bottom].coffs[8])
+      return Face.Bottom;
 
-    return matrixFace;
+    // istanbul ignore else
+    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Left].coffs[6] &&
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Left].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Left].coffs[8])
+      return Face.Left;
+
+    // istanbul ignore else
+    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Right].coffs[6] &&
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Right].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Right].coffs[8])
+      return Face.Right;
+
+    // istanbul ignore else
+    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Back].coffs[6] &&
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Back].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Back].coffs[8])
+      return Face.Back;
+
+    // istanbul ignore else
+    if (rotMatrix.coffs[6] === cubeNavigationFaceRotations[Face.Front].coffs[6] &&
+      rotMatrix.coffs[7] === cubeNavigationFaceRotations[Face.Front].coffs[7] &&
+      rotMatrix.coffs[8] === cubeNavigationFaceRotations[Face.Front].coffs[8])
+      return Face.Front;
+
+    return Face.None;
   };
 
   private static _interpolateRotMatrix = (start: Matrix3d, anim: number, end: Matrix3d): Matrix3d => {
@@ -367,9 +391,9 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     let y = CubeNavigationAid.correctSmallNumber(zVector.y, tolerance);
     let z = CubeNavigationAid.correctSmallNumber(zVector.z, tolerance);
 
-    const xx = Math.abs(x);
-    const yy = Math.abs(y);
-    const zz = Math.abs(z);
+    const xx = x === -0? Math.abs(x) : x;
+    const yy = y === -0 ? Math.abs(y) : y;
+    const zz = z === -0 ? Math.abs(z) : z;
 
     // adjust any adjacent pair of near equal values to the first.
     // istanbul ignore next
@@ -386,20 +410,23 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   /**
-    * Adjust a worldToView matrix to favor both
-    * * direct view at faces, edges, and corners of a view cube.
-    * * heads up
-    * @param worldToView candidate matrix
-    * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
-    * @param result optional result.
-    */
-  private static snapWorldToViewMatrixToCubeFeatures(worldToView: Matrix3d, tolerance: number, result?: Matrix3d): Matrix3d {
+   * Adjust a worldToView matrix to favor both
+   * * direct view at faces, edges, and corners of a view cube.
+   * * heads up
+   * @param worldToView candidate matrix
+   * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
+   * @param result optional result.
+   */
+  private static snapWorldToViewMatrixToCubeFeatures(worldToView: Matrix3d, tolerance: number, result?: Matrix3d, favorHeadsUpRotation?: boolean): Matrix3d {
     const oldZ = worldToView.rowZ();
     const newZ = CubeNavigationAid.snapVectorToCubeFeatures(oldZ, tolerance);
+    const headsUp = !!favorHeadsUpRotation;
     // If newZ is true up or down, it will have true 0 for x and y.
     // special case this to take x direction from the input.
+    // This methodology results in always "righting" the face when rotation from an upside-down cube.
+    // The behavior was made opt-in in response to https://github.com/iTwin/appui/issues/259
     // istanbul ignore next
-    if (newZ.x === 0.0 && newZ.y === 0) {
+    if (!headsUp || (newZ.x === 0.0 && newZ.y === 0)) {
       const perpVector = worldToView.rowX();
       result = Matrix3d.createRigidFromColumns(newZ, perpVector, AxisOrder.ZXY, result)!;
     } else {

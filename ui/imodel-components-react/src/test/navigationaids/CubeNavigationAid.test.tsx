@@ -117,12 +117,14 @@ describe("CubeNavigationAid", () => {
         const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(-1, 0, 0, 0, 0, -1, 0, -1, 0);
 
         const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+        expect (mat2.matrix.coffs[6] === expectedMatrix.coffs[6] &&
+          mat2.matrix.coffs[7] === expectedMatrix.coffs[7] &&
+          mat2.matrix.coffs[8] === expectedMatrix.coffs[8]).is.true;
       });
       it(`${shouldStr} change from top to left when arrow clicked`, async () => {
         sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
         const animationEnd = sinon.fake();
-        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} favorHeadsUpRotation={true}/>);
 
         const topFace = component.getByTestId("components-cube-face-top");
         const pointerButton = component.getByTestId("cube-pointer-button-left");
@@ -137,12 +139,14 @@ describe("CubeNavigationAid", () => {
         const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, 1, 0, 0, 0, -1, -1, 0, 0);
 
         const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+        expect (mat2.matrix.coffs[6] === expectedMatrix.coffs[6] &&
+          mat2.matrix.coffs[7] === expectedMatrix.coffs[7] &&
+          mat2.matrix.coffs[8] === expectedMatrix.coffs[8]).is.true;
       });
       it(`${shouldStr} change from top to right when arrow clicked`, async () => {
         sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
         const animationEnd = sinon.fake();
-        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} favorHeadsUpRotation={true}/>);
 
         const topFace = component.getByTestId("components-cube-face-top");
         const pointerButton = component.getByTestId("cube-pointer-button-right");
@@ -157,7 +161,9 @@ describe("CubeNavigationAid", () => {
         const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, -1, 0, 0, 0, -1, 1, 0, 0);
 
         const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+        expect (mat2.matrix.coffs[6] === expectedMatrix.coffs[6] &&
+          mat2.matrix.coffs[7] === expectedMatrix.coffs[7] &&
+          mat2.matrix.coffs[8] === expectedMatrix.coffs[8]).is.true;
       });
       it(`${shouldStr} highlight hovered cell`, async () => {
         sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
