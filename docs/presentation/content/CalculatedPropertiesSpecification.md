@@ -52,7 +52,7 @@ The attribute allows moving the property into a different category. There are se
 
 - Reference a category by ID used in [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) in the current context.
   The current context contains categories specified in the same [content specification](./index.md#specifications) or
-  [content modifiers](./contentModifier.md) that are applied on the same content class as this rule.
+  [content modifiers](./contentModifier.md) that are applied on the same or base ECClass as this property specification.
 
 - Move to `DefaultParent` category. This is useful when using with [related properties](./RelatedPropertiesSpecification.md), to
   avoid putting them inside a special related class category and instead show them next to properties of the source class.
