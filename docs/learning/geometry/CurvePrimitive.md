@@ -8,8 +8,8 @@
   - increasing fractions always move forward along the primitive.
   - curves implement their equations with the fraction representing the parameter in their most natural equations.
 - All curves also support methods to deal with _true distance_ along the curve. These include
-  - `curve.curveLengthBetweenFractions (startFraction, endFraction)`
-  - `curve.moveByDistanceFromFraction (startFraction, distance)`
+  - `curve.curveLengthBetweenFractions(startFraction, endFraction)`
+  - `curve.moveByDistanceFromFraction(startFraction, distance)`
   - Fraction position along the curve is strictly proportional to true distance along the curve only for a limited number of curve types:
     - LineSegment3d
     - Arc3d
@@ -27,7 +27,7 @@
 - typescript object:
 
 ```
-const myLineSegment = LineSegment.create (Point3d.create (1,2,3), Point3d.create(6,4,2));
+const myLineSegment = LineSegment.create(Point3d.create(1,2,3), Point3d.create(6,4,2));
 ```
 
 ![>](./figs/CurvePrimitives/LineSegment.png)
@@ -39,7 +39,7 @@ const myLineSegment = LineSegment.create (Point3d.create (1,2,3), Point3d.create
     B = end point
     f = fraction varying from 0 to 1
     Point X(f) at fractional position f along the lineSegment is
-        X(f) = (1-f) * A + f * B
+        X(f) = (1-f)*A + f*B
 ```
 
 ## lineString
@@ -50,7 +50,7 @@ const myLineSegment = LineSegment.create (Point3d.create (1,2,3), Point3d.create
 - Typescript object:
 
 ```
-const myLineString = LineString.create ([point0, point1, point2 ....]);
+const myLineString = LineString.create([point0, point1, point2 ....]);
 ```
 
 - Fractional Parameterization
@@ -66,18 +66,18 @@ Having both individual line segments and the composite linestring complicates pa
 
 ## arcs (circular and elliptic)
 
-An arc primitive is a portion of a circular or elliptical arc.   The equations for a complete elliptic arc require a center point and two vectors.   The start and end of a partial arc are controlled by two angles.
+An arc primitive is a portion of a circular or elliptical arc. The equations for a complete elliptic arc require a center point and two vectors. The start and end of a partial arc are controlled by two angles.
 
-The equational forms for circular and elliptic cases are identical.  Telling whether a given arc is true circular requires examination of the vector coordinates.
+The equational forms for circular and elliptic cases are identical. Telling whether a given arc is true circular requires examination of the vector coordinates.
 
-The stroking equation that maps  an angle to a coordinates to points around a (full) elliptic (or circular) arc is
+The stroking equation that maps an angle to coordinates of a point on a (full) elliptic (or circular) arc is
 
 ```
 C = center point
 U = vector from center point to 0-degree point
 V = vector from center point to 90-degree point.
 theta = angle
-X(theta) = C + cos (theta * U + sin(theta) * V
+X(theta) = C + cos(theta)*U + sin(theta)*V
 ```
 
 ### True Circles
