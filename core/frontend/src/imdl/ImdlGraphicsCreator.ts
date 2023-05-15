@@ -13,6 +13,7 @@ import {
 } from "@itwin/core-common";
 import type { ImdlColorDef, ImdlDocument, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
 import type { ImdlModel as Imdl } from "../imdl/ImdlModel";
+import { edgeParamsFromImdl } from "../imdl/ImdlParser";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { CreateRenderMaterialArgs } from "../render/RenderMaterial";
@@ -250,29 +251,6 @@ function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   });
 }
 
-function convertEdges(imdl: Imdl.EdgeParams): EdgeParams | undefined {
-  return {
-    ...imdl,
-    segments: imdl.segments ? {
-      ...imdl.segments,
-      indices: new VertexIndices(imdl.segments.indices),
-    } : undefined,
-    silhouettes: imdl.silhouettes ? {
-      ...imdl.silhouettes,
-      indices: new VertexIndices(imdl.silhouettes.indices),
-    } : undefined,
-    polylines: imdl.polylines ? {
-      ...imdl.polylines,
-      indices: new VertexIndices(imdl.polylines.indices),
-      prevIndices: new VertexIndices(imdl.polylines.prevIndices),
-    } : undefined,
-    indexed: imdl.indexed ? {
-      indices: new VertexIndices(imdl.indexed.indices),
-      edges: imdl.indexed.edges,
-    } : undefined,
-  };
-}
-
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
   const graphics = [];
   for (const primitive of node.primitives) {
@@ -325,7 +303,7 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
 
         geometry = options.system.createMeshGeometry({
           ...primitive.params,
-          edges: primitive.params.edges ? convertEdges(primitive.params.edges) : undefined,
+          edges: primitive.params.edges ? edgeParamsFromImdl(primitive.params.edges) : undefined,
           vertices: toVertexTable(primitive.params.vertices),
           auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
           surface: {

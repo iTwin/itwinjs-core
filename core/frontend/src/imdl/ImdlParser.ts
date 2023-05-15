@@ -24,7 +24,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../render/GraphicBranch";
-import { ComputeAnimationNodeId, MeshParams, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
+import { ComputeAnimationNodeId, EdgeParams, MeshParams, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
 import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
@@ -221,6 +221,29 @@ function fromVertexTable(table: VertexTable): Imdl.VertexTable {
     uniformColor: table.uniformColor?.toJSON(),
     qparams: table.qparams.toJSON(),
     uvParams: table.uvParams?.toJSON(),
+  };
+}
+
+export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams | undefined {
+  return {
+    ...imdl,
+    segments: imdl.segments ? {
+      ...imdl.segments,
+      indices: new VertexIndices(imdl.segments.indices),
+    } : undefined,
+    silhouettes: imdl.silhouettes ? {
+      ...imdl.silhouettes,
+      indices: new VertexIndices(imdl.silhouettes.indices),
+    } : undefined,
+    polylines: imdl.polylines ? {
+      ...imdl.polylines,
+      indices: new VertexIndices(imdl.polylines.indices),
+      prevIndices: new VertexIndices(imdl.polylines.prevIndices),
+    } : undefined,
+    indexed: imdl.indexed ? {
+      indices: new VertexIndices(imdl.indexed.indices),
+      edges: imdl.indexed.edges,
+    } : undefined,
   };
 }
 
@@ -434,10 +457,24 @@ class ImdlParser {
                 texture: typeof texMap.texture === "string" ? new NamedTexture(texMap.texture, RenderTexture.Type.Normal) : new GradientTexture(texMap.texture),
               } : undefined,
             },
-            // ###TODO edges
+            edges: primitive.params.edges ? edgeParamsFromImdl(primitive.params.edges) : undefined,
             isPlanar: primitive.params.isPlanar,
             auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
           };
+
+          const split = splitMeshParams({
+            ...splitArgs,
+            params,
+            createMaterial: (args) => UnnamedMaterial.fromArgs(args),
+          });
+          // for (const [nodeId, params] of split) {
+          //   getNode(nodeId).primitives.push({
+          //     type: "mesh",
+          //     params: {
+          //       vertices: fromVertexTable(params.vertices),
+          //       
+          // }
+
           break;
         }
         case "point": {
