@@ -9,8 +9,8 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
+  BatchType, ColorDef, ColorDefProps, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, RgbColorProps, TextureMapping, TileFormat,
   TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
@@ -108,73 +108,101 @@ function extractNodeId(nodeName: string): number {
   return Number.isNaN(nodeId) ? 0 : nodeId;
 }
 
-class NamedTexture extends RenderTexture {
-  public readonly name: string;
-
-  public constructor(name: string, type: RenderTexture.Type) {
+abstract class Texture extends RenderTexture {
+  protected constructor(type: RenderTexture.Type) {
     super(type);
-    this.name = name;
   }
+
+  public abstract toImdl(): string | Gradient.SymbProps;
 
   public override dispose() { }
   public override get bytesUsed() { return 0; }
 }
 
-class GradientTexture extends RenderTexture {
-  public readonly gradient: Gradient.SymbProps;
+class NamedTexture extends Texture {
+  public constructor(private readonly _name: string, type: RenderTexture.Type) {
+    super(type);
+  }
 
-  public constructor(gradient: Gradient.SymbProps) {
+  public override toImdl(): string {
+    return this._name;
+  }
+}
+
+class GradientTexture extends Texture {
+  public constructor(private readonly _gradient: Gradient.SymbProps) {
     super(RenderTexture.Type.Normal);
-    this.gradient = gradient;
   }
 
-  public override dispose() { }
-  public override get bytesUsed() { return 0; }
+  public override toImdl(): Gradient.SymbProps {
+    return this._gradient;
+  }
 }
 
-class Material extends RenderMaterial {
-  public readonly materialParams: Imdl.SurfaceMaterialParams;
+/** For splitMeshParams. It doesn't actually care about the properties of the material. It is merely used to:
+ *  1. Ensure if input does NOT have a material atlas, every output has the same material as input; and
+ *  2. If input DOES have a material atlas, we can assemble new material atlases or single RenderMaterials from the entries in that atlas for the outputs.
+ */
+abstract class Material extends RenderMaterial {
+  public abstract toImdl(): Imdl.SurfaceMaterial;
 
-  public constructor(params: RenderMaterial.Params) {
-    super(params);
-
-    this.materialParams = {
-      alpha: params.alpha,
-      diffuse: {
-        color: params.diffuseColor?.toJSON(),
-        weight: params.diffuse,
-      },
-      specular: {
-        color: params.specularColor?.toJSON(),
-        weight: params.specular,
-        exponent: params.specularExponent,
-      },
-    };
+  protected constructor() {
+    super(new RenderMaterial.Params());
   }
 
-  public static create(args: CreateRenderMaterialArgs): Material {
-    const params = new RenderMaterial.Params();
-    params.alpha = args.alpha;
-    if (args.diffuse) {
-      if (undefined !== args.diffuse.weight)
-        params.diffuse = args.diffuse?.weight;
+  public static create(imdl: Imdl.SurfaceRenderMaterial) {
+    return typeof imdl.material === "string" ? new NamedMaterial(imdl.material) : new UnnamedMaterial(imdl.material);
+  }
+}
 
-      if (args.diffuse?.color)
-        params.diffuseColor = args.diffuse.color instanceof ColorDef ? args.diffuse.color : RgbColor.fromJSON(args.diffuse.color).toColorDef();
+class NamedMaterial extends Material {
+  public constructor(private readonly _name: string) {
+    super();
+  }
+
+  public override toImdl(): Imdl.SurfaceMaterial {
+    return { isAtlas: false, material: this._name };
+  }
+}
+
+class UnnamedMaterial extends Material {
+  public constructor(private readonly _params: Imdl.SurfaceMaterialParams) {
+    super();
+  }
+
+  public static fromArgs(args: CreateRenderMaterialArgs): Material {
+    function toImdlColor(color: ColorDef | RgbColorProps | undefined): ColorDefProps | undefined {
+      if (!color)
+        return undefined;
+
+      const colorDef = color instanceof ColorDef ? color : RgbColor.fromJSON(color).toColorDef();
+      return colorDef.toJSON();
+    }
+
+
+    const params: Imdl.SurfaceMaterialParams = { alpha: args.alpha };
+    if (args.diffuse) {
+      if (undefined !== args.diffuse) {
+        params.diffuse = {
+          weight: args.diffuse.weight,
+          color: toImdlColor(args.diffuse.color),
+        };
+      }
     }
 
     if (args.specular) {
-      if (undefined !== args.specular.weight)
-        params.specular = args.specular.weight;
-
-      if (undefined !== args.specular.exponent)
-        params.specularExponent = args.specular.exponent;
-
-      if (args.specular.color)
-        params.specularColor = args.specular.color instanceof ColorDef ? args.specular.color : RgbColor.fromJSON(args.specular.color).toColorDef();
+      params.specular = {
+        weight: args.specular.weight,
+        exponent: args.specular.exponent,
+        color: toImdlColor(args.specular.color),
+      };
     }
 
-    return new Material(params);
+    return new UnnamedMaterial(params);
+  }
+
+  public override toImdl(): Imdl.SurfaceMaterial {
+    return { isAtlas: false, material: this._params };
   }
 }
 
@@ -391,18 +419,27 @@ class ImdlParser {
       switch (primitive.type) {
         // ###TODO area patterns
         case "mesh": {
-          // ###TODO
-          // const params: MeshParams = {
-          //   vertices: toVertexTable(primitive.params.vertices),
-          //   surface: {
-          //     ...primitive.params.surface,
-          //     indices: new VertexIndices(primitive.params.surface.indices),
-          //   },
-          //   // ###TODO edges
-          //   isPlanar: primitive.params.isPlanar,
-          //   auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
-          break;
+          const mesh = primitive.params;
+          const material = mesh.surface.material;
+          const texMap = mesh.surface.textureMapping;
+          const params: MeshParams = {
+            vertices: toVertexTable(primitive.params.vertices),
+            surface: {
+              ...primitive.params.surface,
+              indices: new VertexIndices(primitive.params.surface.indices),
+              material: material?.isAtlas ? material : (material ? { isAtlas: false, material: Material.create(material) } : undefined),
+              textureMapping: texMap ? {
+                alwaysDisplayed: texMap.alwaysDisplayed,
+                // The texture type doesn't actually matter here.
+                texture: typeof texMap.texture === "string" ? new NamedTexture(texMap.texture, RenderTexture.Type.Normal) : new GradientTexture(texMap.texture),
+              } : undefined,
+            },
+            // ###TODO edges
+            isPlanar: primitive.params.isPlanar,
+            auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
           };
+          break;
+        }
         case "point": {
           const params = {
             vertices: toVertexTable(primitive.params.vertices),
@@ -640,24 +677,14 @@ class ImdlParser {
       };
     } else if (displayParams.material) {
       assert(displayParams.material instanceof Material);
-      material = {
-        isAtlas: false,
-        material: displayParams.material.key ? displayParams.material.key : displayParams.material.materialParams,
-      };
+      material = displayParams.material.toImdl();
     }
 
     let textureMapping;
     if (texture) {
-      let mappedTexture;
-      if (texture instanceof NamedTexture) {
-        mappedTexture = texture.name;
-      } else {
-        assert(texture instanceof GradientTexture);
-        mappedTexture = texture.gradient;
-      }
-
+      assert(texture instanceof Texture);
       textureMapping = {
-        texture: mappedTexture,
+        texture: texture.toImdl(),
         alwaysDisplayed: JsonUtils.asBool(surf.alwaysDisplayTexture),
       };
     }
@@ -801,39 +828,22 @@ class ImdlParser {
   }
 
   private materialFromJson(key: string): RenderMaterial | undefined {
-    const materialJson = this._document.renderMaterials[key];
-    if (!materialJson)
+    const json = this._document.renderMaterials[key];
+    if (!json)
       return undefined;
 
-    // eslint-disable-next-line deprecation/deprecation
-    const materialParams = new RenderMaterial.Params(key);
-    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
-    if (materialJson.diffuse !== undefined)
-      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
-
-    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
-    if (materialJson.specular !== undefined)
-      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
-
-    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
-    if (materialJson.reflect !== undefined)
-      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
-
-    if (materialJson.specularExponent !== undefined)
-      materialParams.specularExponent = materialJson.specularExponent;
-
-    if (undefined !== materialJson.transparency)
-      materialParams.alpha = 1.0 - materialJson.transparency;
-
-    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
-    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
-    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
-
-    if (undefined !== materialJson.textureMapping)
-      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
-
-    // eslint-disable-next-line deprecation/deprecation
-    return new Material(materialParams);
+    return new UnnamedMaterial({
+      alpha: undefined !== json.transparency ? 1.0 - json.transparency : undefined,
+      diffuse: {
+        color: this.colorDefFromMaterialJson(json.diffuseColor)?.toJSON(),
+        weight: json.diffuse,
+      },
+      specular: {
+        color: this.colorDefFromMaterialJson(json.specularColor)?.toJSON(),
+        weight: json.specular,
+        exponent: json.specularExponent,
+      },
+    });
   }
 
   private parseNamedTexture(namedTex: ImdlNamedTexture, name: string): RenderTexture | undefined {
