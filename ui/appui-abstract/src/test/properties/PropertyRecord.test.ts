@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../appui-abstract";
+import { assert, expect } from "chai";
+import { PropertyDescription, PropertyRecord, PropertyRecordJSON, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../appui-abstract";
 import { ArrayValue, PrimitiveValue, StructValue } from "../../appui-abstract/properties/Value";
 
 const value1: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
@@ -127,6 +127,30 @@ describe("PropertyRecord", () => {
       const record = new PropertyRecord(structValue, getPropertyDescription());
 
       expect(record.getChildrenRecords()).to.deep.equal(structChildren);
+    });
+
+    it("round-trips through JSON", () => {
+      const baseTestCase: PropertyRecordJSON = {value: {valueFormat: PropertyValueFormat.Primitive, value: 123}, property: {name: "Test", displayLabel:"test", typename: "integer"}};
+      const testCases: PropertyRecordJSON[] = [
+        baseTestCase,
+        {...baseTestCase, description: "test"},
+        {...baseTestCase, description: "test", isDisabled: true},
+        {...baseTestCase, description: "test", isDisabled: false},
+        {...baseTestCase, description: "test", isDisabled: true, isMerged : true},
+        {...baseTestCase, description: "test", isDisabled: true, isMerged : false},
+        {...baseTestCase, description: "test", isDisabled: true, isMerged : true, isReadonly: true},
+        {...baseTestCase, description: "test", isDisabled: true, isMerged : true, isReadonly: false},
+      ];
+
+      const roundTrip = (input: PropertyRecordJSON) => {
+        const expected = JSON.parse(JSON.stringify(input)) as PropertyRecordJSON;
+        const record = PropertyRecord.fromJSON(input);
+        const output = record.toJSON();
+        assert.deepEqual(output, expected);
+      };
+
+      for (const testCase of testCases)
+        roundTrip(testCase);
     });
   });
 });

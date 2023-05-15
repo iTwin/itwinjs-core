@@ -6,15 +6,11 @@
  * @module MapLayers
  */
 
-import { PropertyDescription, PropertyRecord, PropertyValue } from "@itwin/appui-abstract";
+import {PropertyRecordJSON } from "@itwin/appui-abstract";
 import { Cartographic } from "@itwin/core-common";
 
 /** @alpha */
-export class MapFeatureInfoRecord extends PropertyRecord {
-  public constructor(value: PropertyValue, property: PropertyDescription) {
-    super(value, property);
-  }
-}
+export type MapFeatureInfoRecord = PropertyRecordJSON;
 
 /** @alpha */
 export interface MapFeatureInfo {

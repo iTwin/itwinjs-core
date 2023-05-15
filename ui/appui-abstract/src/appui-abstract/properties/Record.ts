@@ -25,6 +25,19 @@ export interface LinkElementsInfo {
   matcher?: (displayValue: string) => Array<{ start: number, end: number }>;
 }
 
+/** JSON representation of a [[PropertyRecord]].
+ * @beta
+ */
+export interface PropertyRecordJSON {
+  value: PropertyValue;
+  property: PropertyDescription;
+  description?: string;
+  isReadonly?: boolean;
+  isDisabled?: boolean;
+  isMerged?: boolean;
+  autoExpand?: boolean;
+}
+
 /**
  * PropertyRecord contains instance information about a Property, including a
  * value that can be edited using a PropertyEditor and converted using a TypeConverter.
@@ -106,6 +119,49 @@ export class PropertyRecord {
       value,
       displayValue: value,
     }, description);
+  }
+
+  /** @beta */
+  public toJSON(): PropertyRecordJSON {
+    const json: PropertyRecordJSON = {value: this.value, property: this.property};
+
+    if (this.autoExpand !== undefined)
+      json.autoExpand = this.autoExpand;
+
+    if (this.description !== undefined )
+      json.description = this.description;
+
+    if (this.isDisabled !== undefined)
+      json.isDisabled = this.isDisabled;
+
+    if (this.isMerged !== undefined)
+      json.isMerged = this.isMerged;
+
+    if (this.isReadonly !== undefined)
+      json.isReadonly = this.isReadonly;
+
+    return json;
+  }
+
+  /** @beta */
+  public static fromJSON(json: PropertyRecordJSON) {
+    const result = new PropertyRecord(json.value, json.property);
+    if (json.autoExpand !== undefined)
+      result.autoExpand = json.autoExpand;
+
+    if (json.description !== undefined)
+      result.description = json.description;
+
+    if (json.isDisabled !== undefined)
+      result.isDisabled = json.isDisabled;
+
+    if (json.isMerged !== undefined)
+      result.isMerged = json.isMerged;
+
+    if (json.isReadonly !== undefined)
+      result.isReadonly = json.isReadonly;
+
+    return result;
   }
 }
 
