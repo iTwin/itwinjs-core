@@ -2,6 +2,21 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.7.6",
+      "tag": "@itwin/core-backend_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "log metadata when uploading tiles"
+          },
+          {
+            "comment": "disable native sqlite logger category when calling 'updateToRequestedVersion'"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.7.5",
       "tag": "@itwin/core-backend_v3.7.5",
       "date": "Thu, 04 May 2023 19:43:18 GMT",

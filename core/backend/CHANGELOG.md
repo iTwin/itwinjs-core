@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 04 May 2023 19:43:18 GMT and should not be manually modified.
+This log was last generated on Mon, 15 May 2023 18:23:40 GMT and should not be manually modified.
+
+## 3.7.6
+Mon, 15 May 2023 18:23:40 GMT
+
+### Updates
+
+- log metadata when uploading tiles
+- disable native sqlite logger category when calling 'updateToRequestedVersion'
 
 ## 3.7.5
 Thu, 04 May 2023 19:43:18 GMT
