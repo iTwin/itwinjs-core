@@ -1200,6 +1200,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlR
       throw e;
   }
 
+  args.stream.reset();
   const document = parseImdlDocument({
     stream: args.stream,
     batchModelId: args.modelId,
