@@ -35,6 +35,7 @@ export * from "./gltf/GltfSchema";
 export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
+export * from "./imdl/ImdlSchema";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
