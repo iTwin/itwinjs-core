@@ -22,7 +22,11 @@ if (!ProcessDetector.isElectronAppFrontend) {
 
       try {
         const protocol = TestRpcInterface.getClient().configuration.protocol as WebAppRpcProtocol;
+        console.log("protocol");
+        console.log(protocol.getStatus(200));
         const req: WebAppRpcRequest = new (protocol.requestType)(TestRpcInterface.getClient(), "getRequestedProtocolVersion", []);
+        console.log("status");
+        console.log(req._status);
         await req.submit();
         assert.equal(req.responseProtocolVersion, originalProtocolVersion); // backend should have unmodified RpcProtocol.protocolVersion
         assert.equal(await req.response, RpcProtocol.protocolVersion);
