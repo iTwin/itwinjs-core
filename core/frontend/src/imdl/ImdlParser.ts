@@ -19,7 +19,7 @@ import {
   ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { createSurfaceMaterial, isValidSurfaceType } from "../render/primitives/SurfaceParams";
+import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
@@ -139,70 +139,54 @@ class GradientTexture extends Texture {
   }
 }
 
-/** For splitMeshParams. It doesn't actually care about the properties of the material. It is merely used to:
- *  1. Ensure if input does NOT have a material atlas, every output has the same material as input; and
- *  2. If input DOES have a material atlas, we can assemble new material atlases or single RenderMaterials from the entries in that atlas for the outputs.
- */
-abstract class Material extends RenderMaterial {
-  public abstract toImdl(): Imdl.SurfaceMaterial;
+class Material extends RenderMaterial {
+  public readonly materialParams: Imdl.SurfaceMaterialParams;
 
-  protected constructor() {
-    super(new RenderMaterial.Params());
+  public toImdl(): Imdl.SurfaceMaterial {
+    const material = this.key ?? this.materialParams;
+    return { isAtlas: false, material };
   }
 
-  public static create(imdl: Imdl.SurfaceRenderMaterial) {
-    return typeof imdl.material === "string" ? new NamedMaterial(imdl.material) : new UnnamedMaterial(imdl.material);
-  }
-}
+  public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
+    super(params);
 
-class NamedMaterial extends Material {
-  public constructor(private readonly _name: string) {
-    super();
-  }
-
-  public override toImdl(): Imdl.SurfaceMaterial {
-    return { isAtlas: false, material: this._name };
-  }
-}
-
-class UnnamedMaterial extends Material {
-  public constructor(private readonly _params: Imdl.SurfaceMaterialParams) {
-    super();
+    this.materialParams = imdl ?? {
+      alpha: params.alpha,
+      diffuse: {
+        color: params.diffuseColor?.toJSON(),
+        weight: params.diffuse,
+      },
+      specular: {
+        color: params.specularColor?.toJSON(),
+        weight: params.specular,
+        exponent: params.specularExponent,
+      },
+    };
   }
 
-  public static fromArgs(args: CreateRenderMaterialArgs): Material {
-    function toImdlColor(color: ColorDef | RgbColorProps | undefined): ColorDefProps | undefined {
-      if (!color)
-        return undefined;
-
-      const colorDef = color instanceof ColorDef ? color : RgbColor.fromJSON(color).toColorDef();
-      return colorDef.toJSON();
-    }
-
-
-    const params: Imdl.SurfaceMaterialParams = { alpha: args.alpha };
+  public static create(args: CreateRenderMaterialArgs): Material {
+    const params = new RenderMaterial.Params();
+    params.alpha = args.alpha;
     if (args.diffuse) {
-      if (undefined !== args.diffuse) {
-        params.diffuse = {
-          weight: args.diffuse.weight,
-          color: toImdlColor(args.diffuse.color),
-        };
-      }
+      if (undefined !== args.diffuse.weight)
+        params.diffuse = args.diffuse?.weight;
+
+      if (args.diffuse?.color)
+        params.diffuseColor = args.diffuse.color instanceof ColorDef ? args.diffuse.color : RgbColor.fromJSON(args.diffuse.color).toColorDef();
     }
 
     if (args.specular) {
-      params.specular = {
-        weight: args.specular.weight,
-        exponent: args.specular.exponent,
-        color: toImdlColor(args.specular.color),
-      };
+      if (undefined !== args.specular.weight)
+        params.specular = args.specular.weight;
+
+      if (undefined !== args.specular.exponent)
+        params.specularExponent = args.specular.exponent;
+
+      if (args.specular.color)
+        params.specularColor = args.specular.color instanceof ColorDef ? args.specular.color : RgbColor.fromJSON(args.specular.color).toColorDef();
     }
 
-    return new UnnamedMaterial(params);
-  }
-
-  public override toImdl(): Imdl.SurfaceMaterial {
-    return { isAtlas: false, material: this._params };
+    return new Material(params);
   }
 }
 
@@ -459,6 +443,16 @@ class ImdlParser {
       featureTable,
     };
 
+    const convertMaterial = (imdl: Imdl.SurfaceMaterial | undefined): SurfaceMaterial | undefined => {
+      if (!imdl)
+        return undefined;
+      else if (imdl.isAtlas)
+        return imdl;
+
+      const material = (typeof imdl.material === "string") ? this.materialFromJson(imdl.material) : Material.create(toMaterialArgs(imdl.material));
+      return material ? { isAtlas: false, material } : undefined;
+    };
+
     for (const docPrimitive of docPrimitives) {
       const primitive = this.parseNodePrimitive(docPrimitive);
       if (!primitive)
@@ -471,14 +465,13 @@ class ImdlParser {
           break;
         case "mesh": {
           const mesh = primitive.params;
-          const material = mesh.surface.material;
           const texMap = mesh.surface.textureMapping;
           const params: MeshParams = {
             vertices: toVertexTable(primitive.params.vertices),
             surface: {
               ...primitive.params.surface,
               indices: new VertexIndices(primitive.params.surface.indices),
-              material: material?.isAtlas ? material : (material ? { isAtlas: false, material: Material.create(material) } : undefined),
+              material: convertMaterial(mesh.surface.material),
               textureMapping: texMap ? {
                 alwaysDisplayed: texMap.alwaysDisplayed,
                 // The texture type doesn't actually matter here.
@@ -493,10 +486,19 @@ class ImdlParser {
           const split = splitMeshParams({
             ...splitArgs,
             params,
-            createMaterial: (args) => UnnamedMaterial.fromArgs(args),
+            createMaterial: (args) => Material.create(args),
           });
           for (const [nodeId, params] of split) {
-            assert(params.surface.material === undefined || params.surface.material instanceof Material);
+            let material: Imdl.SurfaceMaterial | undefined;
+            if (params.surface.material) {
+              if (params.surface.material.isAtlas) {
+                material = params.surface.material;
+              } else {
+              assert(params.surface.material.material instanceof Material);
+              material = params.surface.material.material.toImdl();
+              }
+            }
+
             assert(params.surface.textureMapping === undefined || params.surface.textureMapping.texture instanceof Texture);
             getNode(nodeId).primitives.push({
               type: "mesh",
@@ -505,7 +507,7 @@ class ImdlParser {
                 surface: {
                   ...params.surface,
                   indices: params.surface.indices.data,
-                  material: params.surface.material?.toImdl(),
+                  material,
                   textureMapping: params.surface.textureMapping?.texture instanceof Texture ? {
                     texture: params.surface.textureMapping.texture.toImdl(),
                     alwaysDisplayed: params.surface.textureMapping.alwaysDisplayed,
@@ -949,22 +951,39 @@ class ImdlParser {
   }
 
   private materialFromJson(key: string): RenderMaterial | undefined {
-    const json = this._document.renderMaterials[key];
-    if (!json)
+    const materialJson = this._document.renderMaterials[key];
+    if (!materialJson)
       return undefined;
 
-    return new UnnamedMaterial({
-      alpha: undefined !== json.transparency ? 1.0 - json.transparency : undefined,
-      diffuse: {
-        color: this.colorDefFromMaterialJson(json.diffuseColor)?.toJSON(),
-        weight: json.diffuse,
-      },
-      specular: {
-        color: this.colorDefFromMaterialJson(json.specularColor)?.toJSON(),
-        weight: json.specular,
-        exponent: json.specularExponent,
-      },
-    });
+    // eslint-disable-next-line deprecation/deprecation
+    const materialParams = new RenderMaterial.Params(key);
+    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
+    if (materialJson.diffuse !== undefined)
+      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
+
+    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
+    if (materialJson.specular !== undefined)
+      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
+
+    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+    if (materialJson.reflect !== undefined)
+      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+
+    if (materialJson.specularExponent !== undefined)
+      materialParams.specularExponent = materialJson.specularExponent;
+
+    if (undefined !== materialJson.transparency)
+      materialParams.alpha = 1.0 - materialJson.transparency;
+
+    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+
+    if (undefined !== materialJson.textureMapping)
+      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+
+    // eslint-disable-next-line deprecation/deprecation
+    return new Material(materialParams);
   }
 
   private parseNamedTexture(namedTex: ImdlNamedTexture, name: string): RenderTexture | undefined {
@@ -1060,6 +1079,26 @@ class ImdlParser {
 
     return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, gradient, ignoreLighting, textureMapping);
   }
+}
+
+export function toMaterialArgs(mat: Imdl.SurfaceMaterialParams): CreateRenderMaterialArgs {
+  const args: CreateRenderMaterialArgs = { alpha: mat.alpha };
+  if (mat.diffuse) {
+    args.diffuse = {
+      weight: mat.diffuse.weight,
+      color: undefined !== mat.diffuse.color ? ColorDef.fromJSON(mat.diffuse.color) : undefined,
+    };
+  }
+
+  if (mat.specular) {
+    args.specular = {
+      weight: mat.specular.weight,
+      exponent: mat.specular.exponent,
+      color: undefined !== mat.specular.color ? ColorDef.fromJSON(mat.specular.color) : undefined,
+    };
+  }
+
+  return args;
 }
 
 export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchModelId: Id64String): RenderFeatureTable {

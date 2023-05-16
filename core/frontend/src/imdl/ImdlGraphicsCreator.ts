@@ -13,10 +13,9 @@ import {
 } from "@itwin/core-common";
 import type { ImdlColorDef, ImdlDocument, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
 import type { ImdlModel as Imdl } from "../imdl/ImdlModel";
-import { edgeParamsFromImdl } from "../imdl/ImdlParser";
+import { edgeParamsFromImdl, toMaterialArgs } from "../imdl/ImdlParser";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
-import type { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
@@ -161,22 +160,7 @@ function textureMappingFromJson(json: ImdlTextureMapping | undefined, options: G
 
 function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: GraphicsOptions): RenderMaterial | undefined {
   if (typeof mat !== "string") {
-    const args: CreateRenderMaterialArgs = { alpha: mat.alpha };
-    if (mat.diffuse) {
-      args.diffuse = {
-        weight: mat.diffuse.weight,
-        color: undefined !== mat.diffuse.color ? ColorDef.fromJSON(mat.diffuse.color) : undefined,
-      };
-    }
-
-    if (mat.specular) {
-      args.specular = {
-        weight: mat.specular.weight,
-        exponent: mat.specular.exponent,
-        color: undefined !== mat.specular.color ? ColorDef.fromJSON(mat.specular.color) : undefined,
-      };
-    }
-
+    const args = toMaterialArgs(mat);
     return options.system.createRenderMaterial(args);
   }
 
