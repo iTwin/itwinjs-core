@@ -27,8 +27,14 @@ import { AnimationNodeId } from "../render/GraphicBranch";
 import { ComputeAnimationNodeId, EdgeParams, MeshParams, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
 import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 
+/** Timeline used to reassemble iMdl content into animatable nodes.
+ * @internal
+ */
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
+/** Options provided to [[parseImdlDocument]].
+ * @internal
+ */
 export interface ImdlParserOptions {
   stream: ByteStream;
   batchModelId: Id64String;
@@ -89,6 +95,9 @@ class GltfHeader extends TileHeader {
 type OptionalDocumentProperties = "rtcCenter" | "animationNodes";
 type Document = Required<Omit<ImdlDocument, OptionalDocumentProperties>> & Pick<ImdlDocument, OptionalDocumentProperties>;
 
+/** Error codes resulting from [[parseImdlDocument]].
+ * @internal
+ */
 export type ImdlParseError = Exclude<TileReadStatus, TileReadStatus.Success>;
 
 interface FeatureTableInfo {
@@ -190,6 +199,7 @@ class Material extends RenderMaterial {
   }
 }
 
+/** @internal */
 export function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   return new VertexTable({
     ...imdl,
@@ -208,6 +218,7 @@ function fromVertexTable(table: VertexTable): Imdl.VertexTable {
   };
 }
 
+/** @internal */
 export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
   return {
     ...imdl,
@@ -1081,6 +1092,7 @@ class ImdlParser {
   }
 }
 
+/** @internal */
 export function toMaterialArgs(mat: Imdl.SurfaceMaterialParams): CreateRenderMaterialArgs {
   const args: CreateRenderMaterialArgs = { alpha: mat.alpha };
   if (mat.diffuse) {
@@ -1101,6 +1113,7 @@ export function toMaterialArgs(mat: Imdl.SurfaceMaterialParams): CreateRenderMat
   return args;
 }
 
+/** @internal */
 export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchModelId: Id64String): RenderFeatureTable {
   const table = imdlFeatureTable.multiModel
     ? MultiModelPackedFeatureTable.create(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories)
@@ -1110,6 +1123,7 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
   return table;
 }
 
+/** @internal */
 export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
   const stream = options.stream;
   const imdlHeader = new ImdlHeader(stream);

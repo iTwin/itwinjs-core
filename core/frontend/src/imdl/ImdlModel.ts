@@ -16,6 +16,11 @@ import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceP
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { ImdlAreaPattern, ImdlDocument } from "./ImdlSchema";
 
+/** Types comprising the parsed representation of an ImdlDocument, produced by [[parseImdlDocument]] and consumed by [[decodeImdlGraphics]].
+ * All of the types are required to support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) so that they
+ * can be passed between workers and the main JavaScript thread.
+ * @internal
+ */
 export namespace ImdlModel {
   export interface VertexTable {
     data: Uint8Array;

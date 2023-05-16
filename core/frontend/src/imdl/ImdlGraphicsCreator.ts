@@ -22,6 +22,9 @@ import type { IModelConnection } from "../IModelConnection";
 import { createSurfaceMaterial, EdgeParams, VertexIndices, VertexTable } from "../render-primitives";
 import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
+/** Options provided to [[decodeImdlContent]].
+ * @internal
+ */
 export interface ImdlDecodeOptions {
   document: Imdl.Document;
   system: RenderSystem;
@@ -350,6 +353,7 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
   return graphics;
 }
 
+/** @internal */
 export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
   const textures = await loadNamedTextures(options);
   const patterns = new Map<string, RenderGeometry[]>();
