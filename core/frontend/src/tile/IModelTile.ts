@@ -15,7 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
-  addRangeGraphic, ImdlReader, IModelTileTree, readImdlContent, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
+  addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
   TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
@@ -115,25 +115,18 @@ export class IModelTile extends Tile {
     const tree = this.iModelTree;
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
     const { iModel, modelId, is3d, containsTransformNodes } = tree;
-    const args = {
-      stream: streamBuffer,
-      type: tree.batchType,
-      loadEdges: false !== tree.edgeOptions,
-      options: { tileId: this.contentId },
-      timeline: tree.timeline,
-      iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
-    };
-
-    // ###TODO remove this
-    const useNewDecode = true;
     try {
-      if (useNewDecode) {
-        content = await readImdlContent(args);
-      } else {
-        const reader = ImdlReader.create(args);
-        if (reader)
-          content = await reader.read();
-      }
+      const reader = ImdlReader.create({
+        stream: streamBuffer,
+        type: tree.batchType,
+        loadEdges: false !== tree.edgeOptions,
+        options: { tileId: this.contentId },
+        timeline: tree.timeline,
+        iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
+      });
+
+      content = await reader.read();
+      return content;
     } catch {
       //
     }
