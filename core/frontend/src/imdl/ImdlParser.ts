@@ -190,10 +190,10 @@ class Material extends RenderMaterial {
   }
 }
 
-function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
+export function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   return new VertexTable({
     ...imdl,
-    uniformColor: imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
+    uniformColor: undefined !== imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
     qparams: QParams3d.fromJSON(imdl.qparams),
     uvParams: imdl.uvParams ? QParams2d.fromJSON(imdl.uvParams) : undefined,
   });

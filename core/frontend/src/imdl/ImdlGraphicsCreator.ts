@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import type { ImdlColorDef, ImdlDocument, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
 import type { ImdlModel as Imdl } from "../imdl/ImdlModel";
-import { edgeParamsFromImdl, toMaterialArgs } from "../imdl/ImdlParser";
+import { edgeParamsFromImdl, toMaterialArgs, toVertexTable } from "../imdl/ImdlParser";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
@@ -225,15 +225,6 @@ function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instance
     default:
       return { };
   }
-}
-
-function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
-  return new VertexTable({
-    ...imdl,
-    qparams: QParams3d.fromJSON(imdl.qparams),
-    uniformColor: imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
-    uvParams: imdl.uvParams ? QParams2d.fromJSON(imdl.uvParams) : undefined,
-  });
 }
 
 function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOptions, viOrigin: Point3d | undefined): RenderGeometry | undefined {
