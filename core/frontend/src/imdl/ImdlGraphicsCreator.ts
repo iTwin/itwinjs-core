@@ -254,7 +254,7 @@ function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
   const graphics = [];
   for (const primitive of node.primitives) {
-    const mods = getModifiers(primitive);
+    const mods = primitive.type !== "pattern" ? getModifiers(primitive) : { };
 
     // ###TODO area patterns...
     let geometry;

@@ -14,7 +14,7 @@ import {
 import { EdgeTable } from "../render/primitives/EdgeParams";
 import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceParams";
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { ImdlDocument } from "./ImdlSchema";
+import { ImdlAreaPattern, ImdlDocument } from "./ImdlSchema";
 
 export namespace ImdlModel {
   export interface VertexTable {
@@ -153,6 +153,7 @@ export namespace ImdlModel {
 
   export type NodePrimitive = Primitive | {
     params: AreaPatternParams;
+    modifier?: never;
     type: "pattern";
   };
 

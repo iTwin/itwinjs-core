@@ -275,6 +275,7 @@ class ImdlParser {
   private readonly _binaryData: Uint8Array;
   private readonly _options: ImdlParserOptions;
   private readonly _featureTableInfo: FeatureTableInfo;
+  private readonly _patterns = new Map<string, Imdl.Primitive[]>();
 
   private get stream(): ByteStream {
     return this._options.stream;
@@ -305,6 +306,7 @@ class ImdlParser {
       rtcCenter,
       binaryData: this._binaryData,
       json: this._document,
+      patterns: this._patterns,
     };
   }
 
@@ -627,6 +629,17 @@ class ImdlParser {
       weight: displayParams.width,
       linePixels: displayParams.linePixels,
     };
+  }
+
+  private getPattern(name: string): Imdl.Primitive[] | undefined {
+    let primitives = this._patterns.get(name);
+    if (!primitives) {
+      const symbol = this._document.patternSymbols[name];
+      primitives = symbol ? this.parsePrimitives(symbol.primitives) : [];
+      this._patterns.set(name, primitives);
+    }
+
+    return primitives.length > 0 ? primitives : undefined;
   }
 
   private parseAreaPattern(docPattern: ImdlAreaPattern): Imdl.NodePrimitive | undefined {
