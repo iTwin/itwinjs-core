@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { assert, Uint16ArrayBuilder, StructuredCloneableObject, Transferables } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import {
   Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -266,12 +266,6 @@ export interface QPoint2dBuffer {
   points: Uint16Array;
 }
 
-/** @alpha */
-export interface CloneableQPoint2dBuffer extends StructuredCloneableObject {
-  params: QParams2dProps;
-  points: Uint16Array;
-}
-
 /** @public
  * @extensions
  */
@@ -307,23 +301,6 @@ export namespace QPoint2dBuffer {
   export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint2d);
     return qpt.unquantize(buffer.params, result);
-  }
-
-  /** @alpha */
-  export function toStructuredCloneable(buffer: QPoint2dBuffer, transferables: Transferables): CloneableQPoint2dBuffer {
-    transferables.add(buffer.points.buffer);
-    return {
-      params: buffer.params.toJSON(),
-      points: buffer.points,
-    };
-  }
-
-  /** @alpha */
-  export function fromStructuredCloneable(src: CloneableQPoint2dBuffer): QPoint2dBuffer {
-    return {
-      params: QParams2d.fromJSON(src.params),
-      points: src.points,
-    };
   }
 }
 
@@ -711,12 +688,6 @@ export interface QPoint3dBuffer {
   points: Uint16Array;
 }
 
-/** @alpha */
-export interface CloneableQPoint3dBuffer extends StructuredCloneableObject {
-  params: QParams3dProps;
-  points: Uint16Array;
-}
-
 /** @public
  * @extensions
  */
@@ -753,23 +724,6 @@ export namespace QPoint3dBuffer {
   export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint3d);
     return qpt.unquantize(buffer.params, result);
-  }
-
-  /** @alpha */
-  export function toStructuredCloneable(buffer: QPoint3dBuffer, transferables: Transferables): CloneableQPoint3dBuffer {
-    transferables.add(buffer.points.buffer);
-    return {
-      params: buffer.params.toJSON(),
-      points: buffer.points,
-    };
-  }
-
-  /** @alpha */
-  export function fromStructuredCloneable(src: CloneableQPoint3dBuffer): QPoint3dBuffer {
-    return {
-      params: QParams3d.fromJSON(src.params),
-      points: src.points,
-    };
   }
 }
 
