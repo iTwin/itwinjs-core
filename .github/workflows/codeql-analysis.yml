@@ -7,10 +7,12 @@ on:
     branches:
       - master
       - 'release/**'
+      - imodel02
   pull_request:
     branches:
       - master
       - 'release/**'
+      - imodel02
 jobs:
   analyze:
     name: Analyze
