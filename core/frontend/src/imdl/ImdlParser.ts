@@ -465,7 +465,10 @@ class ImdlParser {
         continue;
 
       switch (primitive.type) {
-        // ###TODO area patterns
+        case "pattern":
+          // ###TODO animated area patterns
+          getNode(AnimationNodeId.Untransformed).primitives.push(primitive);
+          break;
         case "mesh": {
           const mesh = primitive.params;
           const material = mesh.surface.material;
@@ -642,9 +645,22 @@ class ImdlParser {
     return primitives.length > 0 ? primitives : undefined;
   }
 
-  private parseAreaPattern(docPattern: ImdlAreaPattern): Imdl.NodePrimitive | undefined {
-    // ###TODO patterns
-    return undefined;
+  private parseAreaPattern(json: ImdlAreaPattern): Imdl.NodePrimitive | undefined {
+    const primitives = this.getPattern(json.symbolName);
+    if (!primitives || primitives.length === 0)
+      return undefined;
+
+    const xyOffsets = this.findBuffer(json.xyOffsets);
+    if (!xyOffsets)
+      return undefined;
+
+    return {
+      type: "pattern",
+      params: {
+        ...json,
+        xyOffsets: new Float32Array(xyOffsets.buffer, xyOffsets.byteOffset, xyOffsets.byteLength / 4),
+      },
+    };
   }
 
   private parseNodePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.NodePrimitive[] {
