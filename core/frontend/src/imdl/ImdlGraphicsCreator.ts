@@ -17,7 +17,7 @@ import { edgeParamsFromImdl } from "../imdl/ImdlParser";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { CreateRenderMaterialArgs } from "../render/RenderMaterial";
-import type { RenderSystem } from "../render/RenderSystem";
+import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
 import { createSurfaceMaterial, EdgeParams, VertexIndices, VertexTable } from "../render-primitives";
@@ -251,69 +251,68 @@ function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   });
 }
 
-function createPrimitiveGraphic(primitive: Imdl.Primitive, options: GraphicsOptions): RenderGraphic | undefined {
-    let geometry;
-    const mods = getModifiers(primitive);
-    switch (primitive.type) {
-      case "point":
-        geometry = options.system.createPointStringGeometry({
-          ...primitive.params,
-          vertices: toVertexTable(primitive.params.vertices),
-          indices: new VertexIndices(primitive.params.indices),
-        }, mods.viOrigin);
-        break;
-      case "polyline":
-        geometry = options.system.createPolylineGeometry({
-          ...primitive.params,
-          vertices: toVertexTable(primitive.params.vertices),
-          polyline: {
-            ...primitive.params.polyline,
-            indices: new VertexIndices(primitive.params.polyline.indices),
-            prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
-          },
-        }, mods.viOrigin);
-        break;
-      case "mesh": {
-        const surf = primitive.params.surface;
-        let material;
-        if (surf.material) {
-          if (!surf.material.isAtlas)
-            material = createSurfaceMaterial(getMaterial(surf.material.material, options));
-          else
-            material = surf.material;
-        }
-
-        let textureMapping;
-        if (surf.textureMapping) {
-          let texture;
-          if (typeof surf.textureMapping.texture === "string") {
-            texture = options.textures.get(surf.textureMapping.texture);
-          } else {
-            const gradient = Gradient.Symb.fromJSON(surf.textureMapping.texture);
-            texture = options.system.getGradientTexture(gradient, options.iModel);
-          }
-
-          if (texture)
-            textureMapping = { texture, alwaysDisplayed: surf.textureMapping.alwaysDisplayed };
-        }
-
-        geometry = options.system.createMeshGeometry({
-          ...primitive.params,
-          edges: primitive.params.edges ? edgeParamsFromImdl(primitive.params.edges) : undefined,
-          vertices: toVertexTable(primitive.params.vertices),
-          auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
-          surface: {
-            ...primitive.params.surface,
-            material,
-            textureMapping,
-            indices: new VertexIndices(primitive.params.surface.indices),
-          },
-        }, mods.viOrigin);
-        break;
+function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOptions, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+  switch (primitive.type) {
+    case "point":
+      return options.system.createPointStringGeometry({
+        ...primitive.params,
+        vertices: toVertexTable(primitive.params.vertices),
+        indices: new VertexIndices(primitive.params.indices),
+      }, viOrigin);
+    case "polyline":
+      return options.system.createPolylineGeometry({
+        ...primitive.params,
+        vertices: toVertexTable(primitive.params.vertices),
+        polyline: {
+          ...primitive.params.polyline,
+          indices: new VertexIndices(primitive.params.polyline.indices),
+          prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
+        },
+      }, viOrigin);
+    case "mesh": {
+      const surf = primitive.params.surface;
+      let material;
+      if (surf.material) {
+        if (!surf.material.isAtlas)
+          material = createSurfaceMaterial(getMaterial(surf.material.material, options));
+        else
+          material = surf.material;
       }
-    }
 
-    return geometry ? options.system.createRenderGraphic(geometry, mods.instances) : undefined;
+      let textureMapping;
+      if (surf.textureMapping) {
+        let texture;
+        if (typeof surf.textureMapping.texture === "string") {
+          texture = options.textures.get(surf.textureMapping.texture);
+        } else {
+          const gradient = Gradient.Symb.fromJSON(surf.textureMapping.texture);
+          texture = options.system.getGradientTexture(gradient, options.iModel);
+        }
+
+        if (texture)
+          textureMapping = { texture, alwaysDisplayed: surf.textureMapping.alwaysDisplayed };
+      }
+
+      return options.system.createMeshGeometry({
+        ...primitive.params,
+        edges: primitive.params.edges ? edgeParamsFromImdl(primitive.params.edges) : undefined,
+        vertices: toVertexTable(primitive.params.vertices),
+        auxChannels: primitive.params.auxChannels ? AuxChannelTable.fromJSON(primitive.params.auxChannels) : undefined,
+        surface: {
+          ...primitive.params.surface,
+          material,
+          textureMapping,
+          indices: new VertexIndices(primitive.params.surface.indices),
+        },
+      }, viOrigin);
+    }
+  }
+}
+
+function createPrimitiveGraphic(primitive: Imdl.Primitive, options: GraphicsOptions): RenderGraphic | undefined {
+  const mods = getModifiers(primitive);
+  const geometry = createPrimitiveGeometry(primitive, options, mods.viOrigin);
+  return geometry ? options.system.createRenderGraphic(geometry, mods.instances) : undefined;
 }
 
 function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsOptions): RenderGraphic | undefined {
