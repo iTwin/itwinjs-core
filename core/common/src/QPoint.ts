@@ -62,7 +62,7 @@ export namespace Quantization {
 }
 
 /** @alpha */
-export type QParams2dProps = {
+export interface QParams2dProps {
   origin: XAndY;
   scale: XAndY;
 }
@@ -413,7 +413,7 @@ export class QPoint2dList {
 }
 
 /** @alpha */
-export type QParams3dProps = {
+export interface QParams3dProps {
   origin: XYAndZ;
   scale: XYAndZ;
 }
