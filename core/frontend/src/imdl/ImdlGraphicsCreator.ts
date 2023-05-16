@@ -7,7 +7,7 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, QParams2d, QParams3d, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
@@ -328,25 +328,46 @@ function createPatternGeometries(primitives: Imdl.Primitive[], options: Graphics
 }
 
 function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsOptions): RenderGraphic | undefined {
-  return undefined;
-  // ###TODO
+  const geometries = options.patterns.get(params.symbolName);
+  if (!geometries || geometries.length === 0)
+    return undefined;
+
+  const clip = ClipVector.fromJSON(params.clip);
+  const clipVolume = clip?.isValid ? options.system.createClipVolume(clip) : undefined;
+  if (!clipVolume)
+    return undefined;
+
+  const viewIndependentOrigin = params.viewIndependentOrigin ? Point3d.fromJSON(params.viewIndependentOrigin) : undefined;
+  const pattern = options.system.createAreaPattern({
+    xyOffsets: params.xyOffsets,
+    featureId: params.featureId,
+    orgTransform: Transform.fromJSON(params.orgTransform),
+    origin: Point2d.fromJSON(params.origin),
+    scale: params.scale,
+    spacing: Point2d.fromJSON(params.spacing),
+    patternToModel: Transform.fromJSON(params.modelTransform),
+    range: Range3d.fromJSON(params.range),
+    symbolTranslation: Point3d.fromJSON(params.symbolTranslation),
+    viewIndependentOrigin,
+  });
+
+  if (!pattern)
+    return undefined;
+
+  const branch = new GraphicBranch(true);
+  for (const geometry of geometries) {
+    const graphic = options.system.createRenderGraphic(geometry, pattern);
+    if (graphic)
+      branch.add(graphic);
+  }
+
+  return branch.isEmpty ? undefined : options.system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
 }
 
 function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
   const graphics = [];
   for (const primitive of node.primitives) {
     const graphic = primitive.type === "pattern" ? createPatternGraphic(primitive.params, options) : createPrimitiveGraphic(primitive, options);
-    if (graphic)
-      graphics.push(graphic);
-  }
-
-  return graphics;
-}
-
-function createPrimitiveGraphics(primitives: Imdl.Primitive[], options: GraphicsOptions): RenderGraphic[] {
-  const graphics = [];
-  for (const primitive of primitives) {
-    const graphic = createPrimitiveGraphic(primitive, options);
     if (graphic)
       graphics.push(graphic);
   }
