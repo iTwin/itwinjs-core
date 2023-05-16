@@ -28,12 +28,21 @@ export namespace CloudSqlite {
   const logInfo = (msg: string) => Logger.logInfo("CloudSqlite", msg);
   const logError = (msg: string) => Logger.logError("CloudSqlite", msg);
 
+  /**
+   * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
+   * If the service is unavailable or returns an error, an empty token is returned.
+   */
   export async function requestToken(args: ContainerTokenProps): Promise<AccessToken> {
     const userToken = await IModelHost.getAccessToken();
     const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken, forWriteAccess: args.writeable });
     return response?.token ?? "";
   }
 
+  /**
+   * Create a new CloudContainer from a ContainerAccessProps. A valid accessToken must be provided before the container can be used.
+   * @note After the container is connected to a CloudCache, it will begin auto-refreshing its AccessToken every `tokenRefreshSeconds` seconds (default is 1 hour).
+   * However, if the container is public, or If `tokenRefreshSeconds` is <0, auto-refresh is not enabled.
+   */
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise: Promise<void> | undefined };
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
