@@ -150,10 +150,12 @@ async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlReaderRe
   };
 }
 
+/** @internal */
 export interface ImdlReader {
   read: () => Promise<ImdlReaderResult>;
 }
 
+/** @internal */
 export namespace ImdlReader {
   export function create(args: ImdlReaderCreateArgs): ImdlReader {
     return {
