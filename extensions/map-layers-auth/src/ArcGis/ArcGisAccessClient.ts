@@ -275,6 +275,19 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   /**
+  * Returns whether the ArcGis host is valid
+  * @internal
+  */
+  private isArcGisHostValid(url: URL): boolean {
+    const isolatedHost = url.hostname.toLowerCase().split(".").slice(-2).join(".");
+    const allowedHosts = [
+      "arcgis.com",
+    ];
+
+    return allowedHosts.includes(isolatedHost);
+  }
+
+  /**
  * Get OAuth2 endpoint that must be cause to get the Oauth2 token
  * @internal
  */
@@ -286,13 +299,10 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     }
 
     const endpointStr = (endpointType === ArcGisOAuth2EndpointType.Authorize ? "authorize" : "token");
+
     const urlObj = new URL(url);
 
-    const allowedHosts = [
-      "arcgis.com"
-    ];
-
-    if (allowedHosts.includes(urlObj.hostname.toLowerCase())) {
+    if (this.isArcGisHostValid(urlObj)) {
       // ArcGIS Online (fixed)
       // Doc: https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/
 
