@@ -92,7 +92,7 @@
     },
     {
       "name": "@bentley/icons-generic-webfont",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
@@ -475,6 +475,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "cpx2",
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -592,7 +596,7 @@
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "internal-tools",
@@ -625,6 +629,54 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "karma",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-babel-preprocessor",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chai-plugins",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chrome-launcher",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-instrumenter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-jasmine",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-junit-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-mocha",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-sourcemap-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-webpack",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "lodash",

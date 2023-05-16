@@ -1,14 +1,14 @@
 # Learning iTwin.js UI
 
-## AppUi
+## AppUI
 
-AppUi is a framework for writing iTwin.js apps. For details, see this [overview](./appui/index).
+AppUI is a framework for writing iTwin.js apps. For details, see this [overview](./appui/index).
 
 For a quick-start approach to creating an iTwin.js app with App UI, see [Quick Start to an App UI user interface](./QuickStartUi.md).
 
 ## React version requirements
 
-iTwin.js UI bases its controls on the [React](https://reactjs.org/) JavaScript library and is compatible with React 17.0 and later.
+AppUI bases its controls on the [React](https://reactjs.org/) JavaScript library and is compatible with React 17.0 and later.
 
 ## Library Organization
 
@@ -16,7 +16,7 @@ The iTwin.js UI library is divided into these NPM packages in the `@bentley` sco
 
 |Package Name|Description
 |-----|-----
-|[appui-abstract](./abstract/index)|Abstractions for UI controls and items, such as Toolbar, Button, Menu, Backstage, StatusBar and Widget.
+|[appui-abstract](./abstract/index)|Abstractions for UI controls and items.
 |[core-react](./core/index)|General purpose React components that can be used outside AppUi apps.
 |[components-react](./components/index)|React components that are data-oriented, such as PropertyGrid, Table and Tree.
 |[imodel-components-react](./imodel-components/index)|React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages. The components pertain to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
