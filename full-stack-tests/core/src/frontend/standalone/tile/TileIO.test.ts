@@ -480,7 +480,7 @@ describe("TileIO (mock render)", () => {
 
       expect(reader).not.to.be.undefined;
 
-      const result = await reader!.read();
+      const result = await reader.read();
       expect(result.readStatus).to.equal(TileReadStatus.Canceled);
     }
   });
