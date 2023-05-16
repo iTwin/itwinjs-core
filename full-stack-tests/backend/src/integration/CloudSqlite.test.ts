@@ -325,8 +325,8 @@ describe("CloudSqlite", () => {
     // destroying a cache disconnects all connected containers
     const testDestroyDisconnects = false; // this causes problems due to refresh timers. Re-enable when next addon is build
     if (testDestroyDisconnects) {
-      expect(contain1.isConnected);
-      expect(anonContainer.isConnected);
+      expect(contain1.isConnected).true;
+      expect(anonContainer.isConnected).true;
     } else {
       contain1.disconnect();
       anonContainer.disconnect();
