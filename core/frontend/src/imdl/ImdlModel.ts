@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { NonFunctionPropertiesOf, UintArray } from "@itwin/core-bentley";
+import { UintArray } from "@itwin/core-bentley";
 import { LowAndHighXYZ, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
@@ -111,11 +111,11 @@ export namespace ImdlModel {
       texture: string | Gradient.SymbProps;
       alwaysDisplayed: boolean;
     };
-  };
+  }
 
   export interface MeshParams {
     vertices: VertexTable;
-    surface: SurfaceParams
+    surface: SurfaceParams;
     edges?: EdgeParams;
     isPlanar: boolean;
     auxChannels?: AuxChannelTableProps;
@@ -209,6 +209,6 @@ export namespace ImdlModel {
     patterns: Map<string, Primitive[]>;
     rtcCenter?: XYAndZ;
     binaryData: Uint8Array;
-    json: ImdlDocument,
+    json: ImdlDocument;
   }
 }

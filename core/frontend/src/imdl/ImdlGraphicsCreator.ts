@@ -9,9 +9,9 @@
 import { JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, Gradient, ImageSource, QParams2d, QParams3d, RenderMaterial, RenderTexture, TextureMapping,
+  ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
-import type { ImdlColorDef, ImdlDocument, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
+import type { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
 import type { ImdlModel as Imdl } from "../imdl/ImdlModel";
 import { edgeParamsFromImdl, toMaterialArgs, toVertexTable } from "../imdl/ImdlParser";
 import type { RenderGraphic } from "../render/RenderGraphic";
@@ -19,7 +19,8 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { createSurfaceMaterial, EdgeParams, VertexIndices, VertexTable } from "../render-primitives";
+import { createSurfaceMaterial } from "../render/primitives/SurfaceParams";
+import { VertexIndices } from "../render/primitives/VertexTable";
 import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
 
 /** Options provided to [[decodeImdlContent]].
@@ -66,7 +67,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
       const texBytes = options.document.binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
       const source = new ImageSource(texBytes, format);
-      return options.system.createTextureFromSource({ source, ownership, type: textureType, transparency: namedTex.transparency });
+      return await options.system.createTextureFromSource({ source, ownership, type: textureType, transparency: namedTex.transparency });
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
@@ -86,7 +87,7 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
 
   const promises = new Array<Promise<void>>();
   for (const [name, namedTexture] of Object.entries(namedTextures)) {
-    let texture = options.system.findTexture(name, options.iModel);
+    const texture = options.system.findTexture(name, options.iModel);
     if (texture) {
       result.set(name, texture);
       continue;
@@ -175,12 +176,12 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
   if (!json)
     return undefined;
 
-  function colorDefFromJson(json: ImdlColorDef | undefined): ColorDef | undefined {
-    return json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
+  function colorDefFromJson(col: ImdlColorDef | undefined): ColorDef | undefined {
+    return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
   // eslint-disable-next-line deprecation/deprecation
-  const params = new RenderMaterial.Params
+  const params = new RenderMaterial.Params(mat);
   params.diffuseColor = colorDefFromJson(json.diffuseColor);
   if (json.diffuse !== undefined)
     params.diffuse = JsonUtils.asDouble(json.diffuse);

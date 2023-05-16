@@ -9,8 +9,8 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, RgbColorProps, TextureMapping, TileFormat,
+  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
   TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
@@ -19,12 +19,13 @@ import {
   ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
+import { isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
+import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../render/GraphicBranch";
-import { ComputeAnimationNodeId, EdgeParams, MeshParams, TesselatedPolyline, VertexIndices, VertexTable } from "../render-primitives";
+import { EdgeParams } from "../render/primitives/EdgeParams";
+import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
 import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
@@ -156,6 +157,7 @@ class Material extends RenderMaterial {
     return { isAtlas: false, material };
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
     super(params);
 
@@ -174,6 +176,7 @@ class Material extends RenderMaterial {
   }
 
   public static create(args: CreateRenderMaterialArgs): Material {
+    // eslint-disable-next-line deprecation/deprecation
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
     if (args.diffuse) {
@@ -272,7 +275,7 @@ class ImdlParser {
   private readonly _featureTableInfo: FeatureTableInfo;
   private readonly _patterns = new Map<string, Imdl.Primitive[]>();
 
-  private get stream(): ByteStream {
+  private get _stream(): ByteStream {
     return this._options.stream;
   }
 
@@ -306,15 +309,15 @@ class ImdlParser {
   }
 
   private parseFeatureTable(): Imdl.FeatureTable | undefined {
-    this.stream.curPos = this._featureTableInfo.startPos;
-    const header = FeatureTableHeader.readFrom(this.stream);
+    this._stream.curPos = this._featureTableInfo.startPos;
+    const header = FeatureTableHeader.readFrom(this._stream);
     if (!header || 0 !== header.length % 4)
       return undefined;
 
     // NB: We make a copy of the sub-array because we don't want to pin the entire data array in memory.
     const numUint32s = (header.length - FeatureTableHeader.sizeInBytes) / 4;
-    const packedFeatureArray = new Uint32Array(this.stream.nextUint32s(numUint32s));
-    if (this.stream.isPastTheEnd)
+    const packedFeatureArray = new Uint32Array(this._stream.nextUint32s(numUint32s));
+    if (this._stream.isPastTheEnd)
       return undefined;
 
     let featureTable: Imdl.FeatureTable;
@@ -360,7 +363,7 @@ class ImdlParser {
       };
     }
 
-    this.stream.curPos = this._featureTableInfo.startPos + header.length;
+    this._stream.curPos = this._featureTableInfo.startPos + header.length;
     return featureTable;
   }
 
@@ -499,35 +502,35 @@ class ImdlParser {
             params,
             createMaterial: (args) => Material.create(args),
           });
-          for (const [nodeId, params] of split) {
+          for (const [nodeId, p] of split) {
             let material: Imdl.SurfaceMaterial | undefined;
-            if (params.surface.material) {
-              if (params.surface.material.isAtlas) {
-                material = params.surface.material;
+            if (p.surface.material) {
+              if (p.surface.material.isAtlas) {
+                material = p.surface.material;
               } else {
-              assert(params.surface.material.material instanceof Material);
-              material = params.surface.material.material.toImdl();
+                assert(p.surface.material.material instanceof Material);
+                material = p.surface.material.material.toImdl();
               }
             }
 
-            assert(params.surface.textureMapping === undefined || params.surface.textureMapping.texture instanceof Texture);
+            assert(p.surface.textureMapping === undefined || p.surface.textureMapping.texture instanceof Texture);
             getNode(nodeId).primitives.push({
               type: "mesh",
               params: {
-                vertices: fromVertexTable(params.vertices),
+                vertices: fromVertexTable(p.vertices),
                 surface: {
-                  ...params.surface,
-                  indices: params.surface.indices.data,
+                  ...p.surface,
+                  indices: p.surface.indices.data,
                   material,
-                  textureMapping: params.surface.textureMapping?.texture instanceof Texture ? {
-                    texture: params.surface.textureMapping.texture.toImdl(),
-                    alwaysDisplayed: params.surface.textureMapping.alwaysDisplayed,
+                  textureMapping: p.surface.textureMapping?.texture instanceof Texture ? {
+                    texture: p.surface.textureMapping.texture.toImdl(),
+                    alwaysDisplayed: p.surface.textureMapping.alwaysDisplayed,
                   } : undefined,
                 },
-                edges: params.edges ? edgeParamsToImdl(params.edges) : undefined,
-                isPlanar: params.isPlanar,
-                auxChannels: params.auxChannels?.toJSON(),
-              }
+                edges: p.edges ? edgeParamsToImdl(p.edges) : undefined,
+                isPlanar: p.isPlanar,
+                auxChannels: p.auxChannels?.toJSON(),
+              },
             });
           }
 
@@ -541,13 +544,13 @@ class ImdlParser {
           };
 
           const split = splitPointStringParams({ ...splitArgs, params });
-          for (const [nodeId, params] of split) {
+          for (const [nodeId, p] of split) {
             getNode(nodeId).primitives.push({
               type: "point",
               params: {
-                vertices: fromVertexTable(params.vertices),
-                indices: params.indices.data,
-                weight: params.weight,
+                vertices: fromVertexTable(p.vertices),
+                indices: p.indices.data,
+                weight: p.weight,
               },
             });
           }
@@ -566,16 +569,16 @@ class ImdlParser {
           };
 
           const split = splitPolylineParams({ ...splitArgs, params });
-          for (const [nodeId, params] of split) {
+          for (const [nodeId, p] of split) {
             getNode(nodeId).primitives.push({
               type: "polyline",
               params: {
-                ...params,
-                vertices: fromVertexTable(params.vertices),
+                ...p,
+                vertices: fromVertexTable(p.vertices),
                 polyline: {
-                  indices: params.polyline.indices.data,
-                  prevIndices: params.polyline.prevIndices.data,
-                  nextIndicesAndParams: params.polyline.nextIndicesAndParams,
+                  indices: p.polyline.indices.data,
+                  prevIndices: p.polyline.prevIndices.data,
+                  nextIndicesAndParams: p.polyline.nextIndicesAndParams,
                 },
               },
             });
@@ -607,7 +610,7 @@ class ImdlParser {
     return segments && normalPairs ? { ...segments, normalPairs } : undefined;
   }
 
-  private parseIndexedEdges(imdl: ImdlIndexedEdges) : Imdl.IndexedEdgeParams | undefined {
+  private parseIndexedEdges(imdl: ImdlIndexedEdges): Imdl.IndexedEdgeParams | undefined {
     const indices = this.findBuffer(imdl.indices);
     const edgeTable = this.findBuffer(imdl.edges);
     if (!indices || !edgeTable)

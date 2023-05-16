@@ -6,33 +6,17 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform } from "@itwin/core-geometry";
+import { ByteStream, Id64String } from "@itwin/core-bentley";
+import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, decodeTileContentDescription, ElementAlignedBox3d, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
-  ImageSource, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d,
-  RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, TextureMapping, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  BatchType, decodeTileContentDescription, RenderSchedule, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { AnimationNodeId, GraphicBranch } from "../render/GraphicBranch";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
-import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
-import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
-import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
-import { PointStringParams } from "../render/primitives/PointStringParams";
-import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
+import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
-import {
-  AnyImdlPrimitive, ImdlAnimationNodes, ImdlAreaPattern, ImdlAreaPatternSymbol, ImdlBufferView, ImdlColorDef, ImdlDictionary, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges,
-  ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlPrimitive, ImdlRenderMaterial, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
-} from "../imdl/ImdlSchema";
+import { RenderSystem } from "../render/RenderSystem";
 import { convertFeatureTable, parseImdlDocument } from "../imdl/ImdlParser";
 import { decodeImdlGraphics } from "../imdl/ImdlGraphicsCreator";
 import { IModelTileContent } from "./internal";
