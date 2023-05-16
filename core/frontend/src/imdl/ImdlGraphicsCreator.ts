@@ -251,13 +251,9 @@ function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   });
 }
 
-function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
-  const graphics = [];
-  for (const primitive of node.primitives) {
-    const mods = primitive.type !== "pattern" ? getModifiers(primitive) : { };
-
-    // ###TODO area patterns...
+function createPrimitiveGraphic(primitive: Imdl.Primitive, options: GraphicsOptions): RenderGraphic | undefined {
     let geometry;
+    const mods = getModifiers(primitive);
     switch (primitive.type) {
       case "point":
         geometry = options.system.createPointStringGeometry({
@@ -317,10 +313,29 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
       }
     }
 
-    if (!geometry)
-      continue;
+    return geometry ? options.system.createRenderGraphic(geometry, mods.instances) : undefined;
+}
 
-    const graphic = options.system.createRenderGraphic(geometry, mods.instances);
+function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsOptions): RenderGraphic | undefined {
+  return undefined;
+  // ###TODO
+}
+
+function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGraphic[] {
+  const graphics = [];
+  for (const primitive of node.primitives) {
+    const graphic = primitive.type === "pattern" ? createPatternGraphic(primitive.params, options) : createPrimitiveGraphic(primitive, options);
+    if (graphic)
+      graphics.push(graphic);
+  }
+
+  return graphics;
+}
+
+function createPrimitiveGraphics(primitives: Imdl.Primitive[], options: GraphicsOptions): RenderGraphic[] {
+  const graphics = [];
+  for (const primitive of primitives) {
+    const graphic = createPrimitiveGraphic(primitive, options);
     if (graphic)
       graphics.push(graphic);
   }
