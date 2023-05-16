@@ -10,7 +10,7 @@ Full instructions for creating a Web Viewer using create-react-app can be found 
 
 ## Modify the basic Frontstage
 
-iTwin's App UI organizes functionality into [Frontstages](./appui-react/Frontstages.md). Because the iTwin Viewer template for create-react-app provides a basic Frontstage, the quickest way to get started with a new app is to add your app's UI to that Frontstage with the [UiItemsProvider](./abstract/UiItemsProvider.md). This will add you tool buttons, [StatusBar](./appui-react/StatusBar.md) items, [Backstage](./appui-react/Backstage.md) items, and [Widgets](./appui-react/Widgets.md) to the basic viewer when the application loads.
+iTwin's App UI organizes functionality into [Frontstages](./appui-react/Frontstages.md). Because the iTwin Viewer template for create-react-app provides a basic Frontstage, the quickest way to get started with a new app is to add your app's UI to that Frontstage with the [UiItemsProvider](./appui-react/UiItemsProvider.md). This will add you tool buttons, [StatusBar](./appui-react/StatusBar.md) items, [Backstage](./appui-react/Backstage.md) items, and [Widgets](./appui-react/Widgets.md) to the basic viewer when the application loads.
 
 A more detailed explanation of using the UiItemsProvider interface can be found here: [Augmenting the UI of an iTwin App](./AugmentingUI.md).
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-AppUi refers to an API and a set of components that enable iTwin.js apps to implement iTwin UI's App UI design. This design organizes the [iModel](../../iModels) data into various components on the screen. Graphical data is usually displayed in a [Viewport](../imodel-components/Viewport), while information such as element properties and data hierarchies are displayed in [Widgets](../appui-react/Widgets). An app using the App UI design will have a look similar to this:
+AppUI refers to an API and a set of components that enable iTwin.js apps to implement iTwin UI's App UI design. This design organizes the [iModel](../../iModels) data into various components on the screen. Graphical data is usually displayed in a [Viewport](../imodel-components/Viewport), while information such as element properties and data hierarchies are displayed in [Widgets](../appui-react/Widgets). An app using the App UI design will have a look similar to this:
 
 ![AppUi](./images/AppUiDarkTheme.png)
 
@@ -22,7 +22,7 @@ The layout of an AppUi app has the following features:
 
 There are two special Widgets that float on top of the Content Area in the upper right and left corners. The [Tool Widget](../appui-react/Widgets.md#tool-widget) in the upper left contains buttons used to launch [iTwin.js Tools](../../frontend/Tools) or functions. The [View Navigation Widget](../appui-react/Widgets.md#navigation-widget) contains buttons to launch tools that manipulate the active graphic view, such as zoom, pan, and rotate.
 
-## AppUi Components
+## AppUI Components
 
 Details about the components used to implement AppUi apps:
 

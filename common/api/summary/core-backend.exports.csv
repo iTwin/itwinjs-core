@@ -27,8 +27,6 @@ public;ChangesetArg
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
 beta;ChangeSummary
-beta;ChangeSummaryExtractOptions
-deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 internal;ChannelAdmin 
 beta;ChannelControl
@@ -397,7 +395,6 @@ public;class ViewDefinition3d
 public;VolumeElement 
 public;WebMercatorModel 
 beta;Workspace
-beta;WorkspaceAccount
 beta;WorkspaceCloudCacheProps 
 beta;WorkspaceContainer
 beta;WorkspaceContainer

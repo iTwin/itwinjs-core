@@ -85,16 +85,14 @@ describe("Learning Snippets", () => {
             condition: `GetVariableBoolValue("DISPLAY_CATEGORIES")`,
             specifications: [{
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"], arePolymorphic: true },
             }],
           }, {
             ruleType: "Content",
             condition: `GetVariableBoolValue("DISPLAY_MODELS")`,
             specifications: [{
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["GeometricModel"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["GeometricModel"], arePolymorphic: true },
             }],
           }],
         };
@@ -181,16 +179,14 @@ describe("Learning Snippets", () => {
             priority: 1,
             specifications: [{
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"], arePolymorphic: true },
             }],
           }, {
             ruleType: "Content",
             priority: 2,
             specifications: [{
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["GeometricModel"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["GeometricModel"], arePolymorphic: true },
             }],
           }],
         };
@@ -224,16 +220,14 @@ describe("Learning Snippets", () => {
             onlyIfNotHandled: true,
             specifications: [{
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"], arePolymorphic: true },
             }],
           }, {
             ruleType: "Content",
             priority: 2,
             specifications: [{
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["GeometricModel"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["GeometricModel"], arePolymorphic: true },
             }],
           }],
         };

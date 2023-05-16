@@ -666,8 +666,8 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix from column vectors, shuffled into place per axisOrder
-   * For example, if axisOrder = XYZ then it returns [vectorU, vectorV, vectorW]
-   * Another example, if axisOrder = YZX then it returns [vectorW, vectorU, vectorV] because
+   * * For example, if axisOrder = XYZ then it returns [vectorU, vectorV, vectorW]
+   * * Another example, if axisOrder = YZX then it returns [vectorW, vectorU, vectorV] because
    * Y is at index 0 so vectorU goes to the column Y (column 2), Z is at index 1 so vectorV goes
    * to the column Z (column 3), and X is at index 2 so vectorW goes to the column X (column 1)
    */
@@ -2611,7 +2611,7 @@ export class Matrix3d implements BeJSONFunctions {
    * almost independent and matrix is invertible).
    */
   public conditionNumber(): number {
-    const determinant = this.determinant();
+    const determinant = Math.abs(this.determinant());
     const columnMagnitudeSum =
       Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6])
       + Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7])

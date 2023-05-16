@@ -14,6 +14,9 @@ parameters:
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild
+  - name: useCoreDocsArtifact
+    type: boolean
+    default: false
   - name: useCurrentAppUIDocsArtifact
     type: boolean
     default: false
@@ -26,12 +29,19 @@ parameters:
   - name: useCurrentTransformerDocsArtifact
     type: boolean
     default: false
+  - name: useCurrentAuthClientsDocsArtifact
+    type: boolean
+    default: false
   - name: shouldPublish
     type: boolean
     default: false
   - name: ignoreAudit
     type: boolean
     default: false
+  - name: isExternalBuild
+    type: boolean
+    default: false
+
 
 jobs:
   - job:
@@ -57,14 +67,16 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: Setup git config
 
+      # Only install, audit, and build the docs if not using the core artifact
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
         workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
       - script: node common/scripts/install-run-rush.js audit
         displayName: rush audit
         workingDirectory: ${{ parameters.workingDir }}
-        condition: and(succeeded(), eq('${{ parameters.ignoreAudit }}', false))
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false), eq('${{ parameters.ignoreAudit }}', false))
 
       - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
@@ -72,12 +84,26 @@ jobs:
         env:
           RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
           RUSH_BUILD_CACHE_ENABLED: 1
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
       - script: node common/scripts/install-run-rush.js docs
         displayName: rush docs
         workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      # Gathers all the pieces to run BeMetalsmith
+
+      # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
+      - task: DownloadPipelineArtifact@2
+        displayName: Download Core Generated Docs Artifact
+        inputs:
+          source: 'specific'
+          project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+          pipeline: 7436 # iTwin.js Docs (docs-ci.yaml)
+          artifact: Core Generated Docs
+          path: ${{ parameters.workingDir }}/generated-docs
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', true))
+
+        # Gather all the pieces to run BeMetalsmith
       - template: ../templates/gather-docs.yaml
         parameters:
           workingDir: ${{ parameters.workingDir }}
@@ -86,9 +112,10 @@ jobs:
           useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
           useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
           useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
+          useCurrentAuthClientsDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@5.0.2 --legacy-peer-deps
+      - script: npm install @bentley/bemetalsmith@5.0.x --legacy-peer-deps
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
@@ -96,7 +123,12 @@ jobs:
         displayName: Run bmsBuild
         workingDirectory: ${{ parameters.workingDir }}
 
-      # Update the .updated.json file after the bmsBuild
+        # if publishing and not using the core artifact, publish the new core artifact
+      - publish: ${{ parameters.workingDir }}/generated-docs
+        artifact: Core Generated Docs
+        displayName: Publish Core Generated Docs Artifact
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
+
       - publish: ${{ parameters.stagingDir }}/config/.updated.json
         artifact: .updated.json
         displayName: Publish Pipeline Artifact - .updated.json
@@ -107,6 +139,7 @@ jobs:
         displayName: Publish Pipeline Artifact - DocsBuild
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
+        # tag the build to trigger the release pipeline
       - powershell: |
           $commitMsg = "$(Build.SourceVersionMessage)"
           if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
@@ -116,4 +149,13 @@ jobs:
             Write-Host `'$commitMsg`'` is not a version bump
           }
         displayName: Tag release if version bump
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
+
+      - task: tagBuildOrRelease@0
+        displayName: Tag release if externally triggered
+        inputs:
+          type: "Build"
+          tags: "iTwinJsDocsRelease"
+        condition: and(succeeded(), ${{ parameters.shouldPublish }}, eq('${{ parameters.isExternalBuild }}', true))
+
+

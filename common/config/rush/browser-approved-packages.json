@@ -8,7 +8,19 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "@bentley/architectural-physical-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/bis-core-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/bis-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -55,20 +67,48 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/construction-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/core-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-map-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-schema-policies-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/formats-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/icons-generic-webfont",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@bentley/linear-referencing-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/physical-material-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/plant-custom-attributes-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/process-functional-schema",
@@ -80,7 +120,7 @@
     },
     {
       "name": "@bentley/quantity-takeoffs-aspects-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/react-scripts",
@@ -89,6 +129,14 @@
     {
       "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/spatial-composition-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/structural-physical-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/units-schema",
@@ -423,6 +471,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "cpx2",
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -540,7 +592,7 @@
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "internal-tools",
@@ -573,6 +625,54 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "karma",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-babel-preprocessor",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chai-plugins",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chrome-launcher",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-instrumenter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-jasmine",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-junit-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-mocha",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-sourcemap-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-webpack",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "lodash",
@@ -672,7 +772,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "sinon",

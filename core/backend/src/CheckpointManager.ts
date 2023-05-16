@@ -137,7 +137,7 @@ export class V2CheckpointManager {
     return cloudCachePath;
   }
 
-  /* only used by tests that reset the state of the v2checkpointmanager. all dbs should be closed before calling this function. */
+  /* only used by tests that reset the state of the v2CheckpointManager. all dbs should be closed before calling this function. */
   public static cleanup(): void {
     for (const [_, value] of this.containers.entries()) {
       if (value.isConnected)
@@ -179,13 +179,14 @@ export class V2CheckpointManager {
 
   /** Member names differ slightly between the V2Checkpoint api and the CloudSqlite api. Add aliases `accessName` for `accountName` and `accessToken` for `sasToken` */
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
-    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+    return { ...from, baseUri: `https://${from.accountName}.blob.core.windows.net`, accessToken: from.sasToken, storageType: "azure" };
   }
 
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
+      // note checkpoint tokens can't be auto-refreshed because they rely on user credentials supplied through RPC. They're refreshed in SnapshotDb._refreshSas.
+      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds: -1 });
       this.containers.set(v2Props.containerId, container);
     }
     return container;

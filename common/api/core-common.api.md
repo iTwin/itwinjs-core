@@ -1085,7 +1085,7 @@ export enum ChangeOpCode {
     Update = 2
 }
 
-// @beta
+// @internal
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -1121,7 +1121,7 @@ export type ChangesetIndexOrId = ChangesetIndexAndId | {
     readonly index?: never;
 };
 
-// @beta
+// @public
 export interface ChangesetProps {
     briefcaseId: number;
     changesType: ChangesetType;
@@ -1130,7 +1130,7 @@ export interface ChangesetProps {
     index: ChangesetIndex;
     parentId: ChangesetId;
     pushDate: string;
-    size?: number;
+    size: number;
     userCreated: string;
 }
 

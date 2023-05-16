@@ -39,7 +39,7 @@ The following code instantiates a modal frontstage and calls `FrontstageManager.
 
 ```ts
 const modalFrontstage = new SampleModalFrontstage();
-FrontstageManager.openModalFrontstage(modalFrontstage);
+UiFramework.frontstages.openModalFrontstage(modalFrontstage);
 ```
 
 ## API Reference

@@ -61,7 +61,8 @@
       "description": "Iterates through each package in the monorepo and runs the 'extract-api' script",
       "enableParallelism": true,
       "ignoreMissingScript": true,
-      "ignoreDependencyOrder": false
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "name": "extract-extension-api",
@@ -70,7 +71,8 @@
       "description": "Iterates through each package in the monorepo and runs the 'extract-extension-api' script",
       "enableParallelism": true,
       "ignoreMissingScript": true,
-      "ignoreDependencyOrder": true
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "name": "lint",

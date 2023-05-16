@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Suite } from "mocha";
-import { CloudSqlite, PropertyStore } from "@itwin/core-backend";
+import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 
 // spell:ignore mkdirs
@@ -14,8 +14,10 @@ const blockSize = 64 * 1024;
 const propContainer = "properties-itwin1";
 
 async function initializeContainer(containerId: string) {
-  await AzuriteTest.Sqlite.createAzContainer(AzuriteTest.Sqlite.makeContainer({ containerId }));
-  await PropertyStore.CloudAccess.initializeDb({ props: { ...AzuriteTest.storage, containerId, accessToken: await AzuriteTest.makeSasToken(containerId, true) }, initContainer: { blockSize } });
+  await AzuriteTest.Sqlite.createAzContainer({ containerId });
+  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
+  const accessToken = await CloudSqlite.requestToken(props);
+  await PropertyStore.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
 }
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
@@ -27,8 +29,9 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
 }
 
 async function makePropertyStore(moniker: string) {
-  const accessProps = { ...AzuriteTest.storage, containerId: propContainer, accessToken: await AzuriteTest.makeSasToken(propContainer, true) };
-  const propStore = new PropertyStore.CloudAccess(accessProps);
+  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: propContainer, writeable: true };
+  const accessToken = await CloudSqlite.requestToken(props);
+  const propStore = new PropertyStore.CloudAccess({ ...props, accessToken });
   propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
   propStore.lockParams.moniker = moniker;
   return propStore;
@@ -41,10 +44,16 @@ describe("PropertyStore", function (this: Suite) {
   let ps2: PropertyStore.CloudAccess;
 
   before(async () => {
+    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+    AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
     await initializeContainer(propContainer);
 
     ps1 = await makePropertyStore("propertyStore1");
     ps2 = await makePropertyStore("propertyStore2");
+  });
+  after(async () => {
+    IModelHost.authorizationClient = undefined;
   });
 
   it("access PropertyStore", async () => {

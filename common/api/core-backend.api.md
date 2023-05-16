@@ -423,19 +423,13 @@ export namespace BlobContainer {
     let service: BlobContainer.ContainerService | undefined;
     export interface AccessContainerProps {
         // (undocumented)
-        address: Address;
+        address: UriAndId;
         // (undocumented)
         userToken: UserToken;
     }
-    export interface Address {
-        // (undocumented)
-        id: ContainerId;
-        // (undocumented)
-        uri: string;
-    }
     export type ContainerId = string;
     export interface ContainerService {
-        create(props: CreateNewContainerProps): Promise<Address>;
+        create(props: CreateNewContainerProps): Promise<UriAndId>;
         delete(props: AccessContainerProps): Promise<void>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
     }
@@ -461,6 +455,7 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
+        owner?: string;
     }
     export interface TokenProps {
         expiration: Date;
@@ -468,6 +463,12 @@ export namespace BlobContainer {
         provider: Provider;
         scope: Scope;
         token: ContainerToken;
+    }
+    export interface UriAndId {
+        // (undocumented)
+        baseUri: string;
+        // (undocumented)
+        id: ContainerId;
     }
     export type UserToken = AccessToken;
 }
@@ -539,6 +540,9 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
     static getIModelPath(iModelId: GuidString): LocalDirName;
+    static getLatestChangeset(arg: {
+        iModelId: GuidString;
+    }): Promise<ChangesetProps>;
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
@@ -547,6 +551,14 @@ export class BriefcaseManager {
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
+    static queryChangeset(arg: {
+        iModelId: GuidString;
+        changeset: ChangesetIndexOrId;
+    }): Promise<ChangesetProps>;
+    static queryChangesets(arg: {
+        iModelId: GuidString;
+        range: ChangesetRange;
+    }): Promise<ChangesetProps[]>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
 }
 
@@ -648,12 +660,6 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @beta @deprecated
-export interface ChangeSummaryExtractOptions {
-    currentVersionOnly?: boolean;
-    startVersion?: IModelVersion;
-}
-
 // @beta
 export class ChangeSummaryManager {
     static attachChangeCache(iModel: IModelDb): void;
@@ -668,8 +674,6 @@ export class ChangeSummaryManager {
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
     static createChangeSummary(accessToken: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
-    // @deprecated
-    static extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
@@ -695,6 +699,11 @@ export class ChannelAdmin implements ChannelControl {
         description?: string;
     }): Id64String;
     // (undocumented)
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+    }): void;
+    // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
     static readonly sharedChannel = "shared";
     // (undocumented)
@@ -712,6 +721,10 @@ export interface ChannelControl {
         parentSubjectId?: Id64String;
         description?: string;
     }): Id64String;
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+    }): void;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -786,17 +799,13 @@ export interface CloudContainerArgs {
 
 // @beta
 export namespace CloudSqlite {
-    export interface AccountAccessProps {
-        accessName: string;
-        storageType: string;
-    }
     export function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler): Promise<void>;
     // @internal
     export interface BcvHttpLog {
-        readonly cloudSqliteLogId: string;
         readonly endTime: string | undefined;
         readonly httpcode: number;
         readonly id: number;
+        readonly logId: string;
         readonly logmsg: string;
         readonly method: string;
         readonly startTime: string;
@@ -862,10 +871,12 @@ export namespace CloudSqlite {
         get hasWriteLock(): boolean;
         initializeContainer(opts?: {
             checksumBlockNames?: boolean;
-            blockSize?: number;
+            blockSize: number;
         }): void;
         get isConnected(): boolean;
+        get isPublic(): boolean;
         get isWriteable(): boolean;
+        get logId(): string;
         // (undocumented)
         onConnect?: (container: CloudContainer, cache: CloudCache) => void;
         // (undocumented)
@@ -894,23 +905,28 @@ export namespace CloudSqlite {
         readonly dbName: string;
         promise: Promise<boolean>;
     }
-    export type ContainerAccessProps = AccountAccessProps & ContainerProps & {
-        durationSeconds?: number;
+    export type ContainerAccessProps = ContainerProps & {
+        lockExpireSeconds?: number;
+        tokenRefreshSeconds?: number;
     };
     export interface ContainerProps {
         accessToken: string;
         alias?: string;
-        cloudSqliteLogId?: string;
+        baseUri: string;
         containerId: string;
+        isPublic?: boolean;
+        logId?: string;
         secure?: boolean;
+        storageType: "azure" | "google";
         writeable?: boolean;
     }
+    // (undocumented)
+    export type ContainerTokenProps = Omit<ContainerProps, "accessToken">;
     export interface CreateCloudCacheArg {
         cacheDir?: string;
         cacheName: string;
         cacheSize?: string;
     }
-    // (undocumented)
     export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
@@ -985,6 +1001,7 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
+    export function requestToken(args: ContainerTokenProps): Promise<AccessToken>;
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
@@ -1079,7 +1096,7 @@ export namespace CodeService {
         readonly errorId: ErrorId;
         readonly problems?: ReserveProblem[] | UpdateProblem[];
     }
-    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "NotAuthorized" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
     // @internal (undocumented)
     export interface FontIndexProps {
         // (undocumented)
@@ -3466,17 +3483,15 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getCloudCache(): CloudSqlite.CloudCache;
     // (undocumented)
-    getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
+    getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
     // (undocumented)
-    getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
+    getWorkspaceDb(dbAlias: string): Promise<WorkspaceDb>;
     // (undocumented)
-    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
+    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
     // (undocumented)
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     // (undocumented)
-    resolveAccount(accountName: string): WorkspaceAccount.Props;
-    // (undocumented)
-    resolveContainer(containerName: string): WorkspaceContainer.Props & WorkspaceAccount.Alias;
+    resolveContainer(containerName: string): WorkspaceContainer.Props;
     // (undocumented)
     resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias;
     // (undocumented)
@@ -3485,7 +3500,7 @@ export class ITwinWorkspace implements Workspace {
 
 // @internal (undocumented)
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
-    constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props);
+    constructor(workspace: ITwinWorkspace, props: WorkspaceContainer.Props);
     // (undocumented)
     addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
     // (undocumented)
@@ -5602,24 +5617,13 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getCloudCache(): CloudSqlite.CloudCache;
-    getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-    getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
-    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
+    getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
+    getWorkspaceDb(dbAlias: WorkspaceDb.Name): Promise<WorkspaceDb>;
+    getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
-    resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
-    resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props & WorkspaceAccount.Alias;
+    resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;
     resolveDatabase(databaseAlias: WorkspaceDb.Name): WorkspaceDb.Props & WorkspaceContainer.Alias;
     readonly settings: Settings;
-}
-
-// @beta
-export namespace WorkspaceAccount {
-    export interface Alias {
-        // (undocumented)
-        accountName: string;
-    }
-    export type Name = string;
-    export type Props = CloudSqlite.AccountAccessProps;
 }
 
 // @beta
@@ -5636,10 +5640,9 @@ export namespace WorkspaceContainer {
     export type Id = string;
     export type Name = string;
     export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
-        isPublic?: boolean;
         syncOnConnect?: boolean;
     }
-    export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
+    export type TokenFunc = (props: Props) => Promise<AccessToken>;
 }
 
 // @beta
