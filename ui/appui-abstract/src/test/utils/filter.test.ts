@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as assert from "assert";
-
+import { assert } from "chai";
 // based on file https://github.com/microsoft/vscode/blob/master/src/vs/base/test/common/filters.test.ts
 
 /* eslint-disable no-console */
@@ -568,32 +567,32 @@ describe("Filters", () => {
 
   const patterns = ["ecti", "Element", "element", "Head", "head"];
   const data = [
-    "HTMLAllCollection","HTMLAnchorElement","HTMLAppletElement","HTMLAreaElement","HTMLAreasCollection",
-    "HTMLAudioElement","HTMLBRElement","HTMLBaseElement","HTMLBaseFontElement","HTMLBodyElement","HTMLBodyElementEventMap","HTMLButtonElement","HTMLCanvasElement",
-    "HTMLCollection","HTMLCollectionBase","HTMLCollectionOf","HTMLDListElement","HTMLDataElement","HTMLDataListElement","HTMLDirectoryElement","HTMLDivElement","HTMLDocument",
-    "HTMLElement","HTMLElementEventMap","HTMLElementTagNameMap","HTMLEmbedElement","HTMLFieldSetElement","HTMLFontElement","HTMLFormControlsCollection","HTMLFormElement",
-    "HTMLFrameElement","HTMLFrameElementEventMap","HTMLFrameSetElement","HTMLFrameSetElementEventMap","HTMLHRElement","HTMLHeadElement","HTMLHeadingElement","HTMLHtmlElement",
-    "HTMLIFrameElement","HTMLIFrameElementEventMap","HTMLImageElement","HTMLInputElement","HTMLLIElement","HTMLLabelElement","HTMLLegendElement","HTMLLinkElement",
-    "HTMLMapElement","HTMLMarqueeElement","HTMLMarqueeElementEventMap","HTMLMediaElement","HTMLMediaElementEventMap","HTMLMenuElement","HTMLMetaElement","HTMLMeterElement",
-    "HTMLModElement","HTMLOListElement","HTMLObjectElement","HTMLOptGroupElement","HTMLOptionElement","HTMLOptionsCollection","HTMLOutputElement","HTMLParagraphElement",
-    "HTMLParamElement","HTMLPictureElement","HTMLPreElement","HTMLProgressElement","HTMLQuoteElement","HTMLScriptElement","HTMLSelectElement","HTMLSlotElement",
-    "HTMLSourceElement","HTMLSpanElement","HTMLStyleElement","HTMLTableAlignment","HTMLTableCaptionElement","HTMLTableCellElement","HTMLTableColElement",
-    "HTMLTableDataCellElement","HTMLTableElement","HTMLTableHeaderCellElement","HTMLTableRowElement","HTMLTableSectionElement","HTMLTemplateElement",
-    "HTMLTextAreaElement","HTMLTimeElement","HTMLTitleElement","HTMLTrackElement","HTMLUListElement","HTMLUnknownElement","HTMLVideoElement","HTMLVideoElementEventMap",
+    "HTMLAllCollection", "HTMLAnchorElement", "HTMLAppletElement", "HTMLAreaElement", "HTMLAreasCollection",
+    "HTMLAudioElement", "HTMLBRElement", "HTMLBaseElement", "HTMLBaseFontElement", "HTMLBodyElement", "HTMLBodyElementEventMap", "HTMLButtonElement", "HTMLCanvasElement",
+    "HTMLCollection", "HTMLCollectionBase", "HTMLCollectionOf", "HTMLDListElement", "HTMLDataElement", "HTMLDataListElement", "HTMLDirectoryElement", "HTMLDivElement", "HTMLDocument",
+    "HTMLElement", "HTMLElementEventMap", "HTMLElementTagNameMap", "HTMLEmbedElement", "HTMLFieldSetElement", "HTMLFontElement", "HTMLFormControlsCollection", "HTMLFormElement",
+    "HTMLFrameElement", "HTMLFrameElementEventMap", "HTMLFrameSetElement", "HTMLFrameSetElementEventMap", "HTMLHRElement", "HTMLHeadElement", "HTMLHeadingElement", "HTMLHtmlElement",
+    "HTMLIFrameElement", "HTMLIFrameElementEventMap", "HTMLImageElement", "HTMLInputElement", "HTMLLIElement", "HTMLLabelElement", "HTMLLegendElement", "HTMLLinkElement",
+    "HTMLMapElement", "HTMLMarqueeElement", "HTMLMarqueeElementEventMap", "HTMLMediaElement", "HTMLMediaElementEventMap", "HTMLMenuElement", "HTMLMetaElement", "HTMLMeterElement",
+    "HTMLModElement", "HTMLOListElement", "HTMLObjectElement", "HTMLOptGroupElement", "HTMLOptionElement", "HTMLOptionsCollection", "HTMLOutputElement", "HTMLParagraphElement",
+    "HTMLParamElement", "HTMLPictureElement", "HTMLPreElement", "HTMLProgressElement", "HTMLQuoteElement", "HTMLScriptElement", "HTMLSelectElement", "HTMLSlotElement",
+    "HTMLSourceElement", "HTMLSpanElement", "HTMLStyleElement", "HTMLTableAlignment", "HTMLTableCaptionElement", "HTMLTableCellElement", "HTMLTableColElement",
+    "HTMLTableDataCellElement", "HTMLTableElement", "HTMLTableHeaderCellElement", "HTMLTableRowElement", "HTMLTableSectionElement", "HTMLTemplateElement",
+    "HTMLTextAreaElement", "HTMLTimeElement", "HTMLTitleElement", "HTMLTrackElement", "HTMLUListElement", "HTMLUnknownElement", "HTMLVideoElement", "HTMLVideoElementEventMap",
   ];
 
   function countMatches(match: IFilter, testPatterns: string[]) {
     let count = 0;
     for (const pattern of testPatterns) {
       for (const item of data) {
-        count += (match(pattern, item)?.length??0);
+        count += (match(pattern, item)?.length ?? 0);
       }
     }
     return count;
   }
 
   it("matches fuzzy simple", function () {
-    filterOk(matchesFuzzy, "par", "HTMLParagraphElement", [{start:4,end:7}]);
+    filterOk(matchesFuzzy, "par", "HTMLParagraphElement", [{ start: 4, end: 7 }]);
   });
 
   it("matches fuzzy", function () {
@@ -602,8 +601,8 @@ describe("Filters", () => {
   });
 
   it("matches fuzzy2 simple", function () {
-    filterOk(matchesFuzzy2, "tab", "HTMLLabelElement", [{start:1,end:2},{start:5,end:7}]);
-    filterOk(matchesFuzzy2, "tab", "HTMLTableSectionElement", [{start:4,end:7}]);
+    filterOk(matchesFuzzy2, "tab", "HTMLLabelElement", [{ start: 1, end: 2 }, { start: 5, end: 7 }]);
+    filterOk(matchesFuzzy2, "tab", "HTMLTableSectionElement", [{ start: 4, end: 7 }]);
   });
 
   it("matches fuzzy2", function () {

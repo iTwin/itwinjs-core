@@ -40,7 +40,7 @@ export enum CurveSearchStatus {
 }
 
 /**
- * use to update a vector in case where source and prior result are both possibly undefined.
+ * Use to update a vector in case where source and prior result are both possibly undefined.
  * * Any undefined source returns undefined.
  * * For defined source, reuse optional result if available.
  * @param source optional source
@@ -52,6 +52,7 @@ function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | u
   }
   return undefined;
 }
+
 /**
  * CurveLocationDetail carries point and parameter data about a point evaluated on a curve.
  * * These are returned by a variety of queries.
@@ -61,7 +62,7 @@ function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | u
 export class CurveLocationDetail {
   /** The curve being evaluated */
   public curve?: CurvePrimitive;
-  /** optional ray */
+  /** Optional ray */
   public ray?: Ray3d;
   /** The fractional position along the curve */
   public fraction: number;
@@ -71,24 +72,26 @@ export class CurveLocationDetail {
   public point: Point3d;
   /** A vector (e.g. tangent vector) in context */
   public vectorInCurveLocationDetail?: Vector3d;
-  /** A context-specific numeric value.  (E.g. a distance) */
+  /** A context-specific numeric value. (e.g. a distance) */
   public a: number;
-  /** optional CurveLocationDetail with more detail of location.  For instance, a detail for fractional position within
+  /**
+   * Optional CurveLocationDetail with more detail of location.  For instance, a detail for fractional position within
    * a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
    * further detail of the particular curve within the chain in the childDetail.
    */
   public childDetail?: CurveLocationDetail;
-  /** A status indicator for certain searches.
+  /**
+   * A status indicator for certain searches.
    * * e.g. CurvePrimitive.moveSignedDistanceFromFraction
    */
   public curveSearchStatus?: CurveSearchStatus;
-  /** (optional) second fraction, e.g. end of interval of coincident curves */
+  /** (Optional) second fraction, e.g. end of interval of coincident curves */
   public fraction1?: number;
-  /** (optional) second point, e.g. end of interval of coincident curves */
+  /** (Optional) second point, e.g. end of interval of coincident curves */
   public point1?: Point3d;
   /** A context-specific additional point */
   public pointQ: Point3d;  // extra point for use in computations
-
+  /** constructor */
   public constructor() {
     this.pointQ = Point3d.createZero();
     this.fraction = 0;
@@ -104,25 +107,22 @@ export class CurveLocationDetail {
     this.fraction1 = fraction1;
     this.point1 = point1;
   }
-
-  /** test if this pair has fraction1 defined */
+  /** Test if this pair has fraction1 defined */
   public get hasFraction1(): boolean {
     return this.fraction1 !== undefined;
   }
-
-  /** test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
+  /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
   public get isIsolated(): boolean {
     return this.intervalRole === undefined
       || this.intervalRole === CurveIntervalRole.isolated
       || this.intervalRole === CurveIntervalRole.isolatedAtVertex;
   }
-
-  /** return the fraction delta. (0 if no fraction1) */
+  /** Return the fraction delta. (0 if no fraction1) */
   public get fractionDelta(): number {
     return this.fraction1 !== undefined ? this.fraction1 - this.fraction : 0.0;
   }
-
-  /** If (fraction1, point1) are defined, make them the primary (and only) data.
+  /**
+   * If (fraction1, point1) are defined, make them the primary (and only) data.
    * * No action if undefined.
    */
   public collapseToEnd() {
@@ -135,16 +135,16 @@ export class CurveLocationDetail {
       this.point1 = undefined;
     }
   }
-
-  /** make (fraction, point) the primary (and only) data.
+  /**
+   * Make (fraction, point) the primary (and only) data.
    * * No action if undefined.
    */
   public collapseToStart() {
     this.fraction1 = undefined;
     this.point1 = undefined;
   }
-
-  /** Return a complete copy, WITH CAVEATS . . .
+  /**
+   * Return a complete copy, WITH CAVEATS . . .
    * * curve member is copied as a reference.
    * * point and vector members are cloned.
    */
@@ -157,12 +157,13 @@ export class CurveLocationDetail {
     result.fraction1 = this.fraction1;
     result.point1 = this.point1;
     result.point.setFromPoint3d(this.point);
-    result.vectorInCurveLocationDetail = optionalVectorUpdate(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
+    result.vectorInCurveLocationDetail = optionalVectorUpdate(
+      this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail
+    );
     result.a = this.a;
     result.curveSearchStatus = this.curveSearchStatus;
     return result;
   }
-
   /**
    * Updated in this instance.
    * * Note that if caller omits `vector` and `a`, those fields are updated to the call-list defaults (NOT left as-is)
@@ -178,7 +179,6 @@ export class CurveLocationDetail {
     this.vectorInCurveLocationDetail = optionalVectorUpdate(vector, this.vectorInCurveLocationDetail);
     this.a = a;
   }
-
   /**
    * Updated in this instance.
    * * Note that if caller omits a`, that field is updated to the call-list default (NOT left as-is)
@@ -190,17 +190,13 @@ export class CurveLocationDetail {
   public setFR(fraction: number, ray: Ray3d, a: number = 0) {
     return this.setFP(fraction, ray.origin, ray.direction, a);
   }
-  /** Set the CurvePrimitive pointer, leaving all other properties untouched.
-   */
+  /** Set the CurvePrimitive pointer, leaving all other properties untouched. */
   public setCurve(curve: CurvePrimitive) { this.curve = curve; }
-
   /** record the distance from the CurveLocationDetail's point to the parameter point. */
   public setDistanceTo(point: Point3d) {
     this.a = this.point.distance(point);
   }
-
-  /** create with a CurvePrimitive pointer but no coordinate data.
-   */
+  /** Create with a CurvePrimitive pointer but no coordinate data. */
   public static create(
     curve?: CurvePrimitive,
     result?: CurveLocationDetail): CurveLocationDetail {
@@ -208,9 +204,7 @@ export class CurveLocationDetail {
     result.curve = curve;
     return result;
   }
-
-  /** create with CurvePrimitive pointer, fraction, and point coordinates.
-   */
+  /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
     curve: CurvePrimitive | undefined,
     fraction: number,
@@ -225,19 +219,17 @@ export class CurveLocationDetail {
     result.curveSearchStatus = undefined;
     return result;
   }
-  /**
-   * Create a new detail with only ray, fraction, and point.
-   */
-  public static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail {
+  /** Create a new detail with only ray, fraction, and point. */
+  public static createRayFractionPoint(
+    ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.fraction = fraction;
     result.ray = ray;
     result.point.setFromPoint3d(point);
     return result;
   }
-
-  /** create with CurvePrimitive pointer, fraction, and point coordinates
-   */
+  /** Create with CurvePrimitive pointer, fraction, and point coordinates */
   public static createCurveFractionPointDistanceCurveSearchStatus(
     curve: CurvePrimitive | undefined,
     fraction: number,
@@ -254,9 +246,7 @@ export class CurveLocationDetail {
     result.curveSearchStatus = status;
     return result;
   }
-  /** create with curveSearchStatus affected by allowExtension.
-   * *
-   */
+  /** Create with curveSearchStatus affected by allowExtension. */
   public static createConditionalMoveSignedDistance(
     allowExtension: boolean,
     curve: CurvePrimitive,
@@ -287,9 +277,7 @@ export class CurveLocationDetail {
     result.curveSearchStatus = status;
     return result;
   }
-
-  /** create with CurvePrimitive pointer and fraction for evaluation.
-   */
+  /** Create with CurvePrimitive pointer and fraction for evaluation. */
   public static createCurveEvaluatedFraction(
     curve: CurvePrimitive,
     fraction: number,
@@ -303,8 +291,7 @@ export class CurveLocationDetail {
     result.a = 0.0;
     return result;
   }
-  /** create with CurvePrimitive pointer and fraction for evaluation.
-   */
+  /** Create with CurvePrimitive pointer and fraction for evaluation. */
   public static createCurveEvaluatedFractionPointAndDerivative(
     curve: CurvePrimitive,
     fraction: number,
@@ -319,9 +306,7 @@ export class CurveLocationDetail {
     result.a = 0.0;
     return result;
   }
-
-  /** create with CurvePrimitive pointer and 2 fractions for evaluation.
-   */
+  /** Create with CurvePrimitive pointer and 2 fractions for evaluation. */
   public static createCurveEvaluatedFractionFraction(
     curve: CurvePrimitive,
     fraction0: number,
@@ -338,9 +323,7 @@ export class CurveLocationDetail {
     result.a = 0.0;
     return result;
   }
-
-  /** create with CurvePrimitive pointer, fraction, and point coordinates.
-   */
+  /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPointDistance(
     curve: CurvePrimitive,
     fraction: number,
@@ -356,8 +339,8 @@ export class CurveLocationDetail {
     result.curveSearchStatus = undefined;
     return result;
   }
-
-  /** update or create if closer than current contents.
+  /**
+   * Update or create if closer than current contents.
    * @param curve candidate curve
    * @param fraction candidate fraction
    * @param point candidate point
@@ -375,7 +358,7 @@ export class CurveLocationDetail {
     return true;
   }
   /**
-   * * Exchange the (fraction,fraction1) and (point, point1) pairs.
+   * Exchange the (fraction,fraction1) and (point, point1) pairs.
    * * (Skip each swap if its "1" value is undefined)
    */
   public swapFractionsAndPoints() {
@@ -387,7 +370,7 @@ export class CurveLocationDetail {
     }
   }
   /**
-   * * return the fraction where f falls between fraction and fraction1.
+   * Return the fraction where f falls between fraction and fraction1.
    * * ASSUME fraction1 defined
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
@@ -410,7 +393,8 @@ export class CurveLocationDetail {
     return detailB;
   }
 }
-/** Enumeration of configurations for intersections and min/max distance-between-curve
+/**
+ * Enumeration of configurations for intersections and min/max distance-between-curve
  * @public
  */
 export enum CurveCurveApproachType {
@@ -423,7 +407,8 @@ export enum CurveCurveApproachType {
   /** Completely parallel geometry. */
   ParallelGeometry = 3,
 }
-/** A pair of CurveLocationDetail.
+/**
+ * A pair of CurveLocationDetail.
  * @public
  */
 export class CurveLocationDetailPair {
@@ -431,7 +416,8 @@ export class CurveLocationDetailPair {
   public detailA: CurveLocationDetail;
   /** The second of the two details ... */
   public detailB: CurveLocationDetail;
-  /** enumeration of how the detail pairs relate.
+  /**
+   * Enumeration of how the detail pairs relate.
    * * This is set only by certain closeApproach calculations.
    */
   public approachType?: CurveCurveApproachType;
@@ -440,20 +426,22 @@ export class CurveLocationDetailPair {
     this.detailA = detailA ? detailA : new CurveLocationDetail();
     this.detailB = detailB ? detailB : new CurveLocationDetail();
   }
-
   /** Create a curve detail pair using references to two CurveLocationDetails */
-  public static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair {
+  public static createCapture(
+    detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair
+  ): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     result.detailA = detailA;
     result.detailB = detailB;
     return result;
   }
-  /** Create a curve detail pair using references to two CurveLocationDetails.
+  /**
+   * Create a curve detail pair using references to two CurveLocationDetails.
    * * optionally install in reversed positions
    */
-  public static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail,
-    reversed: boolean,
-    result?: CurveLocationDetailPair): CurveLocationDetailPair {
+  public static createCaptureOptionalReverse(
+    detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair
+  ): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     if (reversed) {
       result.detailA = detailA;
@@ -465,7 +453,6 @@ export class CurveLocationDetailPair {
     }
     return result;
   }
-
   /** Make a deep copy of this CurveLocationDetailPair */
   public clone(result?: CurveLocationDetailPair): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
