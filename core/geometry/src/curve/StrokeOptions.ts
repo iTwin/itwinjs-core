@@ -12,7 +12,8 @@ import { Angle } from "../geometry3d/Angle";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
-/** tolerance blob for various stroking methods.
+/**
+ * Tolerance blob for various stroking methods.
  *
  * * Across many applications, the critical concepts are:   chordTol, angleTol, maxEdgeLength
  * * Chord error is an distance measured from a curve or facet to its approximating stroke or facet.
@@ -34,42 +35,54 @@ import { Angle } from "../geometry3d/Angle";
  * @public
  */
 export class StrokeOptions {
-
-  /** distance from stroke to actual geometry */
+  /** Distance from stroke to actual geometry */
   public chordTol?: number;
-  /** turning angle between strokes. */
+  /** Turning angle between strokes. */
   public angleTol?: Angle;
-  /** maximum length of a single stroke. */
+  /** Maximum length of a single stroke. */
   public maxEdgeLength?: number;
-  /** caller expects convex facets.  */
+  /** Caller expects convex facets.  */
   public needConvexFacets?: boolean;
-  /** minimum strokes on a primitive */
+  /** Minimum strokes on a primitive */
   public minStrokesPerPrimitive?: number;
-  /** whether or not to triangulate each added facet */
+  /** Whether or not to triangulate each added facet */
   public shouldTriangulate: boolean = false;
   private _needNormals?: boolean;
   private _needTwoSided?: boolean;
   private _needParams?: boolean;
   /** Whether params are requested. */
-  public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }
-  public set needParams(value: boolean) { this._needParams = value; }
+  public get needParams(): boolean {
+    return this._needParams !== undefined ? this._needParams : false;
+  }
+  public set needParams(value: boolean) {
+    this._needParams = value;
+  }
   /** Whether normals are requested */
-  public get needNormals(): boolean { return this._needNormals !== undefined ? this._needNormals : false; }
+  public get needNormals(): boolean {
+    return this._needNormals !== undefined ? this._needNormals : false;
+  }
   public set needNormals(value: boolean) { this._needNormals = value; }
   /** Whether twoSided is requested. */
-  public get needTwoSided(): boolean { return this._needTwoSided !== undefined ? this._needTwoSided : false; }
+  public get needTwoSided(): boolean {
+    return this._needTwoSided !== undefined ? this._needTwoSided : false;
+  }
   public set needTwoSided(value: boolean) { this._needTwoSided = value; }
-  /** optional color request flag */
+  /** Optional color request flag */
   public needColors?: boolean;
-  /** default number of strokes for a circle. */
+  /** Default number of strokes for a circle. */
   public defaultCircleStrokes = 16;
-  /** ask if angleTol is specified */
-  public get hasAngleTol(): boolean { return this.angleTol !== undefined && Math.abs(this.angleTol.radians) > 0.0; }
-  /** ask if chordTol is specified */
-  public get hasChordTol(): boolean { return this.chordTol !== undefined && this.chordTol > 0.0; }
-  /** ask if maxEdgeLength is specified */
-  public get hasMaxEdgeLength(): boolean { return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0; }
-
+  /** Ask if angleTol is specified */
+  public get hasAngleTol(): boolean {
+    return this.angleTol !== undefined && Math.abs(this.angleTol.radians) > 0.0;
+  }
+  /** Ask if chordTol is specified */
+  public get hasChordTol(): boolean {
+    return this.chordTol !== undefined && this.chordTol > 0.0;
+  }
+  /** Ask if maxEdgeLength is specified */
+  public get hasMaxEdgeLength(): boolean {
+    return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0;
+  }
   /** Return a deep clone  */
   public clone(): StrokeOptions {
     const options = new StrokeOptions();
@@ -86,8 +99,7 @@ export class StrokeOptions {
     options.defaultCircleStrokes = this.defaultCircleStrokes;
     return options;
   }
-
-  /** return stroke count which is the larger of the minCount or count needed for edge length condition. */
+  /** Return stroke count which is the larger of the minCount or count needed for edge length condition. */
   public applyMaxEdgeLength(minCount: number, totalLength: number): number {
     totalLength = Math.abs(totalLength);
     if (this.maxEdgeLength && this.maxEdgeLength > 0.0 && minCount * this.maxEdgeLength < totalLength) {
@@ -95,18 +107,21 @@ export class StrokeOptions {
     }
     return minCount;
   }
-
   /**
-   * return stroke count which is the larger of the existing count or count needed for angle condition for given sweepRadians
+   * Return stroke count which is the larger of the existing count or count needed for angle condition for given
+   * sweepRadians.
    * * defaultStepRadians is assumed to be larger than zero.
    */
   public applyAngleTol(minCount: number, sweepRadians: number, defaultStepRadians: number): number {
     return StrokeOptions.applyAngleTol(this, minCount, sweepRadians, defaultStepRadians);
   }
   /**
-   * return stroke count which is the larger of minCount and the count required to turn sweepRadians, using tolerance from the options.
+   * Return stroke count which is the larger of minCount and the count required to turn sweepRadians, using tolerance
+   * from the options.
    */
-  public static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number {
+  public static applyAngleTol(
+    options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number
+  ): number {
     sweepRadians = Math.abs(sweepRadians);
     let stepRadians = defaultStepRadians ? defaultStepRadians : Math.PI / 8.0;
     if (options && options.angleTol && options.angleTol.radians > 0.0)
@@ -121,7 +136,9 @@ export class StrokeOptions {
    * @param minCount smallest allowed count
    * @param edgeLength
    */
-  public static applyMaxEdgeLength(options: StrokeOptions | undefined, minCount: number, edgeLength: number): number {
+  public static applyMaxEdgeLength(
+    options: StrokeOptions | undefined, minCount: number, edgeLength: number
+  ): number {
     if (edgeLength < 0)
       edgeLength = - edgeLength;
     if (minCount < 1)
@@ -132,7 +149,8 @@ export class StrokeOptions {
     return minCount;
   }
   /**
-   * Determine a stroke count for a (partial) circular arc of given radius. This considers angle, maxEdgeLength, chord, and minimum stroke.
+   * Determine a stroke count for a (partial) circular arc of given radius. This considers angle, maxEdgeLength,
+   * chord, and minimum stroke.
    */
   public applyTolerancesToArc(radius: number, sweepRadians: number = Math.PI * 2): number {
     let numStrokes = 1;
@@ -142,8 +160,7 @@ export class StrokeOptions {
     numStrokes = this.applyMinStrokesPerPrimitive(numStrokes);
     return numStrokes;
   }
-
-  /** return stroke count which is the larger of existing count or count needed for circular arc chord tolerance condition. */
+  /** Return stroke count which is the larger of existing count or count needed for circular arc chord tolerance condition. */
   public applyChordTol(minCount: number, radius: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0 && this.chordTol < radius) {
       const a = this.chordTol;
@@ -152,7 +169,9 @@ export class StrokeOptions {
     }
     return minCount;
   }
-  /** return stroke count which is the larger of existing count or count needed for circular arc chord tol with given arc length and radians
+  /**
+   * Return stroke count which is the larger of existing count or count needed for circular arc chord tol with given
+   * arc length and radians
    */
   public applyChordTolToLengthAndRadians(minCount: number, length: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0) {
@@ -162,16 +181,15 @@ export class StrokeOptions {
     }
     return minCount;
   }
-
-  /** return stroke count which is the larger of existing count or `this.minStrokesPerPrimitive` */
+  /** Return stroke count which is the larger of existing count or `this.minStrokesPerPrimitive` */
   public applyMinStrokesPerPrimitive(minCount: number): number {
     if (this.minStrokesPerPrimitive !== undefined && Number.isFinite(this.minStrokesPerPrimitive)
       && this.minStrokesPerPrimitive > minCount)
       minCount = this.minStrokesPerPrimitive;
     return minCount;
   }
-
-  /** create `StrokeOptions` with defaults appropriate for curves.
+  /**
+   * Create `StrokeOptions` with defaults appropriate for curves.
    * * angle tolerance of 15 degrees.
    * * all others inactive.
    */
@@ -180,7 +198,8 @@ export class StrokeOptions {
     options.angleTol = Angle.createDegrees(15.0);
     return options;
   }
-  /** create `StrokeOptions` with defaults appropriate for surfaces facets
+  /**
+   * Create `StrokeOptions` with defaults appropriate for surfaces facets
    * * angle tolerance of 22.5 degrees.
    * * all others inactive.
    */
