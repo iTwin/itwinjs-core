@@ -165,7 +165,9 @@ export interface ImdlInstances {
   readonly symbologyOverrides?: string;
 }
 
-/** Describes a unit of geometry within an [[ImdlMesh]]. */
+/** Describes a unit of geometry within an [[ImdlMesh]].
+ * @alpha
+ */
 export interface ImdlPrimitive {
   /** The Id of the associated [[ImdlDisplayParams]]. */
   readonly material?: string;
