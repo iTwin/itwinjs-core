@@ -147,22 +147,31 @@ export namespace ImdlModel {
     type: "polyline";
   };
 
+  export type AreaPatternParams = Omit<ImdlAreaPattern, "xyOffsets"> & {
+    xyOffsets: Float32Array;
+  };
+
+  export type NodePrimitive = Primitive | {
+    params: AreaPatternParams;
+    type: "pattern";
+  };
+
   export interface BasicNode {
-    primitives: Primitive[];
+    primitives: NodePrimitive[];
     animationNodeId?: never;
     animationId?: never;
     layerId?: never;
   }
 
   export interface AnimationNode {
-    primitives: Primitive[];
+    primitives: NodePrimitive[];
     animationNodeId: number;
     animationId?: string;
     layerId?: never;
   }
 
   export interface Layer {
-    primitives: Primitive[];
+    primitives: NodePrimitive[];
     layerId: string;
     animationNodeId?: never;
     animationId?: never;
@@ -190,8 +199,9 @@ export namespace ImdlModel {
 
   export interface Document {
     featureTable: FeatureTable;
-    rtcCenter?: XYAndZ;
     nodes: Node[];
+    patterns: Map<string, Primitive[]>;
+    rtcCenter?: XYAndZ;
     binaryData: Uint8Array;
     json: ImdlDocument,
   }

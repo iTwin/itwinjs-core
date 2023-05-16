@@ -395,21 +395,21 @@ class ImdlParser {
           // any node in the schedule script can be grouped together.
           nodes.push({
             animationNodeId: AnimationNodeId.Untransformed,
-            primitives: this.parsePrimitives(docPrimitives),
+            primitives: this.parseNodePrimitives(docPrimitives),
           });
         } else {
-          nodes.push({ primitives: this.parsePrimitives(docPrimitives) });
+          nodes.push({ primitives: this.parseNodePrimitives(docPrimitives) });
         }
       } else if (undefined === layerId) {
         nodes.push({
           animationNodeId: extractNodeId(nodeKey),
           animationId: `${this._options.batchModelId}_${nodeKey}`,
-          primitives: this.parsePrimitives(docPrimitives),
+          primitives: this.parseNodePrimitives(docPrimitives),
         });
       } else {
         nodes.push({
           layerId,
-          primitives: this.parsePrimitives(docPrimitives),
+          primitives: this.parseNodePrimitives(docPrimitives),
         });
       }
     }
@@ -458,7 +458,7 @@ class ImdlParser {
     };
 
     for (const docPrimitive of docPrimitives) {
-      const primitive = this.parsePrimitive(docPrimitive);
+      const primitive = this.parseNodePrimitive(docPrimitive);
       if (!primitive)
         continue;
 
@@ -569,17 +569,6 @@ class ImdlParser {
     }
   }
 
-  private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.Primitive[] {
-    const primitives = [];
-    for (const docPrimitive of docPrimitives) {
-      const primitive = this.parsePrimitive(docPrimitive);
-      if (primitive)
-        primitives.push(primitive);
-    }
-
-    return primitives;
-  }
-
   private parseTesselatedPolyline(json: ImdlPolyline): Imdl.TesselatedPolyline | undefined {
     const indices = this.findBuffer(json.indices);
     const prevIndices = this.findBuffer(json.prevIndices);
@@ -640,10 +629,38 @@ class ImdlParser {
     };
   }
 
-  private parsePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.Primitive | undefined {
-    if (docPrimitive.type === "areaPattern")
-      return undefined; // ###TODO
+  private parseAreaPattern(docPattern: ImdlAreaPattern): Imdl.NodePrimitive | undefined {
+    // ###TODO patterns
+    return undefined;
+  }
 
+  private parseNodePrimitives(docPrimitives: Array<AnyImdlPrimitive | ImdlAreaPattern>): Imdl.NodePrimitive[] {
+    const primitives = [];
+    for (const docPrimitive of docPrimitives) {
+      const primitive = this.parseNodePrimitive(docPrimitive);
+      if (primitive)
+        primitives.push(primitive);
+    }
+
+    return primitives;
+  }
+
+  private parseNodePrimitive(docPrimitive: AnyImdlPrimitive | ImdlAreaPattern): Imdl.NodePrimitive | undefined {
+    return docPrimitive.type === "areaPattern" ? this.parseAreaPattern(docPrimitive) : this.parsePrimitive(docPrimitive);
+  }
+
+  private parsePrimitives(docPrimitives: Array<AnyImdlPrimitive>): Imdl.Primitive[] {
+    const primitives = [];
+    for (const docPrimitive of docPrimitives) {
+      const primitive = this.parsePrimitive(docPrimitive);
+      if (primitive)
+        primitives.push(primitive);
+    }
+
+    return primitives;
+  }
+
+  private parsePrimitive(docPrimitive: AnyImdlPrimitive): Imdl.Primitive | undefined {
     let modifier: Imdl.PrimitiveModifier | undefined = this.parseInstances(docPrimitive);
     if (!modifier && docPrimitive.viewIndependentOrigin) {
       const origin = Point3d.fromJSON(docPrimitive.viewIndependentOrigin);
