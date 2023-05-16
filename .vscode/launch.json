@@ -384,27 +384,44 @@
       ]
     },
     // UI TESTS
-    {
-      "name": "[UI] Tests: AppUi Abstract",
+    { /* PARTIAL */
+      "name": "[NODE] Certa Test Runner for UI Abstract Tests",
       "presentation": {
-        "group": "4_UI"
+        "hidden": true
       },
-      "cwd": "${workspaceFolder}/ui/appui-abstract",
+      "cwd": "${workspaceFolder}/ui/abstract/",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/appui-abstract/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--config",
-        "../.mocharc-noreact.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
-      ],
-      "skipFiles": [
-        "<node_internals>/**/*.js",
-        "node_modules/rxjs/**/*"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
+        "${workspaceFolder}/{core}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "outputCapture": "std",
+      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/frontend/certa.json
+      "cascadeTerminateToConfigurations": [
+        "[BROWSER] UI Abstract Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BROWSER] UI Abstract Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "timeout": 20000,
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[NODE] Certa Test Runner for UI Abstract Tests"
       ]
     },
     // PRESENTATION TESTS
@@ -639,23 +656,6 @@
       "env": {
         "WORKSPACE_EDITOR_LOGGING": "true",
       }
-    },
-    {
-      "name": "synchro-schedule-importer",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/test-apps/synchro-schedule-importer/",
-      "type": "pwa-node",
-      "request": "launch",
-      "program": "${workspaceFolder}/test-apps/synchro-schedule-importer/lib/SynchroScheduleImporter.js",
-      "outFiles": [
-        "${workspaceFolder}/lib/**/*.js"
-      ],
-      "args": [
-        "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
-        "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
-      ]
     },
     {
       "name": "Webpack Plugin Tests",
@@ -1082,6 +1082,16 @@
       ]
     },
     {
+      "name": "Electron Frontend Tests",
+      "presentation": {
+        "group": "0_CoreTests"
+      },
+      "configurations": [
+        "[FRONTEND] Electron Frontend Tests",
+        "[BACKEND] Electron Frontend Tests"
+      ]
+    },
+    {
       "name": "HyperModeling Tests",
       "presentation": {
         "group": "0_CoreTests",
@@ -1170,17 +1180,6 @@
       ]
     },
     {
-      "name": "Full Stack IModelClient Integration Tests",
-      "presentation": {
-        "group": "2_FullStackTests",
-        "order": 1
-      },
-      "configurations": [
-        "[BACKEND] Full Stack IModelClient Integration Tests",
-        "[FRONTEND] Full Stack IModelClient Integration Tests"
-      ]
-    },
-    {
       "name": "Full Stack RPC Tests",
       "presentation": {
         "group": "2_FullStackTests",
@@ -1204,24 +1203,14 @@
       ]
     },
     {
-      "name": "Clients Tests (Integration)",
+      "name": "UI Core Tests",
       "presentation": {
-        "group": "3_ClientsTests",
+        "group": "4_UI",
         "order": 2
       },
       "configurations": [
-        "[NODE] Certa Test Runner for Clients Tests",
-        "[BROWSER] Clients Tests"
-      ]
-    },
-    {
-      "name": "Electron Frontend Tests",
-      "presentation": {
-        "group": "0_CoreTests"
-      },
-      "configurations": [
-        "[FRONTEND] Electron Frontend Tests",
-        "[BACKEND] Electron Frontend Tests"
+        "[BROWSER] UI Abstract Tests",
+        "[NODE] Certa Test Runner for UI Abstract Tests"
       ]
     },
   ],

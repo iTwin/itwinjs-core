@@ -949,8 +949,12 @@ export class AccuSnap implements Decorator {
         this.aSnapHits.removeCurrentHit();
         hit = await this.getAccuSnapDetail(this.aSnapHits, out);
       }
+      if (!this._doSnapping)
+        hit = undefined; // Snap no longer requested...
     } else if (this.isLocateEnabled) {
       hit = await this.findLocatableHit(ev, false, out); // get next AccuSnap path (or undefined)
+      if (!this.isLocateEnabled)
+        hit = undefined; // Hit no longer requested...
     }
 
     // set the current hit
@@ -975,8 +979,12 @@ export class AccuSnap implements Decorator {
       if (this._doSnapping) {
         out.snapStatus = this.findHits(ev);
         hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
+        if (!this._doSnapping)
+          hit = undefined; // Snap no longer requested...
       } else if (this.isLocateEnabled) {
         hit = await this.findLocatableHit(ev, true, out);
+        if (!this.isLocateEnabled)
+          hit = undefined; // Hit no longer requested...
       }
     }
 

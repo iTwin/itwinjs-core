@@ -86,6 +86,12 @@ steps:
       artifactName: iTwin-Auth-Clients Docs
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+      stagingSteps:
+        - task: CopyFiles@2
+          displayName: Copy Auth Clients Docs to staging
+          inputs:
+            SourceFolder: $(Pipeline.Workspace)/iTwin-Auth-Clients Docs
+            TargetFolder: ${{ parameters.stagingDir }}/reference/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

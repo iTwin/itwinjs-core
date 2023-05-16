@@ -3,26 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 import { isArrowKey, SpecialKey } from "../../appui-abstract";
 
 describe("isArrowKey", () => {
   it("should return true if Up key", () => {
-    isArrowKey(SpecialKey.ArrowUp).should.true;
+    expect(isArrowKey(SpecialKey.ArrowUp)).true;
   });
 
   it("should return true if Down key", () => {
-    isArrowKey(SpecialKey.ArrowDown).should.true;
+    expect(isArrowKey(SpecialKey.ArrowDown)).true;
   });
 
   it("should return true if Left key", () => {
-    isArrowKey(SpecialKey.ArrowLeft).should.true;
+    expect(isArrowKey(SpecialKey.ArrowLeft)).true;
   });
 
   it("should return true if Right key", () => {
-    isArrowKey(SpecialKey.ArrowRight).should.true;
+    expect(isArrowKey(SpecialKey.ArrowRight)).true;
   });
 
   it("should return false if Enter key", () => {
-    isArrowKey(SpecialKey.Enter).should.false;
+    expect(isArrowKey(SpecialKey.Enter)).false;
   });
 });
