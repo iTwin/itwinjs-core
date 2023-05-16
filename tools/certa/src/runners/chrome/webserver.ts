@@ -29,13 +29,18 @@ app.use("/", (req, resp, next) => {
 // Handle a special route for serving absolute paths and files from node_modules
 app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
+  const canonicalPath = require("canonical-path");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
   const fullPath = path.resolve("/", filePath);
-  resp.sendFile(fullPath, {
-    headers: (sourceMap) && {
-      "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
-    },
-  });
+  if (canonicalPath.normalize(fullPath) === filePath) {
+    resp.sendFile(filePath, {
+      headers: (sourceMap) && {
+        "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+  } else {
+    console.log("FilePath ERROR: The provided absolute path is different from the canonical path. Moving up to parent directory is forbidden.");
+  }
 
 });
 

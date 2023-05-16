@@ -128,7 +128,7 @@ function testCommand(options) {
 }
 
 function getScriptPath(name) {
-  return `${path.resolve(__dirname, path.join("..", "scripts", name))}`;
+  return path.resolve(__dirname, path.join("..", "scripts", name));
 }
 
 function docsCommand(options) {

@@ -48,7 +48,7 @@ function createConfig() {
       new webpack.DefinePlugin({
         "process.env": Object.keys(process.env)
           .reduce((env, key) => {
-            env[key] = JSON.stringify({ [key]: process.env[key] });
+            env[key] = JSON.stringify(process.env[key]);
             return env;
           }, {}),
       })
