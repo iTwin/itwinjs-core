@@ -31,7 +31,7 @@ app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
   const fullPath = path.resolve("/", filePath);
-  resp.sendFile(filePath, {
+  resp.sendFile(fullPath, {
     headers: (sourceMap) && {
       "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
     },
