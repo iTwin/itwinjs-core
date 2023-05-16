@@ -5,7 +5,7 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { ArcGisGeometryReaderJSON, ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -60,7 +60,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
       }
     };
 
-    const getRecordInfo = (fieldName: string, value: any) => {
+    const getRecordInfo = (fieldName: string, value: any): MapLayerFeatureAttribute => {
       const propertyValue: PrimitiveValue = {valueFormat: PropertyValueFormat.Primitive};
 
       if (value === null) {
@@ -92,7 +92,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
       const typename = getStandardTypeName(fieldType);
       propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-      return new MapFeatureInfoRecord(propertyValue, { name: fieldName, displayLabel: fieldName, typename });
+      return {value: propertyValue, property: { name: fieldName, displayLabel: fieldName, typename }};
     };
 
     let geomReader: ArcGisGeometryReaderJSON|undefined;
@@ -109,14 +109,17 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
 
     // Read all features attributes / geometries
     for (const responseFeature of responseObj.features) {
-      const feature: MapLayerFeature = {records: []};
+      const feature: MapLayerFeature = {attributes: []};
 
       for (const [key, value] of Object.entries(responseFeature.attributes))
-        feature.records?.push(getRecordInfo(key, value));
+        feature.attributes?.push(getRecordInfo(key, value));
 
       if (geomReader) {
         await geomReader.readGeometry(responseFeature.geometry);
-        feature.graphics = renderer!.moveGraphics();
+        const graphics = renderer!.moveGraphics();
+        feature.geometries = graphics.map((graphic) => {
+          return {graphic};
+        });
       }
       subLayerInfo.features.push(feature);
     }

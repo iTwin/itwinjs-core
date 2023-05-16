@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import { ArcGisGeometryRenderer, ArcGisGraphicsRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
@@ -119,7 +119,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
       return { propertyValue,  typename };
     };
 
-    const getRecordInfo = (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
+    const getFeatureAttribute = (fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value): MapLayerFeatureAttribute|undefined => {
       let propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
       let typename = StandardTypeNames.String;
@@ -175,7 +175,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
       propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-      return new MapFeatureInfoRecord(propertyValue, { name: fieldInfo.name, displayLabel: fieldInfo.name, typename });
+      return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
     };
 
     const geomType = collection.queryResult.featureResult.geometryType;
@@ -189,7 +189,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
     // Read feature values
     for (const featureResponse of collection.queryResult.featureResult.features) {
-      const feature: MapLayerFeature = { records: []};
+      const feature: MapLayerFeature = { attributes: []};
 
       if (renderer && featureResponse?.has_geometry) {
         if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
@@ -198,7 +198,10 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
           const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
           await renderer.renderPath(featureResponse.geometry.lengths, featureResponse.geometry.coords, fill, stride, true);
         }
-        feature.graphics = renderer.moveGraphics();
+        const graphics = renderer.moveGraphics();
+        feature.geometries = graphics.map((graphic) => {
+          return {graphic};
+        });
       }
 
       let fieldIdx = 0;
@@ -208,9 +211,9 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
           break;
         }
         // Convert everything to string for now
-        const info = getRecordInfo(fields[fieldIdx], attrValue);
-        if (info) {
-          feature.records?.push(info);
+        const attr = getFeatureAttribute(fields[fieldIdx], attrValue);
+        if (attr) {
+          feature.attributes?.push(attr);
         }
 
         fieldIdx++;

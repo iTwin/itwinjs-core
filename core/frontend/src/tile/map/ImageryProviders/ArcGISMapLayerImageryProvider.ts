@@ -10,7 +10,7 @@ import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
   ArcGisUtilities,
-  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo,
+  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeature, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -277,24 +277,25 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
           };
           subLayers.set(result.layerName, subLayerInfo);
         }
-        const feature: MapLayerFeature = {graphics: [], records: []};
+        const feature: MapLayerFeature = {geometries: [], attributes: []};
 
         // Read all feature attributes
         for (const [key, value] of Object.entries(result.attributes)) {
           // Convert everything to string for now
           const strValue = String(value);
-          feature.records.push(new MapFeatureInfoRecord(
-            { valueFormat: PropertyValueFormat.Primitive, value: strValue, displayValue: strValue },
-            { name: key, displayLabel: key, typename: StandardTypeNames.String }
-          ));
+          feature.attributes.push({
+            value: { valueFormat: PropertyValueFormat.Primitive, value: strValue, displayValue: strValue },
+            property: { name: key, displayLabel: key, typename: StandardTypeNames.String },
+          });
         }
 
         // Read feature geometries
         const geomReader = new ArcGisGeometryReaderJSON(result.geometryType, renderer);
         await geomReader.readGeometry(result.geometry);
-        feature.graphics = renderer.moveGraphics();
-
-        subLayerInfo.features.push(feature);
+        const graphics = renderer.moveGraphics();
+        feature.geometries = graphics.map((graphic) => {
+          return {graphic};
+        });
 
       }
 

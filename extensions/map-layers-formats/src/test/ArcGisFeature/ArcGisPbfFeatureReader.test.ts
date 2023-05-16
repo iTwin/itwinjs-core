@@ -6,7 +6,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
@@ -74,10 +74,7 @@ describe("ArcGisPbfFeatureReader", () => {
     featurePbf.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
-
-    // Make deep comparison by using JSON.stringify
-    const resultStr = JSON.stringify(results);
-    expect(resultStr).equals(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
+    assert.deepEqual(results, PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
 
   });
 
@@ -92,10 +89,7 @@ describe("ArcGisPbfFeatureReader", () => {
     featurePbf.floatPrecision = 2;
     const results: MapLayerFeatureInfo[] = [];
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
-
-    // Make deep comparison by using JSON.stringify
-    const resultsStr = JSON.stringify(results);
-    expect(resultsStr).equals(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
+    assert.deepEqual(results, PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
 
   });
 
@@ -110,8 +104,7 @@ describe("ArcGisPbfFeatureReader", () => {
     const results: MapLayerFeatureInfo[] = [];
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
 
-    // Make deep comparison by using JSON.stringify
-    expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.fieldsCoverageGetFeatureInfoResultRef));
+    assert.deepEqual(results, PhillyLandmarksDataset.fieldsCoverageGetFeatureInfoResultRef);
   });
 
   it("should readAndRender single ring polygon feature", async () => {

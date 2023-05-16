@@ -392,15 +392,18 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 public;MapCartoRectangle 
-alpha;MapFeatureInfo
-alpha;MapFeatureInfoRecord 
+beta;MapFeatureInfo
+beta;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
 beta;MapLayerAccessToken
 beta;MapLayerAccessTokenParams
 beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
-alpha;MapLayerFeature
-alpha;MapLayerFeatureInfo
+beta;MapLayerFeature
+beta;MapLayerFeatureAttribute
+beta;MapLayerFeatureGeometry
+beta;MapLayerFeatureInfo
+beta;MapLayerFeatureRecord
 public;MapLayerFormat
 internal;MapLayerFormatEntry
 public;MapLayerFormatRegistry
@@ -417,7 +420,7 @@ public;MapLayerSourceStatus
 public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
-alpha;MapSubLayerFeatureInfo
+beta;MapSubLayerFeatureInfo
 public;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 

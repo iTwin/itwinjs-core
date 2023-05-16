@@ -255,11 +255,11 @@ export class MapFeatureInfoDecorator implements Decorator {
           if (layerInfo.subLayerInfos) {
             for (const subLayerInfo of layerInfo.subLayerInfos) {
               for (const feature of subLayerInfo.features) {
-                if (feature.graphics) {
-                  for (const graphic of feature.graphics) {
-                    if (graphic.type === "linestring") {
-                      this._drapePointsStates.push({ count: graphic.points.length, collectorState: "loading" });
-                      this._drapePoints.pushAll(graphic.points);
+                if (feature.geometries) {
+                  for (const geom of feature.geometries) {
+                    if (geom.graphic.type === "linestring") {
+                      this._drapePointsStates.push({ count: geom.graphic.points.length, collectorState: "loading" });
+                      this._drapePoints.pushAll(geom.graphic.points);
                     }
                   }
                 }
@@ -312,13 +312,13 @@ export class MapFeatureInfoDecorator implements Decorator {
         if (layerInfo.subLayerInfos && !(layerInfo.subLayerInfos instanceof HTMLElement)) {
           for (const subLayerInfo of layerInfo.subLayerInfos) {
             for (const feature of subLayerInfo.features) {
-              if (feature.graphics) {
-                for (const graphic of feature.graphics) {
-                  if (graphic.type === "pointstring") {
-                    for (const point of graphic.points)
+              if (feature.geometries) {
+                for (const geom of feature.geometries) {
+                  if (geom.graphic.type === "pointstring") {
+                    for (const point of geom.graphic.points)
                       this._markerSet.markers.add(new PinMarker(point, this.markerSize, this._markerImage));
                   } else {
-                    builder.addPrimitive(graphic);
+                    builder.addPrimitive(geom.graphic);
                   }
 
                 }

@@ -6268,7 +6268,7 @@ export class MapCartoRectangle extends Range2d {
     set west(x: number);
 }
 
-// @alpha
+// @beta
 export interface MapFeatureInfo {
     // (undocumented)
     hitPoint?: Cartographic;
@@ -6276,7 +6276,7 @@ export interface MapFeatureInfo {
     layerInfos?: MapLayerFeatureInfo[];
 }
 
-// @alpha
+// @beta
 export class MapFeatureInfoRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
 }
@@ -6318,20 +6318,40 @@ export interface MapLayerAuthenticationInfo {
 // @internal (undocumented)
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
-// @alpha
+// @beta
 export interface MapLayerFeature {
     // (undocumented)
-    graphics?: GraphicPrimitive[];
+    attributes: MapLayerFeatureAttribute[];
     // (undocumented)
-    records: MapFeatureInfoRecord[];
+    geometries?: MapLayerFeatureGeometry[];
 }
 
-// @alpha
+// @beta
+export interface MapLayerFeatureAttribute {
+    // (undocumented)
+    property: PropertyDescription;
+    // (undocumented)
+    value: PropertyValue;
+}
+
+// @beta
+export interface MapLayerFeatureGeometry {
+    // (undocumented)
+    graphic: GraphicPrimitive;
+}
+
+// @beta
 export interface MapLayerFeatureInfo {
     // (undocumented)
     layerName: string;
     // (undocumented)
     subLayerInfos?: MapSubLayerFeatureInfo[];
+}
+
+// @beta
+export class MapLayerFeatureRecord {
+    // (undocumented)
+    static createRecordFromAttribute(attribute: MapLayerFeatureAttribute): PropertyRecord;
 }
 
 // @public
@@ -6631,7 +6651,7 @@ export interface MapLayerTokenEndpoint {
     getUrl(): string;
 }
 
-// @alpha
+// @beta
 export interface MapSubLayerFeatureInfo {
     // (undocumented)
     displayFieldName?: string;

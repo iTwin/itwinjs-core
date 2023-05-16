@@ -101,10 +101,13 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimi
     expect(info.length).to.equals(1);
     const features = info[0].features;
     expect(features.length).to.equals(1);
-    const graphics = features[0].graphics;
-    expect(graphics).to.not.undefined;
-    expect(graphics!.length).to.equals(nbGraphics);
-    expect(graphics![0].type).to.equals(expectedPrimitiveType);
+    const geometries = features[0].geometries;
+    expect(geometries).to.not.undefined;
+    if (geometries) {
+      expect(geometries.length).to.equals(nbGraphics);
+      expect(geometries[0].graphic.type).to.equals(expectedPrimitiveType);
+    }
+
   }
   expect(logErrorSpy.calledOnce).to.be.false;
   expect(toSpatialFromEcfSpy.called).to.equals(noGcsDefined);

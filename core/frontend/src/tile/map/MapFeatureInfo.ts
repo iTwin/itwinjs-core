@@ -11,7 +11,7 @@ import { Cartographic } from "@itwin/core-common";
 import { GraphicPrimitive } from "../../render/GraphicPrimitive";
 
 /** Contains record data of a [[MapLayerFeature]] instance .
- * @alpha
+ * @beta
  */
 export class MapFeatureInfoRecord extends PropertyRecord {
   public constructor(value: PropertyValue, property: PropertyDescription) {
@@ -22,7 +22,7 @@ export class MapFeatureInfoRecord extends PropertyRecord {
 /** Main feature info container for a MapFeatureInfo query.
  * Results are grouped per map-layer instance.
  * @see [[MapLayerFeatureInfo]]
- * @alpha
+ * @beta
  */
 export interface MapFeatureInfo {
   layerInfos?: MapLayerFeatureInfo[];
@@ -32,7 +32,7 @@ export interface MapFeatureInfo {
 /** Features container for a given map-layer.
  * Results are grouped per sub-layer instance.
  * @see [[MapSubLayerFeatureInfo]]
- * @alpha
+ * @beta
  */
 export interface MapLayerFeatureInfo {
   layerName: string;
@@ -41,7 +41,7 @@ export interface MapLayerFeatureInfo {
 
 /** Features container for a given sub-layer.
  * @see [[MapSubLayerFeatureInfo]]
- * @alpha
+ * @beta
  */
 export interface MapSubLayerFeatureInfo {
   subLayerName: string;
@@ -49,13 +49,40 @@ export interface MapSubLayerFeatureInfo {
   features: MapLayerFeature[];
 }
 
-/** Records and graphics container of a given feature instance
+/** Attributes and graphics container of a given feature instance
  * Results are grouped per sub-layer instance.
  * @see [[GraphicPrimitive]]
  * @see [[MapFeatureInfoRecord]]
- * @alpha
+ * @beta
  */
 export interface MapLayerFeature {
-  graphics?: GraphicPrimitive[];
-  records: MapFeatureInfoRecord[];
+  geometries?: MapLayerFeatureGeometry[];
+  attributes: MapLayerFeatureAttribute[];
+}
+
+/** Geometry of a [[MapLayerFeature]]
+ * @see [[MapLayerFeature]]
+ * @beta
+ */
+export interface MapLayerFeatureGeometry {
+  graphic: GraphicPrimitive;
+}
+
+/** Attribute of a [[MapLayerFeature]]
+ * @see [[MapLayerFeature]]
+ * @beta
+ */
+export interface MapLayerFeatureAttribute {
+  value: PropertyValue;
+  property: PropertyDescription;
+}
+
+/** Utility class that creates a [[PropertyRecord]] out of [[MapLayerFeatureAttribute]]
+ * @see [[MapLayerFeature]]
+ * @beta
+ */
+export class MapLayerFeatureRecord {
+  public static createRecordFromAttribute(attribute: MapLayerFeatureAttribute) {
+    return new PropertyRecord(attribute.value, attribute.property);
+  }
 }

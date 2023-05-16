@@ -5,8 +5,8 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryReaderJSON, MapFeatureInfoRecord, MapLayerFeature, MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { expect } from "chai";
+import { ArcGisGeometryReaderJSON, MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
@@ -15,7 +15,6 @@ import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRend
 import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 import { ArcGisCanvasRenderer } from "../../ArcGisFeature/ArcGisCanvasRenderer";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 
@@ -38,23 +37,15 @@ describe("ArcGisJsonFeatureReader", () => {
     sandbox.restore();
   });
 
-  it("should read FeatureInfo in JSON (phillyTansportation)", async () => {
+  it("should read FeatureInfo in JSON (phillyTransportation)", async () => {
     const featureJson = createFeatureJSON();
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
     await featureJson.readFeatureInfo({ data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false }, results);
-    const resultsStr = JSON.stringify(results);
-
-    expect(resultsStr).equals(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
+    assert.deepEqual(results, PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
   });
-
-  // it.only("test test", async () => {
-  //   // const feature: MapLayerFeature = {records: []};
-  //   const record: MapFeatureInfoRecord = {value: {valueFormat: PropertyValueFormat.Primitive, value: 123}, property: {name: "Test", displayLabel:"test", typename: "integer"}};
-  //   console.log(JSON.stringify(record));
-  // });
 
   it("should read FeatureInfo in JSON (phillyAirport)", async () => {
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
@@ -65,8 +56,7 @@ describe("ArcGisJsonFeatureReader", () => {
     const results: MapLayerFeatureInfo[] = [];
     const data = JSON.parse(PhillyLandmarksDataset.phillyAirportGetFeatureInfoQueryJson);
     await featureJson.readFeatureInfo({ data, exceedTransferLimit: false }, results);
-    const resultsStr = JSON.stringify(results);
-    expect(resultsStr).equals(PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
+    assert.deepEqual(results, PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
   });
 
   it("should deflate coordinates array", async () => {
