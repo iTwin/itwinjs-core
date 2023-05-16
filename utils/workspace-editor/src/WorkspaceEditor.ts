@@ -442,7 +442,7 @@ async function initializeWorkspace(args: InitializeOpts) {
       return;
   }
   const container = CloudSqlite.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
-  container.initializeContainer({ checksumBlockNames: true });
+  container.initializeContainer({ checksumBlockNames: true, blockSize: 4 * 1024 * 1024 });
   showMessage(`container "${args.containerId} initialized`);
 }
 

@@ -17,7 +17,7 @@ describe("Cloud workspace containers", () => {
   async function initializeContainer(containerId: string) {
     await AzuriteTest.Sqlite.createAzContainer({ containerId });
     const cloudCont1 = await AzuriteTest.Sqlite.makeContainer({ containerId });
-    await AzuriteTest.Sqlite.initializeContainers([cloudCont1]);
+    AzuriteTest.Sqlite.initializeContainers([cloudCont1]);
   }
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();

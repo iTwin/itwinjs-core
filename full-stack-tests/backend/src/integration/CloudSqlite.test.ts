@@ -7,7 +7,8 @@ import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
-import { BriefcaseDb, CloudSqlite, EditableWorkspaceDb, IModelHost, KnownLocations, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import * as sinon from "sinon";
+import { BriefcaseDb, CloudSqlite, IModelHost, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -18,7 +19,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 
 useFromChai(chaiAsPromised);
 
-describe.only("CloudSqlite", () => {
+describe("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
   let caches: CloudSqlite.CloudCache[];
   let testContainers: AzuriteTest.Sqlite.TestContainer[];
@@ -37,7 +38,7 @@ describe.only("CloudSqlite", () => {
       { containerId: "test3", logId: "logId-3", isPublic: true },
     ]);
     caches = azSqlite.makeCaches(["cache1", "cache2"]);
-    await azSqlite.initializeContainers(testContainers);
+    azSqlite.initializeContainers(testContainers);
 
     expect(caches[0].isDaemon).false;
 
@@ -49,7 +50,8 @@ describe.only("CloudSqlite", () => {
     const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testWs.db");
     if (existsSync(tempDbFile))
       removeSync(tempDbFile);
-    EditableWorkspaceDb.createEmpty(tempDbFile); // just to create a db with a few tables
+
+    PropertyStore.PropertyDb.createNewDb(tempDbFile);
 
     await azSqlite.uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
     await azSqlite.uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
@@ -138,7 +140,7 @@ describe.only("CloudSqlite", () => {
 
     const containerId = Guid.createValue();
     const container = (await azSqlite.createContainers([{ containerId, logId: "" }]))[0];
-    await azSqlite.initializeContainers([container]);
+    azSqlite.initializeContainers([container]);
     await azSqlite.uploadFile(container, caches[1], "testBim", testBimFileName);
     container.connect(caches[1]);
     db = SnapshotDb.openFile("testBim", { container });
@@ -338,5 +340,36 @@ describe.only("CloudSqlite", () => {
     newCache2.destroy();
   });
 
+  /** make sure that the auto-refresh for container tokens happens every hour */
+  it("Auto refresh container tokens", async () => {
+    const contain1 = testContainers[0];
+
+    const contProps: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    const accessToken = await CloudSqlite.requestToken(contProps); // must be valid token so property store can connect
+
+    let refreshedToken = "refreshed token";
+    sinon.stub(CloudSqlite, "requestToken").callsFake(async () => refreshedToken);
+
+    const clock = sinon.useFakeTimers(); // must be before creating PropertyStore container
+    const ps1 = new PropertyStore.CloudAccess({ ...contProps, accessToken });
+    const c1 = ps1.container as CloudSqlite.CloudContainer & { refreshPromise?: Promise<void> };
+    expect(c1.accessToken).equals(accessToken);
+
+    // test that the token is refreshed every hour, 24 times
+    for (let i = 0; i < 24; i++) {
+      clock.tick(60 * 60 * 1000); // advance clock by 1 hour so token is auto-refreshed
+
+      // token refresh happens on a timer, but is async. Normally that's fine - it doesn't matter when it finishes.
+      // But for this test we have to wait for it to finish so we can check the new token value.
+      await c1.refreshPromise; // wait for refresh to finish, if it's pending (note: promise can be undefined, that's fine - await does nothing)
+
+      expect(c1.accessToken).equal(refreshedToken);
+      refreshedToken = `refreshed ${i + 1} times`; // change the token for the next refresh
+    }
+
+    ps1.close(); // kills the timer that's using fake clock. Must be before restoring sinon stubs
+    clock.restore();
+    sinon.restore();
+  });
 });
 

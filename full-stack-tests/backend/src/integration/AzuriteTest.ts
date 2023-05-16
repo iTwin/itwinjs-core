@@ -15,12 +15,13 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace AzuriteTest {
 
+  export const storageType = "azure";
   export const httpAddr = "127.0.0.1:10000";
   export const accountName = "devstoreaccount1";
-  const accountSasKey = new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
-  const pipeline = azureBlob.newPipeline(accountSasKey);
   export const baseUri = `http://${httpAddr}/${accountName}`;
+
   export const getContainerUri = (id: string) => `${baseUri}/${id}`;
+  const pipeline = azureBlob.newPipeline(new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="));
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
   export let userToken: AccessToken;
@@ -33,7 +34,7 @@ export namespace AzuriteTest {
     export type TestContainer = CloudSqlite.CloudContainer;
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, requestWriteAccess: boolean) => {
-      container.accessToken = (await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, storageType: "azure", writeable: requestWriteAccess }))!;
+      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, storageType, writeable: requestWriteAccess });
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
@@ -63,9 +64,9 @@ export namespace AzuriteTest {
       return containerService.create(createProps);
     };
 
-    export const initializeContainers = async (containers: TestContainer[]) => {
+    export const initializeContainers = (containers: TestContainer[]) => {
       for (const container of containers) {
-        container.initializeContainer({ checksumBlockNames: true });
+        container.initializeContainer({ checksumBlockNames: true, blockSize: 64 * 1024 });
       }
     };
     export const makeEmptyDir = (name: LocalDirName) => {
@@ -76,9 +77,9 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
-      const containerProps: CloudSqlite.ContainerTokenProps = { ...arg, writeable: true, baseUri, storageType: "azure" };
+      const containerProps: CloudSqlite.ContainerTokenProps = { ...arg, writeable: true, baseUri, storageType };
       const accessToken = await CloudSqlite.requestToken(containerProps);
-      return CloudSqlite.createCloudContainer({ ...containerProps, accessToken: accessToken! });
+      return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
     };
 
     export const createContainers = async (props: TestContainerProps[]): Promise<TestContainer[]> => {
@@ -116,7 +117,7 @@ export namespace AzuriteTest {
   }
 
   const fakeUser = () => `token ${Guid.createValue()}`;
-  export const service = {
+  export const service: BlobContainer.ContainerService & { userToken: { admin: string, readOnly: string, readWrite: string } } = {
     userToken: {
       admin: fakeUser(), // just unique strings
       readOnly: fakeUser(),

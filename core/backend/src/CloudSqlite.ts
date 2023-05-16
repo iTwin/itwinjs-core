@@ -25,40 +25,46 @@ import type { VersionedSqliteDb } from "./SQLiteDb";
  */
 export namespace CloudSqlite {
 
-  const logInfo = (msg: string) => Logger.logInfo("CloudSQLite", msg);
-  const logError = (msg: string) => Logger.logError("CloudSQLite", msg);
+  const logInfo = (msg: string) => Logger.logInfo("CloudSqlite", msg);
+  const logError = (msg: string) => Logger.logError("CloudSqlite", msg);
 
-  export async function requestToken(args: ContainerTokenProps): Promise<AccessToken | undefined> {
-    const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken: await IModelHost.getAccessToken(), forWriteAccess: args.writeable });
-    return response?.token;
+  export async function requestToken(args: ContainerTokenProps): Promise<AccessToken> {
+    const userToken = await IModelHost.getAccessToken();
+    const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken, forWriteAccess: args.writeable });
+    return response?.token ?? "";
   }
 
-  export function createCloudContainer(args: ContainerAccessProps, refreshSecondsArg?: number): CloudContainer {
-    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { refreshInterval?: NodeJS.Timeout };
-    const refreshSeconds = (undefined !== refreshSecondsArg) ? refreshSecondsArg : 60 * 60; // default is 1 hour
+  export function createCloudContainer(args: CreateContainerProps): CloudContainer {
+    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise: Promise<void> | undefined };
+    const refreshSeconds = (undefined !== args.refreshSeconds) ? args.refreshSeconds : 60 * 60; // default is 1 hour
 
     // don't refresh tokens for public containers or if refreshSeconds isn't positive
     if (!args.isPublic && refreshSeconds > 0) {
       const tokenProps: ContainerTokenProps = { baseUri: args.baseUri, storageType: args.storageType, containerId: args.containerId, writeable: args.writeable };
-      container.onConnected = () => {
-        // set an interval timer to refresh the access token after the container is connected
-        container.refreshInterval = setInterval(async () => {
-          let newToken: AccessToken | undefined;
-          try {
-            newToken = await CloudSqlite.requestToken(tokenProps);
-            logInfo(`refreshed token for container ${tokenProps.containerId}`);
-          } catch (err: any) {
-            logError(`Error refreshing token for container ${tokenProps.containerId}: ${err.message}`);
-          }
-          container.accessToken = newToken ?? "";
+      const doRefresh = async () => {
+        let newToken: AccessToken | undefined;
+        const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
+        try {
+          newToken = await CloudSqlite.requestToken(tokenProps);
+          logInfo(`Refreshed token for container ${url}`);
+        } catch (err: any) {
+          logError(`Error refreshing token for container ${url}: ${err.message}`);
+        }
+        container.accessToken = newToken ?? "";
+      };
+      const onConnected = () => {
+        container.timer = setTimeout(async () => {
+          container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
+          await container.refreshPromise;
+          container.refreshPromise = undefined;
+          onConnected(); // schedule next refresh
         }, refreshSeconds * 1000);
       };
-
-      // clear the refresh interval when the container is disconnected
-      container.onDisconnect = () => {
-        if (container.refreshInterval !== undefined) {
-          clearInterval(container.refreshInterval);
-          container.refreshInterval = undefined;
+      container.onConnected = onConnected; // schedule the first refresh when the container is connected
+      container.onDisconnect = () => { // clear the refresh timer when the container is disconnected
+        if (container.timer !== undefined) {
+          clearTimeout(container.timer);
+          container.timer = undefined;
         }
       };
     }
@@ -146,6 +152,10 @@ export namespace CloudSqlite {
   export type ContainerAccessProps = ContainerProps & {
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
     lockExpireSeconds?: number;
+  };
+
+  export type CreateContainerProps = ContainerAccessProps & {
+    refreshSeconds?: number;
   };
 
   /** The name of a CloudSqlite database within a CloudContainer. */
@@ -331,7 +341,7 @@ export namespace CloudSqlite {
      * initialize a cloud blob-store container to be used as a new CloudContainer. This creates the container's manifest of its contents, and should be
      * performed on an empty container. If an existing manifest is present, it is destroyed and a new one is created (essentially emptying the container.)
      */
-    initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize?: number }): void;
+    initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize: number }): void;
 
     /**
      * Connect this CloudContainer to a CloudCache for accessing and/or modifying its contents.
@@ -708,11 +718,11 @@ export namespace CloudSqlite {
       /** The Constructor for DbType. */
       dbType: Constructor<DbType>;
       /** The properties of the cloud container holding the database. */
-      props: ContainerAccessProps;
+      props: CreateContainerProps;
       /** The name of the database within the container. */
       dbName: string;
     }) {
-      this._container = createCloudContainer({ ...args.props, writeable: true });
+      this._container = createCloudContainer({ writeable: true, ...args.props });
       this._cloudDb = new args.dbType(args.props);
       this.dbName = args.dbName;
       this.lockParams.moniker = IModelHost.userMoniker;
