@@ -234,7 +234,7 @@ export namespace PropertyStore {
    * made by others, as appropriate (see [[synchronizeWithCloud]]).
    */
   export class CloudAccess extends CloudSqlite.DbAccess<PropertyDb> {
-    public constructor(props: CloudSqlite.CreateContainerProps) {
+    public constructor(props: CloudSqlite.ContainerAccessProps) {
       super({ dbType: PropertyDb, props, dbName: defaultDbName });
     }
 

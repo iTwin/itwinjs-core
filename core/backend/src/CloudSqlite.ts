@@ -34,9 +34,9 @@ export namespace CloudSqlite {
     return response?.token ?? "";
   }
 
-  export function createCloudContainer(args: CreateContainerProps): CloudContainer {
+  export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise: Promise<void> | undefined };
-    const refreshSeconds = (undefined !== args.refreshSeconds) ? args.refreshSeconds : 60 * 60; // default is 1 hour
+    const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
 
     // don't refresh tokens for public containers or if refreshSeconds isn't positive
     if (!args.isPublic && refreshSeconds > 0) {
@@ -52,15 +52,15 @@ export namespace CloudSqlite {
         }
         container.accessToken = newToken ?? "";
       };
-      const onConnected = () => {
+      const tokenRefreshFn = () => {
         container.timer = setTimeout(async () => {
           container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
           await container.refreshPromise;
           container.refreshPromise = undefined;
-          onConnected(); // schedule next refresh
+          tokenRefreshFn(); // schedule next refresh
         }, refreshSeconds * 1000);
       };
-      container.onConnected = onConnected; // schedule the first refresh when the container is connected
+      container.onConnected = tokenRefreshFn; // schedule the first refresh when the container is connected
       container.onDisconnect = () => { // clear the refresh timer when the container is disconnected
         if (container.timer !== undefined) {
           clearTimeout(container.timer);
@@ -152,10 +152,8 @@ export namespace CloudSqlite {
   export type ContainerAccessProps = ContainerProps & {
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
     lockExpireSeconds?: number;
-  };
-
-  export type CreateContainerProps = ContainerAccessProps & {
-    refreshSeconds?: number;
+    /** number of seconds between auto-refresh of access token. If <=0 no auto-refresh. Default is 1 hour (60*60) */
+    tokenRefreshSeconds?: number;
   };
 
   /** The name of a CloudSqlite database within a CloudContainer. */
@@ -718,7 +716,7 @@ export namespace CloudSqlite {
       /** The Constructor for DbType. */
       dbType: Constructor<DbType>;
       /** The properties of the cloud container holding the database. */
-      props: CreateContainerProps;
+      props: ContainerAccessProps;
       /** The name of the database within the container. */
       dbName: string;
     }) {
