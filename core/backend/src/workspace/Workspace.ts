@@ -232,10 +232,8 @@ export interface Workspace {
 
   /** Get an opened [[WorkspaceDb]] from a WorkspaceDb alias.
    * @param dbAlias the database alias, resolved via [[resolveDatabase]].
-   * @param tokenFunc optional function to obtain an AccessToken for the resolved WorkspaceContainer. This function will only be called the first
-   * time a container is used.
    */
-  getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
+  getWorkspaceDb(dbAlias: WorkspaceDb.Name): Promise<WorkspaceDb>;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -317,13 +315,12 @@ export class ITwinWorkspace implements Workspace {
     return this.getContainer(containerProps).getWorkspaceDb(dbProps);
   }
 
-  public async getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc) {
+  public async getWorkspaceDb(dbAlias: string) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
     let container: WorkspaceContainer | undefined = this.findContainer(containerProps.containerId);
     if (undefined === container) {
-      if (tokenFunc)
-        containerProps.accessToken = await tokenFunc(containerProps);
+      containerProps.accessToken = await CloudSqlite.requestToken(containerProps);
       container = this.getContainer(containerProps);
     }
     return container?.getWorkspaceDb(dbProps);
