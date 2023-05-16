@@ -39,9 +39,10 @@ export namespace CloudSqlite {
   }
 
   /**
-   * Create a new CloudContainer from a ContainerAccessProps. A valid accessToken must be provided before the container can be used.
-   * @note After the container is connected to a CloudCache, it will begin auto-refreshing its AccessToken every `tokenRefreshSeconds` seconds (default is 1 hour).
-   * However, if the container is public, or If `tokenRefreshSeconds` is <0, auto-refresh is not enabled.
+   * Create a new CloudContainer from a ContainerAccessProps. For non-public containers, a valid accessToken must be provided before the container
+   * can be used (e.g. via [[CloudSqlite.requestToken]]).
+   * @note After the container is successfully connected to a CloudCache, it will begin auto-refreshing its accessToken every `tokenRefreshSeconds` seconds (default is 1 hour)
+   * until it is disconnected. However, if the container is public, or if `tokenRefreshSeconds` is <=0, auto-refresh is not enabled.
    */
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise: Promise<void> | undefined };
