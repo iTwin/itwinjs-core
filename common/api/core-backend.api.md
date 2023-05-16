@@ -927,7 +927,6 @@ export namespace CloudSqlite {
         cacheName: string;
         cacheSize?: string;
     }
-    // (undocumented)
     export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
@@ -1002,7 +1001,6 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
-    // (undocumented)
     export function requestToken(args: ContainerTokenProps): Promise<AccessToken>;
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)

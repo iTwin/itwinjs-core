@@ -45,10 +45,10 @@ export namespace CloudSqlite {
    * until it is disconnected. However, if the container is public, or if `tokenRefreshSeconds` is <=0, auto-refresh is not enabled.
    */
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
-    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise: Promise<void> | undefined };
+    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise?: Promise<void> };
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
 
-    // don't refresh tokens for public containers or if refreshSeconds isn't positive
+    // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
       const tokenProps: ContainerTokenProps = { baseUri: args.baseUri, storageType: args.storageType, containerId: args.containerId, writeable: args.writeable };
       const doRefresh = async () => {
@@ -144,7 +144,7 @@ export namespace CloudSqlite {
     readonly id: number;
     /** Time request was made, as iso-8601 */
     readonly startTime: string;
-    /** Time reply received, as iso-8601 (or NULL) */
+    /** Time reply received, as iso-8601 (may be undefined) */
     readonly endTime: string | undefined;
     /** "PUT", "GET", etc. */
     readonly method: string;
