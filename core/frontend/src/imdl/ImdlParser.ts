@@ -1017,10 +1017,12 @@ class ImdlParser {
 }
 
 export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchModelId: Id64String): RenderFeatureTable {
-  if (!imdlFeatureTable.multiModel)
-    return new PackedFeatureTable(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary);
+  const table = imdlFeatureTable.multiModel
+    ? MultiModelPackedFeatureTable.create(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories)
+    : new PackedFeatureTable(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary);
 
-  return MultiModelPackedFeatureTable.create(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories);
+  table.animationNodeIds = imdlFeatureTable.animationNodeIds;
+  return table;
 }
 
 export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
