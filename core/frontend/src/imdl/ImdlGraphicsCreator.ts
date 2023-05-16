@@ -104,6 +104,7 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
 
 interface GraphicsOptions extends ImdlDecodeOptions {
   textures: Map<string, RenderTexture>;
+  patterns: Map<string, RenderGeometry[]>;
 }
 
 function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
@@ -315,6 +316,17 @@ function createPrimitiveGraphic(primitive: Imdl.Primitive, options: GraphicsOpti
   return geometry ? options.system.createRenderGraphic(geometry, mods.instances) : undefined;
 }
 
+function createPatternGeometries(primitives: Imdl.Primitive[], options: GraphicsOptions): RenderGeometry[] {
+  const geometries = [];
+  for (const primitive of primitives) {
+    const geometry = createPrimitiveGeometry(primitive, options, undefined);
+    if (geometry)
+      geometries.push(geometry);
+  }
+
+  return geometries;
+}
+
 function createPatternGraphic(params: Imdl.AreaPatternParams, options: GraphicsOptions): RenderGraphic | undefined {
   return undefined;
   // ###TODO
@@ -344,7 +356,11 @@ function createPrimitiveGraphics(primitives: Imdl.Primitive[], options: Graphics
 
 export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
   const textures = await loadNamedTextures(options);
-  const graphicsOptions = { ...options, textures };
+  const patterns = new Map<string, RenderGeometry[]>();
+  const graphicsOptions = { ...options, textures, patterns };
+
+  for (const [name, primitives] of options.document.patterns)
+    patterns.set(name, createPatternGeometries(primitives, graphicsOptions));
 
   const system = options.system;
   const graphics: RenderGraphic[] = [];
