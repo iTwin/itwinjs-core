@@ -804,7 +804,7 @@ class ImdlParser {
     let material: Imdl.SurfaceMaterial | undefined;
     const atlas = mesh.vertices.materialAtlas;
     const numColors = mesh.vertices.numColors;
-    if (atlas && numColors) {
+    if (atlas && undefined !== numColors) {
       material = {
         isAtlas: true,
         hasTranslucency: JsonUtils.asBool(atlas.hasTranslucency),
