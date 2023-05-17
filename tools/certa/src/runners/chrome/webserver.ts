@@ -37,8 +37,6 @@ app.use("/@/", (_req, resp) => {
       "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
     },
   });
-
-
 });
 
 // Serve static assets from any configured "public" directories
