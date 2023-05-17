@@ -101,6 +101,7 @@ internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
 internal;ContextShareProvider
+internal;convertFeatureTable(imdlFeatureTable: ImdlModel.FeatureTable, batchModelId: Id64String): RenderFeatureTable
 internal;CoordinateConverter
 internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
@@ -151,6 +152,7 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -341,7 +343,10 @@ alpha;ImdlMaterialAtlas
 alpha;ImdlMesh
 alpha;ImdlMeshEdges
 alpha;ImdlMeshPrimitive 
+internal;ImdlModel
 alpha;ImdlNamedTexture
+internal;ImdlParseError = Exclude
+internal;ImdlParserOptions
 alpha;ImdlPointStringPrimitive 
 alpha;ImdlPolyline
 alpha;ImdlPolylinePrimitive 
@@ -515,6 +520,7 @@ public;PaddingPercent
 public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin
+internal;parseImdlDocument(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError
 public;ParseKeyinError
 public;ParseKeyinResult = ParsedKeyin | ParseKeyinError
 public;ParticleCollectionBuilder
@@ -750,6 +756,7 @@ internal;TileUserIdSet
 internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
+internal;toMaterialArgs(mat: ImdlModel.SurfaceMaterialParams): CreateRenderMaterialArgs
 public;Tool
 public;ToolAdmin
 public;ToolAssistance
@@ -768,6 +775,7 @@ public;ToolTipOptions
 public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
+internal;toVertexTable(imdl: ImdlModel.VertexTable): VertexTable
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
