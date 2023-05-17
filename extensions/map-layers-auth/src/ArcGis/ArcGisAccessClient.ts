@@ -283,9 +283,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       "arcgis.com",
     ];
 
-    const present = (host: string) => url.hostname.toLowerCase().endsWith(host);
-
-    return allowedHosts.some(present);
+    return allowedHosts.some((host: string) => url.hostname.toLowerCase().endsWith(host));
   }
 
   /**
