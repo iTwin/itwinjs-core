@@ -108,8 +108,11 @@ export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
 
 // @public
 export interface CalculatedPropertiesSpecification {
+    categoryId?: string | CategoryIdentifier;
+    editor?: PropertyEditorSpecification;
     label: string;
     priority?: number;
+    renderer?: CustomRendererSpecification;
     value: string;
 }
 
