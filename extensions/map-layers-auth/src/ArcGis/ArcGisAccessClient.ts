@@ -279,12 +279,13 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   * @internal
   */
   private isArcGisHostValid(url: URL): boolean {
-    const isolatedHost = url.hostname.toLowerCase().split(".").slice(-2).join(".");
     const allowedHosts = [
       "arcgis.com",
     ];
 
-    return allowedHosts.includes(isolatedHost);
+    const present = (host: string) => url.hostname.toLowerCase().endsWith(host);
+
+    return allowedHosts.some(present);
   }
 
   /**
