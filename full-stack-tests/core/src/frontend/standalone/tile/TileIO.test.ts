@@ -9,8 +9,8 @@ import {
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, SnapshotIModelRpcInterface, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
-  SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, ImdlModel, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
+  parseImdlDocument, RenderGraphic, SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
@@ -782,32 +782,21 @@ describe("TileAdmin", () => {
 
   it("should omit or load edges based on configuration and view flags", async () => {
     class App extends TileAdminApp {
-      private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
+      private static async rootTileHasEdges(tree: IModelTileTree): Promise<boolean> {
         const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
         const stream = ByteStream.fromUint8Array(response);
-        const reader = ImdlReader.create({
+        const document = parseImdlDocument({
           stream,
-          iModel: imodel,
-          modelId: "0x1c",
+          batchModelId: "0x1c",
           is3d: true,
-          system: IModelApp.renderSystem,
-        });
+          maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
+        }) as ImdlModel.Document;
 
-        expect(reader).not.to.be.undefined;
-
-        const meshes = (reader as any)._meshes;
-        expect(meshes).not.to.be.undefined;
-        for (const key of Object.keys(meshes)) {
-          const mesh = meshes[key];
-          for (const primitive of mesh.primitives)
-            if (undefined !== primitive.edges)
-              return true;
-        }
-
-        return false;
+        expect(typeof document).to.equal("object");
+        return document.nodes.some((node) => node.primitives.some((primitive) => primitive.type === "mesh" && undefined !== primitive.params.edges));
       }
 
       public static async test(imodel: IModelConnection) {
@@ -825,7 +814,7 @@ describe("TileAdmin", () => {
           const tree2 = await getTileTree(imodel, "0x1c", false !== edges);
           expect(tree2).to.equal(tree);
 
-          expect(await this.rootTileHasEdges(tree, imodel)).to.equal(false !== edges);
+          expect(await this.rootTileHasEdges(tree)).to.equal(false !== edges);
         };
 
         const version = CurrentImdlVersion.Major.toString(16);

@@ -36,6 +36,8 @@ export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
 export * from "./imdl/ImdlSchema";
+export * from "./imdl/ImdlModel";
+export * from "./imdl/ImdlParser";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";

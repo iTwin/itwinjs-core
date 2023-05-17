@@ -9,7 +9,7 @@
 import { ByteStream, Id64String } from "@itwin/core-bentley";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, decodeTileContentDescription, RenderSchedule, TileReadError, TileReadStatus,
+  BatchType, decodeTileContentDescription, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -17,7 +17,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
-import { convertFeatureTable, parseImdlDocument } from "../imdl/ImdlParser";
+import { convertFeatureTable, ImdlTimeline, parseImdlDocument } from "../imdl/ImdlParser";
 import { decodeImdlGraphics } from "../imdl/ImdlGraphicsCreator";
 import { IModelTileContent } from "./internal";
 
@@ -47,9 +47,6 @@ export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConne
   const result = await reader.read();
   return result.graphic;
 }
-
-/** @internal */
-export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
 /** Arguments supplied to [[ImdlReader.create]]
  * @internal
