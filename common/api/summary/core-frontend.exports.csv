@@ -36,6 +36,7 @@ internal;AnimationBranchStates
 internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
+alpha;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
 internal;ArcGisErrorCode
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
@@ -100,6 +101,7 @@ internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
 internal;ContextShareProvider
+internal;convertFeatureTable(imdlFeatureTable: ImdlModel.FeatureTable, batchModelId: Id64String): RenderFeatureTable
 internal;CoordinateConverter
 internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
@@ -150,6 +152,7 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -244,7 +247,6 @@ internal;GltfDocument
 internal;GltfExtensions = GltfStringMap
 public;GltfGraphic
 internal;GltfGraphicsReader 
-internal;GltfHeader 
 internal;GltfId = Gltf1Id | Gltf2Id
 internal;GltfImage 
 internal;GltfMagFilter
@@ -326,11 +328,41 @@ internal;ImageryMapTile
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
 internal;ImageryTileTreeState
-internal;Imdl
+alpha;ImdlAnimationNodes
+alpha;ImdlAreaPattern
+alpha;ImdlAreaPatternSymbol
+alpha;ImdlAuxChannelTable = Omit
+alpha;ImdlBufferView
+alpha;ImdlColorDef = number[]
+alpha;ImdlDictionary
+alpha;ImdlDisplayParams
+alpha;ImdlDocument
+alpha;ImdlIndexedEdges
+alpha;ImdlInstances
+alpha;ImdlMaterialAtlas
+alpha;ImdlMesh
+alpha;ImdlMeshEdges
+alpha;ImdlMeshPrimitive 
+internal;ImdlModel
+alpha;ImdlNamedTexture
+internal;ImdlParseError = Exclude
+internal;ImdlParserOptions
+alpha;ImdlPointStringPrimitive 
+alpha;ImdlPolyline
+alpha;ImdlPolylinePrimitive 
+alpha;ImdlPrimitive
+internal;ImdlReader
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
+alpha;ImdlRenderMaterial
+alpha;ImdlScene
+alpha;ImdlSegmentEdges
+alpha;ImdlSilhouetteEdges 
+alpha;ImdlSurface
+alpha;ImdlTextureMapping
 internal;ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script
+alpha;ImdlVertexTable
 public;IModelApp
 public;IModelAppOptions
 public;class IModelConnection 
@@ -488,6 +520,7 @@ public;PaddingPercent
 public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin
+internal;parseImdlDocument(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError
 public;ParseKeyinError
 public;ParseKeyinResult = ParsedKeyin | ParseKeyinError
 public;ParticleCollectionBuilder
@@ -633,7 +666,6 @@ public;SetupCameraTool
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
-internal;ShouldAbortImdlReader = (reader: ImdlReader) => boolean
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
 internal;SkyBoxDecorations
 public;SnapDetail 
@@ -724,6 +756,7 @@ internal;TileUserIdSet
 internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
+internal;toMaterialArgs(mat: ImdlModel.SurfaceMaterialParams): CreateRenderMaterialArgs
 public;Tool
 public;ToolAdmin
 public;ToolAssistance
@@ -742,6 +775,7 @@ public;ToolTipOptions
 public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
+internal;toVertexTable(imdl: ImdlModel.VertexTable): VertexTable
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext

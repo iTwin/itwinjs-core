@@ -573,7 +573,9 @@ beta;PropertyMetaDataMap
 beta;PropertyMetaDataProps
 internal;PullChangesOptions
 public;QParams2d
+alpha;QParams2dProps
 public;QParams3d
+alpha;QParams3dProps
 public;QPoint2d
 public;QPoint2dBuffer
 public;QPoint2dBuffer

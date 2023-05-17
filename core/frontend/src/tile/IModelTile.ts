@@ -115,21 +115,20 @@ export class IModelTile extends Tile {
     const tree = this.iModelTree;
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
     const { iModel, modelId, is3d, containsTransformNodes } = tree;
-    const reader = ImdlReader.create({
-      stream: streamBuffer,
-      type: tree.batchType,
-      loadEdges: false !== tree.edgeOptions,
-      options: { tileId: this.contentId },
-      timeline: tree.timeline,
-      iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
-    });
+    try {
+      const reader = ImdlReader.create({
+        stream: streamBuffer,
+        type: tree.batchType,
+        loadEdges: false !== tree.edgeOptions,
+        options: { tileId: this.contentId },
+        timeline: tree.timeline,
+        iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
+      });
 
-    if (undefined !== reader) {
-      try {
-        content = await reader.read();
-      } catch {
-        //
-      }
+      content = await reader.read();
+      return content;
+    } catch {
+      //
     }
 
     return content;
