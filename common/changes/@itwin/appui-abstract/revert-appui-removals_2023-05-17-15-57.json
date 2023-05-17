@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/appui-abstract",
-      "comment": "Remove APIs that were deprecated and moved to AppUI repo.",
+      "comment": "",
       "type": "none"
     }
   ],
