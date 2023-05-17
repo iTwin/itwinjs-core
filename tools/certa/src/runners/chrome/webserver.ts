@@ -32,15 +32,12 @@ app.use("/@/", (_req, resp) => {
   const canonicalPath = require("canonical-path");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
   const fullPath = path.resolve("/", filePath);
-  if (canonicalPath.normalize(fullPath) === filePath) {
-    resp.sendFile(filePath, {
-      headers: (sourceMap) && {
-        "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
-      },
-    });
-  } else {
-    console.log("FilePath ERROR: The provided absolute path is different from the canonical path. Moving up to parent directory is forbidden.");
-  }
+  resp.sendFile(canonicalPath.normalize(fullPath), {
+    headers: (sourceMap) && {
+      "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
+    },
+  });
+
 
 });
 
