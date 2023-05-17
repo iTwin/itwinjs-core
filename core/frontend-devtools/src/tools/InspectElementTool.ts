@@ -8,11 +8,11 @@
  */
 
 import { BentleyError, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
+import { ExtensionHost, GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-extension";
 import {
-  BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
+  BeButtonEvent, CoreTools, EventHandled, HitDetail, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
   NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
-} from "@itwin/core-frontend";
+} from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -50,7 +50,7 @@ export class InspectElementTool extends PrimitiveTool {
   private setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
     if (!this._useSelection)
-      IModelApp.accuSnap.enableLocate(true);
+      ExtensionHost.accuSnap.enableLocate(true);
 
     this.showPrompt();
   }
@@ -74,7 +74,7 @@ export class InspectElementTool extends PrimitiveTool {
       this.process(this._elementIds).then(async () => {
         await this.onReinitialize();
       }).catch((err) => {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+        ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
       });
     else {
       this.setupAndPromptForNextAction();
@@ -91,7 +91,7 @@ export class InspectElementTool extends PrimitiveTool {
         });
 
         if (0 === ids.length)
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
+          ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
         else
           await this.process(ids);
 
@@ -100,7 +100,7 @@ export class InspectElementTool extends PrimitiveTool {
       }
     }
 
-    const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+    const hit = await ExtensionHost.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (undefined === hit || !hit.isElementHit)
       return EventHandled.No;
 
@@ -179,13 +179,13 @@ export class InspectElementTool extends PrimitiveTool {
           }
         }
 
-        await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
+        await ExtensionHost.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
       messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", BentleyError.getErrorMessage(err));
     }
 
-    IModelApp.notifications.outputMessage(messageDetails);
+    ExtensionHost.notifications.outputMessage(messageDetails);
   }
 
   public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
@@ -218,8 +218,8 @@ export class InspectElementTool extends PrimitiveTool {
       this._options.includePlacement = placement;
 
     const parts = args.getBoolean("r");
-    if (true === parts && undefined !== IModelApp.viewManager.selectedView)
-      this._options.includePartReferences = IModelApp.viewManager.selectedView.view.is3d() ? "3d" : "2d";
+    if (true === parts && undefined !== ExtensionHost.viewManager.selectedView)
+      this._options.includePartReferences = ExtensionHost.viewManager.selectedView.view.is3d() ? "3d" : "2d";
 
     const modal = args.getBoolean("m");
     if (undefined !== modal)

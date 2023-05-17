@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, MessageBoxIconType, MessageBoxType, Tool } from "@itwin/core-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, Tool } from "@itwin/core-extension";
 
 /** Queries the client's level of compatibility with the rendering system and outputs it to NotificationManager.
  * @beta
@@ -25,7 +25,7 @@ export class ReportWebGLCompatibilityTool extends Tool {
     html.style.whiteSpace = "pre-wrap";
     html.appendChild(document.createTextNode(msg));
 
-    await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, html, MessageBoxIconType.Information);
+    await ExtensionHost.notifications.openMessageBox(MessageBoxType.Ok, html, MessageBoxIconType.Information);
     return true;
   }
 }

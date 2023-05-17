@@ -8,10 +8,10 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { Camera, ColorDef, Hilite } from "@itwin/core-common";
+import { Camera, ColorDef, ExtensionHost, Hilite } from "@itwin/core-extension";
 import {
-  DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,
-} from "@itwin/core-frontend";
+  DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, TileBoundingBoxes, Tool, Viewport,
+} from "@itwin/core-extension";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
@@ -25,7 +25,7 @@ export abstract class ViewportToggleTool extends Tool {
   protected abstract toggle(vp: Viewport, enable?: boolean): Promise<void>;
 
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp)
       await this.toggle(vp, enable);
 
@@ -76,7 +76,7 @@ export class ShowTileVolumesTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(boxes?: TileBoundingBoxes): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
@@ -151,7 +151,7 @@ export class ToggleTileTreeReferencesTool extends Tool {
   }
 
   public override async run(): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp || !this._which || !vp.view.isSpatialView())
       return false;
 
@@ -176,7 +176,7 @@ export class SetAspectRatioSkewTool extends Tool {
     if (undefined === skew)
       skew = 1.0;
 
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp) {
       vp.view.setAspectRatioSkew(skew);
       vp.synchWithView();
@@ -204,7 +204,7 @@ export class ChangeHiliteModeTool extends Tool {
   public static override toolId = "ChangeHiliteMode";
 
   public override async run(mode?: string) {
-    const hilites = IModelApp.viewManager.selectedView?.iModel.hilited;
+    const hilites = ExtensionHost.viewManager.selectedView?.iModel.hilited;
     if (!hilites)
       return false;
 
@@ -227,7 +227,7 @@ export abstract class ChangeHiliteTool extends Tool {
   public static override get maxArgs() { return 6; }
 
   public override async run(settings?: Hilite.Settings): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp)
       this.apply(vp, settings);
 
@@ -241,7 +241,7 @@ export abstract class ChangeHiliteTool extends Tool {
     if (0 === inputArgs.length)
       return this.run();
 
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
@@ -328,7 +328,7 @@ export class ChangeFlashSettingsTool extends Tool {
   public static override get maxArgs() { return 3; }
 
   public override async run(settings?: FlashSettings): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp)
       vp.flashSettings = settings ?? new FlashSettings();
 
@@ -336,7 +336,7 @@ export class ChangeFlashSettingsTool extends Tool {
   }
 
   public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp)
       return true;
 
@@ -424,7 +424,7 @@ export class ViewportTileSizeModifierTool extends Tool {
    * @param modifier the tile size modifier to use; if undefined, reset the modifier
    */
   public override async run(modifier?: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp)
       vp.setTileSizeModifier(modifier);
 
@@ -453,7 +453,7 @@ export class ViewportAddRealityModel extends Tool {
    * @param url the URL which points to the reality model tileset
    */
   public override async run(url: string): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp)
       vp.displayStyle.attachRealityModel({ tilesetUrl: url });
 
@@ -484,7 +484,7 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
     if (allow !== vp.view.allow3dManipulations()) {
       vp.view.setAllow3dManipulations(allow);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IModelApp.toolAdmin.startDefaultTool();
+      ExtensionHost.toolAdmin.startDefaultTool();
     }
 
     return Promise.resolve();
@@ -579,7 +579,7 @@ export class ChangeCameraTool extends Tool {
   public static override toolId = "ChangeCamera";
 
   public override async run(camera?: Camera): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (camera && vp && vp.view.is3d()) {
       const view = vp.view.clone();
       view.camera.setFrom(camera);
@@ -590,7 +590,7 @@ export class ChangeCameraTool extends Tool {
   }
 
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp || !vp.view.is3d())
       return false;
 

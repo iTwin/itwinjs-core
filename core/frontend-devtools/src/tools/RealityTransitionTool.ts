@@ -8,8 +8,8 @@
  */
 
 import { Vector3d } from "@itwin/core-geometry";
-import { RenderSchedule } from "@itwin/core-common";
-import { IModelApp, Tool } from "@itwin/core-frontend";
+import { ExtensionHost, RenderSchedule } from "@itwin/core-extension";
+import { Tool } from "@itwin/core-extension";
 
 enum FadeMode { X, Y, Z, Transparent }
 
@@ -24,7 +24,7 @@ export class RealityTransitionTool extends Tool {
    * @param fadeMode whether to apply the transition in X, Y, Z, or transparency
    */
   public override async run(fadeMode: FadeMode = FadeMode.X): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp)
       return true;
 

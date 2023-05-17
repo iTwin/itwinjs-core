@@ -8,7 +8,7 @@
  */
 
 import { saveAs } from "file-saver";
-import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@itwin/core-frontend";
+import { GLTimerResult, RenderSystemDebugControl, ExtensionHost } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Trace Event Format, viewable with chrome://tracing
@@ -101,7 +101,7 @@ export class GpuProfiler {
   private _isRecording: boolean;
 
   public constructor(parent: HTMLElement) {
-    this._debugControl = IModelApp.renderSystem.debugControl!;
+    this._debugControl = ExtensionHost.renderSystem.debugControl!;
 
     const checkBox = createCheckBox({
       parent,

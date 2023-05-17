@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@itwin/core-frontend";
+import { ColorDef, ExtensionHost, LinePixels } from "@itwin/core-extension";
+import { DecorateContext, GraphicType, TileTreeReference, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 class TreeDecoration {
@@ -16,7 +16,7 @@ class TreeDecoration {
   private _removeMe?: () => void;
 
   private constructor() {
-    this._removeMe = IModelApp.viewManager.addDecorator(this);
+    this._removeMe = ExtensionHost.viewManager.addDecorator(this);
   }
 
   private stop() {

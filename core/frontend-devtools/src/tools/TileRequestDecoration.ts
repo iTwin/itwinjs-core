@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@itwin/core-frontend";
+import { ColorDef, ExtensionHost, LinePixels } from "@itwin/core-extension";
+import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 class TileRequestDecoration {
@@ -18,7 +18,7 @@ class TileRequestDecoration {
 
   private constructor(vp: Viewport) {
     this._targetVp = vp;
-    this._removeDecorator = IModelApp.viewManager.addDecorator(this);
+    this._removeDecorator = ExtensionHost.viewManager.addDecorator(this);
   }
 
   private stop(): void {
@@ -82,7 +82,7 @@ export class ToggleTileRequestDecorationTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp)
       TileRequestDecoration.toggle(vp, enable);
 

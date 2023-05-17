@@ -6,7 +6,7 @@
  * @module Widgets
  */
 
-import { IModelApp } from "@itwin/core-frontend";
+import { ExtensionHost } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 
 export class RenderCommandBreakdown {
@@ -57,7 +57,7 @@ export class RenderCommandBreakdown {
   }
 
   private update(): void {
-    const ctrl = IModelApp.viewManager.selectedView?.target.debugControl;
+    const ctrl = ExtensionHost.viewManager.selectedView?.target.debugControl;
     if (!ctrl)
       return;
 

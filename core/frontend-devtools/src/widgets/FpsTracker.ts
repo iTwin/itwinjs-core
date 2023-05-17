@@ -7,7 +7,7 @@
  * @module Widgets
  */
 
-import { PerformanceMetrics, Target, Viewport } from "@itwin/core-frontend";
+import { Viewport, Target, PerformanceMetrics } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Displays average frames-per-second.

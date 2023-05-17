@@ -10,10 +10,10 @@
 import {
   ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
-} from "@itwin/core-common";
+} from "@itwin/core-extension";
 import {
-  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
-} from "@itwin/core-frontend";
+  DisplayStyle3dState, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport, ExtensionHost
+} from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
@@ -43,7 +43,7 @@ export abstract class DisplayStyleTool extends Tool {
   protected abstract parse(args: string[], vp: Viewport): Promise<boolean>;
 
   public override async run(): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
 
@@ -51,7 +51,7 @@ export abstract class DisplayStyleTool extends Tool {
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.parse(args, vp))
       return this.run();
     else
@@ -80,7 +80,7 @@ export class ChangeViewFlagsTool extends Tool {
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
 
@@ -284,7 +284,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
     if (this._quote)
       json = `"${json.replace(/"/g, '""')}"`;
 
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Rendering style saved", json));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Rendering style saved", json));
     if (this._copyToClipboard)
       copyStringToClipboard(json);
 
@@ -309,7 +309,7 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
       this._overrides = JSON.parse(args[0]);
       return true;
     } catch {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Invalid JSON"));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "Invalid JSON"));
       return false;
     }
   }

@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
-import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import { ExtensionHost, FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-extension";
+import { getCesiumAssetUrl, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -26,16 +26,16 @@ export class AttachRealityModelTool extends Tool {
    */
   public override async run(data: string): Promise<boolean> {
     const props = JSON.parse(data);
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
     if (props === undefined || props.tilesetUrl === undefined) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Properties ${props} are not valid`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Properties ${props} are not valid`));
     }
 
     vp.displayStyle.attachRealityModel(props);
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${props.tilesetUrl} attached`));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${props.tilesetUrl} attached`));
 
     return true;
   }
@@ -59,13 +59,13 @@ export class SaveRealityModelTool extends Tool {
    * @param name the name of the reality model to copy; if undefined, copy the last found reality model
    */
   public override async run(name: string | undefined): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
     vp.displayStyle.forEachRealityModel((realityModel) => {
       if (name === undefined || realityModel.name === name) {
         copyStringToClipboard(JSON.stringify(realityModel.toJSON()));
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${realityModel.name} copied to clipboard`));
+        ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${realityModel.name} copied to clipboard`));
       }
     });
 
@@ -109,14 +109,14 @@ export class SetRealityModelTransparencyTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(transparency: number, index: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
     const changed = changeRealityModelAppearanceOverrides(vp, { transparency }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to transparency: ${transparency}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to transparency: ${transparency}`));
 
     return true;
   }
@@ -134,7 +134,7 @@ export class SetRealityModelLocateTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(locate: boolean, index: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
@@ -142,7 +142,7 @@ export class SetRealityModelLocateTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { nonLocatable }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to locate: ${locate}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to locate: ${locate}`));
 
     return true;
   }
@@ -162,14 +162,14 @@ export class SetRealityModelEmphasizedTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(emphasized: true | undefined, index: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
     const changed = changeRealityModelAppearanceOverrides(vp, { emphasized }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to emphasized: ${emphasized}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to emphasized: ${emphasized}`));
 
     return true;
   }
@@ -189,7 +189,7 @@ export class DetachRealityModelTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(index: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
@@ -220,14 +220,14 @@ export class SetRealityModelColorTool extends Tool {
   public static override get maxArgs() { return 4; }
 
   public override async run(rgb: RgbColorProps, index: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
     const changed = changeRealityModelAppearanceOverrides(vp, { rgb }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
 
     return true;
   }
@@ -246,7 +246,7 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(index: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp)
       return false;
 
@@ -272,7 +272,7 @@ export class AttachCesiumAssetTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(assetId: number, requestKey: string): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
@@ -289,7 +289,7 @@ export class AttachCesiumAssetTool extends Tool {
     // const props: ContextRealityModelProps = { rdSourceKey, tilesetUrl: getCesiumAssetUrl(assetId, accessKey) };
 
     vp.displayStyle.attachRealityModel(props);
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
     return true;
   }
 
@@ -308,7 +308,7 @@ export class ToggleOSMBuildingDisplay extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(onOff?: boolean, transparency?: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 

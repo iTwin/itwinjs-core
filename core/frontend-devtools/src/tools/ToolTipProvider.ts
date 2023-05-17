@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@itwin/core-frontend";
+import { ExtensionHost, HitDetail, Tool, ToolTipProvider } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 /** Augments tooltips with detailed information useful for debugging.
@@ -42,10 +42,10 @@ class DebugToolTipProvider implements ToolTipProvider {
     if (enabled) {
       if (undefined === this._instance) {
         this._instance = new DebugToolTipProvider();
-        IModelApp.viewManager.addToolTipProvider(this._instance);
+        ExtensionHost.viewManager.addToolTipProvider(this._instance);
       }
     } else if (undefined !== this._instance) {
-      IModelApp.viewManager.dropToolTipProvider(this._instance);
+      ExtensionHost.viewManager.dropToolTipProvider(this._instance);
       this._instance = undefined;
     }
   }

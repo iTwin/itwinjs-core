@@ -9,8 +9,8 @@
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
-  DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
-} from "@itwin/core-frontend";
+  DisclosedTileTreeSet, ExtensionHost, RenderMemory, TileTree, TileTreeOwner, Viewport,
+} from "@itwin/core-extension";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
@@ -97,7 +97,7 @@ const calcMem: CalcMem[] = [
   },
   (stats, vp) => {
     vp.target.renderSystem.collectStatistics(stats);
-    for (const x of IModelApp.viewManager)
+    for (const x of ExtensionHost.viewManager)
       x.target.collectStatistics(stats);
 
     return collectStatisticsForAllTileTrees(vp, stats);
@@ -107,7 +107,7 @@ const calcMem: CalcMem[] = [
 // ###TODO...
 const purgeMem: Array<PurgeMem | undefined> = [
   undefined,
-  (olderThan?) => IModelApp.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
+  (olderThan?) => ExtensionHost.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
 ];
 
 /** @internal */

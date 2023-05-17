@@ -8,7 +8,7 @@
  */
 
 import { StopWatch } from "@itwin/core-bentley";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-extension";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;
@@ -20,7 +20,7 @@ class TileLoadTimer {
     this._stopwatch = new StopWatch();
 
     // Purge tile trees for all models.
-    IModelApp.viewManager.refreshForModifiedModels(undefined);
+    ExtensionHost.viewManager.refreshForModifiedModels(undefined);
 
     const removeOnRender = vp.onRender.addListener(() => this.onRender());
     const removeOnClose = vp.iModel.onClose.addOnce(() => this.cancel());
@@ -29,12 +29,12 @@ class TileLoadTimer {
       removeOnClose();
     };
 
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer started."));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer started."));
     this._stopwatch.start();
   }
 
   private cancel(): void {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer canceled."));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Tile loading timer canceled."));
     this.stop();
   }
 
@@ -51,7 +51,7 @@ class TileLoadTimer {
       return;
 
     this._stopwatch.stop();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Tiles loaded in ${this._stopwatch.elapsedSeconds.toFixed(4)} seconds.`));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Tiles loaded in ${this._stopwatch.elapsedSeconds.toFixed(4)} seconds.`));
 
     this.stop();
   }
@@ -68,7 +68,7 @@ export class MeasureTileLoadTimeTool extends Tool {
    * @param _args this parameter is unused
    */
   public override async run(_args: any[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp)
       new TileLoadTimer(vp);
 

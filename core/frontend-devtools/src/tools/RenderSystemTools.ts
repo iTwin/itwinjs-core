@@ -7,15 +7,15 @@
  * @module Tools
  */
 
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@itwin/core-frontend";
+import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
-/** Executes some code against a RenderSystemDebugControl obtained from the IModelApp's RenderSystem.
+/** Executes some code against a RenderSystemDebugControl obtained from the ExtensionHost's RenderSystem.
  * @beta
  */
 export abstract class RenderSystemDebugControlTool extends Tool {
   public override async run(_args: any[]): Promise<boolean> {
-    const control = IModelApp.renderSystem.debugControl;
+    const control = ExtensionHost.renderSystem.debugControl;
     if (undefined !== control)
       this.execute(control);
 
@@ -43,7 +43,7 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
   public static override toolId = "CompileShaders";
   public execute(control: RenderSystemDebugControl): void {
     const compiled = control.compileAllShaders();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
   }
 }
 
@@ -61,7 +61,7 @@ export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
   public execute(control: RenderSystemDebugControl): void {
     const enable = this._enable ?? !control.dpiAwareLOD;
     control.dpiAwareLOD = enable;
-    IModelApp.viewManager.invalidateViewportScenes();
+    ExtensionHost.viewManager.invalidateViewportScenes();
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {

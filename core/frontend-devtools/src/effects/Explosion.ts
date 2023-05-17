@@ -8,10 +8,10 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ExtensionHost, RenderTexture, TextureTransparency } from "@itwin/core-extension";
 import {
-  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
-} from "@itwin/core-frontend";
+  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
+} from "@itwin/core-extension";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
 /** Represents one particle in the system. */
@@ -106,7 +106,7 @@ class ParticleSystem {
       this._dispose = undefined;
     }
 
-    IModelApp.viewManager.dropDecorator(this);
+    ExtensionHost.viewManager.dropDecorator(this);
     this._texture.dispose();
   }
 
@@ -187,12 +187,12 @@ class ParticleSystem {
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
     const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
-    const texture = IModelApp.renderSystem.createTexture({
+    const texture = ExtensionHost.renderSystem.createTexture({
       ownership: "external",
       image: { source: image, transparency: TextureTransparency.Mixed },
     });
     if (texture)
-      IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
+      ExtensionHost.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
   }
 }
 
@@ -204,7 +204,7 @@ export class ExplosionEffect extends Tool {
 
   /** This method runs the tool, applying an explosion particle effect. */
   public override async run(): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp)
       await ParticleSystem.addDecorator(vp.iModel);
 

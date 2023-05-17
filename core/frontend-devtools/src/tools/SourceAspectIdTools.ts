@@ -8,8 +8,8 @@
  */
 
 import { BentleyError } from "@itwin/core-bentley";
-import { QueryRowFormat } from "@itwin/core-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+import { ExtensionHost, QueryRowFormat } from "@itwin/core-extension";
+import { NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -37,7 +37,7 @@ export abstract class SourceAspectIdTool extends Tool {
   }
 
   private async doQuery(queryId: string, copyToClipboard: boolean): Promise<void> {
-    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    const imodel = ExtensionHost.viewManager.selectedView?.iModel;
     if (undefined === imodel)
       return;
 
@@ -56,7 +56,7 @@ export abstract class SourceAspectIdTool extends Tool {
       copyStringToClipboard(resultId);
 
     const message = `${queryId} => ${resultId}`;
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message));
+    ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message));
   }
 }
 
@@ -66,7 +66,7 @@ export abstract class SourceAspectIdTool extends Tool {
  * Arguments:
  *  - `id=elementId` where `elementId` is the numeric Id of the element of interest (e.g., `0x13a6c`; decimal notation is also permitted).
  *  - `copy=0|1` where `1` indicates the source aspect Id should be copied to the clipboard.
- * The command outputs to the IModelApp.notifications the corresponding source aspect Id, or "NOT FOUND".
+ * The command outputs to the ExtensionHost.notifications the corresponding source aspect Id, or "NOT FOUND".
  * @beta
  */
 export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
@@ -83,7 +83,7 @@ export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
  * Arguments:
  *  - `id=sourceAspectId` where `sourceAspectId` is the string identifier of the object of interest.
  *  - `copy=0|1` where `1` indicates the element Id should be copied to the clipboard.
- * The command outputs to the IModelApp.notifications the corresponding element Id, or "NOT FOUND".
+ * The command outputs to the ExtensionHost.notifications the corresponding element Id, or "NOT FOUND".
  * @beta
  */
 export class ElementIdFromSourceAspectIdTool extends SourceAspectIdTool {

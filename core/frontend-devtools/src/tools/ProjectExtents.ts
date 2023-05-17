@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { AxisAlignedBox3d, ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import { AxisAlignedBox3d, ColorDef, ExtensionHost, LinePixels } from "@itwin/core-extension";
+import { DecorateContext, GraphicType, IModelConnection, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */
@@ -32,7 +32,7 @@ export class ProjectExtentsDecoration {
       }
     } else if (add) {
       if (!this._removeDecorationListener)
-        this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
+        this._removeDecorationListener = ExtensionHost.viewManager.addDecorator(this);
     }
   }
 
@@ -106,7 +106,7 @@ export class ToggleProjectExtentsTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView()) {
       const iModel = vp.iModel;
       if (toggleProjectExtents(iModel, enable))

@@ -7,7 +7,7 @@
  * @module Widgets
  */
 
-import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-frontend";
+import { MessageBoxIconType, MessageBoxType, ParseAndRunResult, ExtensionHost } from "@itwin/core-extension";
 import { createButton } from "../ui/Button";
 import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
@@ -196,7 +196,7 @@ export class KeyinField {
     }
 
     if (undefined !== message)
-      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
+      await ExtensionHost.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
   }
 
   private respondToKeyinFocus() {

@@ -6,7 +6,7 @@
  * @module Controls
  */
 
-import { RgbColor } from "@itwin/core-common";
+import { RgbColor } from "@itwin/core-extension";
 
 /** @alpha */
 export type ColorInputHandler = (value: string) => void;

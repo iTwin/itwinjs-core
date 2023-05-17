@@ -8,8 +8,8 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
+import { BaseMapLayerSettings, ColorDef, ExtensionHost, ModelMapLayerSettings } from "@itwin/core-extension";
+import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-extension";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
@@ -20,7 +20,7 @@ class AttachMapLayerBaseTool extends Tool {
   }
 
   protected doAttach(source?: MapLayerSource) {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined || source === undefined)
       return;
 
@@ -41,19 +41,19 @@ class AttachMapLayerBaseTool extends Tool {
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
           const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+          ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
           const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+          ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
       } else {
         const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+        ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
       const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }
 }
@@ -68,7 +68,7 @@ export class AttachModelMapLayerTool extends Tool {
   constructor(protected _formatId: string) { super(); }
 
   public override async run(nameIn?: string): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp)
       return false;
 
@@ -181,7 +181,7 @@ export class AttachMapLayerTool extends AttachMapLayerBaseTool {
    * @param name the name of the map layer to add
    */
   public override async run(name: string): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
@@ -237,7 +237,7 @@ export class DetachMapLayersTool extends Tool {
   }
 
   public override async run(): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp === undefined)
       return false;
     vp.displayStyle.detachMapLayerByIndex({ index: -1, isOverlay: true });
@@ -265,7 +265,7 @@ export class MapLayerVisibilityTool extends Tool {
    * @param visible a boolean that should be true if the layer should be visible
    */
   public override async run(layerIndex: number, enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -305,7 +305,7 @@ export class ReorderMapLayers extends Tool {
    * @param from a numeric value specifying the layer index to move that layer to
    */
   public override async run(from: number, to: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -337,7 +337,7 @@ export class MapLayerTransparencyTool extends Tool {
    * @param transparency a numeric value in the range 0.0 (fully opaque) to 1.0 (fully transparent)
    */
   public override async run(layerIndex: number, transparency: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -371,7 +371,7 @@ export class MapLayerSubLayerVisibilityTool extends Tool {
    * @param visible a boolean that should be true if the sublayer should be visible
    */
   public override async run(layerIndex: number, visible: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -405,7 +405,7 @@ export class MapLayerZoomTool extends Tool {
    * @param layerIndex the index of the layer whose range to zoom to
    */
   public override async run(layerIndex: number): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -437,7 +437,7 @@ export class ToggleTerrainTool extends Tool {
    * @param enable whether or not to enable terrain heights on the map
    */
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -472,7 +472,7 @@ export class MapBaseColorTool extends Tool {
    * @param color the color for the base map
    */
   public override async run(color: ColorDef) {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -505,7 +505,7 @@ export class MapBaseTransparencyTool extends Tool {
    * @param transparency a numeric value in range 0.0 to 1.0 whether 0.0 means fully opaque and 1.0 means fully transparent
    */
   public override async run(transparency: number) {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
@@ -537,7 +537,7 @@ export class MapBaseVisibilityTool extends Tool {
    * @param visible a boolean which specifies whether or not to make the base map visible
    */
   public override async run(visible: boolean) {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView() || vp.displayStyle.backgroundMapBase instanceof ColorDef)
       return false;
 

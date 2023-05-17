@@ -2,9 +2,10 @@
   "name": "@itwin/frontend-devtools",
   "version": "4.1.0-dev.6",
   "description": "Debug menu and supporting UI widgets",
-  "main": "lib/cjs/frontend-devtools.js",
-  "module": "lib/esm/frontend-devtools.js",
-  "typings": "lib/cjs/frontend-devtools",
+  "main": "./dist/index.js",
+  "module": "./lib/loader.js",
+  "typings": "./lib/loader",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
@@ -36,8 +37,7 @@
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-common": "workspace:*",
-    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-extension": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "file-saver": "^2.0.2"
   },

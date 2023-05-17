@@ -6,7 +6,7 @@
  * @module Widgets
  */
 
-import { IModelApp, IModelConnection, RenderMemory, Tile } from "@itwin/core-frontend";
+import { ExtensionHost, IModelConnection, Tile } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 import { formatMemory } from "./MemoryTracker";
 
@@ -40,7 +40,7 @@ class TileMemoryTracer {
 
     const imodels = new Set<IModelConnection>();
     const selectedTiles = new Set<Tile>();
-    for (const vp of IModelApp.viewManager) {
+    for (const vp of ExtensionHost.viewManager) {
       imodels.add(vp.iModel);
       const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
       if (tiles)

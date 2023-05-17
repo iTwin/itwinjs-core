@@ -2,5 +2,8 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib"
-  }
+  },
+  "files": [
+    "package.json"
+  ]
 }

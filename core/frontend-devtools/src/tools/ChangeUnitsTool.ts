@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, Tool } from "@itwin/core-frontend";
+import { ExtensionHost, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 // CSpell: ignore fmtr
@@ -31,7 +31,7 @@ export class ChangeUnitsTool extends Tool {
 
     if (unitSystem !== fmtr.activeUnitSystem) {
       await fmtr.setActiveUnitSystem(unitSystem);
-      await IModelApp.toolAdmin.startDefaultTool();
+      await ExtensionHost.toolAdmin.startDefaultTool();
     }
 
     return true;

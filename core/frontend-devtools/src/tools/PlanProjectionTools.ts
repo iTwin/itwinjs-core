@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@itwin/core-frontend";
+import { ExtensionHost, PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@itwin/core-extension";
+import { DisplayStyle3dState, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 import { parseArgs } from "./parseArgs";
@@ -35,7 +35,7 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
   protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings.planProjectionSettings;
     if (undefined === settings) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No plan projection settings defined"));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No plan projection settings defined"));
       return false;
     }
 
@@ -48,7 +48,7 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
       copyStringToClipboard(json);
 
     const messageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, "Dumped plan projection settings", json);
-    IModelApp.notifications.outputMessage(messageDetails);
+    ExtensionHost.notifications.outputMessage(messageDetails);
 
     return false;
   }
@@ -132,7 +132,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
   }
 
   private parseModels(models: string) {
-    const vp = IModelApp.viewManager.selectedView!; // already validated by super.parseAndRun
+    const vp = ExtensionHost.viewManager.selectedView!; // already validated by super.parseAndRun
     models = models.toLowerCase();
 
     const isPlanProjection = (modelId: string) => {
@@ -160,7 +160,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     }
 
     if (this._modelIds.size === 0) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No plan projection models"));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No plan projection models"));
       return false;
     }
 

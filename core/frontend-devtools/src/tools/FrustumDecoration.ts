@@ -8,10 +8,10 @@
  */
 
 import { Map4d, Point3d } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@itwin/core-common";
+import { ColorByName, ColorDef, ExtensionHost, Frustum, LinePixels, Npc } from "@itwin/core-extension";
 import {
-  CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
-} from "@itwin/core-frontend";
+  CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, Tool, Viewport, ViewState, ViewState3d,
+} from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 interface FrustumDecorationOptions {
@@ -182,14 +182,14 @@ export class FrustumDecorator implements Decorator {
   public static enable(vp: Viewport, options?: FrustumDecorationOptions): void {
     FrustumDecorator.disable();
     FrustumDecorator._instance = new FrustumDecorator(vp, options);
-    IModelApp.viewManager.addDecorator(FrustumDecorator._instance);
+    ExtensionHost.viewManager.addDecorator(FrustumDecorator._instance);
   }
 
   /** Remove the decoration from the specified viewport. */
   public static disable(): void {
     const instance = FrustumDecorator._instance;
     if (undefined !== instance) {
-      IModelApp.viewManager.dropDecorator(instance);
+      ExtensionHost.viewManager.dropDecorator(instance);
       FrustumDecorator._instance = undefined;
     }
   }
@@ -206,7 +206,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
@@ -258,9 +258,9 @@ class SelectedViewFrustumDecoration {
 
   public constructor(vp: Viewport, private _options?: FrustumDecorationOptions) {
     this._targetVp = vp;
-    this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
+    this._removeDecorationListener = ExtensionHost.viewManager.addDecorator(this);
     this._removeViewChangedListener = vp.onViewChanged.addListener(this.onViewChanged, this); // eslint-disable-line @typescript-eslint/unbound-method
-    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+    ExtensionHost.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   protected stop(): void {
@@ -273,7 +273,7 @@ class SelectedViewFrustumDecoration {
       this._removeViewChangedListener = undefined;
     }
 
-    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+    ExtensionHost.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   public onViewChanged(targetVp: Viewport): void {
@@ -281,7 +281,7 @@ class SelectedViewFrustumDecoration {
       return;
     const decorator = SelectedViewFrustumDecoration._decorator;
     if (undefined !== decorator) {
-      for (const vp of IModelApp.viewManager) {
+      for (const vp of ExtensionHost.viewManager) {
         if (vp !== this._targetVp)
           vp.invalidateCachedDecorations(decorator);
       }
@@ -340,7 +340,7 @@ export class ToggleSelectedViewFrustumTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
     if (SelectedViewFrustumDecoration.toggle(vp, enable)) {
@@ -374,14 +374,14 @@ class ShadowFrustumDecoration {
 
   public constructor(vp: Viewport) {
     this._targetVp = vp;
-    const removeDecorator = IModelApp.viewManager.addDecorator(this);
+    const removeDecorator = ExtensionHost.viewManager.addDecorator(this);
     const removeOnRender = vp.onRender.addListener((_) => this.onRender());
     this._cleanup = () => {
       removeDecorator();
       removeOnRender();
     };
 
-    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+    ExtensionHost.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   private stop(): void {
@@ -390,13 +390,13 @@ class ShadowFrustumDecoration {
       this._cleanup = undefined;
     }
 
-    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+    ExtensionHost.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
   public onRender(): void {
     const decorator = ShadowFrustumDecoration._instance;
     if (undefined !== decorator) {
-      for (const vp of IModelApp.viewManager) {
+      for (const vp of ExtensionHost.viewManager) {
         if (vp !== this._targetVp)
           vp.invalidateCachedDecorations(decorator);
       }
@@ -443,7 +443,7 @@ export class ToggleShadowFrustumTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
       ShadowFrustumDecoration.toggle(vp, enable);
 

@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@itwin/core-frontend";
+import { ExtensionHost, FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-extension";
+import { NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@itwin/core-extension";
 import { parseBoolean } from "./parseBoolean";
 
 function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: FeatureAppearanceProps, name: string): boolean {
@@ -38,10 +38,10 @@ export class SetModelTransparencyTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(transparency: number, name: string): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { transparency }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { transparency }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to transparency: ${transparency}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to transparency: ${transparency}`));
 
     return changed;
   }
@@ -60,10 +60,10 @@ export class SetModelLineWeightTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(weight: number, name: string): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { weight }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { weight }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line weight: ${weight}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line weight: ${weight}`));
 
     return changed;
   }
@@ -86,10 +86,10 @@ export class SetModelLineCodeTool extends Tool {
     if (lineCode < 0 || lineCode >= SetModelLineCodeTool.linePixels.length)
       return false;
 
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { linePixels: SetModelLineCodeTool.linePixels[lineCode] }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { linePixels: SetModelLineCodeTool.linePixels[lineCode] }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line code: ${lineCode}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line code: ${lineCode}`));
 
     return changed;
   }
@@ -109,10 +109,10 @@ export class SetModelLocateTool extends Tool {
 
   public override async run(locate: boolean, name: string): Promise<boolean> {
     const nonLocatable = locate ? undefined : true;
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { nonLocatable }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { nonLocatable }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to locate: ${locate}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to locate: ${locate}`));
 
     return changed;
   }
@@ -132,10 +132,10 @@ export class SetModelEmphasizedTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(emphasized: true | undefined, name: string): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { emphasized }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { emphasized }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to emphasized: ${emphasized}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to emphasized: ${emphasized}`));
 
     return changed;
   }
@@ -155,10 +155,10 @@ export class SetModelIgnoresMaterialsTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   public override async run(ignoresMaterial: true | undefined, name: string): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { ignoresMaterial }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { ignoresMaterial }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to ignore Materials: ${ignoresMaterial}`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to ignore Materials: ${ignoresMaterial}`));
 
     return changed;
   }
@@ -178,10 +178,10 @@ export class SetModelColorTool extends Tool {
   public static override get maxArgs() { return 4; }
 
   public override async run(rgb: RgbColorProps, name: string): Promise<boolean> {
-    const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { rgb }, name);
+    const changed = changeModelAppearanceOverrides(ExtensionHost.viewManager.selectedView, { rgb }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
 
     return true;
   }
@@ -200,7 +200,7 @@ export class ClearModelAppearanceOverrides extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(name?: string): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp !== undefined && vp.view instanceof SpatialViewState) {
       vp.view.forEachModel((model) => {
         if (name === undefined || model.name === name)

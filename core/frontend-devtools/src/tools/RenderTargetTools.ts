@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@itwin/core-frontend";
+import { ExtensionHost, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
@@ -15,7 +15,7 @@ import { parseToggle } from "./parseToggle";
  */
 export abstract class RenderTargetDebugControlTool extends Tool {
   public override async run(_args: any[]): Promise<boolean> {
-    const view = IModelApp.viewManager.selectedView;
+    const view = ExtensionHost.viewManager.selectedView;
     const control = undefined !== view ? view.target.debugControl : undefined;
     if (undefined !== control)
       this.execute(control, view!);
@@ -162,7 +162,7 @@ export class SetAASamplesTool extends RenderTargetDebugControlTool {
 
   public execute(_control: RenderTargetDebugControl, vp: ScreenViewport): void {
     if (this._changeAll)
-      IModelApp.viewManager.setAntialiasingAllViews(this._aaSamples);
+      ExtensionHost.viewManager.setAntialiasingAllViews(this._aaSamples);
     else
       vp.antialiasSamples = this._aaSamples;
   }

@@ -8,10 +8,10 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
-import { RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ExtensionHost, RenderTexture, TextureTransparency } from "@itwin/core-extension";
 import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
-} from "@itwin/core-frontend";
+  DecorateContext, Decorator, GraphicType, imageElementFromUrl, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
+} from "@itwin/core-extension";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
 
@@ -98,7 +98,7 @@ export class SnowDecorator implements Decorator {
 
     // When the viewport is destroyed, dispose of this decorator too.
     const removeOnDispose = viewport.onDisposed.addListener(() => this.dispose());
-    const removeDecorator = IModelApp.viewManager.addDecorator(this);
+    const removeDecorator = ExtensionHost.viewManager.addDecorator(this);
 
     this.dispose = () => {
       removeDecorator();
@@ -226,7 +226,7 @@ export class SnowDecorator implements Decorator {
       // Create a texture to use for the particles.
       // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
       const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_snow.png`);
-      const texture = IModelApp.renderSystem.createTexture({
+      const texture = ExtensionHost.renderSystem.createTexture({
         ownership: "external",
         image: { source: image, transparency: TextureTransparency.Mixed },
       });
@@ -244,7 +244,7 @@ export class SnowEffect extends Tool {
   public static override toolId = "SnowEffect";
 
   public override async run(enable?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp)
       await SnowDecorator.toggle(vp, enable);
 
