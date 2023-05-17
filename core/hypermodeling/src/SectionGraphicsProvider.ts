@@ -8,12 +8,13 @@
 
 import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
 import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
+import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-extension";
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
-  FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
+  ExtensionHost,
+  FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
-} from "@itwin/core-frontend";
+} from "@itwin/core-extension";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
@@ -236,7 +237,7 @@ class DrawingProxyTree extends ProxyTree {
       if (clip.isValid) {
         const sheetToWorld = state.viewAttachment.transformToSpatial.clone();
         clip.transformInPlace(sheetToWorld);
-        clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+        clipVolume = ExtensionHost.renderSystem.createClipVolume(clip);
       }
     }
 
@@ -255,7 +256,7 @@ class SheetProxyTree extends ProxyTree {
 
     let clipVolume;
     if (state.viewAttachment.clip)
-      clipVolume = IModelApp.renderSystem.createClipVolume(state.viewAttachment.clip);
+      clipVolume = ExtensionHost.renderSystem.createClipVolume(state.viewAttachment.clip);
 
     super(params, location, clipVolume);
 

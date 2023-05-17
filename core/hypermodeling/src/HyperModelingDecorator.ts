@@ -9,8 +9,8 @@
 import { Transform, XAndY } from "@itwin/core-geometry";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
 import {
-  ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
-} from "@itwin/core-frontend";
+  ChangeFlags, DecorateContext, Decorator, ExtensionHost, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
+} from "@itwin/core-extension";
 import { SectionMarker, SectionMarkerSet } from "./SectionMarkers";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
@@ -85,7 +85,7 @@ export class HyperModelingDecorator implements Decorator {
 
   /** Obtain the decorator associated with the specified viewport, if any. */
   public static getForViewport(vp: ScreenViewport): HyperModelingDecorator | undefined {
-    for (const decorator of IModelApp.viewManager.decorators)
+    for (const decorator of ExtensionHost.viewManager.decorators)
       if (decorator instanceof HyperModelingDecorator && decorator.viewport === vp)
         return decorator;
 
@@ -191,7 +191,7 @@ export class HyperModelingDecorator implements Decorator {
     }
 
     this.updateMarkerVisibility();
-    IModelApp.viewManager.addDecorator(this);
+    ExtensionHost.viewManager.addDecorator(this);
   }
 
   private onViewportChanged(changeFlags: ChangeFlags): void {
@@ -226,7 +226,7 @@ export class HyperModelingDecorator implements Decorator {
 
   /** @internal */
   public dispose(): void {
-    if (!IModelApp.viewManager.dropDecorator(this))
+    if (!ExtensionHost.viewManager.dropDecorator(this))
       return;
 
     for (const remove of this._removeEventListeners)
