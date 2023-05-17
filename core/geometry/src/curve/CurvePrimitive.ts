@@ -249,7 +249,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /**
    * Returns a (high accuracy) range of the curve between fractional positions
-   * * Default implementation returns the range of the curve from clonePartialCurve.
+   * * Default implementation returns the range of the curve from clonePartialCurve
    */
   public rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     return this.rangeBetweenFractionsByClone(fraction0, fraction1, transform);
@@ -278,7 +278,6 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param fraction0 start fraction for evaluation
    * @param fraction1 end fraction for evaluation
    * @param count number of points to evaluate
-   * @param transform optional transform to be applied to the curve
    * @param extrapolationFactor if positive, evaluate again at interval midpoints and apply this fraction multiplier
    * to any increase in size.
    */
@@ -370,8 +369,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    *    * `curveStartState` = `CurveSearchStatus.error`
    * @param startFraction fractional position where the move starts
    * @param signedDistance distance to move.   Negative distance is backwards in the fraction space
-   * @param allowExtension if true, allow the move to go beyond the startPoint or endpoint of the curve.  If false,
-   * do not allow movement beyond the startPoint or endpoint
+   * @param allowExtension if true, all the move to go beyond the startPoint or endpoint of the curve.  If false, do not
+   * allow movement beyond the startPoint or endpoint
    * @param result optional result.
    * @returns A CurveLocationDetail annotated as above. Note that if the curve does not support the calculation, there is
    * still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState`
@@ -777,7 +776,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
-   * for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset()
+   * for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), ues RegionOps.constructCurveXYOffset()
    * instead.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
