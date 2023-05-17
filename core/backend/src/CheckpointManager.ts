@@ -185,7 +185,8 @@ export class V2CheckpointManager {
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
+      // note checkpoint tokens can't be auto-refreshed because they rely on user credentials supplied through RPC. They're refreshed in SnapshotDb._refreshSas.
+      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds: -1 });
       this.containers.set(v2Props.containerId, container);
     }
     return container;

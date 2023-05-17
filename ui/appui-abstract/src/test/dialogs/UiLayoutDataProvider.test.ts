@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, DialogRow,
   PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, StandardEditorNames,
@@ -91,7 +91,7 @@ describe("UiLayoutDataProvider", () => {
     it("should layout rows if items have changed", () => {
       const sut = new TestDynamicUiDataProvider();
       expect(sut.items.length).to.be.eq(dialogItems.length);
-      sut.rows.should.not.be.empty;
+      expect(sut.rows).not.empty;
     });
   });
   describe("TestDynamicUiDataProvider static functions", () => {
@@ -117,9 +117,9 @@ describe("UiLayoutDataProvider", () => {
     });
     it("should reflect value", () => {
       const record = TestDynamicUiDataProvider.getPropertyRecord(buttonGroupItem);
-      record.should.not.be.undefined;
+      expect(record).not.undefined;
       const primitiveValue = record.value as PrimitiveValue;
-      primitiveValue.should.not.be.undefined;
+      assert(primitiveValue !== undefined);
       expect(primitiveValue.value).to.eq("One");
     });
   });
@@ -171,13 +171,13 @@ describe("DialogLayoutDataProvider", () => {
   describe("items", () => {
     it("should layout rows if items have changed", () => {
       expect(dialogSut.items.length).to.be.eq(dialogItems.length);
-      dialogSut.rows.should.not.be.empty;
+      expect(dialogSut.rows).not.empty;
     });
 
     it("should process changes", () => {
       dialogSut.processChangesInUi([updatedDialogPropertyItem]);
       expect(dialogSut.items.length).to.be.eq(dialogItems.length);
-      dialogSut.rows.should.not.be.empty;
+      expect(dialogSut.rows).not.empty;
     });
 
     it("should handle empty items", () => {

@@ -351,6 +351,8 @@ describe("Functional Domain", () => {
     let partitionId = iModelDb.elements.insertElement(partitionProps);
     const modelId = testChannel(() => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
 
+    expect(() => iModelDb.channels.makeChannelRoot({ elementId: partitionId, channelKey: "nested channel" })).to.throw("may not nest");
+
     assert.isTrue(Id64.isValidId64(modelId));
     assert.isTrue(spy.model.onInsert.calledOnce);
     assert.isTrue(spy.model.onInserted.calledOnce);

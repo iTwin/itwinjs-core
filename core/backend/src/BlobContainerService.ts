@@ -45,6 +45,8 @@ export namespace BlobContainer {
     iTwinId: Id64String;
     /** optionally, an iModelId within the iTwin. If present, container is deleted when the iModel is deleted. */
     iModelId?: Id64String;
+    /** optionally, an owner of the container. Owners always have administrator rights for the container. */
+    owner?: string;
   }
 
   /**

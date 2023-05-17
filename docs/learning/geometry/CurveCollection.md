@@ -31,7 +31,7 @@ There are 5 concrete derived types:
 ### Special `Loop` properties
 
 - The purpose of a `Loop` is to act as the boundary of a planar region.
-  - Unless specifically indicated by names or comments for various methods that at on `Loop`s,  The containing plane will be determine "on demand" using the `FrameBuilder` class.
+  - Unless specifically indicated by names or comments for various methods that act on `Loop`s, the containing plane will be determine "on demand" using the `FrameBuilder` class.
 - A point is "inside" a loop if a line (within the `Loop`'s plane) from the point "to infinity"  crosses the loop an odd number of times.
 - The crossing count rule may be applied (and mathematically always produces the same result) for:
   - Any line direction -- horizontal, vertical, or any other direction.
@@ -41,7 +41,7 @@ There are 5 concrete derived types:
 
 A `ParityRegion` is a curve collection whose immediate children are
 
-- _all_ of type `Loop` (i.e. array of `CurvePrimitive` joined head-to-tail both internally an from last to first.
+- _all_ of type `Loop` (i.e. array of `CurvePrimitive` joined head-to-tail both internally and from last to first.
 - all coplanar.
 
 "Inside" and "Outside" of a parity region is determined by the rule commonly called "even/odd", "exclusive or" or "parity":

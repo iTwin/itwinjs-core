@@ -5,6 +5,7 @@
 
 import { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
+import { SchemaInfo } from "../../Interfaces";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
 
@@ -17,7 +18,15 @@ export class TestSchemaLocater implements ISchemaLocater {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
-    return (await Schema.fromJson(testFormatSchema, context)) as T;
+    await this.getSchemaInfo(schemaKey, matchType, context);
+    return context.getCachedSchema(schemaKey, matchType);
+  }
+
+  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+    if (!schemaKey.matches(formatsKey, matchType))
+      return undefined;
+
+    return Schema.startLoadingFromJson(testFormatSchema, context);
   }
 
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
