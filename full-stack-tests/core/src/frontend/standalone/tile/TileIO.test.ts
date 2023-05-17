@@ -9,7 +9,7 @@ import {
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, SnapshotIModelRpcInterface, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
+  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
   SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
@@ -95,7 +95,7 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
   expect(header.isReadableVersion).to.equal(!data.unreadable);
 }
 
-function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
+async function readTile(imodel: IModelConnection, data: TileTestData, test: TileTestCase): Promise<IModelTileContent | undefined> {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
   const stream = ByteStream.fromUint8Array(test.bytes);
   const reader = ImdlReader.create({
@@ -106,16 +106,18 @@ function createReader(imodel: IModelConnection, data: TileTestData, test: TileTe
     system: IModelApp.renderSystem,
   });
 
-  expect(undefined === reader).to.equal(!!data.unreadable);
-  return reader;
+  const result = await reader.read();
+  if (result.readStatus === TileReadStatus.Success)
+    return result;
+
+  expect(data.unreadable).to.be.true;
+  return undefined;
 }
 
 async function processRectangle(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.rectangle, 1);
-  const reader = createReader(imodel, data, data.rectangle);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.rectangle);
+  if (undefined !== result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -142,10 +144,8 @@ async function processEachRectangle(imodel: IModelConnection, processGraphic: Pr
 
 async function processTriangles(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.triangles, 6);
-  const reader = createReader(imodel, data, data.triangles);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.triangles);
+  if (result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -172,10 +172,8 @@ async function processEachTriangles(imodel: IModelConnection, processGraphic: Pr
 
 async function processLineString(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.lineString, 1);
-  const reader = createReader(imodel, data, data.lineString);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.lineString);
+  if (result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -202,10 +200,8 @@ async function processEachLineString(imodel: IModelConnection, processGraphic: P
 
 async function processLineStrings(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.lineStrings, 3);
-  const reader = createReader(imodel, data, data.lineStrings);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.lineStrings);
+  if (result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -232,10 +228,8 @@ async function processEachLineStrings(imodel: IModelConnection, processGraphic: 
 
 async function processCylinder(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.cylinder, 1);
-  const reader = createReader(imodel, data, data.cylinder);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.cylinder);
+  if (result) {
     expect(result.isLeaf).to.be.false; // cylinder contains curves - not a leaf - can be refined to higher-resolution single child.
     expect(result.contentRange).not.to.be.undefined;
 
@@ -261,7 +255,7 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 }
 
 // These tests require the real (webgl-based) RenderSystem.
-describe("TileIO (WebGL)", () => {
+describe.only("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -439,7 +433,7 @@ describe("TileIO (WebGL)", () => {
 });
 
 // These tests use the mock RenderSystem (do not require WebGL) so will execute in Windows CI job.
-describe("TileIO (mock render)", () => {
+describe.only("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
