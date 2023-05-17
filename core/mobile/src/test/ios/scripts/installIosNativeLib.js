@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const exec = require("child_process").exec;
+const execFile = require("child_process").execFile;
 const path = require("path");
 const fs = require("fs-extra");
 const semver = require("semver");
@@ -54,9 +54,10 @@ function validatePackage() {
 
 // Install the package if required
 if (!validatePackage()) {
-  const installCmd = `npm install --no-save --prefix ${targetPkgDir} @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`;
-  console.log(installCmd);
-  exec(installCmd, (error, stdout, stderr) => {
+  const installCmd = `npm`;
+  const args = [ `install`, `--no-save`, `--prefix`, `${targetPkgDir}`, `@bentley/imodeljs-${os}-${platform}@${requiredPkgVer}` ];
+  console.log(`${installCmd} ${args.join(' ')}`);
+  execFile(installCmd, args, (error, stdout, stderr) => {
     if (error)
       throw error;
     console.log(stdout);
