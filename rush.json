@@ -347,13 +347,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/frontend-devtools-extension",
-      "projectFolder": "extensions/frontend-devtools",
-      "reviewCategory": "extensions",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "internal-tools",
       "projectFolder": "tools/internal",
       "reviewCategory": "internal",
