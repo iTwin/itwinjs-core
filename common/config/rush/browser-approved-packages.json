@@ -4,883 +4,1559 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/bis-core-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-common-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-geometric-rules-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-hydraulic-analysis-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-hydraulic-results-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-quantity-takeoffs-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-rail-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-roads-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-subsurface-conflict-analysis-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-subsurface-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/cif-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/construction-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/core-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/ecdb-map-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/ecdb-schema-policies-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/icons-generic",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/icons-generic-webfont",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/linear-referencing-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/physical-material-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/plant-custom-attributes-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/process-functional-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/process-physical-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/quantity-takeoffs-aspects-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/road-rail-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/spatial-composition-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/structural-physical-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "@itwin/appui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "edit",
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/backend-webpack-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/browser-authorization",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/build-tools",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/cloud-agnostic-core",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [
+        "backend",
+        "frontend"
+      ]
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "edit",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-bentley",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-common",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-electron",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-extension",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-frontend",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-geometry",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-i18n",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-markup",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-mobile",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-orbitgt",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-quantity",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-telemetry",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [
+        "backend",
+        "frontend"
+      ]
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/ecschema-editing",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@itwin/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/editor-backend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/editor-common",
-      "allowedCategories": [ "edit", "internal" ]
+      "allowedCategories": [
+        "edit",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/editor-frontend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/electron-authorization",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/eslint-plugin",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/express-server",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/frontend-devtools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/frontend-tiles",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/hypermodeling-frontend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/imodel-transformer",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/imodels-access-backend",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/imodels-access-frontend",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/imodels-client-authoring",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/imodels-client-management",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/linear-referencing-common",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@itwin/map-layers-formats",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [
+        "backend",
+        "frontend"
+      ]
     },
     {
       "name": "@itwin/object-storage-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/perf-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/presentation-backend",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/presentation-common",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/presentation-frontend",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/projects-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/reality-data-client",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/service-authorization",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/webgl-compatibility",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@loaders.gl/core",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "@loaders.gl/draco",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "@microsoft/api-extractor",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@openid/appauth",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@opentelemetry/api",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "@svgdotjs/svg.js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "@xmldom/xmldom",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "assert",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "azurite",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "babel-loader",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "babel-plugin-istanbul",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "benchmark",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "browserify-zlib",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "extensions", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "cache-require-paths",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "case-sensitive-paths-webpack-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-jest-snapshot",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-spies",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "chai-string",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "internal"
+      ]
     },
     {
       "name": "chalk",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "child_process",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "chrome-launcher",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "commander",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "concurrently",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "copy-webpack-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "coverage",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "cpx2",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "cross-env",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "cross-spawn",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "crypto-browserify",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "debug",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "deep-equal",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "detect-port",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "electron",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "esbuild",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "express",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "express-ws",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "internal"
+      ]
     },
     {
       "name": "faker",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "fast-sort",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "file-saver",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "findup",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "flatbuffers",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "form-data",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "fuse.js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "google-protobuf",
-      "allowedCategories": [ "extensions" ]
+      "allowedCategories": [
+        "extensions"
+      ]
     },
     {
       "name": "https-browserify",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend"
+      ]
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "inversify",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "json-schema-faker",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "json5",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "jsonc-parser",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "karma",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-babel-preprocessor",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-chai-plugins",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-chrome-launcher",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-coverage",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-coverage-istanbul-instrumenter",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-coverage-istanbul-reporter",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-jasmine",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-junit-reporter",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-mocha",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-sourcemap-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "karma-webpack",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "tools"
+      ]
     },
     {
       "name": "lolex",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "memfs",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "mkdirp",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "mocha-junit-reporter",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "multiparty",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "nock",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "nodemon",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "object-hash",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "open",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "integration-testing" ]
+      "allowedCategories": [
+        "integration-testing"
+      ]
     },
     {
       "name": "path-browserify",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "puppeteer",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [
+        "integration-testing",
+        "tools"
+      ]
     },
     {
       "name": "raf",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "resolve",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "rimraf",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "sanitize-filename",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "internal"
+      ]
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "spdy",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "stream-browserify",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "stream-http",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "supertest",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "tree-kill",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "typedoc",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "typedoc-plugin-merge-modules",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "typescript",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "typescript-json-schema",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "url",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "username",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "vhacd-js",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "wms-capabilities",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "ws",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "wtfnode",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "yargonaut",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "internal",
+        "tools"
+      ]
     }
   ]
 }
