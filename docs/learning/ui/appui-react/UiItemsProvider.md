@@ -1,6 +1,6 @@
 # UiItemsProvider
 
-The [UiItemsProvider]($appui-abstract:UiItemsProvider) classes and interfaces are used for specifying UI items to be provided at runtime.
+The [UiItemsProvider]($appui-react) classes and interfaces are used for specifying UI items to be provided at runtime.
 Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage. Widgets may also be provided at runtime.
 
 ## UiItemsProvider Interface
@@ -10,10 +10,23 @@ Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that s
 ```ts
 export interface UiItemsProvider {
   readonly id: string;
-  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
+  provideToolbarButtonItems?: (
+    stageId: string,
+    stageUsage: string,
+    toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation
+  ) => CommonToolbarItem[];
+  provideStatusBarItems?: (
+    stageId: string,
+    stageUsage: string
+  ) => CommonStatusBarItem[];
   provideBackstageItems?: () => BackstageItem[];
-  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
+  provideWidgets?: (
+    stageId: string,
+    stageUsage: string,
+    location: StagePanelLocation,
+    section?: StagePanelSection
+  ) => ReadonlyArray<AbstractWidgetProps>;
 }
 ```
 
@@ -25,7 +38,7 @@ The code excerpt below shows a class that implements the UiItemsProvider interfa
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider";
 
-  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): ToolbarItem[] {
 
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
@@ -50,8 +63,8 @@ class TestUiProvider implements UiItemsProvider {
     return [];
   }
 
-  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const statusBarItems: CommonStatusBarItem[] = [];
+  public provideStatusBarItems(_stageId: string, stageUsage: string): StatusBarItem[] {
+    const statusBarItems: StatusBarItem[] = [];
     const ShadowToggle = withStatusFieldProps(ShadowField);
 
     if (stageUsage === StageUsage.General) {
@@ -80,8 +93,8 @@ class TestUiProvider implements UiItemsProvider {
     return statusBarItems;
   }
 
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<Widget> {
+    const widgets: Widget[] = [];
     if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
       widgets.push({
         id: "addonWidget",
@@ -99,7 +112,7 @@ class TestUiProvider implements UiItemsProvider {
 
 ### BaseUiItemsProvider Example
 
-The [StandardContentToolsProvider]($appui-react) class serves as a good example of an items provider that allows an application to define a callback function to determine if the items are to be added to the active stage. See this [example](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-items-providers-test/src/ui/frontstages/NetworkTracing.tsx) to see how the StandardContentToolsProvider can provide one set of tools to a specific stage. While the same [provider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/appui/frontstages/FrontstageUi2.tsx) can be registered with a different Id and a different isSupportedStage callback to provide a different set of tools to different stages.
+The [StandardContentToolsProvider]($appui-react) class serves as a good example of an items provider that allows an application to define a callback function to determine if the items are to be added to the active stage. See this [example](https://github.com/iTwin/appui/blob/master/test-apps/appui-test-app/appui-test-providers/src/ui/frontstages/ContentLayout.tsx) to see how the StandardContentToolsProvider can provide one set of tools to a specific stage. While the same [provider](https://github.com/iTwin/appui/blob/master/test-apps/appui-test-app/appui-test-providers/src/ui/frontstages/CustomContent.tsx) can be registered with a different Id and a different isSupportedStage callback to provide a different set of tools to different stages.
 
 ## UiItemsManager Class
 
@@ -112,52 +125,13 @@ The [UiItemsManager]($appui-abstract) class has a few responsibilities,
 Below is an example of registering the TestUiProvider defined above.
 
 ```ts
-UiItemsManager.register( new TestUiProvider());
+UiItemsManager.register(new TestUiProvider());
 ```
 
 ### Examples
 
 The following examples show how an application can allow, disallow and update a Toolbar item.
 
-#### Allowing a Toolbar Item
-
-```ts
-class ExampleUiItemsApplication implements UiItemsApplication {
-  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
-    return { updatedItem: item, action: UiItemsApplicationAction.Allow };
-  }
-}
-```
-
-#### Disallowing a Toolbar Item
-
-```ts
-class ExampleUiItemsApplication implements UiItemsApplication {
-  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
-    let action = UiItemsApplicationAction.Allow;
-    if (item.id === "test2")
-      action = UiItemsApplicationAction.Disallow;
-    return { updatedItem: item, action };
-  }
-}
-```
-
-#### Updating a Toolbar Item
-
-```ts
-class ExampleUiItemsApplication implements UiItemsApplication {
-  public validateToolbarButtonItem(item: CommonToolbarItem): { updatedItem: CommonToolbarItem, action: UiItemsApplicationAction } {
-    let action = UiItemsApplicationAction.Allow;
-    let updatedItem = item;
-    if (item.id === "test2") {
-      action = UiItemsApplicationAction.Update;
-      updatedItem = { ...item, itemPriority: 1000 };
-    }
-    return { updatedItem, action };
-  }
-}
-```
-
 ## API Reference
 
-- [UiItemsProvider]($appui-abstract:UiItemsProvider)
+- [UiItemsProvider]($appui-react)
