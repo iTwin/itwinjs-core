@@ -139,7 +139,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         const value = defaultMap[key];
         res[key] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
       });
-
       return res;
     }
     private createSuccessResponse<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
@@ -152,6 +151,11 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       if (response.error)
         throw new PresentationNativePlatformResponseError(response);
       return this.createSuccessResponse(response);
+    }
+    private handleConvertedResult<TSource, TTarget>(response: IModelJsNative.ECPresentationManagerResponse<TSource>, conv: (s: TSource) => TTarget): NativePlatformResponse<TTarget> {
+      return response.error
+        ? this.handleResult<TTarget>(response)
+        : this.handleResult<TTarget>({ ...response, result: conv(response.result) });
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
       if (response.error)
@@ -194,7 +198,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const response = this._nativeAddon.handleRequest(db, options);
       cancelEvent?.addOnce(() => response.cancel());
       const result = await response.result;
-      return this.handleResult<string>(result);
+      return this.handleConvertedResult<Buffer, string>(result, (buffer) => buffer.toString());
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
       return this.handleResult<VariableValue>(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));
