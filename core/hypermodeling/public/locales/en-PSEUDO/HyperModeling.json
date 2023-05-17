@@ -1,0 +1,32 @@
+{
+  "tools": {
+    "HyperModeling": {
+      "keyin": "hýpérmôdëlìñg",
+      "Graphics": {
+        "Config": {
+          "keyin": "hýpérmôdëlìñg gràphï¢s çöñfìg"
+        }
+      },
+      "Marker": {
+        "Config": {
+          "keyin": "hýpérmôdëlìñg màrkër ¢õñfïg"
+        },
+        "Default": {
+          "Config": {
+            "keyin": "hýpérmôdëlìñg màrkër dèfãµlt çòñfîg"
+          }
+        }
+      }
+    }
+  },
+  "Message": {
+    "SectionCallout": "$é¢tïöñ Çállôüt",
+    "DetailCallout": "Ðétâïl Çållòút",
+    "ElevationCallout": "Èlévâtïöñ Çállôüt",
+    "PlanCallout": "Plàñ Çãllöµt",
+    "ApplySection": "Àpplÿ $ë¢tíòñ",
+    "OpenSection": "Òpéñ §èçtîóñ Víêw",
+    "OpenSheet": "Òpéñ §hèét Vîëw",
+    "ApplyView": "Àpplÿ $pãtìål Vîëw"
+  }
+}

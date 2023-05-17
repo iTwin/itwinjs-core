@@ -1353,6 +1353,29 @@ importers:
       rimraf: 3.0.2
       typescript: 5.0.4
 
+  ../../extensions/frontend-devtools:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-extension': workspace:*
+      '@itwin/eslint-plugin': ^4.0.0-dev.33
+      buffer: ^6.0.3
+      esbuild: ^0.13.8
+      eslint: ^8.36.0
+      rimraf: ^3.0.2
+      typescript: ~5.0.2
+      url: ^0.11.0
+    dependencies:
+      '@itwin/core-extension': link:../../core/extension
+      buffer: 6.0.3
+      url: 0.11.0
+    devDependencies:
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/eslint-plugin': 4.0.0-dev.36_iacogk7kkaymxepzhgcbytyi7q
+      esbuild: 0.13.15
+      eslint: 8.39.0
+      rimraf: 3.0.2
+      typescript: 5.0.4
+
   ../../extensions/frontend-tiles:
     specifiers:
       '@itwin/build-tools': workspace:*

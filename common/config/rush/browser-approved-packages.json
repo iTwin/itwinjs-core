@@ -184,7 +184,7 @@
     },
     {
       "name": "@itwin/core-extension",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "@itwin/core-frontend",
@@ -412,7 +412,7 @@
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "extensions", "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -516,7 +516,7 @@
     },
     {
       "name": "esbuild",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "eslint",
@@ -840,7 +840,7 @@
     },
     {
       "name": "url",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "username",

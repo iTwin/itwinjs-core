@@ -17,10 +17,14 @@
       "extensions",
       "integration-testing"
     ],
-    "ignoredNpmScopes": ["@types"]
+    "ignoredNpmScopes": [
+      "@types"
+    ]
   },
   "gitPolicy": {
-    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com"],
+    "allowedEmailRegExps": [
+      "[^@]+@users\\.noreply\\.github\\.com"
+    ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
@@ -340,6 +344,13 @@
       "projectFolder": "extensions/map-layers-formats",
       "reviewCategory": "extensions",
       "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/frontend-devtools-extension",
+      "projectFolder": "extensions/frontend-devtools",
+      "reviewCategory": "extensions",
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
