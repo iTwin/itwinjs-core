@@ -8,10 +8,9 @@
 
 import { assert, BeEvent, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { IModelReadRpcInterface } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
-} from "@itwin/core-frontend";
+  BeButton, BeButtonEvent, Cluster, DecorateContext, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
+} from "@itwin/core-extension";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 

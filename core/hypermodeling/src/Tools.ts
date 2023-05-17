@@ -6,8 +6,7 @@
  * @module HyperModeling
  */
 
-import { SectionType } from "@itwin/core-common";
-import { IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
+import { SectionType, ScreenViewport, Tool, ExtensionHost } from "@itwin/core-extension";
 import { HyperModeling } from "./HyperModeling";
 import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
@@ -31,7 +30,7 @@ class HyperModelingTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(enable?: boolean, vp?: ScreenViewport): Promise<boolean> {
-    vp = vp ?? IModelApp.viewManager.selectedView;
+    vp = vp ?? ExtensionHost.viewManager.selectedView;
     if (vp)
       await HyperModeling.startOrStop(vp, enable);
 
@@ -182,7 +181,7 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
   public static override toolId = "HyperModeling.Marker.Config";
 
   protected update(config: SectionMarkerConfig): void {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     const decorator = vp ? HyperModelingDecorator.getForViewport(vp) : undefined;
     if (decorator)
       decorator.updateConfiguration(config);

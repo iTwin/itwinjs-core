@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import type { AbstractToolbarProps } from "@itwin/appui-abstract";
+import type { AbstractToolbarProps } from "@itwin/core-extension";
 import { SectionMarker } from "./SectionMarkers";
 import { SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";

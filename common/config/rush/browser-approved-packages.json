@@ -184,7 +184,7 @@
     },
     {
       "name": "@itwin/core-extension",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/core-frontend",

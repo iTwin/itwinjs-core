@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { SectionType } from "@itwin/core-common";
-import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-frontend";
+import { SectionType } from "@itwin/core-extension";
+import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-extension";
 import { registerTools } from "./Tools";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
@@ -154,7 +154,7 @@ export class HyperModeling {
         hideSheetAnnotations: config.graphics.hideSheetAnnotations ?? this._graphicsConfig.hideSheetAnnotations,
       };
 
-      IModelApp.viewManager.invalidateViewportScenes();
+      ExtensionHost.viewManager.invalidateViewportScenes();
     }
   }
 
