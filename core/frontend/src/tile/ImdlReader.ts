@@ -21,9 +21,6 @@ import { convertFeatureTable, parseImdlDocument } from "../imdl/ImdlParser";
 import { decodeImdlGraphics } from "../imdl/ImdlGraphicsCreator";
 import { IModelTileContent } from "./internal";
 
-/** @internal */
-export type ShouldAbortImdlReader = (reader: ImdlReader) => boolean;
-
 /* eslint-disable no-restricted-syntax */
 
 /** @internal */
@@ -67,7 +64,7 @@ export interface ImdlReaderCreateArgs {
   system: RenderSystem;
   type?: BatchType; // default Primary
   loadEdges?: boolean; // default true
-  isCanceled?: ShouldAbortImdlReader;
+  isCanceled?: () => boolean;
   sizeMultiplier?: number;
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
@@ -111,7 +108,11 @@ async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlReaderRe
     system: args.system,
     iModel: args.iModel,
     document,
+    isCanceled: args.isCanceled,
   });
+
+  if (args.isCanceled && args.isCanceled())
+    return { isLeaf: true, readStatus: TileReadStatus.Canceled };
 
   if (graphic && false !== args.options) {
     const featureTable = convertFeatureTable(document.featureTable, args.modelId);

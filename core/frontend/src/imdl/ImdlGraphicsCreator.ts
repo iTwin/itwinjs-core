@@ -30,6 +30,7 @@ export interface ImdlDecodeOptions {
   document: Imdl.Document;
   system: RenderSystem;
   iModel: IModelConnection;
+  isCanceled?: () => boolean;
 }
 
 async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, options: ImdlDecodeOptions): Promise<RenderTexture | undefined> {
@@ -357,6 +358,9 @@ function createNodeGraphics(node: Imdl.Node, options: GraphicsOptions): RenderGr
 /** @internal */
 export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
   const textures = await loadNamedTextures(options);
+  if (options.isCanceled && options.isCanceled())
+    return undefined;
+
   const patterns = new Map<string, RenderGeometry[]>();
   const graphicsOptions = { ...options, textures, patterns };
 

@@ -255,7 +255,7 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 }
 
 // These tests require the real (webgl-based) RenderSystem.
-describe.only("TileIO (WebGL)", () => {
+describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -469,7 +469,7 @@ describe.only("TileIO (mock render)", () => {
         system: IModelApp.renderSystem,
         type: BatchType.Primary,
         loadEdges: true,
-        isCanceled: (_) => true,
+        isCanceled: () => true,
       });
 
       expect(reader).not.to.be.undefined;

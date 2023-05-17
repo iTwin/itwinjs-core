@@ -5356,7 +5356,7 @@ export interface ImdlReaderCreateArgs {
     // (undocumented)
     is3d: boolean;
     // (undocumented)
-    isCanceled?: ShouldAbortImdlReader;
+    isCanceled?: () => boolean;
     isLeaf?: boolean;
     // (undocumented)
     loadEdges?: boolean;
@@ -10869,9 +10869,6 @@ export class SheetViewState extends ViewState2d {
     // @internal
     get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>>;
 }
-
-// @internal (undocumented)
-export type ShouldAbortImdlReader = (reader: ImdlReader) => boolean;
 
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;

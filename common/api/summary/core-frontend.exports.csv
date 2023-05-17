@@ -660,7 +660,6 @@ public;SetupCameraTool
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
-internal;ShouldAbortImdlReader = (reader: ImdlReader) => boolean
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
 internal;SkyBoxDecorations
 public;SnapDetail 
