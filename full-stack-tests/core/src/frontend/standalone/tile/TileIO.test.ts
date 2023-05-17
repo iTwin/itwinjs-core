@@ -433,7 +433,7 @@ describe("TileIO (WebGL)", () => {
 });
 
 // These tests use the mock RenderSystem (do not require WebGL) so will execute in Windows CI job.
-describe.only("TileIO (mock render)", () => {
+describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
