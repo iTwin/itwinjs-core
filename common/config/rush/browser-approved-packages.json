@@ -476,7 +476,7 @@
     },
     {
       "name": "cpx2",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "cross-env",
