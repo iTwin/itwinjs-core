@@ -27,7 +27,7 @@ import { AnimationNodeId } from "../render/AnimationNodeId";
 import { EdgeParams } from "../render/primitives/EdgeParams";
 import { MeshParams } from "../render/primitives/MeshParams";
 import { VertexTableParams } from "../render/primitives/VertexTableParams";
-import { CreateRenderMaterialArgs } from "../../render/RenderMaterial";
+import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../render/primitives/VertexIndices";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
@@ -177,7 +177,7 @@ class Material extends RenderMaterial {
     };
   }
 
-  public static create(args: CreateRenderMaterialArgs): Material {
+  public static create(args: MaterialParams): Material {
     // eslint-disable-next-line deprecation/deprecation
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
@@ -465,7 +465,7 @@ class ImdlParser {
       else if (imdl.isAtlas)
         return imdl;
 
-      const material = (typeof imdl.material === "string") ? this.materialFromJson(imdl.material) : Material.create(toMaterialArgs(imdl.material));
+      const material = (typeof imdl.material === "string") ? this.materialFromJson(imdl.material) : Material.create(toMaterialParams(imdl.material));
       return material ? { isAtlas: false, material } : undefined;
     };
 
@@ -1098,8 +1098,8 @@ class ImdlParser {
 }
 
 /** @internal */
-export function toMaterialArgs(mat: Imdl.SurfaceMaterialParams): CreateRenderMaterialArgs {
-  const args: CreateRenderMaterialArgs = { alpha: mat.alpha };
+export function toMaterialParams(mat: Imdl.SurfaceMaterialParams): MaterialParams {
+  const args: MaterialParams = { alpha: mat.alpha };
   if (mat.diffuse) {
     args.diffuse = {
       weight: mat.diffuse.weight,

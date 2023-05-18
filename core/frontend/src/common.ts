@@ -11,6 +11,7 @@ export * from "./common/imdl/ImdlModel";
 export * from "./common/imdl/ImdlParser";
 export * from "./common/imdl/ImdlSchema";
 export * from "./common/render/AnimationNodeId";
+export * from "./common/render/MaterialParams";
 export * from "./common/render/primitives/AuxChannelTable";
 export * from "./common/render/primitives/DisplayParams";
 export * from "./common/render/primitives/EdgeParams";

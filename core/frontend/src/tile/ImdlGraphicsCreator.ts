@@ -12,7 +12,7 @@ import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
 import {
-  edgeParamsFromImdl, ImdlColorDef, ImdlModel as Imdl, ImdlNamedTexture, ImdlTextureMapping, toMaterialArgs, toVertexTable,
+  edgeParamsFromImdl, ImdlColorDef, ImdlModel as Imdl, ImdlNamedTexture, ImdlTextureMapping, toMaterialParams, toVertexTable,
 } from "../common";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -163,7 +163,7 @@ function textureMappingFromJson(json: ImdlTextureMapping | undefined, options: G
 
 function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: GraphicsOptions): RenderMaterial | undefined {
   if (typeof mat !== "string") {
-    const args = toMaterialArgs(mat);
+    const args = toMaterialParams(mat);
     return options.system.createRenderMaterial(args);
   }
 
