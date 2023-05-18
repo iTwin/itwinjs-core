@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./common";
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -31,13 +32,9 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
-export * from "./gltf/GltfSchema";
 export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
-export * from "./imdl/ImdlSchema";
-export * from "./imdl/ImdlModel";
-export * from "./imdl/ImdlParser";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";

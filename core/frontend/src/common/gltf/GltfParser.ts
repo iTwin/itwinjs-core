@@ -10,11 +10,11 @@ import { ByteStream, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley
 import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../../FrontendLoggerCategory";
 import {
   getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl,
-} from "../ImageUtil";
-import { TextureImageSource } from "../render/RenderTexture";
+} from "../../ImageUtil";
+import { TextureImageSource } from "../../render/RenderTexture";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
 } from "./GltfSchema";

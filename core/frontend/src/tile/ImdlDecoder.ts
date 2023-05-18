@@ -11,7 +11,7 @@ import { BatchType } from "@itwin/core-common";
 import type { IModelConnection } from "../IModelConnection";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
-import type { ImdlTimeline } from "../imdl/ImdlParser";
+import type { ImdlTimeline } from "../common";
 import { ImdlReader, ImdlReaderResult } from "./internal";
 
 export interface ImdlDecodeArgs {

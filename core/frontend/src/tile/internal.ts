@@ -51,6 +51,7 @@ export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
 export * from "./ImdlDecoder";
+export * from "./ImdlGraphicsCreator";
 export * from "./map/ArcGISTileMap";
 export * from "./map/MapLayerAuthentication";
 export * from "./map/MapFeatureInfo";

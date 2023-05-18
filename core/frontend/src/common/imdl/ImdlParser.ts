@@ -18,15 +18,15 @@ import {
   AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline,
   ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
-import { AnimationNodeId } from "../render/GraphicBranch";
-import { EdgeParams } from "../render/primitives/EdgeParams";
-import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
-import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
+import { Mesh } from "../../render/primitives/mesh/MeshPrimitives";
+import { isValidSurfaceType, SurfaceMaterial } from "../../render/primitives/SurfaceParams";
+import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { AuxChannelTable, AuxChannelTableProps } from "../../render/primitives/AuxChannelTable";
+import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../../render/primitives/VertexTableSplitter";
+import { AnimationNodeId } from "../../render/GraphicBranch";
+import { EdgeParams } from "../../render/primitives/EdgeParams";
+import { MeshParams, VertexIndices, VertexTable } from "../../render/primitives/VertexTable";
+import { CreateRenderMaterialArgs } from "../../render/RenderMaterial";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal

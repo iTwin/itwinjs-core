@@ -11,9 +11,9 @@ import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-ge
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
-import type { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../imdl/ImdlSchema";
-import type { ImdlModel as Imdl } from "../imdl/ImdlModel";
-import { edgeParamsFromImdl, toMaterialArgs, toVertexTable } from "../imdl/ImdlParser";
+import {
+  edgeParamsFromImdl, ImdlColorDef, ImdlModel as Imdl, ImdlNamedTexture, ImdlTextureMapping, toMaterialArgs, toVertexTable,
+} from "../common";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";

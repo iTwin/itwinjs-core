@@ -38,7 +38,7 @@ import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material,
   traverseGltfNodes,
-} from "../gltf/GltfSchema";
+} from "../common";
 
 /* eslint-disable no-restricted-syntax */
 
