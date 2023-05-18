@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-common";
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { Mesh } from "../../render/primitives/mesh/MeshPrimitives";
+import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
 import { SurfaceType } from "../../render/primitives/SurfaceParams";
 
 /* eslint-disable no-restricted-syntax */
@@ -307,7 +307,7 @@ export interface ImdlSurface {
  */
 export interface ImdlMeshPrimitive extends ImdlPrimitive {
   /** Type discriminator for [[AnyImdlPrimitive]]. */
-  readonly type: Mesh.PrimitiveType.Mesh;
+  readonly type: MeshPrimitiveType.Mesh;
   readonly surface: ImdlSurface;
   readonly edges?: ImdlMeshEdges;
   readonly auxChannels?: ImdlAuxChannelTable;
@@ -319,7 +319,7 @@ export interface ImdlMeshPrimitive extends ImdlPrimitive {
  */
 export interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
   /** Type discriminator for [[AnyImdlPrimitive]]. */
-  readonly type: Mesh.PrimitiveType.Polyline;
+  readonly type: MeshPrimitiveType.Polyline;
 }
 
 /** Describes a collection of individual points. @see [[PointStringParams.
@@ -327,7 +327,7 @@ export interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
  */
 export interface ImdlPointStringPrimitive extends ImdlPrimitive {
   /** Type discriminator for [[AnyImdlPrimitive]]. */
-  readonly type: Mesh.PrimitiveType.Point;
+  readonly type: MeshPrimitiveType.Point;
   /** The Id of the [[ImdlBufferView]] containing - for each point - the 24-bit index of the corresponding vertex in the [[ImdlVertexTable]]. */
   readonly indices: string;
 }

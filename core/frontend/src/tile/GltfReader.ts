@@ -18,7 +18,7 @@ import {
   QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import {
-  FrontendLoggerCategory, getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, TextureImageSource, tryImageElementFromUrl,
+  FrontendLoggerCategory, getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, MeshPrimitiveType, TextureImageSource, tryImageElementFromUrl,
 } from "../common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -939,15 +939,15 @@ export abstract class GltfReader {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
-        primitiveType = Mesh.PrimitiveType.Polyline;
+        primitiveType = MeshPrimitiveType.Polyline;
         break;
 
       case GltfMeshMode.Points:
-        primitiveType = Mesh.PrimitiveType.Point;
+        primitiveType = MeshPrimitiveType.Point;
         break;
 
       case GltfMeshMode.Triangles:
-        primitiveType = Mesh.PrimitiveType.Mesh;
+        primitiveType = MeshPrimitiveType.Mesh;
         break;
 
       default:
@@ -1016,7 +1016,7 @@ export abstract class GltfReader {
       return undefined;
 
     switch (primitiveType) {
-      case Mesh.PrimitiveType.Mesh: {
+      case MeshPrimitiveType.Mesh: {
         if (!this.readMeshIndices(mesh, primitive))
           return undefined;
 
@@ -1037,9 +1037,9 @@ export abstract class GltfReader {
         break;
       }
 
-      case Mesh.PrimitiveType.Polyline:
-      case Mesh.PrimitiveType.Point: {
-        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
+      case MeshPrimitiveType.Polyline:
+      case MeshPrimitiveType.Point: {
+        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", MeshPrimitiveType.Point === primitiveType))
           return undefined;
         break;
       }

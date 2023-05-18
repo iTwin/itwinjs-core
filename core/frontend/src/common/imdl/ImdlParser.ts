@@ -18,7 +18,7 @@ import {
   AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline,
   ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
-import { Mesh } from "../../render/primitives/mesh/MeshPrimitives";
+import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
 import { isValidSurfaceType, SurfaceMaterial } from "../../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
@@ -728,7 +728,7 @@ class ImdlParser {
     let primitive: Imdl.Primitive | undefined;
     const isPlanar = !this._options.is3d || JsonUtils.asBool(docPrimitive.isPlanar);
     switch (docPrimitive.type) {
-      case Mesh.PrimitiveType.Mesh: {
+      case MeshPrimitiveType.Mesh: {
         const surface = this.parseSurface(docPrimitive, displayParams);
         if (surface) {
           primitive = {
@@ -745,7 +745,7 @@ class ImdlParser {
 
         break;
       }
-      case Mesh.PrimitiveType.Polyline: {
+      case MeshPrimitiveType.Polyline: {
         const polyline = this.parseTesselatedPolyline(docPrimitive);
         if (polyline) {
           let type = PolylineTypeFlags.Normal;
@@ -767,7 +767,7 @@ class ImdlParser {
 
         break;
       }
-      case Mesh.PrimitiveType.Point: {
+      case MeshPrimitiveType.Point: {
         const indices = this.findBuffer(docPrimitive.indices);
         const weight = displayParams.width;
         if (indices) {
@@ -877,7 +877,7 @@ class ImdlParser {
 
     const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
     let uvParams: QParams2d | undefined;
-    if (Mesh.PrimitiveType.Mesh === primitive.type && primitive.surface && primitive.surface.uvParams) {
+    if (MeshPrimitiveType.Mesh === primitive.type && primitive.surface && primitive.surface.uvParams) {
       const uvMin = primitive.surface.uvParams.decodedMin;
       const uvMax = primitive.surface.uvParams.decodedMax;
       const uvRange = new Range2d(uvMin[0], uvMin[1], uvMax[0], uvMax[1]);
