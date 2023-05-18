@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ECSqlReader // TODO: Change back to "iModels" or figure out what else fits better
+ * @module iModels
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
@@ -12,14 +12,13 @@ import {
 } from "./ConcurrentQuery";
 
 /**
- * @note **TODO: Should this be marked as \@internal?**
- *
  * @beta
- * */
+ */
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
   private _byPropName = new Map<string, number>();
   private _byJsonName = new Map<string, number>();
   private _byNoCase = new Map<string, number>();
+
   public constructor(public readonly properties: QueryPropertyMetaData[]) {
     for (const property of this.properties) {
       this._byPropName.set(property.name, property.index);
@@ -28,11 +27,15 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
       this._byNoCase.set(property.jsonName.toLowerCase(), property.index);
     }
   }
-  public get length(): number { return this.properties.length; }
+
+  public get length(): number {
+    return this.properties.length;
+  }
 
   public [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined> {
     return this.properties[Symbol.iterator]();
   }
+
   public findByName(name: string): QueryPropertyMetaData | undefined {
     const index = this._byPropName.get(name);
     if (typeof index === "number") {
@@ -40,6 +43,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     }
     return undefined;
   }
+
   public findByJsonName(name: string): QueryPropertyMetaData | undefined {
     const index = this._byJsonName.get(name);
     if (typeof index === "number") {
@@ -47,6 +51,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     }
     return undefined;
   }
+
   public findByNoCase(name: string): QueryPropertyMetaData | undefined {
     const index = this._byNoCase.get(name.toLowerCase());
     if (typeof index === "number") {
@@ -59,7 +64,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 /**
  * The format for rows returned by [[ECSqlReader]].
  * @beta
-*/
+ */
 export type QueryValueType = any;
 
 /**
@@ -70,15 +75,13 @@ export interface QueryRowProxy {
   /**
    * Get the current row as a JavaScript `object`.
    *
-   * @note **TODO: Can we change this to return type `object`?**
-   * @returns The current row as a JavaScript `object.
+   * @returns The current row as a JavaScript `object`.
    */
   toRow(): any;
 
   /**
    * Get all remaining rows from the query result.
-   *
-   * If called on the current row (reader.current), only that row is returned.
+   * If called on the current row ([[ECSqlReader.current]]), only that row is returned.
    *
    * @returns All remaining rows from the query result.
    */
@@ -94,7 +97,7 @@ export interface QueryRowProxy {
   /**
    * Access a property using its name.
    *
-   * @returns The value from the row whose key (ECSQl column name) is `propertyName`.
+   * @returns The value from the row whose key (ECSQL column name) is `propertyName`.
    *
    * @example
    * The following lines will all return the same result:
@@ -108,7 +111,6 @@ export interface QueryRowProxy {
 
   /**
    * Access a property using its index.
-   *
    * The index is relative to the order of the columns returned by the query that produced the row.
    *
    * @returns The value from the column at `propertyIndex`.
@@ -120,52 +122,46 @@ export interface QueryRowProxy {
 
 /**
  * Performance-related statistics for [[ECSqlReader]].
- *
- * @note **TODO: Should this be marked as \@internal?**
- *
  * @beta
  */
 export interface QueryStats {
-  /**
-   * Time spent running the query. Time is in microseconds
-   * @note The time spent queued is excluded.
-   */
+  /** Time spent running the query; not including time spent queued. Time is in microseconds */
   backendCpuTime: number;
-
-  /**
-   * Total time it took the backend to run the query. Time is in milliseconds.
-   */
+  /** Total time it took the backend to run the query. Time is in milliseconds. */
   backendTotalTime: number;
-
-  /**
-   * Estimated memory used for the query.
-   */
+  /** Estimated memory used for the query. */
   backendMemUsed: number;
-
-  /**
-   * Total number of rows returned by the backend.
-   */
+  /** Total number of rows returned by the backend. */
   backendRowsReturned: number;
-
-  /**
-   * The total round trip time from the client's perspective. Time is in milliseconds.
-   */
+  /** The total round trip time from the client's perspective. Time is in milliseconds. */
   totalTime: number;
-
-  /**
-   * The number of retries attempted to execute the query.
-   */
+  /** The number of retries attempted to execute the query. */
   retryCount: number;
 }
 
 /**
  * Execute ECSQL statements and read the results.
  *
- * @note **TODO: Put more information here.**
+ * The query results are returned one row at a time. The format of the row is dictated by the
+ * [[QueryOptions.rowFormat]] specified in the `options` parameter of the constructed ECSqlReader object.
+ *
+ * There are three primary ways to interact with and read the results:
+ * - Stream them using ECSqlReader as an asynchronous iterator.
+ * - Iterator over them manually using [[ECSqlReader.step]].
+ * - Capture all of the results at once in an array using [[QueryRowProxy.toArray]].
+ *
+ * @see [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+ * @see [ECSQL Row Formats]($docs/learning/ECSQLRowFormat) for more details on how rows are formatted.
+ * @see [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples) for examples of each of the above ways of interacting with ECSqlReader.
+ *
+ * @example
+ * ```ts
+ * // TODO
+ * ```
  *
  * @beta
  */
-export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
+export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private static readonly _maxRetryCount = 10;
 
   private _localRows: any[] = [];
@@ -282,7 +278,17 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   }
 
   /**
+   * Get the current row from the query result.
    *
+   * The current row is the one most recently stepped-to (by step() or during iteration).
+   *
+   * The format of the row is dictated by the [[QueryOptions.rowFormat]] specified in the `options` parameter of the
+   * constructed ECSqlReader object.
+   *
+   * @see [[QueryRowFormat]]
+   * @see [ECSQL Row Formats]($docs/learning/ECSQLRowFormat)
+   *
+   * @return The current row.
    */
   public get current(): QueryRowProxy {
     return this._rowProxy as any;
@@ -299,7 +305,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   /**
    * Returns if there are more rows available.
    *
-   * @returns `true` if all rows have been stepped through already; \n
+   * @returns `true` if all rows have been stepped through already.<br/>
    *          `false` if there are any yet unaccessed rows.
    */
   public get done(): boolean {
@@ -412,7 +418,9 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   }
 
   /**
+   * Get the metadata for each column in the query result.
    *
+   * @returns An array of [[QueryPropertyMetaData]].
    */
   public async getMetaData(): Promise<QueryPropertyMetaData[]> {
     if (this._props.length === 0) {
@@ -433,7 +441,10 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   }
 
   /**
+   * Step to the next row of the query result.
    *
+   * @returns `true` if a row can be read from `current`.<br/>
+   *          `false` if there are no more rows; i.e., all rows have been stepped through already.
    */
   public async step(): Promise<boolean> {
     if (this._done) {
@@ -451,7 +462,9 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   }
 
   /**
+   * Get all remaining rows from the query result.
    *
+   * @returns An array of all remaining rows from the query result.
    */
   public async toArray(): Promise<any[]> {
     const rows = [];
@@ -462,14 +475,20 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy>  {
   }
 
   /**
-   * Returns an asynchronous iterator over the rows returned by the executed ECSQL query.
+   * Accessor for using ECSqlReader as an asynchronous iterator.
+   *
+   * @returns An asynchronous iterator over the rows returned by the executed ECSQL query.
    */
   public [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy> {
     return this;
   }
 
   /**
+   * Calls step when called as an iterator.
    *
+   * Returns the row alongside a `done` boolean to indicate if there are any more rows for an iterator to step to.
+   *
+   * @returns An object with the keys: `value` which contains the row and `done` which contains a boolean.
    */
   public async next(): Promise<IteratorResult<QueryRowProxy, any>> {
     if (await this.step()) {
