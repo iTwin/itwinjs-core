@@ -10,6 +10,7 @@ import {
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
+  IModelApp,
   MockRender,
 } from "../../../core-frontend";
 import {
@@ -605,6 +606,7 @@ describe("VertexTableSplitter", () => {
     const split = splitMeshParams({
       params, featureTable, maxDimension: 2048,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+      createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
     });
     expect(split.size).to.equal(3);
 
@@ -720,6 +722,7 @@ describe("VertexTableSplitter", () => {
     const split = splitMeshParams({
       params, featureTable, maxDimension: 2048,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+      createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
     });
     expect(split.size).to.equal(3);
 

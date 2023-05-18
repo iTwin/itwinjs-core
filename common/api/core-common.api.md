@@ -5728,7 +5728,8 @@ export enum MonochromeMode {
 export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
     // (undocumented)
-    get animationNodeIds(): Readonly<UintArray> | undefined;
+    get animationNodeIds(): UintArray | undefined;
+    set animationNodeIds(ids: UintArray | undefined);
     // (undocumented)
     get batchModelId(): string;
     // (undocumented)
@@ -6178,7 +6179,7 @@ export class PackedFeatureModelTable {
 export class PackedFeatureTable implements RenderFeatureTable {
     constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray);
     // (undocumented)
-    get animationNodeIds(): Readonly<UintArray> | undefined;
+    animationNodeIds?: UintArray;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
@@ -6215,7 +6216,6 @@ export class PackedFeatureTable implements RenderFeatureTable {
     static pack(featureTable: FeatureTable): PackedFeatureTable;
     // (undocumented)
     populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
-    setAnimationNodeIds(nodeIds: UintArray | undefined): void;
     // (undocumented)
     readonly type: BatchType;
     unpack(): FeatureTable;
@@ -6801,6 +6801,8 @@ export interface PullChangesOptions {
 export class QParams2d {
     clone(out?: QParams2d): QParams2d;
     copyFrom(src: QParams2d): void;
+    // @alpha (undocumented)
+    static fromJSON(src: QParams2dProps): QParams2d;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
     static fromOriginAndScale(originX: number, originY: number, scaleX: number, scaleY: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
@@ -6811,7 +6813,17 @@ export class QParams2d {
     get rangeDiagonal(): Vector2d;
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
+    // @alpha (undocumented)
+    toJSON(): QParams2dProps;
     unquantize(x: number, y: number, out?: Point2d): Point2d;
+}
+
+// @alpha (undocumented)
+export interface QParams2dProps {
+    // (undocumented)
+    origin: XAndY;
+    // (undocumented)
+    scale: XAndY;
 }
 
 // @public
@@ -6819,6 +6831,8 @@ export class QParams3d {
     clone(out?: QParams3d): QParams3d;
     computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
+    // @alpha (undocumented)
+    static fromJSON(src: QParams3dProps, out?: QParams3d): QParams3d;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
@@ -6830,7 +6844,17 @@ export class QParams3d {
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
+    // @alpha (undocumented)
+    toJSON(): QParams3dProps;
     unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
+}
+
+// @alpha (undocumented)
+export interface QParams3dProps {
+    // (undocumented)
+    origin: XYAndZ;
+    // (undocumented)
+    scale: XYAndZ;
 }
 
 // @public
@@ -7226,6 +7250,8 @@ export type RemoveFunction = () => void;
 
 // @internal
 export interface RenderFeatureTable {
+    // (undocumented)
+    animationNodeIds?: UintArray;
     readonly batchModelId: Id64String;
     readonly batchModelIdPair: Id64.Uint32Pair;
     readonly byteLength: number;

@@ -15,7 +15,7 @@
   },
   "chromeOptions": {
     "publicDirs": [
-      "src/public",
+      "lib/public",
       "src/test/public",
     ],
     "args": [
