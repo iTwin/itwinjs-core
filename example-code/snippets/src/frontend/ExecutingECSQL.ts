@@ -92,5 +92,36 @@ async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void
   }
 }
 
+async function executeECSql_ECSqlReaderIteration(iModel: IModelConnection): Promise<void> {
+  {
+    // __PUBLISH_EXTRACT_START__ ExecuteECSql_ECSqlReaderIteration_AsynchronousIterator
+    for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element")) {
+      console.log(`ECInstanceId is ${row[0]}`);
+      console.log(`ECClassId is ${row.ecclassid}`);
+    }
+    // __PUBLISH_EXTRACT_END__
+  }
+
+  {
+    // __PUBLISH_EXTRACT_START__ ExecuteECSql_ECSqlReaderIteration_ManualIteration
+    const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element");
+    while (await reader.step()) {
+      console.log(`ECInstanceId is ${reader.current[0]}`);
+      console.log(`ECClassId is ${reader.current.ecclassid}`);
+    }
+    // __PUBLISH_EXTRACT_END__
+  }
+
+  {
+    // __PUBLISH_EXTRACT_START__ ExecuteECSql_ECSqlReaderIteration_ToArray
+    const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId FROM bis.Element");
+    const allRows = await reader.toArray();
+    console.log(`First ECInstanceId is ${allRows[0][0]}`);
+    console.log(`First ECClassId is ${allRows[0][1]}`);
+    // __PUBLISH_EXTRACT_END__
+  }
+}
+
 const dummyIModel: IModelConnection = {} as IModelConnection;
 executeECSql_SampleMethod(dummyIModel).catch(() => { });
+executeECSql_ECSqlReaderIteration(dummyIModel).catch(() => { });

@@ -1,5 +1,33 @@
 # ECSQL Code Examples
 
+For working directly with an iModel from the frontend, an [IModelConnection]($frontend) is used. All of the references to an `iModel` object in the examples below are IModelConnections.
+
+Use [IModelConnection.createQueryReader]($common) to create an [ECSqlReader]($common) that can be used to interact with the results from the executed ECSQL statement.
+
+## ECSqlReader Usage
+
+### Iterate Over the Results
+
+There are three primary ways to interact with and read the results:
+
+Stream them using [ECSqlReader]($common) as an asynchronous iterator.
+
+```ts
+[[include:ExecuteECSql_ECSqlReaderIteration_AsynchronousIterator]]
+```
+
+Iterator over them manually using [ECSqlReader.step]($common).
+
+```ts
+[[include:ExecuteECSql_ECSqlReaderIteration_ManualIteration]]
+```
+
+Capture all of the results at once in an array using [QueryRowProxy.toArray]($common).
+
+```ts
+[[include:ExecuteECSql_ECSqlReaderIteration_ToArray]]
+```
+
 ## Parameter Bindings
 
 See section "[ECSQL parameter types in iTwin.js](../ECSQLParameterTypes)" to learn which types to use for the parameters when binding all

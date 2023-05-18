@@ -143,7 +143,8 @@ export interface QueryStats {
  * Execute ECSQL statements and read the results.
  *
  * The query results are returned one row at a time. The format of the row is dictated by the
- * [[QueryOptions.rowFormat]] specified in the `options` parameter of the constructed ECSqlReader object.
+ * [[QueryOptions.rowFormat]] specified in the `options` parameter of the constructed ECSqlReader object. Defaults to
+ * [[QueryRowFormat.UseECSqlPropertyIndexes]] when no `rowFormat` is defined.
  *
  * There are three primary ways to interact with and read the results:
  * - Stream them using ECSqlReader as an asynchronous iterator.
@@ -152,7 +153,11 @@ export interface QueryStats {
  *
  * @see [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
  * @see [ECSQL Row Formats]($docs/learning/ECSQLRowFormat) for more details on how rows are formatted.
- * @see [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples) for examples of each of the above ways of interacting with ECSqlReader.
+ * @see [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples#Iterate-Over-the-Results) for examples of each
+ *      of the above ways of interacting with ECSqlReader.
+ *
+ * @note When iterating over the results, the current row will be a [[QueryRowProxy]] object. To get the row as a basic
+ *       JavaScript object, call [[QueryRowProxy.toRow]] on it.
  *
  * @example
  * ```ts
@@ -278,9 +283,10 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   }
 
   /**
-   * Get the current row from the query result.
+   * Get the current row from the query result. The current row is the one most recently stepped-to
+   * (by step() or during iteration).
    *
-   * The current row is the one most recently stepped-to (by step() or during iteration).
+   * Each value from the row can be accessed by index or by name.
    *
    * The format of the row is dictated by the [[QueryOptions.rowFormat]] specified in the `options` parameter of the
    * constructed ECSqlReader object.
@@ -288,7 +294,20 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * @see [[QueryRowFormat]]
    * @see [ECSQL Row Formats]($docs/learning/ECSQLRowFormat)
    *
-   * @return The current row.
+   * @note The current row is be a [[QueryRowProxy]] object. To get the row as a basic JavaScript object, call
+   *       [[QueryRowProxy.toRow]] on it.
+   *
+   * @example
+   * ```ts
+   * const reader = iModel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
+   * while (await reader.step()) {
+   *   // Both lines below print the same value
+   *   console.log(reader.current[0]);
+   *   console.log(reader.current.ecinstanceid);
+   * }
+   * ```
+   *
+   * @return The current row as a [[QueryRowProxy]].
    */
   public get current(): QueryRowProxy {
     return this._rowProxy as any;
