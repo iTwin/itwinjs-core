@@ -8,9 +8,8 @@
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
-import {
-  computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableParams, VertexTableWithIndices,
-} from "./VertexTable";
+import { computeDimensions, VertexIndices, VertexTableParams } from "../../common";
+import { MeshParams, VertexTable, VertexTableWithIndices } from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
 import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";

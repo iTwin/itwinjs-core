@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../primitives/SurfaceParams";
-import { VertexIndices } from "../primitives/VertexTable";
+import { VertexIndices } from "../../common";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ShaderProgramParams } from "./DrawCommand";

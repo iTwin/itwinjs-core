@@ -8,7 +8,7 @@ import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
-import { VertexIndices } from "../../../render/primitives/VertexTable";
+import { VertexIndices } from "../../../common";
 import { EdgeParams, EdgeTable } from "../../../render/primitives/EdgeParams";
 
 function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {

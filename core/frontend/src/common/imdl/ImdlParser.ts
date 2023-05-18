@@ -25,8 +25,9 @@ import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxC
 import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../../render/GraphicBranch";
 import { EdgeParams } from "../../render/primitives/EdgeParams";
-import { MeshParams, VertexIndices, VertexTable } from "../../render/primitives/VertexTable";
+import { MeshParams, VertexTable } from "../../render/primitives/VertexTable";
 import { CreateRenderMaterialArgs } from "../../render/RenderMaterial";
+import { VertexIndices } from "../render/primitives/VertexIndices";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal

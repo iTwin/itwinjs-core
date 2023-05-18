@@ -20,8 +20,7 @@ import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
 import { createSurfaceMaterial } from "../render/primitives/SurfaceParams";
-import { VertexIndices } from "../render/primitives/VertexTable";
-import { AuxChannelTable } from "../common";
+import { AuxChannelTable, VertexIndices } from "../common";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal

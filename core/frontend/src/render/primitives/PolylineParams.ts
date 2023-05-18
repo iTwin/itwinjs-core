@@ -10,7 +10,8 @@ import { assert } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { LinePixels, PolylineData, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { VertexIndices, VertexTable } from "./VertexTable";
+import { VertexTable } from "./VertexTable";
+import { VertexIndices } from "../../common";
 import { IModelApp } from "../../IModelApp";
 
 /** Parameter associated with each vertex index of a tesselated polyline. */

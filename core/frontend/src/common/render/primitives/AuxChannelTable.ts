@@ -11,7 +11,7 @@ import {
   AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
 } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
-import { computeDimensions } from "../../../render/primitives/VertexTable";
+import { computeDimensions } from "./VertexTableParams";
 
 /** @internal */
 export interface AuxChannelProps {
