@@ -12,7 +12,7 @@ import { ColorDef, FeatureIndexType, QParams2d, QParams3d } from "@itwin/core-co
 /** Describes a VertexTable.
  * @internal
  */
-export interface VertexTableParams {
+export interface VertexTable {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   readonly data: Uint8Array;
   /** If true, positions are not quantized but instead stored as 32-bit floats.

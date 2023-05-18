@@ -8,7 +8,7 @@
 
 import { LinePixels, PolylineTypeFlags } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
-import { VertexTableParams } from "./VertexTableParams";
+import { VertexTable } from "./VertexTable";
 
 /**
  * Represents a tesselated polyline.
@@ -26,7 +26,7 @@ export interface TesselatedPolyline {
 }
 
 export interface PolylineParams {
-  vertices: VertexTableParams;
+  vertices: VertexTable;
   polyline: TesselatedPolyline;
   isPlanar: boolean;
   type: PolylineTypeFlags;

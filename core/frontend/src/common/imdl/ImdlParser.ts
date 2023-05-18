@@ -26,7 +26,7 @@ import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitP
 import { AnimationNodeId } from "../render/AnimationNodeId";
 import { EdgeParams } from "../render/primitives/EdgeParams";
 import { MeshParams } from "../render/primitives/MeshParams";
-import { VertexTableParams } from "../render/primitives/VertexTableParams";
+import { VertexTable } from "../render/primitives/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../render/primitives/VertexIndices";
 
@@ -205,7 +205,7 @@ class Material extends RenderMaterial {
 }
 
 /** @internal */
-export function toVertexTable(imdl: Imdl.VertexTable): VertexTableParams {
+export function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
   return {
     ...imdl,
     uniformColor: undefined !== imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
@@ -214,7 +214,7 @@ export function toVertexTable(imdl: Imdl.VertexTable): VertexTableParams {
   };
 }
 
-function fromVertexTable(table: VertexTableParams): Imdl.VertexTable {
+function fromVertexTable(table: VertexTable): Imdl.VertexTable {
   return {
     ...table,
     uniformColor: table.uniformColor?.toJSON(),

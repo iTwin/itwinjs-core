@@ -7,13 +7,13 @@
  */
 
 import { VertexIndices } from "./VertexIndices";
-import { VertexTableParams } from "./VertexTableParams";
+import { VertexTable } from "./VertexTable";
 
 /** Describes point string geometry to be submitted to the rendering system.
  * @internal
  */
 export interface PointStringParams {
-  vertices: VertexTableParams;
+  vertices: VertexTable;
   indices: VertexIndices;
   weight: number;
 }

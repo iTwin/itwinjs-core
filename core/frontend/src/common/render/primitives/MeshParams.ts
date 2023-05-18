@@ -7,7 +7,7 @@
  */
 
 import { AuxChannelTable } from "./AuxChannelTable";
-import { VertexTableParams } from "./VertexTableParams";
+import { VertexTable } from "./VertexTable";
 import { SurfaceParams } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
@@ -17,7 +17,7 @@ import { EdgeParams } from "./EdgeParams";
  * The surface and edges all refer to the same vertex table.
  */
 export interface MeshParams {
-  vertices: VertexTableParams;
+  vertices: VertexTable;
   surface: SurfaceParams;
   edges?: EdgeParams;
   isPlanar: boolean;

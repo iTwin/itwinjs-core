@@ -12,7 +12,7 @@ import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
 import {
-  AuxChannelTable, computeDimensions, createSurfaceMaterial, MeshParams, Point3dList, SurfaceParams, SurfaceType, VertexIndices, VertexTableParams,
+  AuxChannelTable, computeDimensions, createSurfaceMaterial, MeshParams, Point3dList, SurfaceParams, SurfaceType, VertexIndices, VertexTable,
 } from "../../common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
@@ -114,7 +114,7 @@ export abstract class VertexTableBuilder {
     this.append8(colors.t);
   }
 
-  public build(colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTableParams {
+  public build(colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTable {
     const builder = this;
     const { numVertices, numRgbaPerVertex } = builder;
     const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
@@ -147,7 +147,7 @@ export abstract class VertexTableBuilder {
     };
   }
 
-  public static buildFromPolylines(args: PolylineArgs, maxDimension: number): VertexTableParams | undefined {
+  public static buildFromPolylines(args: PolylineArgs, maxDimension: number): VertexTable | undefined {
     const polylines = args.polylines;
     if (polylines.length === 0)
       return undefined;
