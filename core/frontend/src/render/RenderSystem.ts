@@ -30,7 +30,7 @@ import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
-import { CreateRenderMaterialArgs } from "./RenderMaterial";
+import { CreateRenderMaterialArgs } from "./CreateRenderMaterialArgs";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";

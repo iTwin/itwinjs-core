@@ -13,7 +13,7 @@ import {
   PolylineParams, SurfaceMaterial, TesselatedPolyline, VertexIndices, VertexTableParams,
 } from "../../common";
 import { VertexTable, VertexTableWithIndices } from "./VertexTable";
-import { CreateRenderMaterialArgs } from "../RenderMaterial";
+import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 
 /** Builds up a [[VertexIndices]].
  * Exported strictly for tests.

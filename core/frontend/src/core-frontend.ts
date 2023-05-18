@@ -92,7 +92,7 @@ export * from "./render/RealityMeshGraphicParams";
 export * from "./render/RealityMeshParams";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
-export * from "./render/RenderMaterial";
+export * from "./render/CreateRenderMaterialArgs";
 export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";

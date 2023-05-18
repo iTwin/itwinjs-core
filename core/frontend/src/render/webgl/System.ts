@@ -23,7 +23,7 @@ import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
-import { CreateRenderMaterialArgs } from "../RenderMaterial";
+import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 import { RenderMemory } from "../RenderMemory";
 import { RealityMeshParams } from "../RealityMeshParams";
 import {
