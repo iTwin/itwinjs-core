@@ -16,28 +16,9 @@ import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { ColorMap } from "../ColorMap";
-import { DisplayParams, MeshPrimitiveType } from "../../../common";
+import { DisplayParams, MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
-
-/** A Point3d[] with an [[add]] method used to enable compatibility with the [[MeshPointList]] union type.
- * It is provided a range to contain all of the points. Each point added to the list is transformed to be relative to
- * the center of that range.
- * In the finished graphic, a transform is applied to transform back from the range's center.
- * @internal
- */
-export interface Point3dList extends Array<Point3d> {
-  /** Identical to `push`, except it returns `void` instead of `number`; compatible with [QPoint3dList.add]($common). */
-  add(point: Point3d): void;
-  /** The range containing all of the points to be contained in the list, computed in advance. */
-  range: Range3d;
-}
-
-/** The list of points associated with a [[Mesh]].
- * @see [[Mesh.Props.quantizePositions]] to specify whether points should be quantized or not.
- * @internal
- */
-export type MeshPointList = Point3dList | QPoint3dList;
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer.
  * @internal
