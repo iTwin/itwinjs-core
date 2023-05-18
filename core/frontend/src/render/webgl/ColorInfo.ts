@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
-import { VertexTable } from "../primitives/VertexTableBuilder";
+import { VertexTableParams } from "../../common";
 import { FloatRgba } from "./FloatRGBA";
 
 /* Describes a primitive's basic color properties
@@ -31,7 +31,7 @@ export class ColorInfo {
     return undefined !== colorIndex.uniform ? this.createFromColorDef(colorIndex.uniform) : this.createNonUniform(colorIndex.hasAlpha);
   }
 
-  public static createFromVertexTable(vt: VertexTable) {
+  public static createFromVertexTable(vt: VertexTableParams) {
     return undefined !== vt.uniformColor ? this.createFromColorDef(vt.uniformColor) : this.createNonUniform(vt.hasTranslucency);
   }
 

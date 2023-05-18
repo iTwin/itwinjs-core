@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { PolylineData, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { VertexTable } from "./VertexTableBuilder";
+import { VertexTableBuilder } from "./VertexTableBuilder";
 import { PolylineParams, TesselatedPolyline, VertexIndices } from "../../common";
 import { IModelApp } from "../../IModelApp";
 
@@ -213,7 +213,7 @@ export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dLis
 
 export function createPolylineParams(args: PolylineArgs): PolylineParams | undefined {
   assert(!args.flags.isDisjoint);
-  const vertices = VertexTable.createForPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
   if (undefined === vertices)
     return undefined;
 

@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { PolylineArgs } from "./mesh/MeshPrimitives";
-import { VertexTable } from "./VertexTableBuilder";
+import { VertexTableBuilder } from "./VertexTableBuilder";
 import { PointStringParams, VertexIndices } from "../../common";
 import { IModelApp } from "../../IModelApp";
 
@@ -16,7 +16,7 @@ export function createPointStringParams(args: PolylineArgs): PointStringParams |
   if (!args.flags.isDisjoint)
     return undefined;
 
-  const vertices = VertexTable.createForPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
   if (undefined === vertices)
     return undefined;
 

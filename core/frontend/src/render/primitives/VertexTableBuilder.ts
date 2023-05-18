@@ -17,111 +17,16 @@ import {
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
 
-/**
- * Represents vertex data (position, color, normal, UV params, etc) in a rectangular array.
- * Each vertex is described by one or more contiguous 4-byte ('RGBA') values.
- * This allows vertex data to be uploaded to the GPU as a texture and vertex data to be sampled
- * from that texture using a single vertex ID representing an index into the array.
- * Vertex color is identified by a 16-bit index into a color table appended to the vertex data.
- * @internal
- */
-export class VertexTable implements VertexTableParams {
-  /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
-  public readonly data: Uint8Array;
-  /** If true, positions are not quantized but instead stored as 32-bit floats.
-   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
-   */
-  public readonly usesUnquantizedPositions?: boolean;
-  /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
-   * and for deriving the range of positions in the table, whether quantized or not.
-   */
-  public readonly qparams: QParams3d;
-  /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
-  public readonly width: number;
-  /** The number of rows in the array. */
-  public readonly height: number;
-  /** Whether or not the vertex colors contain translucent colors. */
-  public readonly hasTranslucency: boolean;
-  /** If no color table exists, the color to use for all vertices. */
-  public readonly uniformColor?: ColorDef;
-  /** Describes the number of features (none, one, or multiple) contained. */
-  public readonly featureIndexType: FeatureIndexType;
-  /** If featureIndexType is 'Uniform', the feature ID associated with all vertices. */
-  public readonly uniformFeatureID?: number;
-  /** The number of vertices in the table. Must be less than (width*height)/numRgbaPerVertex. */
-  public readonly numVertices: number;
-  /** The number of 4-byte 'RGBA' values associated with each vertex. */
-  public readonly numRgbaPerVertex: number;
-  /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
-  public readonly uvParams?: QParams2d;
-
-  /** Construct a VertexTable. The VertexTable takes ownership of all input data - it must not be later modified by the caller. */
-  public constructor(props: VertexTableParams) {
-    this.data = props.data;
-    this.qparams = props.qparams;
-    this.usesUnquantizedPositions = !!props.usesUnquantizedPositions;
-    this.width = props.width;
-    this.height = props.height;
-    this.hasTranslucency = true === props.hasTranslucency;
-    this.uniformColor = props.uniformColor;
-    this.featureIndexType = props.featureIndexType;
-    this.uniformFeatureID = props.uniformFeatureID;
-    this.numVertices = props.numVertices;
-    this.numRgbaPerVertex = props.numRgbaPerVertex;
-    this.uvParams = props.uvParams;
-  }
-
-  public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTable {
-    const { numVertices, numRgbaPerVertex } = builder;
-    const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
-    const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors, maxDimension);
-    assert(0 === dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === dimensions.height));
-
-    const data = new Uint8Array(dimensions.width * dimensions.height * 4);
-
-    builder.data = data;
-    for (let i = 0; i < numVertices; i++)
-      builder.appendVertex(i);
-
-    builder.appendColorTable(colorIndex);
-
-    builder.data = undefined;
-
-    return new VertexTable({
-      data,
-      qparams: builder.qparams,
-      usesUnquantizedPositions: builder.usesUnquantizedPositions,
-      width: dimensions.width,
-      height: dimensions.height,
-      hasTranslucency: colorIndex.hasAlpha,
-      uniformColor: colorIndex.uniform,
-      numVertices,
-      numRgbaPerVertex,
-      uvParams: builder.uvParams,
-      featureIndexType: featureIndex.type,
-      uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
-    });
-  }
-
-  public static createForPolylines(args: PolylineArgs, maxDimension: number): VertexTable | undefined {
-    const polylines = args.polylines;
-    if (0 < polylines.length)
-      return this.buildFrom(createPolylineBuilder(args), args.colors, args.features, maxDimension);
-    else
-      return undefined;
-  }
-}
-
 /** @internal */
 export interface VertexTableWithIndices {
-  vertices: VertexTable;
+  vertices: VertexTableParams;
   indices: VertexIndices;
   material?: SurfaceMaterial;
 }
 
 export function createMeshParams(args: MeshArgs, maxDimension: number): MeshParams {
   const builder = createMeshBuilder(args);
-  const vertices = VertexTable.buildFrom(builder, args.colors, args.features, maxDimension);
+  const vertices = builder.build(args.colors, args.features, maxDimension);
 
   const surfaceIndices = VertexIndices.fromArray(args.vertIndices);
 
@@ -214,6 +119,48 @@ export abstract class VertexTableBuilder {
     this.append8(colors.g);
     this.append8(colors.b);
     this.append8(colors.t);
+  }
+
+  public build(colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTableParams {
+    const builder = this;
+    const { numVertices, numRgbaPerVertex } = builder;
+    const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
+    const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors, maxDimension);
+    assert(0 === dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === dimensions.height));
+
+    const data = new Uint8Array(dimensions.width * dimensions.height * 4);
+
+    builder.data = data;
+    for (let i = 0; i < numVertices; i++)
+      builder.appendVertex(i);
+
+    builder.appendColorTable(colorIndex);
+
+    builder.data = undefined;
+
+    return {
+      data,
+      qparams: builder.qparams,
+      usesUnquantizedPositions: builder.usesUnquantizedPositions,
+      width: dimensions.width,
+      height: dimensions.height,
+      hasTranslucency: colorIndex.hasAlpha,
+      uniformColor: colorIndex.uniform,
+      numVertices,
+      numRgbaPerVertex,
+      uvParams: builder.uvParams,
+      featureIndexType: featureIndex.type,
+      uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
+    };
+  }
+
+  public static buildFromPolylines(args: PolylineArgs, maxDimension: number): VertexTableParams | undefined {
+    const polylines = args.polylines;
+    if (polylines.length === 0)
+      return undefined;
+
+    const builder = createPolylineBuilder(args);
+    return builder.build(args.colors, args.features, maxDimension);
   }
 }
 

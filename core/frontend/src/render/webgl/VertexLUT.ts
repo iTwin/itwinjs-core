@@ -8,8 +8,7 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { QParams2d, QParams3d } from "@itwin/core-common";
-import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../../common";
-import { VertexTable } from "../primitives/VertexTableBuilder";
+import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel, VertexTableParams } from "../../common";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
@@ -90,7 +89,7 @@ export class VertexLUT implements WebGLDisposable {
     return bytesUsed;
   }
 
-  public static createFromVertexTable(vt: VertexTable, aux?: AuxChannelTable): VertexLUT | undefined {
+  public static createFromVertexTable(vt: VertexTableParams, aux?: AuxChannelTable): VertexLUT | undefined {
     const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
     if (undefined === texture)
       return undefined;
@@ -99,7 +98,7 @@ export class VertexLUT implements WebGLDisposable {
     return new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, !vt.usesUnquantizedPositions, vt.uvParams, auxLUT);
   }
 
-  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, positionsAreQuantized: boolean, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
+  private constructor(texture: TextureHandle, table: VertexTableParams, colorInfo: ColorInfo, qparams: QParams3d, positionsAreQuantized: boolean, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
     this.texture = texture;
     this.numVertices = table.numVertices;
     this.numRgbaPerVertex = table.numRgbaPerVertex;

@@ -12,7 +12,7 @@ import {
   calculateEdgeTableParams, computeDimensions, createSurfaceMaterial, EdgeParams, EdgeTable, IndexedEdgeParams, MeshParams, PointStringParams,
   PolylineParams, SurfaceMaterial, TesselatedPolyline, VertexIndices, VertexTableParams,
 } from "../../common";
-import { VertexTable, VertexTableWithIndices } from "./VertexTableBuilder";
+import { VertexTableBuilder, VertexTableWithIndices } from "./VertexTableBuilder";
 import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 
 /** Builds up a [[VertexIndices]].
@@ -45,10 +45,10 @@ export class IndexBuffer {
 /** Builds up a [[VertexTable]]. */
 class VertexBuffer {
   private readonly _builder: Uint32ArrayBuilder;
-  private readonly _source: VertexTable;
+  private readonly _source: VertexTableParams;
 
   /** `source` is the original table containing the vertex data from which individual vertices will be obtained. */
-  public constructor(source: VertexTable) {
+  public constructor(source: VertexTableParams) {
     this._source = source;
     this._builder = new Uint32ArrayBuilder({ initialCapacity: 3 * source.numRgbaPerVertex });
   }
@@ -71,7 +71,7 @@ class VertexBuffer {
   }
 
   /** Construct the finished vertex table. */
-  public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined, materialAtlasTable: MaterialAtlasTable): VertexTable {
+  public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined, materialAtlasTable: MaterialAtlasTable): VertexTableParams {
     const source = this._source;
     colorTable = colorTable ?? source.uniformColor;
     assert(undefined !== colorTable);
@@ -96,7 +96,7 @@ class VertexBuffer {
     if (materialAtlasTable instanceof Uint32Array)
       rgbaData.set(materialAtlasTable, tableSize);
 
-    const tableProps: VertexTableParams = {
+    return {
       data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
       usesUnquantizedPositions: source.usesUnquantizedPositions,
       qparams: source.qparams,
@@ -110,8 +110,6 @@ class VertexBuffer {
       numRgbaPerVertex: source.numRgbaPerVertex,
       uvParams: source.uvParams,
     };
-
-    return new VertexTable(tableProps);
   }
 }
 
@@ -242,7 +240,7 @@ class Node {
   public readonly usesUnquantizedPositions?: boolean;
 
   /** `vertexTable` is the source table containing vertex data for all nodes, from which this node will extract the vertices belong to it. */
-  public constructor(vertexTable: VertexTable, atlas?: AtlasInfo) {
+  public constructor(vertexTable: VertexTableParams, atlas?: AtlasInfo) {
     this.vertices = new VertexBuffer(vertexTable);
     if (undefined === vertexTable.uniformColor)
       this.colors = new ColorTableRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex));

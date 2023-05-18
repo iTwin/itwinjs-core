@@ -13,9 +13,9 @@ import {
   IModelApp,
   MockRender,
 } from "../../../core-frontend";
-import { EdgeParams, MeshParams, PointStringParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline } from "../../../common";
+import { EdgeParams, MeshParams, PointStringParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline, VertexTableParams } from "../../../common";
 import {
-  ComputeAnimationNodeId, createMeshParams, createPointStringParams, IndexBuffer, MeshArgs, PolylineArgs, splitMeshParams, splitPointStringParams, VertexTable,
+  ComputeAnimationNodeId, createMeshParams, createPointStringParams, IndexBuffer, MeshArgs, PolylineArgs, splitMeshParams, splitPointStringParams,
 } from "../../../render-primitives";
 
 interface Point {
@@ -83,11 +83,11 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
   return params;
 }
 
-function getVertexTableData(vertexTable: VertexTable, numExtraRgba: number): Uint32Array {
+function getVertexTableData(vertexTable: VertexTableParams, numExtraRgba: number): Uint32Array {
   return new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
 }
 
-function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[]): void {
+function expectColors(vertexTable: VertexTableParams, expected: ColorDef | ColorDef[]): void {
   if (expected instanceof ColorDef) {
     expect(vertexTable.uniformColor).not.to.be.undefined;
     expect(vertexTable.uniformColor!.equals(expected)).to.be.true;
@@ -105,7 +105,7 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
   }
 }
 
-function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasColorIndex = true): void {
+function expectBaseVertices(vertexTable: VertexTableParams, expectedPts: Point[], hasColorIndex = true): void {
   const data = getVertexTableData(vertexTable, 0);
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
