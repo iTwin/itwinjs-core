@@ -30,6 +30,7 @@ jobs:
 
           # Clean up files that we don't want to cherry-pick changes back
           git checkout --ours **/package.json |& gawk '{ print $3 }' | xargs git rm
+          git checkout --ours **/package.json
           git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
           git checkout --theirs **/CHANGELOG.*
 
@@ -40,6 +41,7 @@ jobs:
           git add .
           git clean
 
+          git cherry-pick --continue
           commitMessage=$(git log --format=%B -n 1 a3080bd5a29ce240bf623626f9a2aa1d901537d7)
           git commit -m "$commitMessage Changelogs"
 
