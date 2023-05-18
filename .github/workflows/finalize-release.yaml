@@ -31,20 +31,21 @@ jobs:
           # Clean up files that we don't want to cherry-pick changes back
           git checkout --ours **/package.json |& gawk '{ print $3 }' | xargs git rm
           git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
+          git checkout --theirs **/CHANGELOG.*
 
           # Stage explicit files;
           #   - Files resolved due to taking master's version
           #   - All changelogs to remove duplicates from master
           #     - They would be duplicated if the same PR is backported to the release branch
-          git add **/package.json **/version-policies.json common/changes docs/changehistory/NextVersion.md
+          git add.
 
-          commitMessage=$(git log --format=%B -n 1 $commitid)
+          commitMessage=$(git log --format=%B -n 1 a3080bd5a29ce240bf623626f9a2aa1d901537d7)
           git commit -m "$commitMessage Changelogs"
 
           exitCode=$?
           if [ $exitCode -ne 0 ]
           then
-            echo Failed to cherry-pick changelogs for $commitMessage. Commit id is $commitid
+            echo Failed to cherry-pick changelogs for $commitMessage. Commit id is a3080bd5a29ce240bf623626f9a2aa1d901537d7
             exit $exitCode
           fi
 
