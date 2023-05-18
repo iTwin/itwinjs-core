@@ -26,7 +26,7 @@ jobs:
           git config --local user.name imodeljs-admin
       - name: Cherry-pick changelogs
         run: |
-          git cherry-pick $commitid
+          git cherry-pick a3080bd5a29ce240bf623626f9a2aa1d901537d7
 
           # Clean up files that we don't want to cherry-pick changes back
           git checkout --ours **/package.json |& gawk '{ print $3 }' | xargs git rm
@@ -57,5 +57,5 @@ jobs:
           commitid: ${{ github.sha }}
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
-      - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+      - name: Push to test-workflow
+        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:test-workflow
