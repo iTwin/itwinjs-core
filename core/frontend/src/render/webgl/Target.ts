@@ -15,7 +15,7 @@ import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";
-import { ViewRect } from "../../ViewRect";
+import { ViewRect } from "../../common";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";

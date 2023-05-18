@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common";
 import { getCenteredViewRect } from "../common";
 
 function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number): void {

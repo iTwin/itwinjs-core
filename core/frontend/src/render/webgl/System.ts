@@ -14,7 +14,7 @@ import { imageElementFromImageSource, TextureCacheKey } from "../../common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { ViewRect } from "../../ViewRect";
+import { ViewRect } from "../../common";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";

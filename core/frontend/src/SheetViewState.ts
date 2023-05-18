@@ -26,7 +26,7 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";

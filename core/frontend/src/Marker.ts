@@ -16,7 +16,7 @@ import { CanvasDecoration } from "./render/CanvasDecoration";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common";
 
 /** The types that may be used for Markers
  * @public

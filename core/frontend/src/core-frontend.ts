@@ -65,7 +65,6 @@ export * from "./ViewManager";
 export * from "./Viewport";
 export * from "./ViewportSync";
 export * from "./ViewPose";
-export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./extension/Extension";
