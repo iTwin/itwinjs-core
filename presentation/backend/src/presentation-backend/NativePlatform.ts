@@ -153,8 +153,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.createSuccessResponse(response);
     }
     private handleConvertedResult<TSource, TTarget>(response: IModelJsNative.ECPresentationManagerResponse<TSource>, conv: (s: TSource) => TTarget): NativePlatformResponse<TTarget> {
-      const { result, error, ...rest } = response;
-      return this.handleResult<TTarget>(result ? { ...rest, result: conv(result) } : { ...rest, error: error! });
+      return this.handleResult<TTarget>((response.result ? { ...response, result: conv(response.result) } : response) as IModelJsNative.ECPresentationManagerResponse<TTarget>);
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
       if (response.error)
