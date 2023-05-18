@@ -58,7 +58,7 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
     textureMapping,
   };
 
-  const params = MeshParams.create(args);
+  const params = MeshParams.create(args, IModelApp.renderSystem.maxTextureSize);
   const geom = IModelApp.renderSystem.createMeshGeometry(params);
   expect(geom).not.to.be.undefined;
   return geom!;

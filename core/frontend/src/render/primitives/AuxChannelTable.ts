@@ -183,8 +183,8 @@ export class AuxChannelTable {
     };
   }
 
-  public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
-    return AuxChannelTableBuilder.buildAuxChannelTable(channels, numVertices);
+  public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number, maxDimension: number): AuxChannelTable | undefined {
+    return AuxChannelTableBuilder.buildAuxChannelTable(channels, numVertices, maxDimension);
   }
 }
 
@@ -206,7 +206,7 @@ class AuxChannelTableBuilder {
     this._view = new DataView(props.data.buffer);
   }
 
-  public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
+  public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number, maxDimension: number): AuxChannelTable | undefined {
     const numBytesPerVertex = channels.reduce((accum, channel) => accum + computeNumBytesPerVertex(channel), 0);
     if (!numBytesPerVertex)
       return undefined;
@@ -218,9 +218,9 @@ class AuxChannelTableBuilder {
     // We don't want any unused bytes. If we've got 2 extra, make every other vertex's channel start in the middle of the first texel.
     let dimensions;
     if (0 !== nUnusedBytesPerVertex)
-      dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0); // twice as many RGBA for half as many vertices.
+      dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0, maxDimension); // twice as many RGBA for half as many vertices.
     else
-      dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
+      dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0, maxDimension);
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
     const props: Mutable<AuxChannelTableProps> = {

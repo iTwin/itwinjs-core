@@ -9,6 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexIndices, VertexTable } from "./VertexTable";
+import { IModelApp } from "../../IModelApp";
 
 /** Describes point string geometry to be submitted to the rendering system.
  * @internal
@@ -28,7 +29,7 @@ export class PointStringParams {
     if (!args.flags.isDisjoint)
       return undefined;
 
-    const vertices = VertexTable.createForPolylines(args);
+    const vertices = VertexTable.createForPolylines(args, IModelApp.renderSystem.maxTextureSize);
     if (undefined === vertices)
       return undefined;
 

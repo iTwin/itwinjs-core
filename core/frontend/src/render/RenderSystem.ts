@@ -353,7 +353,7 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    const params = MeshParams.create(args);
+    const params = MeshParams.create(args, this.maxTextureSize);
     return this.createMesh(params, instances);
   }
 

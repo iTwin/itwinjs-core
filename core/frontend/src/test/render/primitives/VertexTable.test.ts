@@ -8,9 +8,10 @@ import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QPara
 import { MockRender } from "../../../render/MockRender";
 import { MeshArgs, Point3dList } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
+import { IModelApp } from "../../../IModelApp";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
-  const params = MeshParams.create(args);
+  const params = MeshParams.create(args, IModelApp.renderSystem.maxTextureSize);
 
   // Compare vertex table bytes
   const data = params.vertices.data;

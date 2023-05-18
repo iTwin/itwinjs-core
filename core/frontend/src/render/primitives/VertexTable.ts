@@ -11,7 +11,6 @@ import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
-import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
@@ -88,8 +87,7 @@ export interface Dimensions {
 }
 
 /** @internal */
-export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize?: number): Dimensions {
-  maxSize = maxSize ?? IModelApp.renderSystem.maxTextureSize;
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions {
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
   if (nRgba < maxSize)
@@ -209,10 +207,10 @@ export class VertexTable implements VertexTableParams {
     this.uvParams = props.uvParams;
   }
 
-  public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
+  public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTable {
     const { numVertices, numRgbaPerVertex } = builder;
     const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
-    const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors);
+    const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors, maxDimension);
     assert(0 === dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === dimensions.height));
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
@@ -241,10 +239,10 @@ export class VertexTable implements VertexTableParams {
     });
   }
 
-  public static createForPolylines(args: PolylineArgs): VertexTable | undefined {
+  public static createForPolylines(args: PolylineArgs, maxDimension: number): VertexTable | undefined {
     const polylines = args.polylines;
     if (0 < polylines.length)
-      return this.buildFrom(createPolylineBuilder(args), args.colors, args.features);
+      return this.buildFrom(createPolylineBuilder(args), args.colors, args.features, maxDimension);
     else
       return undefined;
   }
@@ -279,9 +277,9 @@ export class MeshParams {
   }
 
   /** Construct from a MeshArgs. */
-  public static create(args: MeshArgs): MeshParams {
+  public static create(args: MeshArgs, maxDimension: number): MeshParams {
     const builder = createMeshBuilder(args);
-    const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
+    const vertices = VertexTable.buildFrom(builder, args.colors, args.features, maxDimension);
 
     const surfaceIndices = VertexIndices.fromArray(args.vertIndices);
 
@@ -294,7 +292,7 @@ export class MeshParams {
       material: createSurfaceMaterial(args.material),
     };
 
-    const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices) : undefined;
+    const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices, maxDimension) : undefined;
     const edges = EdgeParams.fromMeshArgs(args);
     return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
   }

@@ -206,7 +206,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     features: makeFeatureIndex(mesh.points),
   };
 
-  return MeshParams.create(args);
+  return MeshParams.create(args, IModelApp.renderSystem.maxTextureSize);
 }
 
 function expectMesh(params: MeshParams, mesh: TriMesh): void {

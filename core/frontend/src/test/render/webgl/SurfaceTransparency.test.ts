@@ -51,7 +51,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   if (texture)
     args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
-  const params = MeshParams.create(args);
+  const params = MeshParams.create(args, IModelApp.renderSystem.maxTextureSize);
   return IModelApp.renderSystem.createMesh(params)!;
 }
 
