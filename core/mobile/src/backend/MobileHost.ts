@@ -8,7 +8,7 @@ import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-bac
 import { IpcWebSocketBackend, RpcInterfaceDefinition } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
-import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
+import { mobileAppStrings } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
@@ -74,7 +74,7 @@ export abstract class MobileDevice {
 }
 
 class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
-  public get channelName() { return mobileAppChannel; }
+  public get channelName() { return mobileAppStrings.mobileAppChannel; }
   public async reconnect(connection: number) {
     MobileHost.reconnect(connection);
   }
@@ -107,7 +107,7 @@ export class MobileHost {
 
   /** Send a notification to the MobileApp connected to this MobileHost. */
   public static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>) {
-    return IpcHost.send(mobileAppNotify, methodName, ...args);
+    return IpcHost.send(mobileAppStrings.mobileAppNotify, methodName, ...args);
   }
 
   /**  @internal */
