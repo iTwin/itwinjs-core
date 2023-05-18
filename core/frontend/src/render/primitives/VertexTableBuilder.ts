@@ -115,33 +115,32 @@ export abstract class VertexTableBuilder {
   }
 
   public build(colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTable {
-    const builder = this;
-    const { numVertices, numRgbaPerVertex } = builder;
+    const { numVertices, numRgbaPerVertex } = this;
     const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
     const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors, maxDimension);
     assert(0 === dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === dimensions.height));
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
 
-    builder.data = data;
+    this.data = data;
     for (let i = 0; i < numVertices; i++)
-      builder.appendVertex(i);
+      this.appendVertex(i);
 
-    builder.appendColorTable(colorIndex);
+    this.appendColorTable(colorIndex);
 
-    builder.data = undefined;
+    this.data = undefined;
 
     return {
       data,
-      qparams: builder.qparams,
-      usesUnquantizedPositions: builder.usesUnquantizedPositions,
+      qparams: this.qparams,
+      usesUnquantizedPositions: this.usesUnquantizedPositions,
       width: dimensions.width,
       height: dimensions.height,
       hasTranslucency: colorIndex.hasAlpha,
       uniformColor: colorIndex.uniform,
       numVertices,
       numRgbaPerVertex,
-      uvParams: builder.uvParams,
+      uvParams: this.uvParams,
       featureIndexType: featureIndex.type,
       uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
     };

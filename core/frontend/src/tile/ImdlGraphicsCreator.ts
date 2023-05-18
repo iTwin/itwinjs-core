@@ -12,14 +12,13 @@ import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
 import {
-  edgeParamsFromImdl, ImdlColorDef, ImdlModel as Imdl, ImdlNamedTexture, ImdlTextureMapping, toMaterialParams, toVertexTable,
+  AuxChannelTable, createSurfaceMaterial, edgeParamsFromImdl, ImdlModel as Imdl, ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping, toMaterialParams, toVertexTable, VertexIndices,
 } from "../common";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { AuxChannelTable, createSurfaceMaterial, VertexIndices } from "../common";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
