@@ -83,9 +83,9 @@ Very rarely, a critical security issue may arise that cannot reasonably be addre
 | Major Version | Status          | Release         | Active Start    | Maintenance Start | End-of-life     |
 | ------------- | --------------- | --------------- | --------------- | ----------------- | --------------- |
 | 1.x           | **End of life** | 2019-06-03      | 2020-05-07      | n/a               | 2020-11-01      |
-| 2.x           | **Maintenance** | 2020-05-07      | 2022-01-24      | 2022-12-31        | 2023-3-31       |
-| 3.x           | **Current**     | 2022-01-24      | **_2023-5-22_** | **_2023-11-22_**  | **_2024-5-22_** |
-| 4.x           | **Future**      | **_2023-5-22_** | TBD             | TBD               | TBD             |
+| 2.x           | **End of life** | 2020-05-07      | 2022-01-24      | 2022-12-31        | 2023-3-31       |
+| 3.x           | **Maintenance** | 2022-01-24      | **_2023-5-22_** | **_2023-11-22_**  | **_2024-5-22_** |
+| 4.x           | **Current**     | **_2023-5-22_** | TBD             | TBD               | TBD             |
 
 _Dates are subject to change._
 
