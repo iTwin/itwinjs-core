@@ -8,7 +8,7 @@
 
 import { XAndY } from "@itwin/core-geometry";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
-import { IModelApp } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-extension";
 
 /** @internal */
 export interface PopupToolbarProvider {

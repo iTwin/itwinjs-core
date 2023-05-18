@@ -8,10 +8,9 @@
 
 import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
 import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-extension";
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
-  ExtensionHost,
+  ExtensionHost, ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
 } from "@itwin/core-extension";

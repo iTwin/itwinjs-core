@@ -37,14 +37,8 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.1.0-dev.6",
-    "@itwin/core-geometry": "workspace:^4.1.0-dev.6"
-  },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/chai": "4.3.1",
@@ -64,7 +58,9 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@itwin/core-extension": "workspace:*"
+    "@itwin/core-extension": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

@@ -7,8 +7,8 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Placement3d, QueryRowFormat, SectionType } from "@itwin/core-extension";
-import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-extension";
+import { } from "@itwin/core-extension";
+import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState, Placement3d, QueryRowFormat, SectionType } from "@itwin/core-extension";
 import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `

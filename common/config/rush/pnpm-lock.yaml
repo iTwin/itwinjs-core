@@ -695,12 +695,12 @@ importers:
       typescript: ~5.0.2
       webpack: ^5.76.0
     dependencies:
+      '@itwin/core-bentley': link:../bentley
       '@itwin/core-extension': link:../extension
+      '@itwin/core-geometry': link:../geometry
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
-      '@itwin/core-bentley': link:../bentley
-      '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': 4.0.0-dev.36_iacogk7kkaymxepzhgcbytyi7q
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
