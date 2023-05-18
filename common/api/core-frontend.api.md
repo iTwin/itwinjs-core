@@ -152,7 +152,6 @@ import { IModelVersion } from '@itwin/core-common';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexMap } from '@itwin/core-bentley';
 import { InternetConnectivityStatus } from '@itwin/core-common';
-import { IpcAppChannel } from '@itwin/core-common';
 import { IpcAppFunctions } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketFrontend } from '@itwin/core-common';
@@ -1702,7 +1701,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal
     constructor(iModel: BriefcaseConnection);
     // @internal (undocumented)
-    get briefcaseChannelName(): IpcAppChannel;
+    get briefcaseChannelName(): "itwinjs-core/txns";
     // @internal (undocumented)
     dispose(): void;
     getRedoString(): Promise<string>;
@@ -4503,7 +4502,7 @@ export interface GpuMemoryLimits {
 // @public
 export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
     // (undocumented)
-    get briefcaseChannelName(): IpcAppChannel;
+    get briefcaseChannelName(): "itwinjs-core/editing-scope";
     // @internal
     static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
     exit(): Promise<void>;

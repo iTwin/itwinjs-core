@@ -404,7 +404,7 @@ internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
-internal;IpcAppChannel
+internal;ipcAppChannels:
 internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
@@ -478,10 +478,9 @@ public;ModelQueryParams
 public;ModelSelectorProps 
 public;MonochromeMode
 internal;MultiModelPackedFeatureTable 
-internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
+internal;nativeAppIpcStrings:
 internal;NativeAppNotifications
-internal;nativeAppNotify = "nativeApp-notify"
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -668,6 +667,7 @@ internal;RpcOperation
 internal;RpcOperationPolicy
 internal;RpcOperationPolicyProps = Partial
 internal;RpcOperationsProfile
+internal;rpcOverIpcStrings:
 internal;RpcPendingQueue
 public;RpcPendingResponse 
 internal;class RpcProtocol

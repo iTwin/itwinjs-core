@@ -141,7 +141,13 @@ export class IpcHost {
  * @public
  */
 export abstract class IpcHandler {
-  /** All subclasses must implement this method to specify their channel name. To ensure uniqueness, channelNames should be prefixed by  `${appName}/` */
+  /**
+   * All subclasses *must* implement this method to specify their channel name.
+   *
+   * Channel names are the key that connects Handlers and senders. The channel name of IpcHandlers must exactly match the name used by senders.
+   * By convention, channel names should be prefixed by a *namespace* (e.g. `${appName}/`)
+   * unique enough to disambiguate them from channels for other apps that may be running in the same processes.
+   */
   public abstract get channelName(): string;
 
   /**
