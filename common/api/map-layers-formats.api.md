@@ -13,6 +13,7 @@ import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
+import { Localization } from '@itwin/core-common';
 import { LocateFilterStatus } from '@itwin/core-frontend';
 import { LocateResponse } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
@@ -88,7 +89,16 @@ export interface MapFeatureInfoToolData {
 
 // @beta
 export class MapLayersFormats {
-    static initialize(): void;
+    static initialize(config?: MapLayersFormatsConfig): Promise<void>;
+    // (undocumented)
+    static localization: Localization;
+    static get localizationNamespace(): string;
+}
+
+// @beta
+export interface MapLayersFormatsConfig {
+    // (undocumented)
+    localization?: Localization;
 }
 
 // (No @packageDocumentation comment for this package)

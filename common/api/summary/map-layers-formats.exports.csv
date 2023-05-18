@@ -4,3 +4,4 @@ internal;ArcGisFeatureProvider
 alpha;MapFeatureInfoTool 
 alpha;MapFeatureInfoToolData
 beta;MapLayersFormats
+beta;MapLayersFormatsConfig
