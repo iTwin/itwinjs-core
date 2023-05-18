@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { PolylineArgs } from "./mesh/MeshPrimitives";
-import { VertexTable } from "./VertexTable";
+import { VertexTable } from "./VertexTableBuilder";
 import { PointStringParams, VertexIndices } from "../../common";
 import { IModelApp } from "../../IModelApp";
 

@@ -9,7 +9,7 @@ import { MockRender } from "../../../render/MockRender";
 import { Point3dList } from "../../../common";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "../../../IModelApp";
-import { createMeshParams } from "../../../render/primitives/VertexTable";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
   const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);

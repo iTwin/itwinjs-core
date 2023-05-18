@@ -36,7 +36,7 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { createMeshParams } from "./primitives/VertexTable";
+import { createMeshParams } from "./primitives/VertexTableBuilder";
 import { createPointStringParams } from "./primitives/PointStringParams";
 import { createPolylineParams } from "./primitives/PolylineParams";
 

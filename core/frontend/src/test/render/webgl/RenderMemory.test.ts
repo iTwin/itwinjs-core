@@ -11,7 +11,7 @@ import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
-import { createMeshParams } from "../../../render/primitives/VertexTable";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams } from "../../../core-frontend";

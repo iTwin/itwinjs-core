@@ -18,7 +18,7 @@ import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../rende
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
 import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
-import { createMeshParams } from "../../../render/primitives/VertexTable";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {

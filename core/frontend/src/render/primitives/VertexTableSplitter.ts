@@ -12,7 +12,7 @@ import {
   calculateEdgeTableParams, computeDimensions, createSurfaceMaterial, EdgeParams, EdgeTable, IndexedEdgeParams, MeshParams, PointStringParams,
   PolylineParams, SurfaceMaterial, TesselatedPolyline, VertexIndices, VertexTableParams,
 } from "../../common";
-import { VertexTable, VertexTableWithIndices } from "./VertexTable";
+import { VertexTable, VertexTableWithIndices } from "./VertexTableBuilder";
 import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 
 /** Builds up a [[VertexIndices]].
