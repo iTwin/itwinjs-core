@@ -9,14 +9,251 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, QParams2d, QParams3d, QPoint2d, QPoint3dList,
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
-import {
-  AuxChannelTable, Point3dList, VertexIndices, VertexTable,
-} from "../../common";
+import { AuxChannelTable, Point3dList } from "../../common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
+
+/**
+ * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
+ * The order of the indices specifies the order in which vertices are drawn.
+ * @internal
+ */
+export class VertexIndices implements Iterable<number> {
+  public readonly data: Uint8Array;
+
+  /**
+   * Directly construct from an array of bytes in which each index occupies 3 contiguous bytes.
+   * The length of the array must be a multiple of 3. This object takes ownership of the array.
+   */
+  public constructor(data: Uint8Array) {
+    this.data = data;
+    assert(0 === this.data.length % 3);
+  }
+
+  /** Get the number of 24-bit indices. */
+  public get length(): number { return this.data.length / 3; }
+
+  /** Convert an array of 24-bit unsigned integer values into a VertexIndices object. */
+  public static fromArray(indices: number[]): VertexIndices {
+    const bytes = new Uint8Array(indices.length * 3);
+    for (let i = 0; i < indices.length; i++)
+      this.encodeIndex(indices[i], bytes, i * 3);
+
+    return new VertexIndices(bytes);
+  }
+
+  public static encodeIndex(index: number, bytes: Uint8Array, byteIndex: number): void {
+    assert(byteIndex + 2 < bytes.length);
+    bytes[byteIndex + 0] = index & 0x000000ff;
+    bytes[byteIndex + 1] = (index & 0x0000ff00) >> 8;
+    bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
+  }
+
+  public setNthIndex(n: number, value: number): void {
+    VertexIndices.encodeIndex(value, this.data, n * 3);
+  }
+
+  public decodeIndex(index: number): number {
+    assert(index < this.length);
+    const byteIndex = index * 3;
+    return this.data[byteIndex] | (this.data[byteIndex + 1] << 8) | (this.data[byteIndex + 2] << 16);
+  }
+
+  public decodeIndices(): number[] {
+    const indices = [];
+    for (let i = 0; i < this.length; i++)
+      indices.push(this.decodeIndex(i));
+
+    return indices;
+  }
+
+  public [Symbol.iterator]() {
+    function * iterator(indices: VertexIndices) {
+      for (let i = 0; i < indices.length; i++)
+        yield indices.decodeIndex(i);
+    }
+
+    return iterator(this);
+  }
+}
+
+/** @internal */
+export interface Dimensions {
+  width: number;
+  height: number;
+}
+
+/** @internal */
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions {
+  const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
+
+  if (nRgba < maxSize)
+    return { width: nRgba, height: 1 };
+
+  // Make roughly square to reduce unused space in last row
+  let width = Math.ceil(Math.sqrt(nRgba));
+
+  // Ensure a given entry's RGBA values all fit on the same row.
+  const remainder = width % nRgbaPerEntry;
+  if (0 !== remainder) {
+    width += nRgbaPerEntry - remainder;
+  }
+
+  // Compute height
+  let height = Math.ceil(nRgba / width);
+  if (width * height < nRgba)
+    ++height;
+
+  assert(height <= maxSize);
+  assert(width <= maxSize);
+  assert(width * height >= nRgba);
+  assert(Math.floor(height) === height);
+  assert(Math.floor(width) === width);
+
+  // Row padding should never be necessary...
+  assert(0 === width % nRgbaPerEntry);
+
+  return { width, height };
+}
+
+/** Describes a VertexTable.
+ * @internal
+ */
+export interface VertexTableParams {
+  /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
+  readonly data: Uint8Array;
+  /** If true, positions are not quantized but instead stored as 32-bit floats.
+   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
+   */
+  readonly usesUnquantizedPositions?: boolean;
+  /** Quantization parameters for the vertex positions encoded into the array, if the positions are quantized;
+   * and for deriving the range of positions in the table, whether quantized or not.
+   */
+  readonly qparams: QParams3d;
+  /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
+  readonly width: number;
+  /** The number of rows in the array. */
+  readonly height: number;
+  /** Whether or not the vertex colors contain translucent colors. */
+  readonly hasTranslucency: boolean;
+  /** If no color table exists, the color to use for all vertices. */
+  readonly uniformColor?: ColorDef;
+  /** Describes the number of features (none, one, or multiple) contained. */
+  readonly featureIndexType: FeatureIndexType;
+  /** If featureIndexType is 'Uniform', the feature ID associated with all vertices. */
+  readonly uniformFeatureID?: number;
+  /** The number of vertices in the table. Must be less than (width*height)/numRgbaPerVertex. */
+  readonly numVertices: number;
+  /** The number of 4-byte 'RGBA' values associated with each vertex. */
+  readonly numRgbaPerVertex: number;
+  /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
+  readonly uvParams?: QParams2d;
+}
+
+/**
+ * Represents vertex data (position, color, normal, UV params, etc) in a rectangular array.
+ * Each vertex is described by one or more contiguous 4-byte ('RGBA') values.
+ * This allows vertex data to be uploaded to the GPU as a texture and vertex data to be sampled
+ * from that texture using a single vertex ID representing an index into the array.
+ * Vertex color is identified by a 16-bit index into a color table appended to the vertex data.
+ * @internal
+ */
+export class VertexTable implements VertexTableParams {
+  /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
+  public readonly data: Uint8Array;
+  /** If true, positions are not quantized but instead stored as 32-bit floats.
+   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
+   */
+  public readonly usesUnquantizedPositions?: boolean;
+  /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
+   * and for deriving the range of positions in the table, whether quantized or not.
+   */
+  public readonly qparams: QParams3d;
+  /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
+  public readonly width: number;
+  /** The number of rows in the array. */
+  public readonly height: number;
+  /** Whether or not the vertex colors contain translucent colors. */
+  public readonly hasTranslucency: boolean;
+  /** If no color table exists, the color to use for all vertices. */
+  public readonly uniformColor?: ColorDef;
+  /** Describes the number of features (none, one, or multiple) contained. */
+  public readonly featureIndexType: FeatureIndexType;
+  /** If featureIndexType is 'Uniform', the feature ID associated with all vertices. */
+  public readonly uniformFeatureID?: number;
+  /** The number of vertices in the table. Must be less than (width*height)/numRgbaPerVertex. */
+  public readonly numVertices: number;
+  /** The number of 4-byte 'RGBA' values associated with each vertex. */
+  public readonly numRgbaPerVertex: number;
+  /** If vertex data include texture UV coordinates, the quantization params for those coordinates. */
+  public readonly uvParams?: QParams2d;
+
+  /** Construct a VertexTable. The VertexTable takes ownership of all input data - it must not be later modified by the caller. */
+  public constructor(props: VertexTableParams) {
+    this.data = props.data;
+    this.qparams = props.qparams;
+    this.usesUnquantizedPositions = !!props.usesUnquantizedPositions;
+    this.width = props.width;
+    this.height = props.height;
+    this.hasTranslucency = true === props.hasTranslucency;
+    this.uniformColor = props.uniformColor;
+    this.featureIndexType = props.featureIndexType;
+    this.uniformFeatureID = props.uniformFeatureID;
+    this.numVertices = props.numVertices;
+    this.numRgbaPerVertex = props.numRgbaPerVertex;
+    this.uvParams = props.uvParams;
+  }
+
+  public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex, maxDimension: number): VertexTable {
+    const { numVertices, numRgbaPerVertex } = builder;
+    const numColors = colorIndex.isUniform ? 0 : colorIndex.numColors;
+    const dimensions = computeDimensions(numVertices, numRgbaPerVertex, numColors, maxDimension);
+    assert(0 === dimensions.width % numRgbaPerVertex || (0 < numColors && 1 === dimensions.height));
+
+    const data = new Uint8Array(dimensions.width * dimensions.height * 4);
+
+    builder.data = data;
+    for (let i = 0; i < numVertices; i++)
+      builder.appendVertex(i);
+
+    builder.appendColorTable(colorIndex);
+
+    builder.data = undefined;
+
+    return new VertexTable({
+      data,
+      qparams: builder.qparams,
+      usesUnquantizedPositions: builder.usesUnquantizedPositions,
+      width: dimensions.width,
+      height: dimensions.height,
+      hasTranslucency: colorIndex.hasAlpha,
+      uniformColor: colorIndex.uniform,
+      numVertices,
+      numRgbaPerVertex,
+      uvParams: builder.uvParams,
+      featureIndexType: featureIndex.type,
+      uniformFeatureID: featureIndex.type === FeatureIndexType.Uniform ? featureIndex.featureID : undefined,
+    });
+  }
+
+  public static createForPolylines(args: PolylineArgs, maxDimension: number): VertexTable | undefined {
+    const polylines = args.polylines;
+    if (0 < polylines.length)
+      return this.buildFrom(createPolylineBuilder(args), args.colors, args.features, maxDimension);
+    else
+      return undefined;
+  }
+}
+
+/** @internal */
+export interface VertexTableWithIndices {
+  vertices: VertexTable;
+  indices: VertexIndices;
+  material?: SurfaceMaterial;
+}
 
 /**
  * Describes mesh geometry to be submitted to the rendering system.

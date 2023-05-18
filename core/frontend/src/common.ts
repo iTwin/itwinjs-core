@@ -13,6 +13,5 @@ export * from "./common/imdl/ImdlSchema";
 export * from "./common/render/primitives/AuxChannelTable";
 export * from "./common/render/primitives/DisplayParams";
 export * from "./common/render/primitives/MeshPrimitive";
-export * from "./common/render/primitives/VertexTable";
 export * from "./common/Texture";
 export * from "./common/ViewRect";
