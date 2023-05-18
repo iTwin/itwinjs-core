@@ -6,17 +6,17 @@
  * @module NativeApp
  */
 
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
-  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
-  PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
+  OpenBriefcaseProps, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
-import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -86,22 +86,22 @@ export class IpcHost {
 
   private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
     if (this.isValid)
-      return this.send(`${channel}:${briefcase.key}`, methodName, ...args);
+      return this.send(`${channel}/${briefcase.key}`, methodName, ...args);
   }
 
   /** @internal */
   public static notifyIpcFrontend<T extends keyof IpcAppNotifications>(methodName: T, ...args: Parameters<IpcAppNotifications[T]>) {
-    return IpcHost.send(IpcAppChannel.AppNotify, methodName, ...args);
+    return IpcHost.send(ipcAppChannels.appNotify, methodName, ...args);
   }
 
   /** @internal */
   public static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>) {
-    this.notify(IpcAppChannel.Txns, briefcase, methodName, ...args);
+    this.notify(ipcAppChannels.txns, briefcase, methodName, ...args);
   }
 
   /** @internal */
   public static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>) {
-    this.notify(IpcAppChannel.EditingScope, briefcase, methodName, ...args);
+    this.notify(ipcAppChannels.editingScope, briefcase, methodName, ...args);
   }
 
   /**
@@ -141,7 +141,13 @@ export class IpcHost {
  * @public
  */
 export abstract class IpcHandler {
-  /** All subclasses must implement this method to specify their channel name. */
+  /**
+   * All subclasses *must* implement this method to specify their channel name.
+   *
+   * Channel names are the key that connects Handlers and senders. The channel name of IpcHandlers must exactly match the name used by senders.
+   * By convention, channel names should be prefixed by a *namespace* (e.g. `${appName}/`)
+   * unique enough to disambiguate them from channels for other apps that may be running in the same processes.
+   */
   public abstract get channelName(): string;
 
   /**
@@ -179,7 +185,7 @@ export abstract class IpcHandler {
  * Implementation  of IpcAppFunctions
  */
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
-  public get channelName() { return IpcAppChannel.Functions; }
+  public get channelName() { return ipcAppChannels.functions; }
 
   private _iModelKeyToPullStatus = new Map<string, ProgressStatus>();
 

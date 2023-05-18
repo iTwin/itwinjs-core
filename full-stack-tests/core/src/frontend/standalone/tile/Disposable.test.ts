@@ -229,7 +229,7 @@ describe("Disposal of WebGL Resources", () => {
     });
 
     expect(reader).not.to.be.undefined;
-    const readerRes = await reader!.read();
+    const readerRes = await reader.read();
     const tileGraphic = readerRes.graphic!;
     assert.isDefined(tileGraphic);
 

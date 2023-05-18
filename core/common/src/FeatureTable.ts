@@ -224,6 +224,7 @@ export interface RenderFeatureTable {
   /** Strictly for reporting memory usage. */
   readonly byteLength: number;
   readonly type: BatchType;
+  animationNodeIds?: UintArray;
 
   /** Get the feature at the specified index. Caller is responsible for validating featureIndex less than numFeatures. */
   getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
@@ -276,16 +277,9 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
-  private _animationNodeIds?: UintArray;
+  public animationNodeIds?: UintArray;
 
   public get byteLength(): number { return this._data.byteLength; }
-  public get animationNodeIds(): Readonly<UintArray> | undefined { return this._animationNodeIds; }
-
-  /** @internal for use by MultiModelPackedFeatureTable */
-  public setAnimationNodeIds(nodeIds: UintArray | undefined): void {
-    assert(undefined === this._animationNodeIds);
-    this._animationNodeIds = nodeIds;
-  }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
@@ -297,7 +291,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     this.batchModelIdPair = Id64.getUint32Pair(modelId);
     this.numFeatures = numFeatures;
     this.type = type;
-    this._animationNodeIds = animationNodeIds;
+    this.animationNodeIds = animationNodeIds;
 
     switch (this.numFeatures) {
       case 0:
@@ -312,7 +306,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     }
 
     assert(this._data.length >= this._subCategoriesOffset);
-    assert(undefined === this._animationNodeIds || this._animationNodeIds.length === this.numFeatures);
+    assert(undefined === this.animationNodeIds || this.animationNodeIds.length === this.numFeatures);
   }
 
   /** Create a packed feature table from a [[FeatureTable]]. */
@@ -387,7 +381,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
 
   /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
-    return undefined !== this._animationNodeIds && featureIndex < this.numFeatures ? this._animationNodeIds[featureIndex] : 0;
+    return undefined !== this.animationNodeIds && featureIndex < this.numFeatures ? this.animationNodeIds[featureIndex] : 0;
   }
 
   /** @internal */
@@ -446,8 +440,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
   }
 
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
-    assert(undefined === this._animationNodeIds);
-    this._animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
+    assert(undefined === this.animationNodeIds);
+    this.animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
   }
 
   public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
@@ -582,7 +576,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   public get batchModelIdPair() { return this._features.batchModelIdPair; }
   public get numFeatures() { return this._features.numFeatures; }
   public get type() { return this._features.type; }
-  public get animationNodeIds(): Readonly<UintArray> | undefined { return this._features.animationNodeIds; }
+  public get animationNodeIds(): UintArray | undefined { return this._features.animationNodeIds; }
+  public set animationNodeIds(ids: UintArray | undefined) { this._features.animationNodeIds = ids; }
 
   public get byteLength() {
     return this._features.byteLength + this._models.byteLength;
@@ -639,6 +634,6 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   }
 
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
-    this._features.setAnimationNodeIds(populateAnimationNodeIds(this, computeNodeId, maxNodeId));
+    this._features.animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
   }
 }
