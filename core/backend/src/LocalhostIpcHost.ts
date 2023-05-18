@@ -7,9 +7,11 @@
  */
 
 import * as ws from "ws";
-import { InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RpcSessionInvocation } from "@itwin/core-common";
-import { IpcHandler, IpcHost } from "./IpcHost";
+import {
+  InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings, RpcSessionInvocation,
+} from "@itwin/core-common";
 import { IModelHostOptions } from "./IModelHost";
+import { IpcHandler, IpcHost } from "./IpcHost";
 
 /** @internal */
 export interface LocalhostIpcHostOpts {
@@ -61,7 +63,7 @@ class LocalTransport extends IpcWebSocketTransport {
 }
 
 class RpcHandler extends IpcHandler {
-  public channelName = "RPC";
+  public channelName = rpcOverIpcStrings.channelName;
 
   public async request(info: InterceptedRpcRequest) {
     const invocation = RpcSessionInvocation.create(info);
@@ -91,8 +93,7 @@ export class LocalhostIpcHost {
 
     await IpcHost.startup({ ipcHost: { socket: this.socket }, iModelHost: opts?.iModelHost });
 
-    if (registerHandler) {
+    if (registerHandler)
       RpcHandler.register();
-    }
   }
 }

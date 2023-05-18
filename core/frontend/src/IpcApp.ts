@@ -8,7 +8,7 @@
 
 import { AsyncMethodsOf, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
+  BackendError, IModelError, IModelStatus, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -129,11 +129,11 @@ export class IpcApp {
 
   /** @deprecated in 3.x. use [[appFunctionIpc]] */
   public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
+    return this.callIpcChannel(ipcAppChannels.functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
-  public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(IpcAppChannel.Functions);
+  public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(ipcAppChannels.functions);
 
   /** start an IpcApp.
    * @note this should not be called directly. It is called by NativeApp.startup */
@@ -191,6 +191,6 @@ export abstract class NotificationHandler {
 
 /** IpcApp notifications from backend */
 class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
-  public get channelName() { return IpcAppChannel.AppNotify; }
+  public get channelName() { return ipcAppChannels.appNotify; }
   public notifyApp() { }
 }
