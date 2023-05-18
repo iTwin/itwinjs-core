@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-    - 'release/*'
+      - "release/*"
 
 jobs:
   finalize:
@@ -29,7 +29,7 @@ jobs:
           git cherry-pick $commitid
 
           # Clean up files that we don't want to cherry-pick changes back
-          for i in **/package.json; do git checkout --ours $i; done
+          git checkout --ours **/package.json |& gawk '{ print $3 }' | xargs git rm
           git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
 
           # Stage explicit files;
@@ -57,5 +57,5 @@ jobs:
           commitid: ${{ github.sha }}
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
-      - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+      # - name: Push to master
+      #   run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
