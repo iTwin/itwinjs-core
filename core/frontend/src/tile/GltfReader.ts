@@ -26,7 +26,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
-import { DisplayParams } from "../render/primitives/DisplayParams";
+import { DisplayParams } from "../common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";

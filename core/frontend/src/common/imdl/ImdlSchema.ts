@@ -11,7 +11,7 @@ import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, ImageSourceFormat, LinePixels, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { AuxChannelTableProps } from "../../render/primitives/AuxChannelTable";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../../render/primitives/mesh/MeshPrimitives";
 import { SurfaceType } from "../../render/primitives/SurfaceParams";
 

@@ -14,7 +14,7 @@ import { ScreenViewport } from "../../../Viewport";
 import { StandardViewId } from "../../../StandardView";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeDisplayParams } from "./Fake";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common";
 import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";
 import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";

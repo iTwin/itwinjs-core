@@ -12,7 +12,6 @@ export * from "./render/primitives/mesh/MeshBuilderMap";
 export * from "./render/primitives/mesh/MeshPrimitives";
 
 export * from "./render/primitives/ColorMap";
-export * from "./render/primitives/DisplayParams";
 export * from "./render/primitives/EdgeParams";
 export * from "./render/primitives/PointCloudPrimitive";
 export * from "./render/primitives/PointStringParams";

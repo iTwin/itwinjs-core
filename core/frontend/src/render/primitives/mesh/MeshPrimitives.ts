@@ -16,7 +16,7 @@ import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { ColorMap } from "../ColorMap";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "../../../common";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 

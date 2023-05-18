@@ -20,7 +20,7 @@ import {
 } from "./ImdlSchema";
 import { Mesh } from "../../render/primitives/mesh/MeshPrimitives";
 import { isValidSurfaceType, SurfaceMaterial } from "../../render/primitives/SurfaceParams";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../../render/primitives/AuxChannelTable";
 import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../../render/GraphicBranch";

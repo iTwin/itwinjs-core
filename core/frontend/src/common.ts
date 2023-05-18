@@ -10,5 +10,6 @@ export * from "./common/ImageUtil";
 export * from "./common/imdl/ImdlModel";
 export * from "./common/imdl/ImdlParser";
 export * from "./common/imdl/ImdlSchema";
+export * from "./common/render/primitives/DisplayParams";
 export * from "./common/Texture";
 export * from "./common/ViewRect";

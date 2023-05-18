@@ -9,7 +9,7 @@ import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
