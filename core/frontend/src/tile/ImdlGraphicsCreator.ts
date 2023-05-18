@@ -21,7 +21,7 @@ import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
 import { createSurfaceMaterial } from "../render/primitives/SurfaceParams";
 import { VertexIndices } from "../render/primitives/VertexTable";
-import { AuxChannelTable } from "../render/primitives/AuxChannelTable";
+import { AuxChannelTable } from "../common";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal

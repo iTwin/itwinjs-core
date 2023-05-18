@@ -11,7 +11,7 @@ import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
-import { AuxChannelTable } from "./AuxChannelTable";
+import { AuxChannelTable } from "../../common";
 import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
