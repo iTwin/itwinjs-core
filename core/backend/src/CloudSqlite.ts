@@ -295,7 +295,7 @@ export namespace CloudSqlite {
      * initialize a cloud blob-store container to be used as a new CloudContainer. This creates the container's manifest of its contents, and should be
      * performed on an empty container. If an existing manifest is present, it is destroyed and a new one is created (essentially emptying the container.)
      */
-    initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize: number }): void;
+    initializeContainer(args: { checksumBlockNames?: boolean, blockSize: number }): void;
 
     /**
      * Connect this CloudContainer to a CloudCache for accessing and/or modifying its contents.
