@@ -8,12 +8,11 @@
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
-import { computeDimensions, VertexIndices, VertexTableParams } from "../../common";
-import { MeshParams, VertexTable, VertexTableWithIndices } from "./VertexTable";
-import { PointStringParams } from "./PointStringParams";
-import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
-import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
-import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
+import {
+  calculateEdgeTableParams, computeDimensions, createSurfaceMaterial, EdgeParams, EdgeTable, IndexedEdgeParams, MeshParams, PointStringParams,
+  PolylineParams, SurfaceMaterial, TesselatedPolyline, VertexIndices, VertexTableParams,
+} from "../../common";
+import { VertexTable, VertexTableWithIndices } from "./VertexTable";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
 
 /** Builds up a [[VertexIndices]].
@@ -370,7 +369,7 @@ export function splitPointStringParams(args: SplitPointStringArgs): Map<number, 
   const result = new Map<number, PointStringParams>();
   for (const [id, node] of nodes) {
     const { vertices, indices } = node.buildOutput(args.maxDimension);
-    result.set(id, new PointStringParams(vertices, indices, args.params.weight));
+    result.set(id, { vertices, indices, weight: args.params.weight });
   }
 
   return result;
@@ -674,8 +673,9 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
 
   for (const [id, node] of nodes) {
     const { vertices, indices, material } = node.buildOutput(args.maxDimension);
-    const params = new MeshParams(
-      vertices, {
+    const params: MeshParams = {
+      vertices,
+      surface: {
         type: args.params.surface.type,
         indices,
         fillFlags: args.params.surface.fillFlags,
@@ -683,11 +683,11 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
         textureMapping: args.params.surface.textureMapping,
         material: material !== undefined ? material : args.params.surface.material,
       },
-      edges?.get(id),
-      args.params.isPlanar,
+      edges: edges?.get(id),
+      isPlanar: args.params.isPlanar,
       // ###TODO handle aux channels.......
-      args.params.auxChannels,
-    );
+      auxChannels: args.params.auxChannels,
+    };
 
     result.set(id, params);
   }
@@ -743,16 +743,15 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
   for (const [id, node] of nodes) {
     assert(undefined !== node.prevIndices && undefined !== node.nextIndicesAndParams);
     const { vertices, indices } = node.buildOutput(args.maxDimension);
-    const params = new PolylineParams(
-      vertices, {
+    const params: PolylineParams = {
+      ...args.params,
+      vertices,
+      polyline: {
         indices,
         prevIndices: node.prevIndices.toVertexIndices(),
         nextIndicesAndParams: node.nextIndicesAndParams.toUint8Array(),
       },
-      args.params.weight,
-      args.params.linePixels,
-      args.params.isPlanar,
-      args.params.type);
+    };
 
     result.set(id, params);
   }

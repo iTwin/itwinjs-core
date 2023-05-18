@@ -14,9 +14,9 @@ import {
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { MeshParams } from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
-import { DisplayParams } from "../common";
+import { DisplayParams, MeshParams } from "../common";
+import { createMeshParams } from "./primitives/VertexTable";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
@@ -370,7 +370,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number, v
     },
   };
 
-  return MeshParams.create(quadArgs, viewport.target.renderSystem.maxTextureSize);
+  return createMeshParams(quadArgs, viewport.target.renderSystem.maxTextureSize);
 }
 
 function clampTransparency(transparency: number): number {

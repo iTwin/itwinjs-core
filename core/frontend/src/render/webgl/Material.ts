@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/SurfaceParams";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common";
 import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:

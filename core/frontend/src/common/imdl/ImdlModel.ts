@@ -11,8 +11,8 @@ import { LowAndHighXYZ, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
 } from "@itwin/core-common";
-import { EdgeTable } from "../../render/primitives/EdgeParams";
-import { SurfaceMaterialAtlas, SurfaceType } from "../../render/primitives/SurfaceParams";
+import { EdgeTable } from "../render/primitives/EdgeParams";
+import { SurfaceMaterialAtlas, SurfaceType } from "../render/primitives/SurfaceParams";
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { ImdlAreaPattern, ImdlDocument } from "./ImdlSchema";
 

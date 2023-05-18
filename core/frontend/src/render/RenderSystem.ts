@@ -20,7 +20,7 @@ import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { ViewRect } from "../common";
+import { MeshParams, PointStringParams, PolylineParams, ViewRect } from "../common";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
@@ -28,9 +28,6 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { PointStringParams } from "./primitives/PointStringParams";
-import { PolylineParams } from "./primitives/PolylineParams";
-import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { CreateRenderMaterialArgs } from "./RenderMaterial";
@@ -39,6 +36,9 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { createMeshParams } from "./primitives/VertexTable";
+import { createPointStringParams } from "./primitives/PointStringParams";
+import { createPolylineParams } from "./primitives/PolylineParams";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -353,17 +353,17 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    const params = MeshParams.create(args, this.maxTextureSize);
+    const params = createMeshParams(args, this.maxTextureSize);
     return this.createMesh(params, instances);
   }
 
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams = PointStringParams.create(args);
+      const pointStringParams = createPointStringParams(args);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
-      const polylineParams = PolylineParams.create(args);
+      const polylineParams = createPolylineParams(args);
       return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
     }
   }

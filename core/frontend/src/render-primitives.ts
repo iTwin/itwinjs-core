@@ -19,7 +19,6 @@ export * from "./render/primitives/Polyface";
 export * from "./render/primitives/PolylineParams";
 export * from "./render/primitives/Primitives";
 export * from "./render/primitives/Strokes";
-export * from "./render/primitives/SurfaceParams";
 export * from "./render/primitives/VertexKey";
 export * from "./render/primitives/VertexTable";
 export * from "./render/primitives/VertexTableSplitter";

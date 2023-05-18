@@ -12,16 +12,15 @@ import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { ViewRect } from "../common";
+import {
+  MeshParams, PointStringParams, PolylineParams, ViewRect,
+} from "../common";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { PointStringParams } from "./primitives/PointStringParams";
-import { PolylineParams } from "./primitives/PolylineParams";
-import { MeshParams } from "./primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";

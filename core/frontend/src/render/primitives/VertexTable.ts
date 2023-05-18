@@ -11,10 +11,11 @@ import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
-import { AuxChannelTable, computeDimensions, Point3dList, VertexIndices, VertexTableParams } from "../../common";
+import {
+  AuxChannelTable, computeDimensions, createSurfaceMaterial, MeshParams, Point3dList, SurfaceMaterial, SurfaceParams, SurfaceType, VertexIndices, VertexTableParams,
+} from "../../common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
-import { EdgeParams } from "./EdgeParams";
+import { createEdgeParams } from "./EdgeParams";
 
 /**
  * Represents vertex data (position, color, normal, UV params, etc) in a rectangular array.
@@ -118,47 +119,30 @@ export interface VertexTableWithIndices {
   material?: SurfaceMaterial;
 }
 
-/**
- * Describes mesh geometry to be submitted to the rendering system.
- * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.
- * The surface and edges all refer to the same vertex table.
- */
-export class MeshParams {
-  public readonly vertices: VertexTable;
-  public readonly surface: SurfaceParams;
-  public edges?: EdgeParams;
-  public readonly isPlanar: boolean;
-  public readonly auxChannels?: AuxChannelTable;
+export function createMeshParams(args: MeshArgs, maxDimension: number): MeshParams {
+  const builder = createMeshBuilder(args);
+  const vertices = VertexTable.buildFrom(builder, args.colors, args.features, maxDimension);
 
-  /** Directly construct a MeshParams. The MeshParams takes ownership of all input data. */
-  public constructor(vertices: VertexTable, surface: SurfaceParams, edges?: EdgeParams, isPlanar?: boolean, auxChannels?: AuxChannelTable) {
-    this.vertices = vertices;
-    this.surface = surface;
-    this.edges = edges;
-    this.isPlanar = !!isPlanar;
-    this.auxChannels = auxChannels;
-  }
+  const surfaceIndices = VertexIndices.fromArray(args.vertIndices);
 
-  /** Construct from a MeshArgs. */
-  public static create(args: MeshArgs, maxDimension: number): MeshParams {
-    const builder = createMeshBuilder(args);
-    const vertices = VertexTable.buildFrom(builder, args.colors, args.features, maxDimension);
+  const surface: SurfaceParams = {
+    type: builder.type,
+    indices: surfaceIndices,
+    fillFlags: args.fillFlags,
+    hasBakedLighting: true === args.hasBakedLighting,
+    textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
+    material: createSurfaceMaterial(args.material),
+  };
 
-    const surfaceIndices = VertexIndices.fromArray(args.vertIndices);
-
-    const surface: SurfaceParams = {
-      type: builder.type,
-      indices: surfaceIndices,
-      fillFlags: args.fillFlags,
-      hasBakedLighting: true === args.hasBakedLighting,
-      textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
-      material: createSurfaceMaterial(args.material),
-    };
-
-    const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices, maxDimension) : undefined;
-    const edges = EdgeParams.fromMeshArgs(args);
-    return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
-  }
+  const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices, maxDimension) : undefined;
+  const edges = createEdgeParams(args);
+  return {
+    vertices,
+    surface,
+    edges,
+    isPlanar: !!args.isPlanar,
+    auxChannels: channels,
+  };
 }
 
 /** Builds a VertexTable from some data type supplying the vertex data. */

@@ -16,9 +16,9 @@ import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primit
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { MeshParams } from "../../../render/primitives/VertexTable";
 import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
+import { createMeshParams } from "../../../render/primitives/VertexTable";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
@@ -406,7 +406,7 @@ describe("Mesh Builder Tests", () => {
     function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
       const args = mesh.toMeshArgs()!;
       expect(args).not.to.be.undefined;
-      const meshParams = MeshParams.create(args, IModelApp.renderSystem.maxTextureSize);
+      const meshParams = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
       expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);

@@ -13,7 +13,7 @@ import {
 import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
-import { SurfaceType } from "../../render/primitives/SurfaceParams";
+import { SurfaceType } from "../render/primitives/SurfaceParams";
 
 /* eslint-disable no-restricted-syntax */
 

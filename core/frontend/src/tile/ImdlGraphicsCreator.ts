@@ -19,8 +19,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { createSurfaceMaterial } from "../render/primitives/SurfaceParams";
-import { AuxChannelTable, VertexIndices } from "../common";
+import { AuxChannelTable, createSurfaceMaterial, VertexIndices } from "../common";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal

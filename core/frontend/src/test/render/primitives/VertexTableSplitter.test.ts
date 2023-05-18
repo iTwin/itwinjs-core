@@ -13,9 +13,9 @@ import {
   IModelApp,
   MockRender,
 } from "../../../core-frontend";
+import { EdgeParams, MeshParams, PointStringParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline } from "../../../common";
 import {
-  ComputeAnimationNodeId, EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, SegmentEdgeParams, splitMeshParams, splitPointStringParams,
-  SurfaceType, TesselatedPolyline, VertexTable,
+  ComputeAnimationNodeId, createMeshParams, createPointStringParams, IndexBuffer, MeshArgs, PolylineArgs, splitMeshParams, splitPointStringParams, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -78,7 +78,7 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     polylines: [ new PolylineData([...new Array<number>(points.length).keys()], points.length) ],
   };
 
-  const params = PointStringParams.create(args)!;
+  const params = createPointStringParams(args)!;
   expect(params).not.to.be.undefined;
   return params;
 }
@@ -206,7 +206,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     features: makeFeatureIndex(mesh.points),
   };
 
-  return MeshParams.create(args, IModelApp.renderSystem.maxTextureSize);
+  return createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
 }
 
 function expectMesh(params: MeshParams, mesh: TriMesh): void {

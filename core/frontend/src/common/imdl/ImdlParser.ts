@@ -19,13 +19,14 @@ import {
   ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
-import { isValidSurfaceType, SurfaceMaterial } from "../../render/primitives/SurfaceParams";
+import { isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../../render/primitives/VertexTableSplitter";
 import { AnimationNodeId } from "../../render/GraphicBranch";
-import { EdgeParams } from "../../render/primitives/EdgeParams";
-import { MeshParams, VertexTable } from "../../render/primitives/VertexTable";
+import { EdgeParams } from "../render/primitives/EdgeParams";
+import { MeshParams } from "../render/primitives/MeshParams";
+import { VertexTableParams } from "../render/primitives/VertexTableParams";
 import { CreateRenderMaterialArgs } from "../../render/RenderMaterial";
 import { VertexIndices } from "../render/primitives/VertexIndices";
 
@@ -204,16 +205,16 @@ class Material extends RenderMaterial {
 }
 
 /** @internal */
-export function toVertexTable(imdl: Imdl.VertexTable): VertexTable {
-  return new VertexTable({
+export function toVertexTable(imdl: Imdl.VertexTable): VertexTableParams {
+  return {
     ...imdl,
     uniformColor: undefined !== imdl.uniformColor ? ColorDef.fromJSON(imdl.uniformColor) : undefined,
     qparams: QParams3d.fromJSON(imdl.qparams),
     uvParams: imdl.uvParams ? QParams2d.fromJSON(imdl.uvParams) : undefined,
-  });
+  };
 }
 
-function fromVertexTable(table: VertexTable): Imdl.VertexTable {
+function fromVertexTable(table: VertexTableParams): Imdl.VertexTable {
   return {
     ...table,
     uniformColor: table.uniformColor?.toJSON(),
