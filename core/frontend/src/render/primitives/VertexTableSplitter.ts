@@ -9,11 +9,9 @@
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
 import {
-  calculateEdgeTableParams, computeDimensions, createSurfaceMaterial, EdgeParams, EdgeTable, IndexedEdgeParams, MeshParams, PointStringParams,
+  calculateEdgeTableParams, computeDimensions, createSurfaceMaterial, EdgeParams, EdgeTable, IndexedEdgeParams, MaterialParams, MeshParams, PointStringParams,
   PolylineParams, SurfaceMaterial, TesselatedPolyline, VertexIndices, VertexTable,
 } from "../../common";
-import { VertexTableBuilder } from "./VertexTableBuilder";
-import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 
 /** @internal */
 export interface VertexTableWithIndices {
@@ -161,7 +159,7 @@ class ColorTableRemapper {
 
 type MaterialAtlasTable = Uint32Array | SurfaceMaterial | undefined;
 
-type CreateRenderMaterial = (args: CreateRenderMaterialArgs) => RenderMaterial | undefined;
+type CreateRenderMaterial = (args: MaterialParams) => RenderMaterial | undefined;
 
 class MaterialAtlasRemapper {
   private readonly _remappedIndices = new Map<number, number>();
@@ -212,7 +210,7 @@ class MaterialAtlasRemapper {
   private materialFromAtlasEntry(entry: Uint32Array): SurfaceMaterial | undefined {
     const rgbOverridden = (entry[1] & 0x1000000) !== 0;
     const alphaOverridden = (entry[1] & 0x2000000) !== 0;
-    const args: CreateRenderMaterialArgs = {
+    const args: MaterialParams = {
       alpha: alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined,
       diffuse: {
         color: rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined,
