@@ -38,8 +38,8 @@ jobs:
           #   - All changelogs to remove duplicates from master
           #     - They would be duplicated if the same PR is backported to the release branch
           git add .
+          git clean
 
-          git cherry-pick --continue
           commitMessage=$(git log --format=%B -n 1 a3080bd5a29ce240bf623626f9a2aa1d901537d7)
           git commit -m "$commitMessage Changelogs"
 
