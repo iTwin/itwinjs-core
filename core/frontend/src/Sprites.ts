@@ -9,8 +9,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 import { ImageSource } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
+import { FrontendLoggerCategory, imageElementFromImageSource, imageElementFromUrl  } from "./common";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";

@@ -17,8 +17,9 @@ import {
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
+import {
+  FrontendLoggerCategory, getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, TextureImageSource, tryImageElementFromUrl,
+} from "../common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -32,7 +33,6 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
-import { TextureImageSource } from "../render/RenderTexture";
 import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,

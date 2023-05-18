@@ -10,7 +10,7 @@ import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@i
 import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
-import { imageElementFromImageSource } from "../../ImageUtil";
+import { imageElementFromImageSource, TextureCacheKey } from "../../common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
@@ -33,7 +33,7 @@ import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs } from "../CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";

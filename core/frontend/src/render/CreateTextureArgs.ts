@@ -6,15 +6,9 @@
  * @module Rendering
  */
 
-import { Gradient, ImageBuffer, ImageSource, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ImageSource, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
-
-/** A key that uniquely identifies a [RenderTexture]($common) in the context of an [[IModelConnection]], used for caching.
- * @see [[TextureCacheOwnership]].
- * @public
- * @extensions
- */
-export type TextureCacheKey = string | Gradient.Symb;
+import { TextureCacheKey, TextureImage } from "../common";
 
 /** Specifies that a [RenderTexture]($common) should be kept in memory until the corresponding [[IModelConnection]] is closed, at
  * which point it will be disposed.
@@ -26,7 +20,7 @@ export interface TextureCacheOwnership {
   /** The iModel on which the texture will be cached. */
   iModel: IModelConnection;
   /** The key uniquely identifying the texture amongst all textures cached on the iModel. */
-  key: string | Gradient.Symb;
+  key: TextureCacheKey;
 }
 
 /** Describes the ownership of a [RenderTexture]($common), which controls when the texture is disposed of.
@@ -40,27 +34,6 @@ export interface TextureCacheOwnership {
  * @extensions
  */
 export type TextureOwnership = TextureCacheOwnership | "external";
-
-/** An object from which a [RenderTexture]($common) can be created.
- * @see [[TextureImage.source]]
- * @public
- * @extensions
- */
-export type TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap; // ###TODO | HTMLCanvasElement etc
-
-/** Describes the image from which to create a [RenderTexture]($common).
- * @see [[CreateTextureArgs.image]]
- * @public
- * @extensions
- */
-export interface TextureImage {
-  /** The object that supplies the texture image. */
-  source: TextureImageSource;
-  /** Describes the transparency of the image. If this information can be supplied, it can improve performance.
-   * If this information is not available at the call site, omit it - it defaults to "mixed" if it cannot be inferred from the source.
-   */
-  transparency?: TextureTransparency;
-}
 
 /** Arguments supplied to [[RenderSystem.createTexture]] to create a [RenderTexture]($common).
  * @public

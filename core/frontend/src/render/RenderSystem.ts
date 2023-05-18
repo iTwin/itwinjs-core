@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { imageElementFromImageSource } from "../ImageUtil";
+import { imageElementFromImageSource, TextureCacheKey } from "../common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
@@ -37,7 +37,7 @@ import { CreateRenderMaterialArgs } from "./RenderMaterial";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 
 /* eslint-disable no-restricted-syntax */

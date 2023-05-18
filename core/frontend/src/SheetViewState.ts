@@ -33,7 +33,7 @@ import { OffScreenViewport, Viewport } from "./Viewport";
 import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common";
 
 // cSpell:ignore ovrs
 

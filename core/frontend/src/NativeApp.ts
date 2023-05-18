@@ -13,7 +13,7 @@ import {
   RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
 import { ProgressCallback } from "./request/Request";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "./common";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 import { OnDownloadProgress } from "./BriefcaseConnection";
