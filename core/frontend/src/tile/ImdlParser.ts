@@ -62,8 +62,10 @@ class ParserWithTimeline implements ImdlParser {
   public release(): void {
     assert(this.refCount > 0);
     --this.refCount;
-    if (this.refCount === 0)
+    if (this.refCount === 0) {
       parsersWithTimelines.delete(this._timeline);
+      // ###TODO terminate worker
+    }
   }
 }
 
