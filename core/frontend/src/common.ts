@@ -22,5 +22,6 @@ export * from "./common/render/primitives/PolylineParams";
 export * from "./common/render/primitives/SurfaceParams";
 export * from "./common/render/primitives/VertexIndices";
 export * from "./common/render/primitives/VertexTable";
+export * from "./common/render/primitives/VertexTableSplitter";
 export * from "./common/Texture";
 export * from "./common/ViewRect";

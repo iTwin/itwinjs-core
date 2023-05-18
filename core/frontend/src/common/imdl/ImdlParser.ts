@@ -22,7 +22,7 @@ import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
 import { isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../../render/primitives/VertexTableSplitter";
+import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../../common";
 import { AnimationNodeId } from "../render/AnimationNodeId";
 import { EdgeParams } from "../render/primitives/EdgeParams";
 import { MeshParams } from "../render/primitives/MeshParams";

@@ -21,4 +21,3 @@ export * from "./render/primitives/Primitives";
 export * from "./render/primitives/Strokes";
 export * from "./render/primitives/VertexKey";
 export * from "./render/primitives/VertexTableBuilder";
-export * from "./render/primitives/VertexTableSplitter";

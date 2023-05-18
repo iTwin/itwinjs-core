@@ -13,9 +13,11 @@ import {
   IModelApp,
   MockRender,
 } from "../../../core-frontend";
-import { EdgeParams, MeshParams, PointStringParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline, VertexTable } from "../../../common";
 import {
-  ComputeAnimationNodeId, createMeshParams, createPointStringParams, IndexBuffer, MeshArgs, PolylineArgs, splitMeshParams, splitPointStringParams,
+  ComputeAnimationNodeId, EdgeParams, IndexBuffer, MeshParams, PointStringParams, SegmentEdgeParams, splitMeshParams, splitPointStringParams, SurfaceType, TesselatedPolyline, VertexTable,
+} from "../../../common";
+import {
+  createMeshParams, createPointStringParams, MeshArgs, PolylineArgs,
 } from "../../../render-primitives";
 
 interface Point {
