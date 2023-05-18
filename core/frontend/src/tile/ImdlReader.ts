@@ -69,6 +69,7 @@ export interface ImdlReaderCreateArgs {
 }
 
 export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocument?: (parseOpts: ImdlParserOptions) => Promise<ImdlModel.Document | ImdlParseError> }): Promise<ImdlReaderResult> {
+  const isCanceled = args.isCanceled ?? (() => false);
   let content;
   try {
     content = decodeTileContentDescription({
@@ -98,7 +99,9 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
   };
 
   const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument(parseOpts);
-  if (typeof document === "number")
+  if (isCanceled())
+    return { isLeaf: true, readStatus: TileReadStatus.Canceled };
+  else if (typeof document === "number")
     return { isLeaf: true, readStatus: document };
 
   let graphic = await decodeImdlGraphics({
@@ -108,7 +111,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     isCanceled: args.isCanceled,
   });
 
-  if (args.isCanceled && args.isCanceled())
+  if (isCanceled())
     return { isLeaf: true, readStatus: TileReadStatus.Canceled };
 
   if (graphic && false !== args.options) {
