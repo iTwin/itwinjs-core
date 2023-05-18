@@ -851,6 +851,7 @@ export namespace CloudSqlite {
         set accessToken(val: string);
         acquireWriteLock(user: string): void;
         get alias(): string;
+        get baseUri(): string;
         get blockSize(): number;
         // (undocumented)
         readonly cache?: CloudCache;
@@ -869,7 +870,7 @@ export namespace CloudSqlite {
         get hasWriteLock(): boolean;
         initializeContainer(opts?: {
             checksumBlockNames?: boolean;
-            blockSize?: number;
+            blockSize: number;
         }): void;
         get isConnected(): boolean;
         get isPublic(): boolean;
@@ -889,6 +890,7 @@ export namespace CloudSqlite {
         // @internal
         queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
         releaseWriteLock(): void;
+        get storageType(): string;
         uploadChanges(): Promise<void>;
     }
     // (undocumented)
@@ -914,7 +916,7 @@ export namespace CloudSqlite {
         isPublic?: boolean;
         logId?: string;
         secure?: boolean;
-        storageType: "azure" | "google" | "aws";
+        storageType: "azure" | "google";
         writeable?: boolean;
     }
     export interface CreateCloudCacheArg {
