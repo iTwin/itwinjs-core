@@ -68,7 +68,7 @@ export namespace AzuriteTest {
     export const initializeContainers = async (containers: TestContainer[]) => {
       for (const container of containers) {
         await createAzContainer(container);
-        container.initializeContainer({ checksumBlockNames: true });
+        container.initializeContainer({ checksumBlockNames: true, blockSize: 64 * 1024 });
       }
     };
     export const makeEmptyDir = (name: LocalDirName) => {
