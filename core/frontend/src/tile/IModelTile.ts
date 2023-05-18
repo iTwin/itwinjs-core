@@ -112,21 +112,15 @@ export class IModelTile extends Tile {
     if (format !== TileFormat.IModel)
       return content;
 
-    const tree = this.iModelTree;
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const { iModel, modelId, is3d, containsTransformNodes } = tree;
     try {
-      const reader = ImdlReader.create({
+      content = await this.iModelTree.decoder.decode({
         stream: streamBuffer,
-        type: tree.batchType,
-        loadEdges: false !== tree.edgeOptions,
         options: { tileId: this.contentId },
-        timeline: tree.timeline,
-        iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
+        system,
+        isCanceled,
+        sizeMultiplier,
       });
-
-      content = await reader.read();
-      return content;
     } catch {
       //
     }

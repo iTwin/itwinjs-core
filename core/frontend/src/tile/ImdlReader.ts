@@ -17,7 +17,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
-import { convertFeatureTable, ImdlTimeline, parseImdlDocument } from "../common";
+import { convertFeatureTable, ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common";
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -68,7 +68,7 @@ export interface ImdlReaderCreateArgs {
   timeline?: ImdlTimeline;
 }
 
-async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlReaderResult> {
+export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocument?: (parseOpts: ImdlParserOptions) => Promise<ImdlModel.Document | ImdlParseError> }): Promise<ImdlReaderResult> {
   let content;
   try {
     content = decodeTileContentDescription({
@@ -87,7 +87,7 @@ async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlReaderRe
   }
 
   args.stream.reset();
-  const document = parseImdlDocument({
+  const parseOpts: ImdlParserOptions = {
     stream: args.stream,
     batchModelId: args.modelId,
     is3d: args.is3d,
@@ -95,8 +95,9 @@ async function readImdlContent(args: ImdlReaderCreateArgs): Promise<ImdlReaderRe
     omitEdges: false === args.loadEdges,
     timeline: args.timeline,
     createUntransformedRootNode: args.containsTransformNodes,
-  });
+  };
 
+  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument(parseOpts);
   if (typeof document === "number")
     return { isLeaf: true, readStatus: document };
 

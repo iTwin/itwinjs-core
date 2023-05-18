@@ -12,13 +12,15 @@ import type { IModelConnection } from "../IModelConnection";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import type { ImdlTimeline } from "../common";
-import { ImdlReader, ImdlReaderResult } from "./internal";
+import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "./internal";
 
 export interface ImdlDecodeArgs {
   stream: ByteStream;
+  system: RenderSystem;
   isLeaf?: boolean;
   sizeMultiplier?: number;
   options?: BatchOptions | false;
+  isCanceled?: () => boolean;
 }
 
 export interface ImdlDecoder {
@@ -30,26 +32,25 @@ export interface AcquireImdlDecoderArgs {
   iModel: IModelConnection;
   batchModelId: Id64String;
   is3d: boolean;
-  system: RenderSystem;
   type?: BatchType;
   omitEdges?: boolean;
-  isCanceled?: () => boolean;
   containsTransformNodes?: boolean;
   timeline?: ImdlTimeline;
+  noWorker?: boolean;
 }
 
 export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder {
+  const parser = acquireImdlParser(args);
   return {
-    release: () => undefined,
+    release: () => parser.release(),
     decode: async (decodeArgs) => {
-      const reader = ImdlReader.create({
+      return readImdlContent({
         ...args,
         ...decodeArgs,
         modelId: args.batchModelId,
         loadEdges: !args.omitEdges,
+        parseDocument: (parserOpts) => parser.parse(parserOpts),
       });
-
-      return reader.read();
     },
   };
 }
