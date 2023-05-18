@@ -12,17 +12,10 @@ import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
 import {
-  AuxChannelTable, computeDimensions, createSurfaceMaterial, MeshParams, Point3dList, SurfaceMaterial, SurfaceParams, SurfaceType, VertexIndices, VertexTableParams,
+  AuxChannelTable, computeDimensions, createSurfaceMaterial, MeshParams, Point3dList, SurfaceParams, SurfaceType, VertexIndices, VertexTableParams,
 } from "../../common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
-
-/** @internal */
-export interface VertexTableWithIndices {
-  vertices: VertexTableParams;
-  indices: VertexIndices;
-  material?: SurfaceMaterial;
-}
 
 export function createMeshParams(args: MeshArgs, maxDimension: number): MeshParams {
   const builder = createMeshBuilder(args);
