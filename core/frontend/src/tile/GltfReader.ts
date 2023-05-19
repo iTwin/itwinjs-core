@@ -132,11 +132,6 @@ class GltfBufferView {
   }
 }
 
-/* -----------------------------------
- * To restore the use of web workers to decode jpeg, locate and uncomment the three sections by searching for "webworker".
-  import { WorkerOperation, WebWorkerManager } from "../WebWorkerManager";
-  ------------------------------------ */
-
 /** The result of [[GltfReader.read]].
  * @internal
  */
@@ -263,17 +258,6 @@ export class GltfMeshData {
  * @internal
  */
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
-
-/* -----------------------------------
-   This is part of the webworker option.
-
-  // input is Uint8Array, the result is an ImageBitMap.
-  class ImageDecodeWorkerOperation extends WorkerOperation {
-    constructor(imageBytes: ArrayBuffer, imageMimeType: string) {
-      super("imageBytesToImageBitmap", [imageBytes, imageMimeType], [imageBytes]);
-    }
-  }
--------------------------------------- */
 
 const emptyDict = { };
 
@@ -430,17 +414,6 @@ export abstract class GltfReader {
 
   protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: TextureImageSource }> { return this._glTF.images ?? emptyDict; }
   protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> { return this._glTF.buffers ?? emptyDict; }
-
-  /* -----------------------------------
-  private static _webWorkerManager: WebWorkerManager;
-
-  private static get webWorkerManager() {
-    if (!GltfReader._webWorkerManager) {
-      GltfReader._webWorkerManager = new WebWorkerManager("v" + BUILD_SEMVER + "/frontend-webworker.js", 4);
-    }
-    return GltfReader._webWorkerManager;
-  }
-  ------------------------------------- */
 
   /** Asynchronously deserialize the tile data and return the result. */
   public abstract read(): Promise<GltfReaderResult>;
