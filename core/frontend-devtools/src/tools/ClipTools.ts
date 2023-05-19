@@ -7,8 +7,9 @@
  * @module Tools
  */
 
-import {
-  ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColorProps, Viewport, Tool, ExtensionHost
+import type {
+  ClipStyleProps, Viewport} from "@itwin/core-extension";
+import { ColorByName, ColorDef, ExtensionHost, LinePixels, RenderMode, RgbColor, Tool,
 } from "@itwin/core-extension";
 import { } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";

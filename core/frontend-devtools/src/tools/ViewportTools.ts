@@ -8,9 +8,11 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { Camera, ColorDef, ExtensionHost, Hilite } from "@itwin/core-extension";
+import type { Camera} from "@itwin/core-extension";
+import { ColorDef, ExtensionHost, Hilite } from "@itwin/core-extension";
+import type { FlashSettingsOptions, Viewport} from "@itwin/core-extension";
 import {
-  DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, TileBoundingBoxes, Tool, Viewport,
+  DrawingViewState, FlashMode, FlashSettings, TileBoundingBoxes, Tool,
 } from "@itwin/core-extension";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";

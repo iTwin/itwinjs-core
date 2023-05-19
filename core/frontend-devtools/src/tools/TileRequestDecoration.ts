@@ -8,7 +8,8 @@
  */
 
 import { ColorDef, ExtensionHost, LinePixels } from "@itwin/core-extension";
-import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@itwin/core-extension";
+import type { DecorateContext, GraphicBuilder, TileTree, Viewport } from "@itwin/core-extension";
+import { GraphicType, IModelApp, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 class TileRequestDecoration {

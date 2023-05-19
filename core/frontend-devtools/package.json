@@ -55,6 +55,10 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended",
+    "rules": {
+      "no-duplicate-imports": "off",
+      "@typescript-eslint/consistent-type-imports": "error"
+    }
   }
 }

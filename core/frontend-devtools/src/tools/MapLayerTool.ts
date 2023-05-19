@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 import { BaseMapLayerSettings, ColorDef, ExtensionHost, ModelMapLayerSettings } from "@itwin/core-extension";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-extension";
 import { parseBoolean } from "./parseBoolean";

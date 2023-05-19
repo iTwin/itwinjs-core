@@ -7,7 +7,8 @@
  * @module Widgets
  */
 
-import { Viewport, Target, PerformanceMetrics } from "@itwin/core-extension";
+import type { Target, Viewport} from "@itwin/core-extension";
+import { PerformanceMetrics } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Displays average frames-per-second.
@@ -57,7 +58,7 @@ export class FpsTracker {
   }
 
   private updateFPS(): void {
-    const metrics = this._metrics!;
+    const metrics = this._metrics;
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
     this._label.innerText = `FPS: ${fps}`;
   }

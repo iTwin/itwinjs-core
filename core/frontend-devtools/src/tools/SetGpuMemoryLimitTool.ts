@@ -6,7 +6,8 @@
  * @module Tools
  */
 
-import { GpuMemoryLimit, IModelApp, Tool } from "@itwin/core-extension";
+import type { GpuMemoryLimit} from "@itwin/core-extension";
+import { IModelApp, Tool } from "@itwin/core-extension";
 
 /** Adjust the value of [TileAdmin.gpuMemoryLimit]($frontend). This controls how much GPU memory is allowed to be consumed
  * by tile graphics before the system starts discarding the graphics for the least recently drawn tiles.

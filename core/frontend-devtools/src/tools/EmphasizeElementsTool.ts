@@ -7,7 +7,8 @@
  */
 
 import { Id64 } from "@itwin/core-bentley";
-import { EmphasizeElements, QueryVisibleFeaturesOptions, ScreenViewport, Tool, ColorDef, ExtensionHost } from "@itwin/core-extension";
+import type { QueryVisibleFeaturesOptions, ScreenViewport} from "@itwin/core-extension";
+import { ColorDef, EmphasizeElements, ExtensionHost, Tool } from "@itwin/core-extension";
 import { parseArgs } from "./parseArgs";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.

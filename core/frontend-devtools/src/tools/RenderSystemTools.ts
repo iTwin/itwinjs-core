@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@itwin/core-extension";
+import type { RenderSystemDebugControl} from "@itwin/core-extension";
+import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderSystemDebugControl obtained from the ExtensionHost's RenderSystem.

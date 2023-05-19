@@ -8,10 +8,11 @@
  */
 
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
-import {
-  ElementLoadOptions, RenderSchedule, RenderTimelineProps,
+import type {
+  ElementLoadOptions, RenderTimelineProps} from "@itwin/core-extension";
+import { RenderSchedule,
 } from "@itwin/core-extension";
-import { Viewport } from "@itwin/core-extension";
+import type { Viewport } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
@@ -84,7 +85,7 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
         for (const elem of model.elementTimelines) {
           const elemIds = typeof elem.elementIds === "string" ? CompressedId64Set.decompressArray(elem.elementIds) : elem.elementIds;
           if (this._countElementIds)
-            elem.elementIds = elemIds.length as any;
+            elem.elementIds = elemIds.length ;
           else
             elem.elementIds = elemIds;
         }

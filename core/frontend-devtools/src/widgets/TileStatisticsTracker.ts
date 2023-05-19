@@ -7,7 +7,8 @@
  * @module Widgets
  */
 
-import { ExtensionHost, Viewport, TileAdmin } from "@itwin/core-extension";
+import type { TileAdmin, Viewport } from "@itwin/core-extension";
+import { ExtensionHost } from "@itwin/core-extension";
 import { createButton } from "../ui/Button";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNumericInput } from "../ui/NumericInput";

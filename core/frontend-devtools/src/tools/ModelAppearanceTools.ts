@@ -7,8 +7,10 @@
  * @module Tools
  */
 
-import { ExtensionHost, FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-extension";
-import { NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@itwin/core-extension";
+import type { FeatureAppearanceProps, RgbColorProps } from "@itwin/core-extension";
+import { ExtensionHost, FeatureAppearance, LinePixels } from "@itwin/core-extension";
+import type { Viewport } from "@itwin/core-extension";
+import { NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool } from "@itwin/core-extension";
 import { parseBoolean } from "./parseBoolean";
 
 function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: FeatureAppearanceProps, name: string): boolean {

@@ -7,10 +7,13 @@
  * @module Tools
  */
 
-import { Map4d, Point3d } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, ExtensionHost, Frustum, LinePixels, Npc } from "@itwin/core-extension";
+import type { Map4d} from "@itwin/core-geometry";
+import { Point3d } from "@itwin/core-geometry";
+import type { Frustum} from "@itwin/core-extension";
+import { ColorByName, ColorDef, ExtensionHost, LinePixels, Npc } from "@itwin/core-extension";
+import type { DecorateContext, Decorator, GraphicBuilder, Viewport, ViewState, ViewState3d} from "@itwin/core-extension";
 import {
-  CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, Tool, Viewport, ViewState, ViewState3d,
+  CoordSystem, GraphicType, Tool,
 } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 

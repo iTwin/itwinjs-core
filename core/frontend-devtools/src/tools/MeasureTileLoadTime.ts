@@ -8,7 +8,8 @@
  */
 
 import { StopWatch } from "@itwin/core-bentley";
-import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-extension";
+import type { Viewport } from "@itwin/core-extension";
+import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-extension";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;

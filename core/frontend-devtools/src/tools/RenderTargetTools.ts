@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { ExtensionHost, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@itwin/core-extension";
+import type { RenderTargetDebugControl, ScreenViewport} from "@itwin/core-extension";
+import { ExtensionHost, PrimitiveVisibility, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.

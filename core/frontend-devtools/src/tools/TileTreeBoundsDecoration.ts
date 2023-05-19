@@ -8,7 +8,8 @@
  */
 
 import { ColorDef, ExtensionHost, LinePixels } from "@itwin/core-extension";
-import { DecorateContext, GraphicType, TileTreeReference, Tool } from "@itwin/core-extension";
+import type { DecorateContext, TileTreeReference} from "@itwin/core-extension";
+import { GraphicType, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 class TreeDecoration {

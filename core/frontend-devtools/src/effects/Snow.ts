@@ -8,9 +8,11 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
-import { ExtensionHost, RenderTexture, TextureTransparency } from "@itwin/core-extension";
-import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
+import type { RenderTexture} from "@itwin/core-extension";
+import { ExtensionHost, TextureTransparency } from "@itwin/core-extension";
+import type {
+  DecorateContext, Decorator, ParticleProps, Viewport} from "@itwin/core-extension";
+import { GraphicType, imageElementFromUrl, ParticleCollectionBuilder, Tool,
 } from "@itwin/core-extension";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";

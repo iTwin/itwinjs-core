@@ -6,7 +6,8 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-extension";
+import type { ScreenSpaceEffectBuilder} from "@itwin/core-extension";
+import { Tool, UniformType, VaryingType } from "@itwin/core-extension";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 

@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, MessageBoxIconType, MessageBoxType, Tool } from "@itwin/core-extension";
+import { ExtensionHost, MessageBoxIconType, MessageBoxType, Tool } from "@itwin/core-extension";
 
 /** Queries the client's level of compatibility with the rendering system and outputs it to NotificationManager.
  * @beta

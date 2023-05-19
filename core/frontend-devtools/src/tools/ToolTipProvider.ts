@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { ExtensionHost, HitDetail, Tool, ToolTipProvider } from "@itwin/core-extension";
+import type { HitDetail, ToolTipProvider } from "@itwin/core-extension";
+import { ExtensionHost, Tool } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 
 /** Augments tooltips with detailed information useful for debugging.

@@ -6,7 +6,8 @@
  * @module Widgets
  */
 
-import { ExtensionHost, IModelConnection, Tile } from "@itwin/core-extension";
+import type { IModelConnection, Tile } from "@itwin/core-extension";
+import { ExtensionHost } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 import { formatMemory } from "./MemoryTracker";
 

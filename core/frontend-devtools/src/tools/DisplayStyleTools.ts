@@ -7,12 +7,14 @@
  * @module Tools
  */
 
+import type { DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions,
+  SubCategoryAppearance, ViewFlagsProperties} from "@itwin/core-extension";
 import {
-  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere,
-  SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
+  ColorDef, RenderMode, SkyCube, SkySphere, SubCategoryOverride, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-extension";
-import {
-  DisplayStyle3dState, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport, ExtensionHost
+import type {
+  DisplayStyle3dState, Viewport} from "@itwin/core-extension";
+import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool,
 } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";

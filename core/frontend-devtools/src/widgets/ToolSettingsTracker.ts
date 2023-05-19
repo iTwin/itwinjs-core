@@ -8,7 +8,8 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { ExtensionHost, ScreenViewport, ToolSettings, Viewport } from "@itwin/core-extension";
+import type { Viewport } from "@itwin/core-extension";
+import { ExtensionHost, ScreenViewport, ToolSettings } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNestedMenu } from "../ui/NestedMenu";
 import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput";

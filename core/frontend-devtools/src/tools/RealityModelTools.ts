@@ -7,8 +7,10 @@
  * @module Tools
  */
 
-import { ExtensionHost, FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-extension";
-import { getCesiumAssetUrl, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-extension";
+import type { FeatureAppearanceProps, RgbColorProps } from "@itwin/core-extension";
+import { ExtensionHost, FeatureAppearance } from "@itwin/core-extension";
+import type { Viewport } from "@itwin/core-extension";
+import { getCesiumAssetUrl, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";

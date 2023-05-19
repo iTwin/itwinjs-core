@@ -8,10 +8,12 @@
  */
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
+import type { TileTree, TileTreeOwner, Viewport} from "@itwin/core-extension";
 import {
-  DisclosedTileTreeSet, ExtensionHost, RenderMemory, TileTree, TileTreeOwner, Viewport,
+  DisclosedTileTreeSet, ExtensionHost, RenderMemory,
 } from "@itwin/core-extension";
-import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
+import type { ComboBoxEntry} from "../ui/ComboBox";
+import { createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
   const tree = owner.tileTree;

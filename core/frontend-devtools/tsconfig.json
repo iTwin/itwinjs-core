@@ -3,7 +3,4 @@
   "compilerOptions": {
     "outDir": "./lib"
   },
-  "files": [
-    "package.json"
-  ]
 }

@@ -7,10 +7,12 @@
  * @module Widgets
  */
 
-import { MessageBoxIconType, MessageBoxType, ParseAndRunResult, ExtensionHost } from "@itwin/core-extension";
+import { ExtensionHost, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-extension";
 import { createButton } from "../ui/Button";
-import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
-import { createTextBox, TextBox } from "../ui/TextBox";
+import type { DataList, DataListEntry } from "../ui/DataList";
+import { appendDataListEntries, createDataList } from "../ui/DataList";
+import type { TextBox } from "../ui/TextBox";
+import { createTextBox } from "../ui/TextBox";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];

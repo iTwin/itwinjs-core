@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64Arg, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { Id64Arg} from "@itwin/core-bentley";
+import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
