@@ -28,6 +28,7 @@ export class WorkerProxy {
   private readonly _worker: Worker;
   private _tasks = new Map<number, Task>();
   private _curMsgId = 0;
+  private _terminated = false;
 
   public constructor(workerJsPath: string) {
     this._worker = new Worker(workerJsPath);
@@ -58,5 +59,11 @@ export class WorkerProxy {
       this._tasks.set(msgId, { resolve, reject });
       this._worker.postMessage({ operation, payload, msgId }, transfer ?? []);
     });
+  }
+
+  public terminate(): void {
+    assert(!this._terminated);
+    this._worker.terminate();
+    this._terminated = true;
   }
 }

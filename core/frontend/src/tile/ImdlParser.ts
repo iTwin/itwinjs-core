@@ -8,7 +8,10 @@
 
 import { assert, BeDuration, Dictionary } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common";
+import {
+  ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument, WorkerProxy,
+} from "../common";
+import { IModelApp } from "../IModelApp";
 
 export interface ImdlParser {
   parse(options: Omit<ImdlParserOptions, "timeline">): Promise<ImdlModel.Document | ImdlParseError>;
@@ -53,19 +56,17 @@ let defaultParserWorker: ImdlParser | undefined;
 class ParserWithTimeline implements ImdlParser {
   public refCount = 0;
   private readonly _timeline: ImdlTimeline;
+  private readonly _worker: WorkerProxy;
 
   public constructor(timeline: ImdlTimeline) {
     this._timeline = timeline;
-    // ###TODO allocate worker and post a message to set the timeline
+
+    this._worker = new WorkerProxy(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
+    this._worker.post("setTimeline", timeline);
   }
 
   public async parse(options: Omit<ImdlParserOptions, "timeline">) {
-    // ###TODO this is just a placeholder
-    await BeDuration.wait(1);
-    return parseImdlDocument({
-      ...options,
-      timeline: this._timeline, // ###TODO don't pass timeline.
-    });
+    return this._worker.execute("parse", options, [options.stream.arrayBuffer]);
   }
 
   public release(): void {
@@ -73,7 +74,7 @@ class ParserWithTimeline implements ImdlParser {
     --this.refCount;
     if (this.refCount === 0) {
       parsersWithTimelines.delete(this._timeline);
-      // ###TODO terminate worker
+      this._worker.terminate();
     }
   }
 }
