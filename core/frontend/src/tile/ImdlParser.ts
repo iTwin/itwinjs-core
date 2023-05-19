@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, Dictionary } from "@itwin/core-bentley";
+import { assert, BeDuration, Dictionary } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import { ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common";
 
@@ -56,7 +56,9 @@ class ParserWithTimeline implements ImdlParser {
   }
 
   public async parse(options: ImdlParserOptions) {
-    return Promise.resolve(parseImdlDocument(options));
+    // ###TODO this is just a placeholder
+    await BeDuration.wait(1);
+    return parseImdlDocument(options);
   }
 
   public release(): void {

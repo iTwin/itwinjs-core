@@ -25,3 +25,4 @@ export * from "./common/render/primitives/VertexTable";
 export * from "./common/render/primitives/VertexTableSplitter";
 export * from "./common/Texture";
 export * from "./common/ViewRect";
+export * from "./common/WorkerProxy";

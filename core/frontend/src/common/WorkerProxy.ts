@@ -10,24 +10,19 @@ interface Task {
   resolve: (error: Error) => void;
 }
 
-type WorkerResult = {
+export type WorkerResult = {
   msgId: number;
   result: any;
   error?: never;
 }
 
-type WorkerError = {
+export type WorkerError = {
   msgId: number;
   error: Error;
   result?: never;
 }
 
-type WorkerResponse = WorkerResult | WorkerError;
-
-type WorkerRequest = {
-  operation: string;
-  payload: any;
-}
+export type WorkerResponse = WorkerResult | WorkerError;
 
 export class WorkerProxy {
   private readonly _worker: Worker;
