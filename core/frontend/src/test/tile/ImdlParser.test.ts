@@ -122,13 +122,9 @@ describe("acquireImdlParser", () => {
   });
 });
 
-describe.only("ImdlParser", () => {
+describe("ImdlParser", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
-
-  it("transfers the array buffer to the worker and back", async () => {
-    // ###TODO
-  });
 
   it("produces an error upon invalid tile header", async () => {
     const parser = acquireImdlParser({});
@@ -150,6 +146,19 @@ describe.only("ImdlParser", () => {
       is3d: true,
       maxVertexTableSize: 4096,
     })).to.be.eventually.rejectedWith(RangeError);
+  });
+
+  it("transfers the array buffer to the worker and back", async () => {
+    const parser = acquireImdlParser({});
+    const data = new Uint8Array(12);
+    expect(data.length).to.equal(12);
+    await expect(parser.parse({
+      stream: ByteStream.fromUint8Array(data),
+      batchModelId: "0x123",
+      is3d: true,
+      maxVertexTableSize: 4096,
+    })).to.be.eventually.rejectedWith(RangeError);
+    expect(data.length).to.equal(0);
   });
 
   it("successfully parses the document", async () => {
