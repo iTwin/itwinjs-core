@@ -82,7 +82,7 @@ steps:
     parameters:
       workingDir: ${{ parameters.workingDir }}
       stagingDir: ${{ parameters.stagingDir }}
-      pipelineId: 6189 # iTwin.js/clients/iTwin.auth-clients.publish build
+      pipelineId: 9108 # iTwin.js/clients/iTwin.auth-clients.docs build
       artifactName: iTwin-Auth-Clients Docs
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
