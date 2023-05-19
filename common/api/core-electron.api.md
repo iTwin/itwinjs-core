@@ -16,9 +16,6 @@ import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 
-// @internal (undocumented)
-export const dialogChannel = "electron-dialog";
-
 // @beta
 export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 
@@ -87,6 +84,11 @@ export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptio
     storeWindowName?: string;
     titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
 }
+
+// @internal (undocumented)
+export const electronIpcStrings: {
+    readonly dialogChannel: "itwinjs-electron/dialog";
+};
 
 // @beta
 export interface WindowSizeAndPositionProps {

@@ -7,6 +7,11 @@
  */
 
 /** @internal */
+export const rpcOverIpcStrings = {
+  channelName: "itwinjs-core/rpc-over-ipc",
+} as const;
+
+/** @internal */
 export interface InterceptedRpcRequest {
   definition: { interfaceName: string, interfaceVersion: string };
   operation: string;
@@ -20,18 +25,13 @@ export abstract class IpcSession {
   public static get active(): IpcSession | undefined { return this._active; }
 
   public static start(session: IpcSession) {
-    if (this._active) {
+    if (this._active)
       return;
-    }
 
     this._active = session;
   }
 
   public static stop() {
-    if (!this._active) {
-      return;
-    }
-
     this._active = undefined;
   }
 

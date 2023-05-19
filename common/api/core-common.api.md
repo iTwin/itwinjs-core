@@ -4942,16 +4942,12 @@ export const Interpolation: {
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @internal (undocumented)
-export enum IpcAppChannel {
-    // (undocumented)
-    AppNotify = "ipcApp-notify",
-    // (undocumented)
-    EditingScope = "editing-scope",
-    // (undocumented)
-    Functions = "ipc-app",
-    // (undocumented)
-    Txns = "txns"
-}
+export const ipcAppChannels: {
+    readonly functions: "itwinjs-core/ipc-app";
+    readonly appNotify: "itwinjs-core/ipcApp-notify";
+    readonly txns: "itwinjs-core/txns";
+    readonly editingScope: "itwinjs-core/editing-scope";
+};
 
 // @internal
 export interface IpcAppFunctions {
@@ -5766,9 +5762,6 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     get type(): BatchType;
 }
 
-// @internal (undocumented)
-export const nativeAppChannel = "nativeApp";
-
 // @internal
 export interface NativeAppFunctions {
     acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
@@ -5791,14 +5784,17 @@ export interface NativeAppFunctions {
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 
+// @internal (undocumented)
+export const nativeAppIpcStrings: {
+    readonly channelName: "itwinjs-core/nativeApp";
+    readonly notifyChannel: "itwinjs-core/nativeApp-notify";
+};
+
 // @internal
 export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
 }
-
-// @internal (undocumented)
-export const nativeAppNotify = "nativeApp-notify";
 
 // @public
 export interface NavigationBindingValue {
@@ -8122,6 +8118,11 @@ export interface RpcOperationsProfile {
     // (undocumented)
     readonly lastResponse: number;
 }
+
+// @internal (undocumented)
+export const rpcOverIpcStrings: {
+    readonly channelName: "itwinjs-core/rpc-over-ipc";
+};
 
 // @internal
 export class RpcPendingQueue {
