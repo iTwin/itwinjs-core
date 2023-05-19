@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
+
 import { Arc3d } from "../curve/Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -72,7 +73,7 @@ export class GeometryCoreTestIO {
     const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
-        fullPath = `${fullPath}.imjs`;
+      fullPath = `${fullPath}.imjs`;
 
     this.consoleLog(`saveGeometry:: ${fullPath}`);
 

@@ -12,7 +12,7 @@ See example [StateManager](./appui-react/State.md#Example-of-Defining-Initial-Se
 
 Any package can provide a class that implements the UiItemsProvider interfaces to add UI items to the host application by registering its UiItemsProvider(s) when it is initialized. Items provided at runtime may be inserted into a Toolbar, StatusBar, Backstage or Widget Panel.
 
-See example [UiItemsProvider](./abstract/UiItemsProvider.md#UiItemsProvider-Example) implementation.
+See example [UiItemsProvider](./appui-react/UiItemsProvider.md#UiItemsProvider-Example) implementation.
 
 UI item definitions for Toolbars, Status Bar, and Backstage specify an item priority value. This value is used to order the items in the parent container. It is suggested that an increment of 10 is used between items in the host application. This provides the opportunity for packages to insert their items adjacent to host application items.
 
@@ -71,8 +71,7 @@ The isHidden property above is specified as a [ConditionalBooleanValue]($appui-a
 ## StatusBar
 
 To ensure that packages can add items to the status bar the [StatusBarWidgetControl]($appui-react) must return the
-[StatusBarComposer]($app
-ui-react) from the getReactNode method. Here is an [example](./appui-react/StatusBar) of defining a status bar.  Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
+[StatusBarComposer]($appui-react) from the getReactNode method. Here is an [example](./appui-react/StatusBar) of defining a status bar.  Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
 
 ## Backstage
 

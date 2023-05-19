@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "4.0.0-dev.87",
+  "version": "4.1.0-dev.8",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -33,6 +33,22 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
+    "@bentley/aec-units-schema": "^1.0.3",
+    "@bentley/architectural-physical-schema": "^1.0.3",
+    "@bentley/bis-core-schema": "^1.0.15",
+    "@bentley/bis-custom-attributes-schema": "^1.0.0",
+    "@bentley/construction-schema": "^1.0.4",
+    "@bentley/core-custom-attributes-schema": "^1.0.3",
+    "@bentley/ecdb-map-schema": "^2.0.1",
+    "@bentley/ecdb-schema-policies-schema": "^1.0.1",
+    "@bentley/formats-schema": "^1.0.0",
+    "@bentley/linear-referencing-schema": "^2.0.3",
+    "@bentley/physical-material-schema": "^1.0.2",
+    "@bentley/plant-custom-attributes-schema": "^1.0.1",
+    "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
+    "@bentley/spatial-composition-schema": "^1.0.1",
+    "@bentley/structural-physical-schema": "^1.0.1",
+    "@bentley/units-schema": "^1.0.5",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.0-dev.33",
@@ -50,6 +66,7 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
     "typescript": "~5.0.2"
   },
   "dependencies": {
@@ -58,7 +75,7 @@
     "@xmldom/xmldom": "~0.8.5"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.87"
+    "@itwin/ecschema-metadata": "workspace:^4.1.0-dev.8"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

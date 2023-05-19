@@ -2,6 +2,27 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.7.4",
+      "tag": "@itwin/core-backend_v3.7.4",
+      "date": "Tue, 25 Apr 2023 17:50:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.3",
+      "tag": "@itwin/core-backend_v3.7.3",
+      "date": "Thu, 20 Apr 2023 13:19:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Prevent IPC requests from blocking the backend."
+          },
+          {
+            "comment": "Fix for timing issue in core tests"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.7.2",
       "tag": "@itwin/core-backend_v3.7.2",
       "date": "Wed, 12 Apr 2023 13:12:42 GMT",

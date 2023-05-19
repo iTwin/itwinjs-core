@@ -155,7 +155,7 @@ export interface EditorIpc {
 
 // @internal (undocumented)
 export const editorIpcStrings: {
-    readonly channel: "editor";
+    readonly channel: "itwinjs-core/editor";
     readonly commandBusy: "EditCommandBusy";
 };
 

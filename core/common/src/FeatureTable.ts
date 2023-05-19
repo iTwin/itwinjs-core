@@ -6,7 +6,9 @@
  * @module Rendering
  */
 
-import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@itwin/core-bentley";
+import {
+  assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap, UintArray,
+} from "@itwin/core-bentley";
 import { GeometryClass } from "./GeometryParams";
 
 /** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be
@@ -203,8 +205,8 @@ export class FeatureTable extends IndexMap<Feature> {
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
-/** @alpha */
-export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
+/** @internal */
+export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 /** Interface common to PackedFeatureTable and MultiModelPackedFeatureTable.
  * @internal
@@ -222,6 +224,7 @@ export interface RenderFeatureTable {
   /** Strictly for reporting memory usage. */
   readonly byteLength: number;
   readonly type: BatchType;
+  animationNodeIds?: UintArray;
 
   /** Get the feature at the specified index. Caller is responsible for validating featureIndex less than numFeatures. */
   getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
@@ -235,9 +238,32 @@ export interface RenderFeatureTable {
   getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
   /** Get an object that provides iteration over all features, in order. `output` is reused as the current value on each iteration. */
   iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
+  populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
+  getAnimationNodeId(featureIndex: number): number;
 }
 
 const scratchPackedFeature = PackedFeature.create();
+
+function populateAnimationNodeIds(table: RenderFeatureTable, computeNodeId: ComputeNodeId, maxNodeId: number): UintArray | undefined {
+  assert(maxNodeId > 0);
+
+  let nodeIds;
+  const outputFeature = PackedFeature.createWithIndex();
+  for (const feature of table.iterable(outputFeature)) {
+    const nodeId = computeNodeId(feature);
+    assert(nodeId <= maxNodeId);
+    if (0 !== nodeId) {
+      if (!nodeIds) {
+        const size = table.numFeatures;
+        nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
+      }
+
+      nodeIds[feature.index] = nodeId;
+    }
+  }
+
+  return nodeIds;
+}
 
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
@@ -251,22 +277,21 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
-  private _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
+  public animationNodeIds?: UintArray;
 
   public get byteLength(): number { return this._data.byteLength; }
-  public get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined { return this._animationNodeIds; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
    * @internal
    */
-  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray) {
     this._data = data;
     this.batchModelId = modelId;
     this.batchModelIdPair = Id64.getUint32Pair(modelId);
     this.numFeatures = numFeatures;
     this.type = type;
-    this._animationNodeIds = animationNodeIds;
+    this.animationNodeIds = animationNodeIds;
 
     switch (this.numFeatures) {
       case 0:
@@ -281,7 +306,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     }
 
     assert(this._data.length >= this._subCategoriesOffset);
-    assert(undefined === this._animationNodeIds || this._animationNodeIds.length === this.numFeatures);
+    assert(undefined === this.animationNodeIds || this.animationNodeIds.length === this.numFeatures);
   }
 
   /** Create a packed feature table from a [[FeatureTable]]. */
@@ -356,7 +381,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
 
   /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
-    return undefined !== this._animationNodeIds && featureIndex < this.numFeatures ? this._animationNodeIds[featureIndex] : 0;
+    return undefined !== this.animationNodeIds && featureIndex < this.numFeatures ? this.animationNodeIds[featureIndex] : 0;
   }
 
   /** @internal */
@@ -413,26 +438,10 @@ export class PackedFeatureTable implements RenderFeatureTable {
 
     return table;
   }
+
   public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
-    assert(undefined === this._animationNodeIds);
-    assert(maxNodeId > 0);
-
-    const pair = { lower: 0, upper: 0 };
-    let haveNodes = false;
-    const size = this.numFeatures;
-    const nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
-    for (let i = 0; i < this.numFeatures; i++) {
-      this.getElementIdPair(i, pair);
-      const nodeId = computeNodeId(pair, i);
-      assert(nodeId <= maxNodeId);
-      if (0 !== nodeId) {
-        nodeIds[i] = nodeId;
-        haveNodes = true;
-      }
-    }
-
-    if (haveNodes)
-      this._animationNodeIds = nodeIds;
+    assert(undefined === this.animationNodeIds);
+    this.animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
   }
 
   public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
@@ -567,6 +576,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   public get batchModelIdPair() { return this._features.batchModelIdPair; }
   public get numFeatures() { return this._features.numFeatures; }
   public get type() { return this._features.type; }
+  public get animationNodeIds(): UintArray | undefined { return this._features.animationNodeIds; }
+  public set animationNodeIds(ids: UintArray | undefined) { this._features.animationNodeIds = ids; }
 
   public get byteLength() {
     return this._features.byteLength + this._models.byteLength;
@@ -616,5 +627,13 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     return {
       [Symbol.iterator]: () => this.iterator(output),
     };
+  }
+
+  public getAnimationNodeId(featureIndex: number): number {
+    return this._features.getAnimationNodeId(featureIndex);
+  }
+
+  public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
+    this._features.animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
   }
 }

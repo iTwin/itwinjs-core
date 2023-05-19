@@ -6,7 +6,7 @@
 import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@itwin/core-common";
 import { IModelAppOptions, IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
-import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
+import { mobileAppStrings } from "../common/MobileAppChannel";
 import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationFrontend } from "./MobileAuthorizationFrontend";
@@ -16,7 +16,7 @@ export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?:
 
 /** receive notifications from backend */
 class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
-  public get channelName() { return mobileAppNotify; }
+  public get channelName() { return mobileAppStrings.mobileAppNotify; }
 
   public notifyMemoryWarning() {
     Logger.logWarning("mobileApp", "Low memory warning");
@@ -41,7 +41,7 @@ export class MobileApp {
   public static onWillTerminate = new BeEvent<() => void>();
   public static onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
   public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>) {
-    return IpcApp.callIpcChannel(mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
+    return IpcApp.callIpcChannel(mobileAppStrings.mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
   }
 
   private static _isValid = false;

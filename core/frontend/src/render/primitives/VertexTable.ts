@@ -124,7 +124,7 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
 /** Describes a VertexTable.
  * @internal
  */
-export interface VertexTableProps {
+export interface VertexTableParams {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   readonly data: Uint8Array;
   /** If true, positions are not quantized but instead stored as 32-bit floats.
@@ -163,7 +163,7 @@ export interface VertexTableProps {
  * Vertex color is identified by a 16-bit index into a color table appended to the vertex data.
  * @internal
  */
-export class VertexTable implements VertexTableProps {
+export class VertexTable implements VertexTableParams {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   public readonly data: Uint8Array;
   /** If true, positions are not quantized but instead stored as 32-bit floats.
@@ -194,7 +194,7 @@ export class VertexTable implements VertexTableProps {
   public readonly uvParams?: QParams2d;
 
   /** Construct a VertexTable. The VertexTable takes ownership of all input data - it must not be later modified by the caller. */
-  public constructor(props: VertexTableProps) {
+  public constructor(props: VertexTableParams) {
     this.data = props.data;
     this.qparams = props.qparams;
     this.usesUnquantizedPositions = !!props.usesUnquantizedPositions;

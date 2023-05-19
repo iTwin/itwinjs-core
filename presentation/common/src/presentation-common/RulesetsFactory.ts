@@ -50,7 +50,6 @@ export class RulesetsFactory {
       specifications: [{
         specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
         classes: createMultiClassSpecification(record.classInfo),
-        handleInstancesPolymorphically: true,
         relatedInstances: relatedInstanceInfo ? [relatedInstanceInfo.spec] : [],
         instanceFilter: createInstanceFilter(relatedInstanceInfo?.spec, field.type, propertyName, propertyValue.raw),
       }],
@@ -224,7 +223,7 @@ const createComparison = (type: PrimitiveTypeDescription, name: string, operator
 
 const createMultiClassSpecification = (classInfo: Readonly<ClassInfo>): MultiSchemaClassesSpecification => {
   const [schemaName, className] = classInfo.name.split(":");
-  return { schemaName, classNames: [className] };
+  return { schemaName, classNames: [className], arePolymorphic: true };
 };
 
 const createSingleClassSpecification = (classInfo: Readonly<ClassInfo>): SingleSchemaClassSpecification => {

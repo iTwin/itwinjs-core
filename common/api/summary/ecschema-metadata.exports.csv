@@ -108,10 +108,11 @@ beta;RelationshipEnd
 beta;relationshipEndToString(end: RelationshipEnd): string
 beta;RelationshipMultiplicity
 beta;Schema 
-beta;SchemaCache 
+internal;SchemaCache 
 beta;SchemaContext 
-beta;SchemaGraph
+internal;SchemaGraph
 internal;SchemaGraphUtil
+beta;SchemaInfo
 beta;class SchemaItem
 beta;SchemaItemFormatProps = SchemaItemProps & FormatProps
 beta;SchemaItemKey
@@ -125,7 +126,6 @@ alpha;SchemaJsonLocater
 beta;SchemaKey
 beta;SchemaKeyProps
 alpha;SchemaLoader
-beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
@@ -149,4 +149,5 @@ internal;UnitConversion
 internal;UnitConverter
 beta;UnitSystem 
 beta;UnitSystemProps = SchemaItemProps
+beta;WithSchemaKey
 internal;XmlParser 

@@ -14,7 +14,6 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
-import { CloudSqliteTest } from "./CloudSqlite.test";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
@@ -27,7 +26,6 @@ async function queryBisModelCount(imodel: IModelDb): Promise<number> {
 
 describe("Checkpoints", () => {
   let daemon: ChildProcess;
-  let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
   let daemonProps: NativeCloudSqlite.DaemonProps;
   let accessToken: AccessToken;
@@ -46,8 +44,8 @@ describe("Checkpoints", () => {
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
-    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
+    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);
+    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
@@ -67,10 +65,6 @@ describe("Checkpoints", () => {
     IModelJsFs.removeSync(cloudcacheDir);
 
     // Props for daemon
-    accountProps = {
-      accessName: CloudSqliteTest.storage.accessName,
-      storageType: CloudSqliteTest.storage.storageType,
-    };
     cacheProps = {
       rootDir: cloudcacheDir,
       name: V2CheckpointManager.cloudCacheName,

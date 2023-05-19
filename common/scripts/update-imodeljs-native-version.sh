@@ -64,13 +64,8 @@ do
   sed -i'' "s/com.github.itwin:mobile-native-android:.*'/com.github.itwin:mobile-native-android:$AddonVersion'/" "$BuildGradle"
 done
 
-# Purge node_modules
-rm "$RepoRoot/common/config/rush/browser-approved-packages.json"
-rm "$RepoRoot/common/config/rush/pnpm-lock.yaml"
-rm -rf "$RepoRoot/common/temp"
-
 # Update to new @bentley/imodeljs-native package.
-rush update
+rush update --purge
 checkfail
 
 git commit -am"@bentley/imodeljs-native $AddonVersion"

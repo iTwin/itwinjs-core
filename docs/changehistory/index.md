@@ -213,7 +213,7 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 
 ### @itwin/appui-abstract
 
-[UiItemsProvider]($appui-abstract) and other AppUI specific types and APIs are deprecated and moved to `@itwin/appui-react` package.
+`UiItemsProvider` and other AppUI specific types and APIs are deprecated and moved to `@itwin/appui-react` package.
 For a replacement in case of API rename consult @deprecated tag in the documentation.
 
 ### @itwin/appui-react

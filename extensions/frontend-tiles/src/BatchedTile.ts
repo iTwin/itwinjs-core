@@ -141,6 +141,7 @@ export class BatchedTile extends Tile {
       isLeaf: this.isLeaf,
       system,
       isCanceled: shouldAbort,
+      timeline: this.batchedTree.scheduleScript,
       options: {
         tileId: this.contentId,
       },

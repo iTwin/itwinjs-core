@@ -6,7 +6,8 @@
  * @module Validation
  */
 
-import { AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
+import {
+  AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
   ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
@@ -258,10 +259,10 @@ export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDi
     }
   }
 
-  const graph = new SchemaGraph(schema);
+  const graph = SchemaGraph.generateGraphSync(schema);
   const cycles = graph.detectCycles();
   if (cycles) {
-    const result = cycles.map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`).join(", ");
+    const result = cycles.map((cycle) => `${cycle.schema.schemaKey.name} --> ${cycle.refSchema.schemaKey.name}`).join(", ");
     yield new Diagnostics.ReferenceCyclesNotAllowed(schema, [schema.name, result]);
   }
 }

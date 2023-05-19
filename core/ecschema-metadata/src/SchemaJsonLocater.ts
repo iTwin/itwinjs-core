@@ -6,6 +6,7 @@
 import { ISchemaLocater, SchemaContext } from "./Context";
 import { SchemaProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
+import { SchemaInfo } from "./Interfaces";
 import { Schema } from "./Metadata/Schema";
 import { SchemaKey } from "./SchemaKey";
 
@@ -30,8 +31,17 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     return this.getSchemaSync(schemaKey, matchType, context) as T;
+  }
+
+  /**
+   * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
+   * @param schemaKey The SchemaKey describing the schema to get from the cache.
+   * @param matchType The match type to use when locating the schema
+   */
+  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+    return this.getSchema(schemaKey, matchType, context);
   }
 
   /** Get a schema by [SchemaKey] synchronously.
@@ -40,7 +50,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [Error]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined {
+  public getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     const schemaProps = this._getSchema(schemaKey.name);
     if (!schemaProps)
       return undefined;
