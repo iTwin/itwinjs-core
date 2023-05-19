@@ -73,11 +73,11 @@ Previously, `@itwin/core-electron` and `@itwin/core-mobile` automatically regist
 - SnapshotIModelRpcInterface
 - PresentationRpcInterface
 
-To be more aligned with other our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for `ElectronApp.startup` and `MobileHost.startup`.
+To be more aligned with our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for [ElectronApp.startup]($core-electron) and [MobileHost.startup]($core-mobile).
 
 ### Breaking out of lockstep
 
-To move more quickly and release independently, the following packages have broken out of lockstep with iTwin.js Core and outside of the itwinjs-core repository.
+To move more quickly and release independently, the following packages have broken out of lockstep with iTwin.js Core and have moved outside of the itwinjs-core repository.
 
 #### AppUI
 
