@@ -592,7 +592,7 @@ export class MapTile extends RealityTile {
       this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
     }
 
-    if (this.rangeCorners &&  this._patch instanceof PlanarTilePatch)
+    if (this.rangeCorners && this._patch instanceof PlanarTilePatch)
       this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
 
@@ -771,7 +771,7 @@ export class MapTile extends RealityTile {
     this._mesh = content.terrain?.mesh;
     if (this.mapTree.produceGeometry) {
       const iModelTransform = this.mapTree.iModelTransform;
-      const geometryTransform =  content.terrain?.renderGeometry?.transform;
+      const geometryTransform = content.terrain?.renderGeometry?.transform;
       const transform = geometryTransform ? iModelTransform.multiplyTransformTransform(geometryTransform) : iModelTransform;
       const polyface = content.terrain?.mesh ? RealityMeshParams.toPolyface(content.terrain.mesh, { transform }) : undefined;
       this._geometry = polyface ? { polyfaces: [polyface] } : undefined;
