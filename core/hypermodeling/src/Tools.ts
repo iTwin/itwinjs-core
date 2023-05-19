@@ -6,9 +6,10 @@
  * @module HyperModeling
  */
 
-import { SectionType, ScreenViewport, Tool, ExtensionHost } from "@itwin/core-extension";
+import { ExtensionHost, SectionType, Tool } from "@itwin/core-extension";
+import type { ScreenViewport } from "@itwin/core-extension";
 import { HyperModeling } from "./HyperModeling";
-import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
+import type { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 
 /** Parses a string case-insensitively returning true for "ON", false for "OFF", undefined for "TOGGLE" or undefined, and the input string for anything else. */

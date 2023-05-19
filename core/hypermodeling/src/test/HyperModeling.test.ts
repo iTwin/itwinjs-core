@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { EmptyLocalization, SectionType } from "@itwin/core-common";
-import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
+import { EmptyLocalization, IModelApp, ParseAndRunResult, SectionType } from "@itwin/core-extension";
 import { HyperModeling } from "../HyperModeling";
-import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
+import type { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
 
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.

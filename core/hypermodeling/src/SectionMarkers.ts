@@ -6,12 +6,15 @@
  * @module HyperModeling
  */
 
-import { assert, BeEvent, Id64String } from "@itwin/core-bentley";
-import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
+import type { XAndY, XYAndZ } from "@itwin/core-geometry";
+import { Point2d, Point3d } from "@itwin/core-geometry";
+import type { BeButtonEvent, Cluster, DecorateContext, MarkerImage, ScreenViewport} from "@itwin/core-extension";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
+  BeButton, InputSource, Marker, MarkerSet, ViewClipTool,
 } from "@itwin/core-extension";
-import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
+import type { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
 const markerSize = Point2d.create(40, 40);

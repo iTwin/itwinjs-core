@@ -6,10 +6,11 @@
  * @module HyperModeling
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { } from "@itwin/core-extension";
-import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState, Placement3d, QueryRowFormat, SectionType } from "@itwin/core-extension";
-import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelConnection, SectionType } from "@itwin/core-extension";
+import { DrawingViewState, Placement3d, QueryRowFormat, SheetViewState, SpatialViewState } from "@itwin/core-extension";
+import type { XYZProps } from "@itwin/core-geometry";
+import { ClipVector, Transform } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT

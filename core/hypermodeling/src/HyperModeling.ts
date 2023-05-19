@@ -7,10 +7,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, ScreenViewport, SectionType, tryImageElementFromUrl, ViewManip } from "@itwin/core-extension";
+import { ExtensionHost, SectionType, tryImageElementFromUrl, ViewManip } from "@itwin/core-extension";
+import type { IModelConnection, ScreenViewport } from "@itwin/core-extension";
 import { registerTools } from "./Tools";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
-import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
+import type { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { SectionMarkerHandler } from "./SectionMarkerHandler";
 
 /** @internal */
