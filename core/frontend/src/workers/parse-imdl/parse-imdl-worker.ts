@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, ByteStream } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import { ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common";
 import { registerWorker, WorkerRequest } from "../RegisterWorker";
@@ -21,15 +21,20 @@ interface SetTimelineRequest {
   };
 }
 
+type ParsePayload = Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array };
 interface ParseRequest {
   operation: "parse";
-  payload: ImdlParserOptions;
+  payload: ParsePayload;
 }
 
 registerWorker((request: ParseRequest | SetTimelineRequest) => {
   switch (request.operation) {
     case "parse":
-      return parseImdlDocument({ ...request.payload, timeline });
+      return parseImdlDocument({
+        ...request.payload,
+        stream: ByteStream.fromUint8Array(request.payload.data),
+        timeline,
+      });
     case "setTimeline":
       assert(undefined === timeline, "setTimeline must be called only once");
       timeline = request.payload.script ? RenderSchedule.Script.fromJSON(request.payload.script) : RenderSchedule.ModelTimeline.fromJSON(request.payload.timeline);

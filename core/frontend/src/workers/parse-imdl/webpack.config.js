@@ -12,7 +12,7 @@ const frontendLib = path.resolve(__dirname, "../../../lib");
 
 module.exports = [{
   // stats: "verbose",
-  mode: "production",
+  mode: "development", // ###TODO "production",
   entry: glob.sync(path.resolve(frontendLib, "esm/workers/parse-imdl/parse-imdl-worker.js")),
   output: {
     path: path.resolve(frontendLib, "workers/webpack/"),

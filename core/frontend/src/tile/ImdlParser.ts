@@ -23,6 +23,16 @@ export interface AcquireImdlParserArgs {
   noWorker?: boolean;
 }
 
+async function workerParse(worker: WorkerProxy, options: Omit<ImdlParserOptions, "timeline">): Promise<ImdlModel.Document | ImdlParseError> {
+  const stream = options.stream;
+  return worker.execute("parse", {
+    ...options,
+    stream: undefined,
+    timeline: undefined,
+    data: stream.readBytes(0, stream.length),
+  }, [stream.arrayBuffer]);
+}
+
 export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
   const timeline = args.timeline;
   if (args.noWorker) {
@@ -39,7 +49,7 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
     if (!defaultParser) {
       const worker = new WorkerProxy(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
       defaultParser = {
-        parse: (options) => worker.execute("parse", options, [options.stream.arrayBuffer]),
+        parse: (options) => workerParse(worker, options),
         release: () => undefined,
       };
     }
@@ -71,7 +81,7 @@ class ParserWithTimeline implements ImdlParser {
   }
 
   public async parse(options: Omit<ImdlParserOptions, "timeline">) {
-    return this._worker.execute("parse", options, [options.stream.arrayBuffer]);
+    return workerParse(this._worker, options);
   }
 
   public release(): void {
