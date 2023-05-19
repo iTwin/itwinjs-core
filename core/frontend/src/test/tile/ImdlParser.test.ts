@@ -8,6 +8,7 @@ import { ByteStream } from "@itwin/core-bentley";
 import { RenderSchedule as RS, TileReadStatus } from "@itwin/core-common";
 import { ImdlTimeline } from "../../common";
 import { acquireImdlParser, ImdlParser } from "../../tile/internal";
+import { IModelApp } from "../../IModelApp";
 
 use(chaiAsPromised);
 
@@ -122,6 +123,9 @@ describe("acquireImdlParser", () => {
 });
 
 describe.only("ImdlParser", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
   it("transfers the array buffer to the worker and back", async () => {
     // ###TODO
   });

@@ -36,10 +36,15 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
   }
 
   if (!args.timeline) {
-    return defaultParserWorker ?? (defaultParserWorker = {
-      parse: (options) => Promise.resolve(parseImdlDocument(options)),
-      release: () => undefined,
-    });
+    if (!defaultParser) {
+      const worker = new WorkerProxy(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
+      defaultParser = {
+        parse: (options) => worker.execute("parse", options, [options.stream.arrayBuffer]),
+        release: () => undefined,
+      };
+    }
+
+    return defaultParser;
   }
 
   let parser = parsersWithTimelines.get(args.timeline);
@@ -51,7 +56,7 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
   return parser;
 }
 
-let defaultParserWorker: ImdlParser | undefined;
+let defaultParser: ImdlParser | undefined;
 
 class ParserWithTimeline implements ImdlParser {
   public refCount = 0;
