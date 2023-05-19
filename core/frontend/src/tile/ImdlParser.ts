@@ -77,7 +77,8 @@ class ParserWithTimeline implements ImdlParser {
     this._timeline = timeline;
 
     this._worker = new WorkerProxy(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
-    this._worker.post("setTimeline", timeline);
+    const payload = timeline instanceof RenderSchedule.Script ? { script: timeline.toJSON() } : { timeline: timeline.toJSON() };
+    this._worker.post("setTimeline", payload);
   }
 
   public async parse(options: Omit<ImdlParserOptions, "timeline">) {
