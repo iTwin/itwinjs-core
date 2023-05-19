@@ -64,11 +64,17 @@ packageClassification:
       "header": "Transformer",
       "packages": ["imodel-transformer"],
     },
-    { 
-      "order": "7", 
-      "header": "Auth", 
-      "packages": ["browser-authorization"] 
-      },
+    {
+      "order": "7",
+      "header": "Authorization",
+      "packages":
+        [
+          "browser-authorization",
+          "electron-authorization",
+          "node-cli-authorization",
+          "service-authorization",
+        ],
+    },
   ]
 ---
 
