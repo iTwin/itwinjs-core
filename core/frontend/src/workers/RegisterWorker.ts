@@ -11,13 +11,9 @@ export type WorkerRequest = {
   payload: any;
 }
 
-interface WorkerEventData extends WorkerRequest {
-  msgId: number;
-}
-
-export function registerWorker(func: (request: WorkerRequest) => any): void {
+export function registerWorker<T extends WorkerRequest>(func: (request: T) => any): void {
   onmessage = (e: MessageEvent) => {
-    const req = e.data as WorkerEventData;
+    const req = e.data as T & { msgId: number };
     const msgId = req.msgId;
     let response: WorkerResponse;
     try {

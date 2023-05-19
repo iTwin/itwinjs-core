@@ -11,7 +11,7 @@ import { RenderSchedule } from "@itwin/core-common";
 import { ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common";
 
 export interface ImdlParser {
-  parse(options: ImdlParserOptions): Promise<ImdlModel.Document | ImdlParseError>;
+  parse(options: Omit<ImdlParserOptions, "timeline">): Promise<ImdlModel.Document | ImdlParseError>;
   release(): void;
 }
 
@@ -21,9 +21,13 @@ export interface AcquireImdlParserArgs {
 }
 
 export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
+  const timeline = args.timeline;
   if (args.noWorker) {
     return {
-      parse: (options) => Promise.resolve(parseImdlDocument(options)),
+      parse: (options) => Promise.resolve(parseImdlDocument({
+        ...options,
+        timeline,
+      })),
       release: () => undefined,
     };
   }
@@ -55,10 +59,13 @@ class ParserWithTimeline implements ImdlParser {
     // ###TODO allocate worker and post a message to set the timeline
   }
 
-  public async parse(options: ImdlParserOptions) {
+  public async parse(options: Omit<ImdlParserOptions, "timeline">) {
     // ###TODO this is just a placeholder
     await BeDuration.wait(1);
-    return parseImdlDocument(options);
+    return parseImdlDocument({
+      ...options,
+      timeline: this._timeline, // ###TODO don't pass timeline.
+    });
   }
 
   public release(): void {
