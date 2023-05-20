@@ -4,32 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import type { WorkerResponse } from "../common";
+import type { WorkerImplementation } from "../common";
 
-export type WorkerRequest = {
+type WorkerRequest = {
   operation: string;
+  msgId: number;
   payload?: any;
 }
 
-export function registerWorker<T extends WorkerRequest>(func: (request: T) => any): void {
+export function registerWorker<T>(impl: WorkerImplementation<T>): void {
   onmessage = (e: MessageEvent) => {
-    const req = e.data as T & { msgId: number };
+    const req = e.data as WorkerRequest;
     const msgId = req.msgId;
-    let response: WorkerResponse;
     try {
       assert(typeof req === "object" && "operation" in req && "payload" in req && "msgId" in req);
-      response = {
-        result: func(req),
-        msgId,
-      };
+      const func = (impl as any)[req.operation];
+      assert(typeof func === "function");
+      const ret = func(req.payload);
+      if (typeof ret === "object" && "transfer" in ret)
+        postMessage({ result: ret.result, msgId }, { transfer: ret.transfer });
+      else
+        postMessage({ result: ret, msgId });
     } catch (e: unknown) {
       const error = e instanceof Error ? e : new Error("Unknown worker error");
-      response = {
-        error,
-        msgId,
-      };
+      postMessage({ error, msgId });
     }
-
-    postMessage(response);
-  };
+  }
 }

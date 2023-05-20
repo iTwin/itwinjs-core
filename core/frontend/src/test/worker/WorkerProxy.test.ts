@@ -9,7 +9,7 @@ import { TestWorker } from "./test-worker";
 
 use(chaiAsPromised);
 
-describe("WorkerProxy", () => {
+describe.only("WorkerProxy", () => {
   const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
   it("terminates", () => {
     const worker = createWorker();

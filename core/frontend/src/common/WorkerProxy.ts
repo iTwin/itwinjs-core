@@ -38,13 +38,21 @@ export type WorkerInterface<T> = {
     )
 };
 
+export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | { result: ReturnType<T>; transfer: Transferable[]; };
+
 /** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
- * The return type of each function in `T` is changed to an object holding the function result and an optional list of values to be transferred from the worker
- * to the main thread.
- * e.g., `doSomething(arg1: string, arg2: number): boolean` becomes `doSomething(arg1: string, arg2: number): { result: boolean; transfer?: Transferable[] }`.
+ * The return type of each function is enhanced to permit supplying a list of values to be transferred from the worker to the main thread.
+ * Multi-argument functions are converted to functions accepting a single tuple of arguments.
+ *  - Every return type `R` is converted to `WorkerReturnType<R>`.
+ *  - `zeroArgFunc(): R` becomes `zeroArgFunc(): R | { result: R; transfer: Transferable[]; }`.
+ *  - `oneArgFunc(arg: U): R` becomes `oneArgFunc(arg: U): R | { result: R; transfer: Transferable[]; }`.
+ *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `multiArgFunc([U, V]): R | { result: R; transfer: Transferable[]; }`.
  */
 export type WorkerImplementation<T> = {
-  [P in keyof T]: T[P] extends (...args: any) => any ? (...args: Parameters<T[P]>) => { result: ReturnType<T[P]>; transfer?: Transferable[]; } : never;
+  [P in keyof T]: T[P] extends () => any ? () => WorkerReturnType<T[P]> :
+    (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0]) => WorkerReturnType<T[P]> :
+      (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>) => WorkerReturnType<T[P]> : never)
+    )
 };
 
 export type WorkerProxy<T> = WorkerInterface<T> & {

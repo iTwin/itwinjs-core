@@ -5,36 +5,32 @@
 
 import { registerWorker } from "../../workers/RegisterWorker";
 
-interface Zero {
-  operation: "zero";
-}
-
-interface One {
-  operation: "one";
-  payload: string;
-}
-
-interface Two {
-  operation: "two";
-  payload: [number, number];
-}
-
-interface Throw {
-  operation: "throwError";
-}
-
-registerWorker((request: Zero | One | Two | Throw) => {
-  switch (request.operation) {
-    case "zero": return "zero";
-    case "throwError": throw new Error("ruh-roh");
-    case "one": return request.payload;
-    case "two": return request.payload[0] + request.payload[1];
-  }
-});
-
 export interface TestWorker {
   zero(): "zero";
   one(s: string): string;
   two(a: number, b: number): number;
   throwError(): never;
+  setTransfer(wantTransfer: boolean): undefined;
 }
+
+let doTransfer = false;
+
+function maybeTransfer<T>(result: T): T | { result: T; transfer: Transferable[] } {
+  if (!doTransfer)
+    return result;
+
+  return { result, transfer: [] };
+}
+
+registerWorker<TestWorker>({
+  zero: () => maybeTransfer("zero"),
+  one: (arg: string) => maybeTransfer(arg),
+  two: (args: [a: number, b: number]) => maybeTransfer(args[0] + args[1]),
+  throwError: () => {
+    throw new Error("ruh-roh");
+  },
+  setTransfer: (wantTransfer: boolean) => {
+    doTransfer = wantTransfer;
+    return undefined;
+  },
+});
