@@ -9,7 +9,7 @@ import { TestWorker } from "./test-worker";
 
 use(chaiAsPromised);
 
-describe.only("WorkerProxy", () => {
+describe("WorkerProxy", () => {
   const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
   it("terminates", () => {
     const worker = createWorker();
@@ -19,10 +19,29 @@ describe.only("WorkerProxy", () => {
   });
 
   it("invokes functions accepting any number of arguments", async () => {
-    // ###TODO
+    const worker = createWorker();
+
+    expect(await worker.zero()).to.equal("zero");
+    expect(await worker.one("hi")).to.equal("hi");
+    expect(await worker.two([1, 2])).to.equal(3);
+    await expect(worker.throwError()).to.be.eventually.rejectedWith("ruh-roh");
+
+    worker.terminate();
   });
 
   it("transfers objects to functions accepting any number of arguments", async () => {
-    // ###TODO
+    const worker = createWorker();
+
+    let bytes = new Uint8Array(5);
+    expect(bytes.length).to.equal(5);
+    await worker.one("hi", [bytes.buffer]);
+    expect(bytes.length).to.equal(0);
+
+    bytes = new Uint8Array(4);
+    expect(bytes.length).to.equal(4);
+    await worker.two([1, 2], [bytes.buffer]);
+    expect(bytes.length).to.equal(0);
+
+    worker.terminate();
   });
 });
