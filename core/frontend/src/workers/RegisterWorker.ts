@@ -8,7 +8,7 @@ import type { WorkerResponse } from "../common";
 
 export type WorkerRequest = {
   operation: string;
-  payload: any;
+  payload?: any;
 }
 
 export function registerWorker<T extends WorkerRequest>(func: (request: T) => any): void {

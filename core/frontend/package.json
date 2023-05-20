@@ -23,7 +23,8 @@
     "test": "npm run -s webpackTests && certa -r chrome",
     "cover": "npm -s test",
     "test:debug": "certa -r chrome --debug",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
+    "webpackTestWorker": "webpack --config ./src/test/worker/webpack.config.js 1>&2 && cpx \"./lib/test/test-worker.js\" ./lib/test",
     "webpackWorkers": "webpack --config ./src/workers/parse-imdl/webpack.config.js 1>&2"
   },
   "repository": {
