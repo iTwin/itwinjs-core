@@ -132,7 +132,7 @@ describe("ImdlParser", () => {
   it("produces an error upon invalid tile header", async () => {
     const parser = acquireImdlParser({});
     const document = await parser.parse({
-      stream: ByteStream.fromUint8Array(new Uint8Array(512)),
+      data: new Uint8Array(512),
       batchModelId: "0x123",
       is3d: true,
       maxVertexTableSize: 4096,
@@ -144,7 +144,7 @@ describe("ImdlParser", () => {
   it("produces an error when reading outside tile data", async () => {
     const parser = acquireImdlParser({});
     await expect(parser.parse({
-      stream: ByteStream.fromUint8Array(new Uint8Array(12)),
+      data: new Uint8Array(12),
       batchModelId: "0x123",
       is3d: true,
       maxVertexTableSize: 4096,
@@ -156,7 +156,7 @@ describe("ImdlParser", () => {
     const data = new Uint8Array(12);
     expect(data.length).to.equal(12);
     await expect(parser.parse({
-      stream: ByteStream.fromUint8Array(data),
+      data,
       batchModelId: "0x123",
       is3d: true,
       maxVertexTableSize: 4096,
@@ -264,7 +264,7 @@ describe("ImdlParser", () => {
 
     const parser = acquireImdlParser({});
     const document = await parser.parse({
-      stream: ByteStream.fromUint8Array(tileData),
+      data: tileData,
       batchModelId: "0x123",
       is3d: true,
       maxVertexTableSize: 4096,

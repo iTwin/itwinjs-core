@@ -89,7 +89,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
 
   args.stream.reset();
   const parseOpts: ImdlParserOptions = {
-    stream: args.stream,
+    data: args.stream.readBytes(0, args.stream.length),
     batchModelId: args.modelId,
     is3d: args.is3d,
     maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,

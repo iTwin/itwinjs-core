@@ -19,7 +19,7 @@ registerWorker<ParseImdlWorker>({
   parse: (options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }) => {
     const result = parseImdlDocument({
       ...options,
-      stream: ByteStream.fromUint8Array(options.data),
+      data: options.data,
       timeline,
     });
 

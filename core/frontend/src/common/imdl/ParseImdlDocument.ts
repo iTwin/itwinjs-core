@@ -39,13 +39,13 @@ export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
  * @internal
  */
 export interface ImdlParserOptions {
-  stream: ByteStream;
+  data: Uint8Array;
   batchModelId: Id64String;
   is3d: boolean;
   maxVertexTableSize: number;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
-  timeline?: ImdlTimeline;
+  timeline: ImdlTimeline | undefined;
 }
 
 /** Header preceding "glTF" data in iMdl tile. */
@@ -276,16 +276,14 @@ class ImdlParser {
   private readonly _options: ImdlParserOptions;
   private readonly _featureTableInfo: FeatureTableInfo;
   private readonly _patterns = new Map<string, Imdl.Primitive[]>();
+  private readonly _stream: ByteStream;
 
-  private get _stream(): ByteStream {
-    return this._options.stream;
-  }
-
-  public constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, featureTableInfo: FeatureTableInfo) {
+  public constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, featureTableInfo: FeatureTableInfo, stream: ByteStream) {
     this._document = doc;
     this._binaryData = binaryData;
     this._options = options;
     this._featureTableInfo = featureTableInfo;
+    this._stream = stream;
   }
 
   public parse(): Imdl.Document | ImdlParseError {
@@ -1130,7 +1128,7 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 
 /** @internal */
 export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
-  const stream = options.stream;
+  const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);
   if (!imdlHeader.isValid)
     return TileReadStatus.InvalidHeader;
@@ -1181,7 +1179,7 @@ export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | I
       multiModel: 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable),
     };
 
-    const parser = new ImdlParser(imdlDoc, binaryData, options, featureTable);
+    const parser = new ImdlParser(imdlDoc, binaryData, options, featureTable, stream);
     return parser.parse();
   } catch (_) {
     return TileReadStatus.InvalidTileData;
