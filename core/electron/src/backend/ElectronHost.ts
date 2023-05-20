@@ -17,7 +17,7 @@ import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { dialogChannel, DialogModuleMethod } from "../common/ElectronIpcInterface";
+import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -304,7 +304,7 @@ export class ElectronHost {
 }
 
 class ElectronDialogHandler extends IpcHandler {
-  public get channelName() { return dialogChannel; }
+  public get channelName() { return electronIpcStrings.dialogChannel; }
   public async callDialog(method: DialogModuleMethod, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
     const dialogMethod = dialog[method] as Function;

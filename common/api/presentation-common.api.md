@@ -2107,7 +2107,7 @@ export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 // @internal (undocumented)
-export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
+export const PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface";
 
 // @public
 export class PresentationError extends BentleyError {
