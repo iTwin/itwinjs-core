@@ -27,12 +27,12 @@ export type WorkerResponse = WorkerResult | WorkerError;
 /** Given an interface T that defines the operations provided by a worker, produce an interface that can be used to asynchronously invoke those operations
  * from the main thread, optionally passing an array of values to be transferred from the main thread to the worker.
  *  - Every return type is converted to a `Promise` (i.e., every function becomes `async`)>.
- *  - `zeroArgFunc(): R` becomes `async zeroArgFunc(transfer?: Transferable[]): Promise<R>`.
+ *  - `zeroArgFunc(): R` becomes `async zeroArgFunc(): Promise<R>`.
  *  - `oneArgFunc(arg: U): R` becomes `async oneArgFunc(arg: U, transfer?: Transferable[]): Promise<R>`.
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `async multiArgFunc(args: [U, V], transfer?: Transferable[]): Promise<R>`.
  */
 export type WorkerInterface<T> = {
-  [P in keyof T]: T[P] extends () => any ? (transfer?: Transferable[]) => Promise<ReturnType<T[P]>> :
+  [P in keyof T]: T[P] extends () => any ? () => Promise<ReturnType<T[P]>> :
     (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0], transfer?: Transferable[]) => Promise<ReturnType<T[P]>> :
       (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>, transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : never)
     )
@@ -85,7 +85,6 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
         return async (...args: any[]) => new Promise((resolve, reject) => {
           const msgId = ++curMsgId;
           tasks.set(msgId, { resolve, reject });
-          // ###TODO how to identify transferables for a function taking zero arguments, vs a function taking 1 argument and supplying no transferables?
           worker.postMessage({ operation, payload: args[0], msgId }, args[1] ?? []);
         });
       }
