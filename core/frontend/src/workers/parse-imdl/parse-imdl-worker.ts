@@ -10,16 +10,8 @@ import { registerWorker } from "../RegisterWorker";
 
 let timeline: ImdlTimeline | undefined;
 
-export type SetTimelineArgs = {
-  timeline: RenderSchedule.ModelTimelineProps;
-  script?: never;
-} | {
-  script: RenderSchedule.ScriptProps;
-  timeline?: never;
-};
-
 export interface ParseImdlWorker {
-  setTimeline(timeline: SetTimelineArgs): void;
+  setTimeline(timeline: RenderSchedule.ScriptProps | RenderSchedule.ModelTimelineProps): void;
   parse(options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }): ImdlModel.Document | ImdlParseError;
 }
 
@@ -36,8 +28,8 @@ registerWorker<ParseImdlWorker>({
 
     return { result, transfer: collectTransferables(result) };
   },
-  setTimeline: (arg: SetTimelineArgs) => {
+  setTimeline: (arg: RenderSchedule.ScriptProps | RenderSchedule.ModelTimelineProps) => {
     assert(undefined === timeline, "setTimeline must be called only once");
-    timeline = arg.script ? RenderSchedule.Script.fromJSON(arg.script) : RenderSchedule.ModelTimeline.fromJSON(arg.timeline);
+    timeline = Array.isArray(arg) ? RenderSchedule.Script.fromJSON(arg) : RenderSchedule.ModelTimeline.fromJSON(arg);
   },
 });
