@@ -67,3 +67,26 @@ export class WorkerProxy {
     this._terminated = true;
   }
 }
+
+/** Given an interface T that defines the operations provided by a worker, produce an interface that can be used to asynchronously invoke those operations
+ * from the main thread, optionally passing an array of values to be transferred from the main thread to the worker.
+ *  - Every return type is converted to a `Promise` (i.e., every function becomes `async`)>.
+ *  - `zeroArgFunc(): R` becomes `async zeroArgFunc(transfer?: Transferable[]): Promise<R>`.
+ *  - `oneArgFunc(arg: U): R` becomes `async oneArgFunc(arg: U, transfer?: Transferable[]): Promise<R>`.
+ *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `async multiArgFunc(args: [U, V], transfer?: Transferable[]): Promise<R>`.
+ */
+export type Workerify<T> = {
+  [P in keyof T]: T[P] extends () => any ? (transfer?: Transferable[]) => Promise<ReturnType<T[P]>> :
+    (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0], transfer?: Transferable[]) => Promise<ReturnType<T[P]>> :
+      (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>, transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : never)
+    )
+};
+
+/** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
+ * The return type of each function in `T` is changed to an object holding the function result and an optional list of values to be transferred from the worker
+ * to the main thread.
+ * e.g., `doSomething(arg1: string, arg2: number): boolean` becomes `doSomething(arg1: string, arg2: number): { result: boolean; transfer?: Transferable[] }`.
+ */
+export type WorkerImpl<T> = {
+  [P in keyof T]: T[P] extends (...args: any) => any ? (...args: Parameters<T[P]>) => { result: ReturnType<T[P]>; transfer?: Transferable[]; } : never;
+};

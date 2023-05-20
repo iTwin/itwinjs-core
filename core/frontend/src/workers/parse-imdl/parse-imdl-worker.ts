@@ -5,8 +5,8 @@
 
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common";
-import { registerWorker, WorkerRequest } from "../RegisterWorker";
+import { ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common";
+import { registerWorker } from "../RegisterWorker";
 
 let timeline: ImdlTimeline | undefined;
 
@@ -41,3 +41,15 @@ registerWorker((request: ParseRequest | SetTimelineRequest) => {
       return undefined;
   }
 });
+
+export interface ParseImdlWorker {
+  setTimeline(timeline: {
+    timeline: RenderSchedule.ModelTimelineProps;
+    script?: never;
+  } | {
+    script: RenderSchedule.ScriptProps;
+    timeline?: never;
+  }): undefined;
+
+  parse(options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }): ImdlModel.Document | ImdlParseError;
+}
