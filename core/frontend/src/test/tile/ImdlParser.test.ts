@@ -13,6 +13,9 @@ import { IModelApp } from "../../IModelApp";
 use(chaiAsPromised);
 
 describe("acquireImdlParser", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
   const model1Props: RS.ModelTimelineProps = { modelId: "0x1", elementTimelines: [] };
   const model2Props: RS.ModelTimelineProps = { modelId: "0x2", elementTimelines: [] };
   const script1Props: RS.ScriptProps = [{ ...model1Props }];

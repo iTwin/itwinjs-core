@@ -9,8 +9,9 @@
 import { assert, BeDuration, Dictionary } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
-  ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument, WorkerProxy,
+  createWorkerProxy, ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument, WorkerProxy,
 } from "../common";
+import { ParseImdlWorker } from "../workers/parse-imdl/parse-imdl-worker";
 import { IModelApp } from "../IModelApp";
 
 export interface ImdlParser {
@@ -23,12 +24,12 @@ export interface AcquireImdlParserArgs {
   noWorker?: boolean;
 }
 
-async function workerParse(worker: WorkerProxy, options: Omit<ImdlParserOptions, "timeline">): Promise<ImdlModel.Document | ImdlParseError> {
+type ParserProxy = WorkerProxy<ParseImdlWorker>;
+
+async function workerParse(worker: ParserProxy, options: Omit<ImdlParserOptions, "timeline">): Promise<ImdlModel.Document | ImdlParseError> {
   const stream = options.stream;
-  return worker.execute("parse", {
+  return worker.parse({
     ...options,
-    stream: undefined,
-    timeline: undefined,
     data: stream.readBytes(0, stream.length),
   }, [stream.arrayBuffer]);
 }
@@ -47,7 +48,7 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
 
   if (!args.timeline) {
     if (!defaultParser) {
-      const worker = new WorkerProxy(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
+      const worker = createWorkerProxy<ParseImdlWorker>(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
       defaultParser = {
         parse: (options) => workerParse(worker, options),
         release: () => undefined,
@@ -71,14 +72,14 @@ let defaultParser: ImdlParser | undefined;
 class ParserWithTimeline implements ImdlParser {
   public refCount = 0;
   private readonly _timeline: ImdlTimeline;
-  private readonly _worker: WorkerProxy;
+  private readonly _worker: ParserProxy;
 
   public constructor(timeline: ImdlTimeline) {
     this._timeline = timeline;
 
-    this._worker = new WorkerProxy(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
+    this._worker = createWorkerProxy<ParseImdlWorker>(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
     const payload = timeline instanceof RenderSchedule.Script ? { script: timeline.toJSON() } : { timeline: timeline.toJSON() };
-    this._worker.post("setTimeline", payload);
+    this._worker.setTimeline(payload);
   }
 
   public async parse(options: Omit<ImdlParserOptions, "timeline">) {
