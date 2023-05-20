@@ -25,6 +25,7 @@ describe("WorkerProxy", () => {
     expect(await worker.one("hi")).to.equal("hi");
     expect(await worker.two([1, 2])).to.equal(3);
     await expect(worker.throwError()).to.be.eventually.rejectedWith("ruh-roh");
+    await expect(worker.throwString()).to.be.eventually.rejectedWith("Unknown worker error");
 
     worker.terminate();
   });

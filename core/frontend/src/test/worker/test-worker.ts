@@ -10,6 +10,7 @@ export interface TestWorker {
   one(s: string): string;
   two(a: number, b: number): number;
   throwError(): never;
+  throwString(): never;
   setTransfer(wantTransfer: boolean): undefined;
 }
 
@@ -28,6 +29,9 @@ registerWorker<TestWorker>({
   two: (args: [a: number, b: number]) => maybeTransfer(args[0] + args[1]),
   throwError: () => {
     throw new Error("ruh-roh");
+  },
+  throwString: () => {
+    throw "not an error";
   },
   setTransfer: (wantTransfer: boolean) => {
     doTransfer = wantTransfer;
