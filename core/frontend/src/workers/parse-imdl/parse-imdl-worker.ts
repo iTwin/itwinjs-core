@@ -5,42 +5,10 @@
 
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common";
+import { collectTransferables, ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common";
 import { registerWorker } from "../RegisterWorker";
 
 let timeline: ImdlTimeline | undefined;
-
-interface SetTimelineRequest {
-  operation: "setTimeline";
-  payload: {
-    timeline: RenderSchedule.ModelTimelineProps;
-    script?: never;
-  } | {
-    script: RenderSchedule.ScriptProps;
-    timeline?: never;
-  };
-}
-
-type ParsePayload = Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array };
-interface ParseRequest {
-  operation: "parse";
-  payload: ParsePayload;
-}
-
-registerWorker((request: ParseRequest | SetTimelineRequest) => {
-  switch (request.operation) {
-    case "parse":
-      return parseImdlDocument({
-        ...request.payload,
-        stream: ByteStream.fromUint8Array(request.payload.data),
-        timeline,
-      });
-    case "setTimeline":
-      assert(undefined === timeline, "setTimeline must be called only once");
-      timeline = request.payload.script ? RenderSchedule.Script.fromJSON(request.payload.script) : RenderSchedule.ModelTimeline.fromJSON(request.payload.timeline);
-      return undefined;
-  }
-});
 
 export interface ParseImdlWorker {
   setTimeline(timeline: {
@@ -53,3 +21,23 @@ export interface ParseImdlWorker {
 
   parse(options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }): ImdlModel.Document | ImdlParseError;
 }
+
+registerWorker<ParseImdlWorker>({
+  parse: (options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }) => {
+    const result = parseImdlDocument({
+      ...options,
+      stream: ByteStream.fromUint8Array(options.data),
+      timeline,
+    });
+
+    if (typeof result === "number")
+      return result;
+
+    return { result, transfer: collectTransferables(result) };
+  },
+  setTimeline: (arg: { timeline: RenderSchedule.ModelTimelineProps; script?: never; } | { script: RenderSchedule.ScriptProps; timeline?: never }) => {
+    assert(undefined === timeline, "setTimeline must be called only once");
+    timeline = arg.script ? RenderSchedule.Script.fromJSON(arg.script) : RenderSchedule.ModelTimeline.fromJSON(arg.timeline);
+    return undefined;
+  },
+});
