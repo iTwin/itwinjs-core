@@ -255,19 +255,19 @@ function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
     ...params,
     segments: params.segments ? {
       ...params.segments,
-      indices: params.segments.indices.VTIdata,
+      indices: params.segments.indices.data,
     } : undefined,
     silhouettes: params.silhouettes ? {
       ...params.silhouettes,
-      indices: params.silhouettes.indices.VTIdata,
+      indices: params.silhouettes.indices.data,
     } : undefined,
     polylines: params.polylines ? {
       ...params.polylines,
-      indices: params.polylines.indices.VTIdata,
-      prevIndices: params.polylines.prevIndices.VTIdata,
+      indices: params.polylines.indices.data,
+      prevIndices: params.polylines.prevIndices.data,
     } : undefined,
     indexed: params.indexed ? {
-      indices: params.indexed.indices.VTIdata,
+      indices: params.indexed.indices.data,
       edges: params.indexed.edges,
     } : undefined,
   };
@@ -525,7 +525,7 @@ class Parser {
                 vertices: fromVertexTable(p.vertices),
                 surface: {
                   ...p.surface,
-                  indices: p.surface.indices.VTIdata,
+                  indices: p.surface.indices.data,
                   material,
                   textureMapping: p.surface.textureMapping?.texture instanceof Texture ? {
                     texture: p.surface.textureMapping.texture.toImdl(),
@@ -554,7 +554,7 @@ class Parser {
               type: "point",
               params: {
                 vertices: fromVertexTable(p.vertices),
-                indices: p.indices.VTIdata,
+                indices: p.indices.data,
                 weight: p.weight,
               },
             });
@@ -581,8 +581,8 @@ class Parser {
                 ...p,
                 vertices: fromVertexTable(p.vertices),
                 polyline: {
-                  indices: p.polyline.indices.VTIdata,
-                  prevIndices: p.polyline.prevIndices.VTIdata,
+                  indices: p.polyline.indices.data,
+                  prevIndices: p.polyline.prevIndices.data,
                   nextIndicesAndParams: p.polyline.nextIndicesAndParams,
                 },
               },

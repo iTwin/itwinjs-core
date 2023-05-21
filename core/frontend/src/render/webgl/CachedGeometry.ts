@@ -1149,8 +1149,8 @@ export class PolylineBuffers implements WebGLDisposable {
   }
 
   public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
-    const indices = BufferHandle.createArrayBuffer(polyline.indices.VTIdata);
-    const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.VTIdata);
+    const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
+    const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
     return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
   }

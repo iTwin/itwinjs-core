@@ -46,7 +46,7 @@ export class PolylineGeometry extends LUTGeometry {
     this.type = params.type;
     this._isPlanar = params.isPlanar;
     this.lut = lut;
-    this.numIndices = params.polyline.indices.VTIlength;
+    this.numIndices = params.polyline.indices.length;
     this._buffers = buffers;
   }
 

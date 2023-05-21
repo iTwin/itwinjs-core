@@ -87,9 +87,9 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   }
 
   public static create(mesh: MeshData, params: IndexedEdgeParams): IndexedEdgeGeometry | undefined {
-    const indexBuffer = BufferHandle.createArrayBuffer(params.indices.VTIdata);
+    const indexBuffer = BufferHandle.createArrayBuffer(params.indices.data);
     const lut = EdgeLUT.create(params.edges);
-    return indexBuffer && lut ? new IndexedEdgeGeometry(mesh, indexBuffer, params.indices.VTIlength, lut) : undefined;
+    return indexBuffer && lut ? new IndexedEdgeGeometry(mesh, indexBuffer, params.indices.length, lut) : undefined;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

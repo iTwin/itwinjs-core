@@ -143,7 +143,7 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
   expectColors(vertexTable, expectedColors);
 
   let curIndex = 0;
-  for (const index of params.indices.VTIiterator())
+  for (const index of params.indices)
     expect(index).to.equal(curIndex++);
 
   expectBaseVertices(vertexTable, expectedPts);
@@ -228,7 +228,7 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
 
   const surface = params.surface;
   let curIndex = 0;
-  for (const index of surface.indices.VTIiterator())
+  for (const index of surface.indices)
     expect(index).to.equal(mesh.indices[curIndex++]);
 
   expect(surface.textureMapping?.texture).to.equal(mesh.texture);
@@ -245,7 +245,7 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
   if (SurfaceType.Textured === type || SurfaceType.TexturedLit === type) {
     const uvs = mesh.points.map((p) => new Point2d(p.uv, -p.uv!));
     const qparams = QParams2d.fromRange(Range2d.createArray(uvs));
-    for (const vertIndex of surface.indices.VTIiterator()) {
+    for (const vertIndex of surface.indices) {
       const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
       const u = data[dataIndex + 3] & 0xffff;
       const v = (data[dataIndex + 3] & 0xffff0000) >>> 16;
@@ -263,7 +263,7 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
         return (data[i + 1] & 0xffff0000) >>> 16;
     };
 
-    for (const vertIndex of surface.indices.VTIiterator()) {
+    for (const vertIndex of surface.indices) {
       const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
       const normal = getNormal(dataIndex);
       expect(normal).to.equal(mesh.points[vertIndex].normal);
@@ -294,14 +294,14 @@ function makePolyline(verts: PolylineIndices[]): TesselatedPolyline {
 }
 
 function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[]): void {
-  expect(polyline.indices.VTIlength).to.equal(expected.length);
-  expect(polyline.prevIndices.VTIlength).to.equal(expected.length);
+  expect(polyline.indices.length).to.equal(expected.length);
+  expect(polyline.prevIndices.length).to.equal(expected.length);
   expect(polyline.nextIndicesAndParams.length).to.equal(4 * expected.length);
 
   let i = 0;
   const niap = new Uint32Array(polyline.nextIndicesAndParams.buffer, polyline.nextIndicesAndParams.byteOffset, polyline.nextIndicesAndParams.length / 4);
-  const prevIter = polyline.prevIndices.VTIiterator();
-  for (const index of polyline.indices.VTIiterator()) {
+  const prevIter = polyline.prevIndices[Symbol.iterator]();
+  for (const index of polyline.indices) {
     const pt = expected[i];
     expect(index).to.equal(pt[0]);
     expect(prevIter.next().value).to.equal(pt[1]);
@@ -368,11 +368,11 @@ function makeEdgeParams(edges: Edges): EdgeParams {
 
 function expectSegments(params: SegmentEdgeParams, expected: Array<[number, number, number]> | Array<[number, number, number, number]>): void {
   let i = 0;
-  expect(params.indices.VTIlength).to.equal(expected.length);
+  expect(params.indices.length).to.equal(expected.length);
   expect(params.endPointAndQuadIndices.length).to.equal(4 * expected.length);
   expect(params.endPointAndQuadIndices.length % 4).to.equal(0);
   const epaq = new Uint32Array(params.endPointAndQuadIndices.buffer, params.endPointAndQuadIndices.byteOffset, params.endPointAndQuadIndices.length / 4);
-  for (const index of params.indices.VTIiterator()) {
+  for (const index of params.indices) {
     expect(index).to.equal(expected[i][0]);
     const endPointAndQuad = epaq[i];
     expect(endPointAndQuad & 0x00ffffff).to.equal(expected[i][1]);

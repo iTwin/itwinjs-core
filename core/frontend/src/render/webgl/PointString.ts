@@ -66,7 +66,7 @@ export class PointStringGeometry extends LUTGeometry {
   }
 
   public static create(params: PointStringParams, viOrigin: Point3d | undefined): PointStringGeometry | undefined {
-    const indices = BufferHandle.createArrayBuffer(params.indices.VTIdata);
+    const indices = BufferHandle.createArrayBuffer(params.indices.data);
     if (undefined === indices)
       return undefined;
 
@@ -75,7 +75,7 @@ export class PointStringGeometry extends LUTGeometry {
       return undefined;
 
     const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
-    return new PointStringGeometry(indices, params.indices.VTIlength, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
+    return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
   }
 
   public get isDisposed(): boolean {
