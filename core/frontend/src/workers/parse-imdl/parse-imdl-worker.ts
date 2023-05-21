@@ -12,11 +12,11 @@ let timeline: ImdlTimeline | undefined;
 
 export interface ParseImdlWorker {
   setTimeline(timeline: RenderSchedule.ScriptProps | RenderSchedule.ModelTimelineProps): void;
-  parse(options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }): ImdlModel.Document | ImdlParseError;
+  parse(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError;
 }
 
 registerWorker<ParseImdlWorker>({
-  parse: (options: Omit<ImdlParserOptions, "timeline" | "stream"> & { data: Uint8Array }) => {
+  parse: (options: ImdlParserOptions) => {
     const result = parseImdlDocument({
       ...options,
       data: options.data,

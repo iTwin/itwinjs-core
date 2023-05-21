@@ -15,7 +15,7 @@ import { ParseImdlWorker } from "../workers/parse-imdl/parse-imdl-worker";
 import { IModelApp } from "../IModelApp";
 
 export interface ImdlParser {
-  parse(options: Omit<ImdlParserOptions, "timeline">): Promise<ImdlModel.Document | ImdlParseError>;
+  parse(options: ImdlParserOptions): Promise<ImdlModel.Document | ImdlParseError>;
   release(): void;
 }
 
@@ -72,7 +72,7 @@ class ParserWithTimeline implements ImdlParser {
     this._worker.setTimeline(timeline.toJSON());
   }
 
-  public async parse(options: Omit<ImdlParserOptions, "timeline">) {
+  public async parse(options: ImdlParserOptions) {
     return this._worker.parse(options, [options.data.buffer]);
   }
 

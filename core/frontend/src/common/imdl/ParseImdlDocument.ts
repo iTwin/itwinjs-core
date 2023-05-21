@@ -45,6 +45,9 @@ export interface ImdlParserOptions {
   maxVertexTableSize: number;
   omitEdges?: boolean;
   createUntransformedRootNode?: boolean;
+}
+
+export interface ParseImdlDocumentArgs extends ImdlParserOptions {
   timeline: ImdlTimeline | undefined;
 }
 
@@ -270,20 +273,22 @@ function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   };
 }
 
-class ImdlParser {
+class Parser {
   private readonly _document: Document;
   private readonly _binaryData: Uint8Array;
   private readonly _options: ImdlParserOptions;
   private readonly _featureTableInfo: FeatureTableInfo;
   private readonly _patterns = new Map<string, Imdl.Primitive[]>();
   private readonly _stream: ByteStream;
+  private readonly _timeline?: ImdlTimeline;
 
-  public constructor(doc: Document, binaryData: Uint8Array, options: ImdlParserOptions, featureTableInfo: FeatureTableInfo, stream: ByteStream) {
+  public constructor(doc: Document, binaryData: Uint8Array, options: ParseImdlDocumentArgs, featureTableInfo: FeatureTableInfo, stream: ByteStream) {
     this._document = doc;
     this._binaryData = binaryData;
     this._options = options;
     this._featureTableInfo = featureTableInfo;
     this._stream = stream;
+    this._timeline = options.timeline;
   }
 
   public parse(): Imdl.Document | ImdlParseError {
@@ -387,9 +392,9 @@ class ImdlParser {
 
       const layerId = docMesh.layer;
       if ("Node_Root" === nodeKey) {
-        if (this._options.timeline) {
+        if (this._timeline) {
           // Split up the root node into transform nodes.
-          this.parseAnimationBranches(nodes, docMesh, featureTable, this._options.timeline);
+          this.parseAnimationBranches(nodes, docMesh, featureTable, this._timeline);
         } else if (this._options.createUntransformedRootNode) {
           // If transform nodes exist in the tile tree, then we need to create a branch for the root node so that elements not associated with
           // any node in the schedule script can be grouped together.
@@ -1127,7 +1132,7 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 }
 
 /** @internal */
-export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | ImdlParseError {
+export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document | ImdlParseError {
   const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);
   if (!imdlHeader.isValid)
@@ -1179,7 +1184,7 @@ export function parseImdlDocument(options: ImdlParserOptions): Imdl.Document | I
       multiModel: 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable),
     };
 
-    const parser = new ImdlParser(imdlDoc, binaryData, options, featureTable, stream);
+    const parser = new Parser(imdlDoc, binaryData, options, featureTable, stream);
     return parser.parse();
   } catch (_) {
     return TileReadStatus.InvalidTileData;

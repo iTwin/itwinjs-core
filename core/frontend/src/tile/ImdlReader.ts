@@ -94,11 +94,10 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     is3d: args.is3d,
     maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
     omitEdges: false === args.loadEdges,
-    timeline: args.timeline,
     createUntransformedRootNode: args.containsTransformNodes,
   };
 
-  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument(parseOpts);
+  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument({ ...parseOpts, timeline: args.timeline });
   if (isCanceled())
     return { isLeaf: true, readStatus: TileReadStatus.Canceled };
   else if (typeof document === "number")
