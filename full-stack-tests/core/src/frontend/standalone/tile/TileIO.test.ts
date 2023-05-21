@@ -10,9 +10,8 @@ import {
 } from "@itwin/core-common";
 import {
   GeometricModelState, ImdlModel, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
-  parseImdlDocument, RenderGraphic, SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  parseImdlDocument, RenderGraphic, SnapshotConnection, SurfaceType, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
-import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestUtility } from "../../TestUtility";
@@ -787,12 +786,12 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const stream = ByteStream.fromUint8Array(response);
         const document = parseImdlDocument({
-          stream,
+          data: response,
           batchModelId: "0x1c",
           is3d: true,
           maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
+          timeline: undefined,
         }) as ImdlModel.Document;
 
         expect(typeof document).to.equal("object");
