@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { getCenteredViewRect, ViewRect } from "../common";
+import { ViewRect } from "../common/ViewRect";
+import { getCenteredViewRect } from "../common/ImageUtil";
 
 function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number): void {
   expect(rect.left).to.equal(l);

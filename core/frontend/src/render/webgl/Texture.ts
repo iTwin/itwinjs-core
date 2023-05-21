@@ -10,7 +10,7 @@ import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
 import {
   ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData, TextureTransparency,
 } from "@itwin/core-common";
-import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../common";
+import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../common/ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { WebGLDisposable } from "./Disposable";

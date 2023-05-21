@@ -16,7 +16,8 @@ import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { ColorMap } from "../ColorMap";
-import { DisplayParams, MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common/render/primitives/MeshPrimitive";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 

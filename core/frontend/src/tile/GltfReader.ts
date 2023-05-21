@@ -30,11 +30,15 @@ import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
+import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
+import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
+import { TextureImageSource } from "../common/Texture";
 import {
-  DisplayParams, DracoMeshCompression, FrontendLoggerCategory, getGltfNodeMeshIds, getImageSourceFormatForMimeType, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
-  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, imageBitmapFromImageSource, imageElementFromImageSource, isGltf1Material, MeshPrimitiveType,
-  TextureImageSource, traverseGltfNodes, tryImageElementFromUrl,
-} from "../common";
+  DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
+  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
+} from "../common/gltf/GltfSchema";
 
 /* eslint-disable no-restricted-syntax */
 

@@ -9,7 +9,8 @@ import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEn
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { createEdgeParams } from "../../../render/primitives/EdgeParams";
-import { EdgeTable, VertexIndices } from "../../../common";
+import { EdgeTable } from "../../../common/render/primitives/EdgeParams";
+import { VertexIndices } from "../../../common/render/primitives/VertexIndices";
 
 function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
   return new OctEncodedNormalPair(new OctEncodedNormal(n0), new OctEncodedNormal(n1));

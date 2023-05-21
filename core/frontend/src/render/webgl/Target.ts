@@ -11,7 +11,9 @@ import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-ge
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
-import { AnimationNodeId, canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas, ViewRect } from "../../common";
+import { AnimationNodeId } from "../../common/render/AnimationNodeId";
+import { ViewRect } from "../../common/ViewRect";
+import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";

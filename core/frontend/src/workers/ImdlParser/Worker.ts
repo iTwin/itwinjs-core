@@ -5,7 +5,8 @@
 
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { collectTransferables, ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common";
+import { collectTransferables, ImdlModel } from "../../common/imdl/ImdlModel";
+import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument";
 import { registerWorker } from "../RegisterWorker";
 
 let timeline: ImdlTimeline | undefined;

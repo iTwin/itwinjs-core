@@ -9,7 +9,8 @@
 import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { DisplayParams, MeshPrimitiveType } from "../../../common";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
 import { GeometryList } from "../geometry/GeometryList";
 import { Geometry } from "../geometry/GeometryPrimitives";
 import { PolyfacePrimitive } from "../Polyface";

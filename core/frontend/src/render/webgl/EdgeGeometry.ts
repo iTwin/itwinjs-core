@@ -8,7 +8,8 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
-import { SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../../common";
+import { SegmentEdgeParams, SilhouetteParams } from "../../common/render/primitives/EdgeParams";
+import { TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { PolylineBuffers } from "./CachedGeometry";

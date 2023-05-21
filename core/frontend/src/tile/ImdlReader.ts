@@ -17,7 +17,8 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
-import { convertFeatureTable, ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common";
+import { ImdlModel } from "../common/imdl/ImdlModel";
+import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */

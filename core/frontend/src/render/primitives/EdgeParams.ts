@@ -9,9 +9,10 @@
 import { assert } from "@itwin/core-bentley";
 import { MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
 import { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import {
-  calculateEdgeTableParams, EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams, VertexIndices,
-} from "../../common";
+  calculateEdgeTableParams, EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams,
+} from "../../common/render/primitives/EdgeParams";
 import { tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
 import { IModelApp } from "../../IModelApp";
 

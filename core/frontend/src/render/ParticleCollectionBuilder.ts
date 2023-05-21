@@ -15,7 +15,8 @@ import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
-import { DisplayParams, MeshParams } from "../common";
+import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { MeshParams } from "../common/render/primitives/MeshParams";
 import { createMeshParams } from "./primitives/VertexTableBuilder";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].

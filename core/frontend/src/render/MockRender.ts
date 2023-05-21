@@ -12,9 +12,10 @@ import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import {
-  MeshParams, PointStringParams, PolylineParams, ViewRect,
-} from "../common";
+import { MeshParams } from "../common/render/primitives/MeshParams";
+import { PointStringParams } from "../common/render/primitives/PointStringParams";
+import { PolylineParams } from "../common/render/primitives/PolylineParams";
+import { ViewRect } from "../common/ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";

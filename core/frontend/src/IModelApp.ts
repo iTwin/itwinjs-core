@@ -29,7 +29,7 @@ import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
 import { FrontendHubAccess } from "./FrontendHubAccess";
-import { FrontendLoggerCategory } from "./common";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";

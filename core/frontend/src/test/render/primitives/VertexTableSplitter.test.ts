@@ -13,9 +13,15 @@ import {
   IModelApp,
   MockRender,
 } from "../../../core-frontend";
+import { EdgeParams, SegmentEdgeParams } from "../../../common/render/primitives/EdgeParams";
+import { MeshParams } from "../../../common/render/primitives/MeshParams";
+import { PointStringParams } from "../../../common/render/primitives/PointStringParams";
+import { TesselatedPolyline } from "../../../common/render/primitives/PolylineParams";
+import { VertexTable } from "../../../common/render/primitives/VertexTable";
+import { SurfaceType } from "../../../common/render/primitives/SurfaceParams";
 import {
-  ComputeAnimationNodeId, EdgeParams, IndexBuffer, MeshParams, PointStringParams, SegmentEdgeParams, splitMeshParams, splitPointStringParams, SurfaceType, TesselatedPolyline, VertexTable,
-} from "../../../common";
+  ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams,
+} from "../../../common/render/primitives/VertexTableSplitter";
 import {
   createMeshParams, createPointStringParams, MeshArgs, PolylineArgs,
 } from "../../../render-primitives";

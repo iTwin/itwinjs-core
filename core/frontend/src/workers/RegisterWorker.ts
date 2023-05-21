@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import type { WorkerImplementation } from "../common";
+import type { WorkerImplementation } from "../common/WorkerProxy";
 
 type WorkerRequest = {
   operation: string;

@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { ByteStream } from "@itwin/core-bentley";
 import { RenderSchedule as RS, TileReadStatus } from "@itwin/core-common";
-import { ImdlTimeline } from "../../common";
+import { ImdlTimeline } from "../../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlParser } from "../../tile/internal";
 import { IModelApp } from "../../IModelApp";
 

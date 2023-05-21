@@ -8,7 +8,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 
-import { FrontendLoggerCategory } from "../common";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import type { ExtensionManifest, ExtensionProvider } from "./Extension";
 
 /** The Extensions loading system has the following goals:

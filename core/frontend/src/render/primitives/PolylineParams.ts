@@ -11,7 +11,8 @@ import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { PolylineData, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexTableBuilder } from "./VertexTableBuilder";
-import { PolylineParams, TesselatedPolyline, VertexIndices } from "../../common";
+import { PolylineParams, TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { IModelApp } from "../../IModelApp";
 
 /** Parameter associated with each vertex index of a tesselated polyline. */

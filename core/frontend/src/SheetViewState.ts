@@ -32,7 +32,8 @@ import { OffScreenViewport, Viewport } from "./Viewport";
 import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow, ViewRect } from "./common";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
+import { ViewRect } from "./common/ViewRect";
 
 // cSpell:ignore ovrs
 

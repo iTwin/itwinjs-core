@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { createWorkerProxy } from "../../common";
+import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "./test-worker";
 
 use(chaiAsPromised);

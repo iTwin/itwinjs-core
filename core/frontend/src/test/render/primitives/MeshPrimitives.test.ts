@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, MeshPolyline, OctEncodedNormal } from "@itwin/core-common";
-import { DisplayParams, MeshPrimitiveType } from "../../../common";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
 import { Triangle } from "../../../render/primitives/Primitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexKey } from "../../../render/primitives/VertexKey";

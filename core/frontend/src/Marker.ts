@@ -9,7 +9,9 @@
 import { assert, Logger, ObservableSet } from "@itwin/core-bentley";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
-import { FrontendLoggerCategory, imageElementFromUrl, ViewRect } from "./common";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { imageElementFromUrl } from "./common/ImageUtil";
+import { ViewRect } from "./common/ViewRect";
 import { IModelApp } from "./IModelApp";
 import { ToolTipOptions } from "./NotificationManager";
 import { CanvasDecoration } from "./render/CanvasDecoration";

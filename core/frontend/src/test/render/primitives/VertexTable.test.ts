@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { Point3dList } from "../../../common";
+import { Point3dList } from "../../../common/render/primitives/MeshPrimitive";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "../../../IModelApp";
 import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";

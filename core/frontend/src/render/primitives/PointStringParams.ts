@@ -9,7 +9,8 @@
 import { assert } from "@itwin/core-bentley";
 import { PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexTableBuilder } from "./VertexTableBuilder";
-import { PointStringParams, VertexIndices } from "../../common";
+import { PointStringParams } from "../../common/render/primitives/PointStringParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { IModelApp } from "../../IModelApp";
 
 export function createPointStringParams(args: PolylineArgs): PointStringParams | undefined {
