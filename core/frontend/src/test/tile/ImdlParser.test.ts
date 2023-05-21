@@ -11,7 +11,7 @@ import { IModelApp } from "../../IModelApp";
 
 use(chaiAsPromised);
 
-describe.only("acquireImdlParser", () => {
+describe("acquireImdlParser", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
@@ -124,7 +124,7 @@ describe.only("acquireImdlParser", () => {
   });
 });
 
-describe.only("ImdlParser", () => {
+describe("ImdlParser", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 

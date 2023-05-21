@@ -328,7 +328,7 @@ class VertexTableSplitter {
     const vertex = new Uint32Array(vertSize);
     const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.numVertices * vertSize);
 
-    for (const index of this._input.indices) {
+    for (const index of this._input.indices.VTIiterator()) {
       // Extract the data for this vertex without allocating new typed arrays.
       const vertexOffset = index * vertSize;
       for (let i = 0; i < vertex.length; i++)
@@ -444,7 +444,7 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
 
   let curIndexIndex = 0;
   const remappedIndex = { } as unknown as RemappedIndex;
-  for (const srcIndex of src.indices) {
+  for (const srcIndex of src.indices.VTIiterator()) {
     if (remapIndex(remappedIndex, srcIndex, nodes)) {
       let endPointAndQuad = srcEndPts[curIndexIndex];
       const otherIndex = (endPointAndQuad & 0x00ffffff) >>> 0;
@@ -478,10 +478,10 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
 
 function remapPolylineEdges(src: TesselatedPolyline, nodes: Map<number, Node>, edges: Map<number, RemappedEdges>): void {
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
-  const prevIter = src.prevIndices[Symbol.iterator]();
+  const prevIter = src.prevIndices.VTIiterator();
   let curIndexIndex = 0;
   const remappedIndex = { } as unknown as RemappedIndex;
-  for (const srcIndex of src.indices) {
+  for (const srcIndex of src.indices.VTIiterator()) {
     if (remapIndex(remappedIndex, srcIndex, nodes)) {
       const prevIndex = prevIter.next().value;
       assert(undefined !== prevIndex);
@@ -549,7 +549,7 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
   }
 
   let maxIndex = 0;
-  for (const srcIndex of src.indices)
+  for (const srcIndex of src.indices.VTIiterator())
     maxIndex = Math.max (srcIndex, maxIndex);
 
   const remappedIndex = { } as unknown as RemappedIndex;
@@ -722,7 +722,7 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
   let curIndexIndex = 0;
   const remappedIndex = { } as unknown as RemappedIndex;
-  for (const prevIndex of src.prevIndices) {
+  for (const prevIndex of src.prevIndices.VTIiterator()) {
     if (remapIndex(remappedIndex, prevIndex, nodes)) {
       const node = remappedIndex.node as PolylineNode;
       if (!node.prevIndices) {

@@ -14,7 +14,7 @@ describe("PolylineTesselator", () => {
     const polylines = [ new PolylineData([0, 1, 2, 3], 4) ];
 
     const tesselated = tesselatePolyline(polylines, qpts, true);
-    expect(tesselated.indices.length).to.equal(72);
+    expect(tesselated.indices.VTIlength).to.equal(72);
 
     expect(tesselated.indices.decodeIndices()).to.deep.equal([0,1,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,2,2,1,2,1,1,2,2,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,2,2,3,3,2,3,2,2,3,3,2,2,2,2,2,2,2,2,2]);
 
