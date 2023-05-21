@@ -11,7 +11,7 @@ import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { TextureImageSource } from "../Texture";
+import { TextureImageSource } from "../render/TextureParams";
 import {
   getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl,
 } from "../ImageUtil";

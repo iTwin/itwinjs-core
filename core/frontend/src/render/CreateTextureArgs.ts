@@ -8,7 +8,7 @@
 
 import { ImageSource, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
-import { TextureCacheKey, TextureImage } from "../common/Texture";
+import { TextureCacheKey, TextureImage } from "../common/render/TextureParams";
 
 /** Specifies that a [RenderTexture]($common) should be kept in memory until the corresponding [[IModelConnection]] is closed, at
  * which point it will be disposed.

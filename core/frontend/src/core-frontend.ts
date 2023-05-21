@@ -33,7 +33,7 @@ export * from "./common/render/primitives/SurfaceParams";
 export * from "./common/render/primitives/VertexIndices";
 export * from "./common/render/primitives/VertexTable";
 export * from "./common/render/primitives/VertexTableSplitter";
-export * from "./common/Texture";
+export * from "./common/render/TextureParams";
 export * from "./common/ViewRect";
 export * from "./common/WorkerProxy";
 export * from "./ContextRealityModelState";

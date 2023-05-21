@@ -23,7 +23,7 @@ import { imageElementFromImageSource } from "../common/ImageUtil";
 import { MeshParams } from "../common/render/primitives/MeshParams";
 import { PointStringParams } from "../common/render/primitives/PointStringParams";
 import { PolylineParams } from "../common/render/primitives/PolylineParams";
-import { TextureCacheKey } from "../common/Texture";
+import { TextureCacheKey } from "../common/render/TextureParams";
 import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
