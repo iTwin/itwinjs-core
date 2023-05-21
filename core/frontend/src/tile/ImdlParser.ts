@@ -11,7 +11,7 @@ import { RenderSchedule } from "@itwin/core-common";
 import {
   createWorkerProxy, ImdlModel, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument, WorkerProxy,
 } from "../common";
-import { ParseImdlWorker } from "../workers/parse-imdl/parse-imdl-worker";
+import { ParseImdlWorker } from "../workers/ImdlParser/Worker";
 import { IModelApp } from "../IModelApp";
 
 export interface ImdlParser {
