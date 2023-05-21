@@ -6,7 +6,6 @@ import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
 import { PolylineData, QPoint3dList } from "@itwin/core-common";
 import { tesselatePolyline } from "../../../render/primitives/PolylineParams";
-import { VertexIndices } from "../../../common/render/primitives/VertexIndices";
 
 describe("PolylineTesselator", () => {
   it("produces joint triangles", () => {
@@ -15,11 +14,11 @@ describe("PolylineTesselator", () => {
     const polylines = [ new PolylineData([0, 1, 2, 3], 4) ];
 
     const tesselated = tesselatePolyline(polylines, qpts, true);
-    expect(VertexIndices.length(tesselated.indices)).to.equal(72);
+    expect(tesselated.indices.VTIlength).to.equal(72);
 
-    expect(VertexIndices.decodeIndices(tesselated.indices)).to.deep.equal([0,1,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,2,2,1,2,1,1,2,2,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,2,2,3,3,2,3,2,2,3,3,2,2,2,2,2,2,2,2,2]);
+    expect(tesselated.indices.decodeIndices()).to.deep.equal([0,1,0,0,1,1,0,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,2,2,1,2,1,1,2,2,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,2,2,3,3,2,3,2,2,3,3,2,2,2,2,2,2,2,2,2]);
 
-    expect(VertexIndices.decodeIndices(tesselated.prevIndices)).to.deep.equal([0,2,0,0,2,2,0,2,0,0,2,2,2,2,2,2,2,2,2,2,2,0,3,0,0,3,3,0,3,0,0,3,3,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,1,3,1,1,3,3,1,3,1,1,3,3,1,1,1,1,1,1,1,1,1]);
+    expect(tesselated.prevIndices.decodeIndices()).to.deep.equal([0,2,0,0,2,2,0,2,0,0,2,2,2,2,2,2,2,2,2,2,2,0,3,0,0,3,3,0,3,0,0,3,3,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,1,3,1,1,3,3,1,3,1,1,3,3,1,1,1,1,1,1,1,1,1]);
 
     const next32 = Array.from(new Uint32Array(tesselated.nextIndicesAndParams.buffer));
     const nextIndices = next32.map((x) => (x & 0x00ffffff) >>> 0);

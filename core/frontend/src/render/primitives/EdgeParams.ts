@@ -74,7 +74,7 @@ function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]
   }
 
   return {
-    indices: VertexIndices.fromBytes(indexBytes),
+    indices: new VertexIndices(indexBytes),
     endPointAndQuadIndices: endPointAndQuadIndexBytes,
   };
 }
@@ -116,10 +116,10 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     return undefined;
 
   // Each edge is a quad consisting of six vertices. Each vertex is an identical 24-bit index into the lookup table.
-  const indices = VertexIndices.fromBytes(new Uint8Array(numTotalEdges * 6 * 3));
+  const indices = new VertexIndices(new Uint8Array(numTotalEdges * 6 * 3));
   for (let i = 0; i < numTotalEdges; i++)
     for (let j = 0; j < 6; j++)
-      VertexIndices.setNthIndex(indices, i * 6 + j, i);
+      indices.setNthIndex(i * 6 + j, i);
 
   const {width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams (numSegmentEdges, numSilhouettes, maxSize);
 

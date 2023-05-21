@@ -9,7 +9,6 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
 import { EdgeTable, IndexedEdgeParams } from "../../common/render/primitives/EdgeParams";
-import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
 import { TextureHandle } from "./Texture";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
@@ -88,9 +87,9 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   }
 
   public static create(mesh: MeshData, params: IndexedEdgeParams): IndexedEdgeGeometry | undefined {
-    const indexBuffer = BufferHandle.createArrayBuffer(VertexIndices.toBytes(params.indices));
+    const indexBuffer = BufferHandle.createArrayBuffer(params.indices.VTIdata);
     const lut = EdgeLUT.create(params.edges);
-    return indexBuffer && lut ? new IndexedEdgeGeometry(mesh, indexBuffer, VertexIndices.length(params.indices), lut) : undefined;
+    return indexBuffer && lut ? new IndexedEdgeGeometry(mesh, indexBuffer, params.indices.VTIlength, lut) : undefined;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

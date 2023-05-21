@@ -41,9 +41,8 @@ function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
 }
 
 function expectIndices(indices: VertexIndices, expected: number[]): void {
-  const bytes = VertexIndices.toBytes(indices);
-  expect(bytes.length).to.equal(expected.length * 3);
-  const stream = ByteStream.fromUint8Array(bytes);
+  expect(indices.VTIdata.length).to.equal(expected.length * 3);
+  const stream = ByteStream.fromUint8Array(indices.VTIdata);
   for (const expectedIndex of expected)
     expect(stream.readUint24()).to.equal(expectedIndex);
 }
