@@ -35,7 +35,7 @@ import { VertexIndices } from "../render/primitives/VertexIndices";
  */
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
-/** Options provided to [[parseImdlDocument]].
+/** Options provided to [[ImdlParser.parse]].
  * @internal
  */
 export interface ImdlParserOptions {
@@ -47,6 +47,9 @@ export interface ImdlParserOptions {
   createUntransformedRootNode?: boolean;
 }
 
+/** Arguments provided to [[parseImdlDocument]].
+ * @internal
+ */
 export interface ParseImdlDocumentArgs extends ImdlParserOptions {
   timeline: ImdlTimeline | undefined;
 }

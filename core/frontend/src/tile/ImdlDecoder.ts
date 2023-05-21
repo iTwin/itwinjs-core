@@ -14,6 +14,9 @@ import { RenderSystem } from "../render/RenderSystem";
 import type { ImdlTimeline } from "../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "./internal";
 
+/** Arguments supplied to [[ImdlDecoder.decode]].
+ * @internal
+ */
 export interface ImdlDecodeArgs {
   stream: ByteStream;
   system: RenderSystem;
@@ -23,11 +26,19 @@ export interface ImdlDecodeArgs {
   isCanceled?: () => boolean;
 }
 
+/** An object that can decode graphics in iMdl format.
+ * @note decoders are reference-counted. When you are finished using one, call [[release]].
+ * @see [[acquireImdlDecoder]] to acquire a decoder.
+ * @internal
+ */
 export interface ImdlDecoder {
   decode(args: ImdlDecodeArgs): Promise<ImdlReaderResult>;
   release(): void;
 }
 
+/** Arguments supplied to [[acquireImdlDecoder]].
+ * @internal
+ */
 export interface AcquireImdlDecoderArgs {
   iModel: IModelConnection;
   batchModelId: Id64String;
@@ -39,6 +50,13 @@ export interface AcquireImdlDecoderArgs {
   noWorker?: boolean;
 }
 
+/** Acquire shared ownership of an [[ImdlDecoder]].
+ * Decoders are reference-counted, because they make use of reference-counted [[ImdlParser]]s internally.
+ * The caller of this function increments the reference count of the decoder and is responsible
+ * for decrementing it by calling [[ImdlDecoder.release]] when it is no longer needed. Typically, a decoder's lifetime is tied to the
+ * lifetime of some [IDisposable]($bentley) object like a [[TileTree]] - acquired in the constructor, and released in the `dispose` method.
+ * @internal
+ */
 export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder {
   const parser = acquireImdlParser(args);
   return {

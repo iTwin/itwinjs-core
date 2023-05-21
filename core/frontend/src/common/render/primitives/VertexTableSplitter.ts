@@ -26,6 +26,7 @@ export interface VertexTableWithIndices {
 
 /** Builds up a [[VertexIndices]].
  * Exported strictly for tests.
+ * @internal
  */
 export class IndexBuffer {
   private readonly _builder: Uint8ArrayBuilder;
@@ -297,6 +298,7 @@ interface VertexTableSplitArgs extends VertexTableWithIndices {
   atlasInfo?: AtlasInfo;
 }
 
+/** @internal */
 export type ComputeAnimationNodeId = (featureIndex: number) => number;
 
 class VertexTableSplitter {
@@ -352,12 +354,14 @@ class VertexTableSplitter {
   }
 }
 
+/** @internal */
 export interface SplitVertexTableArgs {
   featureTable: RenderFeatureTable;
   maxDimension: number;
   computeNodeId: ComputeAnimationNodeId;
 }
 
+/** @internal */
 export interface SplitPointStringArgs extends SplitVertexTableArgs {
   params: PointStringParams;
 }
@@ -657,11 +661,13 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
   return result;
 }
 
+/** @internal */
 export interface SplitMeshArgs extends SplitVertexTableArgs {
   params: MeshParams;
   createMaterial: CreateRenderMaterial;
 }
 
+/** @internal */
 export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   const result = new Map<number, MeshParams>();
 
@@ -702,6 +708,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   return result;
 }
 
+/** @internal */
 export interface SplitPolylineArgs extends SplitVertexTableArgs {
   params: PolylineParams;
 }
@@ -711,6 +718,7 @@ interface PolylineNode extends Node {
   nextIndicesAndParams?: Uint32ArrayBuilder;
 }
 
+/** @internal */
 export function splitPolylineParams(args: SplitPolylineArgs): Map<number, PolylineParams> {
   const nodes = VertexTableSplitter.split({
     indices: args.params.polyline.indices,

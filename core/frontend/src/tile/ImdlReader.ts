@@ -69,6 +69,7 @@ export interface ImdlReaderCreateArgs {
   timeline?: ImdlTimeline;
 }
 
+/** @internal */
 export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocument?: (parseOpts: ImdlParserOptions) => Promise<ImdlModel.Document | ImdlParseError> }): Promise<ImdlReaderResult> {
   const isCanceled = args.isCanceled ?? (() => false);
   let content;

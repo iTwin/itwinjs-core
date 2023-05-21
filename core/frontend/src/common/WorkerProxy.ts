@@ -2,26 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+/** @packageDocumentation
+ * @module Utils
+ */
 import { assert } from "@itwin/core-bentley";
 
+/** Holds callbacks for a Promise produced for a particular call to postMessage. */
 interface Task {
   reject: (result: any) => void;
   resolve: (error: Error) => void;
 }
 
+/** The successful result of a worker operation, correlated with the id of the caller to resolve with the result.
+ * @internal
+ */
 export type WorkerResult = {
   msgId: number;
   result: any;
   error?: never;
 }
 
+/** An error resulting from a worker operation, correlated with the id of the caller to reject with the error.
+ * @internal
+ */
 export type WorkerError = {
   msgId: number;
   error: Error;
   result?: never;
 }
 
+/** Response to `postMessage` produced by a worker operation.
+ * @internal
+ */
 export type WorkerResponse = WorkerResult | WorkerError;
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface that can be used to asynchronously invoke those operations
@@ -30,6 +42,7 @@ export type WorkerResponse = WorkerResult | WorkerError;
  *  - `zeroArgFunc(): R` becomes `async zeroArgFunc(): Promise<R>`.
  *  - `oneArgFunc(arg: U): R` becomes `async oneArgFunc(arg: U, transfer?: Transferable[]): Promise<R>`.
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `async multiArgFunc(args: [U, V], transfer?: Transferable[]): Promise<R>`.
+ * @internal
  */
 export type WorkerInterface<T> = {
   [P in keyof T]: T[P] extends () => any ? () => Promise<ReturnType<T[P]>> :
@@ -38,6 +51,11 @@ export type WorkerInterface<T> = {
     )
 };
 
+/** Augments each method of `T` with the ability to specify values to be transferred from the worker thread to the main thread.
+ * Each return type `R` is replaced with `R | { result: R; transfer: Transferable[]; }`.
+ * @see [[WorkerImplementation]].
+ * @internal
+ */
 export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | { result: ReturnType<T>; transfer: Transferable[]; };
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
@@ -47,6 +65,7 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
  *  - `zeroArgFunc(): R` becomes `zeroArgFunc(): R | { result: R; transfer: Transferable[]; }`.
  *  - `oneArgFunc(arg: U): R` becomes `oneArgFunc(arg: U): R | { result: R; transfer: Transferable[]; }`.
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `multiArgFunc([U, V]): R | { result: R; transfer: Transferable[]; }`.
+ * @internal
  */
 export type WorkerImplementation<T> = {
   [P in keyof T]: T[P] extends () => any ? () => WorkerReturnType<T[P]> :
@@ -55,11 +74,20 @@ export type WorkerImplementation<T> = {
     )
 };
 
+/** A proxy for a [web worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker) that provides the operations specified by
+ * the methods of `T`.
+ * To use a worker proxy, define a worker script that provides [[registerWorker]] with an implementation of `T`, and obtain a proxy
+ * via [[createWorkerProxy]] on the main thread. The proxy can then be used to asynchronously invoke methods of `T` on the worker.
+ * @internal
+ */
 export type WorkerProxy<T> = WorkerInterface<T> & {
   terminate(): void;
   readonly isTerminated: boolean;
 }
 
+/** Create a [[WorkerProxy]] implementing the methods of `T` using the specified worker script.
+ * @internal
+ */
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
   const tasks = new Map<number, Task>();
   let curMsgId = 0;

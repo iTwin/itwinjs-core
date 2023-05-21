@@ -11,10 +11,10 @@ import { VertexTable } from "./VertexTable";
 import { SurfaceParams } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
-/**
- * Describes mesh geometry to be submitted to the rendering system.
+/** Describes mesh geometry to be submitted to the rendering system.
  * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.
  * The surface and edges all refer to the same vertex table.
+ * @internal
  */
 export interface MeshParams {
   vertices: VertexTable;

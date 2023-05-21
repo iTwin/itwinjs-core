@@ -213,6 +213,10 @@ export namespace ImdlModel {
   }
 }
 
+/** Collect an array of all the [transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects)
+ * within the specified document.
+ * @internal
+ */
 export function collectTransferables(document: ImdlModel.Document): Transferable[] {
   const xfers = new Set<Transferable>();
   const add = (array: UintArray | Float32Array | undefined) => {

@@ -10,8 +10,7 @@ import { LinePixels, PolylineTypeFlags } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
 import { VertexTable } from "./VertexTable";
 
-/**
- * Represents a tesselated polyline.
+/** Represents a tesselated polyline.
  * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
  * Based on the angle between two segments, additional joint triangles may be inserted in between to enable smoothly-rounded corners.
  * @internal
@@ -25,6 +24,7 @@ export interface TesselatedPolyline {
   nextIndicesAndParams: Uint8Array;
 }
 
+/** @internal */
 export interface PolylineParams {
   vertices: VertexTable;
   polyline: TesselatedPolyline;

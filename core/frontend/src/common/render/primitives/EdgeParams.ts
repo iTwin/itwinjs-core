@@ -71,6 +71,7 @@ export interface IndexedEdgeParams {
   readonly edges: EdgeTable;
 }
 
+/** @internal */
 export interface EdgeTableInfo {
   /** Width of the table. */
   readonly width: number;
@@ -82,7 +83,9 @@ export interface EdgeTableInfo {
   readonly silhouetteStartByteIndex: number;
 }
 
-/** Describes the edges of a mesh. */
+/** Describes the edges of a mesh.
+ * @internal
+ */
 export interface EdgeParams {
   /** The edge width in pixels. */
   readonly weight: number;
@@ -98,6 +101,7 @@ export interface EdgeParams {
   readonly indexed?: IndexedEdgeParams;
 }
 
+/** @internal */
 export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo {
   // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
   // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.

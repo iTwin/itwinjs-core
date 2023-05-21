@@ -9,6 +9,7 @@
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { QPoint3dList } from "@itwin/core-common";
 
+/** @internal */
 export enum MeshPrimitiveType {
   Mesh,
   Polyline,
