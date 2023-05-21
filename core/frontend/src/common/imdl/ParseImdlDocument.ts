@@ -232,19 +232,19 @@ export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
     ...imdl,
     segments: imdl.segments ? {
       ...imdl.segments,
-      indices: new VertexIndices(imdl.segments.indices),
+      indices: VertexIndices.fromBytes(imdl.segments.indices),
     } : undefined,
     silhouettes: imdl.silhouettes ? {
       ...imdl.silhouettes,
-      indices: new VertexIndices(imdl.silhouettes.indices),
+      indices: VertexIndices.fromBytes(imdl.silhouettes.indices),
     } : undefined,
     polylines: imdl.polylines ? {
       ...imdl.polylines,
-      indices: new VertexIndices(imdl.polylines.indices),
-      prevIndices: new VertexIndices(imdl.polylines.prevIndices),
+      indices: VertexIndices.fromBytes(imdl.polylines.indices),
+      prevIndices: VertexIndices.fromBytes(imdl.polylines.prevIndices),
     } : undefined,
     indexed: imdl.indexed ? {
-      indices: new VertexIndices(imdl.indexed.indices),
+      indices: VertexIndices.fromBytes(imdl.indexed.indices),
       edges: imdl.indexed.edges,
     } : undefined,
   };
@@ -255,19 +255,19 @@ function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
     ...params,
     segments: params.segments ? {
       ...params.segments,
-      indices: params.segments.indices.VTIdata,
+      indices: VertexIndices.toBytes(params.segments.indices),
     } : undefined,
     silhouettes: params.silhouettes ? {
       ...params.silhouettes,
-      indices: params.silhouettes.indices.VTIdata,
+      indices: VertexIndices.toBytes(params.silhouettes.indices),
     } : undefined,
     polylines: params.polylines ? {
       ...params.polylines,
-      indices: params.polylines.indices.VTIdata,
-      prevIndices: params.polylines.prevIndices.VTIdata,
+      indices: VertexIndices.toBytes(params.polylines.indices),
+      prevIndices: VertexIndices.toBytes(params.polylines.prevIndices),
     } : undefined,
     indexed: params.indexed ? {
-      indices: params.indexed.indices.VTIdata,
+      indices: VertexIndices.toBytes(params.indexed.indices),
       edges: params.indexed.edges,
     } : undefined,
   };
@@ -489,7 +489,7 @@ class Parser {
             vertices: toVertexTable(primitive.params.vertices),
             surface: {
               ...primitive.params.surface,
-              indices: new VertexIndices(primitive.params.surface.indices),
+              indices: VertexIndices.fromBytes(primitive.params.surface.indices),
               material: convertMaterial(mesh.surface.material),
               textureMapping: texMap ? {
                 alwaysDisplayed: texMap.alwaysDisplayed,
@@ -525,7 +525,7 @@ class Parser {
                 vertices: fromVertexTable(p.vertices),
                 surface: {
                   ...p.surface,
-                  indices: p.surface.indices.VTIdata,
+                  indices: VertexIndices.toBytes(p.surface.indices),
                   material,
                   textureMapping: p.surface.textureMapping?.texture instanceof Texture ? {
                     texture: p.surface.textureMapping.texture.toImdl(),
@@ -544,7 +544,7 @@ class Parser {
         case "point": {
           const params = {
             vertices: toVertexTable(primitive.params.vertices),
-            indices: new VertexIndices(primitive.params.indices),
+            indices: VertexIndices.fromBytes(primitive.params.indices),
             weight: primitive.params.weight,
           };
 
@@ -554,7 +554,7 @@ class Parser {
               type: "point",
               params: {
                 vertices: fromVertexTable(p.vertices),
-                indices: p.indices.VTIdata,
+                indices: VertexIndices.toBytes(p.indices),
                 weight: p.weight,
               },
             });
@@ -567,8 +567,8 @@ class Parser {
             ...primitive.params,
             vertices: toVertexTable(primitive.params.vertices),
             polyline: {
-              indices: new VertexIndices(primitive.params.polyline.indices),
-              prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
+              indices: VertexIndices.fromBytes(primitive.params.polyline.indices),
+              prevIndices: VertexIndices.fromBytes(primitive.params.polyline.prevIndices),
               nextIndicesAndParams: primitive.params.polyline.nextIndicesAndParams,
             },
           };
@@ -581,8 +581,8 @@ class Parser {
                 ...p,
                 vertices: fromVertexTable(p.vertices),
                 polyline: {
-                  indices: p.polyline.indices.VTIdata,
-                  prevIndices: p.polyline.prevIndices.VTIdata,
+                  indices: VertexIndices.toBytes(p.polyline.indices),
+                  prevIndices: VertexIndices.toBytes(p.polyline.prevIndices),
                   nextIndicesAndParams: p.polyline.nextIndicesAndParams,
                 },
               },

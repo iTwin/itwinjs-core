@@ -40,8 +40,8 @@ export class SurfaceGeometry extends MeshGeometry {
   public get lutBuffers() { return this._buffers; }
 
   public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
-    const indexBuffer = BufferHandle.createArrayBuffer(indices.VTIdata);
-    return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.VTIlength, mesh) : undefined;
+    const indexBuffer = BufferHandle.createArrayBuffer(VertexIndices.toBytes(indices));
+    return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, VertexIndices.length(indices), mesh) : undefined;
   }
 
   public get isDisposed(): boolean {

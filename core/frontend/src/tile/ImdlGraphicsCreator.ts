@@ -238,7 +238,7 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
       return options.system.createPointStringGeometry({
         ...primitive.params,
         vertices: toVertexTable(primitive.params.vertices),
-        indices: new VertexIndices(primitive.params.indices),
+        indices: VertexIndices.fromBytes(primitive.params.indices),
       }, viOrigin);
     case "polyline":
       return options.system.createPolylineGeometry({
@@ -246,8 +246,8 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
         vertices: toVertexTable(primitive.params.vertices),
         polyline: {
           ...primitive.params.polyline,
-          indices: new VertexIndices(primitive.params.polyline.indices),
-          prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
+          indices: VertexIndices.fromBytes(primitive.params.polyline.indices),
+          prevIndices: VertexIndices.fromBytes(primitive.params.polyline.prevIndices),
         },
       }, viOrigin);
     case "mesh": {
@@ -283,7 +283,7 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
           ...primitive.params.surface,
           material,
           textureMapping,
-          indices: new VertexIndices(primitive.params.surface.indices),
+          indices: VertexIndices.fromBytes(primitive.params.surface.indices),
         },
       }, viOrigin);
     }

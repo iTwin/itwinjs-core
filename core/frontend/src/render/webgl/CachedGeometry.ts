@@ -12,6 +12,7 @@ import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, Rend
 import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
 import { TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ColorInfo } from "./ColorInfo";
@@ -1149,8 +1150,8 @@ export class PolylineBuffers implements WebGLDisposable {
   }
 
   public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
-    const indices = BufferHandle.createArrayBuffer(polyline.indices.VTIdata);
-    const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.VTIdata);
+    const indices = BufferHandle.createArrayBuffer(VertexIndices.toBytes(polyline.indices));
+    const prev = BufferHandle.createArrayBuffer(VertexIndices.toBytes(polyline.prevIndices));
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
     return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
   }

@@ -9,6 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
 import { SegmentEdgeParams, SilhouetteParams } from "../../common/render/primitives/EdgeParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -36,9 +37,9 @@ export class EdgeGeometry extends MeshGeometry {
   public override get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
 
   public static create(mesh: MeshData, edges: SegmentEdgeParams): EdgeGeometry | undefined {
-    const indexBuffer = BufferHandle.createArrayBuffer(edges.indices.VTIdata);
+    const indexBuffer = BufferHandle.createArrayBuffer(VertexIndices.toBytes(edges.indices));
     const endPointBuffer = BufferHandle.createArrayBuffer(edges.endPointAndQuadIndices);
-    return undefined !== indexBuffer && undefined !== endPointBuffer ? new EdgeGeometry(indexBuffer, endPointBuffer, edges.indices.VTIlength, mesh) : undefined;
+    return undefined !== indexBuffer && undefined !== endPointBuffer ? new EdgeGeometry(indexBuffer, endPointBuffer, VertexIndices.length(edges.indices), mesh) : undefined;
   }
 
   public get isDisposed(): boolean {
@@ -97,10 +98,10 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
   public override get asSilhouette() { return this; }
 
   public static createSilhouettes(mesh: MeshData, params: SilhouetteParams): SilhouetteEdgeGeometry | undefined {
-    const indexBuffer = BufferHandle.createArrayBuffer(params.indices.VTIdata);
+    const indexBuffer = BufferHandle.createArrayBuffer(VertexIndices.toBytes(params.indices));
     const endPointBuffer = BufferHandle.createArrayBuffer(params.endPointAndQuadIndices);
     const normalsBuffer = BufferHandle.createArrayBuffer(params.normalPairs);
-    return undefined !== indexBuffer && undefined !== endPointBuffer && undefined !== normalsBuffer ? new SilhouetteEdgeGeometry(indexBuffer, endPointBuffer, normalsBuffer, params.indices.VTIlength, mesh) : undefined;
+    return undefined !== indexBuffer && undefined !== endPointBuffer && undefined !== normalsBuffer ? new SilhouetteEdgeGeometry(indexBuffer, endPointBuffer, normalsBuffer, VertexIndices.length(params.indices), mesh) : undefined;
   }
 
   public override get isDisposed(): boolean { return super.isDisposed && this._normalPairs.isDisposed; }
@@ -135,7 +136,7 @@ export class PolylineEdgeGeometry extends MeshGeometry {
 
   public static create(mesh: MeshData, polyline: TesselatedPolyline): PolylineEdgeGeometry | undefined {
     const buffers = PolylineBuffers.create(polyline);
-    return undefined !== buffers ? new PolylineEdgeGeometry(polyline.indices.VTIlength, buffers, mesh) : undefined;
+    return undefined !== buffers ? new PolylineEdgeGeometry(VertexIndices.length(polyline.indices), buffers, mesh) : undefined;
   }
 
   public get isDisposed(): boolean { return this._buffers.isDisposed; }

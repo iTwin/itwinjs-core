@@ -10,6 +10,7 @@ import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
 import { PolylineParams } from "../../common/render/primitives/PolylineParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -46,7 +47,7 @@ export class PolylineGeometry extends LUTGeometry {
     this.type = params.type;
     this._isPlanar = params.isPlanar;
     this.lut = lut;
-    this.numIndices = params.polyline.indices.VTIlength;
+    this.numIndices = VertexIndices.length(params.polyline.indices);
     this._buffers = buffers;
   }
 

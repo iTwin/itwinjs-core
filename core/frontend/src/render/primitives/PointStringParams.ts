@@ -32,7 +32,7 @@ export function createPointStringParams(args: PolylineArgs): PointStringParams |
   }
 
   const vertexIndices = VertexIndices.fromArray(vertIndices);
-  assert(vertexIndices.VTIlength === vertIndices.length);
+  assert(VertexIndices.length(vertexIndices) === vertIndices.length);
 
   return {
     vertices,

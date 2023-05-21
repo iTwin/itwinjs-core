@@ -10,6 +10,7 @@ import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, QParams3d } from "@itwin/core-common";
 import { PointStringParams } from "../../common/render/primitives/PointStringParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { LUTGeometry } from "./CachedGeometry";
@@ -66,7 +67,7 @@ export class PointStringGeometry extends LUTGeometry {
   }
 
   public static create(params: PointStringParams, viOrigin: Point3d | undefined): PointStringGeometry | undefined {
-    const indices = BufferHandle.createArrayBuffer(params.indices.VTIdata);
+    const indices = BufferHandle.createArrayBuffer(VertexIndices.toBytes(params.indices));
     if (undefined === indices)
       return undefined;
 
@@ -75,7 +76,7 @@ export class PointStringGeometry extends LUTGeometry {
       return undefined;
 
     const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
-    return new PointStringGeometry(indices, params.indices.VTIlength, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
+    return new PointStringGeometry(indices, VertexIndices.length(params.indices), lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
   }
 
   public get isDisposed(): boolean {
