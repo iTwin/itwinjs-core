@@ -6,7 +6,7 @@
 import { assert } from "@itwin/core-bentley";
 import type { WorkerImplementation } from "../common/WorkerProxy";
 
-type WorkerRequest = {
+interface WorkerRequest {
   operation: string;
   msgId: number;
   payload?: any;
@@ -25,9 +25,9 @@ export function registerWorker<T>(impl: WorkerImplementation<T>): void {
         postMessage({ result: ret.result, msgId }, { transfer: ret.transfer });
       else
         postMessage({ result: ret, msgId });
-    } catch (e: unknown) {
-      const error = e instanceof Error ? e : new Error("Unknown worker error");
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error("Unknown worker error");
       postMessage({ error, msgId });
     }
-  }
+  };
 }

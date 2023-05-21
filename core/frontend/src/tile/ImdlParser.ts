@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeDuration, Dictionary } from "@itwin/core-bentley";
+import { assert, Dictionary } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import { createWorkerProxy, WorkerProxy } from "../common/WorkerProxy";
 import { ImdlModel } from "../common/imdl/ImdlModel";
@@ -41,7 +41,7 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
   const timeline = args.timeline;
   if (args.noWorker) {
     return {
-      parse: (options) => Promise.resolve(parseImdlDocument({
+      parse: async (options) => Promise.resolve(parseImdlDocument({
         ...options,
         timeline,
       })),
@@ -53,7 +53,7 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
     if (!defaultParser) {
       const worker = createWorkerProxy<ParseImdlWorker>(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
       defaultParser = {
-        parse: (options) => worker.parse(options, [options.data.buffer]),
+        parse: async (options) => worker.parse(options, [options.data.buffer]),
         release: () => undefined,
       };
     }
@@ -80,6 +80,8 @@ class ParserWithTimeline implements ImdlParser {
   public constructor(timeline: ImdlTimeline) {
     this._timeline = timeline;
     this._worker = createWorkerProxy<ParseImdlWorker>(`${IModelApp.publicPath}scripts/parse-imdl-worker.js`);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._worker.setTimeline(timeline.toJSON());
   }
 

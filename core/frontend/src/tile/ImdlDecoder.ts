@@ -67,7 +67,7 @@ export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder {
         ...decodeArgs,
         modelId: args.batchModelId,
         loadEdges: !args.omitEdges,
-        parseDocument: (parserOpts) => parser.parse(parserOpts),
+        parseDocument: async (parserOpts) => parser.parse(parserOpts),
       });
     },
   };

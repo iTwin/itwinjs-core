@@ -16,7 +16,7 @@ export interface TestWorker {
 
 let doTransfer = false;
 
-function maybeTransfer<T>(result: T): T | { result: T; transfer: Transferable[] } {
+function maybeTransfer<T>(result: T): T | { result: T, transfer: Transferable[] } {
   if (!doTransfer)
     return result;
 
@@ -31,7 +31,7 @@ registerWorker<TestWorker>({
     throw new Error("ruh-roh");
   },
   throwString: () => {
-    throw "not an error";
+    throw "not an error"; // eslint-disable-line no-throw-literal
   },
   setTransfer: (wantTransfer: boolean) => {
     doTransfer = wantTransfer;

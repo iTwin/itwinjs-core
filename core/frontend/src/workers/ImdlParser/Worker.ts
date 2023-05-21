@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ByteStream } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import { collectTransferables, ImdlModel } from "../../common/imdl/ImdlModel";
 import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument";

@@ -16,7 +16,7 @@ interface Task {
 /** The successful result of a worker operation, correlated with the id of the caller to resolve with the result.
  * @internal
  */
-export type WorkerResult = {
+export interface WorkerResult {
   msgId: number;
   result: any;
   error?: never;
@@ -25,7 +25,7 @@ export type WorkerResult = {
 /** An error resulting from a worker operation, correlated with the id of the caller to reject with the error.
  * @internal
  */
-export type WorkerError = {
+export interface WorkerError {
   msgId: number;
   error: Error;
   result?: never;
@@ -42,6 +42,8 @@ export type WorkerResponse = WorkerResult | WorkerError;
  *  - `zeroArgFunc(): R` becomes `async zeroArgFunc(): Promise<R>`.
  *  - `oneArgFunc(arg: U): R` becomes `async oneArgFunc(arg: U, transfer?: Transferable[]): Promise<R>`.
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `async multiArgFunc(args: [U, V], transfer?: Transferable[]): Promise<R>`.
+ * @note All parameters of all methods of `T` must support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) -
+ * attempts to pass functions, instances of classes, DOM nodes, WebGL resources, and other non-cloneable types will compile but fail at run-time.
  * @internal
  */
 export type WorkerInterface<T> = {
@@ -56,7 +58,7 @@ export type WorkerInterface<T> = {
  * @see [[WorkerImplementation]].
  * @internal
  */
-export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | { result: ReturnType<T>; transfer: Transferable[]; };
+export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | { result: ReturnType<T>, transfer: Transferable[] };
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
  * The return type of each function is enhanced to permit supplying a list of values to be transferred from the worker to the main thread.
@@ -65,6 +67,8 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
  *  - `zeroArgFunc(): R` becomes `zeroArgFunc(): R | { result: R; transfer: Transferable[]; }`.
  *  - `oneArgFunc(arg: U): R` becomes `oneArgFunc(arg: U): R | { result: R; transfer: Transferable[]; }`.
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `multiArgFunc([U, V]): R | { result: R; transfer: Transferable[]; }`.
+ * @note All parameters of all methods of `T` must support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) -
+ * attempts to pass functions, instances of classes, DOM nodes, WebGL resources, and other non-cloneable types will compile but fail at run-time.
  * @internal
  */
 export type WorkerImplementation<T> = {
@@ -81,9 +85,11 @@ export type WorkerImplementation<T> = {
  * @internal
  */
 export type WorkerProxy<T> = WorkerInterface<T> & {
+  /** Terminate the worker. */
   terminate(): void;
+  /** Returns true if [[terminate]] has been called. */
   readonly isTerminated: boolean;
-}
+};
 
 /** Create a [[WorkerProxy]] implementing the methods of `T` using the specified worker script.
  * @internal
@@ -124,6 +130,6 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
           worker.postMessage({ operation, payload: args[0], msgId }, args[1] ?? []);
         });
       }
-    }
+    },
   });
 }

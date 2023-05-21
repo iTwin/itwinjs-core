@@ -16466,11 +16466,14 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 }
 
 // @internal
-export type WorkerError = {
-    msgId: number;
+export interface WorkerError {
+    // (undocumented)
     error: Error;
+    // (undocumented)
+    msgId: number;
+    // (undocumented)
     result?: never;
-};
+}
 
 // @internal
 export type WorkerImplementation<T> = {
@@ -16492,11 +16495,14 @@ export type WorkerProxy<T> = WorkerInterface<T> & {
 export type WorkerResponse = WorkerResult | WorkerError;
 
 // @internal
-export type WorkerResult = {
-    msgId: number;
-    result: any;
+export interface WorkerResult {
+    // (undocumented)
     error?: never;
-};
+    // (undocumented)
+    msgId: number;
+    // (undocumented)
+    result: any;
+}
 
 // @internal
 export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | {

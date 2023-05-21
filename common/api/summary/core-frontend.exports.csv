@@ -918,12 +918,12 @@ internal;WmtsCapabilities
 internal;WmtsCapability
 internal;WmtsConstants
 internal;WmtsMapLayerImageryProvider 
-internal;WorkerError =
+internal;WorkerError
 internal;WorkerImplementation
 internal;WorkerInterface
 internal;WorkerProxy
 internal;WorkerResponse = WorkerResult | WorkerError
-internal;WorkerResult =
+internal;WorkerResult
 internal;WorkerReturnType
 public;ZoomToOptions
 public;ZoomViewTool 
