@@ -2,6 +2,60 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.0.0",
+      "tag": "@itwin/core-common_v4.0.0",
+      "date": "Mon, 22 May 2023 15:34:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "implemented constant lod texture mapping for tiles"
+          },
+          {
+            "comment": "React to IModelApp.rpcInterfaces and BentleyCloudRpcManager changes."
+          },
+          {
+            "comment": "Promote unregisterNamespace to public."
+          },
+          {
+            "comment": "Update to eslint@8"
+          },
+          {
+            "comment": "Added 'schemaLockHeld' to UpgradeOptions"
+          },
+          {
+            "comment": "Prevent IPC requests from blocking the backend."
+          },
+          {
+            "comment": "ECSqlReader is now an AsyncIterableIterator"
+          },
+          {
+            "comment": "removing dependency on semver"
+          },
+          {
+            "comment": "Implemented constant lod texture mapping mode."
+          },
+          {
+            "comment": "Add interfaces representing 3d tileset schema."
+          },
+          {
+            "comment": "add Atmosphere class as a property of Environment"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.6",
+      "tag": "@itwin/core-common_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.5",
+      "tag": "@itwin/core-common_v3.7.5",
+      "date": "Thu, 04 May 2023 19:43:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.4",
       "tag": "@itwin/core-common_v3.7.4",
       "date": "Tue, 25 Apr 2023 17:50:35 GMT",
