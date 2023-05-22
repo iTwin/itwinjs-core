@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Tiles
+ */
 
 import { assert } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
@@ -11,8 +14,17 @@ import { registerWorker } from "../RegisterWorker";
 
 let timeline: ImdlTimeline | undefined;
 
+/** Parses binary iMdl content into an [[ImdlModel.Document]].
+ * @internal
+ */
 export interface ParseImdlWorker {
+  /** The [[ImdlTimeline]] to be applied  to the document's nodes. This must be called no more than once. It should be called before
+   * any call to [[parse]].
+   */
   setTimeline(timeline: RenderSchedule.ScriptProps | RenderSchedule.ModelTimelineProps): void;
+  /** Parse the binary content into a document.
+   * @note The [[Uint8Array]] containing the binary data is transferred from the caller to the worker - it will become unusable for the caller.
+   */
   parse(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError;
 }
 

@@ -2,16 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Utils
+ */
 
 import { assert } from "@itwin/core-bentley";
 import type { WorkerImplementation } from "../common/WorkerProxy";
 
 interface WorkerRequest {
+  /** The name of the method in the worker's interface to invoke. */
   operation: string;
+  /** Correlates the response to the caller on the main thread to resolve/reject the promise. */
   msgId: number;
+  /** Arguments to `operation`. */
   payload?: any;
 }
 
+/** Configure an implementation of the operations defined by `T` to execute on a worker thread.
+ * @internal
+ */
 export function registerWorker<T>(impl: WorkerImplementation<T>): void {
   onmessage = (e: MessageEvent) => {
     const req = e.data as WorkerRequest;
