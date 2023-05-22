@@ -1,6 +1,31 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Update to eslint@8
+- Documentation improvements
+- Update logging categories under `PresentationBackendNativeLoggerCategory`.
+- Modified supplemental rules to use new content modifier's attribute `applyOnNestedContent`
+- Update `BisCore` supplemental rules to include more `RepositoryLink` properties, including from subclasses.
+- Reduce default backend response timeout from 90 seconds to 5 seconds
+- Fixed diagnostics not being included in error responses
+- Removed IPC method used to track UI state on the backend
+- Added content values formatting to `PresentationManager.getContent`
+
+## 3.7.6
+Mon, 15 May 2023 18:23:41 GMT
+
+_Version update only_
+
+## 3.7.5
+Thu, 04 May 2023 19:43:18 GMT
+
+_Version update only_
 
 ## 3.7.4
 Tue, 25 Apr 2023 17:50:35 GMT

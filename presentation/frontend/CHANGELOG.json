@@ -2,6 +2,48 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
+      "version": "4.0.0",
+      "tag": "@itwin/presentation-frontend_v4.0.0",
+      "date": "Mon, 22 May 2023 15:34:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to eslint@8"
+          },
+          {
+            "comment": "Stop \"eating\" exceptions that occur when handling `PresentationManager` requests and re-throw them for API consumers to handle."
+          },
+          {
+            "comment": "Promoted some `@internal` APIs to `@public`."
+          },
+          {
+            "comment": "Add a way to specify requests timeout when initializing `PresentationManager`"
+          },
+          {
+            "comment": "Removed UI state tracking on the backend"
+          },
+          {
+            "comment": "Deprecate `PresentationManager.activeUnitSystem` in favor of active unit system in `QuantityFormatter`"
+          },
+          {
+            "comment": "Added content values formatting to `PresentationManager`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.6",
+      "tag": "@itwin/presentation-frontend_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.5",
+      "tag": "@itwin/presentation-frontend_v3.7.5",
+      "date": "Thu, 04 May 2023 19:43:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.4",
       "tag": "@itwin/presentation-frontend_v3.7.4",
       "date": "Tue, 25 Apr 2023 17:50:35 GMT",
