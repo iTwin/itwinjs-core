@@ -600,9 +600,21 @@ describe("mirukuru TileTree", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
-    await MockRender.App.startup();
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ] }});
+
+    // electron version of certa doesn't serve worker scripts.
+    const isElectron = ProcessDetector.isElectronAppFrontend;
+    const tileAdmin = isElectron ? { decodeImdlInWorker: false } : undefined;
+
+    await MockRender.App.startup({ tileAdmin });
+    if (ProcessDetector.isElectronAppFrontend) {
+      await ElectronApp.startup({
+        iModelApp: {
+          localization: new EmptyLocalization(),
+          rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          tileAdmin,
+        },
+      });
+    }
 
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -751,14 +763,26 @@ describe("TileAdmin", () => {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       await cleanup();
 
+      if (ProcessDetector.isElectronAppFrontend) {
+        // certa doesn't serve worker script.
+        props.decodeImdlInWorker = false;
+      }
+
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
         rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
       });
 
-      if (ProcessDetector.isElectronAppFrontend)
-        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ] }});
+      if (ProcessDetector.isElectronAppFrontend) {
+        await ElectronApp.startup({
+          iModelApp: {
+            tileAdmin: props,
+            localization: new EmptyLocalization(),
+            rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          },
+        });
+      }
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;

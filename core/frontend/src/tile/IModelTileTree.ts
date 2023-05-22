@@ -386,6 +386,7 @@ export class IModelTileTree extends TileTree {
       batchModelId: this.modelId,
       is3d: this.is3d,
       containsTransformNodes: this.containsTransformNodes,
+      noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
     });
   }
 

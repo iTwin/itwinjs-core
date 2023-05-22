@@ -12843,6 +12843,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly contextPreloadParentSkip: number;
     static create(props?: TileAdmin.Props): Promise<TileAdmin>;
+    // @internal (undocumented)
+    readonly decodeImdlInWorker: boolean;
     get defaultTileSizeModifier(): number;
     set defaultTileSizeModifier(modifier: number);
     // @internal (undocumented)
@@ -12981,6 +12983,8 @@ export namespace TileAdmin {
         contextPreloadParentDepth?: number;
         // @alpha
         contextPreloadParentSkip?: number;
+        // @alpha
+        decodeImdlInWorker?: boolean;
         defaultTileSizeModifier?: number;
         // @alpha
         disableMagnification?: boolean;
