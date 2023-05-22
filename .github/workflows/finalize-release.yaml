@@ -30,7 +30,7 @@ jobs:
 
           # Clean up files that we don't want to cherry-pick changes back
           git checkout --ours **/package.json |& gawk '{ print $3 }' >> ./removed-packages.txt
-          sed -e "s/'//g" -e "s/\/package.json//g" ./bad-files.txt >> ./removed-packages.txt
+          sed -e "s/'//g" -e "s/\/package.json//g" ./removed-packages.txt
           cat ./removed-packages.txt | xargs -n 1 git rm -r
           rm ./bad-files.txt
 
