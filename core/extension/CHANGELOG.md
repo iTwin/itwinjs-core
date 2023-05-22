@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-extension
 
-This log was last generated on Mon, 15 May 2023 18:23:40 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Update to eslint@8
+- Add Viewport, DecorateContext, and readGltfGraphics to the extensions API.
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT

@@ -1,6 +1,14 @@
 # Change Log - @itwin/map-layers-auth
 
-This log was last generated on Mon, 15 May 2023 18:23:41 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Update to eslint@8
+- Upgrade TypeScript compile target to es2021.
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:41 GMT

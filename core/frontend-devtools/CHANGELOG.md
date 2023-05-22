@@ -1,6 +1,15 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Mon, 15 May 2023 18:23:41 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Edit MapLayerTool to be compatible with Viewport change.
+- Update to eslint@8
+- Update TileStatisticsTracker to display mean and max tile content decoding times.
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:41 GMT
