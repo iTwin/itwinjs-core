@@ -150,7 +150,7 @@ describe("ImdlParser", () => {
     })).to.be.eventually.rejectedWith(RangeError);
   });
 
-  it("transfers the array buffer to the worker and back", async () => {
+  it("transfers the array buffer to the worker", async () => {
     const parser = acquireImdlParser({});
     const data = new Uint8Array(12);
     expect(data.length).to.equal(12);
