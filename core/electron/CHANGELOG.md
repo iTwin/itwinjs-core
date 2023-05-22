@@ -1,6 +1,30 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- remove unused electron logging interface
+- React to IModelApp.rpcInterfaces and BentleyCloudRpcManager changes.
+- Update to eslint@8
+- Drop Node 12 and Node 14.
+- Drop Node 16 support.
+- Add support for Electron 24.
+- Drop Electron 14, 15, 16, 17, 22. Start supporting Electron 23.
+- Stopped registering any rpcs by default
+
+## 3.7.6
+Mon, 15 May 2023 18:23:40 GMT
+
+_Version update only_
+
+## 3.7.5
+Thu, 04 May 2023 19:43:18 GMT
+
+_Version update only_
 
 ## 3.7.4
 Tue, 25 Apr 2023 17:50:35 GMT
