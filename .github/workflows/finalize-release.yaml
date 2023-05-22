@@ -32,7 +32,7 @@ jobs:
           git checkout --ours **/package.json |& gawk '{ print $3 }' >> ./removed-packages.txt
           sed -e "s/'//g" -e "s/\/package.json//g" ./removed-packages.txt
           cat ./removed-packages.txt | xargs -n 1 git rm -r
-          rm ./bad-files.txt
+          rm ./removed-packages.txt
 
           git checkout --ours **/package.json
           git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
