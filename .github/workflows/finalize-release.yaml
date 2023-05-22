@@ -29,7 +29,11 @@ jobs:
           git cherry-pick a3080bd5a29ce240bf623626f9a2aa1d901537d7
 
           # Clean up files that we don't want to cherry-pick changes back
-          git checkout --ours **/package.json |& gawk '{ print $3 }' | xargs git rm
+          git checkout --ours **/package.json |& gawk '{ print $3 }' >> ./removed-packages.txt
+          sed -e "s/'//g" -e "s/\/package.json//g" ./bad-files.txt >> ./removed-packages.txt
+          cat ./removed-packages.txt | xargs -n 1 git rm -r
+          rm ./bad-files.txt
+
           git checkout --ours **/package.json
           git checkout --ours **/version-policies.json docs/changehistory/NextVersion.md
           git checkout --theirs **/CHANGELOG.*
