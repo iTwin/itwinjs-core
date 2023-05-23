@@ -61,7 +61,7 @@ export class Loop extends CurveChain {
     return Loop.create(linestring);
   }
   /** Create a loop with the stroked form of this loop. */
-  public cloneStroked(options?: StrokeOptions): AnyCurve {
+  public cloneStroked(options?: StrokeOptions): Loop {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
