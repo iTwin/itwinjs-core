@@ -2244,7 +2244,6 @@ export interface ExportGraphicsOptions {
     chordTol?: number;
     decimationTol?: number;
     elementIdArray: Id64Array;
-    exportRawParameters?: boolean;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
     minLineStyleComponentSize?: number;
@@ -2291,7 +2290,6 @@ export interface ExportPartGraphicsOptions {
     decimationTol?: number;
     displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
-    exportRawParameters?: boolean;
     maxEdgeLength?: number;
     minBRepFeatureSize?: number;
     minLineStyleComponentSize?: number;
