@@ -12,7 +12,7 @@ import { AnalysisStyleDisplacement, Feature, QPoint3dList } from "@itwin/core-co
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { MeshList } from "../mesh/MeshPrimitives";
 import { GeometryOptions } from "../Primitives";

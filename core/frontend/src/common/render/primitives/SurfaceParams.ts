@@ -7,7 +7,7 @@
  */
 
 import { FillFlags, RenderMaterial, RenderTexture } from "@itwin/core-common";
-import { VertexIndices } from "./VertexTable";
+import { VertexIndices } from "./VertexIndices";
 
 /** @internal */
 export enum SurfaceType {
@@ -73,4 +73,3 @@ export interface SurfaceParams {
   };
   readonly material?: SurfaceMaterial;
 }
-

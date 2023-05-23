@@ -13,20 +13,20 @@ import {
 import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { computeDimensions } from "./VertexTable";
 
-/** @internal */
+/** @alpha */
 export interface AuxChannelProps {
   readonly name: string;
   readonly inputs: number[];
   readonly indices: number[];
 }
 
-/** @internal */
+/** @alpha */
 export interface QuantizedAuxChannelProps extends AuxChannelProps {
   readonly qOrigin: number[];
   readonly qScale: number[];
 }
 
-/** @internal */
+/** @alpha */
 export class AuxChannel implements AuxChannelProps {
   public readonly name: string;
   public readonly inputs: number[];
@@ -47,7 +47,7 @@ export class AuxChannel implements AuxChannelProps {
   }
 }
 
-/** @internal */
+/** @alpha */
 export class AuxDisplacementChannel extends AuxChannel {
   public readonly qOrigin: Float32Array;
   public readonly qScale: Float32Array;
@@ -67,7 +67,7 @@ export class AuxDisplacementChannel extends AuxChannel {
   }
 }
 
-/** @internal */
+/** @alpha */
 export class AuxParamChannel extends AuxChannel {
   public readonly qOrigin: number;
   public readonly qScale: number;
@@ -87,7 +87,7 @@ export class AuxParamChannel extends AuxChannel {
   }
 }
 
-/** @internal */
+/** @alpha */
 export interface AuxChannelTableProps {
   /** Rectangular array of per-vertex data, of size width * height * numBytesPerVertex bytes. */
   readonly data: Uint8Array;
@@ -113,7 +113,7 @@ export interface AuxChannelTableProps {
  * The channels are interleaved in a rectangular array such that the data for each vertex is stored contiguously; that is, if a displacement and
  * a normal channel exist, then the first vertex's displacement is followed by the first vertex's normal, which is followed by the second
  * vertex's displacement and normal; and so on.
- * @internal
+ * @alpha
  */
 export class AuxChannelTable {
   /** Rectangular array of per-vertex data, of size width * height * numBytesPerVertex bytes. */
@@ -183,8 +183,8 @@ export class AuxChannelTable {
     };
   }
 
-  public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
-    return AuxChannelTableBuilder.buildAuxChannelTable(channels, numVertices);
+  public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number, maxDimension: number): AuxChannelTable | undefined {
+    return AuxChannelTableBuilder.buildAuxChannelTable(channels, numVertices, maxDimension);
   }
 }
 
@@ -206,7 +206,7 @@ class AuxChannelTableBuilder {
     this._view = new DataView(props.data.buffer);
   }
 
-  public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
+  public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number, maxDimension: number): AuxChannelTable | undefined {
     const numBytesPerVertex = channels.reduce((accum, channel) => accum + computeNumBytesPerVertex(channel), 0);
     if (!numBytesPerVertex)
       return undefined;
@@ -218,9 +218,9 @@ class AuxChannelTableBuilder {
     // We don't want any unused bytes. If we've got 2 extra, make every other vertex's channel start in the middle of the first texel.
     let dimensions;
     if (0 !== nUnusedBytesPerVertex)
-      dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0); // twice as many RGBA for half as many vertices.
+      dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0, maxDimension); // twice as many RGBA for half as many vertices.
     else
-      dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
+      dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0, maxDimension);
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
     const props: Mutable<AuxChannelTableProps> = {

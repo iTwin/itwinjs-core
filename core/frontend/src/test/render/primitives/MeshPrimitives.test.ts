@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, MeshPolyline, OctEncodedNormal } from "@itwin/core-common";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
 import { Triangle } from "../../../render/primitives/Primitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexKey } from "../../../render/primitives/VertexKey";
@@ -21,7 +22,7 @@ export class FakeDisplayParams extends DisplayParams {
 describe("MeshPrimitive Tests", () => {
   it("constructor", () => {
     const displayParams = new FakeDisplayParams();
-    let type = Mesh.PrimitiveType.Mesh;
+    let type = MeshPrimitiveType.Mesh;
     const range = Range3d.createNull();
     const is2d = false;
     const isPlanar = true;
@@ -37,12 +38,12 @@ describe("MeshPrimitive Tests", () => {
     expect(m.triangles).to.not.be.undefined;
     expect(m.polylines).to.be.undefined;
 
-    type = Mesh.PrimitiveType.Polyline;
+    type = MeshPrimitiveType.Polyline;
     m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
     expect(m.polylines).to.not.be.undefined;
     expect(m.triangles).to.be.undefined;
 
-    type = Mesh.PrimitiveType.Point;
+    type = MeshPrimitiveType.Point;
     m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
     expect(m.polylines).to.not.be.undefined;
     expect(m.triangles).to.be.undefined;
@@ -50,7 +51,7 @@ describe("MeshPrimitive Tests", () => {
 
   it("addPolyline", () => {
     const displayParams = new FakeDisplayParams();
-    let type = Mesh.PrimitiveType.Polyline;
+    let type = MeshPrimitiveType.Polyline;
     const range = Range3d.createNull();
     const is2d = false;
     const isPlanar = true;
@@ -63,7 +64,7 @@ describe("MeshPrimitive Tests", () => {
     expect(m.polylines!.length).to.equal(1);
 
     // doesn't add polyline if meshpolyline indices has a length less that 2
-    type = Mesh.PrimitiveType.Polyline;
+    type = MeshPrimitiveType.Polyline;
     m = Mesh.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar });
     expect(m.polylines!.length).to.equal(0);
     mp = new MeshPolyline([1]);
@@ -73,7 +74,7 @@ describe("MeshPrimitive Tests", () => {
 
   it("addTriangle", () => {
     const displayParams = new FakeDisplayParams();
-    const type = Mesh.PrimitiveType.Mesh;
+    const type = MeshPrimitiveType.Mesh;
     const range = Range3d.createNull();
     const is2d = false;
     const isPlanar = true;
@@ -88,7 +89,7 @@ describe("MeshPrimitive Tests", () => {
 
   it("addVertex", () => {
     const displayParams = new FakeDisplayParams();
-    const type = Mesh.PrimitiveType.Mesh;
+    const type = MeshPrimitiveType.Mesh;
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const isPlanar = true;

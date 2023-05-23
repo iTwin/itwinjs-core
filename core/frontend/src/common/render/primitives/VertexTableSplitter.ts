@@ -8,17 +8,25 @@
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
-import {
-  computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableParams, VertexTableWithIndices,
-} from "./VertexTable";
+import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
+import { computeDimensions, VertexTable } from "./VertexTable";
+import { VertexIndices } from "./VertexIndices";
+import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
+import { MaterialParams } from "../MaterialParams";
+import { MeshParams } from "./MeshParams";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
-import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
-import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
-import { CreateRenderMaterialArgs } from "../RenderMaterial";
+
+/** @internal */
+export interface VertexTableWithIndices {
+  vertices: VertexTable;
+  indices: VertexIndices;
+  material?: SurfaceMaterial;
+}
 
 /** Builds up a [[VertexIndices]].
  * Exported strictly for tests.
+ * @internal
  */
 export class IndexBuffer {
   private readonly _builder: Uint8ArrayBuilder;
@@ -98,7 +106,7 @@ class VertexBuffer {
     if (materialAtlasTable instanceof Uint32Array)
       rgbaData.set(materialAtlasTable, tableSize);
 
-    const tableProps: VertexTableParams = {
+    return {
       data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
       usesUnquantizedPositions: source.usesUnquantizedPositions,
       qparams: source.qparams,
@@ -112,8 +120,6 @@ class VertexBuffer {
       numRgbaPerVertex: source.numRgbaPerVertex,
       uvParams: source.uvParams,
     };
-
-    return new VertexTable(tableProps);
   }
 }
 
@@ -158,7 +164,7 @@ class ColorTableRemapper {
 
 type MaterialAtlasTable = Uint32Array | SurfaceMaterial | undefined;
 
-type CreateRenderMaterial = (args: CreateRenderMaterialArgs) => RenderMaterial | undefined;
+type CreateRenderMaterial = (args: MaterialParams) => RenderMaterial | undefined;
 
 class MaterialAtlasRemapper {
   private readonly _remappedIndices = new Map<number, number>();
@@ -209,7 +215,7 @@ class MaterialAtlasRemapper {
   private materialFromAtlasEntry(entry: Uint32Array): SurfaceMaterial | undefined {
     const rgbOverridden = (entry[1] & 0x1000000) !== 0;
     const alphaOverridden = (entry[1] & 0x2000000) !== 0;
-    const args: CreateRenderMaterialArgs = {
+    const args: MaterialParams = {
       alpha: alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined,
       diffuse: {
         color: rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined,
@@ -292,6 +298,7 @@ interface VertexTableSplitArgs extends VertexTableWithIndices {
   atlasInfo?: AtlasInfo;
 }
 
+/** @internal */
 export type ComputeAnimationNodeId = (featureIndex: number) => number;
 
 class VertexTableSplitter {
@@ -347,12 +354,14 @@ class VertexTableSplitter {
   }
 }
 
+/** @internal */
 export interface SplitVertexTableArgs {
   featureTable: RenderFeatureTable;
   maxDimension: number;
   computeNodeId: ComputeAnimationNodeId;
 }
 
+/** @internal */
 export interface SplitPointStringArgs extends SplitVertexTableArgs {
   params: PointStringParams;
 }
@@ -371,7 +380,7 @@ export function splitPointStringParams(args: SplitPointStringArgs): Map<number, 
   const result = new Map<number, PointStringParams>();
   for (const [id, node] of nodes) {
     const { vertices, indices } = node.buildOutput(args.maxDimension);
-    result.set(id, new PointStringParams(vertices, indices, args.params.weight));
+    result.set(id, { vertices, indices, weight: args.params.weight });
   }
 
   return result;
@@ -652,11 +661,13 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
   return result;
 }
 
+/** @internal */
 export interface SplitMeshArgs extends SplitVertexTableArgs {
   params: MeshParams;
   createMaterial: CreateRenderMaterial;
 }
 
+/** @internal */
 export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   const result = new Map<number, MeshParams>();
 
@@ -675,8 +686,9 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
 
   for (const [id, node] of nodes) {
     const { vertices, indices, material } = node.buildOutput(args.maxDimension);
-    const params = new MeshParams(
-      vertices, {
+    const params: MeshParams = {
+      vertices,
+      surface: {
         type: args.params.surface.type,
         indices,
         fillFlags: args.params.surface.fillFlags,
@@ -684,11 +696,11 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
         textureMapping: args.params.surface.textureMapping,
         material: material !== undefined ? material : args.params.surface.material,
       },
-      edges?.get(id),
-      args.params.isPlanar,
+      edges: edges?.get(id),
+      isPlanar: args.params.isPlanar,
       // ###TODO handle aux channels.......
-      args.params.auxChannels,
-    );
+      auxChannels: args.params.auxChannels,
+    };
 
     result.set(id, params);
   }
@@ -696,6 +708,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   return result;
 }
 
+/** @internal */
 export interface SplitPolylineArgs extends SplitVertexTableArgs {
   params: PolylineParams;
 }
@@ -705,6 +718,7 @@ interface PolylineNode extends Node {
   nextIndicesAndParams?: Uint32ArrayBuilder;
 }
 
+/** @internal */
 export function splitPolylineParams(args: SplitPolylineArgs): Map<number, PolylineParams> {
   const nodes = VertexTableSplitter.split({
     indices: args.params.polyline.indices,
@@ -744,16 +758,15 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
   for (const [id, node] of nodes) {
     assert(undefined !== node.prevIndices && undefined !== node.nextIndicesAndParams);
     const { vertices, indices } = node.buildOutput(args.maxDimension);
-    const params = new PolylineParams(
-      vertices, {
+    const params: PolylineParams = {
+      ...args.params,
+      vertices,
+      polyline: {
         indices,
         prevIndices: node.prevIndices.toVertexIndices(),
         nextIndicesAndParams: node.nextIndicesAndParams.toUint8Array(),
       },
-      args.params.weight,
-      args.params.linePixels,
-      args.params.isPlanar,
-      args.params.type);
+    };
 
     result.set(id, params);
   }

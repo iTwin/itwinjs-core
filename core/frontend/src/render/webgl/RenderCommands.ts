@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Decorations } from "../Decorations";
-import { SurfaceType } from "../primitives/SurfaceParams";
+import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { AnimationBranchState } from "../GraphicBranch";
 import { BranchStack } from "./BranchStack";
