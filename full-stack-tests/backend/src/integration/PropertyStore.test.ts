@@ -8,16 +8,13 @@ import { Suite } from "mocha";
 import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 
-// spell:ignore mkdirs
-
-const blockSize = 64 * 1024;
 const propContainer = "properties-itwin1";
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
   const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
-  await PropertyStore.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
+  await PropertyStore.CloudAccess.initializeDb({ props: { ...props, accessToken } });
 }
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {

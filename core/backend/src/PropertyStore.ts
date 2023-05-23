@@ -241,7 +241,7 @@ export namespace PropertyStore {
      * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty PropertyDb into the container.
      * @note this deletes any existing content in the container.
      */
-    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps, initContainer?: { blockSize?: number } }) {
+    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps }) {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
     }
   }
