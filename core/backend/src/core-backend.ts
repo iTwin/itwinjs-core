@@ -56,6 +56,7 @@ export * from "./PropertyStore";
 export * from "./Relationship";
 export * from "./rpc/tracing";
 export * from "./Schema";
+export * from "./SharedSchemaChannel";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./Texture";
