@@ -250,31 +250,20 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].color, elementColor.tbgr);
   });
 
-  it.only("creates meshes with expected parameters", () => {
-    const makeTriangle = (i0: number, i1: number, i2: number, dim: 2 | 3) => {  // 0-based 2d/3d point indices into flat arrays
-      return (acc: number[], _v: number, i: number, arr: Float32Array): number[] => {
-        if (0 === acc.length) {
-          i0 *= dim;
-          if (i0 <= i && i < i0 + dim)
-            return 2 === dim ? [...acc, arr[i0], arr[i0 + 1]] : [...acc, arr[i0], arr[i0 + 1], arr[i0 + 2]];
-        } else if (1 === acc.length) {
-          i1 *= dim;
-          if (i1 <= i && i < i1 + dim)
-            return 2 === dim ? [...acc, arr[i1], arr[i1 + 1]] : [...acc, arr[i1], arr[i1 + 1], arr[i1 + 2]];
-        } else if (2 === acc.length) {
-          i2 *= dim;
-          if (i2 <= i && i < i2 + dim)
-            return 2 === dim ? [...acc, arr[i2], arr[i2 + 1]] : [...acc, arr[i2], arr[i2 + 1], arr[i2 + 2]];
-        }
-        return acc;
-      };
+  it("creates meshes with expected parameters", () => {
+    const makeTriangle = (data: Float32Array, i0: number, i1: number, i2: number, dim: 2 | 3): number[] => {
+      const tri: number[] = [];
+      for (const i of [i0, i1, i2])
+        for (let j = 0; j < dim; ++j)
+          tri.push(data[dim * i + j]);
+      return tri;
     }
 
     const makeFacet = (builder: PolyfaceBuilder, xyz: Float32Array, normals: Float32Array, uv: Float32Array, i0: number, i1: number, i2: number) => {
       builder.addFacetFromGrowableArrays(
-        GrowableXYZArray.create(xyz.reduce(makeTriangle(i0, i1, i2, 3), [])),
-        GrowableXYZArray.create(normals.reduce(makeTriangle(i0, i1, i2, 3), [])),
-        GrowableXYArray.create(uv.reduce(makeTriangle(i0, i1, i2, 2), [])),
+        GrowableXYZArray.create(makeTriangle(xyz, i0, i1, i2, 3)),
+        GrowableXYZArray.create(makeTriangle(normals, i0, i1, i2, 3)),
+        GrowableXYArray.create(makeTriangle(uv, i0, i1, i2, 2)),
         undefined // no colors
       );
     }
