@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
-import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
+import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../../common/render/primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";

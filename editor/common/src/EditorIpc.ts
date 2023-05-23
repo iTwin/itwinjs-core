@@ -8,7 +8,7 @@
 
 /** @internal */
 export const editorIpcStrings = {
-  channel: "editor",
+  channel: "itwinjs-core/editor",
   commandBusy: "EditCommandBusy",
 } as const;
 

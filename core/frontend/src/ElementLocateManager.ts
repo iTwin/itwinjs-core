@@ -13,7 +13,7 @@ import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { ScreenViewport, Viewport } from "./Viewport";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public

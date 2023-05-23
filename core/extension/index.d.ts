@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // manually curated section
-export function registerTool(t: typeof import("@itwin/core-frontend").Tool): Promise<void>
+
 // these types are needed for ExtensionHost
 import type {
 	ToolAdmin,

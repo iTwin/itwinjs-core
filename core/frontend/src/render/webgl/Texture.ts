@@ -10,7 +10,7 @@ import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
 import {
   ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData, TextureTransparency,
 } from "@itwin/core-common";
-import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../common/ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { WebGLDisposable } from "./Disposable";
@@ -18,7 +18,7 @@ import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
-import { TextureOwnership } from "../RenderTexture";
+import { TextureOwnership } from "../CreateTextureArgs";
 
 /** @internal */
 export type Texture2DData = Uint8Array | Float32Array;

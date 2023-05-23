@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
-import { Schema, SchemaContext } from "../../ecschema-metadata";
+import { Schema, SchemaContext, SchemaInfo } from "../../ecschema-metadata";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
 import { UNIT_EXTRA_DATA } from "./UnitData";
@@ -15,10 +15,14 @@ import { SchemaMatchType } from "../../ECObjects";
 import { SchemaKey } from "../../SchemaKey";
 
 class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
     return this.getSchemaSync(schemaKey, matchType, context) as T;
   }
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+
+  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<SchemaInfo | undefined> {
+    return this.getSchema(schemaKey, matchType, context);
+  }
+  public getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
     if (schemaKey.name !== "Units")
       return undefined;
 
@@ -182,9 +186,9 @@ describe("Unit Provider tests", () => {
       expect(unit.name === "Units.FT", `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
     });
 
-    it("should find USUnits.FT with display label 'ft' with schemaName 'USUnits'",async () => {
+    it("should find USUnits.FT with display label 'ft' with schemaName 'USUnits'", async () => {
       const unit = await provider.findUnit("ft", "USUnits");
-      expect(unit.name === "USUnits.FT",  `Unit name should be USUnits.FT and not ${unit.name}`).to.be.true;
+      expect(unit.name === "USUnits.FT", `Unit name should be USUnits.FT and not ${unit.name}`).to.be.true;
     });
 
     it("should find USUnits.FT with display label 'ft' and SIUnits.LENGTH phenomena", async () => {
@@ -194,7 +198,7 @@ describe("Unit Provider tests", () => {
 
     it("should find Units.FT with display label 'ft' and Units.LENGTH phenomena", async () => {
       const unit = await provider.findUnit("ft", undefined, "Units.LENGTH");
-      expect(unit.name === "Units.FT",  `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
+      expect(unit.name === "Units.FT", `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
     });
 
     it("should only find USUnits.FT for USUnits.USCUSTOM unitSystem", async () => {

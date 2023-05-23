@@ -204,7 +204,7 @@ export class DrawingCategory extends Category {
   }
 }
 
-/** Categorizes SpatialElements. See [how to create a SpatialCategory]$(docs/learning/backend/CreateElements.md#SpatialCategory).
+/** Categorizes SpatialElements. See [how to create a SpatialCategory]($docs/learning/backend/CreateElements.md#SpatialCategory).
  * @public
  */
 export class SpatialCategory extends Category {

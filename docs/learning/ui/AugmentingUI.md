@@ -32,72 +32,44 @@ A recommended technique is for a package to have an initialize() method that reg
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
-A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When App UI is constructing the stage, item definitions are requested from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. An application's stageId names may not be useful unless the stage names are already known to the UiItemsProvider. The stageUsage value is also provided. This string is typically set to one of the standard [StageUsage]($appui-abstract) enum values. Each provider also receives the stage's applicationData. This allows the frontstage to specify a list of features that it is intended to support.
+A [UiItemsProvider]($appui-react) is used to provide items to insert into the UI of an existing stage. When App UI is constructing the stage, item definitions are requested from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. An application's stageId names may not be useful unless the stage names are already known to the UiItemsProvider. The stageUsage value is also provided. This string is typically set to one of the standard [StageUsage]($appui-react) enum values. Each provider also receives the stage's applicationData. This allows the frontstage to specify a list of features that it is intended to support.
 
 One important note. When specifying an item via a UiItemsProvider please ensure that its Id is uniquely specified across all applications that may use items from the provider. One way to do this is to prefix the id with a string that represents the package. A common pattern is `package-name:item-id`.
 
 ### Adding a ToolButton
 
-A UiItemsProvider can return an array of [CommonToolbarItem]($appui-abstract) that are used when populating the four different toolbars supported by App UI. The [ToolbarUsage]($appui-abstract) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-abstract) specifies if the toolbar is horizontal or vertical. The item priority determines the order of the tool button items within a group. A group priority can optionally be defined for the tools. If the group priority is defined, tools are placed into groups with a separator displayed when the group priority changes. The default value for group priority is zero.
+A UiItemsProvider can return an array of [ToolbarItem]($appui-react) that are used when populating the four different toolbars supported by App UI. The [ToolbarUsage]($appui-react) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-react) specifies if the toolbar is horizontal or vertical. The item priority determines the order of the tool button items within a group. A group priority can optionally be defined for the tools. If the group priority is defined, tools are placed into groups with a separator displayed when the group priority changes. The default value for group priority is zero.
 
 Below is the UiItemsProvider function called when appui-react is populating toolbars.
 
 ```ts
 public provideToolbarButtonItems(stageId: string, stageUsage: string,
-  toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[]
+  toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): ToolbarItem[]
 ```
 
 ### Status Bar Item
 
-A UiItemsProvider can return an array of [CommonStatusBarItem]($appui-abstract) to insert into the StatusBar. The item's definition includes the StatusBar section to be placed in and a priority defining its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
+A UiItemsProvider can return an array of [StatusBarItem]($appui-react) to insert into the StatusBar. The item's definition includes the StatusBar section to be placed in and a priority defining its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
 
 ```ts
-public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[]
+public provideStatusBarItems(stageId: string, stageUsage: string): StatusBarItem[]
 ```
 
 ### Widget Item
 
-The UiItemsProvider function called when appui-react is populating StagePanels is detailed below. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
+The UiItemsProvider function called when appui-react is populating StagePanels is detailed below. The [StagePanelLocation]($appui-react) will be the default location for the widget. The [StagePanelSection]($appui-react) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
 
 ```ts
-    provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
+    provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection): ReadonlyArray<Widget>;
 ```
 
-Starting in version 2.17 Widgets can support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
+Widgets can support being "popped-out" to a child window by setting the Widget property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
 
-Below is an example of implementation of a `provideWidgets` method that can work in Ninezone UI (UI-1) or AppUi (UI-2).
-
-```tsx
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
-    // `section` will be undefined if uiVersion === "1" (referred to as Ninezone UI) and in that case we can add
-    // specified zoneLocation. Because the Ninezone UI also had StagePanels we must make sure we only add to stage panels if
-    // the Ninezone UI is NOT active.
-    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
-      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
-      {
-        widgets.push({
-          id: PresentationPropertyGridWidgetControl.id,
-          icon: PresentationPropertyGridWidgetControl.iconSpec,
-          label: PresentationPropertyGridWidgetControl.label,
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          defaultFloatingSize={{width:330, height:540}},
-          isFloatingStateWindowResizable={true},
-          getWidgetContent: () => <PresentationPropertyGridWidget />,
-        });
-      }
-    }
-    return widgets;
-  }
-}
-```
-
-For newer apps that run only in AppUI then the above method can be simplified to the following.
+Below is an example of implementation of a `provideWidgets` method.
 
 ```tsx
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<Widget> {
+    const widgets: Widget[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End) {
       {
         widgets.push({
@@ -119,9 +91,9 @@ For newer apps that run only in AppUI then the above method can be simplified to
 
 One last thing to point out in the above example. We specified default size for the widget if it is "floated". This is sometimes required due to the specific construction of the widget component. Most components have an intrinsic size based on their contents and this size is used when the widget is floated. There are a few widget that draw directly to a canvas object or some other object that does not have an intrinsic size, and these component must have a size specified. Widgets that use the `PropertyGrid` and `ControlledTree` components are of this type and must have their sizes specified. The `defaultFloatingSize` prop is used to specify a default size for these widgets when they are "floated". If the prop `isFloatingStateWindowResizable={true}` is also specified the user is allowed to resize the widgets when floated and that stated is saved and used if the widget is floated again in the same frontstage.
 
-## UiItemProviderOverrides
+## UiItemsProviderOverrides
 
-When registering a [UiItemsProvider]($appui-abstract) with the [UiItemsManager]($appui-abstract) it is possible to pass an additional argument to limit when the provider is allowed to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) defines the parameters that can be used to limit when the provider is called to provide its items.
+When registering a [UiItemsProvider]($appui-react) with the [UiItemsManager]($appui-react) it is possible to pass an additional argument to limit when the provider is allowed to provide its items. The interface [UiItemsProviderOverrides]($appui-react) defines the parameters that can be used to limit when the provider is called to provide its items.
 
 In the example registration below the `commonToolSetProvider` is limited to be called to when the active stage has a StageUsage: `StageUsage.General`, `StageUsage.Edit`, or `StageUsage.ViewOnly`. Remember the StageUsage is defined by the FrontStageProvider that has been registered.  Since we want the same provider to provide a different set of tools to different stages we assign an override providerId for this instance of the provider. This is needed since the UiItemsManager does not allow providers with duplicate Ids. The `redlineToolSetProvider` is then registered to show only a subset of tools when the active stage has a StageUsage of `StageUsage.Redline`.
 
@@ -164,17 +136,6 @@ UiItemsManager.register(redlineToolSetProvider, {providerId: "redline-content-to
 ```
 
 There are three standard providers that can be used to serve as example of defining a UiItemsProvider. They are [StandardContentToolsUiItemsProvider]($appui-react), [StandardNavigationToolsUiItemsProvider]($appui-react), and [StandardStatusbarUiItemsProvider]($appui-react).
-
-## BaseUiItemsProvider
-
-Note - This class is targeted to be deprecated in favor of the less intrusive ability to specify overrides as outlined in the topic above.
-
-The BaseUiItemsProvider implements the UiItemsProvider interface and provides the additional functionality of allowing the user of the provider to define a function
-that determines if the provided items are to be supplied to the active stage. The BaseUiItemsProvider is meant to be subclassed to create an items provider that supports the isSupportedStage callback function.
-
-If developing an general purpose UiItemsProvider that may be used in multiple products or may be instantiated multiple times within a product to deliver a different set of items to different stages it is recommended that the provider be subclassed from the BaseUiItemsProvider class.
-
-To see a more complete example of adding ToolButtons, Status Bar items, and Widgets see the [UiItemsProvider example](./abstract/uiitemsprovider/#uiitemsprovider-example). The [StandardContentToolsProvider]($appui-react) class serves as an example of an items provider subclassed from BaseUiItemsProvider.
 
 ## Adding a Frontstage
 

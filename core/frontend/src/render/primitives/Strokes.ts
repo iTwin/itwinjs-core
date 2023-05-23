@@ -7,7 +7,7 @@
  */
 
 import { Point3d, Transform } from "@itwin/core-geometry";
-import { DisplayParams } from "./DisplayParams";
+import { DisplayParams } from "../../common/render/primitives/DisplayParams";
 
 /** @internal */
 export class StrokesPrimitivePointList {

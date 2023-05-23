@@ -340,7 +340,6 @@ export abstract class RpcRequest<TResponse = any> {
       if (typeof (response) === "undefined") {
         return;
       }
-
       this._sending = undefined;
 
       const status = this.protocol.getStatus(response);

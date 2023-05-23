@@ -6,21 +6,79 @@
  * @module SQLiteDb
  */
 
-import { mkdirSync } from "fs";
+import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { BriefcaseStatus, GuidString } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, PickMethods, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { BlobContainer } from "./BlobContainerService";
+
+import type { VersionedSqliteDb } from "./SQLiteDb";
+
+// spell:ignore logmsg httpcode
 
 /**
- * Types for using SQLite files stored in cloud containers.
+ * Types for accessing SQLite databases stored in cloud containers.
  * @beta
  */
 export namespace CloudSqlite {
+
+  const logInfo = (msg: string) => Logger.logInfo("CloudSqlite", msg);
+  const logError = (msg: string) => Logger.logError("CloudSqlite", msg);
+
+  /**
+   * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
+   * If the service is unavailable or returns an error, an empty token is returned.
+   */
+  export async function requestToken(args: ContainerTokenProps): Promise<AccessToken> {
+    const userToken = await IModelHost.getAccessToken();
+    const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken, forWriteAccess: args.writeable });
+    return response?.token ?? "";
+  }
+
+  /**
+   * Create a new CloudContainer from a ContainerAccessProps. For non-public containers, a valid accessToken must be provided before the container
+   * can be used (e.g. via [[CloudSqlite.requestToken]]).
+   * @note After the container is successfully connected to a CloudCache, it will begin auto-refreshing its accessToken every `tokenRefreshSeconds` seconds (default is 1 hour)
+   * until it is disconnected. However, if the container is public, or if `tokenRefreshSeconds` is <=0, auto-refresh is not enabled.
+   */
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
-    return new NativeLibrary.nativeLib.CloudContainer(args);
+    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise?: Promise<void> };
+    const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
+
+    // don't refresh tokens for public containers or if refreshSeconds<=0
+    if (!args.isPublic && refreshSeconds > 0) {
+      const tokenProps: ContainerTokenProps = { baseUri: args.baseUri, storageType: args.storageType, containerId: args.containerId, writeable: args.writeable };
+      const doRefresh = async () => {
+        let newToken: AccessToken | undefined;
+        const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
+        try {
+          newToken = await CloudSqlite.requestToken(tokenProps);
+          logInfo(`Refreshed token for container ${url}`);
+        } catch (err: any) {
+          logError(`Error refreshing token for container ${url}: ${err.message}`);
+        }
+        container.accessToken = newToken ?? "";
+      };
+      const tokenRefreshFn = () => {
+        container.timer = setTimeout(async () => {
+          container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
+          await container.refreshPromise;
+          container.refreshPromise = undefined;
+          tokenRefreshFn(); // schedule next refresh
+        }, refreshSeconds * 1000);
+      };
+      container.onConnected = tokenRefreshFn; // schedule the first refresh when the container is connected
+      container.onDisconnect = () => { // clear the refresh timer when the container is disconnected
+        if (container.timer !== undefined) {
+          clearTimeout(container.timer);
+          container.timer = undefined;
+        }
+      };
+    }
+    return container;
   }
 
   /** Begin prefetching all blocks for a database in a CloudContainer in the background. */
@@ -28,16 +86,12 @@ export namespace CloudSqlite {
     return new NativeLibrary.nativeLib.CloudPrefetch(container, dbName, args);
   }
 
-  /** Properties that specify how to access the account for a cloud blob-store container. */
-  export interface AccountAccessProps {
-    /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
-    storageType: string;
-    /** blob store account name, or a URI for custom domains. */
-    accessName: string;
-  }
-
   /** Properties of a CloudContainer. */
   export interface ContainerProps {
+    /** blob storage provider */
+    storageType: "azure" | "google";
+    /** base URI for container. */
+    baseUri: string;
     /** the name of the container. */
     containerId: string;
     /** an alias for the container. Defaults to `containerId` */
@@ -48,7 +102,13 @@ export namespace CloudSqlite {
     writeable?: boolean;
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
     secure?: boolean;
+    /** true if the container is public (doesn't require authorization) */
+    isPublic?: boolean;
+    /** string attached to log messages from CloudSQLite. This is most useful for identifying usage from daemon mode. */
+    logId?: string;
   }
+
+  export type ContainerTokenProps = Omit<ContainerProps, "accessToken">;
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
   export interface CachedDbProps {
@@ -64,10 +124,46 @@ export namespace CloudSqlite {
     readonly state: "" | "copied" | "deleted";
   }
 
+  /** Filter options passed to CloudContainer.queryHttpLog
+   *  @internal
+   */
+  export interface BcvHttpLogFilterOptions {
+    /** only return rows whose ID is >= the provided id */
+    startFromId?: number;
+    /** only return rows whose endTime is null OR >= the provided endTime. */
+    finishedAtOrAfterTime?: string;
+    /** only return rows with a non-null end_time. */
+    showOnlyFinished?: boolean;
+  }
+
+  /** Returned from 'CloudContainer.queryHttpLog' describing a row in the bcv_http_log table.
+   *  @internal
+   */
+  export interface BcvHttpLog {
+    /** Unique, monotonically increasing id value */
+    readonly id: number;
+    /** Time request was made, as iso-8601 */
+    readonly startTime: string;
+    /** Time reply received, as iso-8601 (may be undefined) */
+    readonly endTime: string | undefined;
+    /** "PUT", "GET", etc. */
+    readonly method: string;
+    /** LogId of client that caused this request. Will be "prefetch" for prefetch requests. */
+    readonly logId: string;
+    /** Log message associated with request */
+    readonly logmsg: string;
+    /** URI of request */
+    readonly uri: string;
+    /** HTTP response code (e.g. 200) */
+    readonly httpcode: number;
+  }
+
   /** Properties for accessing a CloudContainer */
-  export type ContainerAccessProps = AccountAccessProps & ContainerProps & {
+  export type ContainerAccessProps = ContainerProps & {
     /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
-    durationSeconds?: number;
+    lockExpireSeconds?: number;
+    /** number of seconds between auto-refresh of access token. If <=0 no auto-refresh. Default is 1 hour (60*60) */
+    tokenRefreshSeconds?: number;
   };
 
   /** The name of a CloudSqlite database within a CloudContainer. */
@@ -115,12 +211,10 @@ export namespace CloudSqlite {
     curlDiagnostics?: boolean;
   }
 
-  /** Parameters used to obtain the write lock on a cloud container
-   * @internal
-   */
+  /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
-    /** The name of the user attempting to acquire the write lock. This name will be shown to other users while the lock is held. */
-    user?: string;
+    /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
+    moniker?: string;
     /** number of times to retry in the event the lock currently held by someone else.
      * After this number of attempts, `onFailure` is called. Default is 20.
      */
@@ -136,8 +230,8 @@ export namespace CloudSqlite {
 
   /** @internal */
   export interface LockAndOpenArgs {
-    /** the name to be displayed in the event of lock collisions */
-    user: string;
+    /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
+    moniker: string;
     /** the name of the database within the container */
     dbName: string;
     /** the CloudContainer on which the operation will be performed */
@@ -227,14 +321,18 @@ export namespace CloudSqlite {
     onDisconnected?: (container: CloudContainer, detach: boolean) => void;
 
     readonly cache?: CloudCache;
-    /** The ContainerId within the storage account. */
+    /** The ContainerId within a storage account. */
     get containerId(): string;
     /** The *alias* to identify this CloudContainer in a CloudCache. Usually just the ContainerId. */
     get alias(): string;
+    /** The logId. */
+    get logId(): string;
     /** true if this CloudContainer is currently connected to a CloudCache via the `connect` method. */
     get isConnected(): boolean;
     /** true if this CloudContainer was created with the `writeable` flag (and its `accessToken` supplies write access). */
     get isWriteable(): boolean;
+    /** true if this container is public (doesn't require authorization ). */
+    get isPublic(): boolean;
     /** true if this CloudContainer currently holds the write lock for its container in the cloud. */
     get hasWriteLock(): boolean;
     /** true if this CloudContainer has local changes that have not be uploaded to its container in the cloud. */
@@ -251,7 +349,7 @@ export namespace CloudSqlite {
      * initialize a cloud blob-store container to be used as a new CloudContainer. This creates the container's manifest of its contents, and should be
      * performed on an empty container. If an existing manifest is present, it is destroyed and a new one is created (essentially emptying the container.)
      */
-    initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize?: number }): void;
+    initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize: number }): void;
 
     /**
      * Connect this CloudContainer to a CloudCache for accessing and/or modifying its contents.
@@ -361,7 +459,15 @@ export namespace CloudSqlite {
      * Get the status of a specific database in this CloudContainer.
      * @param dbName the name of the database of interest
      */
-    queryDatabase(dbName: string): CloudSqlite.CachedDbProps | undefined;
+    queryDatabase(dbName: string): CachedDbProps | undefined;
+
+    /**
+     * query the bcv_http_log table
+     * @note the bcv_http_log table contains one row for each HTTP request made by the VFS or connected daemon.
+     * @note Entries are automatically removed from the table on a FIFO basis. By default entries which are 1 hr old will be removed.
+     * @internal
+     */
+    queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
 
     /**
      * Get the SHA1 hash of the content of a database.
@@ -426,31 +532,31 @@ export namespace CloudSqlite {
   }
 
   /** Upload a local SQLite database file into a CloudContainer.
-    * @param container the CloudContainer holding the database. Must be connected.
-    * @param props the properties that describe the database to be downloaded, plus optionally an `onProgress` function.
-    * @note this function requires that the write lock be held on the container
-    */
+   * @param container the CloudContainer holding the database. Must be connected.
+   * @param props the properties that describe the database to be downloaded, plus optionally an `onProgress` function.
+   * @note this function requires that the write lock be held on the container
+   */
   export async function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void> {
     await transferDb("upload", container, props);
     container.checkForChanges(); // re-read the manifest so the database is available locally.
   }
 
   /** Download a database from a CloudContainer.
-    * @param container the CloudContainer holding the database. Must be connected.
-    * @param props the properties that describe the database to be downloaded, plus optionally an `onProgress` function.
-    * @returns a Promise that is resolved when the download completes.
-    * @note the download is "restartable." If the transfer is aborted and then re-requested, it will continue from where
-    * it left off rather than re-downloading the entire file.
-    */
+   * @param container the CloudContainer holding the database. Must be connected.
+   * @param props the properties that describe the database to be downloaded, plus optionally an `onProgress` function.
+   * @returns a Promise that is resolved when the download completes.
+   * @note the download is "restartable." If the transfer is aborted and then re-requested, it will continue from where
+   * it left off rather than re-downloading the entire file.
+   */
   export async function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void> {
     await transferDb("download", container, props);
   }
 
   /** Optional method to be called when an attempt to acquire the write lock fails because another user currently holds it.
-    * @param lockedBy The identifier supplied by the application/user that currently holds the lock.
-    * @param expires a stringified Date (in local time) indicating when the lock will expire.
-    * @return "stop" to give up and stop retrying. Generally, it's a good idea to wait for some time before returning.
-    */
+   * @param lockedBy The identifier supplied by the application/user that currently holds the lock.
+   * @param expires a stringified Date (in local time) indicating when the lock will expire.
+   * @return "stop" to give up and stop retrying. Generally, it's a good idea to wait for some time before returning.
+   */
   export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
 
   /**
@@ -478,20 +584,20 @@ export namespace CloudSqlite {
   }
 
   /**
-    * Perform an asynchronous write operation on a CloudContainer with the write lock held.
-    * 1. if write lock is already held, call operation and return.
-    * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
-    * 3. perform the operation
-    * 3.a if the operation throws, abandon all changes and re-throw
-    * 4. release the write lock.
-    * 5. return value from operation
-    * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
-    * @param container the CloudContainer for which the lock is to be acquired
-    * @param operation an asynchronous operation performed with the write lock held.
-    * @param busyHandler if present, function called when the write lock is currently held by another user.
-    * @returns a Promise with the result of `operation`
-    */
-  export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler) {
+   * Perform an asynchronous write operation on a CloudContainer with the write lock held.
+   * 1. if write lock is already held, call operation and return.
+   * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
+   * 3. perform the operation
+   * 3.a if the operation throws, abandon all changes and re-throw
+   * 4. release the write lock.
+   * 5. return value from operation
+   * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
+   * @param container the CloudContainer for which the lock is to be acquired
+   * @param operation an asynchronous operation performed with the write lock held.
+   * @param busyHandler if present, function called when the write lock is currently held by another user.
+   * @returns a Promise with the result of `operation`
+   */
+  export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => Promise<T>, busyHandler?: WriteLockBusyHandler): Promise<T> {
     if (container.hasWriteLock)
       return operation();
 
@@ -520,12 +626,12 @@ export namespace CloudSqlite {
     cacheDir?: string;
   }
 
-  /** The collection of currently extant CloudCaches, by name. */
+  /** The collection of currently extant `CloudCache`s, by name. */
   export class CloudCaches {
-    private static readonly cloudCaches = new Map<string, CloudSqlite.CloudCache>();
+    private static readonly cloudCaches = new Map<string, CloudCache>();
 
     /** create a new CloudCache */
-    private static makeCache(args: CreateCloudCacheArg): CloudSqlite.CloudCache {
+    private static makeCache(args: CreateCloudCacheArg): CloudCache {
       const cacheName = args.cacheName;
       const rootDir = args.cacheDir ?? join(IModelHost.profileDir, "CloudCaches", cacheName);
       IModelJsFs.recursiveMkDirSync(rootDir);
@@ -534,8 +640,8 @@ export namespace CloudSqlite {
       return cache;
     }
 
-    /** find a CloudCache by name if it exists */
-    public static findCache(cacheName: string) {
+    /** find a CloudCache by name, if it exists */
+    public static findCache(cacheName: string): CloudCache | undefined {
       return this.cloudCaches.get(cacheName);
     }
     /** @internal */
@@ -552,9 +658,221 @@ export namespace CloudSqlite {
       this.cloudCaches.clear();
     }
 
-    /** Get an CloudCache by name. If the CloudCache doesn't yet exist, it is created. */
-    public static getCache(args: CreateCloudCacheArg) {
+    /** Get a CloudCache by name. If the CloudCache doesn't yet exist, it is created. */
+    public static getCache(args: CreateCloudCacheArg): CloudCache {
       return this.cloudCaches.get(args.cacheName) ?? this.makeCache(args);
+    }
+  }
+
+  /** Class that provides convenient local access to a SQLite database in a CloudContainer.  */
+  export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
+    /** The name of the database within the cloud container. */
+    public readonly dbName: string;
+    /** Parameters for obtaining the write lock for this container.  */
+    public readonly lockParams: ObtainLockParams = {
+      moniker: "",
+      nRetries: 20,
+      retryDelayMs: 100,
+    };
+    protected static _cacheName = "default-64k";
+    protected _container: CloudContainer;
+    protected _cloudDb: DbType;
+    private _writeLockProxy?: PickAsyncMethods<WriteMethods>;
+    private _readerProxy?: PickMethods<ReadMethods>;
+    private get _ctor() { return this.constructor as typeof DbAccess; }
+
+    /** @internal */
+    public static getCacheForClass() {
+      return CloudCaches.getCache({ cacheName: this._cacheName });
+    }
+    private _cache?: CloudCache;
+    /** only for tests
+     * @internal
+     */
+    public setCache(cache: CloudCache) {
+      this._cache = cache;
+    }
+    /** @internal */
+    public getCache(): CloudCache {
+      return this._cache ??= this._ctor.getCacheForClass();
+    }
+    /** @internal */
+    public getCloudDb(): DbType {
+      return this._cloudDb;
+    }
+
+    /**
+     * The token that grants access to the cloud container for this DbAccess. If it does not grant write permissions, all
+     * write operations will fail. It should be refreshed (via a timer) before it expires.
+     */
+    public get sasToken() { return this._container.accessToken; }
+    public set sasToken(token: AccessToken) { this._container.accessToken = token; }
+
+    /** the container for this DbAccess. It is automatically connected to the CloudCache whenever it is accessed. */
+    public get container(): CloudContainer {
+      const container = this._container;
+      if (!container.isConnected)
+        container.connect(this.getCache());
+      return container;
+    }
+
+    /** Start a prefetch operation to download all the blocks for the VersionedSqliteDb */
+    public startPrefetch(): CloudPrefetch {
+      return startCloudPrefetch(this.container, this.dbName);
+    }
+
+    /** Create a new DbAccess for a database stored in a cloud container. */
+    public constructor(args: {
+      /** The Constructor for DbType. */
+      dbType: Constructor<DbType>;
+      /** The properties of the cloud container holding the database. */
+      props: ContainerAccessProps;
+      /** The name of the database within the container. */
+      dbName: string;
+    }) {
+      this._container = createCloudContainer({ writeable: true, ...args.props });
+      this._cloudDb = new args.dbType(args.props);
+      this.dbName = args.dbName;
+      this.lockParams.moniker = IModelHost.userMoniker;
+    }
+
+    /** Close the database for this DbAccess, if it is open */
+    public closeDb() {
+      if (this._cloudDb.isOpen)
+        this._cloudDb.closeDb();
+    }
+
+    /** Close the database for this DbAccess if it is opened, and disconnect this `DbAccess from its CloudContainer. */
+    public close() {
+      this.closeDb();
+      this._container.disconnect();
+    }
+
+    /**
+     * Initialize a cloud container to hold a Cloud SQliteDb. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
+     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty database into the container.
+     * @note this deletes any existing content in the container.
+     */
+    protected static async _initializeDb(args: { dbType: typeof VersionedSqliteDb, props: ContainerAccessProps, dbName: string, blockSize?: number }) {
+      const container = createCloudContainer({ ...args.props, writeable: true });
+      container.initializeContainer({ blockSize: args.blockSize ?? 64 * 1024 });
+      container.connect(CloudCaches.getCache({ cacheName: this._cacheName }));
+      await withWriteLock("initialize", container, async () => {
+        const localFileName = join(KnownLocations.tmpdir, "blank.db");
+        args.dbType.createNewDb(localFileName);
+        await transferDb("upload", container, { dbName: args.dbName, localFileName });
+        unlinkSync(localFileName);
+      });
+      container.disconnect({ detach: true });
+    }
+
+    /**
+     * Synchronize the local cache of this database with any changes by made by others.
+     * @note This is called automatically whenever any write operation is performed on this DbAccess. It is only necessary to
+     * call this directly if you have not changed the database recently, but wish to perform a readonly operation and want to
+     * ensure it is up-to-date as of now.
+     * @note There is no guarantee that the database is up-to-date even immediately after calling this method, since others
+     * may be modifying it at any time.
+     */
+    public synchronizeWithCloud() {
+      this.closeDb();
+      this.container.checkForChanges();
+    }
+
+    /**
+     * Ensure that the database controlled by this `DbAccess` is open for read access and return the database object.
+     * @note if the database is already open (either for read or write), this method merely returns the database object.
+     */
+    public openForRead(): DbType {
+      if (!this._cloudDb.isOpen)
+        this._cloudDb.openDb(this.dbName, OpenMode.Readonly, this.container);
+      return this._cloudDb;
+    }
+
+    /**
+     * Perform an operation on this database with the lock held and the database opened for write
+     * @param operationName the name of the operation. Only used for logging.
+     * @param operation a function called with the lock held and the database open for write.
+     * @returns A promise that resolves to the the return value of `operation`.
+     * @see `SQLiteDb.withLockedContainer`
+     * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
+     * do any avoidable or time consuming work in your operation function.
+     */
+    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
+      let nRetries = this.lockParams.nRetries;
+      const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const moniker = this.lockParams.moniker ?? cacheGuid;
+      const timer = new StopWatch(undefined, true);
+      const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
+
+      const busyHandler = async (lockedBy: string, expires: string): Promise<void | "stop"> => {
+        if (--nRetries <= 0) {
+          if ("stop" === await this.lockParams.onFailure?.(lockedBy, expires))
+            return "stop";
+          nRetries = this.lockParams.nRetries;
+        }
+        const delay = this.lockParams.retryDelayMs;
+        logInfo(`lock retry for ${cacheGuid} after ${showMs()}, waiting ${delay}`);
+        await BeDuration.fromMilliseconds(delay).wait();
+      };
+
+      this.closeDb(); // in case it is currently open for read.
+      let lockObtained = false;
+      try {
+        return await this._cloudDb.withLockedContainer({ moniker, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+          lockObtained = true;
+          logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
+          return operation();
+        });
+      } finally {
+        if (lockObtained)
+          logInfo(`lock released by ${cacheGuid} after ${operationName} ${showMs()} `);
+        else
+          logError(`could not obtain lock for ${cacheGuid} to perform ${operationName} ${showMs()} `);
+      }
+    }
+
+    /** get a method member, by name, from the database object. Throws if not a Function. */
+    private getDbMethod(methodName: string): Function {
+      const fn = (this._cloudDb as any)[methodName] as Function;
+      if (typeof fn !== "function")
+        throw new Error(`illegal method name ${methodName}`);
+      return fn;
+    }
+
+    /**
+     * A Proxy Object to call a writeable async method on the cloud database controlled by this `DbAccess`.
+     *
+     * Whenever a method is called through this Proxy, it will:
+     * - attempt to acquire the write lock on the container
+     * - open the database for write
+     * - call the method
+     * - close the database
+     * - upload changes
+     * - release the write lock.
+     *
+     * @see [[withLockedDb]]
+     */
+    public get writeLocker() {
+      return this._writeLockProxy ??= new Proxy(this, {
+        get(access, methodName: string) {
+          const fn = access.getDbMethod(methodName);
+          return async (...args: any[]) => access.withLockedDb(methodName, fn.bind(access._cloudDb, ...args));
+        },
+      }) as PickAsyncMethods<WriteMethods>;
+    }
+
+    /**
+     * A Proxy Object to call a synchronous readonly method on the database controlled by this `DbAccess`.
+     * Whenever a method is called through this Proxy, it will first ensure that the database is opened for at least read access.
+     */
+    public get reader() {
+      return this._readerProxy ??= new Proxy(this, {
+        get(access, methodName: string) {
+          const fn = access.getDbMethod(methodName);
+          return (...args: any[]) => fn.call(access.openForRead(), ...args);
+        },
+      }) as PickMethods<ReadMethods>;
     }
   }
 }

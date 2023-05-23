@@ -71,7 +71,7 @@ yargs.strict(true)
       })
     },
     (argv) => { extractCommand(argv) })
-  .command("extract-api", "Extracts the API of the Typescript library starting from an entry file with a default presets.  Powered by @microsoft/api-extractor (https://api-extractor.com)",
+  .command("extract-api", "Extracts the API of the Typescript library starting from an entry file with a default presets. Powered by @microsoft/api-extractor (https://api-extractor.com)",
     function (yargs) {
       return yargs.options({
         "entry": {
@@ -79,6 +79,15 @@ yargs.strict(true)
         },
         "ignoreMissingTags": {
           describe: "Turns off the 'ae-missing-release-tag' option which returns an error when a missing release tag is detected"
+        },
+        "apiReportFolder": {
+          describe: "Directory for the API report. Defaults to `<Rush repository root>/common/api`."
+        },
+        "apiReportTempFolder": {
+          describe: "Directory for the API report. Defaults to `<Rush repository root>/temp/api`."
+        },
+        "apiSummaryFolder": {
+          describe: "Directory for the API summary. Defaults to `<Rush repository root>/common/api/summary`."
         }
       })
     },
@@ -119,7 +128,7 @@ function testCommand(options) {
 }
 
 function getScriptPath(name) {
-  return `"${path.resolve(__dirname, path.join("..", "scripts", name))}"`;
+  return path.resolve(__dirname, path.join("..", "scripts", name));
 }
 
 function docsCommand(options) {
@@ -133,9 +142,9 @@ function docsCommand(options) {
   const testExcludeGlobOpt = options.testExcludeGlob ? ["--testExcludeGlob", options.testExcludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
-  exec(["node", getScriptPath("docs.js"),
-    ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
-    ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
+  exec("node", [getScriptPath("docs.js"),
+  ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
+  ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
 
 function extractCommand(options) {
@@ -143,33 +152,36 @@ function extractCommand(options) {
   const outOpt = options.out ? ["--out", options.out] : [];
   const fileExt = options.fileExt ? ["--fileExt", options.fileExt] : [];
   const recursive = options.recursive ? ["--recursive"] : [];
-  exec(["node", getScriptPath("extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
+  exec("node", [getScriptPath("extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
 }
 
 function extractApiCommand(options) {
   const entryOpt = options.entry ? ["--entry", options.entry] : [];
   const ignoreTagsOpt = options.ignoreMissingTags ? ["--ignoreMissingTags"] : [];
-  exec(["node", getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt]);
+  const apiReportFolderOpt = options.apiReportFolder ? ["--apiReportFolder", options.apiReportFolder] : [];
+  const apiReportTempFolderOpt = options.apiReportTempFolder ? ["--apiReportTempFolder", options.apiReportTempFolder] : [];
+  const apiSummaryFolderOpt = options.apiSummaryFolder ? ["--apiSummaryFolder", options.apiSummaryFolder] : [];
+  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt]);
 }
 
 function pseudolocalizeCommand(options) {
   const englishDir = options.englishDir ? ["--englishDir", options.englishDir] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
-  exec(["node", getScriptPath("pseudolocalize"), ...englishDir, ...outOpt]);
+  exec("node", [getScriptPath("pseudolocalize"), ...englishDir, ...outOpt]);
 }
 
 function copyAssetsCommand(options) {
   const packageJsonDir = options.packageJsonDir ? ["--packageJsonDir", options.packageJsonDir] : [];
   const nodeModulesDir = options.nodeModulesDir ? ["--nodeModulesDir", options.nodeModulesDir] : [];
   const destinationDir = options.destinationDir ? ["--destinationDir", options.destinationDir] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/copy-assets.js"), ...packageJsonDir, ...nodeModulesDir, ...destinationDir]);
+  exec("node", [path.resolve(__dirname, "../scripts/copy-assets.js"), ...packageJsonDir, ...nodeModulesDir, ...destinationDir]);
 }
 
-function exec(cmd) {
+function exec(cmd, args) {
   console.log("Running command:");
-  console.log(cmd.join(" "));
+  console.log(`${cmd} ${args.join(' ')}`);
   try {
-    return child_process.execSync(cmd.join(" "), { encoding: "utf8", stdio: 'inherit' });
+    return child_process.execFileSync(cmd, args, { encoding: "utf8", stdio: 'inherit' });
   } catch (error) {
     if (error.status)
       process.exit(error.status);

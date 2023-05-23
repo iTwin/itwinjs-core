@@ -554,7 +554,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     if (!matrix.computeCachedInverse(true))
       return false;
     const coffs = matrix.inverseCoffs!;
-    const tol = 1.0e-15;
+    const tol = Geometry.smallFloatingPoint;
     let x = 0;
     let y = 0;
     let z = 0;

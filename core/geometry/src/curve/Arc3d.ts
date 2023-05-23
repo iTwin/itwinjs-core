@@ -37,85 +37,87 @@ import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * Compact vector form of an elliptic arc defined by center, vectors for angle coordinates 0 and 90 degrees, and sweep.
- * * See `Arc3d` for further details of the parameterization and meaning of the vectors.
+ * * @see [Curve Collections]($docs/learning/geometry/CurvePrimitive.md) learning article for further details of the
+ * parameterization and meaning of the vectors.
  * @public
  */
 export interface ArcVectors {
-  /** center point of arc. */
+  /** Center point of arc */
   center: Point3d;
-  /** vector to point at angle 0 in parameter space */
+  /** Vector to point at angle 0 in parameter space */
   vector0: Vector3d;
-  /** vector to point at angle 90 degrees in parameter space */
+  /** Vector to point at angle 90 degrees in parameter space */
   vector90: Vector3d;
-  /** angle swept by the subset of the complete arc. */
+  /** Angle swept by the subset of the complete arc */
   sweep: AngleSweep;
 }
 /**
  * Circular or elliptic arc.
- *
  * * The angle to point equation is:
- *
- * *  `X = center + cos(theta) * vector0 + sin(theta) * vector90`
+ * * `X = center + cos(theta) * vector0 + sin(theta) * vector90`
  * * When the two vectors are perpendicular and have equal length, it is a true circle.
  * * Non-perpendicular vectors are always elliptic.
- * *  vectors of unequal length are always elliptic.
+ * * Vectors of unequal length are always elliptic.
  * * To create an ellipse in the common "major and minor axis" form of an ellipse:
  * ** vector0 is the vector from the center to the major axis extreme.
  * ** vector90 is the vector from the center to the minor axis extreme.
- * ** note the constructing the vectors to the extreme points makes them perpendicular.
- * *  The method toScaledMatrix3d () can be called to convert the unrestricted vector0,vector90 to perpendicular form.
- * * The unrestricted form is much easier to work with for common calculations -- stroking, projection to 2d, intersection with plane.
+ * ** note that constructing the vectors to the extreme points makes them perpendicular.
+ * * The method toScaledMatrix3d() can be called to convert the unrestricted vector0,vector90 to perpendicular form.
+ * * The unrestricted form is much easier to work with for common calculations -- stroking, projection to 2d,
+ * intersection with plane.
  * @public
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "arc";
-
-  /**
-   * Test if this and other are both instances of Arc3d.
-   */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Arc3d; }
+  /** Test if this and other are both instances of Arc3d. */
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof Arc3d;
+  }
   private _center: Point3d;
   private _matrix: Matrix3d; // columns are [vector0, vector90, unitNormal]
-  private _sweep: AngleSweep; // sweep limits.
+  private _sweep: AngleSweep; // sweep limits
   private static _workPointA = Point3d.create();
   private static _workPointB = Point3d.create();
   private static _workPointC = Point3d.create();
   private static _workVectorU = Vector3d.create();
   private static _workVectorV = Vector3d.create();
-  /**
-   * read property for (clone of) center
-   */
-  public get center(): Point3d { return this._center.clone(); }
-  /**
-   * read property for (clone of) vector0
-   */
-  public get vector0(): Vector3d { return this._matrix.columnX(); }
-  /**
-   * read property for (clone of) vector90
-   */
-  public get vector90(): Vector3d { return this._matrix.columnY(); }
-  /**
-   * read property for (clone of) plane normal, with arbitrary length.
-   */
-  public get perpendicularVector(): Vector3d { return this._matrix.columnZ(); }
-  /**
-   * read property for (clone of!) matrix of vector0, vector90, unit normal
-   */
-  public matrixClone(): Matrix3d { return this._matrix.clone(); }
-  /**
-   * read property for (reference to !!) matrix of vector0, vector90, unit normal
-   */
-  public get matrixRef(): Matrix3d { return this._matrix; }
+  /** Read property for (clone of) center */
+  public get center(): Point3d {
+    return this._center.clone();
+  }
+  /** Read property for (clone of) vector0 */
+  public get vector0(): Vector3d {
+    return this._matrix.columnX();
+  }
+  /** Read property for (clone of) vector90 */
+  public get vector90(): Vector3d {
+    return this._matrix.columnY();
+  }
+  /** Read property for (clone of) plane normal, with arbitrary length. */
+  public get perpendicularVector(): Vector3d {
+    return this._matrix.columnZ();
+  }
+  /** Read property for (clone of) matrix of vector0, vector90, unit normal */
+  public matrixClone(): Matrix3d {
+    return this._matrix.clone();
+  }
+  /** Read property for (reference to) matrix of vector0, vector90, unit normal */
+  public get matrixRef(): Matrix3d {
+    return this._matrix;
+  }
   /** Sweep of the angle. */
-  public get sweep(): AngleSweep { return this._sweep; }
-  public set sweep(value: AngleSweep) { this._sweep.setFrom(value); }
-  /**
-   * An Arc3d extends along its complete elliptic arc
-   */
-  public override get isExtensibleFractionSpace(): boolean { return true; }
-
-  // constructor copies the pointers !!!
+  public get sweep(): AngleSweep {
+    return this._sweep;
+  }
+  public set sweep(value: AngleSweep) {
+    this._sweep.setFrom(value);
+  }
+  /** An Arc3d extends along its complete elliptic arc */
+  public override get isExtensibleFractionSpace(): boolean {
+    return true;
+  }
+  // constructor copies the pointers
   private constructor(center: Point3d, matrix: Matrix3d, sweep: AngleSweep) {
     super();
     this._center = center;
@@ -123,7 +125,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     this._sweep = sweep;
   }
   /**
-   *  Return a clone of the arc, with transform applied
+   * Return a clone of the arc, with transform applied
    * @param transform
    */
   public cloneTransformed(transform: Transform): Arc3d {  // we know tryTransformInPlace succeeds.
@@ -131,7 +133,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     c.tryTransformInPlace(transform);
     return c;
   }
-
   /**
    * Redefine the arc with (captured references to) given data.
    * @param center arc center
@@ -152,9 +153,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public set(center: Point3d, matrix: Matrix3d, sweep: AngleSweep | undefined) {
     this.setRefs(center.clone(), matrix.clone(), sweep ? sweep.clone() : AngleSweep.create360());
   }
-  /**
-   * Copy center, matrix, and sweep from other Arc3d.
-   */
+  /** Copy center, matrix, and sweep from other Arc3d */
   public setFrom(other: Arc3d) {
     this._center.setFrom(other._center);
     this._matrix.setFrom(other._matrix);
@@ -187,7 +186,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param sweep sweep limits
    * @param result optional preallocated result.
    */
-  public static createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d {
+  public static createScaledXYColumns(
+    center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d
+  ): Arc3d {
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
     return Arc3d.create(center, vector0.scale(radius0, vector0), vector90.scale(radius90, vector90), sweep, result);
@@ -199,11 +200,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param radius radius in x direction.
    * @param result optional preallocated result.
    */
-  public static createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d {
+  public static createCenterNormalRadius(
+    center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d
+  ): Arc3d {
     const frame = Matrix3d.createRigidHeadsUp(normal);
     return Arc3d.createScaledXYColumns(center, frame, radius, radius, undefined, result);
   }
-
   /**
    * Create an arc by center with vectors to points at 0 and 90 degrees in parameter space.
    * @param center arc center
@@ -212,12 +214,20 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param sweep sweep limits
    * @param result optional preallocated result
    */
-  public static create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d {
-    const normal = vector0.unitCrossProductWithDefault(vector90, 0, 0, 0); // normal will be 000 for degenerate case ! !!
+  public static create(
+    center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d
+  ): Arc3d {
+    const normal = vector0.unitCrossProductWithDefault(vector90, 0, 0, 0); // normal will be 000 for degenerate case
     const matrix = Matrix3d.createColumns(vector0, vector90, normal);
-    return Arc3d.createRefs(center !== undefined ? center.clone() : Point3d.create(0, 0, 0), matrix, sweep ? sweep.clone() : AngleSweep.create360(), result);
+    return Arc3d.createRefs(
+      center !== undefined ? center.clone() : Point3d.create(0, 0, 0),
+      matrix,
+      sweep ? sweep.clone() : AngleSweep.create360(),
+      result
+    );
   }
-  /** Return a clone of this arc, projected to given z value.
+  /**
+   * Return a clone of this arc, projected to given z value.
    * * If `z` is omitted, the clone is at the z of the center.
    * * Note that projection to fixed z can change circle into ellipse (and (rarely) ellipse to circle)
    */
@@ -230,15 +240,21 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       this._matrix.coffs[1], this._matrix.coffs[4], 0,
       this._sweep);
   }
-
   /**
-   * Create an arc by center (cx,cy,xz) with vectors (ux,uy,uz) and (vx,vy,vz) to points at 0 and 90 degrees in parameter space.
+   * Create an arc by center (cx,cy,xz) with vectors (ux,uy,uz) and (vx,vy,vz) to points at 0 and 90 degrees in
+   * parameter space.
    * @param result optional preallocated result
    */
-  public static createXYZXYZXYZ(cx: number, cy: number, cz: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, sweep?: AngleSweep, result?: Arc3d): Arc3d {
-    return Arc3d.create(Point3d.create(cx, cy, cz), Vector3d.create(ux, uy, uz), Vector3d.create(vx, vy, vz), sweep, result);
+  public static createXYZXYZXYZ(
+    cx: number, cy: number, cz: number,
+    ux: number, uy: number, uz: number,
+    vx: number, vy: number, vz: number,
+    sweep?: AngleSweep, result?: Arc3d
+  ): Arc3d {
+    return Arc3d.create(
+      Point3d.create(cx, cy, cz), Vector3d.create(ux, uy, uz), Vector3d.create(vx, vy, vz), sweep, result
+    );
   }
-
   /**
    * Return a quick estimate of the eccentricity of the ellipse.
    * * The estimator is the cross magnitude of the product of vectors U and V, divided by square of the larger magnitude
@@ -252,14 +268,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const largeAxis = Geometry.maxXY(magX, magY);
     return jacobian / (largeAxis * largeAxis);
   }
-  /** Create a circular arc defined by start point, any intermediate point, and end point.
+  /**
+   * Create a circular arc defined by start point, any intermediate point, and end point.
    * If the points are colinear, assemble them into a linestring.
    */
   public static createCircularStartMiddleEnd(
-    pointA: XYAndZ,
-    pointB: XYAndZ,
-    pointC: XYAndZ,
-    result?: Arc3d): Arc3d | LineString3d | undefined {
+    pointA: XYAndZ, pointB: XYAndZ, pointC: XYAndZ, result?: Arc3d
+  ): Arc3d | LineString3d | undefined {
     const vectorAB = Vector3d.createStartEnd(pointA, pointB);
     const vectorAC = Vector3d.createStartEnd(pointA, pointC);
     const ab = vectorAB.magnitude();
@@ -312,9 +327,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public fractionAndRadialFractionToPoint(arcFraction: number, radialFraction: number, result?: Point3d): Point3d {
     const radians = this._sweep.fractionToRadians(arcFraction);
-    return this._matrix.originPlusMatrixTimesXY(this._center, radialFraction * Math.cos(radians), radialFraction * Math.sin(radians), result);
+    return this._matrix.originPlusMatrixTimesXY(
+      this._center, radialFraction * Math.cos(radians), radialFraction * Math.sin(radians), result
+    );
   }
-
   /**
    * Convert a fractional position to xyz coordinates and derivative with respect to fraction.
    * @param fraction fractional position on arc
@@ -325,8 +341,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     result.direction.scaleInPlace(this._sweep.sweepRadians);
     return result;
   }
-
-  /** Construct a plane with
+  /**
+   * Construct a plane with
    * * origin at the fractional position along the arc
    * * x axis is the first derivative, i.e. tangent along the arc
    * * y axis is the second derivative, i.e. in the plane and on the center side of the tangent.
@@ -334,14 +350,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const radians = this._sweep.fractionToRadians(fraction);
-    if (!result) result = Plane3dByOriginAndVectors.createXYPlane();
+    if (!result)
+      result = Plane3dByOriginAndVectors.createXYPlane();
     const c = Math.cos(radians);
     const s = Math.sin(radians);
     this._matrix.originPlusMatrixTimesXY(this._center, c, s, result.origin);
     const a = this._sweep.sweepRadians;
     this._matrix.multiplyXY(-a * s, a * c, result.vectorU);
     const aa = a * a;
-    this._matrix.multiplyXY(- aa * c, -aa * s, result.vectorV);
+    this._matrix.multiplyXY(-aa * c, -aa * s, result.vectorV);
     return result;
   }
   /**
@@ -369,7 +386,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     this._matrix.originPlusMatrixTimesXY(this._center, c, s, result);
     return result;
   }
-
   /**
    * Return a parametric plane with
    * * origin at arc center
@@ -387,7 +403,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     this._matrix.multiplyXY(-s, c, result.vectorV);
     return result;
   }
-
   /**
    * Evaluate the point and derivative with respect to the angle (in radians)
    * @param theta angular position
@@ -405,13 +420,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * Return the start point tof the arc.
    * @param result optional preallocated result
    */
-  public override startPoint(result?: Point3d): Point3d { return this.fractionToPoint(0.0, result); }
-
+  public override startPoint(result?: Point3d): Point3d {
+    return this.fractionToPoint(0.0, result);
+  }
   /**
    * Return the end point tof the arc.
    * @param result optional preallocated result
    */
-  public override endPoint(result?: Point3d): Point3d { return this.fractionToPoint(1.0, result); }
+  public override endPoint(result?: Point3d): Point3d {
+    return this.fractionToPoint(1.0, result);
+  }
   /** * If this is a circular arc, return the simple length derived from radius and sweep.
    * * Otherwise (i.e. if this elliptical) fall through to CurvePrimitive base implementation which
    *     Uses quadrature.
@@ -419,13 +437,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public override curveLength(): number {
     return this.curveLengthBetweenFractions(0, 1);
   }
-  // !! misspelled Gauss in the published static !!!   Declare it ok.
+  // !! misspelled Gauss in the published static !! Declare it ok.
   // cspell::word Guass
-  /** Gauss point quadrature count for evaluating curve length.   (The number of intervals is adjusted to the arc sweep) */
+  /** Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep) */
   public static readonly quadratureGuassCount = 5;
   /** In quadrature for arc length, use this interval (divided by quickEccentricity) */
   public static readonly quadratureIntervalAngleDegrees = 10.0;
-  /** * If this is a circular arc, return the simple length derived from radius and sweep.
+  /**
+   * * If this is a circular arc, return the simple length derived from radius and sweep.
    * * Otherwise (i.e. if this elliptical) fall through CurvePrimitive integrator.
    */
   public override curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
@@ -450,13 +469,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       numInterval = 1;
     return super.curveLengthWithFixedIntervalCountQuadrature(f0, f1, numInterval, Arc3d.quadratureGuassCount);
   }
-
   /**
    * Return an approximate (but easy to compute) arc length.
    * The estimate is:
-   * * Form 8 chords on full circle, proportionally fewer for partials.  (But 2 extras if less than half circle.)
-   * * sum the chord lengths
-   * * For a circle, we know this crude approximation has to be increased by a factor (theta/(2 sin (theta/2)))
+   * * Form 8 chords on full circle, proportionally fewer for partials (but 2 extras if less than half circle).
+   * * Sum the chord lengths.
+   * * For a circle, we know this crude approximation has to be increased by a factor (theta/(2*sin(theta/2))).
    * * Apply that factor.
    * * Experiments confirm that this is within 3 percent for a variety of eccentricities and arc sweeps.
    */
@@ -489,7 +507,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * * A zero length line generates `CurveSearchStatus.error`
    * * Nonzero length line generates `CurveSearchStatus.success` or `CurveSearchStatus.stoppedAtBoundary`
    */
-  public override moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail {
+  public override moveSignedDistanceFromFraction(
+    startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail
+  ): CurveLocationDetail {
     if (!this.isCircular) // suppress extension !!!
       return super.moveSignedDistanceFromFractionGeneric(startFraction, signedDistance, allowExtension, result);
     const totalLength = this.curveLength();
@@ -535,10 +555,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Return details of the closest point on the arc, optionally extending to full ellipse.
    * @param spacePoint search for point closest to this point.
-   * @param extend if true, consider projections to the complete ellipse.   If false, consider only endpoints and projections within the arc sweep.
+   * @param extend if true, consider projections to the complete ellipse. If false, consider only endpoints and
+   * projections within the arc sweep.
    * @param result optional preallocated result.
    */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
+  public override closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail
+  ): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
     const allRadians = this.allPerpendicularAngles(spacePoint, true, true);
     let extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
@@ -577,8 +600,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /** Reverse the sweep  of the arc. */
-  public reverseInPlace(): void { this._sweep.reverseInPlace(); }
-  /** apply a transform to the arc basis vectors.
+  public reverseInPlace(): void {
+    this._sweep.reverseInPlace();
+  }
+  /**
+   * Apply a transform to the arc basis vectors.
    * * nonuniform (i.e. skewing) transforms are allowed.
    * * The transformed vector0 and vector90 are NOT squared up as major minor axes.  (This is a good feature!!)
    */
@@ -600,18 +626,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       && Geometry.isSmallMetricDistance(this._matrix.dotColumnX(normal))
       && Geometry.isSmallMetricDistance(this._matrix.dotColumnY(normal));
   }
-  /**
-   * Return true if the vector0 and vector90 are of equal length and perpendicular.
-   */
+  /** Return true if the vector0 and vector90 are of equal length and perpendicular. */
   public get isCircular(): boolean {
     const axx = this._matrix.columnXMagnitudeSquared();
     const ayy = this._matrix.columnYMagnitudeSquared();
     const axy = this._matrix.columnXDotColumnY();
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
-  /**
-   * Return true if the vector0 and vector90 are of equal length and perpendicular.
-   */
+  /** Return true if the vector0 and vector90 are of equal length and perpendicular. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);
     const uy = this._matrix.at(1, 0);
@@ -623,16 +645,17 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       return Geometry.hypotenuseXY(ux, uy);
     return undefined;
   }
-
   /** If the arc is circular, return its radius.  Otherwise return undefined */
   public circularRadius(): number | undefined {
     return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }
 
   /** Return the larger of the two defining vectors. */
-  public maxVectorLength(): number { return Math.max(this._matrix.columnXMagnitude(), this._matrix.columnYMagnitude()); }
+  public maxVectorLength(): number {
+    return Math.max(this._matrix.columnXMagnitude(), this._matrix.columnYMagnitude());
+  }
   /**
-   * compute intersections with a plane.
+   * Compute intersections with a plane.
    * @param plane plane to intersect
    * @param result array of locations on the curve.
    */
@@ -696,16 +719,17 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     range.extend(highPoint);
   }
   /**
- * Returns a (high accuracy) range of the curve between fractional positions
- * * Default implementation returns teh range of the curve from clonePartialCurve
- */
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
-    const sweep = AngleSweep.createStartEndRadians(this.sweep.fractionToRadians(fraction0), this.sweep.fractionToRadians(fraction1));
+    const sweep = AngleSweep.createStartEndRadians(
+      this.sweep.fractionToRadians(fraction0), this.sweep.fractionToRadians(fraction1)
+    );
     const range = Range3d.create();
     this.extendRangeInSweep(range, sweep, transform);
     return range;
   }
-
   /**
    * Set up a SineCosinePolynomial as the function c+u*cos(theta)+v*sin(theta) where
    *  c,u,v are coefficients obtained by evaluating altitude and velocity relative to the plane.
@@ -713,7 +737,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional result.
    * @internal
    */
-  public getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial {
+  public getPlaneAltitudeSineCosinePolynomial(
+    plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial
+  ): SineCosinePolynomial {
     if (!result)
       result = new SineCosinePolynomial(0, 0, 0);
     // altitude function of angle t, given plane with origin o and unit normal n:
@@ -724,9 +750,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       plane.velocityXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
     return result;
   }
-  /**
-   * Create a new arc which is a unit circle centered at the origin.
-   */
+  /** Create a new arc which is a unit circle centered at the origin. */
   public static createUnitCircle(): Arc3d {
     return Arc3d.createRefs(Point3d.create(0, 0, 0), Matrix3d.createIdentity(), AngleSweep.create360());
   }
@@ -766,8 +790,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       vector0.unitCrossProductWithDefault(vector90, 0, 0, 0), // normal will be 000 for degenerate case !!!;
     );
   }
-  /** Return the arc definition with rigid matrix form with axis radii.
-   */
+  /** Return the arc definition with rigid matrix form with axis radii */
   public toScaledMatrix3d(): { center: Point3d, axes: Matrix3d, r0: number, r90: number, sweep: AngleSweep } {
     const angleData = Angle.dotProductsToHalfAngleTrigValues(
       this._matrix.columnXMagnitudeSquared(),
@@ -775,7 +798,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       this._matrix.columnXDotColumnY(), true);
     const vector0A = this._matrix.multiplyXY(angleData.c, angleData.s);
     const vector90A = this._matrix.multiplyXY(-angleData.s, angleData.c);
-
     const axes = Matrix3d.createRigidFromColumns(vector0A, vector90A, AxisOrder.XYZ);
     return {
       axes: (axes ? axes : Matrix3d.createIdentity()),
@@ -785,8 +807,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       sweep: this.sweep.cloneMinusRadians(angleData.radians),
     };
   }
-  /** Return the arc definition with center, two vectors, and angle sweep;
-   */
+  /** Return the arc definition with center, two vectors, and angle sweep; */
   public toVectors(): ArcVectors {
     return {
       center: this.center,
@@ -795,9 +816,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       sweep: this.sweep,
     };
   }
-
-  /** Return the arc definition with center, two vectors, and angle sweep, optionally transformed.
-   */
+  /** Return the arc definition with center, two vectors, and angle sweep, optionally transformed. */
   public toTransformedVectors(transform?: Transform): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
     return transform ? {
       center: transform.multiplyPoint3d(this._center),
@@ -812,9 +831,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         sweep: this.sweep,
       };
   }
-
-  /** Return the arc definition with center, two vectors, and angle sweep, transformed to 4d points.
-   */
+  /** Return the arc definition with center, two vectors, and angle sweep, transformed to 4d points. */
   public toTransformedPoint4d(matrix: Matrix4d): { center: Point4d, vector0: Point4d, vector90: Point4d, sweep: AngleSweep } {
     return {
       center: matrix.multiplyPoint3d(this._center, 1.0),
@@ -857,9 +874,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       vector90: this._matrix.columnY().toJSON(),
     };
   }
-  /**
-   * Test if this arc is almost equal to another GeometryQuery object
-   */
+  /** Test if this arc is almost equal to another GeometryQuery object */
   public override isAlmostEqual(otherGeometry: GeometryQuery): boolean {
     if (otherGeometry instanceof Arc3d) {
       const other = otherGeometry;
@@ -869,13 +884,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return false;
   }
-
   /** Emit strokes to caller-supplied linestring */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     const numStrokes = this.computeStrokeCountForOptions(options);
     dest.appendFractionalStrokePoints(this, numStrokes, 0.0, 1.0, true);
   }
-
   /** Emit strokes to caller-supplied handler */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
     const numStrokes = this.computeStrokeCountForOptions(options);
@@ -883,9 +896,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     handler.announceIntervalForUniformStepStrokes(this, numStrokes, 0.0, 1.0);
     handler.endCurvePrimitive(this);
   }
-
   /**
-   * return the stroke count required for given options.
+   * Return the stroke count required for given options.
    * @param options StrokeOptions that determine count
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -902,7 +914,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleArc3d(this);
   }
-  /** Return (if possible) an arc which is a portion of this curve.
+  /**
+   * Return (if possible) an arc which is a portion of this curve.
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
@@ -915,11 +928,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const arcB = this.clone();
     arcB.sweep.setStartEndRadians(
       this.sweep.fractionToRadians(fractionA),
-      this.sweep.fractionToRadians(fractionB));
+      this.sweep.fractionToRadians(fractionB)
+    );
     return arcB;
   }
-  /** Return an arc whose basis vectors are rotated by given angle within the current basis space.
-   * * the result arc will have its zero-degree point (new `vector0`) at the current `vector0 * cos(theta) + vector90 * sin(theta)`
+  /**
+   * Return an arc whose basis vectors are rotated by given angle within the current basis space.
+   * * the result arc will have its zero-degree point (new `vector0`) at the current
+   * `vector0 * cos(theta) + vector90 * sin(theta)`
    * * the result sweep is adjusted so all fractional coordinates (e.g. start and end) evaluate to the same xyz.
    *   * Specifically, theta is subtracted from the original start and end angles.
    * @param theta the angle (in the input arc space) which is to become the 0-degree point in the new arc.
@@ -929,16 +945,17 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const s = theta.sin();
     const vector0 = this._matrix.multiplyXY(c, s);
     const vector90 = this._matrix.multiplyXY(-s, c);
-
-    const newSweep = AngleSweep.createStartEndRadians(this._sweep.startRadians - theta.radians, this._sweep.endRadians - theta.radians);
+    const newSweep = AngleSweep.createStartEndRadians(
+      this._sweep.startRadians - theta.radians, this._sweep.endRadians - theta.radians
+    );
     const arcB = Arc3d.create(this._center.clone(), vector0, vector90, newSweep);
     return arcB;
   }
-
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper
    * @param clipper clip structure (e.g.clip planes)
-   * @param announce(optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
+   * @param announce(optional) function to be called announcing fractional intervals"
+   * ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.
    */
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
@@ -960,8 +977,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * * Return the arc along with the fractional positions of the tangency points.
    * * In the returned object:
    *   * `arc` is the (bounded) arc
-   *   * `fraction10` is the tangency point's position as an interpolating fraction of the line segment from `point1` (backwards) to `point0`
-   *   * `fraction12` is the tangency point's position as an interpolating fraction of the line segment from `point1` (forward) to `point2`
+   *   * `fraction10` is the tangency point's position as an interpolating fraction of the line segment from
+   * `point1` (backwards) to `point0`
+   *   * `fraction12` is the tangency point's position as an interpolating fraction of the line segment from
+   * `point1` (forward) to `point2`
    *   * `point` is the `point1` input.
    * * If unable to construct the arc:
    *   * `point` is the `point1` input.
@@ -1024,12 +1043,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const wedgeArea = Math.cos(alpha) * Math.sin(alpha);
     return (alpha - wedgeArea) * detJ;
   }
-
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
-  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public override constructOffsetXY(
+    offsetDistanceOrOptions: number | OffsetOptions
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     const options = OffsetOptions.create(offsetDistanceOrOptions);
     if (this.isCircular || options.preserveEllipticalArcs) {
       const arcXY = this.cloneAtZ();
@@ -1038,7 +1058,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       const r0new = r0 - sign * options.leftOffsetDistance;
       const r90 = this.isCircular ? r0 : arcXY.matrixRef.columnYMagnitude();
       const r90new = this.isCircular ? r0new : r90 - sign * options.leftOffsetDistance;
-      if (!Geometry.isSmallMetricDistance(r0new) && (r0 * r0new > 0.0) && (this.isCircular || (!Geometry.isSmallMetricDistance(r90new) && (r90 * r90new > 0.0)))) {
+      if (
+        !Geometry.isSmallMetricDistance(r0new)
+        && (r0 * r0new > 0.0)
+        && (this.isCircular || (!Geometry.isSmallMetricDistance(r90new) && (r90 * r90new > 0.0)))
+      ) {
         const factor0 = r0new / r0;
         const factor90 = this.isCircular ? factor0 : r90new / r90;
         const matrix = arcXY.matrixClone();
@@ -1053,8 +1077,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
   }
-
-  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+  /**
+   * Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
    * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
@@ -1063,6 +1087,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }
+
 /**
  * Carrier structure for an arc with fractional data on incoming, outgoing curves.
  * @public
@@ -1070,10 +1095,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
 export interface ArcBlendData {
   /** Constructed arc */
   arc?: Arc3d;
-  /** fraction "moving backward" on the inbound curve */
+  /** Fraction "moving backward" on the inbound curve */
   fraction10: number;
-  /** fraction "moving forward" on the outbound curve */
+  /** Fraction "moving forward" on the outbound curve */
   fraction12: number;
-  /** optional reference point */
+  /** Optional reference point */
   point?: Point3d;
 }

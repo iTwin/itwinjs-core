@@ -122,7 +122,7 @@ class FacetSector {
       packedDerivatives.getVector3dAtCheckedVectorIndex(i, this.sectionDerivative);
   }
   private static suppressSmallUnitVectorComponents(uvw: XYZ) {
-    const tol = 1.0e-15;
+    const tol = Geometry.smallFloatingPoint;
     if (Math.abs(uvw.x) < tol) uvw.x = 0.0;
     if (Math.abs(uvw.y) < tol) uvw.y = 0.0;
     if (Math.abs(uvw.z) < tol) uvw.z = 0.0;

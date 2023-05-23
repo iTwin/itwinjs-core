@@ -16,7 +16,8 @@
       "--no-sandbox"
     ],
     "publicDirs": [
-      "./node_modules/@itwin/hypermodeling-frontend/lib/public/"
+      "./node_modules/@itwin/hypermodeling-frontend/lib/public/",
+      "./node_modules/@itwin/core-frontend/lib/public/"
     ]
   },
   "mochaOptions": {

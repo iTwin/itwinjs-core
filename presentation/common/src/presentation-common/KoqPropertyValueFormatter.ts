@@ -8,7 +8,7 @@
 
 import { Format, FormatProps, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import {
-  Format as ECFormat, InvertedUnit, ISchemaLocater, KindOfQuantity, OverrideFormat, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
+  getFormatProps, InvertedUnit, KindOfQuantity, SchemaContext, SchemaKey, SchemaMatchType, SchemaUnitProvider,
   Unit,
 } from "@itwin/ecschema-metadata";
 
@@ -59,7 +59,7 @@ interface FormattingProps {
   persistenceUnitName: string;
 }
 
-async function getFormattingProps(schemaLocater: ISchemaLocater, options: FormatOptions): Promise<FormattingProps | undefined> {
+async function getFormattingProps(schemaLocater: SchemaContext, options: FormatOptions): Promise<FormattingProps | undefined> {
   const { koqName, unitSystem } = options;
 
   const koq = await getKoq(schemaLocater, koqName);
@@ -78,7 +78,7 @@ async function getFormattingProps(schemaLocater: ISchemaLocater, options: Format
   return { formatProps, persistenceUnitName: persistenceUnit.fullName };
 }
 
-async function getKoq(schemaLocater: ISchemaLocater, fullName: string) {
+async function getKoq(schemaLocater: SchemaContext, fullName: string) {
   const [schemaName, propKoqName] = fullName.split(":");
   const schema = await schemaLocater.getSchema(new SchemaKey(schemaName), SchemaMatchType.Latest);
   if (!schema)
@@ -92,7 +92,7 @@ async function getKoqFormatProps(koq: KindOfQuantity, persistenceUnit: Unit | In
   // use one of KOQ presentation format that matches requested unit system
   const presentationFormat = await getKoqPresentationFormat(koq, unitSystems);
   if (presentationFormat)
-    return formatToFormatProps(presentationFormat);
+    return getFormatProps(presentationFormat);
 
   // use persistence unit format if it matches requested unit system and matching presentation format was not found
   const persistenceUnitSystem = await persistenceUnit.unitSystem;
@@ -101,7 +101,7 @@ async function getKoqFormatProps(koq: KindOfQuantity, persistenceUnit: Unit | In
 
   // use default presentation format if persistence unit does not match requested unit system
   if (koq.defaultPresentationFormat)
-    return formatToFormatProps(koq.defaultPresentationFormat);
+    return getFormatProps(koq.defaultPresentationFormat);
 
   return undefined;
 }
@@ -121,39 +121,6 @@ async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystems: string
     }
   }
   return undefined;
-}
-
-function formatToFormatProps(format: ECFormat | OverrideFormat): FormatProps {
-  // istanbul ignore if
-  if (OverrideFormat.isOverrideFormat(format)) {
-    const baseFormat = baseFormatToFormatProps(format.parent);
-    return {
-      ...baseFormat,
-      composite: format.units
-        ? {
-          ...baseFormat.composite,
-          units: format.units.map(([unit, _]) => ({ name: unit.fullName, label: unit.label })),
-          spacer: format.spacer,
-          includeZero: format.includeZero,
-        }
-        : baseFormat.composite,
-    };
-  }
-  return baseFormatToFormatProps(format);
-}
-
-function baseFormatToFormatProps(format: ECFormat): FormatProps {
-  const json = format.toJSON();
-  return {
-    ...json,
-    composite: json.composite
-      ? {
-        ...json.composite,
-        spacer: format.spacer,
-        includeZero: format.includeZero,
-      }
-      : /* istanbul ignore next */ undefined,
-  };
 }
 
 function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): FormatProps {
