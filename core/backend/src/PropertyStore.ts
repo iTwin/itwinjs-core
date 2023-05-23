@@ -159,7 +159,7 @@ export namespace PropertyStore {
     public async deleteProperty(propName: PropertyName) {
       this.withSqliteStatement("DELETE from properties WHERE name=?", (stmt) => {
         stmt.bindString(1, propName);
-        stmt.step();
+        this.stepForWrite(stmt);
       });
     }
     /** Delete an array of properties from this PropertyDb. Any value that does not exist is ignored.
@@ -207,9 +207,7 @@ export namespace PropertyStore {
             throw new Error("illegal property value type");
         }
 
-        const rc = stmt.step();
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new BentleyError(rc, "error saving property");
+        this.stepForWrite(stmt);
       });
     }
 
