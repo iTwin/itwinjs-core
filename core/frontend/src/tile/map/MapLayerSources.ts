@@ -26,6 +26,10 @@ export enum MapLayerSourceStatus {
   InvalidCredentials,
   /** Provided format id could not be resolved in [[MapLayerFormatRegistry]] */
   InvalidFormat,
+  /** Format is not compatible with the URL provided.
+   * @beta
+   */
+  IncompatibleFormat,
   /** The tiling schema of the source is not supported */
   InvalidTileTree,
   /** Could not not connect to remote server using the provided URL.*/
