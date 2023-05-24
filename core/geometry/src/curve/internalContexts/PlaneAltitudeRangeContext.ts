@@ -77,6 +77,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
   }
 
   private _strokeOptions?: StrokeOptions;
+
   private initStrokeOptions() {
     // TODO: compute the exact extrema; until then stroke aggressively
     if (undefined === this._strokeOptions) {
@@ -84,6 +85,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
       this._strokeOptions.angleTol = Angle.createDegrees(1);
     }
   }
+
   public override handleBSplineCurve3d(bcurve: BSplineCurve3d) {
     // ugh.   The point MUST be on the curve -- usual excess-range of poles is not ok.
     this.initStrokeOptions();
@@ -91,6 +93,7 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
     bcurve.emitStrokes(ls, this._strokeOptions);
     this.handleLineString3d(ls);
   }
+
   public override handleBSplineCurve3dH(bcurve: BSplineCurve3dH) {
     // ugh.   The point MUST be on the curve -- usual excess-range of poles is not ok.
     this.initStrokeOptions();
@@ -100,7 +103,9 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
   }
 
   private _sineCosinePolynomial?: SineCosinePolynomial;
+
   private _workPoint?: Point3d;
+
   public override handleArc3d(g: Arc3d) {
     this._sineCosinePolynomial = g.getPlaneAltitudeSineCosinePolynomial(this.plane, this._sineCosinePolynomial);
     let radians = this._sineCosinePolynomial.referenceMinMaxRadians();
@@ -113,7 +118,9 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
     this.announcePoint((this._workPoint = g.endPoint(this._workPoint)));
   }
 
-  private static findExtremesInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d): PlaneAltitudeRangeContext | undefined {
+  private static findExtremesInDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d
+  ): PlaneAltitudeRangeContext | undefined {
     const origin = direction instanceof Ray3d ? direction.origin : Point3d.createZero();
     const vector = direction instanceof Ray3d ? direction.direction : direction;
     const plane = Plane3dByOriginAndUnitNormal.create(origin, vector);  // vector is normalized, so altitudes are distances
@@ -131,36 +138,50 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
     }
     return undefined;
   }
-  /** Compute altitudes for the geometry (via dispatch) over the plane defined by the given direction,
-   *   and return points at min and max altitude, packed into a `LineSegment3d`.
+  /**
+   * Compute altitudes for the geometry (via dispatch) over the plane defined by the given direction, and
+   * return points at min and max altitude, packed into a `LineSegment3d`.
    * @param geometry geometry to project
-   * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with
+   * zero origin.
    * @param lowHigh optional receiver for output
   */
-  public static findExtremePointsInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: LineSegment3d): LineSegment3d | undefined {
+  public static findExtremePointsInDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: LineSegment3d
+  ): LineSegment3d | undefined {
     const context = this.findExtremesInDirection(geometry, direction);
     if (context && context.highPoint && context.lowPoint)
       return LineSegment3d.create(context.lowPoint, context.highPoint, lowHigh);
     return undefined;
   }
-  /** Compute altitudes for the geometry (via dispatch) over the plane defined by the given direction,
-   *   and return the min and max altitudes, packed into a Range1d.
+
+  /**
+   * Compute altitudes for the geometry (via dispatch) over the plane defined by the given direction, and return
+   * the min and max altitudes, packed into a Range1d.
    * @param geometry geometry to project
-   * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with
+   * zero origin.
    * @param lowHigh optional receiver for output
   */
-  public static findExtremeAltitudesInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+  public static findExtremeAltitudesInDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d
+  ): Range1d | undefined {
     const context = this.findExtremesInDirection(geometry, direction);
     if (context && !context.range.isNull)
       return Range1d.createFrom(context.range, lowHigh);
     return undefined;
   }
-  /** Project geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+
+  /**
+   * Project geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
    * @param geometry geometry to project
-   * @param direction vector or ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param direction vector or ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with
+   * zero origin.
    * @param lowHigh optional receiver for output
    */
-  public static findExtremeFractionsAlongDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+  public static findExtremeFractionsAlongDirection(
+    geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d
+  ): Range1d | undefined {
     const range = this.findExtremeAltitudesInDirection(geometry, direction, lowHigh);
     if (undefined !== range) {
       const mag = (direction instanceof Vector3d) ? direction.magnitude() : direction.direction.magnitude();
