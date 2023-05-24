@@ -2,6 +2,78 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "4.0.0",
+      "tag": "@itwin/presentation-common_v4.0.0",
+      "date": "Mon, 22 May 2023 15:34:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed improper use of `ISchemaLocater` interface"
+          },
+          {
+            "comment": "Remove `handleInstancesPolymorphically` from `ContentInstancesOfSpecificClassesSpecification`"
+          },
+          {
+            "comment": "Update to eslint@8"
+          },
+          {
+            "comment": "Add deprecation attributes to `Ruleset.schema.json`"
+          },
+          {
+            "comment": "Promote `PropertyInfo.kindOfQuantity` to `@public`"
+          },
+          {
+            "comment": "Added new `applyOnNestedContent` attribute on content modifier"
+          },
+          {
+            "comment": "Added `Format` lookup in `ECSchema` for formatting properties with `KindOfQuantity`"
+          },
+          {
+            "comment": "Added peer dependency `@itwin/ecschema-metadata`"
+          },
+          {
+            "comment": "Add `HierarchyRequestOptions.sizeLimit` attribute to support hierarchy level size limiting"
+          },
+          {
+            "comment": "Promoted some `@internal` APIs to `@public`."
+          },
+          {
+            "comment": "Cleaned up localizable strings"
+          },
+          {
+            "comment": "Promote `LabelDefinition` APIs to `@public`."
+          },
+          {
+            "comment": "Added `PropertyFormatter` for formatting property values in `Content`"
+          },
+          {
+            "comment": "Change RPC requests' timeout handling - instead of repeating 5 times, repeat for a specified amount of time (10 minutes by default)"
+          },
+          {
+            "comment": "Removed unused Update related types"
+          },
+          {
+            "comment": "Added `ContentPropertyValuesFormatter` for content values' formatting on either frontend or backend"
+          },
+          {
+            "comment": "Fix `@deprecated` messages"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.6",
+      "tag": "@itwin/presentation-common_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.5",
+      "tag": "@itwin/presentation-common_v3.7.5",
+      "date": "Thu, 04 May 2023 19:43:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.4",
       "tag": "@itwin/presentation-common_v3.7.4",
       "date": "Tue, 25 Apr 2023 17:50:35 GMT",

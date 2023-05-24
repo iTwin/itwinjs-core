@@ -16,7 +16,7 @@ import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { Atmosphere } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
-import { AuxChannel } from '@itwin/core-geometry';
+import { AuxChannel as AuxChannel_2 } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
 import { AuxCoordSystemProps } from '@itwin/core-common';
@@ -1008,6 +1008,40 @@ export namespace AccuSnap {
     }
 }
 
+// @internal
+export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder;
+
+// @internal
+export interface AcquireImdlDecoderArgs {
+    // (undocumented)
+    batchModelId: Id64String;
+    // (undocumented)
+    containsTransformNodes?: boolean;
+    // (undocumented)
+    iModel: IModelConnection;
+    // (undocumented)
+    is3d: boolean;
+    // (undocumented)
+    noWorker?: boolean;
+    // (undocumented)
+    omitEdges?: boolean;
+    // (undocumented)
+    timeline?: ImdlTimeline;
+    // (undocumented)
+    type?: BatchType;
+}
+
+// @internal (undocumented)
+export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser;
+
+// @internal
+export interface AcquireImdlParserArgs {
+    // (undocumented)
+    noWorker?: boolean;
+    // (undocumented)
+    timeline?: ImdlTimeline;
+}
+
 // @public (undocumented)
 export enum ACSDisplayOptions {
     // (undocumented)
@@ -1128,7 +1162,7 @@ export interface Animator {
     interrupt(): void;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
 // @internal (undocumented)
@@ -1258,6 +1292,59 @@ export interface AttachToViewportArgs {
     invalidateSymbologyOverrides: () => void;
 }
 
+// @alpha (undocumented)
+export class AuxChannel implements AuxChannelProps {
+    constructor(props: AuxChannelProps);
+    // (undocumented)
+    readonly indices: number[];
+    // (undocumented)
+    readonly inputs: number[];
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    toJSON(): AuxChannelProps;
+}
+
+// @alpha (undocumented)
+export interface AuxChannelProps {
+    // (undocumented)
+    readonly indices: number[];
+    // (undocumented)
+    readonly inputs: number[];
+    // (undocumented)
+    readonly name: string;
+}
+
+// @alpha
+export class AuxChannelTable {
+    readonly data: Uint8Array;
+    readonly displacements?: AuxDisplacementChannel[];
+    // (undocumented)
+    static fromChannels(channels: ReadonlyArray<AuxChannel_2>, numVertices: number, maxDimension: number): AuxChannelTable | undefined;
+    // (undocumented)
+    static fromJSON(props: AuxChannelTableProps): AuxChannelTable | undefined;
+    readonly height: number;
+    readonly normals?: AuxChannel[];
+    readonly numBytesPerVertex: number;
+    readonly numVertices: number;
+    readonly params?: AuxParamChannel[];
+    // (undocumented)
+    toJSON(): AuxChannelTableProps;
+    readonly width: number;
+}
+
+// @alpha (undocumented)
+export interface AuxChannelTableProps {
+    readonly count: number;
+    readonly data: Uint8Array;
+    readonly displacements?: QuantizedAuxChannelProps[];
+    readonly height: number;
+    readonly normals?: AuxChannelProps[];
+    readonly numBytesPerVertex: number;
+    readonly params?: QuantizedAuxChannelProps[];
+    readonly width: number;
+}
+
 // @public
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection);
@@ -1340,6 +1427,28 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     toJSON(): AuxCoordSystemProps;
     // (undocumented)
     type: number;
+}
+
+// @alpha (undocumented)
+export class AuxDisplacementChannel extends AuxChannel {
+    constructor(props: QuantizedAuxChannelProps);
+    // (undocumented)
+    readonly qOrigin: Float32Array;
+    // (undocumented)
+    readonly qScale: Float32Array;
+    // (undocumented)
+    toJSON(): QuantizedAuxChannelProps;
+}
+
+// @alpha (undocumented)
+export class AuxParamChannel extends AuxChannel {
+    constructor(props: QuantizedAuxChannelProps);
+    // (undocumented)
+    readonly qOrigin: number;
+    // (undocumented)
+    readonly qScale: number;
+    // (undocumented)
+    toJSON(): QuantizedAuxChannelProps;
 }
 
 // @internal (undocumented)
@@ -1785,6 +1894,9 @@ export interface CachedIModelCoordinatesResponseProps {
 // @public
 export function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined>;
 
+// @internal (undocumented)
+export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo;
+
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;
@@ -1947,17 +2059,26 @@ export class Cluster<T extends Marker> {
 // @beta
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
+// @internal
+export function collectTransferables(document: ImdlModel.Document): Transferable[];
+
 // @public
 export enum CompassMode {
     Polar = 0,
     Rectangular = 1
 }
 
+// @internal (undocumented)
+export type ComputeAnimationNodeId = (featureIndex: number) => number;
+
 // @public
 export interface ComputeChordToleranceArgs {
     readonly computeRange: () => Range3d;
     readonly graphic: GraphicBuilder;
 }
+
+// @internal (undocumented)
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions;
 
 // @beta
 export interface ComputeDisplayTransformArgs {
@@ -2166,17 +2287,16 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
 
 // @public
-export interface CreateRenderMaterialArgs {
-    alpha?: number;
-    diffuse?: MaterialDiffuseProps;
+export interface CreateRenderMaterialArgs extends MaterialParams {
     // @internal
     source?: RenderMaterialSource;
-    specular?: MaterialSpecularProps;
-    textureMapping?: MaterialTextureMappingProps;
 }
 
 // @internal (undocumented)
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
+
+// @internal (undocumented)
+export function createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined;
 
 // @public
 export interface CreateTextureArgs {
@@ -2194,6 +2314,9 @@ export interface CreateTextureFromSourceArgs {
     transparency?: TextureTransparency;
     type?: RenderTexture.Type;
 }
+
+// @internal
+export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T>;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -2315,6 +2438,9 @@ export class DebugShaderFile {
     // (undocumented)
     readonly src: string;
 }
+
+// @internal (undocumented)
+export function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined>;
 
 // @public
 export class DecorateContext extends RenderContext {
@@ -2467,6 +2593,14 @@ export class DevTools {
     versions(): Promise<any>;
 }
 
+// @internal (undocumented)
+export interface Dimensions {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+}
+
 // @public
 export class DisclosedTileTreeSet implements Iterable<TileTree> {
     [Symbol.iterator](): Iterator<TileTree>;
@@ -2476,6 +2610,82 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
     disclose(discloser: TileTreeDiscloser): void;
     has(tree: TileTree): boolean;
     get size(): number;
+}
+
+// @internal
+export class DisplayParams {
+    constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width?: number, linePixels?: LinePixels, fillFlags?: FillFlags, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting?: boolean, textureMapping?: TextureMapping);
+    static adjustTransparency(color: ColorDef): ColorDef;
+    // (undocumented)
+    compareForMerge(rhs: DisplayParams): number;
+    static createForLinear(gf: GraphicParams): DisplayParams;
+    static createForMesh(gf: GraphicParams, ignoreLighting: boolean, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams;
+    static createForText(gf: GraphicParams): DisplayParams;
+    static createForType(type: DisplayParams.Type, gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined, ignoreLighting?: boolean): DisplayParams;
+    equals(rhs: DisplayParams, purpose?: DisplayParams.ComparePurpose): boolean;
+    // (undocumented)
+    readonly fillColor: ColorDef;
+    // (undocumented)
+    readonly fillFlags: FillFlags;
+    // (undocumented)
+    readonly gradient?: Gradient.Symb;
+    // (undocumented)
+    get hasBlankingFill(): boolean;
+    // (undocumented)
+    get hasFillTransparency(): boolean;
+    // (undocumented)
+    get hasLineTransparency(): boolean;
+    // (undocumented)
+    readonly ignoreLighting: boolean;
+    // (undocumented)
+    get isTextured(): boolean;
+    // (undocumented)
+    readonly lineColor: ColorDef;
+    // (undocumented)
+    readonly linePixels: LinePixels;
+    // (undocumented)
+    readonly material?: RenderMaterial;
+    // (undocumented)
+    static readonly minTransparency: number;
+    // (undocumented)
+    get regionEdgeType(): DisplayParams.RegionEdgeType;
+    // (undocumented)
+    get textureMapping(): TextureMapping | undefined;
+    // (undocumented)
+    readonly type: DisplayParams.Type;
+    // (undocumented)
+    get wantRegionOutline(): boolean;
+    // (undocumented)
+    readonly width: number;
+}
+
+// @internal (undocumented)
+export namespace DisplayParams {
+    // (undocumented)
+    export enum ComparePurpose {
+        // (undocumented)
+        Merge = 0,
+        // (undocumented)
+        Strict = 1
+    }
+    // (undocumented)
+    export enum RegionEdgeType {
+        // (undocumented)
+        Default = 1,
+        // (undocumented)
+        None = 0,
+        // (undocumented)
+        Outline = 2
+    }
+    // (undocumented)
+    export enum Type {
+        // (undocumented)
+        Linear = 1,
+        // (undocumented)
+        Mesh = 0,
+        // (undocumented)
+        Text = 2
+    }
 }
 
 // @public
@@ -2740,8 +2950,35 @@ export class DynamicsContext extends RenderContext {
     createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
 }
 
+// @internal
+export interface EdgeParams {
+    readonly indexed?: IndexedEdgeParams;
+    readonly linePixels: LinePixels;
+    readonly polylines?: TesselatedPolyline;
+    readonly segments?: SegmentEdgeParams;
+    readonly silhouettes?: SilhouetteParams;
+    readonly weight: number;
+}
+
 // @internal (undocumented)
 export function edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams;
+
+// @internal
+export interface EdgeTable {
+    readonly data: Uint8Array;
+    readonly height: number;
+    readonly numSegments: number;
+    readonly silhouettePadding: number;
+    readonly width: number;
+}
+
+// @internal (undocumented)
+export interface EdgeTableInfo {
+    readonly height: number;
+    readonly silhouettePadding: number;
+    readonly silhouetteStartByteIndex: number;
+    readonly width: number;
+}
 
 // @public
 export namespace EditManipulator {
@@ -3698,6 +3935,143 @@ export class GlobeAnimator implements Animator {
     protected _startHeight?: number;
     // (undocumented)
     protected _viewport: ScreenViewport;
+}
+
+// @internal
+export namespace Gltf {
+    // (undocumented)
+    export type AnyPrimitive = TrianglesPrimitive;
+    // (undocumented)
+    export interface Attribute {
+        // (undocumented)
+        buffer: Buffer;
+        // (undocumented)
+        byteStride?: number;
+    }
+    // (undocumented)
+    export interface Buffer {
+        // (undocumented)
+        data: Uint8Array;
+    }
+    // (undocumented)
+    export interface ColorAttribute extends Attribute {
+        // (undocumented)
+        componentType: "f32" | "u8" | "u16";
+    }
+    // (undocumented)
+    export interface Indices {
+        // (undocumented)
+        buffer: Buffer;
+        // (undocumented)
+        count: number;
+        // (undocumented)
+        dataType: "u8" | "u16" | "u32";
+    }
+    // (undocumented)
+    export interface Material {
+        // (undocumented)
+        alphaCutoff: number;
+        // (undocumented)
+        alphaMode: GltfAlphaMode;
+        // (undocumented)
+        doubleSided: boolean;
+        // (undocumented)
+        metallicRoughness: MetallicRoughness;
+        // (undocumented)
+        unlit: boolean;
+    }
+    // (undocumented)
+    export interface MetallicRoughness {
+        // (undocumented)
+        baseColorFactor: Rgba;
+        // (undocumented)
+        metallicFactor: number;
+        // (undocumented)
+        roughnessFactor: number;
+    }
+    // (undocumented)
+    export interface Model {
+        // (undocumented)
+        nodes: Node[];
+        toWorld?: Transform;
+    }
+    // (undocumented)
+    export interface Node {
+        primitives: AnyPrimitive[];
+        toParent?: Transform;
+    }
+    // (undocumented)
+    export interface NormalAttribute extends Attribute {
+        // (undocumented)
+        componentType: "f32" | "i8" | "i16";
+    }
+    // (undocumented)
+    export interface PositionAttribute extends Attribute {
+        // (undocumented)
+        componentType: "f32" | "u8" | "i8" | "u16" | "i16";
+        // (undocumented)
+        decodedMax: XYAndZ;
+        // (undocumented)
+        decodedMin: XYAndZ;
+        // (undocumented)
+        quantization?: PositionQuantization;
+    }
+    // (undocumented)
+    export interface PositionQuantization {
+        // (undocumented)
+        origin: XYAndZ;
+        // (undocumented)
+        scale: XYAndZ;
+    }
+    // (undocumented)
+    export interface Primitive {
+        // (undocumented)
+        attributeCount: number;
+        // (undocumented)
+        color?: ColorAttribute;
+        // (undocumented)
+        indices: Indices;
+        // (undocumented)
+        position: PositionAttribute;
+    }
+    // (undocumented)
+    export type PrimitiveType = "triangles";
+    // (undocumented)
+    export interface Rgba {
+        // (undocumented)
+        a: number;
+        // (undocumented)
+        b: number;
+        // (undocumented)
+        g: number;
+        // (undocumented)
+        r: number;
+    }
+    // (undocumented)
+    export interface TextureUVAttribute extends Attribute {
+        // (undocumented)
+        componentType: "f32" | "u8" | "u16" | "i8" | "i16";
+        // (undocumented)
+        quantization?: TextureUVQuantization;
+    }
+    // (undocumented)
+    export interface TextureUVQuantization {
+        // (undocumented)
+        origin: XAndY;
+        // (undocumented)
+        scale: XAndY;
+    }
+    // (undocumented)
+    export interface TrianglesPrimitive extends Primitive {
+        // (undocumented)
+        material: Material;
+        // (undocumented)
+        normal?: NormalAttribute;
+        // (undocumented)
+        textureUV?: TextureUVAttribute;
+        // (undocumented)
+        type: "triangles";
+    }
 }
 
 // @internal
@@ -5139,13 +5513,13 @@ export class ImageryTileTreeState {
     setScaleRangeVisibility(visible: boolean): void;
 }
 
-// @alpha
+// @internal
 export interface ImdlAnimationNodes {
     bufferView: string;
     bytesPerId: number;
 }
 
-// @alpha
+// @internal
 export interface ImdlAreaPattern {
     readonly clip: ClipVectorProps;
     // (undocumented)
@@ -5170,33 +5544,69 @@ export interface ImdlAreaPattern {
     readonly xyOffsets: string;
 }
 
-// @alpha
+// @internal
 export interface ImdlAreaPatternSymbol {
     // (undocumented)
     readonly primitives: AnyImdlPrimitive[];
 }
 
-// @alpha
+// @internal
 export type ImdlAuxChannelTable = Omit<AuxChannelTableProps, "data"> & {
     bufferView: string;
 };
 
-// @alpha
+// @internal
 export interface ImdlBufferView {
     byteLength: number;
     byteOffset: number;
 }
 
-// @alpha
+// @internal
 export type ImdlColorDef = number[];
 
-// @alpha
+// @internal
+export interface ImdlDecodeArgs {
+    // (undocumented)
+    isCanceled?: () => boolean;
+    // (undocumented)
+    isLeaf?: boolean;
+    // (undocumented)
+    options?: BatchOptions | false;
+    // (undocumented)
+    sizeMultiplier?: number;
+    // (undocumented)
+    stream: ByteStream;
+    // (undocumented)
+    system: RenderSystem;
+}
+
+// @internal
+export interface ImdlDecodeOptions {
+    // (undocumented)
+    document: ImdlModel.Document;
+    // (undocumented)
+    iModel: IModelConnection;
+    // (undocumented)
+    isCanceled?: () => boolean;
+    // (undocumented)
+    system: RenderSystem;
+}
+
+// @internal
+export interface ImdlDecoder {
+    // (undocumented)
+    decode(args: ImdlDecodeArgs): Promise<ImdlReaderResult>;
+    // (undocumented)
+    release(): void;
+}
+
+// @internal
 export interface ImdlDictionary<T> {
     // (undocumented)
     [key: string]: T | undefined;
 }
 
-// @alpha
+// @internal
 export interface ImdlDisplayParams {
     // (undocumented)
     fillColor?: ColorDefProps;
@@ -5220,7 +5630,7 @@ export interface ImdlDisplayParams {
     type: DisplayParams.Type;
 }
 
-// @alpha
+// @internal
 export interface ImdlDocument {
     // (undocumented)
     animationNodes?: ImdlAnimationNodes;
@@ -5242,7 +5652,7 @@ export interface ImdlDocument {
     scenes: ImdlDictionary<ImdlScene>;
 }
 
-// @alpha
+// @internal
 export interface ImdlIndexedEdges {
     readonly edges: string;
     readonly height: number;
@@ -5252,7 +5662,7 @@ export interface ImdlIndexedEdges {
     readonly width: number;
 }
 
-// @alpha
+// @internal
 export interface ImdlInstances {
     // (undocumented)
     readonly count: number;
@@ -5266,7 +5676,7 @@ export interface ImdlInstances {
     readonly transforms: string;
 }
 
-// @alpha
+// @internal
 export interface ImdlMaterialAtlas {
     // (undocumented)
     readonly hasTranslucency?: boolean;
@@ -5276,13 +5686,13 @@ export interface ImdlMaterialAtlas {
     readonly overridesAlpha?: boolean;
 }
 
-// @alpha
+// @internal
 export interface ImdlMesh {
     readonly layer?: string;
     readonly primitives?: Array<AnyImdlPrimitive | ImdlAreaPattern>;
 }
 
-// @alpha
+// @internal
 export interface ImdlMeshEdges {
     // (undocumented)
     readonly indexed?: ImdlIndexedEdges;
@@ -5293,7 +5703,7 @@ export interface ImdlMeshEdges {
     readonly silhouettes?: ImdlSilhouetteEdges;
 }
 
-// @alpha
+// @internal
 export interface ImdlMeshPrimitive extends ImdlPrimitive {
     // (undocumented)
     readonly areaPattern?: ImdlAreaPattern;
@@ -5303,7 +5713,7 @@ export interface ImdlMeshPrimitive extends ImdlPrimitive {
     readonly edges?: ImdlMeshEdges;
     // (undocumented)
     readonly surface: ImdlSurface;
-    readonly type: Mesh.PrimitiveType.Mesh;
+    readonly type: MeshPrimitiveType.Mesh;
 }
 
 // @internal
@@ -5588,7 +5998,7 @@ export namespace ImdlModel {
     }
 }
 
-// @alpha
+// @internal
 export interface ImdlNamedTexture {
     bufferView: string;
     format: ImageSourceFormat;
@@ -5601,42 +6011,48 @@ export interface ImdlNamedTexture {
 export type ImdlParseError = Exclude<TileReadStatus, TileReadStatus.Success>;
 
 // @internal
+export interface ImdlParser {
+    // (undocumented)
+    parse(options: ImdlParserOptions): Promise<ImdlModel.Document | ImdlParseError>;
+    // (undocumented)
+    release(): void;
+}
+
+// @internal
 export interface ImdlParserOptions {
     // (undocumented)
     batchModelId: Id64String;
     // (undocumented)
     createUntransformedRootNode?: boolean;
     // (undocumented)
+    data: Uint8Array;
+    // (undocumented)
     is3d: boolean;
     // (undocumented)
     maxVertexTableSize: number;
     // (undocumented)
     omitEdges?: boolean;
-    // (undocumented)
-    stream: ByteStream;
-    // (undocumented)
-    timeline?: ImdlTimeline;
 }
 
-// @alpha
+// @internal
 export interface ImdlPointStringPrimitive extends ImdlPrimitive {
     readonly indices: string;
-    readonly type: Mesh.PrimitiveType.Point;
+    readonly type: MeshPrimitiveType.Point;
 }
 
-// @alpha
+// @internal
 export interface ImdlPolyline {
     readonly indices: string;
     readonly nextIndicesAndParams: string;
     readonly prevIndices: string;
 }
 
-// @alpha
+// @internal
 export interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
-    readonly type: Mesh.PrimitiveType.Polyline;
+    readonly type: MeshPrimitiveType.Polyline;
 }
 
-// @alpha
+// @internal
 export interface ImdlPrimitive {
     readonly instances?: ImdlInstances;
     readonly isPlanar?: boolean;
@@ -5691,7 +6107,7 @@ export interface ImdlReaderResult extends IModelTileContent {
     readStatus: TileReadStatus;
 }
 
-// @alpha
+// @internal
 export interface ImdlRenderMaterial {
     // (undocumented)
     ambient?: number;
@@ -5720,23 +6136,23 @@ export interface ImdlRenderMaterial {
     transparency?: number;
 }
 
-// @alpha
+// @internal
 export interface ImdlScene {
     nodes: string[];
 }
 
-// @alpha
+// @internal
 export interface ImdlSegmentEdges {
     readonly endPointAndQuadIndices: string;
     readonly indices: string;
 }
 
-// @alpha
+// @internal
 export interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
     readonly normalPairs: string;
 }
 
-// @alpha
+// @internal
 export interface ImdlSurface {
     readonly alwaysDisplayTexture?: boolean;
     readonly indices: string;
@@ -5747,7 +6163,7 @@ export interface ImdlSurface {
     };
 }
 
-// @alpha
+// @internal
 export interface ImdlTextureMapping {
     name?: string;
     // (undocumented)
@@ -5775,7 +6191,7 @@ export interface ImdlTextureMapping {
 // @internal
 export type ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script;
 
-// @alpha
+// @internal
 export interface ImdlVertexTable {
     readonly bufferView: string;
     readonly count: number;
@@ -6214,6 +6630,10 @@ export class IModelTileTree extends TileTree {
     readonly contentIdQualifier?: string;
     debugMaxDepth?: number;
     // (undocumented)
+    readonly decoder: ImdlDecoder;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
     get edgeOptions(): EdgeOptions | false;
@@ -6288,6 +6708,23 @@ export interface IModelTileTreeParams extends TileTreeParams {
 
 // @internal (undocumented)
 export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams;
+
+// @internal
+export class IndexBuffer {
+    constructor(initialCapacity?: number);
+    // (undocumented)
+    get numIndices(): number;
+    // (undocumented)
+    push(index: number): void;
+    // (undocumented)
+    toVertexIndices(): VertexIndices;
+}
+
+// @internal
+export interface IndexedEdgeParams {
+    readonly edges: EdgeTable;
+    readonly indices: VertexIndices;
+}
 
 // @public
 export abstract class InputCollector extends InteractiveTool {
@@ -6439,6 +6876,9 @@ export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec)
 
 // @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
+
+// @internal (undocumented)
+export function isValidSurfaceType(value: number): boolean;
 
 // @public
 export enum ItemField {
@@ -7620,6 +8060,14 @@ export interface MaterialDiffuseProps {
 }
 
 // @public
+export interface MaterialParams {
+    alpha?: number;
+    diffuse?: MaterialDiffuseProps;
+    specular?: MaterialSpecularProps;
+    textureMapping?: MaterialTextureMappingProps;
+}
+
+// @public
 export interface MaterialSpecularProps {
     color?: ColorDef | RgbColorProps;
     exponent?: number;
@@ -7948,6 +8396,33 @@ export interface MeshFeature extends GltfProperty {
 export interface MeshFeatures {
     // (undocumented)
     featureIds: MeshFeature[];
+}
+
+// @internal
+export interface MeshParams {
+    // (undocumented)
+    auxChannels?: AuxChannelTable;
+    // (undocumented)
+    edges?: EdgeParams;
+    // (undocumented)
+    isPlanar: boolean;
+    // (undocumented)
+    surface: SurfaceParams;
+    // (undocumented)
+    vertices: VertexTable;
+}
+
+// @internal
+export type MeshPointList = Point3dList | QPoint3dList;
+
+// @internal (undocumented)
+export enum MeshPrimitiveType {
+    // (undocumented)
+    Mesh = 0,
+    // (undocumented)
+    Point = 2,
+    // (undocumented)
+    Polyline = 1
 }
 
 // @public
@@ -8748,8 +9223,39 @@ export interface ParsedKeyin {
     tool: ToolType;
 }
 
+// @internal
+export function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undefined>;
+
+// @internal
+export interface ParseGltfArgs {
+    // (undocumented)
+    baseUrl?: string;
+    // (undocumented)
+    gltf: Uint8Array | GltfDocument;
+    // (undocumented)
+    isCanceled?: boolean;
+    // (undocumented)
+    logger?: ParseGltfLogger;
+    // (undocumented)
+    noCreateImageBitmap?: boolean;
+    // (undocumented)
+    upAxis?: "y" | "z";
+}
+
 // @internal (undocumented)
-export function parseImdlDocument(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError;
+export interface ParseGltfLogger {
+    // (undocumented)
+    log(message: string, type: "error" | "warning" | "info"): void;
+}
+
+// @internal (undocumented)
+export function parseImdlDocument(options: ParseImdlDocumentArgs): ImdlModel.Document | ImdlParseError;
+
+// @internal
+export interface ParseImdlDocumentArgs extends ImdlParserOptions {
+    // (undocumented)
+    timeline: ImdlTimeline | undefined;
+}
 
 // @public
 export interface ParseKeyinError {
@@ -9014,6 +9520,38 @@ export class PlanarTilePatch {
     normal: Vector3d;
 }
 
+// @internal
+export interface Point3dList extends Array<Point3d> {
+    add(point: Point3d): void;
+    range: Range3d;
+}
+
+// @internal
+export interface PointStringParams {
+    // (undocumented)
+    indices: VertexIndices;
+    // (undocumented)
+    vertices: VertexTable;
+    // (undocumented)
+    weight: number;
+}
+
+// @internal (undocumented)
+export interface PolylineParams {
+    // (undocumented)
+    isPlanar: boolean;
+    // (undocumented)
+    linePixels: LinePixels;
+    // (undocumented)
+    polyline: TesselatedPolyline;
+    // (undocumented)
+    type: PolylineTypeFlags;
+    // (undocumented)
+    vertices: VertexTable;
+    // (undocumented)
+    weight: number;
+}
+
 // @beta
 export interface PreferenceArg extends PreferenceKeyArg {
     // (undocumented)
@@ -9208,6 +9746,14 @@ export interface QuantityTypeDefinition {
 // @public
 export type QuantityTypeKey = string;
 
+// @alpha (undocumented)
+export interface QuantizedAuxChannelProps extends AuxChannelProps {
+    // (undocumented)
+    readonly qOrigin: number[];
+    // (undocumented)
+    readonly qScale: number[];
+}
+
 // @public
 export interface QueryScreenFeaturesOptions {
     includeNonLocatable?: boolean;
@@ -9265,6 +9811,11 @@ export interface ReadImageBufferArgs {
     size?: XAndY;
     upsideDown?: boolean;
 }
+
+// @internal (undocumented)
+export function readImdlContent(args: ImdlReaderCreateArgs & {
+    parseDocument?: (parseOpts: ImdlParserOptions) => Promise<ImdlModel.Document | ImdlParseError>;
+}): Promise<ImdlReaderResult>;
 
 // @public
 export interface ReadMeshArgs {
@@ -10806,6 +11357,12 @@ export class SectionDrawingModelState extends DrawingModelState {
     static get className(): string;
 }
 
+// @internal
+export interface SegmentEdgeParams {
+    readonly endPointAndQuadIndices: Uint8Array;
+    readonly indices: VertexIndices;
+}
+
 // @public
 export interface SelectAddEvent {
     added: Id64Arg;
@@ -11186,6 +11743,11 @@ export class SheetViewState extends ViewState2d {
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
+// @internal
+export interface SilhouetteParams extends SegmentEdgeParams {
+    readonly normalPairs: Uint8Array;
+}
+
 // @internal (undocumented)
 export interface SkyBoxDecorations {
     // (undocumented)
@@ -11392,6 +11954,45 @@ export class SpatialViewState extends ViewState3d {
     viewsModel(modelId: Id64String): boolean;
 }
 
+// @internal (undocumented)
+export interface SplitMeshArgs extends SplitVertexTableArgs {
+    // (undocumented)
+    createMaterial: CreateRenderMaterial;
+    // (undocumented)
+    params: MeshParams;
+}
+
+// @internal (undocumented)
+export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams>;
+
+// @internal (undocumented)
+export interface SplitPointStringArgs extends SplitVertexTableArgs {
+    // (undocumented)
+    params: PointStringParams;
+}
+
+// @internal
+export function splitPointStringParams(args: SplitPointStringArgs): Map<number, PointStringParams>;
+
+// @internal (undocumented)
+export interface SplitPolylineArgs extends SplitVertexTableArgs {
+    // (undocumented)
+    params: PolylineParams;
+}
+
+// @internal (undocumented)
+export function splitPolylineParams(args: SplitPolylineArgs): Map<number, PolylineParams>;
+
+// @internal (undocumented)
+export interface SplitVertexTableArgs {
+    // (undocumented)
+    computeNodeId: ComputeAnimationNodeId;
+    // (undocumented)
+    featureTable: RenderFeatureTable;
+    // (undocumented)
+    maxDimension: number;
+}
+
 // @public
 export class Sprite {
     constructor(src: ImageSource | string);
@@ -11551,6 +12152,64 @@ export interface SubCategoriesRequest {
     cancel(): void;
     readonly missingCategoryIds: Id64Set;
     readonly promise: Promise<boolean>;
+}
+
+// @internal (undocumented)
+export type SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas;
+
+// @internal (undocumented)
+export interface SurfaceMaterialAtlas {
+    // (undocumented)
+    readonly hasTranslucency: boolean;
+    // (undocumented)
+    readonly isAtlas: true;
+    // (undocumented)
+    readonly numMaterials: number;
+    // (undocumented)
+    readonly overridesAlpha: boolean;
+    // (undocumented)
+    readonly vertexTableOffset: number;
+}
+
+// @internal (undocumented)
+export interface SurfaceParams {
+    // (undocumented)
+    readonly fillFlags: FillFlags;
+    // (undocumented)
+    readonly hasBakedLighting: boolean;
+    // (undocumented)
+    readonly indices: VertexIndices;
+    // (undocumented)
+    readonly material?: SurfaceMaterial;
+    // (undocumented)
+    readonly textureMapping?: {
+        texture: RenderTexture;
+        alwaysDisplayed: boolean;
+    };
+    // (undocumented)
+    readonly type: SurfaceType;
+}
+
+// @internal (undocumented)
+export interface SurfaceRenderMaterial {
+    // (undocumented)
+    readonly isAtlas: false;
+    // (undocumented)
+    readonly material: RenderMaterial;
+}
+
+// @internal (undocumented)
+export enum SurfaceType {
+    // (undocumented)
+    Lit = 1,
+    // (undocumented)
+    Textured = 2,
+    // (undocumented)
+    TexturedLit = 3,
+    // (undocumented)
+    Unlit = 0,
+    // (undocumented)
+    VolumeClassifier = 4
 }
 
 // @beta
@@ -11966,6 +12625,13 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
+// @internal
+export interface TesselatedPolyline {
+    indices: VertexIndices;
+    nextIndicesAndParams: Uint8Array;
+    prevIndices: VertexIndices;
+}
+
 // @public
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
@@ -11997,7 +12663,7 @@ export type TextureCacheKey = string | Gradient.Symb;
 // @public
 export interface TextureCacheOwnership {
     iModel: IModelConnection;
-    key: string | Gradient.Symb;
+    key: TextureCacheKey;
 }
 
 // @internal (undocumented)
@@ -12177,6 +12843,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly contextPreloadParentSkip: number;
     static create(props?: TileAdmin.Props): Promise<TileAdmin>;
+    // @internal (undocumented)
+    readonly decodeImdlInWorker: boolean;
     get defaultTileSizeModifier(): number;
     set defaultTileSizeModifier(modifier: number);
     // @internal (undocumented)
@@ -12315,6 +12983,8 @@ export namespace TileAdmin {
         contextPreloadParentDepth?: number;
         // @alpha
         contextPreloadParentSkip?: number;
+        // @alpha
+        decodeImdlInWorker?: boolean;
         defaultTileSizeModifier?: number;
         // @alpha
         disableMagnification?: boolean;
@@ -12976,7 +13646,7 @@ export interface TokenArg {
 }
 
 // @internal (undocumented)
-export function toMaterialArgs(mat: ImdlModel.SurfaceMaterialParams): CreateRenderMaterialArgs;
+export function toMaterialParams(mat: ImdlModel.SurfaceMaterialParams): MaterialParams;
 
 // @public
 export class Tool {
@@ -13552,6 +14222,51 @@ export enum VaryingType {
     Vec2 = 1,
     Vec3 = 2,
     Vec4 = 3
+}
+
+// @internal
+export class VertexIndices implements Iterable<number> {
+    // (undocumented)
+    [Symbol.iterator](): Generator<number, void, unknown>;
+    constructor(data: Uint8Array);
+    // (undocumented)
+    readonly data: Uint8Array;
+    // (undocumented)
+    decodeIndex(index: number): number;
+    // (undocumented)
+    decodeIndices(): number[];
+    // (undocumented)
+    static encodeIndex(index: number, bytes: Uint8Array, byteIndex: number): void;
+    static fromArray(indices: number[]): VertexIndices;
+    get length(): number;
+    // (undocumented)
+    setNthIndex(n: number, value: number): void;
+}
+
+// @internal
+export interface VertexTable {
+    readonly data: Uint8Array;
+    readonly featureIndexType: FeatureIndexType;
+    readonly hasTranslucency: boolean;
+    readonly height: number;
+    readonly numRgbaPerVertex: number;
+    readonly numVertices: number;
+    readonly qparams: QParams3d;
+    readonly uniformColor?: ColorDef;
+    readonly uniformFeatureID?: number;
+    readonly usesUnquantizedPositions?: boolean;
+    readonly uvParams?: QParams2d;
+    readonly width: number;
+}
+
+// @internal (undocumented)
+export interface VertexTableWithIndices {
+    // (undocumented)
+    indices: VertexIndices;
+    // (undocumented)
+    material?: SurfaceMaterial;
+    // (undocumented)
+    vertices: VertexTable;
 }
 
 // @public
@@ -15753,6 +16468,51 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     get useGeographicTilingScheme(): boolean;
 }
+
+// @internal
+export interface WorkerError {
+    // (undocumented)
+    error: Error;
+    // (undocumented)
+    msgId: number;
+    // (undocumented)
+    result?: never;
+}
+
+// @internal
+export type WorkerImplementation<T> = {
+    [P in keyof T]: T[P] extends () => any ? () => WorkerReturnType<T[P]> : (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0]) => WorkerReturnType<T[P]> : (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>) => WorkerReturnType<T[P]> : never));
+};
+
+// @internal
+export type WorkerInterface<T> = {
+    [P in keyof T]: T[P] extends () => any ? () => Promise<ReturnType<T[P]>> : (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0], transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>, transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : never));
+};
+
+// @internal
+export type WorkerProxy<T> = WorkerInterface<T> & {
+    terminate(): void;
+    readonly isTerminated: boolean;
+};
+
+// @internal
+export type WorkerResponse = WorkerResult | WorkerError;
+
+// @internal
+export interface WorkerResult {
+    // (undocumented)
+    error?: never;
+    // (undocumented)
+    msgId: number;
+    // (undocumented)
+    result: any;
+}
+
+// @internal
+export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | {
+    result: ReturnType<T>;
+    transfer: Transferable[];
+};
 
 // @public
 export interface ZoomToOptions {

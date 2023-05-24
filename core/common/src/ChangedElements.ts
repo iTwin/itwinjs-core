@@ -16,6 +16,8 @@ import { AxisAlignedBox3dProps } from "./geometry/Placement";
  * @extensions
  */
 export enum TypeOfChange {
+  /** Element contains no changes */
+  NoChange = 0,
   /** A property in the element changed */
   Property = 0b1,
   /** The geometry stream of a [GeometricElement]($backend) changed */

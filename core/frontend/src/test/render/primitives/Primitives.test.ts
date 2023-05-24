@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@itwin/core-geometry";
 import { GraphicParams } from "@itwin/core-common";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { GenerateEdges, GeometryOptions, NormalMode, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";

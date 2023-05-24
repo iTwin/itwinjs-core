@@ -18,7 +18,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { Pixel } from "../render/Pixel";
 import { DecorateContext } from "../ViewContext";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";

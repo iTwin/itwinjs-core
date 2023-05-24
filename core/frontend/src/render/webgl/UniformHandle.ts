@@ -7,7 +7,7 @@
  */
 
 import { assert, Logger } from "@itwin/core-bentley";
-import { FrontendLoggerCategory } from "../../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { ShaderProgram } from "./ShaderProgram";
 import { SyncToken } from "./Sync";

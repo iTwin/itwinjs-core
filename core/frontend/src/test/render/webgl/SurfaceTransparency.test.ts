@@ -19,8 +19,8 @@ import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags"
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
-import { MeshParams } from "../../../render/primitives/VertexTable";
 import { createBlankConnection } from "../../createBlankConnection";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const colors = new ColorIndex();
@@ -51,7 +51,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   if (texture)
     args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
-  const params = MeshParams.create(args);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
   return IModelApp.renderSystem.createMesh(params)!;
 }
 
