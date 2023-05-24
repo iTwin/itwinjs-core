@@ -1,6 +1,13 @@
 # Change Log - @itwin/imodel-components-react
 
-This log was last generated on Mon, 15 May 2023 18:23:41 GMT and should not be manually modified.
+This log was last generated on Wed, 24 May 2023 17:27:09 GMT and should not be manually modified.
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+### Updates
+
+- Use Z-axis comparison to determine matrix face. This fixes a tooltip bug in . Make heads-up for rotating CubeNavigationAid opt-in with new optional prop favorHeadsUpRotation.
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:41 GMT

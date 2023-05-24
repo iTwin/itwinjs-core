@@ -2,6 +2,18 @@
   "name": "@itwin/imodel-components-react",
   "entries": [
     {
+      "version": "3.7.7",
+      "tag": "@itwin/imodel-components-react_v3.7.7",
+      "date": "Wed, 24 May 2023 17:27:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use Z-axis comparison to determine matrix face. This fixes a tooltip bug in . Make heads-up for rotating CubeNavigationAid opt-in with new optional prop favorHeadsUpRotation."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.7.6",
       "tag": "@itwin/imodel-components-react_v3.7.6",
       "date": "Mon, 15 May 2023 18:23:41 GMT",
