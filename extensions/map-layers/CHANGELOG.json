@@ -1,0 +1,1334 @@
+{
+  "name": "@itwin/map-layers",
+  "entries": [
+    {
+      "version": "3.7.7",
+      "tag": "@itwin/map-layers_v3.7.7",
+      "date": "Wed, 24 May 2023 17:27:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.6",
+      "tag": "@itwin/map-layers_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.5",
+      "tag": "@itwin/map-layers_v3.7.5",
+      "date": "Thu, 04 May 2023 19:43:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.4",
+      "tag": "@itwin/map-layers_v3.7.4",
+      "date": "Tue, 25 Apr 2023 17:50:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.3",
+      "tag": "@itwin/map-layers_v3.7.3",
+      "date": "Thu, 20 Apr 2023 13:19:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.2",
+      "tag": "@itwin/map-layers_v3.7.2",
+      "date": "Wed, 12 Apr 2023 13:12:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.1",
+      "tag": "@itwin/map-layers_v3.7.1",
+      "date": "Mon, 03 Apr 2023 15:15:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.0",
+      "tag": "@itwin/map-layers_v3.7.0",
+      "date": "Wed, 29 Mar 2023 15:02:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use `UiFramework` instead of `Manager` classes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.6.3",
+      "tag": "@itwin/map-layers_v3.6.3",
+      "date": "Mon, 27 Mar 2023 16:26:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.6.2",
+      "tag": "@itwin/map-layers_v3.6.2",
+      "date": "Fri, 17 Mar 2023 17:52:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.6.1",
+      "tag": "@itwin/map-layers_v3.6.1",
+      "date": "Fri, 24 Feb 2023 22:00:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.6.0",
+      "tag": "@itwin/map-layers_v3.6.0",
+      "date": "Wed, 08 Feb 2023 14:58:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow map-layer requiring authentication to be correctly initialized after a saved view restore."
+          },
+          {
+            "comment": "Added support for new viewport event (onMapLayerScaleRangeVisibilityChanged)"
+          },
+          {
+            "comment": "Improved map-layer coordinate systems validation and error reporting."
+          },
+          {
+            "comment": "Fix Map Layers widget not updating after an iModel gets geolocated."
+          },
+          {
+            "comment": " Use EmptyLocalization for localization in tests to increase test performance"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.6",
+      "tag": "@itwin/map-layers_v3.5.6",
+      "date": "Fri, 24 Feb 2023 16:02:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.5",
+      "tag": "@itwin/map-layers_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.4",
+      "tag": "@itwin/map-layers_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.3",
+      "tag": "@itwin/map-layers_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.2",
+      "tag": "@itwin/map-layers_v3.5.2",
+      "date": "Wed, 11 Jan 2023 16:46:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.1",
+      "tag": "@itwin/map-layers_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/map-layers_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "MapLayers widget's preferences UI now support edit,delete buttons without having an iModel ID. Also fix an issue with edit. "
+          },
+          {
+            "comment": "Unpin classnames package"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/map-layers_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/map-layers_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/map-layers_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/map-layers_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/map-layers_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/map-layers_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/map-layers_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/map-layers_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Disable map-layers widget when the background map setting is off in the current view settings."
+          },
+          {
+            "comment": "Maplayers widget now correctly rerefresh its state whenever the application switches between different viewports."
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/map-layers_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/map-layers_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:05 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/map-layers_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/map-layers_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/map-layers_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/map-layers_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Fixed FeatureInfo provider registration when Map Layers Widget is initialized."
+          },
+          {
+            "comment": "Update iTwinUI-react to 1.38.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/map-layers_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/map-layers_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/map-layers_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/map-layers_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/map-layers_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use a different resize observer technique to ensure the controlled tree in map suplayer popup is properly sized."
+          },
+          {
+            "comment": "Turned ON Popup's 'repositionOnResize' property for MapLayerSettingsMenu."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/map-layers_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/map-layers_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Made public MapLayers related objects, methods."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/map-layers_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/map-layers_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/map-layers_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "maplayers widget has been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process. When process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed."
+          },
+          {
+            "comment": "Use iTwinUI-react components to get consistent styling. Alos fixed bug with elevation correction control."
+          },
+          {
+            "comment": "Fix a display issue with background color's ColorPicker where part of the dialog was missing."
+          },
+          {
+            "comment": "Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/map-layers_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/map-layers_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/map-layers_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adjusted the map-layers package's peer dependencies to no longer lock down core packages."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/map-layers_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for map layers using model geometry."
+          },
+          {
+            "comment": "User Preferences is now supported for Blank Connection configurations."
+          },
+          {
+            "comment": "Fixed issue that would close the new maplayer dialog when a new layer type was picked."
+          },
+          {
+            "comment": "Fix 'ResizeObserver loop limit exceeded' error in MapLayers widget"
+          },
+          {
+            "comment": "Added FeatureInfo Widget."
+          },
+          {
+            "comment": "Bug fix: Right click on the new map layer dialog would close it."
+          },
+          {
+            "comment": "Refactored MapLayersUI initialization, and will always use UiProviders"
+          },
+          {
+            "comment": "Fix style on select"
+          },
+          {
+            "comment": "Update to itwinui-css version \"0.44.0\"."
+          },
+          {
+            "comment": "Update to @itwin/itwinui-react: 1.32.0"
+          },
+          {
+            "comment": "Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/map-layers_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/map-layers_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/map-layers_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/map-layers_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Layers could not be added through MapLayers widget when UserPreferences was not set. Fix various issues related to user preferences."
+          },
+          {
+            "comment": "Fixed various CSS issues in map-layers widget after recent UI framework changes."
+          },
+          {
+            "comment": "No longer display username/password fields by default in the custom map layers dialog: If validation fails and reports authentication is needed, we then ask end-user for credentials."
+          },
+          {
+            "comment": "Use QuantityNumericInput for 'Elevation Offset' and 'Model Height' fields instead of hardcoded units."
+          },
+          {
+            "comment": "Migrated from Toggle to ToggleSwitch component in map-layers widget"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Unregister maplayers itemsProvider and widget control on terminate."
+          },
+          {
+            "comment": "Now use 'DisplayStyleState.backgroundMapBase' instead of 'DisplayStyleState.changeBaseMapProps' to update the mapImagery."
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/map-layers"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Ignore lint warning for deprecated class"
+          },
+          {
+            "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes."
+          },
+          {
+            "comment": "Update to latest itwinui-react"
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Replace deprecated ThemedSelect component with iTwinUI-react Select component."
+          },
+          {
+            "comment": "Remove itwinUi css overrides."
+          },
+          {
+            "comment": "Replaced ui-core Slider with one from iTwinUi-react."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.28",
+      "tag": "@itwin/map-layers_v2.19.28",
+      "date": "Wed, 12 Jan 2022 14:52:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.27",
+      "tag": "@itwin/map-layers_v2.19.27",
+      "date": "Wed, 05 Jan 2022 20:07:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.26",
+      "tag": "@itwin/map-layers_v2.19.26",
+      "date": "Wed, 08 Dec 2021 20:54:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.25",
+      "tag": "@itwin/map-layers_v2.19.25",
+      "date": "Fri, 03 Dec 2021 20:05:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.24",
+      "tag": "@itwin/map-layers_v2.19.24",
+      "date": "Mon, 29 Nov 2021 18:44:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed UI spacing issues in map-layers widget."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.23",
+      "tag": "@itwin/map-layers_v2.19.23",
+      "date": "Mon, 22 Nov 2021 20:41:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.22",
+      "tag": "@itwin/map-layers_v2.19.22",
+      "date": "Wed, 17 Nov 2021 01:23:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.21",
+      "tag": "@itwin/map-layers_v2.19.21",
+      "date": "Wed, 10 Nov 2021 10:58:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.20",
+      "tag": "@itwin/map-layers_v2.19.20",
+      "date": "Fri, 29 Oct 2021 16:14:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Mask transparency to map-layers widget."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.19",
+      "tag": "@itwin/map-layers_v2.19.19",
+      "date": "Mon, 25 Oct 2021 16:16:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Drop unnecessary dep on @bentley/react-scripts"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.18",
+      "tag": "@itwin/map-layers_v2.19.18",
+      "date": "Thu, 21 Oct 2021 20:59:44 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.17",
+      "tag": "@itwin/map-layers_v2.19.17",
+      "date": "Thu, 14 Oct 2021 21:19:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.16",
+      "tag": "@itwin/map-layers_v2.19.16",
+      "date": "Mon, 11 Oct 2021 17:37:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.15",
+      "tag": "@itwin/map-layers_v2.19.15",
+      "date": "Fri, 08 Oct 2021 16:44:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.14",
+      "tag": "@itwin/map-layers_v2.19.14",
+      "date": "Fri, 01 Oct 2021 13:07:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.13",
+      "tag": "@itwin/map-layers_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@itwin/map-layers_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@itwin/map-layers_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@itwin/map-layers_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.9",
+      "tag": "@itwin/map-layers_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@itwin/map-layers_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@itwin/map-layers_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@itwin/map-layers_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@itwin/map-layers_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@itwin/map-layers_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@itwin/map-layers_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@itwin/map-layers_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@itwin/map-layers_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@itwin/map-layers_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@itwin/map-layers_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@itwin/map-layers_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@itwin/map-layers_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@itwin/map-layers_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@itwin/map-layers_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@itwin/map-layers_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@itwin/map-layers_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@itwin/map-layers_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@itwin/map-layers_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": " Allow saved map-layer definition to be edited."
+          },
+          {
+            "comment": "Made MaplayerSource independent from MapLayerProps."
+          },
+          {
+            "comment": "MapManagerSettings UI Refresh. Added tests."
+          },
+          {
+            "comment": "Fixed typo in activeViewport.view.isSpatialView: it should be invoked as a method and not a property."
+          },
+          {
+            "comment": "Fixed a bug where an elevation offset value of 0 could not be in the UI."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@itwin/map-layers_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@itwin/map-layers_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@itwin/map-layers_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@itwin/map-layers_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@itwin/map-layers_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@itwin/map-layers_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@itwin/map-layers_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@itwin/map-layers_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@itwin/map-layers_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@itwin/map-layers_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@itwin/map-layers_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix 'npm run cover' that would never complete. "
+          },
+          {
+            "comment": "Exposed the map masking option in the map layers settings UI."
+          },
+          {
+            "comment": "Move map tile trees to Viewport to handle synching correctly"
+          },
+          {
+            "comment": "Update to latest classnames package"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@itwin/map-layers_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@itwin/map-layers_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@itwin/map-layers_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@itwin/map-layers_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@itwin/map-layers_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@itwin/map-layers_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@itwin/map-layers_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow saved map layer definition to be deleted from setting service."
+          },
+          {
+            "comment": "Fixed typo in the message when the iModel is not geolocated."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@itwin/map-layers_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@itwin/map-layers_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@itwin/map-layers_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@itwin/map-layers_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@itwin/map-layers_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WMS/WMTS layers will now provide feedback to end-user when an unauthorized error is returned by server. Enabled tests in map-layers extensions."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@itwin/map-layers_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Restored base layer visibility button in map manager. "
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@itwin/map-layers_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@itwin/map-layers_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@itwin/map-layers_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@itwin/map-layers_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Provide default props to map-layers widget when used as an extension."
+          },
+          {
+            "comment": "ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@itwin/map-layers_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@itwin/map-layers_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@itwin/map-layers_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Refreshed MapLayerManager UI. Fixed minor issues with layer dragging order.  Code refactoring."
+          },
+          {
+            "comment": "Correctly handle WMTS layers (only one layer can be visible at a time)"
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fix compile errors for later versions."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@itwin/map-layers_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@itwin/map-layers_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@itwin/map-layers_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Correctly handle WMTS layers (only one layer can be visible at a time)"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@itwin/map-layers_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move dependencies to peerDependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@itwin/map-layers_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@itwin/map-layers_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@itwin/map-layers_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@itwin/map-layers_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@itwin/map-layers_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@itwin/map-layers_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.3",
+      "tag": "@itwin/map-layers_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@itwin/map-layers_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@itwin/map-layers_v2.9.1",
+      "date": "Thu, 19 Nov 2020 17:03:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@itwin/map-layers_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.8.1",
+      "tag": "@itwin/map-layers_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.8.0",
+      "tag": "@itwin/map-layers_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduced the concept of named/unamed groups and made sure the SubLayers tree view remained consistent with the display (i.e disabling children of non-visible unnamed groups)"
+          },
+          {
+            "comment": "Added optional wms autentication"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@itwin/map-layers_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.5",
+      "tag": "@itwin/map-layers_v2.7.5",
+      "date": "Fri, 23 Oct 2020 16:23:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.4",
+      "tag": "@itwin/map-layers_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.3",
+      "tag": "@itwin/map-layers_v2.7.3",
+      "date": "Wed, 14 Oct 2020 17:00:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.2",
+      "tag": "@itwin/map-layers_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.1",
+      "tag": "@itwin/map-layers_v2.7.1",
+      "date": "Thu, 08 Oct 2020 13:04:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.0",
+      "tag": "@itwin/map-layers_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Modify MapUrlDialog to handle MapLayerSettingsService"
+          },
+          {
+            "comment": "Fix background color of bgmap visibility button."
+          },
+          {
+            "comment": "Added switches to turn on and off the WMS feature of the map layer widget"
+          },
+          {
+            "comment": "Made transparent the visibility button of Mapmanager"
+          },
+          {
+            "comment": "Added optional wms autentication"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.5",
+      "tag": "@itwin/map-layers_v2.6.5",
+      "date": "Sat, 26 Sep 2020 16:06:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.4",
+      "tag": "@itwin/map-layers_v2.6.4",
+      "date": "Tue, 22 Sep 2020 17:40:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.3",
+      "tag": "@itwin/map-layers_v2.6.3",
+      "date": "Mon, 21 Sep 2020 14:47:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.2",
+      "tag": "@itwin/map-layers_v2.6.2",
+      "date": "Mon, 21 Sep 2020 13:07:44 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.1",
+      "tag": "@itwin/map-layers_v2.6.1",
+      "date": "Fri, 18 Sep 2020 13:15:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.0",
+      "tag": "@itwin/map-layers_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.5.5",
+      "tag": "@itwin/map-layers_v2.5.5",
+      "date": "Wed, 02 Sep 2020 17:42:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.4",
+      "tag": "@itwin/map-layers_v2.5.4",
+      "date": "Fri, 28 Aug 2020 15:34:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Locatable toggle, updated icon for transparency button, add visibilty toggle for 'Base Layer'"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.5.3",
+      "tag": "@itwin/map-layers_v2.5.3",
+      "date": "Wed, 26 Aug 2020 11:46:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.2",
+      "tag": "@itwin/map-layers_v2.5.2",
+      "date": "Tue, 25 Aug 2020 22:09:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.1",
+      "tag": "@itwin/map-layers_v2.5.1",
+      "date": "Mon, 24 Aug 2020 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.0",
+      "tag": "@itwin/map-layers_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "lock down @types/react version at 16.9.43 to prevent build error from csstype dependency"
+          },
+          {
+            "comment": "Add MapLayersWidgetControl that can be used to specify widget in UI 1.0 FrontstageDef."
+          },
+          {
+            "comment": "Switch to ESLint"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.4.2",
+      "tag": "@itwin/map-layers_v2.4.2",
+      "date": "Fri, 14 Aug 2020 16:34:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add MapLayersWidgetControl that can be used to specify widget in UI 1.0 FrontstageDef."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.4.1",
+      "tag": "@itwin/map-layers_v2.4.1",
+      "date": "Fri, 07 Aug 2020 19:57:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.4.0",
+      "tag": "@itwin/map-layers_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add map-layer extension that can also be used as a package. Adds 'Map Layers' widget."
+          }
+        ]
+      }
+    }
+  ]
+}

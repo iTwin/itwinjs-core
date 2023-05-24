@@ -1,23 +1,11 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+This log was last generated on Wed, 24 May 2023 17:27:09 GMT and should not be manually modified.
 
-## 4.0.0
-Mon, 22 May 2023 15:34:14 GMT
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
 
-### Updates
-
-- implemented constant lod texture mapping for tiles
-- React to IModelApp.rpcInterfaces and BentleyCloudRpcManager changes.
-- Promote unregisterNamespace to public.
-- Update to eslint@8
-- Added 'schemaLockHeld' to UpgradeOptions
-- Prevent IPC requests from blocking the backend.
-- ECSqlReader is now an AsyncIterableIterator
-- removing dependency on semver
-- Implemented constant lod texture mapping mode.
-- Add interfaces representing 3d tileset schema.
-- add Atmosphere class as a property of Environment
+_Version update only_
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT

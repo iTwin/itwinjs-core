@@ -1,27 +1,11 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+This log was last generated on Wed, 24 May 2023 17:27:09 GMT and should not be manually modified.
 
-## 4.0.0
-Mon, 22 May 2023 15:34:14 GMT
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
 
-### Updates
-
-- RegionOps improvements in arc handling
-- fix for CurveChainWithDistanceIndex.fractionToCurvature
-- missing types in core-geometry barrel file
-- geometry API promotions
-- conditionalize core-geometry test output
-- intersect local ranges
-- implement PolyfaceBuilder.addGeometryQuery for Loops and ParityRegions
-- tighten vector normalization tol
-- PolyfaceBuilder for UnionRegions
-- ray-mesh intersection
-- add merge tolerance to regionBooleanXY
-- avoid misclassify null face as negative area face
-- New method PolyfaceQuery.cloneWithMaximalPlanarFacets
-- Plane3d evaluations for issue #5169
-- Update to eslint@8
+_Version update only_
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT
