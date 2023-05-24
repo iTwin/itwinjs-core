@@ -2360,6 +2360,7 @@ export class GrowableXYArray extends IndexedXYCollection {
         offset: number;
     };
     static create(data: any, result?: GrowableXYArray): GrowableXYArray;
+    // @deprecated
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined;
@@ -2427,6 +2428,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         offset: number;
     };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
+    static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined;
