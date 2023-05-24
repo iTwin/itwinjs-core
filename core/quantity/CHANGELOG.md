@@ -1,5 +1,6 @@
 # Change Log - @itwin/core-quantity
 
+<<<<<<< HEAD
 This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
 
 ## 4.0.0
@@ -10,6 +11,14 @@ Mon, 22 May 2023 15:34:14 GMT
 - Update to eslint@8
 - Fixed KeepSingleZero format trait where zero wasn't being retained when fractional part was all zeroes.
 - Renamed UnitConversion interface to UnitConversionProps.
+=======
+This log was last generated on Wed, 24 May 2023 17:27:09 GMT and should not be manually modified.
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+_Version update only_
+>>>>>>> aea0a7a746... 3.7.7
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:41 GMT

@@ -1,5 +1,6 @@
 # Change Log - @itwin/core-frontend
 
+<<<<<<< HEAD
 This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
 
 ## 4.0.0
@@ -34,6 +35,14 @@ Mon, 22 May 2023 15:34:14 GMT
 - Add an option for ViewCreator3d to make all subcategories visible.
 - add physics-based Atmospheric scattering shader
 - Localize tooltips for view clip decorations.
+=======
+This log was last generated on Wed, 24 May 2023 17:27:09 GMT and should not be manually modified.
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+_Version update only_
+>>>>>>> aea0a7a746... 3.7.7
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT
