@@ -1937,7 +1937,7 @@ export enum DbResponseStatus {
 
 export { DbResult }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface DbRuntimeStats {
     // (undocumented)
     cpuTime: number;
@@ -2454,37 +2454,28 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta (undocumented)
+// @public
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
-    // (undocumented)
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    // (undocumented)
     get current(): QueryRowProxy;
-    // (undocumented)
     get done(): boolean;
     // (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
-    // (undocumented)
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
-    // (undocumented)
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
     // (undocumented)
     reset(options?: QueryOptions): void;
-    // (undocumented)
     resetBindings(): void;
     // (undocumented)
     setParams(param: QueryBinder): void;
-    // (undocumented)
     get stats(): QueryStats;
-    // (undocumented)
     step(): Promise<boolean>;
-    // (undocumented)
     toArray(): Promise<any[]>;
 }
 
@@ -6737,7 +6728,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     structName?: string;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     // (undocumented)
     [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined>;
@@ -7030,7 +7021,7 @@ export class QueryOptionsBuilder {
     setUsePrimaryConnection(val: boolean): this;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
@@ -7061,37 +7052,26 @@ export enum QueryRowFormat {
     UseJsPropertyNames = 2
 }
 
-// @beta (undocumented)
+// @public
 export interface QueryRowProxy {
-    // (undocumented)
     [propertyName: string]: QueryValueType;
-    // (undocumented)
     [propertyIndex: number]: QueryValueType;
-    // (undocumented)
     getMetaData(): QueryPropertyMetaData[];
-    // (undocumented)
     toArray(): QueryValueType[];
-    // (undocumented)
     toRow(): any;
 }
 
-// @beta (undocumented)
+// @public
 export interface QueryStats {
-    // (undocumented)
     backendCpuTime: number;
-    // (undocumented)
     backendMemUsed: number;
-    // (undocumented)
     backendRowsReturned: number;
-    // (undocumented)
     backendTotalTime: number;
-    // (undocumented)
     retryCount: number;
-    // (undocumented)
     totalTime: number;
 }
 
-// @beta (undocumented)
+// @public
 export type QueryValueType = any;
 
 // @public

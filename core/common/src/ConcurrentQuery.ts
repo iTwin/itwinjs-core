@@ -30,6 +30,7 @@ export enum QueryRowFormat {
    */
   UseJsPropertyNames,
 }
+
 /**
  * Specify limit or range of rows to return
  * @public
@@ -41,7 +42,8 @@ export interface QueryLimit {
   /** Offset from which to return rows */
   offset?: number;
 }
-/** @beta */
+
+/** @public */
 export interface QueryPropertyMetaData {
   className: string;
   generated: boolean;
@@ -51,7 +53,8 @@ export interface QueryPropertyMetaData {
   extendType: string;
   typeName: string;
 }
-/** @beta */
+
+/** @public */
 export interface DbRuntimeStats {
   cpuTime: number;
   totalTime: number;
@@ -59,6 +62,7 @@ export interface DbRuntimeStats {
   memLimit: number;
   memUsed: number;
 }
+
 /**
  * Quota hint for the query.
  * @public
@@ -70,6 +74,7 @@ export interface QueryQuota {
   /** Max memory allowed in bytes. This is hint and may not be honoured but help in prioritize request */
   memory?: number;
 }
+
 /**
  * Config for all request made to concurrent query engine.
  * @public
@@ -93,6 +98,7 @@ export interface BaseReaderOptions {
    */
   delay?: number;
 }
+
 /**
  * ECSql query config
  * @public
