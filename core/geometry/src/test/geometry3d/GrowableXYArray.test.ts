@@ -525,7 +525,7 @@ describe("GrowableXYArray", () => {
     ck.testExactNumber(a0.length, 0, "create from one number yields empty array");
 
     const a1 = GrowableXYArray.create(dataNumberArray2, a0);
-    ck.testTrue (a0 === a1, "create from pre-allocated object returns same object")
+    ck.testTrue (a0 === a1, "create from pre-allocated object returns same object");
     if (ck.testExactNumber(a0.length, 1, "create from number array length 2: count")) {
       ck.testExactNumber(a0.getXAtUncheckedPointIndex(0), dataNumberArray2[0], "create from number array length 2: x-value");
       ck.testExactNumber(a0.getYAtUncheckedPointIndex(0), dataNumberArray2[1], "create from number array length 2: y-value");
