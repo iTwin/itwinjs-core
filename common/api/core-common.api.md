@@ -10008,6 +10008,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    NoChange = 0,
     Parent = 32,
     Placement = 4,
     Property = 1
