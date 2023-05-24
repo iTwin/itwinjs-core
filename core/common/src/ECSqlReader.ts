@@ -204,7 +204,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     },
   });
 
-
   /**
    * @internal
    */

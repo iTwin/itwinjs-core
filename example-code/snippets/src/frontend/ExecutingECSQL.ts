@@ -7,6 +7,7 @@ import { NavigationValue, QueryBinder, QueryRowFormat } from "@itwin/core-common
 import { IModelConnection } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 
 async function executeECSql_ECSqlReaderIteration(iModel: IModelConnection): Promise<void> {
@@ -128,7 +129,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyIndexes_ToArray
-    const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), , { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     const jsRows = await reader.toArray();
     console.log(jsRows);
     // __PUBLISH_EXTRACT_END__
@@ -136,7 +137,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyNames
-    for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Parent, LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), , { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const row of iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Parent, LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`ECInstanceId is ${row.ECInstanceId}`);
       console.log(`ECClassId is ${row.ECClassId}`);
       console.log(`Parent is ${row.Parent}`);
@@ -147,7 +148,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseECSqlPropertyNames_ToArray
-    const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), , { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     const jsRows = await reader.toArray();
     console.log(jsRows);
     // __PUBLISH_EXTRACT_END__
@@ -155,7 +156,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseJsPropertyNames
-    for await (const row of iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), , { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const row of iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       console.log(`ECInstanceId is ${row.id}`);
       console.log(`ECClassId is ${row.className}`);
       console.log(`Parent is ${row.parent}`);
@@ -166,7 +167,7 @@ async function executeECSql_QueryRowFormat(iModel: IModelConnection): Promise<vo
 
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_QueryRowFormat_UseJsPropertyNames_ToArray
-    const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), , { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    const reader = iModel.createQueryReader("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", QueryBinder.from(["0x10"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     const jsRows = await reader.toArray();
     console.log(jsRows);
     // __PUBLISH_EXTRACT_END__
