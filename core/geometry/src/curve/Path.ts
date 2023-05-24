@@ -18,25 +18,28 @@ import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
- * * A `Path` object does not bound a planar region.  Use `Loop` to indicate region bounding.
+ * * A `Path` object does not bound a planar region. Use `Loop` to indicate region bounding.
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
 export class Path extends CurveChain {
   /** String name for schema properties */
   public readonly curveCollectionType = "path";
-
   /** Test if `other` is an instance of `Path` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Path; }
-  /** invoke `processor.announcePath(this, indexInParent)` */
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof Path;
+  }
+  /** Invoke `processor.announcePath(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announcePath(this, indexInParent);
   }
   /** Construct an empty path. */
-  public constructor() { super(); }
+  public constructor() {
+    super();
+  }
   /**
    * Create a path from a variable length list of curve primitives
-   * * CurvePrimitive params are captured !!!
+   * * CurvePrimitive params are captured.
    * @param curves variable length list of individual curve primitives or point arrays.
    */
   public static create(...curves: Array<CurvePrimitive | Point3d[]>): Path {
@@ -51,8 +54,8 @@ export class Path extends CurveChain {
     return result;
   }
   /**
-   * Create a path from a an array of curve primitives
-   * @param curves array of individual curve primitives
+   * Create a path from a an array of curve primitives.
+   * @param curves array of individual curve primitives.
    */
   public static createArray(curves: CurvePrimitive[]): Path {
     const result = new Path();
@@ -69,10 +72,14 @@ export class Path extends CurveChain {
     return Path.create(strokes);
   }
   /** Return the boundary type (1) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 1; }
+  public dgnBoundaryType(): number {
+    return 1;
+  }
   /** Clone as a new `Path` with no primitives */
-  public cloneEmptyPeer(): Path { return new Path(); }
-  /** Second step of double dispatch:  call `handler.handlePath(this)` */
+  public cloneEmptyPeer(): Path {
+    return new Path();
+  }
+  /** Second step of double dispatch: call `handler.handlePath(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handlePath(this);
   }
