@@ -1,6 +1,6 @@
 # Format of a row returned from an [ECSQL](./ECSQL.md) SELECT query
 
-> Code examples showing off the use of different row formats can be found in [ECSQL Code Examples](./ECSQLCodeExamples.md#using-queryrowformats)
+> Code examples showing off the use of different row formats can be found in [ECSQL Code Examples](./ECSQLCodeExamples.md#specifying-row-formats)
 
 When using Concurrent query a row format can be selected. By default ConcurrentQuery engine always render top level row as array of values and not object. But it also include meta data allowing array to be converted into two other formats. The format is controlled by flag [QueryRowFormat]($common) which can have one of following values.
 

@@ -45,7 +45,7 @@ See [ECSQL parameter types in iTwin.js](../ECSQLParameterTypes.md) to learn whic
 ### Navigation properties
 
 [Navigation properties](../ECSQL.md#navigation-properties) are structs made up of the Id of the related instance and the backing
-[ECRelationshipClass](../bis/ec/ec-relationship-class.md). The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
+[ECRelationshipClass](../../bis/ec/ec-relationship-class.md). The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
 
 ```ts
 [[include:ExecuteECSql_Binding_Navigation_ByParameter]]
