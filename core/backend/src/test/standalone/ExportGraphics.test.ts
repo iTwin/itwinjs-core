@@ -257,7 +257,7 @@ describe("exportGraphics", () => {
         for (let j = 0; j < dim; ++j)
           tri.push(data[dim * i + j]);
       return tri;
-    }
+    };
 
     const makeFacet = (builder: PolyfaceBuilder, xyz: Float32Array, normals: Float32Array, uv: Float32Array, i0: number, i1: number, i2: number) => {
       builder.addFacetFromGrowableArrays(
@@ -266,17 +266,25 @@ describe("exportGraphics", () => {
         GrowableXYArray.create(makeTriangle(uv, i0, i1, i2, 2)),
         undefined // no colors
       );
-    }
+    };
+
+    const negateV = (param: number, index: number): number => {
+      return (index % 2) ? 1 - param : param;
+    };
+
+    const unNegateV = (param: number, index: number): number => {
+      return (index % 2) ? 2 - param : param;
+    };
 
     /** return 2x2 array of uvParams: [vNegate][meters] given raw uv and the [1][1] entry */
     const mutateUV = (uvRaw: Float32Array, uvVNegatedMeters: Float32Array): Float32Array[][] => {
-      let uvArray: Float32Array[][] = [[],[]];
-      uvArray[1].push(Float32Array.from(uvRaw, (param: number, index: number) => { return (index % 2) ? 1 - param : param; }));
+      const uvArray: Float32Array[][] = [[],[]];
+      uvArray[1].push(Float32Array.from(uvRaw, negateV));
       uvArray[1].push(uvVNegatedMeters);
       for (let i = 0; i < 2; ++i)
-        uvArray[0].push(Float32Array.from(uvArray[1][i], (param: number, index: number) => { return (index % 2) ? 2 - param : param; }));
+        uvArray[0].push(Float32Array.from(uvArray[1][i], unNegateV));
       return uvArray;
-    }
+    };
 
     const materials: Id64String[][] = [["",""],["",""]];
     const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
@@ -288,7 +296,7 @@ describe("exportGraphics", () => {
       const matScale = vNegate ? [1, -1] : [1, 1];
       const matUnits = meters ? TextureMapUnits.Meters : TextureMapUnits.Relative;
       return materials[i][j] = insertRenderMaterialWithTexture(matName, getTextureId(), matScale, matUnits);
-    }
+    };
 
     const triangleBuilder = PolyfaceBuilder.create();
     triangleBuilder.options.needParams = triangleBuilder.options.needNormals = true;
@@ -338,8 +346,8 @@ describe("exportGraphics", () => {
     };
 
     const testMesh = (geom: GeometryQuery, expectedParams: Float32Array[][]) => {
-      for (let vNegate of [false, true])
-        for (let meters of [false, true])
+      for (const vNegate of [false, true])
+        for (const meters of [false, true])
           testMeshWithTexture(geom, expectedParams[vNegate ? 1 : 0][meters ? 1 : 0], getMaterial(vNegate, meters));
     };
 
