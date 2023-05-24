@@ -151,19 +151,14 @@ export interface QueryStats {
  * - Iterator over them manually using [[ECSqlReader.step]].
  * - Capture all of the results at once in an array using [[QueryRowProxy.toArray]].
  *
- * @see [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
- * @see [ECSQL Row Formats]($docs/learning/ECSQLRowFormat) for more details on how rows are formatted.
- * @see [ECSQL Code Examples]($docs/learning/backend/ECSQLCodeExamples#Iterate-Over-the-Results) for examples of each
+ * @see
+ * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+ * - [ECSQL Row Formats]($docs/learning/ECSQLRowFormat) for more details on how rows are formatted.
+ * - [ECSQL Code Examples]($docs/learning/ECSQLCodeExamples#iterating-over-query-results) for examples of each
  *      of the above ways of interacting with ECSqlReader.
  *
  * @note When iterating over the results, the current row will be a [[QueryRowProxy]] object. To get the row as a basic
  *       JavaScript object, call [[QueryRowProxy.toRow]] on it.
- *
- * @example
- * ```ts
- * // TODO
- * ```
- *
  * @beta
  */
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
@@ -181,9 +176,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0 };
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
-  /**
-   *
-   */
   private _rowProxy = new Proxy<ECSqlReader>(this, {
     get: (target: ECSqlReader, key: string | Symbol) => {
       if (typeof key === "string") {
@@ -233,9 +225,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     this.reset(options);
   }
 
-  /**
-   *
-   */
   private static replaceBase64WithUint8Array(row: any) {
     for (const key of Object.keys(row)) {
       const val = row[key];
@@ -249,9 +238,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
   }
 
-  /**
-   *
-   */
   public setParams(param: QueryBinder) {
     if (this._lockArgs) {
       throw new Error("call resetBindings() before setting or changing parameters");
@@ -259,9 +245,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     this._param = param.serialize();
   }
 
-  /**
-   *
-   */
   public reset(options?: QueryOptions) {
     if (options) {
       this._options = options;
@@ -291,8 +274,9 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * The format of the row is dictated by the [[QueryOptions.rowFormat]] specified in the `options` parameter of the
    * constructed ECSqlReader object.
    *
-   * @see [[QueryRowFormat]]
-   * @see [ECSQL Row Formats]($docs/learning/ECSQLRowFormat)
+   * @see
+   * - [[QueryRowFormat]]
+   * - [ECSQL Row Formats]($docs/learning/ECSQLRowFormat)
    *
    * @note The current row is be a [[QueryRowProxy]] object. To get the row as a basic JavaScript object, call
    *       [[QueryRowProxy.toRow]] on it.
