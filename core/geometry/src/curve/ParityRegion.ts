@@ -25,19 +25,23 @@ import { StrokeOptions } from "./StrokeOptions";
 export class ParityRegion extends CurveCollection {
   /** String name for schema properties */
   public readonly curveCollectionType = "parityRegion";
-
   /** Test if `other` is an instance of `ParityRegion` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof ParityRegion; }
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof ParityRegion;
+  }
   /** Array of loops in this parity region. */
   protected _children: Loop[];
   /** Return the array of loops in this parity region. */
-  public override get children(): Loop[] { return this._children; }
+  public override get children(): Loop[] {
+    return this._children;
+  }
   /** Construct parity region with empty loop array */
-  public constructor() { super(); this._children = []; }
-  /**
-   * Add loops (recursively) to this region's children
-   */
-  public addLoops(data?: Loop | Loop[] | Loop[][]) {
+  public constructor() {
+    super();
+    this._children = [];
+  }
+  /** Add loops (recursively) to this region's children */
+  public addLoops(data?: Loop | Loop[] | Loop[][]): void {
     if (data === undefined) {
     } else if (data instanceof Loop)
       this.children.push(data);
@@ -50,7 +54,8 @@ export class ParityRegion extends CurveCollection {
       }
     }
   }
-  /** Return a single loop or parity region with given loops.
+  /**
+   * Return a single loop or parity region with given loops.
    * * The returned structure CAPTURES the loops.
    * * The loops are NOT reorganized by hole analysis.
    */
@@ -61,7 +66,6 @@ export class ParityRegion extends CurveCollection {
     result.addLoops(data);
     return result;
   }
-
   /** Create a parity region with given loops */
   public static create(...data: Loop[]): ParityRegion {
     const result = new ParityRegion();
@@ -71,8 +75,10 @@ export class ParityRegion extends CurveCollection {
     return result;
   }
   /** Return the boundary type (4) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 4; }
-  /** invoke `processor.announceParityRegion(this, indexInParent)` */
+  public dgnBoundaryType(): number {
+    return 4;
+  }
+  /** Invoke `processor.announceParityRegion(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceParityRegion(this, indexInParent);
   }
@@ -99,9 +105,12 @@ export class ParityRegion extends CurveCollection {
     return clone;
   }
   /** Create a new empty parity region. */
-  public cloneEmptyPeer(): ParityRegion { return new ParityRegion(); }
-  /** Add `child` to this parity region.
-   * * any child type other than `Loop` is ignored.
+  public cloneEmptyPeer(): ParityRegion {
+    return new ParityRegion();
+  }
+  /**
+   * Add `child` to this parity region.
+   * * Any child type other than `Loop` is ignored.
    */
   public tryAddChild(child: AnyCurve | undefined): boolean {
     if (child && child instanceof Loop) {
