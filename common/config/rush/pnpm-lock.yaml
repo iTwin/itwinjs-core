@@ -45,7 +45,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^7.3.5
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
@@ -91,7 +91,7 @@ importers:
       null-loader: 4.0.1_webpack@5.81.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       source-map-loader: 4.0.1_webpack@5.81.0
       typescript: 5.0.4
       webpack: 5.81.0
@@ -192,7 +192,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     devDependencies:
       '@bentley/units-schema': 1.0.7
@@ -218,7 +218,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       typescript: 5.0.4
 
   ../../core/ecschema-locaters:
@@ -259,7 +259,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     dependencies:
       '@xmldom/xmldom': 0.8.7
@@ -299,7 +299,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       typescript: 5.0.4
 
   ../../core/ecschema-metadata:
@@ -326,7 +326,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     dependencies:
       almost-equal: 1.1.0
@@ -352,7 +352,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       typescript: 5.0.4
 
   ../../core/ecschema-rpc/common:
@@ -475,7 +475,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       supertest: ^3.0.0
       typescript: ~5.0.2
     dependencies:
@@ -499,7 +499,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       supertest: 3.4.2
       typescript: 5.0.4
 
@@ -558,7 +558,7 @@ importers:
       nyc: ^15.1.0
       reflect-metadata: 0.1.13
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
       webpack: ^5.76.0
@@ -600,7 +600,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       source-map-loader: 4.0.1_webpack@5.81.0
       typescript: 5.0.4
       webpack: 5.81.0
@@ -926,7 +926,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -944,7 +944,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
       typescript: 5.0.4
 
   ../../core/telemetry:
@@ -1396,7 +1396,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typescript: ~5.0.2
@@ -1418,8 +1418,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       source-map-support: 0.5.21
       typescript: 5.0.4
 
@@ -1448,7 +1448,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typescript: ~5.0.2
@@ -1477,8 +1477,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       source-map-support: 0.5.21
       typescript: 5.0.4
 
@@ -1556,7 +1556,7 @@ importers:
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       typescript: ~5.0.2
     dependencies:
       '@azure/storage-blob': 12.14.0
@@ -1598,7 +1598,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
+      sinon: 15.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.0-dev.36_iacogk7kkaymxepzhgcbytyi7q
@@ -1669,7 +1669,7 @@ importers:
       nyc: ^15.1.0
       path-browserify: ^1.0.1
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
@@ -1705,8 +1705,8 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 24.1.2
       fs-extra: 8.1.0
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -1889,7 +1889,7 @@ importers:
       mocha: ^10.0.0
       rimraf: ^3.0.2
       sanitize-filename: ^1.6.3
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
@@ -1928,8 +1928,8 @@ importers:
       fast-sort: 3.4.0
       mocha: 10.2.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       source-map-support: 0.5.21
       typemoq: 2.1.0
     devDependencies:
@@ -2155,7 +2155,7 @@ importers:
       object-hash: ^1.3.1
       rimraf: ^3.0.2
       semver: ^7.3.5
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~5.0.2
@@ -2197,8 +2197,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       typemoq: 2.1.0
       typescript: 5.0.4
 
@@ -2233,7 +2233,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~5.0.2
@@ -2269,8 +2269,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       typemoq: 2.1.0
       typescript: 5.0.4
       typescript-json-schema: 0.55.0
@@ -2309,7 +2309,7 @@ importers:
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
@@ -2346,8 +2346,8 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       source-map-support: 0.5.21
       typemoq: 2.1.0
       typescript: 5.0.4
@@ -3021,7 +3021,7 @@ importers:
       mocha: ^10.0.0
       raf: ^3.4.0
       rimraf: ^3.0.2
-      sinon: ^9.0.2
+      sinon: ^15.0.4
       sinon-chai: ^3.2.0
       source-map-loader: ^4.0.0
       typescript: ~5.0.2
@@ -3046,8 +3046,8 @@ importers:
       mocha: 10.2.0
       raf: 3.4.1
       rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
+      sinon: 15.1.0
+      sinon-chai: 3.7.0_chai@4.3.7+sinon@15.1.0
       source-map-loader: 4.0.1_webpack@5.81.0
       typescript: 5.0.4
       webpack: 5.81.0
@@ -6530,11 +6530,22 @@ packages:
     resolution: {integrity: sha512-Ky+XkAkqPZSm3NLBeUng77EBQl3cmeJhITaGHdYH8kjVB+aun3S4XBRti2zt17mtt0mIUDiNxYeoJm6drVvBJQ==}
     dependencies:
       type-detect: 4.0.8
+    dev: true
 
-  /@sinonjs/fake-timers/6.0.1:
-    resolution: {integrity: sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==}
+  /@sinonjs/commons/2.0.0:
+    resolution: {integrity: sha512-uLa0j859mMrg2slwQYdO/AkrOfmH+X6LTVmNTS9CqexuE2IvVORIkSpJLqePAbEnKJ77aMmCwr1NUZ57120Xcg==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
+      type-detect: 4.0.8
+
+  /@sinonjs/commons/3.0.0:
+    resolution: {integrity: sha512-jXBtWAF4vmdNmZgD5FoKsVLv3rPgDnLgPbU84LIJ3otV44vJlDRokVng5v8NFJdCf/da9legHcKaRuZs4L7faA==}
+    dependencies:
+      type-detect: 4.0.8
+
+  /@sinonjs/fake-timers/10.2.0:
+    resolution: {integrity: sha512-OPwQlEdg40HAj5KNF8WW6q2KG4Z+cBCZb3m4ninfTZKaBmbIJodviQsDBoYMPHkOyJJMHnOJo5j2+LKDOhOACg==}
+    dependencies:
+      '@sinonjs/commons': 3.0.0
 
   /@sinonjs/fake-timers/8.1.0:
     resolution: {integrity: sha512-OAPJUAtgeINhh/TAlUID4QTs53Njm7xzddaVlEs/SXwgtiD1tW22zAB/W1wdqfrpmikgaWQ9Fw6Ws+hsiRm5Vg==}
@@ -6542,10 +6553,10 @@ packages:
       '@sinonjs/commons': 1.8.6
     dev: true
 
-  /@sinonjs/samsam/5.3.1:
-    resolution: {integrity: sha512-1Hc0b1TtyfBu8ixF/tpfSHTVWKwCBLY4QJbkgnE7HcwyvT2xArDxb4K7dMgqRm3szI+LJbzmW/s4xxEhv6hwDg==}
+  /@sinonjs/samsam/8.0.0:
+    resolution: {integrity: sha512-Bp8KUVlLp8ibJZrnvq2foVhP0IVX2CIprMJPK0vqGqgrDa0OHVKeZyBykqskkrdxV6yKBPmGasO8LVjAKR3Gew==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
+      '@sinonjs/commons': 2.0.0
       lodash.get: 4.4.2
       type-detect: 4.0.8
 
@@ -9875,9 +9886,14 @@ packages:
   /diff/4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
     engines: {node: '>=0.3.1'}
+    dev: true
 
   /diff/5.0.0:
     resolution: {integrity: sha512-/VTCrvm5Z0JGty/BWHljh+BAiw3IK+2j87NGMu8Nwc/f48WoDAC395uomO9ZD117ZOBaHmkX1oyLvkVM/aIT3w==}
+    engines: {node: '>=0.3.1'}
+
+  /diff/5.1.0:
+    resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}
     engines: {node: '>=0.3.1'}
 
   /diffie-hellman/5.0.3:
@@ -14321,11 +14337,11 @@ packages:
   /nice-try/1.0.5:
     resolution: {integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==}
 
-  /nise/4.1.0:
-    resolution: {integrity: sha512-eQMEmGN/8arp0xsvGoQ+B1qvSkR73B1nWSCh7nOt5neMCtwcQVYQGdzQMhcNscktTsWB54xnlSQFzOAPJD8nXA==}
+  /nise/5.1.4:
+    resolution: {integrity: sha512-8+Ib8rRJ4L0o3kfmyVCL7gzrohyDe0cMFTBa2d364yIrEGMEoetznKJx899YxjybU6bL9SQkYPSBBs1gyYs8Xg==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
-      '@sinonjs/fake-timers': 6.0.1
+      '@sinonjs/commons': 2.0.0
+      '@sinonjs/fake-timers': 10.2.0
       '@sinonjs/text-encoding': 0.7.2
       just-extend: 4.2.1
       path-to-regexp: 1.8.0
@@ -17010,23 +17026,23 @@ packages:
       semver: 7.0.0
     dev: false
 
-  /sinon-chai/3.7.0_chai@4.3.7+sinon@9.2.4:
+  /sinon-chai/3.7.0_chai@4.3.7+sinon@15.1.0:
     resolution: {integrity: sha512-mf5NURdUaSdnatJx3uhoBOrY9dtL19fiOtAdT1Azxg3+lNJFiuN0uzaU3xX1LeAfL17kHQhTAJgpsfhbMJMY2g==}
     peerDependencies:
       chai: ^4.0.0
       sinon: '>=4.0.0'
     dependencies:
       chai: 4.3.7
-      sinon: 9.2.4
+      sinon: 15.1.0
 
-  /sinon/9.2.4:
-    resolution: {integrity: sha512-zljcULZQsJxVra28qIAL6ow1Z9tpattkCTEJR4RBP3TGc00FcttsP5pK284Nas5WjMZU5Yzy3kAIp3B3KRf5Yg==}
+  /sinon/15.1.0:
+    resolution: {integrity: sha512-cS5FgpDdE9/zx7no8bxROHymSlPLZzq0ChbbLk1DrxBfc+eTeBK3y8nIL+nu/0QeYydhhbLIr7ecHJpywjQaoQ==}
     dependencies:
-      '@sinonjs/commons': 1.8.6
-      '@sinonjs/fake-timers': 6.0.1
-      '@sinonjs/samsam': 5.3.1
-      diff: 4.0.2
-      nise: 4.1.0
+      '@sinonjs/commons': 3.0.0
+      '@sinonjs/fake-timers': 10.2.0
+      '@sinonjs/samsam': 8.0.0
+      diff: 5.1.0
+      nise: 5.1.4
       supports-color: 7.2.0
 
   /sisteransi/1.0.5:
