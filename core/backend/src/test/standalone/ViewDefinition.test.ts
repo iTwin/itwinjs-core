@@ -37,7 +37,7 @@ describe("ViewDefinition", () => {
     iModel.close();
   });
 
-  it("create SpatialViewDefinition and throw errors on bad input", () => {
+  it("SpatialViewDefinition", () => {
     const { modelId, spatialCategoryId } = createNewModelAndCategory(iModel);
     const displayStyleId = DisplayStyle3d.insert(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") });
     const modelSelectorId = ModelSelector.insert(iModel, IModel.dictionaryId, "default", [modelId]);
