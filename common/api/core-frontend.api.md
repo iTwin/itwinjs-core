@@ -7498,14 +7498,13 @@ export class MapLayerSources {
 
 // @public
 export enum MapLayerSourceStatus {
-    // @beta
-    IncompatibleFormat = 3,
-    InvalidCoordinateSystem = 7,
+    IncompatibleFormat = 7,
+    InvalidCoordinateSystem = 6,
     InvalidCredentials = 1,
     InvalidFormat = 2,
-    InvalidTileTree = 4,
-    InvalidUrl = 5,
-    RequireAuth = 6,
+    InvalidTileTree = 3,
+    InvalidUrl = 4,
+    RequireAuth = 5,
     Valid = 0
 }
 
