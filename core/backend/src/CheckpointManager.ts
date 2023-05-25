@@ -215,8 +215,10 @@ export class V2CheckpointManager {
           const done = await prefetch.promise;
           Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
         };
+        const minRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/minRequests", 3);
+        const maxRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/maxRequests", 6);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, maxRequests }));
       }
       return { dbName, container };
     } catch (e: any) {
