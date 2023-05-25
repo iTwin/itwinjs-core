@@ -47,11 +47,11 @@ describe.only("ViewStore", function (this: Suite) {
     const vs1locker = vs1.writeLocker;
     const vs1reader = vs1.reader;
 
-    expect(vs1reader.getViewByName("view1")).to.be.undefined;
-    const v1Id = await vs1locker.addView({ className: "spatial", name: "view1", json: "json1", owner: "owner1" });
+    expect(vs1reader.getViewByName("view1", ViewStore.defaultViewGroupId)).to.be.undefined;
+    const v1Id = vs1locker.addViewRow({ className: "spatial", name: "view1", json: "json1", owner: "owner1" });
     expect(v1Id).equals(1);
 
-    const v1 = vs1reader.getViewByName("view1")!;
+    const v1 = vs1reader.getViewByName("view1", ViewStore.defaultViewGroupId)!;
     expect(v1.json).equals("json1");
     expect(v1.owner).equals("owner1");
     expect(v1.className).equals("spatial");
@@ -70,7 +70,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1reader.findViewsByClass(["blah"]).length).equals(0);
     expect(vs1reader.findViewsByOwner("owner1").length).equals(1);
 
-    expect(vs1reader.getViewByName("view2")?.groupId).equals(g1);
+    expect(vs1reader.getViewByName("view2", defaultViewGroupId)?.groupId).equals(g1);
     await vs1locker.deleteGroup(g1);
     expect(vs1reader.getViewByName("view2")?.groupId).to.be.undefined;
   });

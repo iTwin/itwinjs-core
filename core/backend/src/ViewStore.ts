@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { GuidString, Id64, Id64Array, Id64String, Optional } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
@@ -32,10 +32,11 @@ export namespace ViewStore {
 
   /** A row in a table. 0 means "not present" */
   export type RowId = number;
+  /** a string representation of a row in a table of a ViewStore. Will be a base-36 integer with a leading "@" (e.g."@t4e3") */
   export type RowString = string;
 
   export interface TableRow {
-    name: string;
+    name?: string;
     json: string;
     owner?: string;
   }
@@ -45,7 +46,7 @@ export namespace ViewStore {
   export type SearchRow = TableRow;
   export type TimelineRow = TableRow;
 
-  export interface ViewRow extends TableRow {
+  export interface ViewRow extends MarkRequired<TableRow, "name"> {
     className: string;
     groupId: RowId;
     shared?: boolean;
@@ -60,14 +61,16 @@ export namespace ViewStore {
     tagId: RowId;
   }
 
-  const rowIdToString = (rowId: RowId): RowString => {
+  export const rowIdToString = (rowId: RowId): RowString => {
     return `@${rowId.toString(36)}`;
   };
-  const rowIdFromString = (id: RowString): RowId => {
+  export const rowIdFromString = (id: RowString): RowId => {
     if (!id.startsWith("@"))
       throw new Error(`invalid row id`);
     return parseInt(id.slice(1), 36);
   };
+
+  export const defaultViewGroupId = 1 as const;
 
   export class ViewDb extends VersionedSqliteDb {
     public override myVersion = "4.0.0";
@@ -82,7 +85,7 @@ export namespace ViewStore {
       });
 
       const makeTable = (table: string, extra?: string) => {
-        this.createTable({ tableName: table, columns: `${baseCols},name TEXT NOT NULL UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
+        this.createTable({ tableName: table, columns: `${baseCols},name TEXT UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
       };
 
       makeTable(tableName.groups, `,parent INTEGER NOT NULL REFERENCES ${tableName.groups}(Id) ON DELETE CASCADE`);
@@ -111,13 +114,13 @@ export namespace ViewStore {
         return !stmt.nextRow() ? undefined : stmt.getValueGuid(0);
       });
     }
-    public iterateGuids(rowIds: RowId[], fn: (guid: GuidString) => void) {
+    public iterateGuids(rowIds: RowId[], fn: (guid: GuidString, row: RowId) => void) {
       this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=?`, (stmt) => {
         for (const rowId of rowIds) {
           stmt.reset();
           stmt.bindInteger(1, rowId);
           if (stmt.nextRow())
-            fn(stmt.getValueGuid(0));
+            fn(stmt.getValueGuid(0), rowId);
         }
       });
     }
@@ -145,7 +148,7 @@ export namespace ViewStore {
 
     public addViewGroup(args: Optional<GroupRow, "parentId">): RowId {
       return this.withSqliteStatement(`INSERT INTO ${tableName.groups}(name,owner,parent,json) VALUES (?,?,?,?)`, (stmt) => {
-        stmt.bindString(1, args.name);
+        stmt.maybeBindString(1, args.name);
         stmt.maybeBindString(2, args.owner);
         stmt.bindInteger(3, args.parentId ?? 1);
         stmt.maybeBindString(4, args.json);
@@ -154,9 +157,9 @@ export namespace ViewStore {
       });
     }
 
-    private addSelector(table: string, args: SelectorRow): RowId {
+    private addTableRow(table: string, args: TableRow): RowId {
       return this.withSqliteStatement(`INSERT INTO ${table}(name,json,owner) VALUES (?,?,?)`, (stmt) => {
-        stmt.bindString(1, args.name);
+        stmt.maybeBindString(1, args.name);
         stmt.bindString(2, args.json);
         stmt.maybeBindString(3, args.owner);
         this.stepForWrite(stmt);
@@ -164,24 +167,15 @@ export namespace ViewStore {
       });
     }
     public addModelSelectorRow(args: SelectorRow): RowId {
-      return this.addSelector(tableName.modelSelectors, args);
+      return this.addTableRow(tableName.modelSelectors, args);
     }
     public addCategorySelectorRow(args: SelectorRow): RowId { // for tests
-      return this.addSelector(tableName.categorySelectors, args);
-    }
-    private addTableRow(table: string, args: TableRow): RowId {
-      return this.withSqliteStatement(`INSERT INTO ${table}(name,json,owner) VALUES (?,?,?)`, (stmt) => {
-        stmt.bindString(1, args.name);
-        stmt.bindString(2, args.json);
-        stmt.maybeBindString(3, args.owner);
-        this.stepForWrite(stmt);
-        return this.nativeDb.getLastInsertRowId();
-      });
+      return this.addTableRow(tableName.categorySelectors, args);
     }
     public addDisplayStyleRow(args: DisplayStyleRow): RowId {
       return this.addTableRow(tableName.displayStyles, args);
     }
-    public async addTimeline(args: TimelineRow): Promise<RowId> {
+    public addTimelineRow(args: TimelineRow): RowId {
       return this.addTableRow(tableName.timelines, args);
     }
     public async addTag(args: TagRow): Promise<RowId> {
@@ -247,7 +241,7 @@ export namespace ViewStore {
       return this.withSqliteStatement(`SELECT name,owner,json,parent FROM ${tableName.groups} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
-          name: stmt.getValueString(0),
+          name: stmt.getValueStringMaybe(0),
           owner: stmt.getValueStringMaybe(1),
           json: stmt.getValueString(2),
           parentId: stmt.getValueInteger(3),
@@ -258,7 +252,7 @@ export namespace ViewStore {
       return this.withSqliteStatement(`SELECT name,json,owner FROM ${table} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
-          name: stmt.getValueString(0),
+          name: stmt.getValueStringMaybe(0),
           json: stmt.getValueString(1),
           owner: stmt.getValueStringMaybe(2),
         };
@@ -329,32 +323,32 @@ export namespace ViewStore {
     public async updateSearchJson(searchId: RowId, json: string): Promise<void> {
       return this.updateJson(tableName.searches, searchId, json);
     }
-    private async updateName(table: string, id: RowId, name: string): Promise<void> {
+    private async updateName(table: string, id: RowId, name?: string): Promise<void> {
       this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=?`, (stmt) => {
-        stmt.bindString(1, name);
+        stmt.maybeBindString(1, name);
         stmt.bindInteger(2, id);
         this.stepForWrite(stmt);
       });
     }
-    public async updateViewName(viewId: RowId, name: string): Promise<void> {
+    public async updateViewName(viewId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.views, viewId, name);
     }
-    public async updateViewGroupName(groupId: RowId, name: string): Promise<void> {
+    public async updateViewGroupName(groupId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.groups, groupId, name);
     }
-    public async updateModelSelectorName(selectorId: RowId, name: string): Promise<void> {
+    public async updateModelSelectorName(selectorId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.modelSelectors, selectorId, name);
     }
-    public async updateCategorySelectorName(selectorId: RowId, name: string): Promise<void> {
+    public async updateCategorySelectorName(selectorId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.categorySelectors, selectorId, name);
     }
-    public async updateDisplayStyleName(styleId: RowId, name: string): Promise<void> {
+    public async updateDisplayStyleName(styleId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.displayStyles, styleId, name);
     }
-    public async updateTimelineName(timelineId: RowId, name: string): Promise<void> {
+    public async updateTimelineName(timelineId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.timelines, timelineId, name);
     }
-    public async updateSearchName(searchId: RowId, name: string): Promise<void> {
+    public async updateSearchName(searchId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.searches, searchId, name);
     }
     public async addTagToView(args: { viewId: RowId, tagId: RowId }): Promise<void> {
@@ -537,7 +531,7 @@ export namespace ViewStore {
 
     public async addDisplayStyle(args: { iModel: IModelDb, name: string, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
       const settings = args.displayStyle.jsonProperties?.styles;
-
+      return "";
     }
   }
 

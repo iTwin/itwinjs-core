@@ -106,8 +106,8 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.deleteCategorySelector(cat1Id);
     expect(vs1.findCategorySelectorByName("cat1")).equals(0);
 
-    await vs1.addDisplayStyle({ name: "style1", json: "style1-json" });
-    await vs1.addDisplayStyle({ name: "style2", json: "style2-json" });
+    vs1.addDisplayStyleRow({ name: "style1", json: "style1-json" });
+    vs1.addDisplayStyleRow({ name: "style2", json: "style2-json" });
     const style1Id = vs1.findDisplayStyleByName("style1");
     expect(style1Id).equals(1);
     const style1 = vs1.getDisplayStyle(style1Id)!;
@@ -126,16 +126,21 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.findDisplayStyleByName("style2")).equals(2);
 
     vs1.addModelSelectorRow({ name: "model1", json: "model1-json" });
-    vs1.addModelSelectorRow({ name: "model2", json: "model2-json" });
+    const ms2 = vs1.addModelSelectorRow({ json: "model2-json" });
     const model1Id = vs1.findModelSelectorByName("model1");
     expect(model1Id).equals(1);
     const model1 = vs1.getModelSelector(model1Id)!;
     expect(model1.name).equals("model1");
     expect(model1.json).equals("model1-json");
+    const model2 = vs1.getModelSelector(ms2)!;
+    expect(model2.name).undefined;
+    expect(model2.json).equals("model2-json");
 
     await vs1.updateModelSelectorName(model1Id, "model1-updated");
     const model1UpdatedNameId = vs1.findModelSelectorByName("model1-updated");
     expect(model1UpdatedNameId).equals(model1Id);
+    await vs1.updateModelSelectorName(model1Id, undefined);
+    expect(vs1.getModelSelector(model1Id)!.name).undefined;
 
     await vs1.updateModelSelectorJson(model1Id, "model1-json-updated");
     const model1Updated = vs1.getModelSelector(model1Id)!;
@@ -144,8 +149,8 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.deleteModelSelector(model1Id);
     expect(vs1.findModelSelectorByName("model1")).equals(0);
 
-    await vs1.addTimeline({ name: "timeline1", json: "timeline1-json" });
-    await vs1.addTimeline({ name: "timeline2", json: "timeline2-json" });
+    vs1.addTimelineRow({ name: "timeline1", json: "timeline1-json" });
+    vs1.addTimelineRow({ name: "timeline2", json: "timeline2-json" });
     const timeline1Id = vs1.findTimelineByName("timeline1");
     const timeline2Id = vs1.findTimelineByName("timeline2");
     expect(timeline1Id).equals(1);
@@ -212,25 +217,32 @@ describe.only("ViewStore", function (this: Suite) {
 
     const guids: GuidString[] = [];
     const rowIds: ViewStore.RowId[] = [];
-    for (let i = 0; i < 100; i++) {
+    const nGuids = 1000;
+    for (let i = 0; i < nGuids; i++) {
       const guid = Guid.createValue();
       const rowid = vs1.addGuid(guid);
       guids.push(guid);
       rowIds.push(rowid);
     }
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < nGuids; i++) {
       expect(vs1.getGuid(rowIds[i])).equals(guids[i]);
       expect(vs1.addGuid(guids[i])).equals(rowIds[i]);
     }
 
     let count = 0;
-    vs1.iterateGuids(rowIds, (guid: GuidString) => {
+    vs1.iterateGuids(rowIds, (guid: GuidString, row: ViewStore.RowId) => {
       count++;
       expect(guid).not.undefined;
       expect(guids.indexOf(guid)).not.equals(-1);
+      const rowString1 = ViewStore.rowIdToString(row);
+      expect(rowString1.startsWith("@")).true;
+      expect(ViewStore.rowIdFromString(rowString1)).equals(row); // round trip
     });
+    expect(count).equals(nGuids);
 
-    expect(count).equals(100);
+    const largeNumber = 0x7ffffffffffff;
+    expect(ViewStore.rowIdFromString(ViewStore.rowIdToString(largeNumber))).equals(largeNumber);
+
     vs1.vacuum();
   });
 });
