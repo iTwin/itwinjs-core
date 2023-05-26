@@ -29,7 +29,7 @@ export class GeometryCoreTestIO {
   /** For debugging: set to true to enable output to console via wrapped methods. */
   public static enableConsole: boolean = false;
   /** For debugging: set to true to enable saveGeometry output. */
-  public static enableSave: boolean = true;
+  public static enableSave: boolean = false;
   /** For debugging: set to true to also run longer tests */
   public static enableLongTests: boolean = false;
 
