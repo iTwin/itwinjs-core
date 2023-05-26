@@ -9,8 +9,8 @@
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, FillFlags, LinePixels } from "@itwin/core-common";
-import { MeshParams } from "../primitives/VertexTable";
-import { SurfaceType } from "../primitives/SurfaceParams";
+import { MeshParams } from "../../common/render/primitives/MeshParams";
+import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";
 import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";

@@ -14,7 +14,7 @@ import {
   OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
-import { Mesh } from "./primitives/mesh/MeshPrimitives";
+import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
 
 function precondition(condition: boolean, message: string | (() => string)): asserts condition {
   if (condition)
@@ -53,7 +53,7 @@ export namespace RealityMeshParams {
   /** @internal */
   export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
     // The specialized reality mesh shaders expect a mesh with uvs and no edges.
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
+    if (mesh.primitive.type !== MeshPrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
       return undefined;
 
     return {

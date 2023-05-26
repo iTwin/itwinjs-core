@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 
 export class FakeDisplayParams extends DisplayParams {

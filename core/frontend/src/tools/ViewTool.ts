@@ -31,7 +31,7 @@ import {
 } from "../ViewGlobalLocation";
 import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
 import { ViewPose } from "../ViewPose";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { ViewState3d } from "../ViewState";
 import { ViewStatus } from "../ViewStatus";
 import { EditManipulator } from "./EditManipulator";

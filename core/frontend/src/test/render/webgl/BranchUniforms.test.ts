@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { dispose } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
-import { ViewRect } from "../../../ViewRect";
+import { ViewRect } from "../../../common/ViewRect";
 import { createEmptyRenderPlan } from "../../../render/RenderPlan";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Branch } from "../../../render/webgl/Graphic";
