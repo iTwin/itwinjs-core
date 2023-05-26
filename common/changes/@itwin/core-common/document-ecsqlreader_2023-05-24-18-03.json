@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Changed QueryPropertyMetaData, DbRuntimeStats, PropertyMetaDataMap, QueryValueType, QueryRowProxy, QueryStats, and ECSqlReader from beta to public.",
+      "comment": "Add documentation for ECSqlReader",
       "type": "none"
     }
   ],
