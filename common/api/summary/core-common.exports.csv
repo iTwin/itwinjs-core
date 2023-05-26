@@ -166,7 +166,7 @@ internal;DbRequestKind
 internal;DbResponse
 internal;DbResponseKind
 internal;DbResponseStatus
-public;DbRuntimeStats
+beta;DbRuntimeStats
 internal;DbValueFormat
 internal;decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription
 internal;DecodeTileContentDescriptionArgs
@@ -203,7 +203,7 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-public;ECSqlReader 
+beta;ECSqlReader 
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -569,7 +569,7 @@ public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransver
 public;ProjectionProps
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
-public;PropertyMetaDataMap 
+beta;PropertyMetaDataMap 
 beta;PropertyMetaDataProps
 internal;PullChangesOptions
 public;QParams2d
@@ -592,12 +592,12 @@ public;QueryBinder
 public;QueryLimit
 public;QueryOptions 
 public;QueryOptionsBuilder
-public;QueryPropertyMetaData
+beta;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
-public;QueryRowProxy
-public;QueryStats
-public;QueryValueType = any
+beta;QueryRowProxy
+beta;QueryStats
+beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
