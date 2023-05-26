@@ -48,7 +48,9 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof LineSegment3d;
   }
+  /** Start point of the segment */
   private _point0: Point3d;
+  /** End point of the segment */
   private _point1: Point3d;
   /**
    * Return REFERENCE to the start point of this segment.

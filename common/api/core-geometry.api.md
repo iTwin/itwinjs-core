@@ -3211,11 +3211,11 @@ export interface IStrokeHandler {
 
 // @public
 export class JointOptions {
-    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, preserveEllipticalArcs?: boolean);
+    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, allowSharpestCorners?: boolean, preserveEllipticalArcs?: boolean);
+    allowSharpestCorners: boolean;
     clone(): JointOptions;
     static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions;
     leftOffsetDistance: number;
-    // (undocumented)
     maxChamferTurnDegrees: number;
     minArcDegrees: number;
     needArc(theta: Angle): boolean;
@@ -4876,7 +4876,7 @@ export class PolygonOps {
 // @internal
 export class PolygonWireOffsetContext {
     constructor();
-    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
+    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, leftOffsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
 }
 
 // @public
@@ -5368,7 +5368,7 @@ export class RegionOps {
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance?: number): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
-    static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
+    static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
     static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean, consolidateAdjacentPrimitives?: boolean): CurveCollection | undefined;
     static curveArrayRange(data: any, worldToLocal?: Transform): Range3d;
     static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[];
