@@ -6,11 +6,14 @@
  * @module ViewDefinitions
  */
 
-import { GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
-import { VersionedSqliteDb } from "./SQLiteDb";
+import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
+import {
+  CategorySelectorProps, Code, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSubCategoryProps, ElementProps, ModelSelectorProps, PlanProjectionSettingsProps, SpatialViewDefinitionProps,
+  ViewDefinitionProps,
+} from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
-import { DisplayStyleProps, SpatialViewDefinitionProps, ViewDefinitionProps } from "@itwin/core-common";
+import { VersionedSqliteDb } from "./SQLiteDb";
 
 /** @beta */
 export namespace ViewStore {
@@ -23,6 +26,7 @@ export namespace ViewStore {
     modelSelectors: "modelSelectors",
     taggedViews: "taggedViews",
     tags: "tags",
+    thumbnails: "thumbnails",
     timelines: "timelines",
     searches: "searches",
     views: "views",
@@ -50,11 +54,16 @@ export namespace ViewStore {
     className: string;
     groupId: RowId;
     shared?: boolean;
-    thumbnail?: ThumbnailData;
   }
 
   export interface GroupRow extends Optional<TableRow, "json"> {
     parentId: RowId;
+  }
+  export interface ThumbnailRow {
+    viewId: RowId;
+    data: ThumbnailData;
+    json?: string;
+    owner?: string;
   }
   export interface TaggedViewRow {
     viewId: RowId;
@@ -69,6 +78,22 @@ export namespace ViewStore {
       throw new Error(`invalid row id`);
     return parseInt(id.slice(1), 36);
   };
+  const blankElementProps = (from: any, classFullName: string, id: RowId, name?: string): ElementProps => {
+    from.id = rowIdToString(id);
+    from.classFullName = classFullName;
+    from.model = IModelDb.repositoryModelId;
+    from.code = Code.createEmpty();
+    from.code.name = name;
+    return from;
+  };
+  const stringifyProps = (props: any): string => {
+    delete props.id;
+    delete props.federationGuid;
+    delete props.parent;
+    delete props.code;
+    delete props.model;
+    return JSON.stringify(props);
+  };
 
   export const defaultViewGroupId = 1 as const;
 
@@ -79,7 +104,7 @@ export namespace ViewStore {
       const baseCols = "Id INTEGER PRIMARY KEY,json TEXT,owner TEXT";
       this.createTable({
         tableName: tableName.views,
-        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,shared BOOLEAN,groupId INTEGER NOT NULL REFERENCES ${tableName.groups}(Id) ON DELETE CASCADE,thumbnail BLOB`,
+        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,shared BOOLEAN,groupId INTEGER NOT NULL REFERENCES ${tableName.groups}(Id) ON DELETE CASCADE`,
         constraints: "UNIQUE(groupId,name)",
         addTimestamp: true,
       });
@@ -95,6 +120,7 @@ export namespace ViewStore {
       makeTable(tableName.timelines);
       makeTable(tableName.tags);
       makeTable(tableName.searches);
+      this.createTable({ tableName: tableName.thumbnails, columns: `Id INTEGER PRIMARY KEY REFERENCES ${tableName.views}(Id) ON DELETE CASCADE,json,owner,data BLOB NOT NULL` });
       this.createTable({
         tableName: tableName.taggedViews, columns: `viewId NOT NULL REFERENCES ${tableName.views}(Id) ON DELETE CASCADE,tagId NOT NULL REFERENCES ${tableName.tags}(Id) ON DELETE CASCADE`,
       });
@@ -133,14 +159,13 @@ export namespace ViewStore {
       });
     }
     public addViewRow(args: ViewRow): RowId {
-      return this.withSqliteStatement(`INSERT INTO ${tableName.views}(className,name,json,owner,shared,groupId,thumbnail) VALUES (?,?,?,?,?,?,?)`, (stmt) => {
+      return this.withSqliteStatement(`INSERT INTO ${tableName.views}(className,name,json,owner,shared,groupId) VALUES (?,?,?,?,?,?)`, (stmt) => {
         stmt.bindString(1, args.className);
         stmt.bindString(2, args.name);
         stmt.bindString(3, args.json);
         stmt.maybeBindString(4, args.owner);
         stmt.maybeBindBoolean(5, args.shared);
         stmt.bindInteger(6, args.groupId ?? 1);
-        stmt.maybeBindBlob(7, args.thumbnail);
         this.stepForWrite(stmt);
         return this.nativeDb.getLastInsertRowId();
       });
@@ -184,6 +209,16 @@ export namespace ViewStore {
     public async addSearch(args: SearchRow): Promise<RowId> {
       return this.addTableRow(tableName.searches, args);
     }
+    public async addOrReplaceThumbnail(args: ThumbnailRow): Promise<RowId> {
+      return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails}(Id,json,owner,data) VALUES (?,?,?,?)`, (stmt) => {
+        stmt.bindInteger(1, args.viewId);
+        stmt.maybeBindString(2, args.json);
+        stmt.maybeBindString(3, args.owner);
+        stmt.bindBlob(4, args.data);
+        this.stepForWrite(stmt);
+        return this.nativeDb.getLastInsertRowId();
+      });
+    }
 
     private deleteFromTable(table: string, id: RowId): void {
       this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=?`, (stmt) => {
@@ -217,6 +252,9 @@ export namespace ViewStore {
     public async deleteSearch(id: RowId): Promise<void> {
       return this.deleteFromTable(tableName.searches, id);
     }
+    public async deleteThumbnail(id: RowId): Promise<void> {
+      return this.deleteFromTable(tableName.thumbnails, id);
+    }
 
     public getView(viewId: RowId): undefined | Omit<ViewRow, "thumbnail"> {
       return this.withSqliteStatement(`SELECT className,name,json,owner,shared,groupId FROM ${tableName.views} WHERE Id=?`, (stmt) => {
@@ -231,10 +269,15 @@ export namespace ViewStore {
         };
       });
     }
-    public getThumbnail(viewId: RowId): undefined | ThumbnailData {
-      return this.withSqliteStatement(`SELECT thumbnail FROM ${tableName.views} WHERE Id=?`, (stmt) => {
+    public getThumbnail(viewId: RowId): undefined | ThumbnailRow {
+      return this.withSqliteStatement(`SELECT json,owner,data FROM ${tableName.thumbnails} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
-        return !stmt.nextRow() ? undefined : stmt.getValueBlobMaybe(0);
+        return !stmt.nextRow() ? undefined : {
+          viewId,
+          json: stmt.getValueStringMaybe(0),
+          owner: stmt.getValueStringMaybe(1),
+          data: stmt.getValueBlob(2),
+        };
       });
     }
     public getViewGroup(id: RowId): GroupRow | undefined {
@@ -281,13 +324,6 @@ export namespace ViewStore {
       return this.getTableRow(tableName.searches, id);
     }
 
-    public async updateViewThumbnail(viewId: RowId, thumbnail: ThumbnailData): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${tableName.views} SET thumbnail=? WHERE Id=?`, (stmt) => {
-        stmt.bindBlob(1, thumbnail);
-        stmt.bindInteger(2, viewId);
-        this.stepForWrite(stmt);
-      });
-    }
     private async updateJson(table: string, id: RowId, json: string): Promise<void> {
       this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=?`, (stmt) => {
         stmt.bindString(1, json);
@@ -458,22 +494,23 @@ export namespace ViewStore {
       });
     }
 
-    private swizzleId(iModel: IModelDb, id: Id64String): RowId {
+    private swizzleId(iModel: IModelDb, id: Id64String): RowId | undefined {
       const fedGuid = iModel.withPreparedSqliteStatement(`SELECT FederationGuid FROM bis_Element WHERE Id=?`, (stmt) => {
         stmt.bindId(1, id);
-        if (!stmt.nextRow())
-          throw new Error("Element not found");
-        const guid = stmt.getValueGuid(0);
-        if (undefined === guid)
-          throw new Error("Element has no federationGuid");
-        return guid;
+        return stmt.nextRow() ? stmt.getValueGuid(0) : undefined;
       });
-      return this.addGuid(fedGuid);
+      return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
     private swizzleIds(iModel: IModelDb, ids: Id64String[]): RowId[] {
-      return ids.map((id) => this.swizzleId(iModel, id));
+      const result: RowId[] = [];
+      for (const id of ids) {
+        const swizzled = this.swizzleId(iModel, id);
+        if (undefined !== swizzled)
+          result.push(swizzled);
+      }
+      return result;
     }
-    private unswizzleId(iModel: IModelDb, id: RowId): Id64String | undefined {
+    private unSwizzleId(iModel: IModelDb, id: RowId): Id64String | undefined {
       const guid = this.getGuid(id);
       if (undefined === guid)
         return undefined;
@@ -481,20 +518,36 @@ export namespace ViewStore {
         return !stmt.nextRow() ? undefined : stmt.getValueId(0);
       });
     }
+    private unSwizzleIdString(iModel: IModelDb, id?: string) {
+      return (typeof id !== "string" || !id.startsWith("@")) ? id : this.unSwizzleId(iModel, rowIdFromString(id));
+    }
+    private unSwizzleIds(iModel: IModelDb, ids: RowId[]): Id64String[] {
+      const result: Id64String[] = [];
+      for (const id of ids) {
+        const unSwizzled = this.unSwizzleId(iModel, id);
+        if (undefined !== unSwizzled)
+          result.push(unSwizzled);
+      }
+      return result;
+    }
     private swizzleMember(iModel: IModelDb, base: any, memberName: string) {
       const id = base?.[memberName];
       if (typeof id === "string" && Id64.isValidId64(id)) {
-        try {
-          base[memberName] = rowIdToString(this.swizzleId(iModel, id));
-        } catch (err) {
-          // leave it alone if we can't swizzle it
-        }
+        const swizzled = this.swizzleId(iModel, id);
+        if (undefined !== swizzled)
+          base[memberName] = rowIdToString(swizzled);
       }
     }
-    private verifyRowId(table: string, rowIdString?: RowString): void {
-      if (undefined === rowIdString)
-        return; // if missing, it's ok
+    private unSwizzleMember(iModel: IModelDb, base: any, memberName: string) {
+      const id = base?.[memberName];
+      if (typeof id === "string" && id.startsWith("@")) {
+        const unSwizzled = this.unSwizzleId(iModel, rowIdFromString(id));
+        if (undefined !== unSwizzled)
+          base[memberName] = unSwizzled;
+      }
+    }
 
+    private verifyRowId(table: string, rowIdString: RowString): void {
       const rowId = rowIdFromString(rowIdString);
       this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, rowId);
@@ -510,6 +563,17 @@ export namespace ViewStore {
       const json = JSON.stringify({ categories: this.swizzleIds(args.iModel, args.categories) });
       return rowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
+    public loadCategorySelector(args: { iModel: IModelDb, rowId: RowId }): CategorySelectorProps {
+      const row = this.getCategorySelector(args.rowId);
+      if (undefined === row)
+        throw new Error("CategorySelector not found");
+
+      const props = blankElementProps({}, "BisCore:CategorySelector", args.rowId, row.name) as CategorySelectorProps;
+      const json = JSON.parse(row.json);
+      props.categories = this.unSwizzleIds(args.iModel, json.categories);
+      return props;
+    }
+
     public async addModelSelector(args: { iModel: IModelDb, name: string, models: Id64Array, owner?: string }): Promise<RowString> {
       if (args.models.length === 0)
         throw new Error("Must specify at least one model");
@@ -517,21 +581,115 @@ export namespace ViewStore {
       const json = JSON.stringify({ models: this.swizzleIds(args.iModel, args.models) });
       return rowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public async addViewDefinition(args: { iModel: IModelDb, name: string, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
-      const viewDef = args.viewDef;
-      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelectorId);
-      this.verifyRowId(tableName.displayStyles, viewDef.displayStyleId);
-      this.verifyRowId(tableName.modelSelectors, (viewDef as SpatialViewDefinitionProps).modelSelectorId);
-      this.swizzleMember(args.iModel, viewDef, "baseModelId");
-      this.swizzleMember(args.iModel, viewDef.jsonProperties?.viewDetails, "acs");
+    public loadModelSelector(args: { iModel: IModelDb, rowId: RowId }): ModelSelectorProps {
+      const row = this.getModelSelector(args.rowId);
+      if (undefined === row)
+        throw new Error("ModelSelector not found");
 
-      const json = JSON.stringify(viewDef);
-      return rowIdToString(this.addViewRow({ name: args.name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId, json }));
+      const props = blankElementProps({}, "BisCore:ModelSelector", args.rowId, row?.name) as ModelSelectorProps;
+      const json = JSON.parse(row.json);
+      props.models = this.unSwizzleIds(args.iModel, json.models);
+      return props;
     }
 
-    public async addDisplayStyle(args: { iModel: IModelDb, name: string, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
-      const settings = args.displayStyle.jsonProperties?.styles;
-      return "";
+    public async addDisplayStyle(args: { iModel: IModelDb, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
+      const displayStyle = JSON.parse(JSON.stringify(args.displayStyle)) as DisplayStyleProps; // make a copy
+      const settings = displayStyle.jsonProperties?.styles;
+      if (!settings)
+        throw new Error("DisplayStyle has no settings");
+
+      const name = displayStyle.code.value;
+      if (settings.subCategoryOvr) {
+        for (const ovr of settings.subCategoryOvr)
+          this.swizzleMember(args.iModel, ovr, "subCategory");
+      }
+
+      if (settings.excludedElements) {
+        const excluded = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
+        (settings as any).excludedGuids = this.swizzleIds(args.iModel, excluded);
+        delete settings.excludedElements; // remove the original. We'll put it back when we load the display style.
+      }
+
+      const settings3d = settings as DisplayStyle3dSettingsProps;
+      if (settings3d.planProjections) {
+        for (const entry of Object.entries(settings3d.planProjections)) {
+          const swizzledModelId = this.swizzleId(args.iModel, entry[0]);
+          if (swizzledModelId)
+            entry[0] = rowIdToString(swizzledModelId);
+        }
+      }
+
+      if (settings.renderTimeline)
+        this.swizzleMember(args.iModel, settings, "renderTimeline");
+
+      return rowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: stringifyProps(displayStyle) }));
+    }
+    public loadDisplayStyle(args: { iModel: IModelDb, rowId: RowId }): DisplayStyleProps {
+      const row = this.getDisplayStyle(args.rowId);
+      if (undefined === row)
+        throw new Error("DisplayStyle not found");
+
+      const displayStyle = JSON.parse(row.json) as DisplayStyleProps;
+      blankElementProps(displayStyle, displayStyle.classFullName, args.rowId, row.name);
+
+      const settings = displayStyle.jsonProperties!.styles! as DisplayStyle3dSettingsProps & { excludedGuids?: number[] }; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      if (settings.subCategoryOvr) {
+        const unSwizzled: DisplayStyleSubCategoryProps[] = [];
+        for (const ovr of settings.subCategoryOvr) {
+          const id = this.unSwizzleIdString(args.iModel, ovr.subCategory);
+          if (undefined !== id) {
+            ovr.subCategory = id;
+            unSwizzled.push(ovr);
+          }
+        }
+        settings.subCategoryOvr = unSwizzled;
+      }
+
+      if (settings.excludedGuids) {
+        const ids = this.unSwizzleIds(args.iModel, settings.excludedGuids);
+        settings.excludedElements = CompressedId64Set.compressArray(ids);
+        delete settings.excludedGuids; // remove the swizzled version
+      }
+
+      const settings3d = settings as DisplayStyle3dSettingsProps;
+      if (settings3d.planProjections) {
+        const out = {} as { [modelId: string]: PlanProjectionSettingsProps };
+        for (const entry of Object.entries(settings3d.planProjections)) {
+          const unSwizzled = this.unSwizzleIdString(args.iModel, entry[0]);
+          if (undefined !== unSwizzled)
+            out[unSwizzled] = entry[1];
+        }
+        settings3d.planProjections = out;
+      }
+
+      settings.renderTimeline = this.unSwizzleIdString(args.iModel, settings.renderTimeline);
+      return displayStyle;
+    }
+
+    public async addViewDefinition(args: { iModel: IModelDb, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
+      const viewDef = JSON.parse(JSON.stringify(args.viewDef)) as ViewDefinitionProps; // make a copy
+      const name = viewDef.code.value;
+      if (name === undefined)
+        throw new Error("ViewDefinition must have a name");
+
+      this.verifyRowId(tableName.categorySelectors, viewDef.categorySelectorId);
+      this.verifyRowId(tableName.displayStyles, viewDef.displayStyleId);
+      if ((viewDef as SpatialViewDefinitionProps).modelSelectorId)
+        this.verifyRowId(tableName.modelSelectors, (viewDef as SpatialViewDefinitionProps).modelSelectorId);
+
+      this.swizzleMember(args.iModel, viewDef, "baseModelId");
+      this.swizzleMember(args.iModel, viewDef.jsonProperties?.viewDetails, "acs");
+      return rowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId, json: stringifyProps(viewDef) }));
+    }
+    public loadViewDefinition(args: { iModel: IModelDb, rowId: RowId }): ViewDefinitionProps {
+      const row = this.getView(args.rowId);
+      if (undefined === row)
+        throw new Error("ViewDefinition not found");
+
+      const props = blankElementProps(JSON.parse(row.json), row.className, args.rowId, row.name) as ViewDefinitionProps;
+      this.unSwizzleMember(args.iModel, props, "baseModelId");
+      this.unSwizzleMember(args.iModel, props.jsonProperties?.viewDetails, "acs");
+      return props;
     }
   }
 
@@ -544,8 +702,8 @@ export namespace ViewStore {
     }
 
     /** Initialize a cloud container for use as a ViewDb. */
-    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps }) {
-      return super._initializeDb({ ...args, dbType: ViewDb, dbName: viewDbName });
+    public static async initializeDb(props: CloudSqlite.ContainerAccessProps) {
+      return super._initializeDb({ props, dbType: ViewDb, dbName: viewDbName });
     }
   }
 

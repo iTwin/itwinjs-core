@@ -84,9 +84,19 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.findViewsByOwner("owner1").length).equals(102);
 
     const thumbnail1 = new Uint8Array([2, 33, 23, 0, 202]);
-    await vs1.updateViewThumbnail(v2Id, thumbnail1);
+    await vs1.addOrReplaceThumbnail({ data: thumbnail1, viewId: v1Id, json: "thumbnail1-json" });
+    await vs1.addOrReplaceThumbnail({ data: thumbnail1, viewId: v2Id, json: "thumbnail2-json" });
     const thumbnail2 = vs1.getThumbnail(v2Id);
-    expect(thumbnail2).deep.equals(thumbnail1);
+    expect(thumbnail2?.data).deep.equals(thumbnail1);
+    expect(thumbnail2?.json).equals("thumbnail2-json");
+    const thumb3 = new Uint8Array([2, 33, 23, 0, 203]);
+    await vs1.addOrReplaceThumbnail({ data: thumb3, viewId: v2Id });
+    const thumbnail3 = vs1.getThumbnail(v2Id);
+    expect(thumbnail3?.data).deep.equals(thumb3);
+    await vs1.addOrReplaceThumbnail({ data: thumbnail1, viewId: 33 });
+    expect(vs1.getThumbnail(33)).to.not.be.undefined;
+    await vs1.deleteThumbnail(33);
+    expect(vs1.getThumbnail(33)).to.be.undefined;
 
     expect(vs1.getViewByName("view2", g1)?.groupId).equals(g1);
     await vs1.deleteViewGroup(g1);
