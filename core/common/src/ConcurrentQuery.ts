@@ -43,7 +43,7 @@ export interface QueryLimit {
   offset?: number;
 }
 
-/** @public */
+/** @beta */
 export interface QueryPropertyMetaData {
   className: string;
   generated: boolean;
@@ -54,7 +54,7 @@ export interface QueryPropertyMetaData {
   typeName: string;
 }
 
-/** @public */
+/** @beta */
 export interface DbRuntimeStats {
   cpuTime: number;
   totalTime: number;
