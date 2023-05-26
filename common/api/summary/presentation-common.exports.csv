@@ -299,7 +299,7 @@ deprecated;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeleti
 public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
 deprecated;PartialNodeJSON = AllOrNone
-internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
+internal;PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface"
 public;PresentationError 
 internal;PresentationIpcEvents
 internal;PresentationIpcInterface

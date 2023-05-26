@@ -30,7 +30,7 @@ export interface PullChangesOptions {
 /** Get IPC channel name used for reporting progress of pulling changes into iModel.
  * @internal
  */
-export const getPullChangesIpcChannel = (iModelId: string) => `${IpcAppChannel.Functions}.pullChanges-progress-${iModelId}`;
+export const getPullChangesIpcChannel = (iModelId: string) => `${ipcAppChannels.functions}/pullChanges/${iModelId}`;
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
@@ -55,12 +55,12 @@ export interface ModelIdAndGeometryGuid {
 }
 
 /** @internal */
-export enum IpcAppChannel {
-  Functions = "ipc-app",
-  AppNotify = "ipcApp-notify",
-  Txns = "txns",
-  EditingScope = "editing-scope",
-}
+export const ipcAppChannels = {
+  functions: "itwinjs-core/ipc-app",
+  appNotify: "itwinjs-core/ipcApp-notify",
+  txns: "itwinjs-core/txns",
+  editingScope: "itwinjs-core/editing-scope",
+} as const;
 
 /**
  * Interface implemented by the frontend [NotificationHandler]($common) to be notified of events from IpcApp backend.

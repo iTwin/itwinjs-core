@@ -512,6 +512,7 @@ export namespace CodeService {
     "MissingInput" |
     "MissingSpec" |
     "NoCodeIndex" |
+    "NotAuthorized" |
     "SequenceFull" |
     "ReserveErrors" |
     "SequenceNotFound" |

@@ -14,13 +14,13 @@ import { ScreenViewport } from "../../../Viewport";
 import { StandardViewId } from "../../../StandardView";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeDisplayParams } from "./Fake";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
 import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";
 import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { MeshBuilderMap } from "../../../render/primitives/mesh/MeshBuilderMap";
-import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;
@@ -201,7 +201,7 @@ describe("MeshBuilderMap Tests", () => {
     expect(map.size).to.equal(0);
     map.loadGeometry(arcGeom);
     expect(map.size).to.equal(1);
-    const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const type = strokesPrimList[0].isDisjoint ? MeshPrimitiveType.Point : MeshPrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.size).to.equal(1);
     // EDL Why is this a hard coded count?
@@ -250,7 +250,7 @@ describe("MeshBuilderMap Tests", () => {
     map.loadPolyfacePrimitiveList(loopGeom);
 
     expect(map.size).to.equal(1);
-    const builder = map.getBuilder(pfPrim.displayParams, Mesh.PrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
+    const builder = map.getBuilder(pfPrim.displayParams, MeshPrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
     expect(builder.triangleSet.length).to.equal(2);
   });
 
@@ -303,7 +303,7 @@ describe("MeshBuilderMap Tests", () => {
     map.loadIndexedPolyface(pfPrim, undefined);
 
     expect(map.size).to.equal(1);
-    const builder = map.getBuilder(pfPrim.displayParams, Mesh.PrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
+    const builder = map.getBuilder(pfPrim.displayParams, MeshPrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
     expect(builder.triangleSet.length).to.equal(2);
 
     // test case: when polyface has no points, no builder is created
@@ -344,7 +344,7 @@ describe("MeshBuilderMap Tests", () => {
     expect(map.size).to.equal(0);
     map.loadStrokePrimitiveList(arcGeom);
     expect(map.size).to.equal(1);
-    const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const type = strokesPrimList[0].isDisjoint ? MeshPrimitiveType.Point : MeshPrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.size).to.equal(1);
     expect(builder.vertexMap.length).to.equal(25);
@@ -381,7 +381,7 @@ describe("MeshBuilderMap Tests", () => {
     expect(map.size).to.equal(0);
     map.loadStrokesPrimitive(strokesPrimList[0], undefined);
     expect(map.size).to.equal(1);
-    const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const type = strokesPrimList[0].isDisjoint ? MeshPrimitiveType.Point : MeshPrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
     expect(map.size).to.equal(1);
     expect(builder.vertexMap.length).to.equal(25);
@@ -390,7 +390,7 @@ describe("MeshBuilderMap Tests", () => {
 
   it("getBuilder", () => {
     const displayParams = new FakeDisplayParams();
-    const type = Mesh.PrimitiveType.Mesh;
+    const type = MeshPrimitiveType.Mesh;
     const isPlanar = true;
     const range = Range3d.createNull();
     const is2d = false;
@@ -414,7 +414,7 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.15;
     const hasNormals = false;
     const displayParams = new FakeDisplayParams();
-    const type = Mesh.PrimitiveType.Mesh;
+    const type = MeshPrimitiveType.Mesh;
     const isPlanar = true;
     let map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
     let key = map.getKey(displayParams, type, hasNormals, isPlanar);
@@ -429,7 +429,7 @@ describe("MeshBuilderMap Tests", () => {
 
   it("getBuilderFromKey", () => {
     const displayParams = new FakeDisplayParams();
-    const type = Mesh.PrimitiveType.Mesh;
+    const type = MeshPrimitiveType.Mesh;
     const isPlanar = true;
     const range = Range3d.createNull();
     const is2d = false;

@@ -22,7 +22,7 @@ import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@it
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";

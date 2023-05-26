@@ -2,6 +2,102 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "4.0.0",
+      "tag": "@itwin/core-backend_v4.0.0",
+      "date": "Mon, 22 May 2023 15:34:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "use baseUri rather than accountName for cloud containers"
+          },
+          {
+            "comment": "added support for index of internal codes"
+          },
+          {
+            "comment": "added IModelHost.profileDir. No two process may use the same profile directory at the same time."
+          },
+          {
+            "comment": "implemented constant lod texture mapping for tiles"
+          },
+          {
+            "comment": "Deprecate IModelDb's and ECDb's query, queryRowCount, and restartQuery methods."
+          },
+          {
+            "comment": "Remove `ChangeSummaryManager.extractChangeSummaries`"
+          },
+          {
+            "comment": "added ChannelControl"
+          },
+          {
+            "comment": "Update to eslint@8"
+          },
+          {
+            "comment": "add flag schemaLockHeld"
+          },
+          {
+            "comment": "add public methods to BriefcaseManager to query the hub for changesets"
+          },
+          {
+            "comment": "Drop Node 12 and Node 14."
+          },
+          {
+            "comment": "Drop Node 16 support."
+          },
+          {
+            "comment": "Prevent IPC requests from blocking the backend."
+          },
+          {
+            "comment": "cloudsqlite: add bcvhttplog and pragma bcv_client support"
+          },
+          {
+            "comment": "change backendhubaccess and related properties to @internal"
+          },
+          {
+            "comment": "Add SpatialViewState.fromJSON."
+          },
+          {
+            "comment": "remove old entity-unaware implementation of getReferenceIds"
+          },
+          {
+            "comment": "rename members of @alpha CodeService interfaces"
+          },
+          {
+            "comment": "DrawingViewDefinition.fromJSON"
+          },
+          {
+            "comment": "Fix for timing issue in core tests"
+          },
+          {
+            "comment": "allow passing a custom schema read context to IModelDb.importSchemas"
+          },
+          {
+            "comment": "Added test to verify Id serialization to hex for system properties."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.6",
+      "tag": "@itwin/core-backend_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "log metadata when uploading tiles"
+          },
+          {
+            "comment": "disable native sqlite logger category when calling 'updateToRequestedVersion'"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.5",
+      "tag": "@itwin/core-backend_v3.7.5",
+      "date": "Thu, 04 May 2023 19:43:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.4",
       "tag": "@itwin/core-backend_v3.7.4",
       "date": "Tue, 25 Apr 2023 17:50:35 GMT",

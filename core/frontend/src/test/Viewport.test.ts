@@ -9,7 +9,7 @@ import { Point2d } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";

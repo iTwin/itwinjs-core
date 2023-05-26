@@ -122,6 +122,8 @@ export class TileAdmin {
   /** @internal */
   public readonly enableFrontendScheduleScripts: boolean;
   /** @internal */
+  public readonly decodeImdlInWorker: boolean;
+  /** @internal */
   public readonly ignoreAreaPatterns: boolean;
   /** @internal */
   public readonly enableExternalTextures: boolean;
@@ -224,6 +226,7 @@ export class TileAdmin {
     this._generateAllPolyfaceEdges = options.generateAllPolyfaceEdges ?? defaultTileOptions.generateAllPolyfaceEdges;
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this.enableFrontendScheduleScripts = options.enableFrontendScheduleScripts ?? false;
+    this.decodeImdlInWorker = options.decodeImdlInWorker ?? true;
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this.disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
@@ -321,8 +324,9 @@ export class TileAdmin {
     // start dynamically loading default implementation and save the promise to avoid duplicate instances
     this._tileStoragePromise = (async () => {
       await import("reflect-metadata");
+      const objectStorage = await import(/* webpackChunkName: "object-storage-azure" */ "@itwin/object-storage-azure/lib/frontend");
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
+      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = objectStorage.default ?? objectStorage;
       const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
       this._tileStorage = new TileStorage(azureStorage);
       return this._tileStorage;
@@ -1252,6 +1256,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @public
      */
     enableFrontendScheduleScripts?: boolean;
+
+    /** If true, contents of tiles in iMdl format will be decoded in a web worker to avoid blocking the main (UI) thread.
+     * Default value: true
+     * @alpha This was primarily introduced because the electron version of certa does not serve local assets, so the tests can't locate the worker script.
+     */
+    decodeImdlInWorker?: boolean;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

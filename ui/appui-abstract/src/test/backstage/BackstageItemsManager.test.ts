@@ -13,13 +13,13 @@ const getStageLauncherItem = () => BackstageItemUtilities.createStageLauncher("s
 
 describe("isActionItem", () => {
   it("should return true for ActionItem", () => {
-    isActionItem(getActionItem()).should.true;
+    expect(isActionItem(getActionItem())).to.true;
   });
 });
 
 describe("isStageLauncher", () => {
   it("should return true for StageLauncher", () => {
-    isStageLauncher(getStageLauncherItem()).should.true;
+    expect(isStageLauncher(getStageLauncherItem())).to.true;
   });
 });
 
@@ -32,7 +32,7 @@ describe("BackstageItemsManager", () => {
 
       sut.items = [];
 
-      spy.calledOnce.should.true;
+      expect(spy.calledOnce).to.true;
     });
 
     it("should not raise onItemsChanged event if items did not change", () => {
@@ -45,14 +45,14 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.items = items;
 
-      spy.notCalled.should.true;
+      expect(spy.notCalled).to.true;
     });
   });
 
   describe("add", () => {
     it("should instantiate with item", () => {
       const sut = new BackstageItemsManager([getActionItem()]);
-      sut.items.length.should.eq(1);
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add item without callback", () => {
@@ -62,8 +62,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.loadItems([getActionItem()]);
 
-      spy.calledOnce.should.false;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).to.false;
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add single item", () => {
@@ -73,8 +73,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.add(getActionItem());
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).to.true;
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add multiple items", () => {
@@ -84,8 +84,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.add([getActionItem(), getStageLauncherItem()]);
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(2);
+      expect(spy.calledOnce).to.true;
+      expect(sut.items.length).to.eq(2);
     });
 
     it("should not add multiple items with same id", () => {
@@ -95,8 +95,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.add([getActionItem(), getActionItem()]);
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).to.true;
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should not add item that is already added", () => {
@@ -107,8 +107,8 @@ describe("BackstageItemsManager", () => {
       sut.add(getActionItem());
       sut.add(getActionItem());
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).to.true;
+      expect(sut.items.length).to.eq(1);
     });
   });
 
@@ -124,9 +124,9 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.remove("a");
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(1);
-      sut.items[0].id.should.eq("b");
+      expect(spy.calledOnce).to.true;
+      expect(sut.items.length).to.eq(1);
+      expect(sut.items[0].id).to.eq("b");
     });
 
     it("should remove multiple items", () => {
@@ -140,8 +140,8 @@ describe("BackstageItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.remove(["a", "b"]);
 
-      spy.calledOnce.should.true;
-      sut.items.length.should.eq(0);
+      expect(spy.calledOnce).to.true;
+      expect(sut.items.length).to.eq(0);
     });
   });
 
@@ -219,7 +219,7 @@ describe("BackstageItemsManager", () => {
       const sut = new BackstageItemsManager();
       sut.add(action);
       const syncIds = BackstageItemsManager.getSyncIdsOfInterest(sut.items);
-      syncIds.should.eql(["test:customid"]);
+      expect(syncIds).to.eql(["test:customid"]);
     });
   });
 });

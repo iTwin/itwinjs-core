@@ -9,10 +9,9 @@ import {
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, SnapshotIModelRpcInterface, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
-  SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, ImdlModel, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
+  parseImdlDocument, RenderGraphic, SnapshotConnection, SurfaceType, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
-import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestUtility } from "../../TestUtility";
@@ -95,7 +94,7 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
   expect(header.isReadableVersion).to.equal(!data.unreadable);
 }
 
-function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
+async function readTile(imodel: IModelConnection, data: TileTestData, test: TileTestCase): Promise<IModelTileContent | undefined> {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
   const stream = ByteStream.fromUint8Array(test.bytes);
   const reader = ImdlReader.create({
@@ -106,16 +105,18 @@ function createReader(imodel: IModelConnection, data: TileTestData, test: TileTe
     system: IModelApp.renderSystem,
   });
 
-  expect(undefined === reader).to.equal(!!data.unreadable);
-  return reader;
+  const result = await reader.read();
+  if (result.readStatus === TileReadStatus.Success)
+    return result;
+
+  expect(data.unreadable).to.be.true;
+  return undefined;
 }
 
 async function processRectangle(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.rectangle, 1);
-  const reader = createReader(imodel, data, data.rectangle);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.rectangle);
+  if (undefined !== result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -142,10 +143,8 @@ async function processEachRectangle(imodel: IModelConnection, processGraphic: Pr
 
 async function processTriangles(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.triangles, 6);
-  const reader = createReader(imodel, data, data.triangles);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.triangles);
+  if (result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -172,10 +171,8 @@ async function processEachTriangles(imodel: IModelConnection, processGraphic: Pr
 
 async function processLineString(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.lineString, 1);
-  const reader = createReader(imodel, data, data.lineString);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.lineString);
+  if (result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -202,10 +199,8 @@ async function processEachLineString(imodel: IModelConnection, processGraphic: P
 
 async function processLineStrings(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.lineStrings, 3);
-  const reader = createReader(imodel, data, data.lineStrings);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.lineStrings);
+  if (result) {
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -232,10 +227,8 @@ async function processEachLineStrings(imodel: IModelConnection, processGraphic: 
 
 async function processCylinder(data: TileTestData, imodel: IModelConnection, processGraphic: ProcessGraphic) {
   processHeader(data, data.cylinder, 1);
-  const reader = createReader(imodel, data, data.cylinder);
-  if (undefined !== reader) {
-    const result = await reader.read();
-    expect(result.readStatus).to.equal(TileReadStatus.Success);
+  const result = await readTile(imodel, data, data.cylinder);
+  if (result) {
     expect(result.isLeaf).to.be.false; // cylinder contains curves - not a leaf - can be refined to higher-resolution single child.
     expect(result.contentRange).not.to.be.undefined;
 
@@ -475,12 +468,12 @@ describe("TileIO (mock render)", () => {
         system: IModelApp.renderSystem,
         type: BatchType.Primary,
         loadEdges: true,
-        isCanceled: (_) => true,
+        isCanceled: () => true,
       });
 
       expect(reader).not.to.be.undefined;
 
-      const result = await reader!.read();
+      const result = await reader.read();
       expect(result.readStatus).to.equal(TileReadStatus.Canceled);
     }
   });
@@ -607,9 +600,21 @@ describe("mirukuru TileTree", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
-    await MockRender.App.startup();
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ] }});
+
+    // electron version of certa doesn't serve worker scripts.
+    const isElectron = ProcessDetector.isElectronAppFrontend;
+    const tileAdmin = isElectron ? { decodeImdlInWorker: false } : undefined;
+
+    await MockRender.App.startup({ tileAdmin });
+    if (ProcessDetector.isElectronAppFrontend) {
+      await ElectronApp.startup({
+        iModelApp: {
+          localization: new EmptyLocalization(),
+          rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          tileAdmin,
+        },
+      });
+    }
 
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -758,14 +763,26 @@ describe("TileAdmin", () => {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       await cleanup();
 
+      if (ProcessDetector.isElectronAppFrontend) {
+        // certa doesn't serve worker script.
+        props.decodeImdlInWorker = false;
+      }
+
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
         rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
       });
 
-      if (ProcessDetector.isElectronAppFrontend)
-        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ] }});
+      if (ProcessDetector.isElectronAppFrontend) {
+        await ElectronApp.startup({
+          iModelApp: {
+            tileAdmin: props,
+            localization: new EmptyLocalization(),
+            rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          },
+        });
+      }
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
@@ -788,32 +805,21 @@ describe("TileAdmin", () => {
 
   it("should omit or load edges based on configuration and view flags", async () => {
     class App extends TileAdminApp {
-      private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
+      private static async rootTileHasEdges(tree: IModelTileTree): Promise<boolean> {
         const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const stream = ByteStream.fromUint8Array(response);
-        const reader = ImdlReader.create({
-          stream,
-          iModel: imodel,
-          modelId: "0x1c",
+        const document = parseImdlDocument({
+          data: response,
+          batchModelId: "0x1c",
           is3d: true,
-          system: IModelApp.renderSystem,
-        });
+          maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
+          timeline: undefined,
+        }) as ImdlModel.Document;
 
-        expect(reader).not.to.be.undefined;
-
-        const meshes = (reader as any)._meshes;
-        expect(meshes).not.to.be.undefined;
-        for (const key of Object.keys(meshes)) {
-          const mesh = meshes[key];
-          for (const primitive of mesh.primitives)
-            if (undefined !== primitive.edges)
-              return true;
-        }
-
-        return false;
+        expect(typeof document).to.equal("object");
+        return document.nodes.some((node) => node.primitives.some((primitive) => primitive.type === "mesh" && undefined !== primitive.params.edges));
       }
 
       public static async test(imodel: IModelConnection) {
@@ -831,7 +837,7 @@ describe("TileAdmin", () => {
           const tree2 = await getTileTree(imodel, "0x1c", false !== edges);
           expect(tree2).to.equal(tree);
 
-          expect(await this.rootTileHasEdges(tree, imodel)).to.equal(false !== edges);
+          expect(await this.rootTileHasEdges(tree)).to.equal(false !== edges);
         };
 
         const version = CurrentImdlVersion.Major.toString(16);

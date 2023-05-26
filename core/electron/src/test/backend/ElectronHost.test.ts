@@ -72,7 +72,7 @@ async function testStartWithOptions() {
 
 async function testRegisterIpcHandler() {
   class IpcHandlerMock extends IpcHandler {
-    public override get channelName() { return "IpcHandlerMock-channel"; }
+    public override get channelName() { return "electron-test/mock-channel"; }
     public static wasRegisterCalled = false;
 
     public static override register() {

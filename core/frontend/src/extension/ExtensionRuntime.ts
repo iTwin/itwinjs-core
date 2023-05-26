@@ -10,7 +10,6 @@
 /* eslint-disable @itwin/no-internal-barrel-imports */
 /* eslint-disable sort-imports */
 
-import { ExtensionImpl } from "./ExtensionImpl";
 import { ExtensionHost } from "./ExtensionHost";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
@@ -529,7 +528,7 @@ const extensionExports = {
 
 // END GENERATED CODE
 
-const getExtensionApi = (id: string) => {
+const getExtensionApi = (_id: string) => {
   return {
     exports: {
       // exceptions
@@ -537,7 +536,6 @@ const getExtensionApi = (id: string) => {
       // automated
       ...extensionExports,
     },
-    api: new ExtensionImpl(id),
   };
 };
 
