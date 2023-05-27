@@ -4,10 +4,11 @@ A [CurveCollection]($core-geometry) is a an abstract base class for various coll
 
 There are 5 concrete derived types:
 
-- [Path]($core-geometry) - curve primitives joining head to tail
-- [Loop]($core-geometry) - curve primitives joining head to tail and closing to form a loop
+- [Path]($core-geometry) - curve primitives joining head to tail.
+- [Loop]($core-geometry) - curve primitives joining head to tail and closing to form a loop and be on the same plane.
 - [ParityRegion]($core-geometry) - `Loop`s that bound a planar area by parity rules.
-- [UnionRegion]($core-geometry) - boolean union of areas of `Loop`s and/or `ParityRegion`s
+- [UnionRegion]($core-geometry) - boolean union of areas of `Loop`s and/or `ParityRegion`s.
+- BagOfCurves - a collection of `AnyCurve` with no implied structure.
 
 ![>](./figs/CurveCollections/CurveCollectionClasses.png)
 
@@ -24,14 +25,14 @@ There are 5 concrete derived types:
 - In a `Loop`, the last member's head must match the first member's tail.
 - Throughout the library, a `Loop` is expected to be a "filled" planar region.
 - A `Path` is usually does _not_ return to its start point.
-  - If a `Path` _does_ return to its start point, it is _not_ interpreted as enclosing area.  The path is still just a wire that happens to come back to its start.
+- If a `Path` _does_ return to its start point, it is _not_ interpreted as enclosing area. The path is still just a wire that happens to come back to its start.
 
  The immediate base class for both `Path` and `Loop` is `CurveChain`.   The `CurveChain` base class implements various methods that depend on the internal head-to-tail matching but _not_ on the closure of a `Loop`.
 
 ### Special `Loop` properties
 
 - The purpose of a `Loop` is to act as the boundary of a planar region.
-  - Unless specifically indicated by names or comments for various methods that at on `Loop`s,  The containing plane will be determine "on demand" using the `FrameBuilder` class.
+  - Unless specifically indicated by names or comments for various methods that act on `Loop`s, the containing plane will be determine "on demand" using the `FrameBuilder` class.
 - A point is "inside" a loop if a line (within the `Loop`'s plane) from the point "to infinity"  crosses the loop an odd number of times.
 - The crossing count rule may be applied (and mathematically always produces the same result) for:
   - Any line direction -- horizontal, vertical, or any other direction.
@@ -41,19 +42,19 @@ There are 5 concrete derived types:
 
 A `ParityRegion` is a curve collection whose immediate children are
 
-- _all_ of type `Loop` (i.e. array of `CurvePrimitive` joined head-to-tail both internally an from last to first.
+- _all_ of type `Loop` (i.e. array of `CurvePrimitive` joined head-to-tail both internally and from last to first.
 - all coplanar.
 
 "Inside" and "Outside" of a parity region is determined by the rule commonly called "even/odd", "exclusive or" or "parity":
 
 - A point is "inside" the parity region if and only if it is classified as "inside" of an odd number of its `Loop`s.
-- A point is "inside" if and only if performing "exclusive or" among the (boolean) "inside" classification of all of its `Loop`s.
+- A point is "inside" the parity region if and only if performing XOR (exclusive or) among the (boolean) "inside" classification of all of its `Loop`s.
 
 In nearly all uses, the various loops in a `ParityRegion`
 
 - have no intersections among any pair of loops.
 - have exactly one that can be called `outer`
-- all other than the `outer`
+- are either the `outer` loop or inside the `outer` loop
 
 ## `UnionRegion`
 

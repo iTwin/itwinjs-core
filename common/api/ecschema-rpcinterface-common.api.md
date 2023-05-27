@@ -9,6 +9,7 @@ import { ISchemaLocater } from '@itwin/ecschema-metadata';
 import { RpcInterface } from '@itwin/core-common';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaInfo } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SchemaKeyProps } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
@@ -29,12 +30,12 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
 // @alpha
 export class ECSchemaRpcLocater implements ISchemaLocater {
     constructor(token: IModelRpcProps);
-    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
-    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
+    getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
     // (undocumented)
     readonly token: IModelRpcProps;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

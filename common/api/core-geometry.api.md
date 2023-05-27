@@ -4127,12 +4127,10 @@ export class PathFragment {
     // @deprecated (undocumented)
     childFractionTChainDistance(fraction: number): number;
     childFractionToChainDistance(fraction: number): number;
-    // (undocumented)
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
     containsChildCurveAndChildFraction(curve: CurvePrimitive, fraction: number): boolean;
     fractionScaleFactor(globalDistance: number): number;
-    // (undocumented)
     quickMinDistanceToChildCurve(spacePoint: Point3d): number;
     range?: Range3d;
     reverseFractionsAndDistances(totalDistance: number): void;
@@ -4978,7 +4976,6 @@ export class Range1d extends RangeBase {
     intersectsRange(other: Range1d): boolean;
     isAlmostEqual(other: Readonly<Range1d>): boolean;
     get isAlmostZeroLength(): boolean;
-    // (undocumented)
     get isExact01(): boolean;
     get isNull(): boolean;
     get isSinglePoint(): boolean;

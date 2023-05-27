@@ -250,10 +250,19 @@ export class MapTileTree extends RealityTileTree {
     const childAvailable = this.mapLoader.isTileAvailable(quadId);
     if (!childAvailable && this.produceGeometry)
       return undefined;
+
     const patch = new PlanarTilePatch(corners, normal, chordHeight);
     const cornerNormals = this.getCornerRays(rectangle);
-    const ctor = childAvailable ? MapTile : UpsampledMapTile;
-    return new ctor(params, this, quadId, patch, rectangle, heightRange, cornerNormals);
+    if (childAvailable)
+      return new MapTile(params, this, quadId, patch, rectangle, heightRange, cornerNormals);
+
+    assert(params.parent instanceof MapTile);
+    let loadableTile: MapTile | undefined = params.parent;
+    while (loadableTile?.isUpsampled)
+      loadableTile = loadableTile.parent as MapTile | undefined;
+
+    assert(undefined !== loadableTile);
+    return new UpsampledMapTile(params, this, quadId, patch, rectangle, heightRange, cornerNormals, loadableTile);
   }
 
   /** @internal */

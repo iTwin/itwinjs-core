@@ -72,7 +72,7 @@ describe("ToolbarItemsManager", () => {
   describe("add & remove", () => {
     it("should instantiate with item", () => {
       const sut = new ToolbarItemsManager([simpleActionSpec]);
-      sut.items.length.should.eq(1);
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add item without callback", () => {
@@ -82,8 +82,8 @@ describe("ToolbarItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.loadItems([simpleActionSpec]);
 
-      spy.calledOnce.should.false;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).to.false;
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add & remove one item", () => {
@@ -110,7 +110,7 @@ describe("ToolbarItemsManager", () => {
       const sut = new ToolbarItemsManager();
 
       sut.add([simpleActionSpec, simpleActionSpec]);
-      sut.items.length.should.eq(1);
+      expect(sut.items.length).to.eq(1);
     });
 
     it("attempt to add duplicate item ignores it", () => {
@@ -144,13 +144,13 @@ describe("ToolbarItemsManager", () => {
       const spy = sinon.spy();
       sut.onItemsChanged.addListener(spy);
       sut.loadItems(items);
-      spy.calledOnce.should.false;
+      expect(spy.calledOnce).to.false;
 
       expect(sut.items.length).to.eq(3);
 
       spy.resetHistory();
       sut.removeAll();
-      spy.calledOnce.should.false;
+      expect(spy.calledOnce).to.false;
       expect(sut.items.length).to.eq(0);
     });
   });

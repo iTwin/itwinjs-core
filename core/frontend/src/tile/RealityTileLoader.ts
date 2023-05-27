@@ -13,7 +13,7 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { GltfWrapMode } from "../gltf/GltfSchema";
+import { GltfWrapMode } from "../common/gltf/GltfSchema";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
   RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,

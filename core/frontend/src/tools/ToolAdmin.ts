@@ -12,7 +12,7 @@ import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";

@@ -18,7 +18,7 @@ import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
 import {
-  DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
+  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
   TileRequestChannel, TileTree, TileTreeParams,
 } from "./internal";
 
@@ -339,6 +339,7 @@ class RootTile extends Tile {
  * @internal
  */
 export class IModelTileTree extends TileTree {
+  public readonly decoder: ImdlDecoder;
   private readonly _rootTile: RootTile;
   private readonly _options: IModelTileTreeOptions;
   private readonly _transformNodeRanges?: Map<number, Range3d>;
@@ -376,6 +377,22 @@ export class IModelTileTree extends TileTree {
 
     params.rootTile.contentId = this.contentIdProvider.rootContentId;
     this._rootTile = new RootTile(iModelTileParamsFromJSON(params.rootTile, undefined), this);
+
+    this.decoder = acquireImdlDecoder({
+      type: this.batchType,
+      omitEdges: false === this.edgeOptions,
+      timeline: this.timeline,
+      iModel: this.iModel,
+      batchModelId: this.modelId,
+      is3d: this.is3d,
+      containsTransformNodes: this.containsTransformNodes,
+      noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+    });
+  }
+
+  public override dispose(): void {
+    this.decoder.release();
+    super.dispose();
   }
 
   public get maxDepth() { return 32; }

@@ -10,11 +10,20 @@ import {
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
+  IModelApp,
   MockRender,
 } from "../../../core-frontend";
+import { EdgeParams, SegmentEdgeParams } from "../../../common/render/primitives/EdgeParams";
+import { MeshParams } from "../../../common/render/primitives/MeshParams";
+import { PointStringParams } from "../../../common/render/primitives/PointStringParams";
+import { TesselatedPolyline } from "../../../common/render/primitives/PolylineParams";
+import { VertexTable } from "../../../common/render/primitives/VertexTable";
+import { SurfaceType } from "../../../common/render/primitives/SurfaceParams";
 import {
-  ComputeAnimationNodeId, EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, SegmentEdgeParams, splitMeshParams, splitPointStringParams,
-  SurfaceType, TesselatedPolyline, VertexTable,
+  ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams,
+} from "../../../common/render/primitives/VertexTableSplitter";
+import {
+  createMeshParams, createPointStringParams, MeshArgs, PolylineArgs,
 } from "../../../render-primitives";
 
 interface Point {
@@ -77,7 +86,7 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     polylines: [ new PolylineData([...new Array<number>(points.length).keys()], points.length) ],
   };
 
-  const params = PointStringParams.create(args)!;
+  const params = createPointStringParams(args)!;
   expect(params).not.to.be.undefined;
   return params;
 }
@@ -205,7 +214,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     features: makeFeatureIndex(mesh.points),
   };
 
-  return MeshParams.create(args);
+  return createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
 }
 
 function expectMesh(params: MeshParams, mesh: TriMesh): void {
@@ -605,6 +614,7 @@ describe("VertexTableSplitter", () => {
     const split = splitMeshParams({
       params, featureTable, maxDimension: 2048,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+      createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
     });
     expect(split.size).to.equal(3);
 
@@ -720,6 +730,7 @@ describe("VertexTableSplitter", () => {
     const split = splitMeshParams({
       params, featureTable, maxDimension: 2048,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
+      createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
     });
     expect(split.size).to.equal(3);
 

@@ -112,10 +112,10 @@ describe("UiItemsManager", () => {
     const spy = sinon.spy();
     const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider");
     UiItemsManager.onUiProviderRegisteredEvent.addListener(spy);
-    spy.calledOnce.should.false;
+    expect(spy.calledOnce).to.false;
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     UiItemsManager.register(testUiProvider);
-    spy.calledOnce.should.true;
+    expect(spy.calledOnce).to.true;
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(spy);
     UiItemsManager.unregister(testUiProvider.id);
@@ -126,7 +126,7 @@ describe("UiItemsManager", () => {
     const spy = sinon.spy();
     const testUiProvider = new TestUnregisterUiItemsProvider("TestUnregisterUiItemsProvider", spy);
     UiItemsManager.register(testUiProvider);
-    spy.calledOnce.should.false;
+    expect(spy.calledOnce).to.false;
 
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(0);
@@ -141,7 +141,7 @@ describe("UiItemsManager", () => {
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     testUiProvider.unregister();
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
-    spy.calledOnce.should.true;
+    expect(spy.calledOnce).to.true;
   });
 
   it("don't register UiProvider with same id more than once", () => {

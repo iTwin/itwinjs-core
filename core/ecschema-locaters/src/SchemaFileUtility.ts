@@ -23,19 +23,27 @@ export class SchemaFileUtility {
    * @param outputPath The directory in which to create the file.
    */
   public static async writeSchemaXmlFile(schema: Schema, outputPath: string) {
-    let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+    const xml = await this.writeSchemaToXmlString(schema);
+
     const baseFile = this.getSchemaPath(schema, outputPath);
-
-    xmlDoc = await schema.toXml(xmlDoc);
-    const serializer = new XMLSerializer();
-    const xml = serializer.serializeToString(xmlDoc);
-
     try {
       await fs.writeFile(baseFile, xml);
     } catch (err: any) {
       const msg = `An error occurred writing to file '${baseFile}': ${err.message}`;
       throw new Error(msg);
     }
+  }
+
+  /**
+   * Writes a Schema to an xml string.
+   * @param schema The Schema to serialize.
+   */
+  public static async writeSchemaToXmlString(schema: Schema): Promise<string> {
+    let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+
+    xmlDoc = await schema.toXml(xmlDoc);
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(xmlDoc);
   }
 
   private static getSchemaPath(schema: Schema, outputPath: string): string {

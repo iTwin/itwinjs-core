@@ -24,6 +24,8 @@ The following constructs are defined using these components and classes:
 - [UI Settings](./UiSettings.md)
 - [AccuDraw UI](./AccuDraw.md)
 - [KeyboardShortcuts]($appui-react:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
+- [Toolbar](./Toolbar.md) - Classes for creating and managing items in a toolbar.
+- [UiItemsProvider](./UiItemsProvider.md) - Classes and interfaces for specifying UI items to be inserted at runtime.
 
 ## Other Topics
 

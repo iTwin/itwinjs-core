@@ -37,8 +37,13 @@ export interface ChannelControl {
    * @throws if the element does not exist
    */
   getChannelKey(elementId: Id64String): ChannelKey;
-  /** Insert a new Subject element that defines a new Channel in this iModel.
+  /** Make an existing element a new Channel root.
+   * @note if the element is already in a channel, this will throw an error.
+   */
+  makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }): void;
+  /** Insert a new Subject element that is a Channel root in this iModel.
    * @returns the ElementId of the new Subject element.
+   * @note if the parentSubject element is already in a channel, this will add the Subject element and then throw an error without making it a Channel root.
    */
   insertChannelSubject(args: {
     /** The name of the new Subject element */
@@ -122,14 +127,17 @@ export class ChannelAdmin implements ChannelControl {
     this._deniedModels.set(modelId, channel);
     return this.verifyChannel(modelId);
   }
-  public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
-    if (args.parentSubjectId && ChannelAdmin.sharedChannel !== this.getChannelKey(args.parentSubjectId))
+  public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
+    if (ChannelAdmin.sharedChannel !== this.getChannelKey(args.elementId))
       throw new Error("channels may not nest");
 
-    const subjectId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
-    const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: subjectId }, owner: args.channelKey };
+    const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
     this._hasChannels = true;
-    return subjectId;
+  }
+  public insertChannelSubject(args: { subjectName: string, channelKey: ChannelKey, parentSubjectId?: Id64String, description?: string }): Id64String {
+    const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
+    this.makeChannelRoot({ elementId, channelKey: args.channelKey });
+    return elementId;
   }
 }
