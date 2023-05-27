@@ -9,7 +9,7 @@
 import { join } from "path";
 import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager";
@@ -22,7 +22,7 @@ import { NativeAppStorage } from "./NativeAppStorage";
  * Implementation of NativeAppFunctions
  */
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
-  public get channelName() { return nativeAppChannel; }
+  public get channelName() { return nativeAppIpcStrings.channelName; }
 
   public async getAccessToken(): Promise<AccessToken | undefined> {
     return IModelHost.authorizationClient?.getAccessToken();
@@ -147,7 +147,7 @@ export class NativeHost {
 
   /** Send a notification to the NativeApp connected to this NativeHost. */
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
-    return IpcHost.send(nativeAppNotify, methodName, ...args);
+    return IpcHost.send(nativeAppIpcStrings.notifyChannel, methodName, ...args);
   }
 
   private static _isValid = false;

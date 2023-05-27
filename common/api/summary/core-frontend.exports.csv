@@ -22,6 +22,10 @@ internal;AccuDrawSetOriginTool
 alpha;AccuDrawShortcuts
 public;AccuSnap 
 public;AccuSnap
+internal;acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder
+internal;AcquireImdlDecoderArgs
+internal;acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser
+internal;AcquireImdlParserArgs
 public;ACSDisplayOptions
 public;ACSType
 alpha;ActivationEvent = "onStartup"
@@ -36,6 +40,7 @@ internal;AnimationBranchStates
 internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
+internal;AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive
 internal;ArcGisErrorCode
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
@@ -45,10 +50,16 @@ internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 internal;AttachToViewportArgs
+alpha;AuxChannel 
+alpha;AuxChannelProps
+alpha;AuxChannelTable
+alpha;AuxChannelTableProps
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+alpha;AuxDisplacementChannel 
+alpha;AuxParamChannel 
 internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
@@ -76,6 +87,7 @@ public;BriefcaseTxns
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
+internal;calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -90,8 +102,11 @@ public;CheckpointConnection
 public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
+internal;collectTransferables(document: ImdlModel.Document): Transferable[]
 public;CompassMode
+internal;ComputeAnimationNodeId = (featureIndex: number) => number
 public;ComputeChordToleranceArgs
+internal;computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions
 beta;ComputeDisplayTransformArgs
 public;connectViewportFrusta(viewports: Iterable
 public;connectViewports(viewports: Iterable
@@ -100,6 +115,7 @@ internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
 internal;ContextShareProvider
+internal;convertFeatureTable(imdlFeatureTable: ImdlModel.FeatureTable, batchModelId: Id64String): RenderFeatureTable
 internal;CoordinateConverter
 internal;CoordinateConverterOptions
 public;CoordinateLockOverrides
@@ -115,16 +131,19 @@ internal;createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettin
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
-public;CreateRenderMaterialArgs
+public;CreateRenderMaterialArgs 
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
+internal;createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
+internal;createWorkerProxy
 internal;CurrentInputState
 public;CurrentState
 public;CustomFormatPropEditorSpec
 public;CustomGraphicBuilderOptions 
 public;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
+internal;decodeImdlGraphics(options: ImdlDecodeOptions): Promise
 public;DecorateContext 
 public;Decorations 
 internal;DecorationsCache
@@ -136,7 +155,10 @@ public;DepthPointOptions
 public;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
+internal;Dimensions
 public;DisclosedTileTreeSet 
+internal;DisplayParams
+internal;DisplayParams
 public;DisplayStyle2dState 
 public;DisplayStyle3dState 
 public;class DisplayStyleState 
@@ -150,6 +172,10 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
+internal;EdgeParams
+internal;edgeParamsFromImdl(imdl: ImdlModel.EdgeParams): EdgeParams
+internal;EdgeTable
+internal;EdgeTableInfo
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -222,6 +248,7 @@ public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
 public;GlobeAnimator 
+internal;Gltf
 internal;Gltf1Id = string
 internal;Gltf1Material 
 internal;Gltf1Node 
@@ -244,7 +271,6 @@ internal;GltfDocument
 internal;GltfExtensions = GltfStringMap
 public;GltfGraphic
 internal;GltfGraphicsReader 
-internal;GltfHeader 
 internal;GltfId = Gltf1Id | Gltf2Id
 internal;GltfImage 
 internal;GltfMagFilter
@@ -326,11 +352,45 @@ internal;ImageryMapTile
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
 internal;ImageryTileTreeState
-internal;Imdl
+internal;ImdlAnimationNodes
+internal;ImdlAreaPattern
+internal;ImdlAreaPatternSymbol
+internal;ImdlAuxChannelTable = Omit
+internal;ImdlBufferView
+internal;ImdlColorDef = number[]
+internal;ImdlDecodeArgs
+internal;ImdlDecodeOptions
+internal;ImdlDecoder
+internal;ImdlDictionary
+internal;ImdlDisplayParams
+internal;ImdlDocument
+internal;ImdlIndexedEdges
+internal;ImdlInstances
+internal;ImdlMaterialAtlas
+internal;ImdlMesh
+internal;ImdlMeshEdges
+internal;ImdlMeshPrimitive 
+internal;ImdlModel
+internal;ImdlNamedTexture
+internal;ImdlParseError = Exclude
+internal;ImdlParser
+internal;ImdlParserOptions
+internal;ImdlPointStringPrimitive 
+internal;ImdlPolyline
+internal;ImdlPolylinePrimitive 
+internal;ImdlPrimitive
+internal;ImdlReader
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
+internal;ImdlRenderMaterial
+internal;ImdlScene
+internal;ImdlSegmentEdges
+internal;ImdlSilhouetteEdges 
+internal;ImdlSurface
+internal;ImdlTextureMapping
 internal;ImdlTimeline = RenderSchedule.ModelTimeline | RenderSchedule.Script
+internal;ImdlVertexTable
 public;IModelApp
 public;IModelAppOptions
 public;class IModelConnection 
@@ -347,6 +407,8 @@ internal;IModelTileTree
 internal;IModelTileTreeOptions
 internal;IModelTileTreeParams 
 internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams
+internal;IndexBuffer
+internal;IndexedEdgeParams
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
@@ -360,6 +422,7 @@ public;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is Cus
 internal;isGltf1Material(material: GltfMaterial): material is Gltf1Material
 public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
+internal;isValidSurfaceType(value: number): boolean
 public;ItemField
 beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
@@ -429,6 +492,7 @@ public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
 public;MaterialDiffuseProps
+public;MaterialParams
 public;MaterialSpecularProps
 public;MaterialTextureMappingProps
 public;MeasureAreaByPointsTool 
@@ -440,6 +504,9 @@ public;MeasureLocationTool
 public;MeasureVolumeTool 
 internal;MeshFeature 
 internal;MeshFeatures
+internal;MeshParams
+internal;MeshPointList = Point3dList | QPoint3dList
+internal;MeshPrimitiveType
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -488,6 +555,11 @@ public;PaddingPercent
 public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin
+internal;parseGltf(args: ParseGltfArgs): Promise
+internal;ParseGltfArgs
+internal;ParseGltfLogger
+internal;parseImdlDocument(options: ParseImdlDocumentArgs): ImdlModel.Document | ImdlParseError
+internal;ParseImdlDocumentArgs 
 public;ParseKeyinError
 public;ParseKeyinResult = ParsedKeyin | ParseKeyinError
 public;ParticleCollectionBuilder
@@ -508,6 +580,9 @@ beta;PlanarClipMaskState
 alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
+internal;Point3dList 
+internal;PointStringParams
+internal;PolylineParams
 beta;PreferenceArg 
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
@@ -522,6 +597,7 @@ public;QuantityType
 public;QuantityTypeArg = QuantityType | string
 public;QuantityTypeDefinition
 public;QuantityTypeKey = string
+alpha;QuantizedAuxChannelProps 
 public;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 public;QueryTileFeaturesOptions
@@ -534,6 +610,7 @@ public;readGltf(args: ReadGltfGraphicsArgs): Promise
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
+internal;readImdlContent(args: ImdlReaderCreateArgs &
 public;ReadMeshArgs
 internal;ReadonlyTileUserSet 
 alpha;RealityDataError 
@@ -617,6 +694,7 @@ public;ScreenViewport
 public;ScrollViewTool 
 internal;SectionDrawingInfo
 public;SectionDrawingModelState 
+internal;SegmentEdgeParams
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
@@ -633,8 +711,8 @@ public;SetupCameraTool
 public;SetupWalkCameraTool 
 public;SheetModelState 
 public;SheetViewState 
-internal;ShouldAbortImdlReader = (reader: ImdlReader) => boolean
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
+internal;SilhouetteParams 
 internal;SkyBoxDecorations
 public;SnapDetail 
 public;SnapHeat
@@ -648,6 +726,13 @@ public;SpatialModelState
 internal;SpatialTileTreeReferences 
 internal;SpatialTileTreeReferences
 public;SpatialViewState 
+internal;SplitMeshArgs 
+internal;splitMeshParams(args: SplitMeshArgs): Map
+internal;SplitPointStringArgs 
+internal;splitPointStringParams(args: SplitPointStringArgs): Map
+internal;SplitPolylineArgs 
+internal;splitPolylineParams(args: SplitPolylineArgs): Map
+internal;SplitVertexTableArgs
 public;Sprite
 public;SpriteLocation 
 public;StandardView
@@ -657,6 +742,11 @@ public;StartOrResume
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
+internal;SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas
+internal;SurfaceMaterialAtlas
+internal;SurfaceParams
+internal;SurfaceRenderMaterial
+internal;SurfaceType
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
 public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
@@ -672,6 +762,7 @@ public;TerrainProvider
 public;TerrainProviderRegistry
 internal;TerrainTexture
 internal;TerrainTileContent 
+internal;TesselatedPolyline
 public;TextInputFormatPropEditorSpec 
 public;TextSelectFormatPropEditorSpec 
 public;TextureCacheKey = string | Gradient.Symb
@@ -724,6 +815,7 @@ internal;TileUserIdSet
 internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
+internal;toMaterialParams(mat: ImdlModel.SurfaceMaterialParams): MaterialParams
 public;Tool
 public;ToolAdmin
 public;ToolAssistance
@@ -742,6 +834,7 @@ public;ToolTipOptions
 public;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
+internal;toVertexTable(imdl: ImdlModel.VertexTable): VertexTable
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
@@ -760,6 +853,9 @@ public;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType
+internal;VertexIndices 
+internal;VertexTable
+internal;VertexTableWithIndices
 public;ViewAnimationOptions
 public;ViewChangeOptions 
 public;ViewClipByElementTool 
@@ -822,5 +918,12 @@ internal;WmtsCapabilities
 internal;WmtsCapability
 internal;WmtsConstants
 internal;WmtsMapLayerImageryProvider 
+internal;WorkerError
+internal;WorkerImplementation
+internal;WorkerInterface
+internal;WorkerProxy
+internal;WorkerResponse = WorkerResult | WorkerError
+internal;WorkerResult
+internal;WorkerReturnType
 public;ZoomToOptions
 public;ZoomViewTool 

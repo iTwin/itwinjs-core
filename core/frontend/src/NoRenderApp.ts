@@ -11,7 +11,7 @@ import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 
 /**
  * A RenderTarget for applications that must run in environments where WebGL is not present.

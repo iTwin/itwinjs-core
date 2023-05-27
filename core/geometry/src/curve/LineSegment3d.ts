@@ -29,57 +29,76 @@ import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * A LineSegment3d is:
- *
  * * A 3d line segment represented by its start and end coordinates
  *   * startPoint
  *   * endPoint
- * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. either of these equivalent forms to map fraction `f` to a point `X(f)`
+ * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. either of these
+ * equivalent forms to map fraction `f` to a point `X(f)`
  * ```
  * equation
- *  X(f) = P_0 + f * (P_1 - P_0)\newline
- *  X(f) = (1-f)*P_0  + f * P_0
+ *  X(f) = P_0 + f*(P_1 - P_0)\newline
+ *  X(f) = (1-f)*P_0 + f*P_1
  * ```
  * @public
  */
 export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "lineSegment";
-
-  /** test if `other` is of class `LineSegment3d` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof LineSegment3d; }
+  /** Test if `other` is of class `LineSegment3d` */
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof LineSegment3d;
+  }
   private _point0: Point3d;
   private _point1: Point3d;
-  /** Return REFERENCE to the start point of this segment.
-   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
-   */
-  public get point0Ref(): Point3d { return this._point0; }
-  /** Return REFERENCE to the end point of this segment.
-   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
-   */
-  public get point1Ref(): Point3d { return this._point1; }
   /**
-   * A LineSegment3d extends along its infinite line.
+   * Return REFERENCE to the start point of this segment.
+   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
    */
-  public override get isExtensibleFractionSpace(): boolean { return true; }
-
+  public get point0Ref(): Point3d {
+    return this._point0;
+  }
+  /**
+   * Return REFERENCE to the end point of this segment.
+   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
+   */
+  public get point1Ref(): Point3d {
+    return this._point1;
+  }
+  /** A LineSegment3d extends along its infinite line. */
+  public override get isExtensibleFractionSpace(): boolean {
+    return true;
+  }
   /**
    * CAPTURE point references as a `LineSegment3d`
    * @param point0
    * @param point1
    */
-  protected constructor(point0: Point3d, point1: Point3d) { super(); this._point0 = point0; this._point1 = point1; }
+  protected constructor(point0: Point3d, point1: Point3d) {
+    super();
+    this._point0 = point0;
+    this._point1 = point1;
+  }
   /** Set the start and endpoints by capturing input references. */
-  public setRefs(point0: Point3d, point1: Point3d) { this._point0 = point0; this._point1 = point1; }
+  public setRefs(point0: Point3d, point1: Point3d) {
+    this._point0 = point0;
+    this._point1 = point1;
+  }
   /** Set the start and endpoints by cloning the input parameters. */
-  public set(point0: Point3d, point1: Point3d) { this._point0 = point0.clone(); this._point1 = point1.clone(); }
-  /** copy (clone) data from other */
-  public setFrom(other: LineSegment3d) { this._point0.setFrom(other._point0); this._point1.setFrom(other._point1); }
-  /** Return a (clone of) the start point. (This is NOT a reference to the stored start point) */
+  public set(point0: Point3d, point1: Point3d) {
+    this._point0 = point0.clone();
+    this._point1 = point1.clone();
+  }
+  /** Copy (clone) data from other */
+  public setFrom(other: LineSegment3d) {
+    this._point0.setFrom(other._point0);
+    this._point1.setFrom(other._point1);
+  }
+  /** Return a (clone of) the start point (This is NOT a reference to the stored start point) */
   public override startPoint(result?: Point3d): Point3d {
     if (result) { result.setFrom(this._point0); return result; }
     return this._point0.clone();
   }
-  /** Return a (clone of) the end point. (This is NOT a reference to the stored end point) */
+  /** Return a (clone of) the end point (This is NOT a reference to the stored end point) */
   public override endPoint(result?: Point3d): Point3d {
     if (result) { result.setFrom(this._point1); return result; }
     return this._point1.clone();
@@ -91,7 +110,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     this._point0.interpolate(fraction, this._point1, result.origin);
     return result;
   }
-  /** Construct a plane with
+  /**
+   * Construct a plane with
    * * origin at the fractional position along the line segment
    * * x axis is the first derivative, i.e. along the line segment
    * * y axis is the second derivative, i.e. 000
@@ -103,9 +123,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     this._point0.interpolate(fraction, this._point1, result.origin);
     return result;
   }
-
   /** Clone the LineSegment3d */
-  public clone(): LineSegment3d { return LineSegment3d.create(this._point0, this._point1); }
+  public clone(): LineSegment3d {
+    return LineSegment3d.create(this._point0, this._point1);
+  }
   /** Clone and apply transform to the clone. */
   public cloneTransformed(transform: Transform): LineSegment3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
@@ -120,12 +141,12 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return new LineSegment3d(point0.clone(), point1.clone());
   }
-
   /** Create with start and end points.  The point contents are CAPTURED into the result */
   public static createCapture(point0: Point3d, point1: Point3d): LineSegment3d {
     return new LineSegment3d(point0, point1);
   }
-  /** create a LineSegment3d from xy coordinates of start and end, with common z.
+  /**
+   * Create a LineSegment3d from xy coordinates of start and end, with common z.
    * @param x0 start point x coordinate.
    * @param y0 start point y coordinate.
    * @param x1 end point x coordinate.
@@ -141,8 +162,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return new LineSegment3d(Point3d.create(x0, y0, z), Point3d.create(x1, y1, z));
   }
-
-  /** create a LineSegment3d from xy coordinates of start and end, with common z.
+  /**
+   * Create a LineSegment3d from xy coordinates of start and end, with common z.
    * @param x0 start point x coordinate.
    * @param y0 start point y coordinate.
    * @param x1 end point x coordinate.
@@ -150,7 +171,9 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param z z coordinate to use for both points.
    * @param result optional existing LineSegment to be reinitialized.
    */
-  public static createXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d) {
+  public static createXYZXYZ(
+    x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d
+  ): LineSegment3d {
     if (result) {
       result._point0.set(x0, y0, z0);
       result._point1.set(x1, y1, z1);
@@ -158,24 +181,31 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return new LineSegment3d(Point3d.create(x0, y0, z0), Point3d.create(x1, y1, z1));
   }
-
   /** Return the point at fractional position along the line segment. */
-  public fractionToPoint(fraction: number, result?: Point3d): Point3d { return this._point0.interpolate(fraction, this._point1, result); }
+  public fractionToPoint(fraction: number, result?: Point3d): Point3d {
+    return this._point0.interpolate(fraction, this._point1, result);
+  }
   /** Return the length of the segment. */
-  public override curveLength(): number { return this._point0.distance(this._point1); }
+  public override curveLength(): number {
+    return this._point0.distance(this._point1);
+  }
   /** Return the length of the partial segment between fractions. */
   public override curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
     return Math.abs(fraction1 - fraction0) * this._point0.distance(this._point1);
   }
   /** Return the length of the segment. */
-  public quickLength(): number { return this.curveLength(); }
-
+  public quickLength(): number {
+    return this.curveLength();
+  }
   /**
    * Returns a curve location detail with both xyz and fractional coordinates of the closest point.
    * @param spacePoint point in space
-   * @param extend if false, only return points within the bounded line segment. If true, allow the point to be on the unbounded line that contains the bounded segment.
+   * @param extend if false, only return points within the bounded line segment. If true, allow the point to be on
+   * the unbounded line that contains the bounded segment.
    */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
+  public override closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail
+  ): CurveLocationDetail {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
     fraction = CurveExtendOptions.correctFraction(extend, fraction);
     result = CurveLocationDetail.create(this, result);
@@ -187,7 +217,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     result.a = result.point.distance(spacePoint);
     return result;
   }
-  /** swap the endpoint references. */
+  /** Swap the endpoint references. */
   public reverseInPlace(): void {
     const a = this._point0;
     this._point0 = this._point1;
@@ -204,7 +234,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     return Geometry.isSmallMetricDistance(plane.altitude(this._point0))
       && Geometry.isSmallMetricDistance(plane.altitude(this._point1));
   }
-  /** Compute points of simple (transverse) with a plane.
+  /**
+   * Compute points of simple (transverse) with a plane.
    * * Use isInPlane to test if the line segment is completely in the plane.
    */
   public override appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
@@ -259,12 +290,16 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
   }
   /** A simple line segment's fraction and distance are proportional. */
-  public override getFractionToDistanceScale(): number | undefined { return this.curveLength(); }
+  public override getFractionToDistanceScale(): number | undefined {
+    return this.curveLength();
+  }
   /**
    * Place the lineSegment3d start and points in a json object
    * @return {*} [[x,y,z],[x,y,z]]
    */
-  public toJSON(): any { return [this._point0.toJSON(), this._point1.toJSON()]; }
+  public toJSON(): any {
+    return [this._point0.toJSON(), this._point1.toJSON()];
+  }
   /** Create a new `LineSegment3d` with coordinates from json object.   See `setFromJSON` for object layout description. */
   public static fromJSON(json?: any): LineSegment3d {
     const result = new LineSegment3d(Point3d.createZero(), Point3d.create());
@@ -279,7 +314,6 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return false;
   }
-
   /** Emit strokes to caller-supplied linestring */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     const numStroke = this.computeStrokeCountForOptions(options);
@@ -292,9 +326,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     handler.announceSegmentInterval(this, this._point0, this._point1, numStroke, 0.0, 1.0);
     handler.endCurvePrimitive(this);
   }
-
   /**
-   * return the stroke count required for given options.
+   * Return the stroke count required for given options.
    * @param options StrokeOptions that determine count
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -306,22 +339,21 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return numStroke;
   }
-  /** Second step of double dispatch:  call `handler.handleLineSegment3d(this)` */
+  /** Second step of double dispatch: call `handler.handleLineSegment3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLineSegment3d(this);
   }
-
   /**
    * Find intervals of this curve primitive that are interior to a clipper
    * @param clipper clip structure (e.g. clip planes)
-   * @param announce function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
+   * @param announce function to be called announcing fractional intervals `announce(fraction0, fraction1, curvePrimitive)`
    */
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedSegmentIntervals(0.0, 1.0, this._point0, this._point1,
       announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined);
   }
-
-  /** Return (if possible) a curve primitive which is a portion of this curve.
+  /**
+   * Return (if possible) a curve primitive which is a portion of this curve.
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
@@ -332,41 +364,46 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * Returns a (high accuracy) range of the curve between fractional positions
    * * Default implementation returns teh range of the curve from clonePartialCurve
    */
-   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+  public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     // (This is cheap -- don't bother testing for fraction0===fraction1)
-    if (!transform){
+    if (!transform) {
       const range = Range3d.create();
-      range.extendInterpolated (this._point0, fraction0, this._point1);
-      range.extendInterpolated (this._point0, fraction1, this._point1);
+      range.extendInterpolated(this._point0, fraction0, this._point1);
+      range.extendInterpolated(this._point0, fraction1, this._point1);
       return range;
     }
-    const point0 = this.fractionToPoint (fraction0);
-    const point1 = this.fractionToPoint (fraction1);
-    if (transform){
-      transform.multiplyPoint3d (point0, point0);
-      transform.multiplyPoint3d (point1, point1);
+    const point0 = this.fractionToPoint(fraction0);
+    const point1 = this.fractionToPoint(fraction1);
+    if (transform) {
+      transform.multiplyPoint3d(point0, point0);
+      transform.multiplyPoint3d(point1, point1);
     }
-    return Range3d.create (point0, point1);
+    return Range3d.create(point0, point1);
   }
-
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
-  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public override constructOffsetXY(
+    offsetDistanceOrOptions: number | OffsetOptions
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     const offsetVec = Vector3d.createStartEnd(this._point0, this._point1);
     if (offsetVec.normalizeInPlace()) {
       offsetVec.rotate90CCWXY(offsetVec);
       const offsetDist = OffsetOptions.getOffsetDistance(offsetDistanceOrOptions);
-      return LineSegment3d.create(this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist));
+      return LineSegment3d.create(
+        this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist)
+      );
     }
     return undefined;
   }
-
-  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+  /**
+   * Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of
+   * projection.
    * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
-   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the
+   * end of the ray.
    */
   public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);

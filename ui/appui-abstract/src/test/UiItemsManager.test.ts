@@ -101,10 +101,10 @@ describe("UiItemsManager", () => {
     const spy = sinon.spy();
     const testUiProvider = new TestUiItemsProvider();
     UiItemsManager.onUiProviderRegisteredEvent.addListener(spy);
-    spy.calledOnce.should.false;
+    expect(spy.calledOnce).to.false;
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     UiItemsManager.register(testUiProvider);
-    spy.calledOnce.should.true;
+    expect(spy.calledOnce).to.true;
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(spy);
     UiItemsManager.unregister(testUiProvider.id);

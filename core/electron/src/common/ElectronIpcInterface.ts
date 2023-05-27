@@ -9,7 +9,9 @@
 import { AsyncMethodsOf } from "@itwin/core-bentley";
 
 /** @internal */
-export const dialogChannel = "electron-dialog";
+export const electronIpcStrings = {
+  dialogChannel: "itwinjs-electron/dialog",
+} as const;
 
 /** Asynchronous methods of dialog module in an Electron app.
  * @beta

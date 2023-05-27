@@ -8,7 +8,7 @@ import { Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { SpatialViewState } from "../SpatialViewState";
 import { Pixel } from "../render/Pixel";
 import { createBlankConnection } from "./createBlankConnection";

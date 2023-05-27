@@ -1,19 +1,20 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.0.0-dev.102",
+  "version": "4.1.0-dev.16",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
   "typings": "lib/cjs/core-frontend",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm && npm run -s webpackWorkers && npm run -s copy:workers",
     "build:cjs": "npm run -s copy:js:cjs && tsc 1>&2 --outDir lib/cjs",
     "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
+    "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-eslintrc -c \"./node_modules/@itwin/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
@@ -22,7 +23,9 @@
     "test": "npm run -s webpackTests && certa -r chrome",
     "cover": "npm -s test",
     "test:debug": "certa -r chrome --debug",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
+    "webpackTestWorker": "webpack --config ./src/test/worker/webpack.config.js 1>&2 && cpx \"./lib/test/test-worker.js\" ./lib/test",
+    "webpackWorkers": "webpack --config ./src/workers/ImdlParser/webpack.config.js 1>&2"
   },
   "repository": {
     "type": "git",
@@ -41,12 +44,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.0.0-dev.102",
-    "@itwin/core-bentley": "workspace:^4.0.0-dev.102",
-    "@itwin/core-common": "workspace:^4.0.0-dev.102",
-    "@itwin/core-geometry": "workspace:^4.0.0-dev.102",
-    "@itwin/core-orbitgt": "workspace:^4.0.0-dev.102",
-    "@itwin/core-quantity": "workspace:^4.0.0-dev.102"
+    "@itwin/appui-abstract": "workspace:^4.1.0-dev.16",
+    "@itwin/core-bentley": "workspace:^4.1.0-dev.16",
+    "@itwin/core-common": "workspace:^4.1.0-dev.16",
+    "@itwin/core-geometry": "workspace:^4.1.0-dev.16",
+    "@itwin/core-orbitgt": "workspace:^4.1.0-dev.16",
+    "@itwin/core-quantity": "workspace:^4.1.0-dev.16"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

@@ -455,6 +455,7 @@ export namespace BlobContainer {
     export interface Scope {
         iModelId?: Id64String;
         iTwinId: Id64String;
+        owner?: string;
     }
     export interface TokenProps {
         expiration: Date;
@@ -659,12 +660,6 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @beta @deprecated
-export interface ChangeSummaryExtractOptions {
-    currentVersionOnly?: boolean;
-    startVersion?: IModelVersion;
-}
-
 // @beta
 export class ChangeSummaryManager {
     static attachChangeCache(iModel: IModelDb): void;
@@ -679,8 +674,6 @@ export class ChangeSummaryManager {
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
     static createChangeSummary(accessToken: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
-    // @deprecated
-    static extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
@@ -706,6 +699,11 @@ export class ChannelAdmin implements ChannelControl {
         description?: string;
     }): Id64String;
     // (undocumented)
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+    }): void;
+    // (undocumented)
     removeAllowedChannel(channelKey: ChannelKey): void;
     static readonly sharedChannel = "shared";
     // (undocumented)
@@ -723,6 +721,10 @@ export interface ChannelControl {
         parentSubjectId?: Id64String;
         description?: string;
     }): Id64String;
+    makeChannelRoot(args: {
+        elementId: Id64String;
+        channelKey: ChannelKey;
+    }): void;
     removeAllowedChannel(channelKey: ChannelKey): void;
     // @internal (undocumented)
     verifyChannel(modelId: Id64String): void;
@@ -907,6 +909,7 @@ export namespace CloudSqlite {
     }
     export type ContainerAccessProps = ContainerProps & {
         lockExpireSeconds?: number;
+        tokenRefreshSeconds?: number;
     };
     export interface ContainerProps {
         accessToken: string;
@@ -919,12 +922,13 @@ export namespace CloudSqlite {
         storageType: "azure" | "google";
         writeable?: boolean;
     }
+    // (undocumented)
+    export type ContainerTokenProps = Omit<ContainerProps, "accessToken">;
     export interface CreateCloudCacheArg {
         cacheDir?: string;
         cacheName: string;
         cacheSize?: string;
     }
-    // (undocumented)
     export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
@@ -999,6 +1003,7 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
+    export function requestToken(args: ContainerTokenProps): Promise<AccessToken>;
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
@@ -1093,7 +1098,7 @@ export namespace CodeService {
         readonly errorId: ErrorId;
         readonly problems?: ReserveProblem[] | UpdateProblem[];
     }
-    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "InconsistentIModels" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "NotAuthorized" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
     // @internal (undocumented)
     export interface FontIndexProps {
         // (undocumented)
@@ -3482,7 +3487,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
     // (undocumented)
-    getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
+    getWorkspaceDb(dbAlias: string): Promise<WorkspaceDb>;
     // (undocumented)
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
     // (undocumented)
@@ -5615,7 +5620,7 @@ export interface Workspace {
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getCloudCache(): CloudSqlite.CloudCache;
     getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
-    getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
+    getWorkspaceDb(dbAlias: WorkspaceDb.Name): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;

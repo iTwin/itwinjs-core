@@ -59,7 +59,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation, viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewPose } from "./ViewPose";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";

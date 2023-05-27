@@ -2,6 +2,108 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.0.0",
+      "tag": "@itwin/core-frontend_v4.0.0",
+      "date": "Mon, 22 May 2023 15:34:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "implemented constant lod texture mapping for tiles"
+          },
+          {
+            "comment": "Deprecate IModelConnection's query, queryRowCount, and restartQuery methods."
+          },
+          {
+            "comment": "Deprecated IModelAppOptions.rpcInterfaces in favor of using platform-specific RPC manager."
+          },
+          {
+            "comment": "Fixed inconsistent point sizes for additive point cloud tiles."
+          },
+          {
+            "comment": "added return of rtcCenter to readPointCloudTileContent"
+          },
+          {
+            "comment": "Promote and document some map layers functions."
+          },
+          {
+            "comment": "Update to eslint@8"
+          },
+          {
+            "comment": "Patch how dynamic import for packages are resolved in Vite based apps so tiles render\""
+          },
+          {
+            "comment": "Remove dependency on `lodash`"
+          },
+          {
+            "comment": "Map-layers should not be displayed past maximum LOD limit advertised by service metadata"
+          },
+          {
+            "comment": "Improved tiling tests"
+          },
+          {
+            "comment": "Move webgl-compatibility package out of peer to direct deps in core-frontend"
+          },
+          {
+            "comment": "Refactoring of internal request api, removed 'superagent', 'deep-assign' and 'qs' dependencies."
+          },
+          {
+            "comment": "add IModelApp.hubAccess to public api"
+          },
+          {
+            "comment": "ViewState3d.lookAt with ortho paramters should not use camera focusDist"
+          },
+          {
+            "comment": "Implemented constant lod texture mapping mode."
+          },
+          {
+            "comment": "Fixed clipping problem with decorators."
+          },
+          {
+            "comment": "Drop support for WebGL 1."
+          },
+          {
+            "comment": "Promote terrain-related APIs to public."
+          },
+          {
+            "comment": "Add readGltf which returns bounding boxes along with the graphic."
+          },
+          {
+            "comment": "When reading glTF, use a default material if none is specified, per the glTF spec."
+          },
+          {
+            "comment": "Promote APIs for converting between geographic and iModel coordinates."
+          },
+          {
+            "comment": "Promote HiliteSet constructor and NoRenderApp to public."
+          },
+          {
+            "comment": "Record statistics about tile content decoding times to TileRequestChannelStatistics."
+          },
+          {
+            "comment": "Add an option for ViewCreator3d to make all subcategories visible."
+          },
+          {
+            "comment": "add physics-based Atmospheric scattering shader"
+          },
+          {
+            "comment": "Localize tooltips for view clip decorations."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.7.6",
+      "tag": "@itwin/core-frontend_v3.7.6",
+      "date": "Mon, 15 May 2023 18:23:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.5",
+      "tag": "@itwin/core-frontend_v3.7.5",
+      "date": "Thu, 04 May 2023 19:43:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.4",
       "tag": "@itwin/core-frontend_v3.7.4",
       "date": "Tue, 25 Apr 2023 17:50:35 GMT",

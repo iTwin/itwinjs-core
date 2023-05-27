@@ -19,7 +19,7 @@ import { Pixel } from "../render/Pixel";
 import { SelectionSet } from "../SelectionSet";
 import { DecorateContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
