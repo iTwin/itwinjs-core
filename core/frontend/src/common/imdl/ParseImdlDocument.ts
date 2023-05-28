@@ -15,8 +15,8 @@ import {
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
-  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges, ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline,
-  ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
+  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlCompactEdges, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges,
+  ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
 import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
 import { isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
@@ -29,6 +29,7 @@ import { MeshParams } from "../render/primitives/MeshParams";
 import { VertexTable } from "../render/primitives/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../render/primitives/VertexIndices";
+import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -636,14 +637,32 @@ class Parser {
     };
   }
 
-  private parseEdges(imdl: ImdlMeshEdges | undefined, displayParams: DisplayParams): Imdl.EdgeParams | undefined {
+  private parseCompactEdges(imdl: ImdlCompactEdges, vertexIndices: VertexIndices): Imdl.IndexedEdgeParams | undefined {
+    const visibility = this.findBuffer(imdl.visibility);
+    if (!visibility)
+      return undefined;
+
+    const normals = undefined !== imdl.normalPairs ? this.findBuffer(imdl.normalPairs) : undefined;
+    return indexedEdgeParamsFromCompactEdges({
+      numVisibleEdges: imdl.numVisible,
+      visibility,
+      vertexIndices,
+      normalPairs: normals ? new Uint32Array(normals.buffer, normals.byteOffset, normals.byteLength / 4) : undefined,
+      maxEdgeTableDimension: this._options.maxVertexTableSize,
+    });
+  }
+
+  private parseEdges(imdl: ImdlMeshEdges | undefined, displayParams: DisplayParams, indices: Uint8Array): Imdl.EdgeParams | undefined {
     if (!imdl)
       return undefined;
 
     const segments = imdl.segments ? this.parseSegmentEdges(imdl.segments) : undefined;
     const silhouettes = imdl.silhouettes ? this.parseSilhouetteEdges(imdl.silhouettes) : undefined;
-    const indexed = imdl.indexed ? this.parseIndexedEdges(imdl.indexed) : undefined;
     const polylines = imdl.polylines ? this.parseTesselatedPolyline(imdl.polylines) : undefined;
+
+    let indexed = imdl.indexed ? this.parseIndexedEdges(imdl.indexed) : undefined;
+    if (!indexed && imdl.compact)
+      indexed = this.parseCompactEdges(imdl.compact, new VertexIndices(indices));
 
     if (!segments && !silhouettes && !indexed &&!polylines)
       return undefined;
@@ -746,7 +765,7 @@ class Parser {
               surface,
               isPlanar,
               auxChannels: this.parseAuxChannelTable(docPrimitive),
-              edges: this.parseEdges(docPrimitive.edges, displayParams),
+              edges: this.parseEdges(docPrimitive.edges, displayParams, surface.indices),
             },
           };
         }
