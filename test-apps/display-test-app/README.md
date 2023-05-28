@@ -219,6 +219,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the @itwin/frontend-tiles package will be used to obtain tile trees for spatial views, served over localhost.
 * IMJS_GPU_MEMORY_LIMIT
   * If defined, specifies the GpuMemoryLimit with which to initialize TileAdmin (none, relaxed, default, aggressive; or a specific number of bytes).
+* IMJS_NO_IMDL_WORKER
+  * If defined, decoding of iMdl content is performed in the main thread instead of in a web worker. This makes debugging easier.
 
 ## Key-ins
 
