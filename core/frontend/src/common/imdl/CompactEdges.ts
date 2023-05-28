@@ -12,11 +12,21 @@ import { ImdlModel } from "./ImdlModel";
 import { calculateEdgeTableParams } from "../render/primitives/EdgeParams";
 import { VertexIndices } from "../render/primitives/VertexIndices";
 
+/** Parameters supplied to [[indexedEdgeParamsFromCompactEdges]].
+ * @internal
+ */
 export interface CompactEdgeParams {
+  /** The number of always-visible edges.
+   * @note The number of silhouette edges is the same as the number of [[normalPairs]].
+   */
   numVisibleEdges: number;
+  /** 2 bit visibility of each edge to the next edge in the triangle, in the same order as the triangle indices in [[vertexIndices]]. */
   visibility: Uint8Array;
+  /** The indices describing the topology of the triangle mesh. */
   vertexIndices: VertexIndices;
+  /** If any silhouettes are present, the [OctEncodedNormalPair]($common)s associated with each. */
   normalPairs?: Uint32Array;
+  /** The maximum width or height for the resultant [[EdgeTable]]. */
   maxEdgeTableDimension: number;
 }
 
@@ -26,7 +36,10 @@ interface CompactEdge {
   normals?: number;
 }
 
-function * visibilityIterator(visibilityFlags: Uint8Array, vertexIndices: VertexIndices, normalPairs: Uint32Array | undefined): IterableIterator<CompactEdge> {
+/** Iterate over the compact edges.
+ * @note The same object is returned on each iteration, mutated in place.
+ */
+function * compactEdgeIterator(visibilityFlags: Uint8Array, vertexIndices: VertexIndices, normalPairs: Uint32Array | undefined): IterableIterator<CompactEdge> {
   let bitIndex = 0;
   let flagsIndex = 0;
   let normalIndex = 0;
@@ -62,12 +75,9 @@ function setUint24(edgeTable: Uint8Array, byteIndex: number, value: number): voi
   edgeTable[byteIndex + 2] = (value & 0xff0000) >>> 16;
 }
 
-function setEdge(edgeTable: Uint8Array, index: number, startPointIndex: number, endPointIndex: number): void {
-  const byteIndex = index * 6;
-  setUint24(edgeTable, byteIndex, startPointIndex);
-  setUint24(edgeTable, byteIndex + 3, endPointIndex);
-}
-
+/** Convert an [[ImdlCompactEdges]] to an [[IndexedEdgeParams]].
+ * @internal
+ */
 export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): ImdlModel.IndexedEdgeParams  | undefined {
   const numSilhouettes = compact.normalPairs?.length ?? 0;
   const numTotalEdges = compact.numVisibleEdges + numSilhouettes;
@@ -85,9 +95,12 @@ export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): I
 
   let curVisibleIndex = 0;
   let curSilhouetteIndex = 0;
-  for (const edge of visibilityIterator(compact.visibility, compact.vertexIndices, compact.normalPairs)) {
+  for (const edge of compactEdgeIterator(compact.visibility, compact.vertexIndices, compact.normalPairs)) {
     if (undefined === edge.normals) {
-      setEdge(edgeTable, curVisibleIndex++, edge.index0, edge.index1);
+      const index = curVisibleIndex++;
+      const byteIndex = index * 6;
+      setUint24(edgeTable, byteIndex, edge.index0);
+      setUint24(edgeTable, byteIndex + 3, edge.index1);
     } else {
       const index = curSilhouetteIndex++;
       const byteIndex = silhouetteStartByteIndex + silhouettePadding + index * 10;
