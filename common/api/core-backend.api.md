@@ -870,7 +870,7 @@ export namespace CloudSqlite {
         get garbageBlocks(): number;
         get hasLocalChanges(): boolean;
         get hasWriteLock(): boolean;
-        initializeContainer(opts?: {
+        initializeContainer(args: {
             checksumBlockNames?: boolean;
             blockSize: number;
         }): void;
@@ -2913,6 +2913,8 @@ export abstract class IModelDb extends IModel {
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
+    // @alpha
+    convertEc2SchemaStrings(ec2XmlSchemas: string[]): string[];
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
     // @beta

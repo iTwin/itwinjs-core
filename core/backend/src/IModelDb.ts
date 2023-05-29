@@ -846,6 +846,23 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
   }
 
+  /** Convert EC2 XML ECSchema(s). On success, the EC2.0 schemas are converted into EC3.2 schemas.
+   * @param ec2XmlSchemas The EC2 XML string(s) created from a serialized ECSchema.
+   * @returns EC3.2 XML ECSchema(s).
+   * @throws [[IModelError]] if there is a problem converting the EC2.0 schemas.
+   * @alpha
+   */
+  public convertEc2SchemaStrings(ec2XmlSchemas: string[]): string[] {
+    if (ec2XmlSchemas.length === 0)
+      return [];
+
+    const ec3XmlSchemas: string[] = this.nativeDb.convertEC2XmlSchemas(ec2XmlSchemas);
+    if (ec2XmlSchemas.length === 0)
+      throw new IModelError(BentleyStatus.ERROR, "Error converting ec2 Xml schema(s)");
+
+    return ec3XmlSchemas;
+  }
+
   /** Find an opened instance of any subclass of IModelDb, by filename
    * @note this method returns an IModelDb if the filename is open for *any* subclass of IModelDb
   */

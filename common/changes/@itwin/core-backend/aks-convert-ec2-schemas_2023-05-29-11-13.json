@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added support for converting EC2 XML schemas to EC3.2 XML schemas via the IModelDb.convertEc2SchemaStrings method",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
