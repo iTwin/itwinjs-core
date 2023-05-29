@@ -389,10 +389,10 @@ export class RegionOps {
    * guarantee a simple area offset.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
+   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
+   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
    * single intersection point (to create a sharp corner).
-   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
+   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
    * straight lines (a line string) that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`
@@ -416,10 +416,10 @@ export class RegionOps {
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
+   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
+   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
    * single intersection point (to create a sharp corner).
-   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
+   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
    * straight lines (a line string) that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`

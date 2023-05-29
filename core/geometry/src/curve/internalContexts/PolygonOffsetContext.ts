@@ -38,12 +38,13 @@ enum JointMode {
 
 /**
  * Control parameters for joint construction based on turn angle (which is always between -180 and 180).
- * * Turn angle is the angle between the direction of starting line and the direction of turned line (ccw).
+ * * Turn angle is the angle between the direction of starting line and the direction of turned line (ccw). If we
+ * have curves instead of lines, the line would the tangent line at the turn point.
  * * Decision order is:
- *   * if the turn angle is greater than minArcDegrees, make an arc.
- *   * if the turn angle is less than or equal maxChamferTurnDegrees, extend curves along tangent to single
+ *   * if the turn angle angle is greater than minArcDegrees, make an arc.
+ *   * if the turn angle angle is less than or equal maxChamferTurnDegrees, extend curves along tangent to single
  * intersection point (to create a sharp corner).
- *   * if the turn angle is greater than maxChamferTurnDegrees,  construct multiple lines that are tangent to
+ *   * if the turn angle angle is greater than maxChamferTurnDegrees,  construct multiple lines that are tangent to
  * the turn circle "from the outside", with each equal turn less than maxChamferTurnDegrees.
  * @public
  */
@@ -324,10 +325,11 @@ class Joint {
       }
     }
   }
+  /** Turn the Joint chain into the destination CurvePrimitive array. */
   public static collectCurvesFromChain(start: Joint | undefined, destination: CurvePrimitive[], maxTest: number = 100) {
     if (start === undefined)
       return;
-    let numOut = -2 * maxTest;    // allow extra things to happen
+    let numOut = -2 * maxTest; // allow extra things to happen
     Joint.visitJointsOnChain(
       start,
       (joint: Joint) => {
@@ -620,10 +622,10 @@ export class PolygonWireOffsetContext {
    * * This is a simple wire offset (in the form of a line string), not an area.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
+   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
+   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
    * single intersection point (to create a sharp corner).
-   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
+   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
    * straight lines (a line string) that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`
@@ -645,7 +647,7 @@ export class PolygonWireOffsetContext {
     if (wrap && !points[0].isAlmostEqual(points[points.length - 1])) {
       wrap = false;
     }
-    /** create raw offset curves as a linked list (joint0) */
+    /** create raw offsets as a linked list (joint0) */
     const options = JointOptions.create(leftOffsetDistanceOrOptions);
     const numPoints = points.length;
     let fragment0 = PolygonWireOffsetContext.createOffsetSegment(points[0], points[1], options.leftOffsetDistance);
@@ -722,7 +724,7 @@ export class CurveChainWireOffsetContext {
     return cp;
   }
   /**
-   * Create the offset of a single primitive.
+   * Create the offset of a single primitive as viewed in the xy-plane (ignoring z).
    * * each primitive may be labeled (as an `any` object) with start or end point of base curve:
    *   * `(primitive as any).baseCurveStart: Point3d`
    *   * `(primitive as any).baseCurveEnd: Point3d`
@@ -752,10 +754,10 @@ export class CurveChainWireOffsetContext {
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
+   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
+   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
    * single intersection point (to create a sharp corner).
-   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight
+   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight
    * lines (a line string) that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`
@@ -766,23 +768,24 @@ export class CurveChainWireOffsetContext {
   public static constructCurveXYOffset(
     curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions
   ): CurveCollection | undefined {
-    const wrap = curves instanceof Loop;
+    const wrap: boolean = curves instanceof Loop;
     const offsetOptions = OffsetOptions.create(offsetDistanceOrOptions);
     const simpleOffsets: CurvePrimitive[] = [];
-    // setup pass: get simple offsets of each primitive
+    /** traverse primitives (children of curves) and create simple offsets of each primitive as an array */
     for (const c of curves.children) {
       const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, offsetOptions);
       if (c1 === undefined) {
         // bad .. maybe arc to inside?
-      } else if (c1 instanceof CurvePrimitive)
+      } else if (c1 instanceof CurvePrimitive) {
         simpleOffsets.push(c1);
-      else if (Array.isArray(c1)) {
+      } else if (Array.isArray(c1)) {
         for (const c2 of c1) {
           if (c2 instanceof CurvePrimitive)
             simpleOffsets.push(c2);
         }
       }
     }
+    /** create joints between array elements to make offsets as a linked list (joint0) */
     let fragment0;
     let newJoint;
     let previousJoint;
@@ -801,10 +804,10 @@ export class CurveChainWireOffsetContext {
     }
     if (joint0 && previousJoint && curves instanceof Loop)
       Joint.link(previousJoint, joint0);
-
+    /** annotateChain sets some of the joints attributes (including how to extend curves or fill the gap between curves) */
     const numOffset = simpleOffsets.length;
     Joint.annotateChain(joint0, offsetOptions.jointOptions, numOffset);
-
+    /** turn the Joint linked list into a CurveCollection. trimming is done in collectCurvesFromChain */
     const outputCurves: CurvePrimitive[] = [];
     Joint.collectCurvesFromChain(joint0, outputCurves, numOffset);
     return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap, true);

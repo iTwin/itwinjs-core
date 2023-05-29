@@ -1311,7 +1311,7 @@ describe("RegionOps.constructPolygonWireXYOffset", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "PolygonWireXYOffsetWrapFalse");
   });
 
-  it("PolygonWireXYOffsetCustomOptions", () => {
+  it("PolygonWireXYOffsetCustomOption", () => {
     const wrap: boolean = true;
     const allGeometry: GeometryQuery[] = [];
     const lineStrings: Point3d[][] = [
@@ -1342,7 +1342,7 @@ describe("RegionOps.constructPolygonWireXYOffset", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
       }
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "PolygonWireXYOffsetCustomOptions");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "PolygonWireXYOffsetCustomOption");
   });
 });
 
@@ -1362,8 +1362,12 @@ describe("RegionOps.constructCurveXYOffset", () => {
           Point3d.create(-1, 4), Point3d.create(2, 4), Point3d.create(1, 5), Point3d.create(-2, 5), Point3d.create(-1, 4),
         ])
       ),
+      Path.create([
+        Point3d.create(-1, -2), Point3d.create(1, -2), Point3d.create(0.1, -3), Point3d.create(1, -4),
+        Point3d.create(-1, -4), Point3d.create(-0.1, -3), Point3d.create(-1, -2),
+      ]),
     ];
-    const offsetDistances: number[] = [-0.2, -0.1, -0.05, 0.05, 0.1, 0.2];
+    const offsetDistances: number[] = [-0.3, -0.1, -0.05, 0.05, 0.1, 0.3];
 
     for (const lineString of lineStrings) {
       GeometryCoreTestIO.captureGeometry(allGeometry, lineString);
@@ -1375,7 +1379,7 @@ describe("RegionOps.constructCurveXYOffset", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetDefaultOption");
   });
 
-  it("constructCurveXYOffsetCustomOptions", () => {
+  it("constructCurveXYOffsetCustomOption", () => {
     const allGeometry: GeometryQuery[] = [];
     const lineStrings: CurveChain[] = [
       Path.create([Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-3, -1)]),
@@ -1390,8 +1394,12 @@ describe("RegionOps.constructCurveXYOffset", () => {
           Point3d.create(-1, 4), Point3d.create(2, 4), Point3d.create(1, 5), Point3d.create(-2, 5), Point3d.create(-1, 4),
         ])
       ),
+      Path.create([
+        Point3d.create(-1, -2), Point3d.create(1, -2), Point3d.create(0.1, -3), Point3d.create(1, -4),
+        Point3d.create(-1, -4), Point3d.create(-0.1, -3), Point3d.create(-1, -2),
+      ]),
     ];
-    const offsetDistances: number[] = [-0.2, -0.1, -0.05, 0.05, 0.1, 0.2];
+    const offsetDistances: number[] = [-0.3, -0.1, -0.05, 0.05, 0.1, 0.3];
     const jointOptions: JointOptions[] = [];
     const minArcDegrees = 100;
     const maxChamferDegrees = 50;
@@ -1406,6 +1414,6 @@ describe("RegionOps.constructCurveXYOffset", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
       }
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetCustomOptions");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetCustomOption");
   });
 });
