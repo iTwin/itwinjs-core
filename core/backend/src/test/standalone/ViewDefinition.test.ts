@@ -7,7 +7,8 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import {
-  Camera, Code, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, SpatialViewDefinitionProps, SubCategoryAppearance,
+  Camera, Code, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, SpatialViewDefinitionProps,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -125,8 +126,7 @@ describe("ViewDefinition", () => {
 
     const guids: GuidString[] = [];
     const ids1: Id64String[] = [];
-    const ids2: Id64String[] = [];
-    const id1Mapper: ViewStore.GuidMapper = {
+    const id1Mapper: IModelDb.GuidMapper = {
       getFederationGuidFromId(id: Id64String): GuidString | undefined {
         const index = ids1.indexOf(id);
         if (index >= 0)
@@ -140,24 +140,9 @@ describe("ViewDefinition", () => {
         return undefined;
       },
     };
-    const id2Mapper: ViewStore.GuidMapper = {
-      getFederationGuidFromId(id: Id64String): GuidString | undefined {
-        const index = ids2.indexOf(id);
-        if (index >= 0)
-          return guids[index];
-        return undefined;
-      },
-      getIdFromFederationGuid(guid?: GuidString): Id64String | undefined {
-        const index = guids.indexOf(guid!);
-        if (index >= 0)
-          return ids2[index];
-        return undefined;
-      },
-    };
     for (let i = 0; i < 100; i++) {
       guids.push(Guid.createValue());
       ids1.push(Id64.fromLocalAndBriefcaseIds(i, 0));
-      ids2.push(Id64.fromLocalAndBriefcaseIds(i + 1, 0));
     }
 
     const ds1Row = await vs1.addDisplayStyle({ elements: id1Mapper, displayStyle: ds1.toJSON() });
@@ -166,6 +151,14 @@ describe("ViewDefinition", () => {
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");
     expect(ds1out.code.value).equal("default");
     expect(ds1out.jsonProperties?.styles).deep.equal(JSON.parse(JSON.stringify(styles)));
+
+    const tl1Row = await vs1.addTimeline({ elements: id1Mapper, name: "TestRenderTimeline", timeline: styles.scheduleScript, owner: "owner2" });
+    expect(tl1Row).equal("@1");
+    const tl1out = vs1.loadTimeline({ elements: id1Mapper, id: tl1Row });
+    expect(tl1out.classFullName).equal("BisCore:RenderTimeline");
+    expect(tl1out.id).equal(tl1Row);
+    expect(tl1out.code.value).equal("TestRenderTimeline");
+    expect(tl1out.script).equal(JSON.stringify(styles.scheduleScript));
 
     const viewDefProps: SpatialViewDefinitionProps = {
       ...basicProps,

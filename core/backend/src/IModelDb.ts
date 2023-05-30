@@ -1559,10 +1559,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
   }
 
+  export interface GuidMapper {
+    getFederationGuidFromId(id: Id64String): GuidString | undefined;
+    getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
+  }
+
   /** The collection of elements in an [[IModelDb]].
    * @public
    */
-  export class Elements {
+  export class Elements implements GuidMapper {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 

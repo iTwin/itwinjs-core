@@ -9,19 +9,14 @@
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSubCategoryProps, ElementProps,
-  ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule, SpatialViewDefinitionProps, ViewDefinitionProps,
+  ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule, RenderTimelineProps, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
 import { IModelDb } from "./IModelDb";
+import { VersionedSqliteDb } from "./SQLiteDb";
 
 /** @beta */
 export namespace ViewStore {
-
-  export interface GuidMapper {
-    getFederationGuidFromId(id: Id64String): GuidString | undefined;
-    getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
-  }
 
   export const tableName = {
     categorySelectors: "categorySelectors",
@@ -41,8 +36,12 @@ export namespace ViewStore {
 
   /** A row in a table. 0 means "not present" */
   export type RowId = number;
-  /** a string representation of a row in a table of a ViewStore. Will be a base-36 integer with a leading "@" (e.g."@t4e3") */
+
+  /** a string representation of a row in a table of a ViewStore. Will be a base-36 integer with a leading "@" (e.g."@4e3") */
   export type RowString = string;
+
+  /** a string representation of a row in a the Guid table. Will be a base-36 integer with a leading "^" (e.g."^4e3") */
+  export type GuidRowString = string;
 
   export interface TableRow {
     name?: string;
@@ -75,16 +74,23 @@ export namespace ViewStore {
     tagId: RowId;
   }
 
-  export const rowIdToString = (rowId: RowId): RowString => {
+  export const tableRowIdToString = (rowId: RowId): RowString => {
     return `@${rowId.toString(36)}`;
   };
+  export const guidRowToString = (rowId: RowId): GuidRowString => {
+    return `^${rowId.toString(36)}`;
+  };
+
+  const isTableRowString = (id?: string) => true === id?.startsWith("@");
+  const isGuidRowString = (id?: string) => true === id?.startsWith("^");
+
   export const rowIdFromString = (id: RowString): RowId => {
-    if (!id.startsWith("@"))
+    if (!isTableRowString(id) && !isGuidRowString(id))
       throw new Error(`invalid row id`);
     return parseInt(id.slice(1), 36);
   };
-  const blankElementProps = (from: any, classFullName: string, id: RowId, name?: string): ElementProps => {
-    from.id = rowIdToString(id);
+  const blankElementProps = (from: any, classFullName: string, idString: RowString, name?: string): ElementProps => {
+    from.id = idString;
     from.classFullName = classFullName;
     from.model = IModelDb.repositoryModelId;
     from.code = { spec: "0x1", scope: "0x1", value: name };
@@ -318,7 +324,7 @@ export namespace ViewStore {
     public getDisplayStyle(id: RowId): DisplayStyleRow | undefined {
       return this.getTableRow(tableName.displayStyles, id);
     }
-    public getTimeline(id: RowId): TimelineRow | undefined {
+    public getTimelineRow(id: RowId): TimelineRow | undefined {
       return this.getTableRow(tableName.timelines, id);
     }
     public getTag(id: RowId): TagRow | undefined {
@@ -498,13 +504,13 @@ export namespace ViewStore {
       });
     }
 
-    private toGuidRow(elements: GuidMapper, id?: Id64String): RowId | undefined {
+    private toGuidRow(elements: IModelDb.GuidMapper, id?: Id64String): RowId | undefined {
       if (undefined === id)
         return undefined;
       const fedGuid = elements.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
-    private toCompressedGuidRows(elements: GuidMapper, ids: Id64String[] | string): CompressedId64Set {
+    private toCompressedGuidRows(elements: IModelDb.GuidMapper, ids: Id64String[] | string): CompressedId64Set {
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
         const guidRow = this.toGuidRow(elements, id);
@@ -513,13 +519,13 @@ export namespace ViewStore {
       }
       return CompressedId64Set.compressSet(result);
     }
-    private fromGuidRow(elements: GuidMapper, id: RowId): Id64String | undefined {
-      return elements.getIdFromFederationGuid(this.getGuid(id));
+    private fromGuidRow(elements: IModelDb.GuidMapper, guidRow: RowId): Id64String | undefined {
+      return elements.getIdFromFederationGuid(this.getGuid(guidRow));
     }
-    private fromGuidRowString(elements: GuidMapper, id?: string) {
-      return (typeof id !== "string" || !id.startsWith("@")) ? id : this.fromGuidRow(elements, rowIdFromString(id));
+    private fromGuidRowString(elements: IModelDb.GuidMapper, id?: string) {
+      return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(elements, rowIdFromString(id));
     }
-    private fromCompressedGuidRows(elements: GuidMapper, guidRows: CompressedId64Set): CompressedId64Set {
+    private fromCompressedGuidRows(elements: IModelDb.GuidMapper, guidRows: CompressedId64Set): CompressedId64Set {
       const result = new Set<Id64String>();
       for (const rowId64String of CompressedId64Set.iterable(guidRows)) {
         const elId = this.fromGuidRow(elements, Id64.getLocalId(rowId64String));
@@ -528,25 +534,25 @@ export namespace ViewStore {
       }
       return CompressedId64Set.compressSet(result);
     }
-    private toGuidRowMember(elements: GuidMapper, base: any, memberName: string) {
+    private toGuidRowMember(elements: IModelDb.GuidMapper, base: any, memberName: string) {
       const id = base?.[memberName];
       if (id === undefined)
         return;
       if (typeof id === "string" && Id64.isValidId64(id)) {
         const guidRow = this.toGuidRow(elements, id);
         if (undefined !== guidRow) {
-          base[memberName] = rowIdToString(guidRow);
+          base[memberName] = guidRowToString(guidRow);
           return;
         }
       }
       throw new Error(`invalid ${memberName}: ${id}`);
     }
 
-    private fromGuidRowMember(elements: GuidMapper, base: any, memberName: string) {
+    private fromGuidRowMember(elements: IModelDb.GuidMapper, base: any, memberName: string) {
       const id = base?.[memberName];
       if (id === undefined)
         return;
-      if (typeof id === "string" && id.startsWith("@")) {
+      if (typeof id === "string" && id.startsWith("^")) {
         const elId = this.fromGuidRow(elements, rowIdFromString(id));
         if (undefined !== elId) {
           base[memberName] = elId;
@@ -564,47 +570,90 @@ export namespace ViewStore {
           throw new Error(`entry missing from ${table}`);
       });
     }
+    private scriptToGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+      const scriptProps: RenderSchedule.ScriptProps = [];
+      for (const model of script) {
+        const modelGuidRow = this.toGuidRow(elements, model.modelId);
+        if (modelGuidRow) {
+          model.modelId = guidRowToString(modelGuidRow);
+          scriptProps.push(model);
+          for (const batch of model.elementTimelines)
+            batch.elementIds = this.toCompressedGuidRows(elements, batch.elementIds);
+        }
+      }
+      return scriptProps;
+    }
+    private scriptFromGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+      const scriptProps: RenderSchedule.ScriptProps = [];
+      for (const model of script) {
+        const modelId = this.fromGuidRow(elements, rowIdFromString(model.modelId));
+        if (modelId) {
+          model.modelId = modelId;
+          scriptProps.push(model);
+          for (const batch of model.elementTimelines)
+            batch.elementIds = this.fromCompressedGuidRows(elements, batch.elementIds as CompressedId64Set);
+        }
+      }
+      return scriptProps;
+    }
 
-    public async addCategorySelector(args: { elements: GuidMapper, name: string, categories: Id64Array, owner?: string }): Promise<RowString> {
+    public async addCategorySelector(args: { elements: IModelDb.GuidMapper, name: string, categories: Id64Array, owner?: string }): Promise<RowString> {
       if (args.categories.length === 0)
         throw new Error("Must specify at least one category");
 
       const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.elements, args.categories) });
-      return rowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
+      return tableRowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadCategorySelector(args: { iModel: GuidMapper, id: RowString }): CategorySelectorProps {
-      const rowId = rowIdFromString(args.id);
-      const row = this.getCategorySelector(rowId);
+    public loadCategorySelector(args: { iModel: IModelDb.GuidMapper, id: RowString }): CategorySelectorProps {
+      const row = this.getCategorySelector(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
-      const props = blankElementProps({}, "BisCore:CategorySelector", rowId, row.name) as CategorySelectorProps;
+      const props = blankElementProps({}, "BisCore:CategorySelector", args.id, row.name) as CategorySelectorProps;
       const json = JSON.parse(row.json);
       props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.iModel, json.categories));
       return props;
     }
 
-    public async addModelSelector(args: { elements: GuidMapper, name: string, models: Id64Array, owner?: string }): Promise<RowString> {
+    public async addModelSelector(args: { elements: IModelDb.GuidMapper, name: string, models: Id64Array, owner?: string }): Promise<RowString> {
       if (args.models.length === 0)
         throw new Error("Must specify at least one model");
 
       const json = JSON.stringify({ models: this.toCompressedGuidRows(args.elements, args.models) });
-      return rowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
+      return tableRowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadModelSelector(args: { elements: GuidMapper, id: RowString }): ModelSelectorProps {
-      const rowId = rowIdFromString(args.id);
-      const row = this.getModelSelector(rowId);
+    public loadModelSelector(args: { elements: IModelDb.GuidMapper, id: RowString }): ModelSelectorProps {
+      const row = this.getModelSelector(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
-      const props = blankElementProps({}, "BisCore:ModelSelector", rowId, row?.name) as ModelSelectorProps;
+      const props = blankElementProps({}, "BisCore:ModelSelector", args.id, row?.name) as ModelSelectorProps;
       const json = JSON.parse(row.json);
       props.models = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.elements, json.models));
       return props;
     }
 
+    public async addTimeline(args: { elements: IModelDb.GuidMapper, name: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
+      const timeline = JSON.parse(JSON.stringify(args.timeline));
+      if (!Array.isArray(timeline))
+        throw new Error("Timeline has no entries");
+
+      const json = JSON.stringify(this.scriptToGuids(args.elements, timeline));
+      return tableRowIdToString(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
+    }
+
+    public loadTimeline(args: { elements: IModelDb.GuidMapper, id: RowString }): RenderTimelineProps {
+      const row = this.getTimelineRow(rowIdFromString(args.id));
+      if (undefined === row)
+        throw new Error("Timeline not found");
+
+      const props = blankElementProps({}, "BisCore:RenderTimeline", args.id, row?.name) as RenderTimelineProps;
+      props.script = JSON.stringify(this.scriptFromGuids(args.elements, JSON.parse(row.json)));
+      return props;
+    }
+
     /** add a DisplayStyleProps to the ViewStore */
-    public async addDisplayStyle(args: { elements: GuidMapper, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
+    public async addDisplayStyle(args: { elements: IModelDb.GuidMapper, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
       const displayStyle = JSON.parse(JSON.stringify(args.displayStyle)) as DisplayStyleProps; // make a copy
       const settings = displayStyle.jsonProperties?.styles;
       if (!settings)
@@ -616,7 +665,7 @@ export namespace ViewStore {
         for (const ovr of settings.subCategoryOvr) {
           const subCategoryGuidRow = this.toGuidRow(args.elements, ovr.subCategory);
           if (subCategoryGuidRow) {
-            ovr.subCategory = rowIdToString(subCategoryGuidRow);
+            ovr.subCategory = guidRowToString(subCategoryGuidRow);
             outOvr.push(ovr);
           }
         }
@@ -632,43 +681,31 @@ export namespace ViewStore {
         for (const entry of Object.entries(settings3d.planProjections)) {
           const modelGuidRow = this.toGuidRow(args.elements, entry[0]);
           if (modelGuidRow)
-            planProjections[rowIdToString(modelGuidRow)] = entry[1];
+            planProjections[guidRowToString(modelGuidRow)] = entry[1];
         }
         settings3d.planProjections = planProjections;
       }
 
       if (settings.renderTimeline) {
-        this.toGuidRowMember(args.elements, settings, "renderTimeline");
+        if (!isTableRowString(settings.renderTimeline))
+          this.toGuidRowMember(args.elements, settings, "renderTimeline");
         delete settings.scheduleScript;
-      } else if (Array.isArray(settings.scheduleScript)) {
-        const scriptProps: RenderSchedule.ScriptProps = [];
-        for (const model of settings.scheduleScript) {
-          const modelGuidRow = this.toGuidRow(args.elements, model.modelId);
-          if (modelGuidRow) {
-            model.modelId = rowIdToString(modelGuidRow);
-            scriptProps.push(model);
-            for (const batch of model.elementTimelines)
-              batch.elementIds = this.toCompressedGuidRows(args.elements, batch.elementIds);
-          }
-        }
-
+      } else if (settings.scheduleScript) {
+        const scriptProps = this.scriptToGuids(args.elements, settings.scheduleScript);
         if (scriptProps.length > 0)
           settings.scheduleScript = scriptProps;
-        else
-          delete settings.scheduleScript;
       }
 
-      return rowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: stringifyProps(displayStyle) }));
+      return tableRowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: stringifyProps(displayStyle) }));
     }
 
-    public loadDisplayStyle(args: { elements: GuidMapper, id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
-      const rowId = rowIdFromString(args.id);
-      const row = this.getDisplayStyle(rowId);
+    public loadDisplayStyle(args: { elements: IModelDb.GuidMapper, id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
+      const row = this.getDisplayStyle(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("DisplayStyle not found");
 
       const displayStyle = JSON.parse(row.json) as DisplayStyleProps;
-      blankElementProps(displayStyle, displayStyle.classFullName, rowId, row.name);
+      blankElementProps(displayStyle, displayStyle.classFullName, args.id, row.name);
 
       const settings = displayStyle.jsonProperties!.styles! as DisplayStyle3dSettingsProps; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       if (settings.subCategoryOvr) {
@@ -697,32 +734,20 @@ export namespace ViewStore {
         settings3d.planProjections = planProjections;
       }
 
-      settings.renderTimeline = this.fromGuidRowString(args.elements, settings.renderTimeline);
+      if (isGuidRowString(settings.renderTimeline))
+        settings.renderTimeline = this.fromGuidRowString(args.elements, settings.renderTimeline);
+
       if (undefined !== settings.renderTimeline) {
         delete settings.scheduleScript;
       } else if (settings.scheduleScript) {
         delete settings.renderTimeline;
-        const scriptProps: RenderSchedule.ScriptProps = [];
-        for (const model of settings.scheduleScript) {
-          const modelId = this.fromGuidRow(args.elements, rowIdFromString(model.modelId));
-          if (modelId) {
-            model.modelId = modelId;
-            scriptProps.push(model);
-            for (const batch of model.elementTimelines)
-              batch.elementIds = this.fromCompressedGuidRows(args.elements, batch.elementIds as CompressedId64Set);
-          }
-        }
-
-        if (scriptProps.length > 0)
-          settings.scheduleScript = scriptProps;
-        else
-          delete settings.scheduleScript;
+        settings.scheduleScript = this.scriptFromGuids(args.elements, settings.scheduleScript);
       }
 
       return displayStyle;
     }
 
-    public async addViewDefinition(args: { elements: GuidMapper, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
+    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
       const viewDef = JSON.parse(JSON.stringify(args.viewDef)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -735,16 +760,15 @@ export namespace ViewStore {
 
       this.toGuidRowMember(args.elements, viewDef, "baseModelId");
       this.toGuidRowMember(args.elements, viewDef.jsonProperties?.viewDetails, "acs");
-      return rowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId, json: stringifyProps(viewDef) }));
+      return tableRowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId, json: stringifyProps(viewDef) }));
     }
 
-    public loadViewDefinition(args: { elements: GuidMapper, id: RowString }): ViewDefinitionProps {
-      const rowId = rowIdFromString(args.id);
-      const row = this.getView(rowId);
+    public loadViewDefinition(args: { elements: IModelDb.GuidMapper, id: RowString }): ViewDefinitionProps {
+      const row = this.getView(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("ViewDefinition not found");
 
-      const props = blankElementProps(JSON.parse(row.json), row.className, rowId, row.name) as ViewDefinitionProps;
+      const props = blankElementProps(JSON.parse(row.json), row.className, args.id, row.name) as ViewDefinitionProps;
       this.fromGuidRowMember(args.elements, props, "baseModelId");
       this.fromGuidRowMember(args.elements, props.jsonProperties?.viewDetails, "acs");
       return props;

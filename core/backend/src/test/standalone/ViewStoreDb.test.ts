@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import { Suite } from "mocha";
-import { ViewStore } from "../../ViewStore";
 import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { ViewStore } from "../../ViewStore";
 
 describe.only("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -164,7 +164,7 @@ describe.only("ViewStore", function (this: Suite) {
     const timeline1Id = vs1.findTimelineByName("timeline1");
     const timeline2Id = vs1.findTimelineByName("timeline2");
     expect(timeline1Id).equals(1);
-    const timeline1 = vs1.getTimeline(timeline1Id)!;
+    const timeline1 = vs1.getTimelineRow(timeline1Id)!;
     expect(timeline1.name).equals("timeline1");
     expect(timeline1.json).equals("timeline1-json");
 
@@ -173,7 +173,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(timeline1UpdatedNameId).equals(timeline1Id);
 
     await vs1.updateTimelineJson(timeline1Id, "timeline1-json-updated");
-    const timeline1Updated = vs1.getTimeline(timeline1Id)!;
+    const timeline1Updated = vs1.getTimelineRow(timeline1Id)!;
     expect(timeline1Updated.json).equals("timeline1-json-updated");
 
     await vs1.deleteTimeline(timeline2Id);
@@ -244,14 +244,14 @@ describe.only("ViewStore", function (this: Suite) {
       count++;
       expect(guid).not.undefined;
       expect(guids.indexOf(guid)).not.equals(-1);
-      const rowString1 = ViewStore.rowIdToString(row);
+      const rowString1 = ViewStore.tableRowIdToString(row);
       expect(rowString1.startsWith("@")).true;
       expect(ViewStore.rowIdFromString(rowString1)).equals(row); // round trip
     });
     expect(count).equals(nGuids);
 
     const largeNumber = 0x7ffffffffffff;
-    expect(ViewStore.rowIdFromString(ViewStore.rowIdToString(largeNumber))).equals(largeNumber);
+    expect(ViewStore.rowIdFromString(ViewStore.tableRowIdToString(largeNumber))).equals(largeNumber);
 
     vs1.vacuum();
   });
