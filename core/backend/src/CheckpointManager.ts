@@ -219,7 +219,7 @@ export class V2CheckpointManager {
         const maxRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/maxRequests", 6);
         const timeout = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/timeout", 100);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, maxRequests, timeout }), minRequests, maxRequests, timeout);
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }), minRequests, maxRequests, timeout);
       }
       return { dbName, container };
     } catch (e: any) {
