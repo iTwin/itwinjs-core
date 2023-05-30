@@ -218,7 +218,7 @@ export class V2CheckpointManager {
         const minRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/minRequests", 3);
         const maxRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/maxRequests", 6);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, maxRequests }, minRequests, maxRequests));
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, maxRequests }), minRequests, maxRequests);
       }
       return { dbName, container };
     } catch (e: any) {
