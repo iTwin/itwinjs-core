@@ -8,15 +8,20 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
-  CategorySelectorProps, Code, DisplayStyle3dSettingsProps, DisplayStyleProps, DisplayStyleSubCategoryProps, ElementProps, ModelSelectorProps, PlanProjectionSettingsProps, SpatialViewDefinitionProps,
-  ViewDefinitionProps,
+  CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSubCategoryProps, ElementProps,
+  ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelDb } from "./IModelDb";
 import { VersionedSqliteDb } from "./SQLiteDb";
+import { IModelDb } from "./IModelDb";
 
 /** @beta */
 export namespace ViewStore {
+
+  export interface GuidMapper {
+    getFederationGuidFromId(id: Id64String): GuidString | undefined;
+    getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
+  }
 
   export const tableName = {
     categorySelectors: "categorySelectors",
@@ -82,8 +87,7 @@ export namespace ViewStore {
     from.id = rowIdToString(id);
     from.classFullName = classFullName;
     from.model = IModelDb.repositoryModelId;
-    from.code = Code.createEmpty();
-    from.code.name = name;
+    from.code = { spec: "0x1", scope: "0x1", value: name };
     return from;
   };
   const stringifyProps = (props: any): string => {
@@ -494,57 +498,62 @@ export namespace ViewStore {
       });
     }
 
-    private swizzleId(iModel: IModelDb, id: Id64String): RowId | undefined {
-      const fedGuid = iModel.withPreparedSqliteStatement(`SELECT FederationGuid FROM bis_Element WHERE Id=?`, (stmt) => {
-        stmt.bindId(1, id);
-        return stmt.nextRow() ? stmt.getValueGuid(0) : undefined;
-      });
+    private toGuidRow(elements: GuidMapper, id?: Id64String): RowId | undefined {
+      if (undefined === id)
+        return undefined;
+      const fedGuid = elements.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
-    private swizzleIds(iModel: IModelDb, ids: Id64String[]): RowId[] {
-      const result: RowId[] = [];
-      for (const id of ids) {
-        const swizzled = this.swizzleId(iModel, id);
-        if (undefined !== swizzled)
-          result.push(swizzled);
+    private toCompressedGuidRows(elements: GuidMapper, ids: Id64String[] | string): CompressedId64Set {
+      const result = new Set<Id64String>();
+      for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
+        const guidRow = this.toGuidRow(elements, id);
+        if (undefined !== guidRow)
+          result.add(Id64.fromLocalAndBriefcaseIds(guidRow, 0));
       }
-      return result;
+      return CompressedId64Set.compressSet(result);
     }
-    private unSwizzleId(iModel: IModelDb, id: RowId): Id64String | undefined {
-      const guid = this.getGuid(id);
-      if (undefined === guid)
-        return undefined;
-      return iModel.withPreparedSqliteStatement(`SELECT Id FROM bis_Element WHERE FederationGuid=?`, (stmt) => {
-        return !stmt.nextRow() ? undefined : stmt.getValueId(0);
-      });
+    private fromGuidRow(elements: GuidMapper, id: RowId): Id64String | undefined {
+      return elements.getIdFromFederationGuid(this.getGuid(id));
     }
-    private unSwizzleIdString(iModel: IModelDb, id?: string) {
-      return (typeof id !== "string" || !id.startsWith("@")) ? id : this.unSwizzleId(iModel, rowIdFromString(id));
+    private fromGuidRowString(elements: GuidMapper, id?: string) {
+      return (typeof id !== "string" || !id.startsWith("@")) ? id : this.fromGuidRow(elements, rowIdFromString(id));
     }
-    private unSwizzleIds(iModel: IModelDb, ids: RowId[]): Id64String[] {
-      const result: Id64String[] = [];
-      for (const id of ids) {
-        const unSwizzled = this.unSwizzleId(iModel, id);
-        if (undefined !== unSwizzled)
-          result.push(unSwizzled);
+    private fromCompressedGuidRows(elements: GuidMapper, guidRows: CompressedId64Set): CompressedId64Set {
+      const result = new Set<Id64String>();
+      for (const rowId64String of CompressedId64Set.iterable(guidRows)) {
+        const elId = this.fromGuidRow(elements, Id64.getLocalId(rowId64String));
+        if (undefined !== elId)
+          result.add(elId);
       }
-      return result;
+      return CompressedId64Set.compressSet(result);
     }
-    private swizzleMember(iModel: IModelDb, base: any, memberName: string) {
+    private toGuidRowMember(elements: GuidMapper, base: any, memberName: string) {
       const id = base?.[memberName];
+      if (id === undefined)
+        return;
       if (typeof id === "string" && Id64.isValidId64(id)) {
-        const swizzled = this.swizzleId(iModel, id);
-        if (undefined !== swizzled)
-          base[memberName] = rowIdToString(swizzled);
+        const guidRow = this.toGuidRow(elements, id);
+        if (undefined !== guidRow) {
+          base[memberName] = rowIdToString(guidRow);
+          return;
+        }
       }
+      throw new Error(`invalid ${memberName}: ${id}`);
     }
-    private unSwizzleMember(iModel: IModelDb, base: any, memberName: string) {
+
+    private fromGuidRowMember(elements: GuidMapper, base: any, memberName: string) {
       const id = base?.[memberName];
+      if (id === undefined)
+        return;
       if (typeof id === "string" && id.startsWith("@")) {
-        const unSwizzled = this.unSwizzleId(iModel, rowIdFromString(id));
-        if (undefined !== unSwizzled)
-          base[memberName] = unSwizzled;
+        const elId = this.fromGuidRow(elements, rowIdFromString(id));
+        if (undefined !== elId) {
+          base[memberName] = elId;
+          return;
+        }
       }
+      throw new Error(`invalid ${memberName}: ${id}`);
     }
 
     private verifyRowId(table: string, rowIdString: RowString): void {
@@ -556,43 +565,46 @@ export namespace ViewStore {
       });
     }
 
-    public async addCategorySelector(args: { iModel: IModelDb, name: string, categories: Id64Array, owner?: string }): Promise<RowString> {
+    public async addCategorySelector(args: { elements: GuidMapper, name: string, categories: Id64Array, owner?: string }): Promise<RowString> {
       if (args.categories.length === 0)
         throw new Error("Must specify at least one category");
 
-      const json = JSON.stringify({ categories: this.swizzleIds(args.iModel, args.categories) });
+      const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.elements, args.categories) });
       return rowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadCategorySelector(args: { iModel: IModelDb, rowId: RowId }): CategorySelectorProps {
-      const row = this.getCategorySelector(args.rowId);
+    public loadCategorySelector(args: { iModel: GuidMapper, id: RowString }): CategorySelectorProps {
+      const rowId = rowIdFromString(args.id);
+      const row = this.getCategorySelector(rowId);
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
-      const props = blankElementProps({}, "BisCore:CategorySelector", args.rowId, row.name) as CategorySelectorProps;
+      const props = blankElementProps({}, "BisCore:CategorySelector", rowId, row.name) as CategorySelectorProps;
       const json = JSON.parse(row.json);
-      props.categories = this.unSwizzleIds(args.iModel, json.categories);
+      props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.iModel, json.categories));
       return props;
     }
 
-    public async addModelSelector(args: { iModel: IModelDb, name: string, models: Id64Array, owner?: string }): Promise<RowString> {
+    public async addModelSelector(args: { elements: GuidMapper, name: string, models: Id64Array, owner?: string }): Promise<RowString> {
       if (args.models.length === 0)
         throw new Error("Must specify at least one model");
 
-      const json = JSON.stringify({ models: this.swizzleIds(args.iModel, args.models) });
+      const json = JSON.stringify({ models: this.toCompressedGuidRows(args.elements, args.models) });
       return rowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadModelSelector(args: { iModel: IModelDb, rowId: RowId }): ModelSelectorProps {
-      const row = this.getModelSelector(args.rowId);
+    public loadModelSelector(args: { elements: GuidMapper, id: RowString }): ModelSelectorProps {
+      const rowId = rowIdFromString(args.id);
+      const row = this.getModelSelector(rowId);
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
-      const props = blankElementProps({}, "BisCore:ModelSelector", args.rowId, row?.name) as ModelSelectorProps;
+      const props = blankElementProps({}, "BisCore:ModelSelector", rowId, row?.name) as ModelSelectorProps;
       const json = JSON.parse(row.json);
-      props.models = this.unSwizzleIds(args.iModel, json.models);
+      props.models = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.elements, json.models));
       return props;
     }
 
-    public async addDisplayStyle(args: { iModel: IModelDb, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
+    /** add a DisplayStyleProps to the ViewStore */
+    public async addDisplayStyle(args: { elements: GuidMapper, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
       const displayStyle = JSON.parse(JSON.stringify(args.displayStyle)) as DisplayStyleProps; // make a copy
       const settings = displayStyle.jsonProperties?.styles;
       if (!settings)
@@ -600,73 +612,117 @@ export namespace ViewStore {
 
       const name = displayStyle.code.value;
       if (settings.subCategoryOvr) {
-        for (const ovr of settings.subCategoryOvr)
-          this.swizzleMember(args.iModel, ovr, "subCategory");
+        const outOvr: DisplayStyleSubCategoryProps[] = [];
+        for (const ovr of settings.subCategoryOvr) {
+          const subCategoryGuidRow = this.toGuidRow(args.elements, ovr.subCategory);
+          if (subCategoryGuidRow) {
+            ovr.subCategory = rowIdToString(subCategoryGuidRow);
+            outOvr.push(ovr);
+          }
+        }
+        settings.subCategoryOvr = outOvr;
       }
 
-      if (settings.excludedElements) {
-        const excluded = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
-        (settings as any).excludedGuids = this.swizzleIds(args.iModel, excluded);
-        delete settings.excludedElements; // remove the original. We'll put it back when we load the display style.
-      }
+      if (settings.excludedElements)
+        settings.excludedElements = this.toCompressedGuidRows(args.elements, settings.excludedElements);
 
       const settings3d = settings as DisplayStyle3dSettingsProps;
       if (settings3d.planProjections) {
+        const planProjections = {} as { [modelId: string]: PlanProjectionSettingsProps };
         for (const entry of Object.entries(settings3d.planProjections)) {
-          const swizzledModelId = this.swizzleId(args.iModel, entry[0]);
-          if (swizzledModelId)
-            entry[0] = rowIdToString(swizzledModelId);
+          const modelGuidRow = this.toGuidRow(args.elements, entry[0]);
+          if (modelGuidRow)
+            planProjections[rowIdToString(modelGuidRow)] = entry[1];
         }
+        settings3d.planProjections = planProjections;
       }
 
-      if (settings.renderTimeline)
-        this.swizzleMember(args.iModel, settings, "renderTimeline");
+      if (settings.renderTimeline) {
+        this.toGuidRowMember(args.elements, settings, "renderTimeline");
+        delete settings.scheduleScript;
+      } else if (Array.isArray(settings.scheduleScript)) {
+        const scriptProps: RenderSchedule.ScriptProps = [];
+        for (const model of settings.scheduleScript) {
+          const modelGuidRow = this.toGuidRow(args.elements, model.modelId);
+          if (modelGuidRow) {
+            model.modelId = rowIdToString(modelGuidRow);
+            scriptProps.push(model);
+            for (const batch of model.elementTimelines)
+              batch.elementIds = this.toCompressedGuidRows(args.elements, batch.elementIds);
+          }
+        }
+
+        if (scriptProps.length > 0)
+          settings.scheduleScript = scriptProps;
+        else
+          delete settings.scheduleScript;
+      }
 
       return rowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: stringifyProps(displayStyle) }));
     }
-    public loadDisplayStyle(args: { iModel: IModelDb, rowId: RowId }): DisplayStyleProps {
-      const row = this.getDisplayStyle(args.rowId);
+
+    public loadDisplayStyle(args: { elements: GuidMapper, id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
+      const rowId = rowIdFromString(args.id);
+      const row = this.getDisplayStyle(rowId);
       if (undefined === row)
         throw new Error("DisplayStyle not found");
 
       const displayStyle = JSON.parse(row.json) as DisplayStyleProps;
-      blankElementProps(displayStyle, displayStyle.classFullName, args.rowId, row.name);
+      blankElementProps(displayStyle, displayStyle.classFullName, rowId, row.name);
 
-      const settings = displayStyle.jsonProperties!.styles! as DisplayStyle3dSettingsProps & { excludedGuids?: number[] }; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const settings = displayStyle.jsonProperties!.styles! as DisplayStyle3dSettingsProps; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       if (settings.subCategoryOvr) {
-        const unSwizzled: DisplayStyleSubCategoryProps[] = [];
+        const subCatOvr: DisplayStyleSubCategoryProps[] = [];
         for (const ovr of settings.subCategoryOvr) {
-          const id = this.unSwizzleIdString(args.iModel, ovr.subCategory);
+          const id = this.fromGuidRowString(args.elements, ovr.subCategory);
           if (undefined !== id) {
             ovr.subCategory = id;
-            unSwizzled.push(ovr);
+            subCatOvr.push(ovr);
           }
         }
-        settings.subCategoryOvr = unSwizzled;
+        settings.subCategoryOvr = subCatOvr;
       }
 
-      if (settings.excludedGuids) {
-        const ids = this.unSwizzleIds(args.iModel, settings.excludedGuids);
-        settings.excludedElements = CompressedId64Set.compressArray(ids);
-        delete settings.excludedGuids; // remove the swizzled version
-      }
+      if (settings.excludedElements)
+        settings.excludedElements = this.fromCompressedGuidRows(args.elements, settings.excludedElements as CompressedId64Set);
 
-      const settings3d = settings as DisplayStyle3dSettingsProps;
+      const settings3d = settings;
       if (settings3d.planProjections) {
-        const out = {} as { [modelId: string]: PlanProjectionSettingsProps };
+        const planProjections = {} as { [modelId: string]: PlanProjectionSettingsProps };
         for (const entry of Object.entries(settings3d.planProjections)) {
-          const unSwizzled = this.unSwizzleIdString(args.iModel, entry[0]);
-          if (undefined !== unSwizzled)
-            out[unSwizzled] = entry[1];
+          const modelId = this.fromGuidRowString(args.elements, entry[0]);
+          if (undefined !== modelId)
+            planProjections[modelId] = entry[1];
         }
-        settings3d.planProjections = out;
+        settings3d.planProjections = planProjections;
       }
 
-      settings.renderTimeline = this.unSwizzleIdString(args.iModel, settings.renderTimeline);
+      settings.renderTimeline = this.fromGuidRowString(args.elements, settings.renderTimeline);
+      if (undefined !== settings.renderTimeline) {
+        delete settings.scheduleScript;
+      } else if (settings.scheduleScript) {
+        delete settings.renderTimeline;
+        const scriptProps: RenderSchedule.ScriptProps = [];
+        for (const model of settings.scheduleScript) {
+          const modelId = this.fromGuidRow(args.elements, rowIdFromString(model.modelId));
+          if (modelId) {
+            model.modelId = modelId;
+            scriptProps.push(model);
+            for (const batch of model.elementTimelines)
+              batch.elementIds = this.fromCompressedGuidRows(args.elements, batch.elementIds as CompressedId64Set);
+          }
+        }
+
+        if (scriptProps.length > 0)
+          settings.scheduleScript = scriptProps;
+        else
+          delete settings.scheduleScript;
+      }
+
       return displayStyle;
     }
 
-    public async addViewDefinition(args: { iModel: IModelDb, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
+    public async addViewDefinition(args: { elements: GuidMapper, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
       const viewDef = JSON.parse(JSON.stringify(args.viewDef)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -677,18 +733,20 @@ export namespace ViewStore {
       if ((viewDef as SpatialViewDefinitionProps).modelSelectorId)
         this.verifyRowId(tableName.modelSelectors, (viewDef as SpatialViewDefinitionProps).modelSelectorId);
 
-      this.swizzleMember(args.iModel, viewDef, "baseModelId");
-      this.swizzleMember(args.iModel, viewDef.jsonProperties?.viewDetails, "acs");
+      this.toGuidRowMember(args.elements, viewDef, "baseModelId");
+      this.toGuidRowMember(args.elements, viewDef.jsonProperties?.viewDetails, "acs");
       return rowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId, json: stringifyProps(viewDef) }));
     }
-    public loadViewDefinition(args: { iModel: IModelDb, rowId: RowId }): ViewDefinitionProps {
-      const row = this.getView(args.rowId);
+
+    public loadViewDefinition(args: { elements: GuidMapper, id: RowString }): ViewDefinitionProps {
+      const rowId = rowIdFromString(args.id);
+      const row = this.getView(rowId);
       if (undefined === row)
         throw new Error("ViewDefinition not found");
 
-      const props = blankElementProps(JSON.parse(row.json), row.className, args.rowId, row.name) as ViewDefinitionProps;
-      this.unSwizzleMember(args.iModel, props, "baseModelId");
-      this.unSwizzleMember(args.iModel, props.jsonProperties?.viewDetails, "acs");
+      const props = blankElementProps(JSON.parse(row.json), row.className, rowId, row.name) as ViewDefinitionProps;
+      this.fromGuidRowMember(args.elements, props, "baseModelId");
+      this.fromGuidRowMember(args.elements, props.jsonProperties?.viewDetails, "acs");
       return props;
     }
   }

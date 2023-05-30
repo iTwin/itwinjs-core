@@ -1566,6 +1566,20 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
+    public getFederationGuidFromId(id: Id64String): GuidString | undefined {
+      return this._iModel.withPreparedSqliteStatement(`SELECT FederationGuid FROM bis_Element WHERE Id=?`, (stmt) => {
+        stmt.bindId(1, id);
+        return stmt.nextRow() ? stmt.getValueGuid(0) : undefined;
+      });
+    }
+
+    public getIdFromFederationGuid(guid?: GuidString): Id64String | undefined {
+      return guid ? this._iModel.withPreparedSqliteStatement(`SELECT Id FROM bis_Element WHERE FederationGuid=?`, (stmt) => {
+        stmt.bindGuid(1, guid);
+        return !stmt.nextRow() ? undefined : stmt.getValueId(0);
+      }) : undefined;
+    }
+
     /** Read element data from the iModel as JSON
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element.
