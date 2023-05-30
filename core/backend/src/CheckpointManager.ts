@@ -209,16 +209,17 @@ export class V2CheckpointManager {
         container.connect(this.cloudCache);
       container.checkForChanges();
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
-        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch, minRequests: number, maxRequests: number) => {
+        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch, minRequests: number, maxRequests: number, timeout: number) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
-          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, {minRequests, maxRequests});
+          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, {minRequests, maxRequests, timeout});
           const done = await prefetch.promise;
-          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, {minRequests, maxRequests});
+          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, {minRequests, maxRequests, timeout});
         };
         const minRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/minRequests", 3);
         const maxRequests = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/maxRequests", 6);
+        const timeout = IModelHost.appWorkspace.settings.getNumber("Checkpoints/prefetch/timeout", 100);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, maxRequests }), minRequests, maxRequests);
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, maxRequests, timeout }), minRequests, maxRequests, timeout);
       }
       return { dbName, container };
     } catch (e: any) {
