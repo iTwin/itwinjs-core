@@ -7,9 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import type { ScreenSpaceEffectBuilder, ScreenSpaceEffectSource} from "@itwin/core-extension";
 import {
-  IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
-} from "@itwin/core-frontend";
+  ExtensionHost, Tool,
+} from "@itwin/core-extension";
 
 /** Adds a screen-space effect to the selected viewport.
  * @beta
@@ -31,7 +32,7 @@ export abstract class AddEffectTool extends Tool {
     const name = `fdt ${this.effectName}`;
     if (!AddEffectTool._registeredEffects.has(name)) {
       // Register the effect.
-      const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder({
+      const builder = ExtensionHost.renderSystem.createScreenSpaceEffectBuilder({
         name,
         textureCoordFromPosition: this.textureCoordFromPosition,
         source: this.source,
@@ -44,7 +45,7 @@ export abstract class AddEffectTool extends Tool {
       AddEffectTool._registeredEffects.add(name);
     }
 
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp)
       vp.addScreenSpaceEffect(name);
 
@@ -61,7 +62,7 @@ export class ClearEffectsTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
-    IModelApp.viewManager.selectedView?.removeScreenSpaceEffects();
+    ExtensionHost.viewManager.selectedView?.removeScreenSpaceEffects();
     return true;
   }
 }
@@ -71,7 +72,7 @@ export class ClearEffectsTool extends Tool {
  * @beta
  */
 export function refreshViewportsForEffect(effectName: string): void {
-  for (const vp of IModelApp.viewManager) {
+  for (const vp of ExtensionHost.viewManager) {
     for (const vpEffectName of vp.screenSpaceEffects) {
       if (vpEffectName === effectName) {
         vp.requestRedraw();

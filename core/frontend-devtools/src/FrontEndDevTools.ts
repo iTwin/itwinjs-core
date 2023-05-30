@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { IModelApp } from "@itwin/core-frontend";
+import { ExtensionHost } from "@itwin/core-extension";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { ExplosionEffect } from "./effects/Explosion";

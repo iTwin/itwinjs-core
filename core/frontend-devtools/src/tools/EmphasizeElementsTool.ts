@@ -7,8 +7,8 @@
  */
 
 import { Id64 } from "@itwin/core-bentley";
-import { ColorDef } from "@itwin/core-common";
-import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@itwin/core-frontend";
+import type { QueryVisibleFeaturesOptions, ScreenViewport} from "@itwin/core-extension";
+import { ColorDef, EmphasizeElements, ExtensionHost, Tool } from "@itwin/core-extension";
 import { parseArgs } from "./parseArgs";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.
@@ -20,7 +20,7 @@ export abstract class EmphasizeElementsTool extends Tool {
   protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
 
   public override async run(_args: any[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp)
       return true;
 

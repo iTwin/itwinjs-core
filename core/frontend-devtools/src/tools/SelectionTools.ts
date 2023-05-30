@@ -7,8 +7,9 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64Arg, OrderedId64Iterable } from "@itwin/core-bentley";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+import type { Id64Arg} from "@itwin/core-bentley";
+import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
+import { ExtensionHost, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -22,7 +23,7 @@ export class SelectElementsByIdTool extends Tool {
   public static override get maxArgs() { return undefined; }
 
   public override async run(ids?: Id64Arg): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp && undefined !== ids)
       vp.iModel.selectionSet.replace(ids);
 
@@ -46,7 +47,7 @@ export class DumpSelectionSetTool extends Tool {
   private _copy?: boolean;
 
   public override async run(): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp)
       return false;
 
@@ -71,7 +72,7 @@ export class DumpSelectionSetTool extends Tool {
 
     const brief = `Selection set dumped${this._copy ? " to clipboard" : ""}.`;
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, brief, output);
-    IModelApp.notifications.outputMessage(details);
+    ExtensionHost.notifications.outputMessage(details);
     return true;
   }
 

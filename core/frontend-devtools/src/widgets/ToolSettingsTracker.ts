@@ -8,7 +8,8 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { IModelApp, ScreenViewport, ToolSettings, Viewport } from "@itwin/core-frontend";
+import type { Viewport } from "@itwin/core-extension";
+import { ExtensionHost, ScreenViewport, ToolSettings } from "@itwin/core-extension";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNestedMenu } from "../ui/NestedMenu";
 import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput";
@@ -41,7 +42,7 @@ export class ToolSettingsTracker {
       handler: (_cb) => {
         ToolSettings.preserveWorldUp = !ToolSettings.preserveWorldUp;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
     });
     div.style.textAlign = "left";
@@ -63,7 +64,7 @@ export class ToolSettingsTracker {
       handler: (value, _input) => {
         ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
     });
     div.style.display = "block";
@@ -84,7 +85,7 @@ export class ToolSettingsTracker {
       handler: (value, _input) => {
         ToolSettings.viewToolPickRadiusInches = value;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
       parseAsFloat: true,
     }, true);
@@ -100,7 +101,7 @@ export class ToolSettingsTracker {
       handler: (_cb) => {
         ToolSettings.walkEnforceZUp = !ToolSettings.walkEnforceZUp;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
     });
     div.style.display = "block";
@@ -120,7 +121,7 @@ export class ToolSettingsTracker {
       handler: (value, _input) => {
         ToolSettings.walkCameraAngle.setDegrees(value);
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
       parseAsFloat: true,
     }, true);
@@ -141,7 +142,7 @@ export class ToolSettingsTracker {
       handler: (value, _input) => {
         ToolSettings.walkVelocity = value;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
       parseAsFloat: true,
     }, true);
@@ -162,7 +163,7 @@ export class ToolSettingsTracker {
       handler: (value, _input) => {
         ToolSettings.wheelZoomBumpDistance = value;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        IModelApp.toolAdmin.exitViewTool();
+        ExtensionHost.toolAdmin.exitViewTool();
       },
       parseAsFloat: true,
     }, true);
@@ -182,7 +183,7 @@ export class ToolSettingsTracker {
       value: ToolSettings.wheelZoomRatio,
       handler: async (value, _input) => {
         ToolSettings.wheelZoomRatio = value;
-        return IModelApp.toolAdmin.exitViewTool();
+        return ExtensionHost.toolAdmin.exitViewTool();
       },
       parseAsFloat: true,
     }, true);
@@ -195,7 +196,7 @@ export class ToolSettingsTracker {
       value: ToolSettings.viewingInertia.damping,
       handler: async (value, _) => {
         ToolSettings.viewingInertia.damping = value;
-        return IModelApp.toolAdmin.exitViewTool();
+        return ExtensionHost.toolAdmin.exitViewTool();
       },
       min: 0,
       max: 1,
@@ -209,7 +210,7 @@ export class ToolSettingsTracker {
       value: ToolSettings.viewingInertia.duration.milliseconds / 1000,
       handler: async (value, _) => {
         ToolSettings.viewingInertia.duration = BeDuration.fromMilliseconds(value * 1000);
-        return IModelApp.toolAdmin.exitViewTool();
+        return ExtensionHost.toolAdmin.exitViewTool();
       },
       min: 0,
       max: 10,

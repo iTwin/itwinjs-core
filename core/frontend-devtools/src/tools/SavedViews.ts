@@ -8,10 +8,12 @@
  */
 
 import { BentleyError } from "@itwin/core-bentley";
-import { ViewStateProps } from "@itwin/core-common";
-import {
-  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
-} from "@itwin/core-frontend";
+import type { ViewStateProps } from "@itwin/core-extension";
+import { ExtensionHost } from "@itwin/core-extension";
+import type {
+  EntityState, IModelConnection, ViewState} from "@itwin/core-extension";
+import { NotifyMessageDetails, OutputMessagePriority, Tool,
+} from "@itwin/core-extension";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -68,9 +70,9 @@ export class SaveViewTool extends Tool {
   }
 
   public override async run(): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No viewport"));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No viewport"));
       return true;
     }
 
@@ -79,9 +81,9 @@ export class SaveViewTool extends Tool {
       if (this._quote)
         json = `"${json.replace(/"/g, '""')}"`;
       copyStringToClipboard(json);
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard"));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard"));
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;
@@ -99,7 +101,7 @@ export class ApplyViewTool extends Tool {
   public static override get minArgs() { return 1; }
 
   public override async run(view?: ViewState): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== view && undefined !== vp)
       vp.changeView(view);
 
@@ -107,7 +109,7 @@ export class ApplyViewTool extends Tool {
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
 
@@ -117,7 +119,7 @@ export class ApplyViewTool extends Tool {
       const view = await deserializeViewState(json, vp.iModel);
       await this.run(view);
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
+      ExtensionHost.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;
@@ -140,7 +142,7 @@ export class ApplyViewByIdTool extends Tool {
     if (typeof viewId !== "string")
       return false;
 
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (!vp)
       return false;
 

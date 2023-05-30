@@ -7,10 +7,12 @@
  * @module Widgets
  */
 
-import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-frontend";
+import { ExtensionHost, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-extension";
 import { createButton } from "../ui/Button";
-import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
-import { createTextBox, TextBox } from "../ui/TextBox";
+import type { DataList, DataListEntry } from "../ui/DataList";
+import { appendDataListEntries, createDataList } from "../ui/DataList";
+import type { TextBox } from "../ui/TextBox";
+import { createTextBox } from "../ui/TextBox";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];
@@ -196,7 +198,7 @@ export class KeyinField {
     }
 
     if (undefined !== message)
-      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
+      await ExtensionHost.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
   }
 
   private respondToKeyinFocus() {

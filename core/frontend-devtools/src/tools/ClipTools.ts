@@ -7,10 +7,11 @@
  * @module Tools
  */
 
-import {
-  ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
-} from "@itwin/core-common";
-import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
+import type {
+  ClipStyleProps, Viewport} from "@itwin/core-extension";
+import { ColorByName, ColorDef, ExtensionHost, LinePixels, RenderMode, RgbColor, Tool,
+} from "@itwin/core-extension";
+import { } from "@itwin/core-extension";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";
@@ -36,7 +37,7 @@ export class ClipColorTool extends Tool {
   public static override get maxArgs() { return 2; }
 
   private _clearClipColors() {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (undefined !== vp) {
       const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
       props.insideColor = props.outsideColor = undefined;
@@ -45,7 +46,7 @@ export class ClipColorTool extends Tool {
   }
 
   private setClipColor(colStr: string, which: "insideColor" | "outsideColor") {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp) {
       const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
       props[which] = colStr === "clear" ? undefined : RgbColor.fromColorDef(ColorDef.fromString(colStr));
@@ -95,7 +96,7 @@ export class ToggleSectionCutTool extends Tool {
    * @param produceCutGeometry whether to produce cut geometry
    */
   public override async run(produceCutGeometry?: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
+    const vp = ExtensionHost.viewManager.selectedView;
     if (vp) {
       const style = vp.view.displayStyle.settings.clipStyle;
       produceCutGeometry = produceCutGeometry ?? !style.produceCutGeometry;
