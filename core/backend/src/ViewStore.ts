@@ -8,14 +8,62 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
-  CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSubCategoryProps, ElementProps,
-  ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule, RenderTimelineProps, SpatialViewDefinitionProps, ViewDefinitionProps,
+  CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
+  DisplayStyleSubCategoryProps, ElementProps, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule, RenderTimelineProps,
+  SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
 import { VersionedSqliteDb } from "./SQLiteDb";
 
-/** @beta */
+// cspell:ignore nocase rowid
+
+/**
+ * A ViewStore is a database that stores Views and related data. It is used to store and retrieve views for iTwin.js.
+ * It can either be a local SQLite file or a cloud-based database. To use a cloud-based database, you must first create a container
+ * in Blob Storage and then call [[ViewStore.CloudAccess.initializeDb]].
+ *
+ * A ViewStore can hold:
+ * - [[View]]s
+ * - [[DisplayStyle]]s
+ * - [[CategorySelector]]s
+ * - [[ModelSelector]]s
+ * - [[RenderTimeline]]s
+ * - [[Search]]es
+ * - [[Tag]]s
+ * - [[Thumbnail]]s
+ * - [[ViewGroup]]s
+ *
+ * Views are added to a ViewStore via ViewDefinitionProps that may hold references to a DisplayStyle, CategorySelector, ModelSelector, or RenderTimeline.
+ * Before storing a View, you must first add any referenced DisplayStyles, CategorySelectors, ModelSelectors, and RenderTimelines to the
+ * ViewStore. The "add" methods return a string that uniquely identifies the object in the ViewStore.
+ * You should set the ViewDefinitionProps's displayStyle, categorySelector, modelSelector, or renderTimeline member to the returned string.
+ * When you load the ViewDefinition from the ViewStore, the string may be used to load the DisplayStyle, CategorySelector,
+ * ModelSelector, RenderTimeline, etc.
+ *
+ * A ViewStore Id is a string that uniquely identifies a row in one of the ViewStore's tables. The string is a base-36 integer
+ * that starts with "@" (vs. "0x" for ElementIds). For example, if you store a DisplayStyle and it is assigned the ViewStore Id "@y1", then you
+ * would set the ViewDefinitionProps's displayStyle member to "@y1". When you load the ViewDefinition from the ViewStore, the "@Y1" may be used to
+ * alo load the DisplayStyle from the ViewStore.
+ *
+ * Views are organized into hierarchical ViewGroups (like file and folder hierarchies on a file system). A View
+ * is always stored "in" a ViewGroup, and ViewGroups may nest. There is a root ViewGroup named "Root". ViewGroups are stored in the "viewGroups" table.
+ *
+ * ViewDefinitions may be "tagged" with one or more Tags. Tags are arbitrary strings that can be used to group ViewDefinitions. A Tag may
+ * be associated with multiple ViewDefinitions, and a ViewDefinition may have multiple Tags. Tags are stored in the "tags" table.
+ *
+ * Views may optionally have a thumbnail, paired via the View's Id. Thumbnails are stored in the "thumbnails" table.
+ *
+ * Note: All ElementIds and ModelIds in ModelSelectors, CategorySelectors, DisplayStyles, Timelines, etc. are converted to special ViewStore Ids when stored in the ViewStore.
+ * They are then remapped back to their Ids when loaded from the ViewStore. This allows the ViewStore to be used with more than one iModel,
+ * provided that the same Guids are used in each iModel. This is done by storing the set of unique Guids in the "guids" table, and then
+ * creating a reference to the row in the "guids" table via the special Id prefix "^". For example, if a category selector contains the
+ * Id "0x123", then the guid from element 0x123 is stored in the "guids" table, and the category selector is stored with the rowId of the entry
+ * in the guid table (e.g. "^1w"). When the category selector is loaded from the ViewStore, the guid is looked up in the "guids" table and
+ * the iModel is queried for the element with that guid. That element's Id (which may or may not be 0x123) is then returned in the category selector.
+ *
+ * @beta
+ */
 export namespace ViewStore {
 
   export const tableName = {
@@ -32,6 +80,7 @@ export namespace ViewStore {
     views: "views",
   } as const;
 
+  /** data for a Thumbnail */
   export type ThumbnailData = Uint8Array;
 
   /** A row in a table. 0 means "not present" */
@@ -40,9 +89,10 @@ export namespace ViewStore {
   /** a string representation of a row in a table of a ViewStore. Will be a base-36 integer with a leading "@" (e.g."@4e3") */
   export type RowString = string;
 
-  /** a string representation of a row in a the Guid table. Will be a base-36 integer with a leading "^" (e.g."^4e3") */
+  /** a string representation of a row in the Guid table. Will be a base-36 integer with a leading "^" (e.g."^4e3") */
   export type GuidRowString = string;
 
+  /** common properties for all tables */
   export interface TableRow {
     name?: string;
     json: string;
@@ -54,39 +104,47 @@ export namespace ViewStore {
   export type SearchRow = TableRow;
   export type TimelineRow = TableRow;
 
+  /** a row in the "views" table */
   export interface ViewRow extends MarkRequired<TableRow, "name"> {
     className: string;
     groupId: RowId;
     shared?: boolean;
   }
 
-  export interface GroupRow extends Optional<TableRow, "json"> {
+  /** a row in the "viewGroups" table */
+  export interface ViewGroupRow extends Optional<TableRow, "json"> {
     parentId: RowId;
   }
+  /** a row in the "thumbnails" table */
   export interface ThumbnailRow {
     viewId: RowId;
     data: ThumbnailData;
     json?: string;
     owner?: string;
   }
+  /** a row in the "taggedViews" table */
   export interface TaggedViewRow {
     viewId: RowId;
     tagId: RowId;
   }
 
+  /** convert a RowId to a RowString (base-36 integer with a leading "@") */
   export const tableRowIdToString = (rowId: RowId): RowString => {
     return `@${rowId.toString(36)}`;
   };
+  /** convert a guid RowId to a GuidRowString (base-36 integer with a leading "^") */
   export const guidRowToString = (rowId: RowId): GuidRowString => {
     return `^${rowId.toString(36)}`;
   };
 
+  /** determine if a string is table row string (base-36 integer with a leading "@") */
   const isTableRowString = (id?: string) => true === id?.startsWith("@");
+  /** determine if a string is a guid row string (base-36 integer with a leading "^") */
   const isGuidRowString = (id?: string) => true === id?.startsWith("^");
 
   export const rowIdFromString = (id: RowString): RowId => {
     if (!isTableRowString(id) && !isGuidRowString(id))
-      throw new Error(`invalid row id`);
+      throw new Error(`invalid value: ${id}`);
     return parseInt(id.slice(1), 36);
   };
   const blankElementProps = (from: any, classFullName: string, idString: RowString, name?: string): ElementProps => {
@@ -96,7 +154,7 @@ export namespace ViewStore {
     from.code = { spec: "0x1", scope: "0x1", value: name };
     return from;
   };
-  const stringifyProps = (props: any): string => {
+  const stringifyProps = (props: Partial<ElementProps>): string => {
     delete props.id;
     delete props.federationGuid;
     delete props.parent;
@@ -110,6 +168,7 @@ export namespace ViewStore {
   export class ViewDb extends VersionedSqliteDb {
     public override myVersion = "4.0.0";
 
+    /** create all the tables for a new ViewDb */
     protected override createDDL() {
       const baseCols = "Id INTEGER PRIMARY KEY,json TEXT,owner TEXT";
       this.createTable({
@@ -135,9 +194,10 @@ export namespace ViewStore {
         tableName: tableName.taggedViews, columns: `viewId NOT NULL REFERENCES ${tableName.views}(Id) ON DELETE CASCADE,tagId NOT NULL REFERENCES ${tableName.tags}(Id) ON DELETE CASCADE`,
       });
       this.createTable({ tableName: tableName.guids, columns: `guid BLOB NOT NULL UNIQUE` });
-      this.addViewGroup({ name: "Root" });
+      this.addViewGroupRow({ name: "Root" });
     }
 
+    /** get the row in the "guids" table for a given guid. If the guid is not present, return 0 */
     private getGuidRow(guid: GuidString): RowId {
       return this.withPreparedSqliteStatement(`SELECT rowId FROM ${tableName.guids} WHERE guid=?`, (stmt) => {
         stmt.bindGuid(1, guid);
@@ -150,6 +210,7 @@ export namespace ViewStore {
         return !stmt.nextRow() ? undefined : stmt.getValueGuid(0);
       });
     }
+    /** @internal */
     public iterateGuids(rowIds: RowId[], fn: (guid: GuidString, row: RowId) => void) {
       this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=?`, (stmt) => {
         for (const rowId of rowIds) {
@@ -160,6 +221,8 @@ export namespace ViewStore {
         }
       });
     }
+
+    /** @internal */
     public addGuid(guid: GuidString): RowId {
       const existing = this.getGuidRow(guid);
       return existing !== 0 ? existing : this.withPreparedSqliteStatement(`INSERT INTO ${tableName.guids}(guid) VALUES (?)`, (stmt) => {
@@ -168,6 +231,8 @@ export namespace ViewStore {
         return this.nativeDb.getLastInsertRowId();
       });
     }
+
+    /** @internal */
     public addViewRow(args: ViewRow): RowId {
       return this.withSqliteStatement(`INSERT INTO ${tableName.views}(className,name,json,owner,shared,groupId) VALUES (?,?,?,?,?,?)`, (stmt) => {
         stmt.bindString(1, args.className);
@@ -181,7 +246,8 @@ export namespace ViewStore {
       });
     }
 
-    public addViewGroup(args: Optional<GroupRow, "parentId">): RowId {
+    /** @internal */
+    public addViewGroupRow(args: Optional<ViewGroupRow, "parentId">): RowId {
       return this.withSqliteStatement(`INSERT INTO ${tableName.groups}(name,owner,parent,json) VALUES (?,?,?,?)`, (stmt) => {
         stmt.maybeBindString(1, args.name);
         stmt.maybeBindString(2, args.owner);
@@ -201,24 +267,35 @@ export namespace ViewStore {
         return this.nativeDb.getLastInsertRowId();
       });
     }
+    /** add a row to the "modelSelectors" table, return the RowId */
     public addModelSelectorRow(args: SelectorRow): RowId {
       return this.addTableRow(tableName.modelSelectors, args);
     }
+    /** add a row to the "categorySelectors" table, return the RowId */
     public addCategorySelectorRow(args: SelectorRow): RowId { // for tests
       return this.addTableRow(tableName.categorySelectors, args);
     }
+    /** add a row to the "displayStyles" table, return the RowId */
     public addDisplayStyleRow(args: DisplayStyleRow): RowId {
       return this.addTableRow(tableName.displayStyles, args);
     }
+    /** add a row to the "timelines" table, return the RowId */
     public addTimelineRow(args: TimelineRow): RowId {
       return this.addTableRow(tableName.timelines, args);
     }
+    /** add a row to the "tags" table, return the RowId */
     public async addTag(args: TagRow): Promise<RowId> {
       return this.addTableRow(tableName.tags, args);
     }
+    /** add a row to the "searches" table, return the RowId */
     public async addSearch(args: SearchRow): Promise<RowId> {
       return this.addTableRow(tableName.searches, args);
     }
+    /** add a ViewGroup to the "viewGroups" table, return the RowId */
+    public async addViewGroup(args: ViewGroupRow): Promise<RowId> {
+      return this.addViewGroupRow(args);
+    }
+
     public async addOrReplaceThumbnail(args: ThumbnailRow): Promise<RowId> {
       return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails}(Id,json,owner,data) VALUES (?,?,?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
@@ -290,7 +367,7 @@ export namespace ViewStore {
         };
       });
     }
-    public getViewGroup(id: RowId): GroupRow | undefined {
+    public getViewGroup(id: RowId): ViewGroupRow | undefined {
       return this.withSqliteStatement(`SELECT name,owner,json,parent FROM ${tableName.groups} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
@@ -466,8 +543,8 @@ export namespace ViewStore {
     public findSearchByName(name: string): RowId {
       return this.findByName(tableName.searches, name);
     }
-    public getViewByName(name: string, groupId: RowId): Omit<ViewRow, "thumbnail"> | undefined {
-      const id = this.findViewByName(name, groupId);
+    public getViewByName(arg: { name: string, groupId?: RowId }): Omit<ViewRow, "thumbnail"> | undefined {
+      const id = this.findViewByName(arg.name, arg.groupId ?? defaultViewGroupId);
       return id ? this.getView(id) : undefined;
     }
 
@@ -563,12 +640,16 @@ export namespace ViewStore {
     }
 
     private verifyRowId(table: string, rowIdString: RowString): void {
-      const rowId = rowIdFromString(rowIdString);
-      this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=?`, (stmt) => {
-        stmt.bindInteger(1, rowId);
-        if (!stmt.nextRow())
-          throw new Error(`entry missing from ${table}`);
-      });
+      try {
+        const rowId = rowIdFromString(rowIdString);
+        this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=?`, (stmt) => {
+          stmt.bindInteger(1, rowId);
+          if (!stmt.nextRow())
+            throw new Error(`missing: ${rowIdString}`);
+        });
+      } catch (err: any) {
+        throw new Error(`invalid Id for ${table}: ${err.message}`);
+      }
     }
     private scriptToGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
       const scriptProps: RenderSchedule.ScriptProps = [];
@@ -597,7 +678,7 @@ export namespace ViewStore {
       return scriptProps;
     }
 
-    public async addCategorySelector(args: { elements: IModelDb.GuidMapper, name: string, categories: Id64Array, owner?: string }): Promise<RowString> {
+    public async addCategorySelector(args: { elements: IModelDb.GuidMapper, name?: string, categories: Id64Array, owner?: string }): Promise<RowString> {
       if (args.categories.length === 0)
         throw new Error("Must specify at least one category");
 
@@ -615,7 +696,7 @@ export namespace ViewStore {
       return props;
     }
 
-    public async addModelSelector(args: { elements: IModelDb.GuidMapper, name: string, models: Id64Array, owner?: string }): Promise<RowString> {
+    public async addModelSelector(args: { elements: IModelDb.GuidMapper, name?: string, models: Id64Array, owner?: string }): Promise<RowString> {
       if (args.models.length === 0)
         throw new Error("Must specify at least one model");
 
@@ -633,7 +714,7 @@ export namespace ViewStore {
       return props;
     }
 
-    public async addTimeline(args: { elements: IModelDb.GuidMapper, name: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
+    public async addTimeline(args: { elements: IModelDb.GuidMapper, name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
       const timeline = JSON.parse(JSON.stringify(args.timeline));
       if (!Array.isArray(timeline))
         throw new Error("Timeline has no entries");
@@ -653,13 +734,9 @@ export namespace ViewStore {
     }
 
     /** add a DisplayStyleProps to the ViewStore */
-    public async addDisplayStyle(args: { elements: IModelDb.GuidMapper, displayStyle: DisplayStyleProps, owner?: string }): Promise<RowString> {
-      const displayStyle = JSON.parse(JSON.stringify(args.displayStyle)) as DisplayStyleProps; // make a copy
-      const settings = displayStyle.jsonProperties?.styles;
-      if (!settings)
-        throw new Error("DisplayStyle has no settings");
-
-      const name = displayStyle.code.value;
+    public async addDisplayStyle(args: { elements: IModelDb.GuidMapper, name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
+      const settings = JSON.parse(JSON.stringify(args.settings)) as DisplayStyleSettingsProps; // make a copy
+      const name = args.name;
       if (settings.subCategoryOvr) {
         const outOvr: DisplayStyleSubCategoryProps[] = [];
         for (const ovr of settings.subCategoryOvr) {
@@ -696,7 +773,7 @@ export namespace ViewStore {
           settings.scheduleScript = scriptProps;
       }
 
-      return tableRowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: stringifyProps(displayStyle) }));
+      return tableRowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
     }
 
     public loadDisplayStyle(args: { elements: IModelDb.GuidMapper, id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
@@ -704,10 +781,10 @@ export namespace ViewStore {
       if (undefined === row)
         throw new Error("DisplayStyle not found");
 
-      const displayStyle = JSON.parse(row.json) as DisplayStyleProps;
-      blankElementProps(displayStyle, displayStyle.classFullName, args.id, row.name);
-
-      const settings = displayStyle.jsonProperties!.styles! as DisplayStyle3dSettingsProps; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const val = JSON.parse(row.json) as { settings: DisplayStyle3dSettingsProps, className: string };
+      const props = blankElementProps({}, val.className, args.id, row.name);
+      props.jsonProperties = { styles: val.settings };
+      const settings = val.settings;
       if (settings.subCategoryOvr) {
         const subCatOvr: DisplayStyleSubCategoryProps[] = [];
         for (const ovr of settings.subCategoryOvr) {
@@ -744,10 +821,10 @@ export namespace ViewStore {
         settings.scheduleScript = this.scriptFromGuids(args.elements, settings.scheduleScript);
       }
 
-      return displayStyle;
+      return props;
     }
 
-    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDef: ViewDefinitionProps, groupId: RowId, owner?: string }): Promise<RowString> {
+    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDef: ViewDefinitionProps, groupId?: RowId, owner?: string }): Promise<RowString> {
       const viewDef = JSON.parse(JSON.stringify(args.viewDef)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -760,7 +837,7 @@ export namespace ViewStore {
 
       this.toGuidRowMember(args.elements, viewDef, "baseModelId");
       this.toGuidRowMember(args.elements, viewDef.jsonProperties?.viewDetails, "acs");
-      return tableRowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId, json: stringifyProps(viewDef) }));
+      return tableRowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId: args.groupId ?? defaultViewGroupId, json: stringifyProps(viewDef) }));
     }
 
     public loadViewDefinition(args: { elements: IModelDb.GuidMapper, id: RowString }): ViewDefinitionProps {

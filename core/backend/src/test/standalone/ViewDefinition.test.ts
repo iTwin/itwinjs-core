@@ -28,6 +28,8 @@ function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
   return { modelId, modelId2, spatialCategoryId };
 }
 
+// cspell:disable
+
 let vs1: ViewStore.ViewDb;
 
 describe("ViewDefinition", () => {
@@ -145,7 +147,7 @@ describe("ViewDefinition", () => {
       ids1.push(Id64.fromLocalAndBriefcaseIds(i, 0));
     }
 
-    const ds1Row = await vs1.addDisplayStyle({ elements: id1Mapper, displayStyle: ds1.toJSON() });
+    const ds1Row = await vs1.addDisplayStyle({ elements: id1Mapper, name: "default", className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
     expect(ds1Row).equal("@1");
     const ds1out = vs1.loadDisplayStyle({ elements: id1Mapper, id: ds1Row });
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");

@@ -28,11 +28,11 @@ describe.only("ViewStore", function (this: Suite) {
   });
 
   it("ViewDb", async () => {
-    expect(vs1.getViewByName("view1", 1)).to.be.undefined;
+    expect(vs1.getViewByName({ name: "view1" })).to.be.undefined;
     const v1Id = vs1.addViewRow({ className: "spatial", name: "view1", json: "json1", owner: "owner1", shared: true, groupId: 1 });
     expect(v1Id).equals(1);
 
-    const v1 = vs1.getViewByName("view1", 1)!;
+    const v1 = vs1.getViewByName({ name: "view1" })!;
     expect(v1.json).equals("json1");
     expect(v1.owner).equals("owner1");
     expect(v1.className).equals("spatial");
@@ -40,7 +40,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(v1.shared).to.be.true;
     expect(v1.name).equals("view1");
     await vs1.updateViewShared(v1Id, false);
-    const v1Updated = vs1.getViewByName("view1", 1)!;
+    const v1Updated = vs1.getViewByName({ name: "view1" })!;
     expect(v1Updated.shared).to.be.false;
 
     const v1Id2 = vs1.addViewRow({ className: "spatial", name: "v2", json: "json-v2", owner: "owner1", groupId: 1 });
@@ -50,9 +50,9 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.deleteView(v1Id2);
     expect(vs1.findViewByName("v2", 1)).equals(0);
 
-    const g1 = vs1.addViewGroup({ name: "group1" });
-    const g2 = vs1.addViewGroup({ name: "group2" });
-    const g3 = vs1.addViewGroup({ name: "group3", parentId: g2, json: "group3-json" });
+    const g1 = vs1.addViewGroupRow({ name: "group1" });
+    const g2 = vs1.addViewGroupRow({ name: "group2" });
+    const g3 = vs1.addViewGroupRow({ name: "group3", parentId: g2, json: "group3-json" });
     const v2Id = vs1.addViewRow({ className: "spatial2", name: "view2", json: "json2", groupId: g1 });
     expect(v2Id).equals(2);
 
@@ -98,9 +98,9 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.deleteThumbnail(33);
     expect(vs1.getThumbnail(33)).to.be.undefined;
 
-    expect(vs1.getViewByName("view2", g1)?.groupId).equals(g1);
+    expect(vs1.getViewByName({ name: "view2", groupId: g1 })?.groupId).equals(g1);
     await vs1.deleteViewGroup(g1);
-    expect(vs1.getViewByName("view2", g1)).to.be.undefined;
+    expect(vs1.getViewByName({ name: "view2", groupId: g1 })).to.be.undefined;
 
     vs1.addCategorySelectorRow({ name: "cat1", json: "cat1-json" });
     vs1.addCategorySelectorRow({ name: "cat2", json: "cat2-json" });
