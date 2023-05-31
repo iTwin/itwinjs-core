@@ -2914,8 +2914,6 @@ export abstract class IModelDb extends IModel {
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
-    convertEc2SchemaStrings(ec2XmlSchemas: string[]): string[];
-    // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
     // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
