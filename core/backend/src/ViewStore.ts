@@ -20,8 +20,8 @@ import { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
  * A ViewStore is a database that stores Views and related data. It is used to store and retrieve views for iTwin.js.
- * It can either be a local SQLite file stored in a cloud container. To use a cloud-based database, you must first create a container
- * in Blob Storage and then call [[ViewStore.CloudAccess.initializeDb]].
+ * It can either be a local SQLite file, or a CloudSqlite database stored in a cloud container. To use a CloudSqlite
+ * database, you must first create a container in Blob Storage and then call [[ViewStore.CloudAccess.initializeDb]].
  *
  * A ViewStore can hold:
  * - Views
@@ -47,9 +47,10 @@ import { VersionedSqliteDb } from "./SQLiteDb";
  * alo load the DisplayStyle from the ViewStore.
  *
  * Views are organized into hierarchical ViewGroups (like file and folder hierarchies on a file system). A View is always stored "in" a ViewGroup, and
- * views must have a name that is unique within the ViewGroup. The root ViewGroup is named "Root" and has a RowId of 1. ViewGroups are stored in the "viewGroups" table.
+ * views must have a name that is unique within the ViewGroup. The root ViewGroup is named "Root" and has a RowId of 1. The root ViewGroup can not be deleted.
+ * ViewGroups are stored in the "viewGroups" table.
  *
- * Views may be "tagged" with one or more Tags. Tags are named with an arbitrary strings that can be used to group Views. A Tag may
+ * Views may be "tagged" with one or more Tags. Tags are named with an arbitrary string that can be used to group Views. A Tag may
  * be associated with multiple Views, and a View may have multiple Tags. Tags are stored in the "tags" table.
  *
  * Views may optionally have a thumbnail, paired via the View's Id. Thumbnails are stored in the "thumbnails" table.
