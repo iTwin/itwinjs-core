@@ -20,37 +20,37 @@ import { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
  * A ViewStore is a database that stores Views and related data. It is used to store and retrieve views for iTwin.js.
- * It can either be a local SQLite file or a cloud-based database. To use a cloud-based database, you must first create a container
+ * It can either be a local SQLite file stored in a cloud container. To use a cloud-based database, you must first create a container
  * in Blob Storage and then call [[ViewStore.CloudAccess.initializeDb]].
  *
  * A ViewStore can hold:
- * - [[View]]s
- * - [[DisplayStyle]]s
- * - [[CategorySelector]]s
- * - [[ModelSelector]]s
- * - [[RenderTimeline]]s
- * - [[Search]]es
- * - [[Tag]]s
- * - [[Thumbnail]]s
- * - [[ViewGroup]]s
+ * - Views
+ * - DisplayStyles
+ * - CategorySelectors
+ * - ModelSelectors
+ * - RenderTimelines
+ * - Searches
+ * - Tags
+ * - Thumbnails
+ * - ViewGroups
  *
  * Views are added to a ViewStore via ViewDefinitionProps that may hold references to a DisplayStyle, CategorySelector, ModelSelector, or RenderTimeline.
  * Before storing a View, you must first add any referenced DisplayStyles, CategorySelectors, ModelSelectors, and RenderTimelines to the
  * ViewStore. The "add" methods return a string that uniquely identifies the object in the ViewStore.
  * You should set the ViewDefinitionProps's displayStyle, categorySelector, modelSelector, or renderTimeline member to the returned string.
- * When you load the ViewDefinition from the ViewStore, the string may be used to load the DisplayStyle, CategorySelector,
+ * When you load a ViewDefinition from the ViewStore, the member may be used to load the DisplayStyle, CategorySelector,
  * ModelSelector, RenderTimeline, etc.
  *
- * A ViewStore Id is a string that uniquely identifies a row in one of the ViewStore's tables. The string is a base-36 integer
+ * A ViewStore Id is a string that uniquely identifies a row in one of the ViewStore's internal tables. The string is a base-36 integer
  * that starts with "@" (vs. "0x" for ElementIds). For example, if you store a DisplayStyle and it is assigned the ViewStore Id "@y1", then you
  * would set the ViewDefinitionProps's displayStyle member to "@y1". When you load the ViewDefinition from the ViewStore, the "@Y1" may be used to
  * alo load the DisplayStyle from the ViewStore.
  *
- * Views are organized into hierarchical ViewGroups (like file and folder hierarchies on a file system). A View
- * is always stored "in" a ViewGroup, and ViewGroups may nest. There is a root ViewGroup named "Root". ViewGroups are stored in the "viewGroups" table.
+ * Views are organized into hierarchical ViewGroups (like file and folder hierarchies on a file system). A View is always stored "in" a ViewGroup, and
+ * views must have a name that is unique within the ViewGroup. The root ViewGroup is named "Root" and has a RowId of 1. ViewGroups are stored in the "viewGroups" table.
  *
- * ViewDefinitions may be "tagged" with one or more Tags. Tags are arbitrary strings that can be used to group ViewDefinitions. A Tag may
- * be associated with multiple ViewDefinitions, and a ViewDefinition may have multiple Tags. Tags are stored in the "tags" table.
+ * Views may be "tagged" with one or more Tags. Tags are named with an arbitrary strings that can be used to group Views. A Tag may
+ * be associated with multiple Views, and a View may have multiple Tags. Tags are stored in the "tags" table.
  *
  * Views may optionally have a thumbnail, paired via the View's Id. Thumbnails are stored in the "thumbnails" table.
  *
@@ -178,6 +178,7 @@ export namespace ViewStore {
         addTimestamp: true,
       });
 
+      // for tables that have a "name" column, we want to enforce case-insensitive uniqueness. Names may be null.
       const makeTable = (table: string, extra?: string) => {
         this.createTable({ tableName: table, columns: `${baseCols},name TEXT UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
       };
@@ -296,6 +297,7 @@ export namespace ViewStore {
       return this.addViewGroupRow(args);
     }
 
+    /** add or update a row in the "thumbnails" table, return the RowId */
     public async addOrReplaceThumbnail(args: ThumbnailRow): Promise<RowId> {
       return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails}(Id,json,owner,data) VALUES (?,?,?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
@@ -342,7 +344,7 @@ export namespace ViewStore {
     public async deleteThumbnail(id: RowId): Promise<void> {
       return this.deleteFromTable(tableName.thumbnails, id);
     }
-
+    /** get the data for a view from the database */
     public getView(viewId: RowId): undefined | Omit<ViewRow, "thumbnail"> {
       return this.withSqliteStatement(`SELECT className,name,json,owner,shared,groupId FROM ${tableName.views} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
