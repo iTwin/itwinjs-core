@@ -2454,37 +2454,28 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
-    // (undocumented)
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    // (undocumented)
     get current(): QueryRowProxy;
-    // (undocumented)
     get done(): boolean;
     // (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
-    // (undocumented)
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
-    // (undocumented)
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
     // (undocumented)
     reset(options?: QueryOptions): void;
-    // (undocumented)
     resetBindings(): void;
     // (undocumented)
     setParams(param: QueryBinder): void;
-    // (undocumented)
     get stats(): QueryStats;
-    // (undocumented)
     step(): Promise<boolean>;
-    // (undocumented)
     toArray(): Promise<any[]>;
 }
 
@@ -7081,37 +7072,26 @@ export enum QueryRowFormat {
     UseJsPropertyNames = 2
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryRowProxy {
-    // (undocumented)
     [propertyName: string]: QueryValueType;
-    // (undocumented)
     [propertyIndex: number]: QueryValueType;
-    // (undocumented)
     getMetaData(): QueryPropertyMetaData[];
-    // (undocumented)
     toArray(): QueryValueType[];
-    // (undocumented)
     toRow(): any;
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryStats {
-    // (undocumented)
     backendCpuTime: number;
-    // (undocumented)
     backendMemUsed: number;
-    // (undocumented)
     backendRowsReturned: number;
-    // (undocumented)
     backendTotalTime: number;
-    // (undocumented)
     retryCount: number;
-    // (undocumented)
     totalTime: number;
 }
 
-// @beta (undocumented)
+// @beta
 export type QueryValueType = any;
 
 // @public
@@ -10008,6 +9988,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    NoChange = 0,
     Parent = 32,
     Placement = 4,
     Property = 1

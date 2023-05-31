@@ -6,21 +6,10 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
 import { ColorDef, NormalMapParams, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-
-/** Specifies the provenance of a [RenderMaterial]($common) created for a persistent material element.
- * @see [[CreateRenderMaterialArgs.source]].
- * @internal
- */
-export interface RenderMaterialSource {
-  iModel: IModelConnection;
-  id: Id64String;
-}
 
 /** Describes the [diffuse](https://en.wikipedia.org/wiki/Diffuse_reflection) properties of a [RenderMaterial]($common).
- * @see [[CreateRenderMaterialArgs.diffuse]].
+ * @see [[MaterialParams.diffuse]].
  * @public
  */
 export interface MaterialDiffuseProps {
@@ -34,7 +23,7 @@ export interface MaterialDiffuseProps {
 }
 
 /** Describes the [specular](https://en.wikipedia.org/wiki/Specular_highlight) properties of a material.
- * @see [[CreateRenderMaterialArgs.specular]].
+ * @see [[MaterialParams.specular]].
  * @public
  */
 export interface MaterialSpecularProps {
@@ -55,7 +44,7 @@ export interface MaterialSpecularProps {
 }
 
 /** Describes how to map a [RenderTexture]($common)'s image to the surfaces to which a [RenderMaterial]($common) is applied.
- * @see [[CreateRenderMaterialArgs.textureMapping]].
+ * @see [[MaterialParams.textureMapping]].
  * @public
  */
 export interface MaterialTextureMappingProps {
@@ -95,15 +84,11 @@ export interface MaterialTextureMappingProps {
   constantLodProps?: TextureMapping.ConstantLodParamProps;
 }
 
-/** Arguments supplied to [[RenderSystem.createRenderMaterial]].
+/** Describes a [RenderMaterial]($common).
+ * @see [[RenderSystem.createRenderMaterial]] to create a material.
  * @public
  */
-export interface CreateRenderMaterialArgs {
-  /** If supplied, the material will be cached on the iModel by its element Id for subsequent reuse.
-   * @internal
-   */
-  source?: RenderMaterialSource;
-
+export interface MaterialParams {
   /** Specifies the transparency of the material from 0.0 (fully transparent) to 1.0 (fully opaque).
    * If defined, this overrides the transparency of any surface to which the material is applied, and is multiplied with the
    * transparency of the material's [[textureMapping]] when sampling the texture.
@@ -119,3 +104,4 @@ export interface CreateRenderMaterialArgs {
   /** Maps [RenderTexture]($common) images to the surfaces to which the material is applied to customize their appearance. */
   textureMapping?: MaterialTextureMappingProps;
 }
+

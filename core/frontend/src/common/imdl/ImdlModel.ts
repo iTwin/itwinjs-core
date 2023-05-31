@@ -212,3 +212,71 @@ export namespace ImdlModel {
     json: ImdlDocument;
   }
 }
+
+/** Collect an array of all the [transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects)
+ * within the specified document.
+ * @internal
+ */
+export function collectTransferables(document: ImdlModel.Document): Transferable[] {
+  const xfers = new Set<Transferable>();
+  const add = (array: UintArray | Float32Array | undefined) => {
+    if (array)
+      xfers.add(array.buffer);
+  };
+
+  add(document.binaryData);
+  add(document.featureTable.data);
+  add(document.featureTable.animationNodeIds);
+
+  const addPrimitive = (primitive: ImdlModel.NodePrimitive) => {
+    if (primitive.type === "pattern") {
+      add(primitive.params.xyOffsets);
+      return;
+    }
+
+    add(primitive.params.vertices.data);
+    if (primitive.modifier?.type === "instances") {
+      add(primitive.modifier.transforms);
+      add(primitive.modifier.featureIds);
+      add(primitive.modifier.symbologyOverrides);
+    }
+
+    switch (primitive.type) {
+      case "point":
+        add(primitive.params.indices);
+        break;
+      case "polyline":
+        add(primitive.params.polyline.indices);
+        add(primitive.params.polyline.prevIndices);
+        add(primitive.params.polyline.nextIndicesAndParams);
+        break;
+      case "mesh":
+        add(primitive.params.surface.indices);
+        const edges = primitive.params.edges;
+        if (edges) {
+          add(edges.segments?.indices);
+          add(edges.segments?.endPointAndQuadIndices);
+          add(edges.silhouettes?.indices);
+          add(edges.silhouettes?.endPointAndQuadIndices);
+          add(edges.silhouettes?.normalPairs);
+          add(edges.polylines?.indices);
+          add(edges.polylines?.prevIndices);
+          add(edges.polylines?.nextIndicesAndParams);
+          add(edges.indexed?.indices);
+          add(edges.indexed?.edges.data);
+        }
+
+        break;
+    }
+  };
+
+  for (const node of document.nodes)
+    for (const primitive of node.primitives)
+      addPrimitive(primitive);
+
+  for (const primitives of document.patterns.values())
+    for (const primitive of primitives)
+      addPrimitive(primitive);
+
+  return Array.from(xfers);
+}

@@ -11,7 +11,7 @@ import { GltfAlphaMode } from "./GltfSchema";
 
 /** Types describing the in-memory representation of a glTF model as parsed from a [[GltfDocument]].
  * This API is incomplete.
- * @alpha
+ * @internal
  */
 export namespace Gltf {
   // A view into (usually a subset of) a GltfBuffer, used for vertex attributes and indices.

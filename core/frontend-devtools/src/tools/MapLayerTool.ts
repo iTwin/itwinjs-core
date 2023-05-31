@@ -40,19 +40,22 @@ class AttachMapLayerBaseTool extends Tool {
 
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
-          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
           const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
+      } else if (validation.status === MapLayerSourceStatus.IncompatibleFormat) {
+        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayersIncompatibleFormat", { sourceName: source.name });
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       } else {
-        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
+        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceName: source.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceName: source.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }

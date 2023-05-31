@@ -13,7 +13,7 @@ import { Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-commo
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";

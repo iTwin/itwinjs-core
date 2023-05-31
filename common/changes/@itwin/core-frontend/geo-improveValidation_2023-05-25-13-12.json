@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improved ArcGIS map-layers validation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
