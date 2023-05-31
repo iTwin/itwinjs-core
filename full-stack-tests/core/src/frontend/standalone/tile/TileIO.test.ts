@@ -10,9 +10,8 @@ import {
 } from "@itwin/core-common";
 import {
   GeometricModelState, ImdlModel, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
-  parseImdlDocument, RenderGraphic, SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  parseImdlDocument, RenderGraphic, SnapshotConnection, SurfaceType, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
-import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestUtility } from "../../TestUtility";
@@ -601,9 +600,21 @@ describe("mirukuru TileTree", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
-    await MockRender.App.startup();
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ] }});
+
+    // electron version of certa doesn't serve worker scripts.
+    const isElectron = ProcessDetector.isElectronAppFrontend;
+    const tileAdmin = isElectron ? { decodeImdlInWorker: false } : undefined;
+
+    await MockRender.App.startup({ tileAdmin });
+    if (ProcessDetector.isElectronAppFrontend) {
+      await ElectronApp.startup({
+        iModelApp: {
+          localization: new EmptyLocalization(),
+          rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          tileAdmin,
+        },
+      });
+    }
 
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -752,14 +763,26 @@ describe("TileAdmin", () => {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       await cleanup();
 
+      if (ProcessDetector.isElectronAppFrontend) {
+        // certa doesn't serve worker script.
+        props.decodeImdlInWorker = false;
+      }
+
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
         rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
       });
 
-      if (ProcessDetector.isElectronAppFrontend)
-        await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization(), rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ] }});
+      if (ProcessDetector.isElectronAppFrontend) {
+        await ElectronApp.startup({
+          iModelApp: {
+            tileAdmin: props,
+            localization: new EmptyLocalization(),
+            rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          },
+        });
+      }
 
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
@@ -787,12 +810,12 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const stream = ByteStream.fromUint8Array(response);
         const document = parseImdlDocument({
-          stream,
+          data: response,
           batchModelId: "0x1c",
           is3d: true,
           maxVertexTableSize: IModelApp.renderSystem.maxTextureSize,
+          timeline: undefined,
         }) as ImdlModel.Document;
 
         expect(typeof document).to.equal("object");

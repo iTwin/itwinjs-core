@@ -14,9 +14,10 @@ import {
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { MeshParams } from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
-import { DisplayParams } from "./primitives/DisplayParams";
+import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { MeshParams } from "../common/render/primitives/MeshParams";
+import { createMeshParams } from "./primitives/VertexTableBuilder";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
@@ -330,7 +331,7 @@ class Builder implements ParticleCollectionBuilder {
     // Produce instanced quads.
     // Note: We do not need to allocate an array of featureIds. If we have a pickableId, all particles refer to the same Feature, with index 0.
     // So we leave the vertex attribute disabled causing the shader to receive the default (0, 0, 0) which happens to correspond to our feature index.
-    const quad = createQuad(meanSize, this._texture, uniformTransparency ?? 0x7f);
+    const quad = createQuad(meanSize, this._texture, uniformTransparency ?? 0x7f, this._viewport);
     const transformCenter = new Point3d(0, 0, 0);
     const range = computeRange(this._range, rangeCenter, maxSize);
     const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides, range };
@@ -338,7 +339,7 @@ class Builder implements ParticleCollectionBuilder {
   }
 }
 
-function createQuad(size: XAndY, texture: RenderTexture, transparency: number): MeshParams {
+function createQuad(size: XAndY, texture: RenderTexture, transparency: number, viewport: Viewport): MeshParams {
   const halfWidth = size.x / 2;
   const halfHeight = size.y / 2;
   const corners = [
@@ -370,7 +371,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
     },
   };
 
-  return MeshParams.create(quadArgs);
+  return createMeshParams(quadArgs, viewport.target.renderSystem.maxTextureSize);
 }
 
 function clampTransparency(transparency: number): number {

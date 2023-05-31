@@ -16,28 +16,10 @@ import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { ColorMap } from "../ColorMap";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common/render/primitives/MeshPrimitive";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
-
-/** A Point3d[] with an [[add]] method used to enable compatibility with the [[MeshPointList]] union type.
- * It is provided a range to contain all of the points. Each point added to the list is transformed to be relative to
- * the center of that range.
- * In the finished graphic, a transform is applied to transform back from the range's center.
- * @internal
- */
-export interface Point3dList extends Array<Point3d> {
-  /** Identical to `push`, except it returns `void` instead of `number`; compatible with [QPoint3dList.add]($common). */
-  add(point: Point3d): void;
-  /** The range containing all of the points to be contained in the list, computed in advance. */
-  range: Range3d;
-}
-
-/** The list of points associated with a [[Mesh]].
- * @see [[Mesh.Props.quantizePositions]] to specify whether points should be quantized or not.
- * @internal
- */
-export type MeshPointList = Point3dList | QPoint3dList;
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer.
  * @internal
@@ -69,7 +51,7 @@ export namespace PolylineArgs {
       return undefined;
 
     const flags = new PolylineFlags(mesh.is2d, mesh.isPlanar);
-    flags.isDisjoint = mesh.type === Mesh.PrimitiveType.Point;
+    flags.isDisjoint = mesh.type === MeshPrimitiveType.Point;
     if (mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline) {
       // This polyline is behaving as the edges of a region surface.
       if (!mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
@@ -201,7 +183,7 @@ export class Mesh {
   public colors: number[] = [];
   public edges?: MeshEdges;
   public readonly features?: Mesh.Features;
-  public readonly type: Mesh.PrimitiveType;
+  public readonly type: MeshPrimitiveType;
   public readonly is2d: boolean;
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
@@ -211,7 +193,7 @@ export class Mesh {
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
+    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
     this.displayParams = displayParams;
     this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;
@@ -236,11 +218,11 @@ export class Mesh {
   public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
 
   public get triangles(): TriangleList | undefined {
-    return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined;
+    return MeshPrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined;
   }
 
   public get polylines(): MeshPolylineList | undefined {
-    return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined;
+    return MeshPrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined;
   }
 
   public get auxChannels(): ReadonlyArray<AuxChannel> | undefined {
@@ -305,10 +287,10 @@ export class Mesh {
   public addPolyline(poly: MeshPolyline): void {
     const { type, polylines } = this;
 
-    assert(Mesh.PrimitiveType.Polyline === type || Mesh.PrimitiveType.Point === type);
+    assert(MeshPrimitiveType.Polyline === type || MeshPrimitiveType.Point === type);
     assert(undefined !== polylines);
 
-    if (Mesh.PrimitiveType.Polyline === type && poly.indices.length < 2)
+    if (MeshPrimitiveType.Polyline === type && poly.indices.length < 2)
       return;
 
     if (undefined !== polylines)
@@ -318,7 +300,7 @@ export class Mesh {
   public addTriangle(triangle: Triangle): void {
     const { triangles, type } = this;
 
-    assert(Mesh.PrimitiveType.Mesh === type);
+    assert(MeshPrimitiveType.Mesh === type);
     assert(undefined !== triangles);
 
     if (undefined !== triangles)
@@ -361,12 +343,6 @@ export class Mesh {
 
 /** @internal */
 export namespace Mesh { // eslint-disable-line no-redeclare
-  export enum PrimitiveType {
-    Mesh, // eslint-disable-line @typescript-eslint/no-shadow
-    Polyline,
-    Point,
-  }
-
   export class Features {
     public readonly table: FeatureTable;
     public indices: number[] = [];
@@ -424,7 +400,7 @@ export namespace Mesh { // eslint-disable-line no-redeclare
   export interface Props {
     displayParams: DisplayParams;
     features?: FeatureTable;
-    type: Mesh.PrimitiveType;
+    type: MeshPrimitiveType;
     range: Range3d;
     quantizePositions: boolean;
     is2d: boolean;

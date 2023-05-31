@@ -25,7 +25,7 @@ import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
 import { OffScreenViewport } from "./Viewport";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 import { AttachToViewportArgs, ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.

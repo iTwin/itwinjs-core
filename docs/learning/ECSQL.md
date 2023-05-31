@@ -1,6 +1,8 @@
 # ECSQL
 
 > Make sure to check out the [ECSQL Tutorial](./ECSQLTutorial/index.md) as well!
+>
+> See [ECSQL Code Examples](./ECSQLCodeExamples.md) for examples of how to query ECSQL in with the iTwin API.
 
 ## What is ECSQL
 
@@ -60,6 +62,8 @@ Parameter type | Description
 --- | ---
 `?` | Positional parameter. Its index is one greater than the previous parameter in the ECSQL statement.
 `:aaa` | Named parameter. This allows to bind the same value to more than one placeholder.
+
+> For the full list of supported iTwin.js parameter types, see [ECSQL Parameter Types](./ECSQLParameterTypes.md).
 
 ### Example
 

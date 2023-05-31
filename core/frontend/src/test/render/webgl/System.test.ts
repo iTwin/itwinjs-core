@@ -9,7 +9,7 @@ import {
 } from "@itwin/core-common";
 import { Capabilities } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
-import { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
+import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialArgs";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
 import { Material } from "../../../render/webgl/Material";

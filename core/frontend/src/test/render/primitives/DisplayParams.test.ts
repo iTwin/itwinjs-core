@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@itwin/core-common";
-import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }

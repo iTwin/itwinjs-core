@@ -8,9 +8,12 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { LinePixels, PolylineData, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
+import { PolylineData, QPoint3dList } from "@itwin/core-common";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { VertexIndices, VertexTable } from "./VertexTable";
+import { VertexTableBuilder } from "./VertexTableBuilder";
+import { PolylineParams, TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
+import { IModelApp } from "../../IModelApp";
 
 /** Parameter associated with each vertex index of a tesselated polyline. */
 const enum PolylineParam { // eslint-disable-line no-restricted-syntax
@@ -24,26 +27,9 @@ const enum PolylineParam { // eslint-disable-line no-restricted-syntax
   kNoneAdjustWeight = 32 * 3,
 }
 
-/**
- * Represents a tesselated polyline.
- * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
- * Based on the angle between two segments, additional joint triangles may be inserted in between to enable smoothly-rounded corners.
- * @internal
- */
-export interface TesselatedPolyline {
-  /** 24-bit index of each vertex. */
-  readonly indices: VertexIndices;
-  /** 24-bit index of the previous vertex in the polyline. */
-  readonly prevIndices: VertexIndices;
-  /** 24-bit index of the next vertex in the polyline, plus 8-bit parameter describing the semantics of this vertex. */
-  readonly nextIndicesAndParams: Uint8Array;
-}
-
-export namespace TesselatedPolyline {
-  export function fromMesh(args: MeshArgs): TesselatedPolyline | undefined {
-    const tesselator = PolylineTesselator.fromMesh(args);
-    return tesselator?.tesselate();
-  }
+export function tesselatePolylineFromMesh(args: MeshArgs): TesselatedPolyline | undefined {
+  const tesselator = PolylineTesselator.fromMesh(args);
+  return tesselator?.tesselate();
 }
 
 class PolylineVertex {
@@ -226,42 +212,24 @@ export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dLis
   return tesselator.tesselate();
 }
 
-/**
- * Describes a set of tesselated polylines.
- * Each segment of each polyline is triangulated into a quad. Additional triangles may be inserted
- * between segments to enable rounded corners.
- */
-export class PolylineParams {
-  public readonly vertices: VertexTable;
-  public readonly polyline: TesselatedPolyline;
-  public readonly isPlanar: boolean;
-  public readonly type: PolylineTypeFlags;
-  public readonly weight: number;
-  public readonly linePixels: LinePixels;
+export function createPolylineParams(args: PolylineArgs): PolylineParams | undefined {
+  assert(!args.flags.isDisjoint);
+  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  if (undefined === vertices)
+    return undefined;
 
-  /** Directly construct a PolylineParams. The PolylineParams takes ownership of all input data. */
-  public constructor(vertices: VertexTable, polyline: TesselatedPolyline, weight: number, linePixels: LinePixels, isPlanar: boolean, type: PolylineTypeFlags = PolylineTypeFlags.Normal) {
-    this.vertices = vertices;
-    this.polyline = polyline;
-    this.isPlanar = isPlanar;
-    this.weight = weight;
-    this.linePixels = linePixels;
-    this.type = type;
-  }
+  const tesselator = PolylineTesselator.fromPolyline(args);
+  if (undefined === tesselator)
+    return undefined;
 
-  /** Construct from an PolylineArgs. */
-  public static create(args: PolylineArgs): PolylineParams | undefined {
-    assert(!args.flags.isDisjoint);
-    const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
-
-    const tesselator = PolylineTesselator.fromPolyline(args);
-    if (undefined === tesselator)
-      return undefined;
-
-    return new PolylineParams(vertices, tesselator.tesselate(), args.width, args.linePixels, args.flags.isPlanar, args.flags.type);
-  }
+  return {
+    vertices,
+    polyline: tesselator.tesselate(),
+    isPlanar: args.flags.isPlanar,
+    type: args.flags.type,
+    weight: args.width,
+    linePixels: args.linePixels,
+  };
 }
 
 export function wantJointTriangles(weight: number, is2d: boolean): boolean {
