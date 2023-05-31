@@ -81,7 +81,7 @@ function setUint24(edgeTable: Uint8Array, byteIndex: number, value: number): voi
 export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): ImdlModel.IndexedEdgeParams  | undefined {
   const numSilhouettes = compact.normalPairs?.length ?? 0;
   const numTotalEdges = compact.numVisibleEdges + numSilhouettes;
-  if (numTotalEdges === 0 || numTotalEdges % 3 !== 0)
+  if (numTotalEdges <= 0)
     return undefined;
 
   // Each edge is a quad consisting of six vertices. Each vertex is an identical 24-bit index into the lookup table.
