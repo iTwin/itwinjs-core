@@ -83,6 +83,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
    * Refer to fetch API for more details (https://developer.mozilla.org/en-US/docs/Web/API/fetch)
    */
   protected async fetch(url: URL, options?: RequestInit) {
+    console.log(" ArcGISImageryProvider.fetch");
 
     let errorCode: number | undefined;
     const urlObj = new URL(url);
