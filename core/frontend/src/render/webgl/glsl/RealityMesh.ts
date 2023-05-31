@@ -102,7 +102,9 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
   float alpha = layerAlpha * texCol.a;
 
   if (alpha > 0.05) {
-    vec3 texRgb = isProjected ? (texCol.rgb / texCol.a) : texCol.rgb; // Texture color is premultiplied by alpha only if projected (from classification).
+    vec3 texRgb = isProjected ? (texCol.rgb / texCol.a) : texCol.rgb; // If projected, undo premultiplication
+    // Texture color is premultiplied earlier by alpha only if projected (from classification).
+
     col.rgb = (1.0 - alpha) * col.rgb + alpha * texRgb;
 
     if (isProjected) {
@@ -115,9 +117,15 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
 
     if (alpha > col.a)
       col.a = alpha;
+
+    return true;
   }
 
-  return true;
+  // If texture color is transparent but base color is not, don't discard
+  if (col.a > 0.05) return true;
+
+  // Only discard if both the texture and base color are transparent
+  return false;
 }
 `;
 
@@ -208,7 +216,7 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
   vec4 col = u_baseColor;
   ${applyTextureStrings.join("\n  ")}
   if (doDiscard)
-      discard;
+    discard;
 
   ${applyFeatureColor}
 
