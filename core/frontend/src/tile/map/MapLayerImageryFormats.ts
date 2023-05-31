@@ -168,6 +168,11 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGIS";
   public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+
+    const urlValidation = ArcGisUtilities.validateUrl(url, "MapServer");
+    if (urlValidation !== MapLayerSourceStatus.Valid)
+      return {status: urlValidation};
+
     // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
     return ArcGisUtilities.validateSource(url, this.formatId, [], userName, password, ignoreCache);
   }
