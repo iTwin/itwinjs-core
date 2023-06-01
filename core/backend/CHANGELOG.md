@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 24 May 2023 17:27:09 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Jun 2023 17:00:39 GMT and should not be manually modified.
+
+## 3.7.8
+Thu, 01 Jun 2023 17:00:39 GMT
+
+### Updates
+
+- Prefetches triggered by attach now have configurable minRequests/maxRequests through ApplicationSettings
 
 ## 3.7.7
 Wed, 24 May 2023 17:27:09 GMT
