@@ -18,14 +18,15 @@ class TileSizeRecorder {
   // Inner dictionary maps stringified unique tile tree Ids to the tile's content size (prior to decoding) loaded by that tree.
   private readonly _records = new Map<string, Map<string, number>>();
 
-  public record(contentId: ContentId, treeId: IModelTileTreeId, size: number): void {
-    const id = `${contentId.modelId}:${contentId.contentId}`;
+  public record(contentId: ContentId, tree: IModelTileTree, size: number): void {
+    const id = `${tree.iModel.key}:${contentId.modelId}:${contentId.contentId}`;
     let record = this._records.get(id);
     if (!record)
       this._records.set(id, record = new Map<string, number>());
 
     // Note: use the same (fake) model Id for every tree Id for grouping - the actual model Ids are in the row labels.
-    record.set(iModelTileTreeIdToString("1", treeId, IModelApp.tileAdmin), size);
+    const treeId = iModelTileTreeIdToString("1", tree.iModelTileTreeId, IModelApp.tileAdmin);
+    record.set(treeId, size);
   }
 
   // Produce CSV of the format:
@@ -94,7 +95,7 @@ export class RecordTileSizesTool extends Tool {
       recorder = new TileSizeRecorder();
       IModelApp.tileAdmin.generateTileContent = async (tile: { iModelTree: IModelTileTree, contentId: string, request?: { isCanceled: boolean } }): Promise<Uint8Array> => {
         const content = await generateTileContent.bind(IModelApp.tileAdmin, tile)();
-        recorder?.record({ contentId: tile.contentId, modelId: tile.iModelTree.modelId }, tile.iModelTree.iModelTileTreeId, content.byteLength);
+        recorder?.record({ contentId: tile.contentId, modelId: tile.iModelTree.modelId }, tile.iModelTree, content.byteLength);
         return content;
       };
 
