@@ -143,6 +143,14 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@esbuild-plugins/node-globals-polyfill",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@esbuild-plugins/node-modules-polyfill",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/appui-abstract",
       "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
     },
@@ -351,6 +359,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@kckst8/vite-plugin-commonjs",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@loaders.gl/core",
       "allowedCategories": [ "frontend" ]
     },
@@ -373,6 +385,10 @@
     {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -520,6 +536,10 @@
     },
     {
       "name": "esbuild",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "esbuild-plugin-external-global",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -771,6 +791,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "rollup-plugin-ignore",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
     },
@@ -852,6 +876,26 @@
     },
     {
       "name": "vhacd-js",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-env-compatible",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-inspect",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-svgr",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-tsconfig-paths",
       "allowedCategories": [ "internal" ]
     },
     {
