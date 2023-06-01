@@ -16,6 +16,15 @@ import { ModelProps } from "./ModelProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
+/** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore. Will be a base-36 number with a leading "@". */
+export type ViewStoreIdString = string;
+
+/** The id of either an element or an entry in a ViewStore. */
+export type ViewIdString = Id64String | ViewStoreIdString;
+
+/** determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@") */
+export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
+
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
  * @public
@@ -144,8 +153,8 @@ export interface ViewQueryParams extends EntityQueryParams {
  * @extensions
  */
 export interface ViewDefinitionProps extends DefinitionElementProps {
-  categorySelectorId: Id64String;
-  displayStyleId: Id64String;
+  categorySelectorId: ViewIdString;
+  displayStyleId: ViewIdString;
   description?: string;
   jsonProperties?: {
     /** Additional properties of the view. */
@@ -179,7 +188,7 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
  * @extensions
  */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
-  modelSelectorId: Id64String;
+  modelSelectorId: ViewIdString;
 }
 
 /** Parameters used to construct a ViewDefinition2d

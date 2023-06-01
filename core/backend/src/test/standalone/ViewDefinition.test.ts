@@ -92,7 +92,7 @@ describe("ViewDefinition", () => {
     const cs1 = iModel.elements.getElement<CategorySelector>(categorySelectorId);
     const cs1Row = await vs1.addCategorySelector({ elements: guidMap, name: cs1.code.value, categories: cs1.categories });
     expect(cs1Row).equal("@1");
-    const cs1out = vs1.loadCategorySelector({ iModel: guidMap, id: cs1Row });
+    const cs1out = vs1.loadCategorySelector({ elements: guidMap, id: cs1Row });
     expect(cs1out.classFullName).equal("BisCore:CategorySelector");
     expect(cs1out.categories.length).equal(1);
     expect(cs1out.categories[0]).equal(spatialCategoryId);

@@ -9,12 +9,13 @@
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
-  DisplayStyleSubCategoryProps, ElementProps, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule, RenderTimelineProps,
-  SpatialViewDefinitionProps, ViewDefinitionProps,
+  DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
+  RenderTimelineProps, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelDb } from "./IModelDb";
 import { VersionedSqliteDb } from "./SQLiteDb";
+
+import type { IModelDb } from "./IModelDb";
 
 // cspell:ignore nocase rowid
 
@@ -138,20 +139,18 @@ export namespace ViewStore {
     return `^${rowId.toString(36)}`;
   };
 
-  /** determine if a string is table row string (base-36 integer with a leading "@") */
-  const isTableRowString = (id?: string) => true === id?.startsWith("@");
   /** determine if a string is a guid row string (base-36 integer with a leading "^") */
   const isGuidRowString = (id?: string) => true === id?.startsWith("^");
 
   export const rowIdFromString = (id: RowString): RowId => {
-    if (!isTableRowString(id) && !isGuidRowString(id))
+    if (!isViewStoreId(id) && !isGuidRowString(id))
       throw new Error(`invalid value: ${id}`);
     return parseInt(id.slice(1), 36);
   };
   const blankElementProps = (from: any, classFullName: string, idString: RowString, name?: string): ElementProps => {
     from.id = idString;
     from.classFullName = classFullName;
-    from.model = IModelDb.repositoryModelId;
+    from.model = IModel.repositoryModelId;
     from.code = { spec: "0x1", scope: "0x1", value: name };
     return from;
   };
@@ -346,7 +345,7 @@ export namespace ViewStore {
       return this.deleteFromTable(tableName.thumbnails, id);
     }
     /** get the data for a view from the database */
-    public getView(viewId: RowId): undefined | Omit<ViewRow, "thumbnail"> {
+    public getViewRow(viewId: RowId): undefined | Omit<ViewRow, "thumbnail"> {
       return this.withSqliteStatement(`SELECT className,name,json,owner,shared,groupId FROM ${tableName.views} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
         return !stmt.nextRow() ? undefined : {
@@ -548,7 +547,7 @@ export namespace ViewStore {
     }
     public getViewByName(arg: { name: string, groupId?: RowId }): Omit<ViewRow, "thumbnail"> | undefined {
       const id = this.findViewByName(arg.name, arg.groupId ?? defaultViewGroupId);
-      return id ? this.getView(id) : undefined;
+      return id ? this.getViewRow(id) : undefined;
     }
 
     public findViewsByOwner(owner: string): RowId[] {
@@ -667,15 +666,17 @@ export namespace ViewStore {
       }
       return scriptProps;
     }
-    private scriptFromGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+    private scriptFromGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps, omitElementIds: boolean): RenderSchedule.ScriptProps {
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
         const modelId = this.fromGuidRow(elements, rowIdFromString(model.modelId));
         if (modelId) {
           model.modelId = modelId;
           scriptProps.push(model);
-          for (const batch of model.elementTimelines)
-            batch.elementIds = this.fromCompressedGuidRows(elements, batch.elementIds as CompressedId64Set);
+          for (const batch of model.elementTimelines) {
+            if (undefined !== batch.elementIds)
+              batch.elementIds = omitElementIds ? "" : this.fromCompressedGuidRows(elements, batch.elementIds as CompressedId64Set);
+          }
         }
       }
       return scriptProps;
@@ -688,14 +689,14 @@ export namespace ViewStore {
       const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.elements, args.categories) });
       return tableRowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadCategorySelector(args: { iModel: IModelDb.GuidMapper, id: RowString }): CategorySelectorProps {
+    public loadCategorySelector(args: { elements: IModelDb.GuidMapper, id: RowString }): CategorySelectorProps {
       const row = this.getCategorySelector(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
       const props = blankElementProps({}, "BisCore:CategorySelector", args.id, row.name) as CategorySelectorProps;
       const json = JSON.parse(row.json);
-      props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.iModel, json.categories));
+      props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.elements, json.categories));
       return props;
     }
 
@@ -732,7 +733,7 @@ export namespace ViewStore {
         throw new Error("Timeline not found");
 
       const props = blankElementProps({}, "BisCore:RenderTimeline", args.id, row?.name) as RenderTimelineProps;
-      props.script = JSON.stringify(this.scriptFromGuids(args.elements, JSON.parse(row.json)));
+      props.script = JSON.stringify(this.scriptFromGuids(args.elements, JSON.parse(row.json), false));
       return props;
     }
 
@@ -767,7 +768,7 @@ export namespace ViewStore {
       }
 
       if (settings.renderTimeline) {
-        if (!isTableRowString(settings.renderTimeline))
+        if (!isViewStoreId(settings.renderTimeline))
           this.toGuidRowMember(args.elements, settings, "renderTimeline");
         delete settings.scheduleScript;
       } else if (settings.scheduleScript) {
@@ -821,7 +822,7 @@ export namespace ViewStore {
         delete settings.scheduleScript;
       } else if (settings.scheduleScript) {
         delete settings.renderTimeline;
-        settings.scheduleScript = this.scriptFromGuids(args.elements, settings.scheduleScript);
+        settings.scheduleScript = this.scriptFromGuids(args.elements, settings.scheduleScript, args.opts?.omitScheduleScriptElementIds === true);
       }
 
       return props;
@@ -844,7 +845,7 @@ export namespace ViewStore {
     }
 
     public loadViewDefinition(args: { elements: IModelDb.GuidMapper, id: RowString }): ViewDefinitionProps {
-      const row = this.getView(rowIdFromString(args.id));
+      const row = this.getViewRow(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("ViewDefinition not found");
 

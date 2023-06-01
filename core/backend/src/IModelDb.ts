@@ -15,24 +15,27 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
-  EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
+  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
+  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, isViewStoreId, LocalFileName, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
+  PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
+  ViewDefinition2dProps,
+  ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { ChannelAdmin, ChannelControl } from "./ChannelControl";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -51,8 +54,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
-import { ChannelAdmin, ChannelControl } from "./ChannelControl";
+import { ViewStore } from "./ViewStore";
 
 // spell:ignore fontid fontmap
 
@@ -2036,6 +2038,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
+    private _viewStore?: ViewStore.CloudAccess;
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
      * @param className Query for view definitions of this class.
@@ -2086,78 +2089,84 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    private loadViewStateProps(viewDefinitionElement: ViewDefinition, options?: ViewStateLoadProps, drawingExtents?: Range3d): ViewStateProps {
-      const elements = this._iModel.elements;
-      const viewDefinitionProps = viewDefinitionElement.toJSON();
-      const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
-
-      const displayStyleProps = elements.getElementProps<DisplayStyleProps>({
-        id: viewDefinitionProps.displayStyleId,
-        displayStyle: options?.displayStyle,
-      });
-
-      const viewStateData: ViewStateProps = {
-        viewDefinitionProps,
-        displayStyleProps,
-        categorySelectorProps,
+    private loadViewData(viewDefId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
+      const iModel = this._iModel;
+      const elements = iModel.elements;
+      const getLoader = () => {
+        if (isViewStoreId(viewDefId)) {
+          if (!this._viewStore)
+            throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
+          const reader = this._viewStore.reader;
+          return {
+            loadView: () => reader.loadViewDefinition({ elements, id: viewDefId }),
+            loadCategorySelector: (id: ViewIdString) => reader.loadCategorySelector({ elements, id }),
+            loadDisplayStyle: (id: ViewIdString) => reader.loadDisplayStyle({ elements, id, opts: options?.displayStyle }),
+            loadModelSelector: (id: ViewIdString) => reader.loadModelSelector({ elements, id }),
+          };
+        } else {
+          return {
+            loadView: () => elements.getElementProps<ViewDefinitionProps>(viewDefId),
+            loadCategorySelector: (id: Id64String) => elements.getElementProps<CategorySelectorProps>(id),
+            loadDisplayStyle: (id: Id64String) => elements.getElementProps<DisplayStyleProps>({ id, displayStyle: options?.displayStyle }),
+            loadModelSelector: (id: Id64String) => elements.getElementProps<ModelSelectorProps>(id),
+          };
+        }
       };
 
-      const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
-      if (modelSelectorId !== undefined) {
-        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(modelSelectorId);
-      } else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
-        viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
-          from: "BisCore.ViewAttachment",
-          where: `Model.Id=${viewDefinitionElement.baseModelId}`,
-        }));
-      } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
-        // Ensure view has known extents
-        if (drawingExtents && !drawingExtents.isNull)
-          viewStateData.modelExtents = drawingExtents.toJSON();
+      const loader = getLoader();
+      const props = {} as ViewStateProps;
+      props.viewDefinitionProps = loader.loadView();
+      props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);
+      props.displayStyleProps = loader.loadDisplayStyle(props.viewDefinitionProps.displayStyleId);
+      const modelSelectorId = (props.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      if (modelSelectorId !== undefined)
+        props.modelSelectorProps = loader.loadModelSelector(modelSelectorId);
 
+      const viewClass = iModel.getJsClass(props.viewDefinitionProps.classFullName);
+      const baseModelId = (props.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      if (viewClass.is(SheetViewDefinition)) {
+        props.sheetProps = elements.getElementProps<SheetProps>(baseModelId);
+        props.sheetAttachments = Array.from(iModel.queryEntityIds({
+          from: "BisCore.ViewAttachment",
+          where: `Model.Id=${baseModelId}`,
+        }));
+      } else if (viewClass.is(DrawingViewDefinition)) {
         // Include information about the associated [[SectionDrawing]], if any.
         // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
-        try {
-          const sectionDrawing = this._iModel.elements.tryGetElement<SectionDrawing>(viewDefinitionElement.baseModelId);
-          if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
-            viewStateData.sectionDrawing = {
-              spatialView: sectionDrawing.spatialView.id,
-              displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
-              drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
-            };
-          }
-        } catch {
-          //
+        const sectionDrawing = iModel.elements.tryGetElement<SectionDrawing>(baseModelId);
+        if (sectionDrawing && sectionDrawing.spatialView && Id64.isValidId64(sectionDrawing.spatialView.id)) {
+          props.sectionDrawing = {
+            spatialView: sectionDrawing.spatialView.id,
+            displaySpatialView: true === sectionDrawing.jsonProperties.displaySpatialView,
+            drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
+          };
         }
       }
-
-      return viewStateData;
+      return props;
     }
 
     /** @deprecated in 3.x. use [[getViewStateProps]]. */
-    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
-      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
-      let drawingExtents;
-      if (view instanceof DrawingViewDefinition) {
-        try {
-          drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId }).modelExtents);
-        } catch {
-          //
-        }
+    public getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
+      const viewStateData = this.loadViewData(viewDefinitionId, options);
+      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      if (baseModelId) {
+        const drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: baseModelId }).modelExtents);
+        if (!drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
       }
-
-      return this.loadViewStateProps(view, options, drawingExtents);
+      return viewStateData;
     }
 
-    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by element Id. */
-    public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
-      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
-      let drawingExtents;
-      if (view instanceof DrawingViewDefinition)
-        drawingExtents = (await this._iModel.models.queryRange(view.baseModelId));
-
-      return this.loadViewStateProps(view, options, drawingExtents);
+    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by ViewIdString. */
+    public async getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+      const viewStateData = this.loadViewData(viewDefinitionId, options);
+      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      if (baseModelId) {
+        const drawingExtents = await this._iModel.models.queryRange(baseModelId);
+        if (!drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
+      }
+      return viewStateData;
     }
 
     private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
@@ -2205,9 +2214,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 
   /** Represents the current state of a pollable tile content request.
-   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
-   * @internal
-   */
+* Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+* @internal
+*/
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.

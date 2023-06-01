@@ -45,7 +45,7 @@ describe.only("ViewStore", function (this: Suite) {
 
     const v1Id2 = vs1.addViewRow({ className: "spatial", name: "v2", json: "json-v2", owner: "owner1", groupId: 1 });
     expect(v1Id2).equals(2);
-    const v2 = vs1.getView(v1Id2)!;
+    const v2 = vs1.getViewRow(v1Id2)!;
     expect(v2.name).equals("v2");
     await vs1.deleteView(v1Id2);
     expect(vs1.findViewByName("v2", 1)).equals(0);
