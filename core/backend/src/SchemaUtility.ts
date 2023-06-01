@@ -15,17 +15,17 @@ import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
  * Utility class for EC Schemas
  */
 export class SchemaUtility {
-  /** Convert EC2 XML ECSchema(s). On success, the EC2.0 schemas are converted into EC3.2 schemas.
-   * @param ec2XmlSchemas The EC2 XML string(s) created from a serialized ECSchema.
-   * @returns EC3.2 XML ECSchema(s).
-   * @throws [[IModelError]] if there is a problem converting the EC2.0 schemas.
+  /** Convert EC2 Xml ECSchema(s). On success, the EC2 schemas are converted into EC3.2 schemas.
+   * @param ec2XmlSchemas The EC2 Xml string(s) created from a serialized ECSchema.
+   * @returns EC3.2 Xml ECSchema(s).
+   * @throws [[IModelError]] if there is a problem converting the EC2 schemas.
    * @alpha
    */
-  public convertEc2SchemaStrings(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[] {
+  public convertEC2SchemaStrings(ec2XmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[] {
     const maybeNativeContext = schemaContext?.nativeContext;
     const ec3XmlSchemas: string[] = IModelJsNative.SchemaUtility.convertEC2XmlSchemas(ec2XmlSchemas, maybeNativeContext);
     if (ec2XmlSchemas.length === 0)
-      throw new IModelError(BentleyStatus.ERROR, "Error converting ec2 Xml schema(s)");
+      throw new IModelError(BentleyStatus.ERROR, "Error converting EC2 Xml schema(s)");
 
     return ec3XmlSchemas;
   }
