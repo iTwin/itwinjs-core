@@ -109,6 +109,7 @@
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "esbuild-plugin-external-global": "^1.0.1",
+    "rollup-plugin-ignore": "^1.0.10",
     "webpack": "^5.76.0"
   },
   "browserslist": [

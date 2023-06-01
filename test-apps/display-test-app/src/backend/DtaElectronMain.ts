@@ -51,7 +51,7 @@ const dtaElectronMain = async () => {
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
-    developmentServer: import.meta.env.NODE_ENV === "development",
+    developmentServer: process.env.NODE_ENV === "development",
   };
 
   await initializeDtaBackend(opts);
