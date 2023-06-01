@@ -17,7 +17,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 
-/** Loads the provided `.env` file into process.env */
+/** Loads the provided `.env` file into import.meta.env */
 function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
@@ -35,8 +35,8 @@ function loadEnv(envFile: string) {
 class DisplayTestAppRpc extends DtaRpcInterface {
 
   public override async readExternalSavedViews(bimFileName: string): Promise<string> {
-    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
-      const docPath = process.env.DOCS;
+    if (ProcessDetector.isMobileAppBackend && import.meta.env.DOCS) {
+      const docPath = import.meta.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 
@@ -49,9 +49,9 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
-    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+    if (ProcessDetector.isMobileAppBackend && import.meta.env.DOCS) {
       // Used to set a writeable directory on an iOS or Android device.
-      const docPath = process.env.DOCS;
+      const docPath = import.meta.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 
@@ -60,8 +60,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public override async readExternalCameraPaths(bimFileName: string): Promise<string> {
-    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
-      const docPath = process.env.DOCS;
+    if (ProcessDetector.isMobileAppBackend && import.meta.env.DOCS) {
+      const docPath = import.meta.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 
@@ -74,9 +74,9 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public override async writeExternalCameraPaths(bimFileName: string, cameraPaths: string): Promise<void> {
-    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+    if (ProcessDetector.isMobileAppBackend && import.meta.env.DOCS) {
       // Used to set a writeable directory on an iOS or Android device.
-      const docPath = process.env.DOCS;
+      const docPath = import.meta.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 
@@ -85,8 +85,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 
   public override async readExternalFile(txtFileName: string): Promise<string> {
-    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
-      const docPath = process.env.DOCS;
+    if (ProcessDetector.isMobileAppBackend && import.meta.env.DOCS) {
+      const docPath = import.meta.env.DOCS;
       txtFileName = path.join(docPath, txtFileName);
     }
 
@@ -208,13 +208,13 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
 
   const iModelHost: IModelHostOptions = {
     logTileLoadTimeThreshold: 3,
     logTileSizeThreshold: 500000,
-    cacheDir: process.env.IMJS_BRIEFCASE_CACHE_LOCATION,
+    cacheDir: import.meta.env.IMJS_BRIEFCASE_CACHE_LOCATION,
     hubAccess,
   };
 
@@ -255,12 +255,12 @@ async function initializeAuthorizationClient(): Promise<ElectronMainAuthorizatio
     )
   ) {
     return new ElectronMainAuthorization({
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!,
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES!,
+      clientId: import.meta.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!,
+      scope: import.meta.env.IMJS_OIDC_ELECTRON_TEST_SCOPES!,
       redirectUri:
-        process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ??
+        import.meta.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ??
         "http://localhost:3000/signin-callback",
-      issuerUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
+      issuerUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
     });
   }
   // Note: Mobile's default auth client works, and will be used if we get here on mobile.
@@ -272,7 +272,7 @@ async function initializeAuthorizationClient(): Promise<ElectronMainAuthorizatio
  * @returns true if all are provided, false if any missing.
  */
 function checkEnvVars(...keys: Array<string>): boolean {
-  const missing = keys.filter((name) => process.env[name] === undefined);
+  const missing = keys.filter((name) => import.meta.env[name] === undefined);
   if (missing.length === 0) {
     return true;
   }
