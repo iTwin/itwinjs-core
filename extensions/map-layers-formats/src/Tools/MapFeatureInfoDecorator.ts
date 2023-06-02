@@ -201,8 +201,8 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._drapedStrings = undefined;
     this._allGeomDraped = false;
 
-    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
     this._state = state;
+    IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
 
     this._drapePoints.clear();
     this._drapePointsStates = [];
