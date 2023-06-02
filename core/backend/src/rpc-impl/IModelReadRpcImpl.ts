@@ -10,25 +10,27 @@ import {
   AccessToken, assert, BeDuration, BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger,
 } from "@itwin/core-bentley";
 import {
-  Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps,
-  ElementMeshRequestProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
-  IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
-  IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps,
-  ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps, SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps,
-  ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse,
+  ElementLoadOptions, ElementLoadProps, ElementMeshRequestProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel, IModelConnectionProps,
+  IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
+  MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewDefinitionProps, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
+  ViewStateProps,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { SpatialCategory } from "../Category";
 import { ConcurrentQuery } from "../ConcurrentQuery";
+import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { generateGeometrySummaries } from "../GeometrySummary";
 import { DictionaryModel } from "../Model";
-import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { RpcTrace } from "../rpc/tracing";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
-import { ViewStateHydrator } from "../ViewStateHydrator";
 import { PromiseMemoizer } from "../PromiseMemoizer";
+import { RpcTrace } from "../rpc/tracing";
+import { ViewStateHydrator } from "../ViewStateHydrator";
+import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;
@@ -361,5 +363,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async generateElementMeshes(iModelToken: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
     const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, iModelToken);
     return db.nativeDb.generateElementMeshes(props);
+  }
+
+  public async getViewList(iModelToken: IModelRpcProps, queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
+    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, iModelToken);
+    return db.views.getViewList(queryParams);
+  }
+  public async queryViewProps(iModelToken: IModelRpcProps, queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
+    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, iModelToken);
+    return db.views.queryProps(queryParams);
   }
 }

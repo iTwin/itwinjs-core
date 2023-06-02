@@ -26,6 +26,7 @@ const viewContainer = "views-itwin1";
 let iModel: StandaloneDb;
 let vs1: ViewStore.CloudAccess;
 let drawingViewId: Id64String;
+let auxCoordSystemId: Id64String;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -119,8 +120,6 @@ function populateDb(sourceDb: IModelDb) {
   assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
   const subCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
   assert.isTrue(Id64.isValidId64(subCategoryId));
-  const filteredSubCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "FilteredSubCategory", { color: ColorDef.green.toJSON() });
-  assert.isTrue(Id64.isValidId64(filteredSubCategoryId));
   const drawingCategoryId = DrawingCategory.insert(sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
   assert.isTrue(Id64.isValidId64(drawingCategoryId));
   const spatialCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
@@ -132,7 +131,7 @@ function populateDb(sourceDb: IModelDb) {
     model: definitionModelId,
     code: AuxCoordSystem2d.createCode(sourceDb, definitionModelId, "AuxCoordSystem2d"),
   };
-  const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
+  auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
   assert.isTrue(Id64.isValidId64(auxCoordSystemId));
   const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", { paletteName: "PaletteName" });
   assert.isTrue(Id64.isValidId64(renderMaterialId));
@@ -335,7 +334,7 @@ describe.only("ViewStore", function (this: Suite) {
 
     let props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId: ms1Id, categorySelectorId: cs1Id, displayStyleId: dsId };
     props.code.value = "view2";
-    props.jsonProperties = { viewDetails: { aspectSkew: 1 } };
+    props.jsonProperties = { viewDetails: { aspectSkew: 1, acs: auxCoordSystemId } };
 
     const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
     const viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
@@ -417,13 +416,13 @@ describe.only("ViewStore", function (this: Suite) {
     expect(dFromVs.viewDefinitionProps.classFullName).equals(dv.viewDefinitionProps.classFullName);
     expect(dFromVs.viewDefinitionProps.code.value).equals(dv.viewDefinitionProps.code.value);
     expect(dFromVs.modelExtents).to.deep.equal(dv.modelExtents);
-    const vdel = dv.viewDefinitionProps as ViewDefinition2dProps;
-    const vdel2 = dFromVs.viewDefinitionProps as ViewDefinition2dProps;
-    expect(vdel.baseModelId).equals(vdel2.baseModelId);
-    expect(vdel.angle).to.deep.equal(vdel2.angle);
-    expect(vdel.origin).to.deep.equal(vdel2.origin);
-    expect(vdel.delta).to.deep.equal(vdel2.delta);
-    expect(vdel.jsonProperties).to.deep.equal(vdel2.jsonProperties);
+    const v2dEl = dv.viewDefinitionProps as ViewDefinition2dProps;
+    const v2dVs = dFromVs.viewDefinitionProps as ViewDefinition2dProps;
+    expect(v2dEl.baseModelId).equals(v2dVs.baseModelId);
+    expect(v2dEl.angle).to.deep.equal(v2dVs.angle);
+    expect(v2dEl.origin).to.deep.equal(v2dVs.origin);
+    expect(v2dEl.delta).to.deep.equal(v2dVs.delta);
+    expect(v2dEl.jsonProperties).to.deep.equal(v2dVs.jsonProperties);
 
     sinon.restore();
   });

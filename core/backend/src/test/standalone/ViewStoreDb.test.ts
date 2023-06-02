@@ -8,6 +8,7 @@ import { Suite } from "mocha";
 import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore";
+import { ThumbnailFormatProps } from "@itwin/core-common";
 
 describe.only("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -84,19 +85,21 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.findViewsByOwner("owner1").length).equals(102);
 
     const thumbnail1 = new Uint8Array([2, 33, 23, 0, 202]);
-    await vs1.addOrReplaceThumbnail({ data: thumbnail1, viewId: v1Id, json: "thumbnail1-json" });
-    await vs1.addOrReplaceThumbnail({ data: thumbnail1, viewId: v2Id, json: "thumbnail2-json" });
-    const thumbnail2 = vs1.getThumbnail(v2Id);
+    const format1: ThumbnailFormatProps = { width: 100, height: 200, format: "jpeg" };
+    const format2: ThumbnailFormatProps = { width: 10, height: 20, format: "png" };
+    vs1.addOrReplaceThumbnailRow({ data: thumbnail1, viewId: v1Id, format: format1 });
+    vs1.addOrReplaceThumbnailRow({ data: thumbnail1, viewId: v2Id, format: format2 });
+    const thumbnail2 = vs1.getThumbnailRow(v2Id);
     expect(thumbnail2?.data).deep.equals(thumbnail1);
-    expect(thumbnail2?.json).equals("thumbnail2-json");
+    expect(thumbnail2?.format).deep.equals(format2);
     const thumb3 = new Uint8Array([2, 33, 23, 0, 203]);
-    await vs1.addOrReplaceThumbnail({ data: thumb3, viewId: v2Id });
-    const thumbnail3 = vs1.getThumbnail(v2Id);
+    vs1.addOrReplaceThumbnailRow({ data: thumb3, viewId: v2Id, format: format2 });
+    const thumbnail3 = vs1.getThumbnailRow(v2Id);
     expect(thumbnail3?.data).deep.equals(thumb3);
-    await vs1.addOrReplaceThumbnail({ data: thumbnail1, viewId: 33 });
-    expect(vs1.getThumbnail(33)).to.not.be.undefined;
+    vs1.addOrReplaceThumbnailRow({ data: thumbnail1, viewId: 33, format: format1 });
+    expect(vs1.getThumbnailRow(33)).to.not.be.undefined;
     await vs1.deleteThumbnail(33);
-    expect(vs1.getThumbnail(33)).to.be.undefined;
+    expect(vs1.getThumbnailRow(33)).to.be.undefined;
 
     expect(vs1.getViewByName({ name: "view2", groupId: g1 })?.groupId).equals(g1);
     await vs1.deleteViewGroup(g1);

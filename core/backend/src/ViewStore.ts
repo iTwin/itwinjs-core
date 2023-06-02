@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequire
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ViewDefinitionProps,
+  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -121,7 +121,7 @@ export namespace ViewStore {
   export interface ThumbnailRow {
     viewId: RowId;
     data: ThumbnailData;
-    json?: string;
+    format: ThumbnailFormatProps;
     owner?: string;
   }
   /** a row in the "taggedViews" table */
@@ -298,10 +298,10 @@ export namespace ViewStore {
     }
 
     /** add or update a row in the "thumbnails" table, return the RowId */
-    public async addOrReplaceThumbnail(args: ThumbnailRow): Promise<RowId> {
+    public addOrReplaceThumbnailRow(args: ThumbnailRow): RowId {
       return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails}(Id,json,owner,data) VALUES (?,?,?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
-        stmt.maybeBindString(2, args.json);
+        stmt.bindString(2, JSON.stringify(args.format));
         stmt.maybeBindString(3, args.owner);
         stmt.bindBlob(4, args.data);
         this.stepForWrite(stmt);
@@ -358,12 +358,12 @@ export namespace ViewStore {
         };
       });
     }
-    public getThumbnail(viewId: RowId): undefined | ThumbnailRow {
+    public getThumbnailRow(viewId: RowId): undefined | ThumbnailRow {
       return this.withSqliteStatement(`SELECT json,owner,data FROM ${tableName.thumbnails} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
         return !stmt.nextRow() ? undefined : {
           viewId,
-          json: stmt.getValueStringMaybe(0),
+          format: JSON.parse(stmt.getValueString(0)),
           owner: stmt.getValueStringMaybe(1),
           data: stmt.getValueBlob(2),
         };
@@ -853,6 +853,15 @@ export namespace ViewStore {
       this.fromGuidRowMember(args.elements, props, "baseModelId");
       this.fromGuidRowMember(args.elements, props.jsonProperties?.viewDetails, "acs");
       return props;
+    }
+
+    public async updateThumbnail(args: { viewId: RowString, thumbnail: ThumbnailProps }) {
+      const format: ThumbnailFormatProps = { format: args.thumbnail.format, height: args.thumbnail.height, width: args.thumbnail.width };
+      return this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: rowIdFromString(args.viewId), format });
+    }
+    public loadThumbnail(viewId: RowString): ThumbnailProps | undefined {
+      const row = this.getThumbnailRow(rowIdFromString(viewId));
+      return row ? { image: row.data, format: row.format.format, height: row.format.height, width: row.format.width } : undefined;
     }
   }
 

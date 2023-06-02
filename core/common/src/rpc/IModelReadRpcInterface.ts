@@ -10,8 +10,7 @@ import { CompressedId64Set, GuidString, Id64String, IModelStatus } from "@itwin/
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
 import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
-import { RpcResponseCacheControl } from "./core/RpcConstants";
-import { RpcOperation } from "./core/RpcOperation";
+import { ElementMeshRequestProps } from "../ElementMesh";
 import { ElementLoadOptions, ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../EntityProps";
 import { FontMapProps } from "../Fonts";
@@ -21,15 +20,21 @@ import {
 import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { GeometrySummaryRequestProps } from "../GeometrySummary";
 import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
-import { MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
+import {
+  MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+} from "../MassProperties";
 import { ModelProps } from "../ModelProps";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
-import { ElementMeshRequestProps } from "../ElementMesh";
-import { CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow, ViewStateLoadProps, ViewStateProps } from "../ViewProps";
+import {
+  CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow,
+  ViewDefinitionProps, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+} from "../ViewProps";
+import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcNotFoundResponse } from "./core/RpcControl";
+import { RpcOperation } from "./core/RpcOperation";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 /** Response if the IModelDb was not found at the backend
@@ -79,7 +84,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.5.0";
+  public static interfaceVersion = "3.6.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -132,4 +137,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public async generateElementMeshes(_iModelToken: IModelRpcProps, _props: ElementMeshRequestProps): Promise<Uint8Array> {
     return this.forward(arguments);
   }
+  public async getViewList(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewListEntry[]> { return this.forward(arguments); }
+  public async queryViewProps(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> { return this.forward(arguments); }
 }

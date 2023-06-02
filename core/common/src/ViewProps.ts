@@ -124,6 +124,15 @@ export interface ViewStateLoadProps {
   displayStyle?: DisplayStyleLoadProps;
 }
 
+export interface ViewListEntry {
+  /** The Id of the ViewDefinition. This string may be passed to [[IModelConnection.Views.load]]. */
+  id: ViewIdString;
+  /** The name of the view. This string may be used to create a list with the possible view names. */
+  name: string;
+  /** The fullClassName of the ViewDefinition. Useful for sorting the list of views. */
+  class: string;
+}
+
 /** Properties that define a ModelSelector
  * @public
  * @extensions
