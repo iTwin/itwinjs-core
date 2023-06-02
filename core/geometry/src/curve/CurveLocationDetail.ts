@@ -17,7 +17,7 @@ import { CurvePrimitive } from "./CurvePrimitive";
 export enum CurveIntervalRole {
   /** This point is an isolated point NOT at a primary vertex. */
   isolated = 0,
-  /**  This point is an isolated vertex hit */
+  /** This point is an isolated vertex hit */
   isolatedAtVertex = 1,
   /** This is the beginning of an interval */
   intervalStart = 10,

@@ -24,28 +24,31 @@ import { RegionOps } from "../RegionOps";
 import { StrokeOptions } from "../StrokeOptions";
 
 /**
- * Classification of contortions at a joint (how the joint is constructed).
+ * Classification of how the joint is constructed.
  * @internal
  */
 enum JointMode {
-  Unknown = 0, // used when joint mode is unknown.
-  Cap = 1, // used to annotate a "Joint" at the start/end of a curve without wrap (so there's no "other" curve).
-  Extend = 2, // used when offset curves do not intersect and needs expanding to connect.
-  Trim = -1, // used when offset curves intersect and still goes beyond the intersection so need trimming.
-  JustGeometry = 3,
-  Gap = 4, // used when we want to leave a gap between curves
+  Unknown = 0, /** used when joint mode is unknown. */
+  Cap = 1, /** used to annotate a "Joint" at the start/end of a curve without wrap (so there's no "other" curve). */
+  Extend = 2, /** used when offset curves do not intersect and needs expanding to connect. */
+  Trim = -1, /** used when offset curves intersect and still goes beyond the intersection so need trimming. */
+  JustGeometry = 3, /** unused */
+  Gap = 4, /** used when joint construction fails, resulting in a gap in the offset filled by a line segment. */
 }
 
 /**
- * Control parameters for joint construction based on turn angle (which is always between -180 and 180).
- * * Turn angle is the angle between the direction of starting line and the direction of turned line (ccw). If we
- * have curves instead of lines, the line would the tangent line at the turn point.
- * * Decision order is:
- *   * if the turn angle angle is greater than minArcDegrees, make an arc.
- *   * if the turn angle angle is less than or equal maxChamferTurnDegrees, extend curves along tangent to single
- * intersection point (to create a sharp corner).
- *   * if the turn angle angle is greater than maxChamferTurnDegrees,  construct multiple lines that are tangent to
- * the turn circle "from the outside", with each equal turn less than maxChamferTurnDegrees.
+ * Control parameters for joint construction.
+ *   * Define a "joint" as the common point between adjacent segments of the input curve.
+ *   * Define the "turn angle" at a joint to be the angle in [0,pi] between the first derivatives (tangents) of
+ * the segments at the joint.
+ *   * When creating offsets, if an offset needs to do an "outside" turn, the first applicable construction is applied:
+ *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed to offset the joint.
+ *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
+ * single intersection point (to create a sharp corner).
+ *   * If the turn angle is larger than `options.maxChamferDegrees`, the joint is offset with a line string whose edges:
+ *      * lie outside the arc that would have been created by the first construction
+ *      * have uniform turn angle less than `options.maxChamferDegrees`
+ *      * touch the arc at their midpoint (except first and last edge).
  * @public
  */
 export class JointOptions {
@@ -54,13 +57,16 @@ export class JointOptions {
    * * If this control angle is 180 degrees or more, arcs are never created.
    */
   public minArcDegrees = 180.0;
-  /** Smallest turn angle to construct a chamfer */
+  /** Largest turn angle at which to construct a sharp corner, or largest turn angle in a multi-segment chamfer. */
   public maxChamferTurnDegrees = 90;
   /**
-   * Boolean to allow sharp corners for turn angles larger than 120 degrees.
-   * * By default we don't allow sharp corners for turn angles larger than 120 degrees. If you want to have sharp
-   * corners for a turn angle larger than 120 degrees set this boolean to true and set maxChamferTurnDegrees to
-   * greater than 120.
+   * Whether to remove the internal turn angle upper bound for sharp corner construction.
+   * * By default, a sharp corner is not created at a joint when the turn angle is too large, so as to avoid offsets whose
+   *  ranges blow up. Internally, this is implemented by applying an upper bound of 120 degrees to `maxChamferTurnDegrees`.
+   * * When `allowSharpestCorners` is true, this internal upper bound is removed, allowing sharp corners for turn angles
+   * up to `maxChamferTurnDegrees`.
+   * * Thus, if you know your input turn angles are no greater than `maxChamferTurnDegrees`, you can create an offset
+   * with sharp corners at each joint by setting `minArcDegrees` to 180 and `allowSharpestCorners` to true.
    */
   public allowSharpestCorners = false;
   /** Offset distance, positive to left of base curve. */
@@ -74,19 +80,19 @@ export class JointOptions {
    */
   constructor(
     leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 90,
-    allowSharpestCorners = false, preserveEllipticalArcs = false
+    preserveEllipticalArcs = false, allowSharpestCorners = false
   ) {
     this.leftOffsetDistance = leftOffsetDistance;
     this.minArcDegrees = minArcDegrees;
     this.maxChamferTurnDegrees = maxChamferDegrees;
-    this.allowSharpestCorners = allowSharpestCorners;
     this.preserveEllipticalArcs = preserveEllipticalArcs;
+    this.allowSharpestCorners = allowSharpestCorners;
   }
   /** Return a deep clone. */
   public clone(): JointOptions {
     return new JointOptions(
       this.leftOffsetDistance, this.minArcDegrees, this.maxChamferTurnDegrees,
-      this.allowSharpestCorners, this.preserveEllipticalArcs
+      this.preserveEllipticalArcs, this.allowSharpestCorners
     );
   }
   /** Copy values of input options */
@@ -94,8 +100,8 @@ export class JointOptions {
     this.leftOffsetDistance = other.leftOffsetDistance;
     this.minArcDegrees = other.minArcDegrees;
     this.maxChamferTurnDegrees = other.maxChamferTurnDegrees;
-    this.allowSharpestCorners = other.allowSharpestCorners;
     this.preserveEllipticalArcs = other.preserveEllipticalArcs;
+    this.allowSharpestCorners = other.allowSharpestCorners;
   }
   /**
    * Parse a number or JointOptions up to JointOptions:
@@ -109,9 +115,7 @@ export class JointOptions {
     return new JointOptions(leftOffsetDistanceOrOptions);
   }
   /**
-   * Return true if the options indicate this amount of turn should be handled with an arc (if turn angle
-   * is equal or greater than minArcDegrees).
-   */
+   /** Return true if the options indicate this amount of turn should be handled with an arc. */
   public needArc(theta: Angle): boolean {
     return Math.abs(theta.degrees) >= this.minArcDegrees;
   }
@@ -155,6 +159,12 @@ export class OffsetOptions {
   }
   public set maxChamferTurnDegrees(value: number) {
     this.jointOptions.maxChamferTurnDegrees = value;
+  }
+  public get allowSharpestCorners(): boolean {
+    return this.jointOptions.allowSharpestCorners;
+  }
+  public set allowSharpestCorners(value: boolean) {
+    this.jointOptions.allowSharpestCorners = value;
   }
   public get leftOffsetDistance(): number {
     return this.jointOptions.leftOffsetDistance;
@@ -269,7 +279,7 @@ class Joint {
         destination.packedPoints.push(point);
     }
   }
-  /** Turn the Joint chain into the destination line string. */
+  /** Append stroke points along the offset curve defined by the Joint chain to the destination line string. */
   public static collectStrokesFromChain(start: Joint, destination: LineString3d, maxTest: number = 100) {
     let numOut = -2 * maxTest; // allow extra things to happen
     Joint.visitJointsOnChain(
@@ -283,7 +293,7 @@ class Joint {
           if (fA === 0.0 && fB === 1.0)
             curve1 = joint.curve1.clone();
           else if (fA < fB)
-            curve1 = joint.curve1.clonePartialCurve(fA, fB);
+            curve1 = joint.curve1.clonePartialCurve(fA, fB); // trimming is done by clonePartialCurve
           if (curve1) {
             if (!joint.jointCurve) {
               this.addPoint(destination, curve1.startPoint());
@@ -325,7 +335,7 @@ class Joint {
       }
     }
   }
-  /** Turn the Joint chain into the destination CurvePrimitive array. */
+  /** Append CurvePrimitives along the offset curve defined by the Joint chain to the destination array. */
   public static collectCurvesFromChain(start: Joint | undefined, destination: CurvePrimitive[], maxTest: number = 100) {
     if (start === undefined)
       return;
@@ -343,7 +353,7 @@ class Joint {
           if (fA === 0.0 && fB === 1.0)
             curve1 = joint.curve1.clone();
           else if (fA < fB)
-            curve1 = joint.curve1.clonePartialCurve(fA, fB);
+            curve1 = joint.curve1.clonePartialCurve(fA, fB); // trimming is done by clonePartialCurve
           this.collectPrimitive(destination, curve1);
         }
         return numOut++ < maxTest;
@@ -367,7 +377,7 @@ class Joint {
     if (joint) {
       let numTest = 0;
       while (joint !== undefined) {
-        if (numTest++ >= maxTest + 5) // not sure why 5 is needed
+        if (numTest++ >= maxTest + 5) // allow extra things to happen
           return true;
         if (!callback(joint))
           return false;
@@ -397,7 +407,7 @@ class Joint {
               return;
             }
           }
-          const numChamferPoints = options.numChamferPoints(theta); // how many chamfer points to be used
+          const numChamferPoints = options.numChamferPoints(theta); // how many interior points in the linestring
           if (numChamferPoints <= 1) { // create sharp corner
             this.jointCurve = LineString3d.create(ray0.origin, intersection.detailA.point, ray1.origin);
             return;
@@ -462,7 +472,7 @@ class Joint {
       this.flexure = JointMode.Cap;
       this.fraction0 = 1.0;
     } else if (this.curve0 && this.curve1) { // joints at the middle of the chain
-      if (this.curve0.endPoint().isAlmostEqual(this.curve1.startPoint())) { // joints on the same line
+      if (this.curve0.endPoint().isAlmostEqual(this.curve1.startPoint())) { // joint between colinear segments
         this.fraction0 = 1.0;
         this.fraction1 = 0.0;
         this.flexure = JointMode.Trim;
@@ -621,19 +631,9 @@ export class PolygonWireOffsetContext {
    *  a plane parallel to xy-plane).
    * * This is a simple wire offset (in the form of a line string), not an area.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
-   * single intersection point (to create a sharp corner).
-   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
-   * straight lines (a line string) that are:
-   *      * outside the arc
-   *      * have uniform turn angle less than `options.maxChamferDegrees`
-   *      * each line segment (except first and last) touches the arc at its midpoint.
-   * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not
-   * guarantee a simple area offset.
+   * * See [[JointOptions]] class doc for offset construction rules.
    * @param points a single loop or path
-   * @param wrap true to include wraparound
+   * @param wrap true to offset the wraparound joint. Assumes first = last point.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or JointOptions
    * object.
    */
@@ -654,14 +654,13 @@ export class PolygonWireOffsetContext {
     let joint0 = new Joint(undefined, fragment0, points[0]);
     let newJoint;
     let previousJoint = joint0;
-    for (let i = 1; i < numPoints - 1; i++) {
+    for (let i = 1; i + 1 < numPoints; i++) {
       const fragment1 = PolygonWireOffsetContext.createOffsetSegment(points[i], points[i + 1], options.leftOffsetDistance);
       newJoint = new Joint(fragment0, fragment1, points[i]);
       Joint.link(previousJoint, newJoint);
       previousJoint = newJoint;
       fragment0 = fragment1;
     }
-    /** use "wrap" boolean to finalize the linking between joints */
     if (wrap)
       Joint.link(previousJoint, joint0);
     else {
@@ -707,10 +706,10 @@ export class CurveChainWireOffsetContext {
   public constructor() { }
   /**
    * Annotate a CurvePrimitive with properties `baseCurveStart` and `baseCurveEnd`.
-   * * return CurvePrimitive
    * @param cp curve primitive to annotate
    * @param startPoint optional start point
    * @param endPoint optional end point
+   * @return the input CurvePrimitive with annotations
    */
   public static applyBasePoints(
     cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined
@@ -753,15 +752,7 @@ export class CurveChainWireOffsetContext {
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
-   * single intersection point (to create a sharp corner).
-   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight
-   * lines (a line string) that are:
-   *      * outside the arc
-   *      * have uniform turn angle less than `options.maxChamferDegrees`
-   *      * each line segment (except first and last) touches the arc at its midpoint.
+   * * See [[JointOptions]] class doc for offset construction rules.
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */

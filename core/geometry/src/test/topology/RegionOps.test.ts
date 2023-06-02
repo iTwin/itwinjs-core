@@ -1330,9 +1330,12 @@ describe("RegionOps.constructPolygonWireXYOffset", () => {
     // no arcs, no chamfers, only sharp corners
     const minArcDegrees = 180;
     const maxChamferDegrees = 180;
+    const preserveEllipticalArcs = false;
     const allowSharpestCorners = true;
     for (let i = 0; i < offsetDistances.length; i++) {
-      jointOptions[i] = new JointOptions(offsetDistances[i], minArcDegrees, maxChamferDegrees, allowSharpestCorners);
+      jointOptions[i] = new JointOptions(
+        offsetDistances[i], minArcDegrees, maxChamferDegrees, preserveEllipticalArcs, allowSharpestCorners
+      );
     }
 
     for (const lineString of lineStrings) {

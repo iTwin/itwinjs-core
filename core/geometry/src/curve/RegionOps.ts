@@ -382,23 +382,14 @@ export class RegionOps {
     return RegionOps.sortOuterAndHoleLoopsXY(allLoops);
   }
   /**
-   * Construct a wire (not area) that is offset from given polyline or polygon (which must be in xy-plane or in
-   *  a plane parallel to xy-plane).
-   * * This is a simple wire offset (in the form of a line string), not an area.
+   * Construct a wire that is offset from the given polyline or polygon.
+   * * This is a simple wire offset, not an area offset.
+   * * Since z-coordinates are ignored, for best results the input points should lie in (a plane parallel to)
+   * the xy-plane.
    * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not
    * guarantee a simple area offset.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
-   * single intersection point (to create a sharp corner).
-   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
-   * straight lines (a line string) that are:
-   *      * outside the arc
-   *      * have uniform turn angle less than `options.maxChamferDegrees`
-   *      * each line segment (except first and last) touches the arc at its midpoint.
-   * * The construction algorithm is subject to being changed, resulting in different (hopefully better)
-   * self-intersection behavior on the future.
+   * * See [[JointOptions]] class doc for offset construction rules.
    * @param points a single loop or path
    * @param wrap true to include wraparound
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or JointOptions
@@ -415,15 +406,7 @@ export class RegionOps {
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn angle is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn angle is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
-   * single intersection point (to create a sharp corner).
-   *   * If the turn angle is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of
-   * straight lines (a line string) that are:
-   *      * outside the arc
-   *      * have uniform turn angle less than `options.maxChamferDegrees`
-   *      * each line segment (except first and last) touches the arc at its midpoint.
+   * * See [[JointOptions]] class doc for offset construction rules.
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */

@@ -3211,7 +3211,7 @@ export interface IStrokeHandler {
 
 // @public
 export class JointOptions {
-    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, allowSharpestCorners?: boolean, preserveEllipticalArcs?: boolean);
+    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, preserveEllipticalArcs?: boolean, allowSharpestCorners?: boolean);
     allowSharpestCorners: boolean;
     clone(): JointOptions;
     static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions;
@@ -3959,6 +3959,9 @@ export interface OffsetMeshSelectiveOutputOptions {
 // @public
 export class OffsetOptions {
     constructor(offsetDistanceOrOptions: number | JointOptions, strokeOptions?: StrokeOptions);
+    // (undocumented)
+    get allowSharpestCorners(): boolean;
+    set allowSharpestCorners(value: boolean);
     clone(): OffsetOptions;
     static create(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): OffsetOptions;
     static getOffsetDistance(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): number;
