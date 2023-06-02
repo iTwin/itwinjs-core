@@ -121,7 +121,6 @@ for artifact in artifactPaths:
     packagesToPublish = True
     print ("The package does not yet exist.  Copying " + packageName + " to staging area.")
     shutil.copy(artifact, stagingDir)
-    continue
 
   if 0 != len(serverVer):
     print ("The version already exists.  Skipping...")
