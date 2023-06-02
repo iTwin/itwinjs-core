@@ -2092,7 +2092,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private loadViewData(viewDefId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
       const iModel = this._iModel;
       const elements = iModel.elements;
-      const getViewLoader = () => {
+      const loader = (() => {
         if (isViewStoreId(viewDefId)) {
           if (!this.viewStore)
             throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
@@ -2103,17 +2103,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             loadDisplayStyle: (id: ViewIdString) => reader.loadDisplayStyle({ elements, id, opts: options?.displayStyle }),
             loadModelSelector: (id: ViewIdString) => reader.loadModelSelector({ elements, id }),
           };
-        } else {
-          return {
-            loadView: () => elements.getElementProps<ViewDefinitionProps>(viewDefId),
-            loadCategorySelector: (id: Id64String) => elements.getElementProps<CategorySelectorProps>(id),
-            loadDisplayStyle: (id: Id64String) => elements.getElementProps<DisplayStyleProps>({ id, displayStyle: options?.displayStyle }),
-            loadModelSelector: (id: Id64String) => elements.getElementProps<ModelSelectorProps>(id),
-          };
         }
-      };
+        return {
+          loadView: () => elements.getElementProps<ViewDefinitionProps>(viewDefId),
+          loadCategorySelector: (id: Id64String) => elements.getElementProps<CategorySelectorProps>(id),
+          loadDisplayStyle: (id: Id64String) => elements.getElementProps<DisplayStyleProps>({ id, displayStyle: options?.displayStyle }),
+          loadModelSelector: (id: Id64String) => elements.getElementProps<ModelSelectorProps>(id),
+        };
+      })();
 
-      const loader = getViewLoader();
       const props = {} as ViewStateProps;
       props.viewDefinitionProps = loader.loadView();
       props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);

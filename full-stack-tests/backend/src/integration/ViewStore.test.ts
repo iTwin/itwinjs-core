@@ -3,18 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { Suite } from "mocha";
-import { CategorySelector, CloudSqlite, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, SpatialViewDefinition, StandaloneDb, ViewStore } from "@itwin/core-backend";
-import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { Camera, Code, ColorByName, ColorDef, DisplayStyle3dSettingsProps, IModel, LocalFileName, SpatialViewDefinitionProps, ViewDefinitionProps } from "@itwin/core-common";
-import { AzuriteTest } from "./AzuriteTest";
-import { join } from "path";
+import { assert, expect } from "chai";
 import { existsSync, mkdirSync, unlinkSync } from "fs-extra";
-import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Suite } from "mocha";
+import { join } from "path";
 import * as sinon from "sinon";
+import {
+  AuxCoordSystem2d, CategorySelector, CloudSqlite, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  DrawingGraphic, DrawingViewDefinition, GroupModel, IModelDb, IModelHost, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
+  PhysicalModel, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, StandaloneDb, SubCategory, Subject, ViewStore,
+} from "@itwin/core-backend";
+import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  AuxCoordSystem2dProps, Camera, Code, CodeScopeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyle3dProps, DisplayStyle3dSettingsProps,
+  Environment, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, LocalFileName, PlanProjectionSettings, SkyBoxImageType,
+  SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, ViewDefinition2dProps, ViewDefinitionProps,
+} from "@itwin/core-common";
+import { LineString3d, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { AzuriteTest } from "./AzuriteTest";
 
 const viewContainer = "views-itwin1";
+let iModel: StandaloneDb;
+let vs1: ViewStore.CloudAccess;
+let drawingViewId: Id64String;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -32,6 +43,27 @@ async function makeViewStore(moniker: string) {
   return propStore;
 }
 
+function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, categoryName: string, color: ColorDef): Id64String {
+  const appearance: SubCategoryAppearance.Props = {
+    color: color.toJSON(),
+    transp: 0,
+    invisible: false,
+  };
+  return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
+}
+
+function createRectangle(size: Point2d): GeometryStreamProps {
+  const geometryStreamBuilder = new GeometryStreamBuilder();
+  geometryStreamBuilder.appendGeometry(LineString3d.createPoints([
+    new Point3d(0, 0),
+    new Point3d(size.x, 0),
+    new Point3d(size.x, size.y),
+    new Point3d(0, size.y),
+    new Point3d(0, 0),
+  ]));
+  return geometryStreamBuilder.geometryStream;
+}
+
 function prepareOutputFile(subDirName: string, fileName: string): LocalFileName {
   const outputDir = join(__dirname, "output", subDirName);
   if (!existsSync(outputDir))
@@ -44,11 +76,118 @@ function prepareOutputFile(subDirName: string, fileName: string): LocalFileName 
   return outputFile;
 }
 
+function populateDb(sourceDb: IModelDb) {
+  // make sure Arial is in the font table
+  sourceDb.addNewFont("Arial");
+  assert.exists(sourceDb.fontMap.getFont("Arial"));
+
+  // Initialize project extents
+  const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
+  sourceDb.updateProjectExtents(projectExtents);
+  // Insert CodeSpecs
+  const codeSpecId1 = sourceDb.codeSpecs.insert("SourceCodeSpec", CodeScopeSpec.Type.Model);
+  const codeSpecId2 = sourceDb.codeSpecs.insert("ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
+  const codeSpecId3 = sourceDb.codeSpecs.insert("InformationRecords", CodeScopeSpec.Type.Model);
+  assert.isTrue(Id64.isValidId64(codeSpecId1));
+  assert.isTrue(Id64.isValidId64(codeSpecId2));
+  assert.isTrue(Id64.isValidId64(codeSpecId3));
+  // Insert RepositoryModel structure
+  const subjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Subject", "Subject Description");
+  assert.isTrue(Id64.isValidId64(subjectId));
+  const sourceOnlySubjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Only in Source");
+  assert.isTrue(Id64.isValidId64(sourceOnlySubjectId));
+  const definitionModelId = DefinitionModel.insert(sourceDb, subjectId, "Definition");
+  assert.isTrue(Id64.isValidId64(definitionModelId));
+  const informationModelId = InformationRecordModel.insert(sourceDb, subjectId, "Information");
+  assert.isTrue(Id64.isValidId64(informationModelId));
+  const groupModelId = GroupModel.insert(sourceDb, subjectId, "Group");
+  assert.isTrue(Id64.isValidId64(groupModelId));
+  const physicalModelId = PhysicalModel.insert(sourceDb, subjectId, "Physical");
+  assert.isTrue(Id64.isValidId64(physicalModelId));
+  const spatialLocationModelId = SpatialLocationModel.insert(sourceDb, subjectId, "SpatialLocation", true);
+  assert.isTrue(Id64.isValidId64(spatialLocationModelId));
+  const documentListModelId = DocumentListModel.insert(sourceDb, subjectId, "Document");
+  assert.isTrue(Id64.isValidId64(documentListModelId));
+  const drawingId = Drawing.insert(sourceDb, documentListModelId, "Drawing");
+  assert.isTrue(Id64.isValidId64(drawingId));
+  // Insert DefinitionElements
+  const modelSelectorId = ModelSelector.insert(sourceDb, definitionModelId, "SpatialModels", [physicalModelId, spatialLocationModelId]);
+  assert.isTrue(Id64.isValidId64(modelSelectorId));
+  const spatialCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SpatialCategory", ColorDef.green);
+  assert.isTrue(Id64.isValidId64(spatialCategoryId));
+  const sourcePhysicalCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SourcePhysicalCategory", ColorDef.blue);
+  assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
+  const subCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
+  assert.isTrue(Id64.isValidId64(subCategoryId));
+  const filteredSubCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "FilteredSubCategory", { color: ColorDef.green.toJSON() });
+  assert.isTrue(Id64.isValidId64(filteredSubCategoryId));
+  const drawingCategoryId = DrawingCategory.insert(sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+  assert.isTrue(Id64.isValidId64(drawingCategoryId));
+  const spatialCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
+  assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+  const drawingCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
+  assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
+  const auxCoordSystemProps: AuxCoordSystem2dProps = {
+    classFullName: AuxCoordSystem2d.classFullName,
+    model: definitionModelId,
+    code: AuxCoordSystem2d.createCode(sourceDb, definitionModelId, "AuxCoordSystem2d"),
+  };
+  const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
+  assert.isTrue(Id64.isValidId64(auxCoordSystemId));
+  const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", { paletteName: "PaletteName" });
+  assert.isTrue(Id64.isValidId64(renderMaterialId));
+  // Insert DrawingGraphics
+  const drawingGraphicProps1: GeometricElement2dProps = {
+    classFullName: DrawingGraphic.classFullName,
+    model: drawingId,
+    category: drawingCategoryId,
+    code: Code.createEmpty(),
+    userLabel: "DrawingGraphic1",
+    geom: createRectangle(Point2d.create(1, 1)),
+    placement: { origin: Point2d.create(2, 2), angle: 0 },
+  };
+  const drawingGraphicId1 = sourceDb.elements.insertElement(drawingGraphicProps1);
+  assert.isTrue(Id64.isValidId64(drawingGraphicId1));
+  const drawingGraphicProps2: GeometricElement2dProps = {
+    classFullName: DrawingGraphic.classFullName,
+    model: drawingId,
+    category: drawingCategoryId,
+    code: Code.createEmpty(),
+    userLabel: "DrawingGraphic2",
+    geom: createRectangle(Point2d.create(1, 1)),
+    placement: { origin: Point2d.create(3, 3), angle: 0 },
+  };
+  const drawingGraphicId2 = sourceDb.elements.insertElement(drawingGraphicProps2);
+  assert.isTrue(Id64.isValidId64(drawingGraphicId2));
+  // Insert DisplayStyles
+  const displayStyle2dId = DisplayStyle2d.insert(sourceDb, definitionModelId, "DisplayStyle2d");
+  assert.isTrue(Id64.isValidId64(displayStyle2dId));
+  const displayStyle3d: DisplayStyle3d = DisplayStyle3d.create(sourceDb, definitionModelId, "DisplayStyle3d");
+  const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
+  displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
+  displayStyle3d.settings.addExcludedElements("0x123");
+  displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+  displayStyle3d.settings.environment = Environment.fromJSON({
+    sky: {
+      image: {
+        type: SkyBoxImageType.Spherical,
+        texture: "0x31",
+      },
+    },
+  });
+  const displayStyle3dId = displayStyle3d.insert();
+  assert.isTrue(Id64.isValidId64(displayStyle3dId));
+  // Insert ViewDefinitions
+  const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
+  assert.isTrue(Id64.isValidId64(viewId));
+  sourceDb.views.setDefaultViewId(viewId);
+  const drawingViewRange = new Range2d(0, 0, 100, 100);
+  drawingViewId = DrawingViewDefinition.insert(sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+  assert.isTrue(Id64.isValidId64(drawingViewId));
+}
+
 describe.only("ViewStore", function (this: Suite) {
   this.timeout(0);
-  let iModel: StandaloneDb;
-
-  let vs1: ViewStore.CloudAccess;
 
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
@@ -64,6 +203,7 @@ describe.only("ViewStore", function (this: Suite) {
       guid: Guid.createValue(),
     });
 
+    populateDb(iModel);
   });
   after(async () => {
     vs1.close();
@@ -96,6 +236,10 @@ describe.only("ViewStore", function (this: Suite) {
       ids1.push(Id64.fromLocalAndBriefcaseIds(i, 0));
     }
 
+    const c1 = { time: 3, interpolation: 2, value: { red: 0, green: 1, blue: 2 } };
+    const c2 = { time: 4, interpolation: 2, value: { red: 255, green: 254, blue: 253 } };
+    const colorTimeline = [c1, c2];
+
     const displayStyleProps: DisplayStyle3dSettingsProps = {
       backgroundColor: ColorDef.fromString("rgb(255,20,10)").toJSON(),
       subCategoryOvr:
@@ -107,6 +251,13 @@ describe.only("ViewStore", function (this: Suite) {
           weight: 10,
           transp: 0.5,
         },
+        {
+          subCategory: "0x41",
+          color: ColorByName.darkBlue,
+          invisible: false,
+          style: "0xaa3",
+          weight: 10,
+        },
         ],
 
       excludedElements: CompressedId64Set.compressArray(["0x8", "0x12", "0x22"]),
@@ -115,17 +266,19 @@ describe.only("ViewStore", function (this: Suite) {
         realityModelUrl: "reality.com",
         elementTimelines: [{
           batchId: 64,
+          colorTimeline,
           elementIds: CompressedId64Set.compressArray(["0x1a", "0x1d"]),
         }, {
           batchId: 65,
-          elementIds: CompressedId64Set.compressArray(["0x2a", "0x2b", "0x2d", "0x2e"]),
+          elementIds: CompressedId64Set.compressArray(["0x2a", "0x2b", "0x2d", "0x2e", "0x144"]),
         }],
       }],
     };
 
     const dsEl = DisplayStyle3d.create(iModel, IModel.dictionaryId, "test style 1", displayStyleProps);
-    const dsId = iModel.elements.insertElement(dsEl.toJSON());
-    const ds1Row = await vs1locker.addDisplayStyle({ elements, className: dsEl.classFullName, settings: displayStyleProps });
+    const styleProps = dsEl.toJSON() as DisplayStyle3dProps;
+    const dsId = iModel.elements.insertElement(styleProps);
+    const ds1Row = await vs1locker.addDisplayStyle({ elements, className: dsEl.classFullName, name: dsEl.code.value, settings: styleProps.jsonProperties!.styles! });
     expect(ds1Row).equals("@1");
     expect(Id64.isValid(dsId)).true;
 
@@ -180,12 +333,15 @@ describe.only("ViewStore", function (this: Suite) {
       camera: new Camera(),
     };
 
-    const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId: ms1Id, categorySelectorId: cs1Id, displayStyleId: dsId };
+    let props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId: ms1Id, categorySelectorId: cs1Id, displayStyleId: dsId };
     props.code.value = "view2";
+    props.jsonProperties = { viewDetails: { aspectSkew: 1 } };
+
     const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
     const viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
     expect(Id64.isValid(viewDefinitionId)).true;
 
+    props = viewDefinition.toJSON();
     props.categorySelectorId = cs1Row;
     props.displayStyleId = ds1Row;
     props.modelSelectorId = ms1Row;
@@ -196,10 +352,44 @@ describe.only("ViewStore", function (this: Suite) {
     sinon.stub(iModel.elements, "getIdFromFederationGuid").callsFake((id) => elements.getIdFromFederationGuid(id));
 
     iModel.views.viewStore = vs1;
-    const vsElOut = iModel.views.getViewStateData(viewDefinitionId);
-    const vsStoreOut = iModel.views.getViewStateData(v2Id);
-    expect(vsElOut).to.deep.equal(vsStoreOut);
-    sinon.restore();
+    const vsElOut = await iModel.views.getViewStateProps(viewDefinitionId, { displayStyle: { compressExcludedElementIds: true } });
+    const vsStoreOut = await iModel.views.getViewStateProps(v2Id, { displayStyle: { compressExcludedElementIds: true } });
+    const compareHeader = (props1: DefinitionElementProps, props2: DefinitionElementProps) => {
+      expect(props1.code.value).equals(props2.code.value);
+      expect(props1.model).equals(props2.model);
+      expect(props1.classFullName).equals(props2.classFullName);
+    };
+    compareHeader(vsElOut.categorySelectorProps, vsStoreOut.categorySelectorProps);
+    compareHeader(vsElOut.displayStyleProps, vsStoreOut.displayStyleProps);
+    compareHeader(vsElOut.modelSelectorProps!, vsStoreOut.modelSelectorProps!);
+    compareHeader(vsElOut.viewDefinitionProps, vsStoreOut.viewDefinitionProps);
+
+    expect(vsElOut.categorySelectorProps.categories).to.deep.equal(vsStoreOut.categorySelectorProps.categories);
+    expect(vsElOut.modelSelectorProps!.models).to.deep.equal(vsStoreOut.modelSelectorProps!.models);
+    const s1 = vsElOut.displayStyleProps.jsonProperties!.styles! as DisplayStyle3dSettingsProps;
+    const s2 = vsStoreOut.displayStyleProps.jsonProperties!.styles! as DisplayStyle3dSettingsProps;
+    expect(s1.backgroundMap).to.deep.equal(s2.backgroundMap);
+    expect(s1.backgroundColor).to.deep.equal(s2.backgroundColor);
+    expect(s1.viewflags).to.deep.equal(s2.viewflags);
+    expect(s1.subCategoryOvr).to.deep.equal(s2.subCategoryOvr);
+    expect(s1.monochromeColor).to.deep.equal(s2.monochromeColor);
+    expect(s1.monochromeMode).to.deep.equal(s2.monochromeMode);
+    expect(s1.timePoint).to.deep.equal(s2.timePoint);
+    expect(s1.analysisFraction).to.deep.equal(s2.analysisFraction);
+    expect(s1.mapImagery).to.deep.equal(s2.mapImagery);
+    expect(s1.scheduleScript).to.deep.equal(s2.scheduleScript);
+    expect(s1.hline).to.deep.equal(s2.hline);
+    expect(s1.ao).to.deep.equal(s2.ao);
+    expect(s1.solarShadows).to.deep.equal(s2.solarShadows);
+
+    const vd1 = vsElOut.viewDefinitionProps as SpatialViewDefinitionProps;
+    const vd2 = vsStoreOut.viewDefinitionProps as SpatialViewDefinitionProps;
+    expect(vd1.camera).to.deep.equal(vd2.camera);
+    expect(vd1.origin).to.deep.equal(vd2.origin);
+    expect(vd1.extents).to.deep.equal(vd2.extents);
+    expect(YawPitchRollAngles.fromJSON(vd1.angles).isAlmostEqual(YawPitchRollAngles.fromJSON(vd2.angles))).true;
+    expect(vd1.cameraOn).to.deep.equal(vd2.cameraOn);
+    expect(vd1.jsonProperties).to.deep.equal(vd2.jsonProperties);
 
     expect(vs1reader.findViewsByClass(["spatial"]).length).equals(1);
     expect(vs1reader.findViewsByClass(["BisCore:SpatialViewDefinition"]).length).equals(1);
@@ -211,6 +401,31 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1reader.getViewByName({ name: "view2", groupId: g1 })?.groupId).equals(g1);
     await vs1locker.deleteViewGroup(g1);
     expect(vs1reader.getViewByName({ name: "view2", groupId: g1 })).to.be.undefined;
+
+    // now test Drawing views.
+    const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.
+    const dcs = await vs1locker.addCategorySelector({ elements, categories: dv.categorySelectorProps.categories });
+    const dds = await vs1locker.addDisplayStyle({ elements, className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
+    dv.viewDefinitionProps.categorySelectorId = dcs;
+    dv.viewDefinitionProps.displayStyleId = dds;
+    const dvId = await vs1locker.addViewDefinition({ elements, viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
+    expect(dvId).equals("@2");
+    const dFromVs = await iModel.views.getViewStateProps(dvId);
+    expect(dFromVs.categorySelectorProps.categories).to.deep.equal(dv.categorySelectorProps.categories);
+    expect(dFromVs.displayStyleProps.jsonProperties!.styles!).to.deep.equal(dv.displayStyleProps.jsonProperties!.styles!);
+    expect(dFromVs.displayStyleProps.classFullName).equals(dv.displayStyleProps.classFullName);
+    expect(dFromVs.viewDefinitionProps.classFullName).equals(dv.viewDefinitionProps.classFullName);
+    expect(dFromVs.viewDefinitionProps.code.value).equals(dv.viewDefinitionProps.code.value);
+    expect(dFromVs.modelExtents).to.deep.equal(dv.modelExtents);
+    const vdel = dv.viewDefinitionProps as ViewDefinition2dProps;
+    const vdel2 = dFromVs.viewDefinitionProps as ViewDefinition2dProps;
+    expect(vdel.baseModelId).equals(vdel2.baseModelId);
+    expect(vdel.angle).to.deep.equal(vdel2.angle);
+    expect(vdel.origin).to.deep.equal(vdel2.origin);
+    expect(vdel.delta).to.deep.equal(vdel2.delta);
+    expect(vdel.jsonProperties).to.deep.equal(vdel2.jsonProperties);
+
+    sinon.restore();
   });
 });
 

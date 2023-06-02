@@ -150,7 +150,7 @@ export namespace ViewStore {
   const blankElementProps = (from: any, classFullName: string, idString: RowString, name?: string): ElementProps => {
     from.id = idString;
     from.classFullName = classFullName;
-    from.model = IModel.repositoryModelId;
+    from.model = IModel.dictionaryId;
     from.code = { spec: "0x1", scope: "0x1", value: name };
     return from;
   };
