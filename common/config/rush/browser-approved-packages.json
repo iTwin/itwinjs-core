@@ -383,6 +383,10 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@rollup/plugin-replace",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
     },
@@ -792,6 +796,10 @@
     },
     {
       "name": "rollup-plugin-ignore",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-node-polyfills",
       "allowedCategories": [ "internal" ]
     },
     {

@@ -12,11 +12,12 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run -s build:backend && npm run -s build:frontend && npm run -s build:frontend-webpack",
+    "build": "npm run -s build:backend && npm run -s build:frontend && npm run -s build:frontend-vite",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
-    "build:frontend-webpack": "cross-env DISABLE_TERSER=true DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true vite build",
+    "build:frontend-vite": "vite build",
+    "build:frontend-webpack": "cross-env DISABLE_TERSER=true DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
     "build:webpack": "npm run build:frontend-webpack && npm run build:backend-webpack",
     "clean": "rimraf build lib .rush/temp/package-deps*.json ios/imodeljs-test-app/build android/imodeljs-test-app/app/build android/imodeljs-test-app/app/src/main/assets",
     "docs": "",
@@ -24,7 +25,8 @@
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/DtaElectronMain.js",
     "start:electron-webpack": "electron ./lib/build/DtaElectronMain.js --enable-logging",
-    "start:webserver": "cross-env VITE_DISABLE_NEW_JSX_TRANSFORM=true VITE_SKIP_PREFLIGHT_CHECK=true vite",
+    "start:webserver": "vite",
+    "start:webserver:cra": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true  BROWSER=none USE_FULL_SOURCEMAP=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true DISABLE_TERSER=true react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "test": "",
@@ -110,6 +112,8 @@
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "esbuild-plugin-external-global": "^1.0.1",
     "rollup-plugin-ignore": "^1.0.10",
+    "@rollup/plugin-replace": "^5.0.2",
+    "rollup-plugin-node-polyfills": "^0.2.1",
     "webpack": "^5.76.0"
   },
   "browserslist": [
@@ -131,7 +135,8 @@
       "project": [
         "tsconfig.json",
         "tsconfig.backend.json",
-        "tsconfig.buildScripts.json"
+        "tsconfig.buildScripts.json",
+        "vite.config.ts"
       ]
     }
   }
