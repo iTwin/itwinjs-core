@@ -42,9 +42,9 @@ import type { IModelDb } from "./IModelDb";
  * When you load a ViewDefinition from the ViewStore, the member may be used to load the DisplayStyle, CategorySelector,
  * ModelSelector, RenderTimeline, etc.
  *
- * A ViewStore Id is a string that uniquely identifies a row in one of the ViewStore's internal tables. The string is a base-36 integer
+ * A ViewStoreId is a string that uniquely identifies a row in one of the ViewStore's internal tables. The string holds a base-36 integer
  * that starts with "@" (vs. "0x" for ElementIds). For example, if you store a DisplayStyle and it is assigned the ViewStore Id "@y1", then you
- * would set the ViewDefinitionProps's displayStyle member to "@y1". When you load the ViewDefinition from the ViewStore, the "@Y1" may be used to
+ * should set the ViewDefinitionProps's displayStyle member to "@y1". When you load the ViewDefinition from the ViewStore, the "@Y1" may be used to
  * alo load the DisplayStyle from the ViewStore.
  *
  * Views are organized into hierarchical ViewGroups (like file and folder hierarchies on a file system). A View is always stored "in" a ViewGroup, and
@@ -56,7 +56,7 @@ import type { IModelDb } from "./IModelDb";
  *
  * Views may optionally have a thumbnail, paired via the View's Id. Thumbnails are stored in the "thumbnails" table.
  *
- * Note: All ElementIds and ModelIds in ModelSelectors, CategorySelectors, DisplayStyles, Timelines, etc. are converted to special ViewStore Ids when stored in the ViewStore.
+ * Note: All ElementIds and ModelIds in ModelSelectors, CategorySelectors, DisplayStyles, Timelines, etc. are converted to guid-based identifiers when stored in the ViewStore.
  * They are then remapped back to their Ids when loaded from the ViewStore. This allows the ViewStore to be used with more than one iModel,
  * provided that the same Guids are used in each iModel. This is done by storing the set of unique Guids in the "guids" table, and then
  * creating a reference to the row in the "guids" table via the special Id prefix "^". For example, if a category selector contains the
@@ -828,8 +828,8 @@ export namespace ViewStore {
       return props;
     }
 
-    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDef: ViewDefinitionProps, groupId?: RowId, owner?: string }): Promise<RowString> {
-      const viewDef = JSON.parse(JSON.stringify(args.viewDef)) as ViewDefinitionProps; // make a copy
+    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDefinition: ViewDefinitionProps, groupId?: RowId, owner?: string }): Promise<RowString> {
+      const viewDef = JSON.parse(JSON.stringify(args.viewDefinition)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
         throw new Error("ViewDefinition must have a name");

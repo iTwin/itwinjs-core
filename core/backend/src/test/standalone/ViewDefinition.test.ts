@@ -170,7 +170,7 @@ describe("ViewDefinition", () => {
     };
 
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
-    const viewDefId = await vs1.addViewDefinition({ elements: id1Mapper, viewDef: viewDefProps, groupId: 1 });
+    const viewDefId = await vs1.addViewDefinition({ elements: id1Mapper, viewDefinition: viewDefProps, groupId: 1 });
     expect(viewDefId).equal("@1");
     const viewDefOut = vs1.loadViewDefinition({ elements: id1Mapper, id: viewDefId }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");

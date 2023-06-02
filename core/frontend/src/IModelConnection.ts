@@ -16,7 +16,7 @@ import {
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
   RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -1110,10 +1110,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
-    public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
-
+    public async load(viewDefinitionId: ViewIdString): Promise<ViewState> {
       const options: ViewStateLoadProps = {
         displayStyle: {
           omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,

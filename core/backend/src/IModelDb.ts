@@ -2038,7 +2038,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
-    private _viewStore?: ViewStore.CloudAccess;
+    public viewStore?: ViewStore.CloudAccess;
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
      * @param className Query for view definitions of this class.
@@ -2092,11 +2092,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private loadViewData(viewDefId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
       const iModel = this._iModel;
       const elements = iModel.elements;
-      const getLoader = () => {
+      const getViewLoader = () => {
         if (isViewStoreId(viewDefId)) {
-          if (!this._viewStore)
+          if (!this.viewStore)
             throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
-          const reader = this._viewStore.reader;
+          const reader = this.viewStore.reader;
           return {
             loadView: () => reader.loadViewDefinition({ elements, id: viewDefId }),
             loadCategorySelector: (id: ViewIdString) => reader.loadCategorySelector({ elements, id }),
@@ -2113,7 +2113,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }
       };
 
-      const loader = getLoader();
+      const loader = getViewLoader();
       const props = {} as ViewStateProps;
       props.viewDefinitionProps = loader.loadView();
       props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);
@@ -2145,7 +2145,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return props;
     }
 
-    /** @deprecated in 3.x. use [[getViewStateProps]]. */
     public getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
       const viewStateData = this.loadViewData(viewDefinitionId, options);
       const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
