@@ -1277,6 +1277,7 @@ export class ArcGisUtilities {
     };
     static isEpsg3857Compatible(tileInfo: any): boolean;
     static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
 }
 
 // @internal
@@ -7497,6 +7498,7 @@ export class MapLayerSources {
 
 // @public
 export enum MapLayerSourceStatus {
+    IncompatibleFormat = 7,
     InvalidCoordinateSystem = 6,
     InvalidCredentials = 1,
     InvalidFormat = 2,

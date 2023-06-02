@@ -1,10 +1,14 @@
-# ECSQL Code Examples
+# Backend ECSQL Code Examples
 
-> The code examples do not explicitly show examples using the [ECDb]($backend) class. However, the code examples work likewise for
-> ECDb. Just replace [IModelDb.withPreparedStatement]($backend) in the code examples
-> with [ECDb.withPreparedStatement]($backend).
+For working directly with an iModel from the frontend, an [IModelDb]($backend) or [ECDb]($backend) object is used.
 
-Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the specific ECSQL queries that app backends and services often run.
+This page contains example code that can be used for working with both the [IModelDb]($backend) and [ECDb]($backend) classes. In the examples, the identifier `iModel` is used as an object that could be either of those classes.
+
+The examples below focus on the use of the `withPreparedStatment` method which works identically in both [IModelDb]($backend) and [ECDb]($backend). Both classes have a method `withPreparedStatment` method.
+
+**Also see the [general ECSQL Code Examples](../ECSQLCodeExamples.md)** for more and different examples that use the `createQueryReader` method. All of the references to an `iModel` object in those examples can be considered an [IModelDb]($backend) or [ECDb]($backend) object.
+
+Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the some specific ECSQL queries that app backends and services often run.
 
 ## Parameter Bindings
 
@@ -24,8 +28,7 @@ Also see [frequently used ECSQL queries](./ECSQL-queries.md) for the specific EC
 
 ### Binding to all parameters at once
 
-See section "[ECSQL parameter types in iTwin.js](../ECSQLParameterTypes.md)" to learn which types to use for the parameters when binding all
-parameters at once.
+See [ECSQL parameter types in iTwin.js](../ECSQLParameterTypes.md) to learn which types to use for the parameters when binding all parameters at once.
 
 #### Positional parameters
 
@@ -42,7 +45,7 @@ parameters at once.
 ### Navigation properties
 
 [Navigation properties](../ECSQL.md#navigation-properties) are structs made up of the Id of the related instance and the backing
-ECRelationshipClass. The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
+[ECRelationshipClass](../../bis/ec/ec-relationship-class.md). The [NavigationBindingValue]($common) interface is used to bind values to navigation property parameters.
 
 ```ts
 [[include:ExecuteECSql_Binding_Navigation_ByParameter]]
@@ -65,7 +68,7 @@ this by specifying the **Id** member of a navigation property.
 
 ### Struct properties
 
-You can either parameterize a struct property as a whole or parameterize individual members of the struct. See "[Struct properties in ECSQL](../ECSQL.md#structs)" for the ECSQL background.
+You can either parameterize a struct property as a whole or parameterize individual members of the struct. See [Struct properties in ECSQL](../ECSQL.md#structs) for the ECSQL background.
 
 > The ECSQL examples used in this section refer to the sample ECSchema in "[Struct properties in ECSQL](../ECSQL.md#structs)".
 
@@ -93,7 +96,7 @@ You can either parameterize a struct property as a whole or parameterize individ
 
 ### Array properties
 
-See "[Array properties in ECSQL](../ECSQL.md#arrays)" for the ECSQL background.
+See [Array properties in ECSQL](../ECSQL.md#arrays) for the ECSQL background.
 
 > The ECSQL examples used in this section refer to the sample ECSchema in "[Array properties in ECSQL](../ECSQL.md#arrays)".
 
