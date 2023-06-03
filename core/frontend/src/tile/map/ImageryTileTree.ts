@@ -320,18 +320,25 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
    * This allows the ID to serve as a lookup key to find the corresponding TileTree.
    */
   public compareTileTreeIds(lhs: ImageryMapLayerTreeId, rhs: ImageryMapLayerTreeId): number {
-    let cmp = compareStrings(lhs.settings.url, rhs.settings.url);
+    let cmp = compareStrings(lhs.settings.formatId, rhs.settings.formatId);
     if (0 === cmp) {
-      cmp = compareStringsOrUndefined(lhs.settings.userName, rhs.settings.userName);
+      cmp = compareStrings(lhs.settings.url, rhs.settings.url);
       if (0 === cmp) {
-        cmp = compareStringsOrUndefined(lhs.settings.password, rhs.settings.password);
+        cmp = compareStringsOrUndefined(lhs.settings.userName, rhs.settings.userName);
         if (0 === cmp) {
-          cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
+          cmp = compareStringsOrUndefined(lhs.settings.password, rhs.settings.password);
           if (0 === cmp) {
-            cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
+            cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
             if (0 === cmp) {
-              for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++)
-                cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+              cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
+              if (0 === cmp) {
+                for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++) {
+                  cmp = compareStringsOrUndefined(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
+                  if (0 === cmp) {
+                    cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+                  }
+                }
+              }
             }
           }
         }
