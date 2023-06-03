@@ -45,7 +45,7 @@ interface DatasetEntry {
   expectSameTileTree: boolean;
 }
 
-describe.only("ImageryTileTree", () => {
+describe("ImageryTileTree", () => {
 
   let imodel: IModelConnection;
 
