@@ -333,7 +333,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
               cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
               if (0 === cmp) {
                 for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++) {
-                  cmp = compareStringsOrUndefined(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
+                  cmp = compareStrings(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
                   if (0 === cmp) {
                     cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
                   }
