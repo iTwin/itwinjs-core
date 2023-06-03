@@ -318,7 +318,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
   edgeOptions: {
-    type: "indexed" as const, // ###TODO change default to compact
+    type: "compact" as const,
     smooth: true,
   },
 });

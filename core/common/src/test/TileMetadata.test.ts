@@ -8,9 +8,14 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { BatchType } from "../FeatureTable";
 import {
-  ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, EdgeOptions, IModelTileTreeId, iModelTileTreeIdToString,
+  ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, defaultTileOptions as realDefaultTileOptions, EdgeOptions, IModelTileTreeId, iModelTileTreeIdToString,
   parseTileTreeIdAndContentId, PrimaryTileTreeId, TileMetadata, TileOptions, TreeFlags,
 } from "../tile/TileMetadata";
+
+// NB: These tests were written when defaultTileOptions specified indexed edges as the default. Now, compact edges are the default.
+// Adjust the defaults used by the tests to continue to use indexed; additional tests for compact have been added.
+const defaultEdgeOptions: EdgeOptions = { ...(realDefaultTileOptions.edgeOptions as EdgeOptions), type: "indexed" };
+const defaultTileOptions: TileOptions = { ...realDefaultTileOptions, edgeOptions: defaultEdgeOptions };
 
 describe("TileMetadata", () => {
   it("computes chord tolerance", () => {
@@ -341,24 +346,23 @@ describe("TileMetadata", () => {
     }
 
     expect(typeof defaultTileOptions.edgeOptions).to.equal("object");
-    const defaultEdgeOptions = defaultTileOptions.edgeOptions as EdgeOptions;
     const defaultNoIndexedEdges: TileOptions = { ...defaultTileOptions, edgeOptions: { ...defaultEdgeOptions, type: "non-indexed" } };
     const defaultNoEdges: TileOptions = { ...defaultNoIndexedEdges, edgeOptions: { type: "non-indexed", smooth: false } };
     const defaultNoSmoothEdges: TileOptions = { ...defaultTileOptions, edgeOptions: { ...defaultEdgeOptions, smooth: false } };
 
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, defaultTileOptions);
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableImprovedElision: false });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, ignoreAreaPatterns: true });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableExternalTextures: false });
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, useProjectExtents: false });
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, realDefaultTileOptions);
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...realDefaultTileOptions, enableInstancing: false });
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...realDefaultTileOptions, enableImprovedElision: false });
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...realDefaultTileOptions, ignoreAreaPatterns: true });
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...realDefaultTileOptions, enableExternalTextures: false });
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...realDefaultTileOptions, useProjectExtents: false });
     // disableMagnification and alwaysSubdivideIncompleteTiles intentionally left out - they're not included in tileTreeId and contentId strings
-    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false, enableImprovedElision: false, ignoreAreaPatterns: true, enableExternalTextures: false, useProjectExtents: false });
+    test("0x1c", { type: BatchType.Primary, edges: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...realDefaultTileOptions, enableInstancing: false, enableImprovedElision: false, ignoreAreaPatterns: true, enableExternalTextures: false, useProjectExtents: false });
 
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
 
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
 
@@ -370,7 +374,7 @@ describe("TileMetadata", () => {
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
-    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
 
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
 
