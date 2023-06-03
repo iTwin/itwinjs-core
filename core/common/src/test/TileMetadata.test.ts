@@ -391,6 +391,16 @@ describe("TileMetadata", () => {
     test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
 
+    const realDefaultNoSmoothEdges: TileOptions  = { ...realDefaultTileOptions, edgeOptions: { type: "compact", smooth: false } };
+
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: false } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultNoSmoothEdges);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: false }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultNoSmoothEdges);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: false }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultNoSmoothEdges);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: false }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultNoSmoothEdges);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: true } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: true }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: true }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
+    test("0x1d", { type: BatchType.Primary, edges: { type: "compact", smooth: true }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
   });
 
   it("parses TileTreeId and ContentId strings", () => {
