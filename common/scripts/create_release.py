@@ -21,6 +21,7 @@ def getCommitMessage(sha):
     commitMessage = re.sub(pattern, "", commitMessage, 1)
   return commitMessage
 
+# Replaces relative image links with complete URLs
 def replace_image_links(file_path):
     with open(file_path, 'r+') as f:
         content = f.read()
@@ -39,6 +40,7 @@ def replace_image_links(file_path):
         f.write(updated_content)
 
 # Convert headings to HTML
+# Needed because github release markdown doesn't support linking within a document
 def convert_markdown_headings_to_html(file_path):
 
     # Read the Markdown file
@@ -51,10 +53,10 @@ def convert_markdown_headings_to_html(file_path):
         heading_text = match.group(2).strip().lower()
         if heading_text in heading_counts:
             heading_counts[heading_text] += 1
-            heading_id = generate_id(heading_text, heading_counts[heading_text])
         else:
             heading_counts[heading_text] = 1
-            heading_id = generate_id(heading_text, heading_counts[heading_text])
+
+        heading_id = generate_id(heading_text, heading_counts[heading_text])
 
         return f'<h{len(match.group(1))} id="{heading_id}">{match.group(2)}</h{len(match.group(1))}>'
 
