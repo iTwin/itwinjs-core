@@ -80,7 +80,7 @@ jobs:
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
-      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
+      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js --siteRoot /v3 --editSrcBaseURL https://github.com/iTwin/itwinjs-core/tree/release/3.7.x/ --editDocsBaseURL https://github.com/iTwin/itwinjs-core/tree/release/3.7.x/docs"
         displayName: Run bmsBuild
         workingDirectory: ${{ parameters.workingDir }}
 
