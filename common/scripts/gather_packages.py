@@ -131,17 +131,17 @@ for artifact in artifactPaths:
   if not os.path.exists(os.path.join(stagingDir, baseName)):
     shutil.copy(artifact, stagingDir)
 
-  command = "npm view " + packageName + " dist-tags.latest"
+  command = "npm dist-tag ls " + packageName
   proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
-  latestVer = proc.communicate()[0]
-  if len(latestVer) == 0:
-    print("No version found for dist-tag 'latest'")
-
-  command = "npm view " + packageName + " dist-tags.previous"
-  proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
-  previousVer = proc.communicate()[0]
-  if len(previousVer) == 0:
-    print("No version found for dist-tag 'previous'")
+  res = proc.communicate()[0]
+  if len(res) == 0:
+    print("error getting dist-tags")
+  splitter = res.decode().split('\n')
+  for str in splitter:
+    if str.split(':')[0] == "latest":
+      latestVer = str.split(':')[1]
+    elif str.split(':')[0] == "previous":
+      previousVer = str.split(':')[1]
 
 if packagesToPublish:
   distTag = determineDistTag(branchName, localVer, latestVer.decode(), previousVer.decode())
