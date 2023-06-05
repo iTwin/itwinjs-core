@@ -310,10 +310,10 @@ describe.only("ViewStore", function (this: Suite) {
     expect(v1.owner).equals("owner1");
     expect(v1.className).equals("spatial");
     expect(v1.groupId).equals(ViewStore.defaultViewGroupId);
-    expect(v1.shared).to.be.false;
+    expect(v1.isPrivate).to.be.false;
     expect(v1.name).equals("view1");
 
-    const g1 = await vs1locker.addViewGroup({ name: "group1", parentId: ViewStore.defaultViewGroupId });
+    const g1 = await vs1locker.addViewGroup({ name: "group1", props: {} });
 
     const standardView = StandardViewIndex.Iso;
     const rotation = Matrix3d.createStandardWorldToView(standardView);
@@ -344,7 +344,7 @@ describe.only("ViewStore", function (this: Suite) {
     props.categorySelectorId = cs1Row;
     props.displayStyleId = ds1Row;
     props.modelSelectorId = ms1Row;
-    const v2Id = await vs1locker.addViewDefinition({ elements, viewDefinition: props, owner: "owner2", groupId: g1 });
+    const v2Id = await vs1locker.addViewDefinition({ elements, viewDefinition: props, owner: "owner2", group: g1 });
     expect(v2Id).equals("@2");
 
     sinon.stub(iModel.elements, "getFederationGuidFromId").callsFake((id) => elements.getFederationGuidFromId(id));
@@ -397,9 +397,9 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1reader.findViewsByClass(["blah"]).length).equals(0);
     expect(vs1reader.findViewsByOwner("owner1").length).equals(1);
 
-    expect(vs1reader.getViewByName({ name: "view2", groupId: g1 })?.groupId).equals(g1);
+    expect(vs1reader.getViewByName({ name: "group1/view2" })!.groupId).equals(ViewStore.rowIdFromString(g1));
     await vs1locker.deleteViewGroup(g1);
-    expect(vs1reader.getViewByName({ name: "view2", groupId: g1 })).to.be.undefined;
+    expect(vs1reader.getViewByName({ name: "group1/view2" })).to.be.undefined;
 
     // now test Drawing views.
     const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.

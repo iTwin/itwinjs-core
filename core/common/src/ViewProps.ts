@@ -22,6 +22,14 @@ export type ViewStoreIdString = string;
 /** The id of either an element or an entry in a ViewStore. */
 export type ViewIdString = Id64String | ViewStoreIdString;
 
+/**
+ * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
+ * The syntax is not ambiguous because a RowString start with "@" and  Group names can never contain "@".
+ */
+export type ViewGroupSpec = ViewStoreIdString | string;
+
+export type ViewName = string;
+
 /** determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@") */
 export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
 
@@ -131,6 +139,10 @@ export interface ViewListEntry {
   name: string;
   /** The fullClassName of the ViewDefinition. Useful for sorting the list of views. */
   class: string;
+  isPrivate?: boolean;
+  groupId?: ViewStoreIdString;
+  tags?: string[];
+
 }
 
 /** Properties that define a ModelSelector
@@ -154,6 +166,12 @@ export interface CategorySelectorProps extends DefinitionElementProps {
  * @extensions
  */
 export interface ViewQueryParams extends EntityQueryParams {
+  readonly value?: string;
+  /** The comparison operator for `value`. Default is `=` */
+  readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  readonly group?: ViewGroupSpec;
+  readonly tags?: string[];
+  readonly owner?: string;
   wantPrivate?: boolean;
 }
 

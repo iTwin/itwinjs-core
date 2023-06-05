@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
+import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
   ModelSelectorState, OrthographicViewState, ViewState,

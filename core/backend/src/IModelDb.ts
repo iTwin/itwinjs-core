@@ -22,8 +22,7 @@ import {
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
   SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
-  ViewDefinition2dProps,
-  ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ViewDefinition2dProps, ViewDefinitionProps, ViewGroupSpec, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -52,9 +51,9 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { ViewStore } from "./ViewStore";
 
 // spell:ignore fontid fontmap
 
@@ -2175,6 +2174,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     private getViewThumbnailArg(viewDefinitionId: ViewIdString): FilePropertyProps {
+      if (!Id64.isValid(viewDefinitionId))
+        throw new Error("illegal thumbnail id");
+
       return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
 
@@ -2201,17 +2203,25 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param thumbnail The thumbnail data.
      * @returns 0 if successful
      */
-    public saveThumbnail(viewDefinitionId: ViewIdString, thumbnail: ThumbnailProps): number {
-      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
+    public saveThumbnail(viewId: ViewIdString, thumbnail: ThumbnailProps): number {
+      const viewArg = this.getViewThumbnailArg(viewId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
       return 0;
     }
 
+    public async addOrReplaceThumbnail(args: { viewId: ViewIdString, thumbnail: ThumbnailProps, owner?: string }) {
+      return this._viewStore ? this._viewStore.writeLocker.addOrReplaceThumbnail(args) : this.saveThumbnail(args.viewId, args.thumbnail);
+    }
+    public async deleteThumbnail(viewId: ViewIdString) {
+      if (this._viewStore)
+        return this._viewStore.writeLocker.deleteThumbnail(viewId);
+    }
+
     /** Set the default view property the iModel
      * @param viewId The Id of the ViewDefinition to use as the default
      */
-    public setDefaultViewId(viewId: Id64String): void {
+    public setDefaultViewId(viewId: ViewIdString): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob32 = new Uint32Array(2);
       blob32[0] = Id64.getLowerUint32(viewId);
@@ -2220,9 +2230,32 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       this._iModel.saveFileProperty(spec, undefined, blob8);
     }
 
+    public async changeDefaultViewId(args: { defaultView: ViewIdString, group?: ViewGroupSpec }) {
+      return this._viewStore ? this._viewStore.writeLocker.changeDefaultViewId(args) : this.setDefaultViewId(args.defaultView);
+    }
+
+    public getDefaultViewId(group?: ViewGroupSpec): ViewIdString | undefined {
+      if (this._viewStore)
+        return this._viewStore.reader.getDefaultViewId(group);
+
+      const spec = { namespace: "dgn_View", name: "DefaultView" };
+      const blob = this._iModel.queryFilePropertyBlob(spec);
+      if (undefined === blob || 8 !== blob.length)
+        return undefined;
+
+      const view = new Uint32Array(blob.buffer);
+      return Id64.fromUint32Pair(view[0], view[1]);
+    }
+
     public getViewList(queryParams: ViewQueryParams): ViewListEntry[] {
-      const viewProps = this.queryProps(queryParams);
+      if (this._viewStore)
+        return this._viewStore.reader.getViewList(queryParams);
+
       const viewList: ViewListEntry[] = [];
+      if (queryParams.group)
+        return viewList;
+
+      const viewProps = this.queryProps(queryParams);
       for (const viewProp of viewProps)
         viewList.push({ id: viewProp.id!, name: viewProp.code.value!, class: viewProp.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
       return viewList;

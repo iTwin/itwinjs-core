@@ -17,7 +17,7 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
-  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewDefinitionProps, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
@@ -329,8 +329,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return val;
   }
 
-  public async getDefaultViewId(tokenProps: IModelRpcProps): Promise<Id64String> {
+  public async getDefaultViewId(tokenProps: IModelRpcProps, groupId?: ViewIdString): Promise<Id64String> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    iModelDb.views.getDefaultViewId(groupId);
     const spec = { namespace: "dgn_View", name: "DefaultView" };
     const blob = iModelDb.queryFilePropertyBlob(spec);
     if (undefined === blob || 8 !== blob.length)
