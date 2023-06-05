@@ -338,8 +338,6 @@ export class TileAdmin {
 
   /** @internal */
   public get enableInstancing() { return this._enableInstancing; }
-  /** @internal */
-  public setGenerateAllPolyfaceEdges(val: boolean) { this.edgeOptions.smooth = val; }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
