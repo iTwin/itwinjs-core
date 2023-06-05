@@ -995,7 +995,11 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
   }
 
   /** Describes the configuration of the [[TileAdmin]].
-   * @see [[TileAdmin.create]]
+   * @see [[TileAdmin.create]] to specify the configuration at [[IModelApp.startup]] time.
+   * @note Many of these settings serve as "feature gates" introduced alongside new, potentially experimental features.
+   * Over time, as a feature is tested and proven, their relevance wanes, and the feature becomes enabled by default.
+   * Such properties should be flagged as `beta` and removed or rendered non-operational once the feature itself is considered
+   * stable.
    * @public
    */
   export interface Props {
