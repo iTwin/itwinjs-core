@@ -39,3 +39,9 @@ The purpose of the iTwin.js library is to make iModels accessible to everyone, e
 ## ECSQL is the query language of iModels
 
 An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iTwin.js includes [ECSQL](../learning/ecsql) to form queries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite to achieve outstanding performance.
+
+To learn more about how to interact with ECSQL with the iTwin.js API, see [Executing ECSQL in an iTwin Frontend](./frontend/ExecutingECSQL.md) and [Executing ECSQL in an iTwin Backend](./backend/ExecutingECSQL.md).
+
+## See Also
+
+- [iModel Contents](./backend/IModelContents.md)

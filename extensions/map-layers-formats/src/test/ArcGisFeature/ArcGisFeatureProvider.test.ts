@@ -27,6 +27,12 @@ const pngTransparent1x1 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQ
 
 describe("ArcGisFeatureProvider", () => {
   const sandbox = sinon.createSandbox();
+  let fetchStub: any;
+
+  beforeEach(async () => {
+    // Make sure no call to fetch is made, other it creates leaks
+    fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
+  });
 
   afterEach(async () => {
     sandbox.restore();
@@ -416,6 +422,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return {accessTokenRequired: false, content:{currentVersion: 11, capabilities: "Query"}};
     });
+    fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
     sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async  function _(_url: unknown, _options?: unknown) {
       const test = {
         headers: { "content-type" : "pbf"},
@@ -786,7 +793,6 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return {accessTokenRequired: false, content:{capabilities: "Query"}};
     });
-    const fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return {url: settings.url};
