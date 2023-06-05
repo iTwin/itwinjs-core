@@ -229,6 +229,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Return a clone of this arc, projected to given z value.
    * * If `z` is omitted, the clone is at the z of the center.
+   * * This function projects the arc into a plane parallel to xy-plane.
    * * Note that projection to fixed z can change circle into ellipse (and (rarely) ellipse to circle)
    */
   public cloneAtZ(z?: number): Arc3d {
@@ -238,7 +239,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       this._center.x, this._center.y, this._center.z,
       this._matrix.coffs[0], this._matrix.coffs[3], 0,
       this._matrix.coffs[1], this._matrix.coffs[4], 0,
-      this._sweep);
+      this._sweep
+    );
   }
   /**
    * Create an arc by center (cx,cy,xz) with vectors (ux,uy,uz) and (vx,vy,vz) to points at 0 and 90 degrees in

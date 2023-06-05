@@ -503,10 +503,12 @@ export class Ray3d implements BeJSONFunctions {
     let fractionA, fractionB;
     let pointA, pointB;
     let pairType;
-    if (SmallSystem.ray3dXYZUVWClosestApproachUnbounded(
-      rayA.origin.x, rayA.origin.y, rayA.origin.z, rayA.direction.x, rayA.direction.y, rayA.direction.z,
-      rayB.origin.x, rayB.origin.y, rayB.origin.z, rayB.direction.x, rayB.direction.y, rayB.direction.z,
-      intersectionFractions)
+    if (
+      SmallSystem.ray3dXYZUVWClosestApproachUnbounded(
+        rayA.origin.x, rayA.origin.y, rayA.origin.z, rayA.direction.x, rayA.direction.y, rayA.direction.z,
+        rayB.origin.x, rayB.origin.y, rayB.origin.z, rayB.direction.x, rayB.direction.y, rayB.direction.z,
+        intersectionFractions
+      )
     ) {
       fractionA = intersectionFractions.x;
       fractionB = intersectionFractions.y;
