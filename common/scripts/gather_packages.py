@@ -144,7 +144,7 @@ for artifact in artifactPaths:
       previousVer = str.split(':')[1]
 
 if packagesToPublish:
-  distTag = determineDistTag(branchName, localVer, latestVer.decode(), previousVer.decode())
+  distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
   if distTag is not None:
     print ("Setting dist tag " + distTag)
     print ("##vso[build.addbuildtag]dist-tag " + distTag)
