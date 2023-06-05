@@ -115,6 +115,7 @@ export class TileAdmin {
   private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  /** @internal */
   public readonly edgeOptions: EdgeOptions;
   /** @internal */
   public readonly enableImprovedElision: boolean;
