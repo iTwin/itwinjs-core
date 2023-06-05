@@ -128,7 +128,8 @@ for artifact in artifactPaths:
 
   packagesToPublish = True
   print ("Local version is newer than on the server.  Copying package " + packageName + " to staging area.")
-  shutil.copy(artifact, stagingDir)
+  if not os.path.exists(os.path.join(stagingDir, baseName)):
+    shutil.copy(artifact, stagingDir)
 
   command = "npm view " + packageName + " dist-tags.latest"
   proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
@@ -143,7 +144,7 @@ for artifact in artifactPaths:
     print("No version found for dist-tag 'previous'")
 
 if packagesToPublish:
-  distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
+  distTag = determineDistTag(branchName, localVer, latestVer.decode(), previousVer.decode())
   if distTag is not None:
     print ("Setting dist tag " + distTag)
     print ("##vso[build.addbuildtag]dist-tag " + distTag)
