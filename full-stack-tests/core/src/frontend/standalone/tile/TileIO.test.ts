@@ -842,7 +842,7 @@ describe("TileAdmin", () => {
 
         const version = CurrentImdlVersion.Major.toString(16);
         await expectTreeId(false, `${version}_d-E:0_0x1c`);
-        await expectTreeId({ type: "indexed" as const, smooth: true }, `${version}_d-E:4_0x1c`);
+        await expectTreeId({ type: "compact" as const, smooth: true }, `${version}_d-E:6_0x1c`);
       }
     }
 
