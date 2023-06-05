@@ -1,6 +1,6 @@
 {
   "name": "@itwin/eslint-plugin",
-  "version": "3.7.4",
+  "version": "3.7.8",
   "description": "ESLint plugin with default configuration and custom rules for iTwin.js projects",
   "license": "MIT",
   "keywords": [

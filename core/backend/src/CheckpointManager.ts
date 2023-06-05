@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
@@ -20,6 +20,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -206,14 +207,18 @@ export class V2CheckpointManager {
         container.connect(this.cloudCache);
       container.checkForChanges();
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
+        const getPrefetchConfig = (name: string, defaultVal: number) => IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
+        const minRequests = getPrefetchConfig("minRequests", 3);
+        const maxRequests = getPrefetchConfig("maxRequests", 6);
+        const timeout = getPrefetchConfig("timeout", 100);
         const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
-          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
+          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, { minRequests, maxRequests, timeout });
           const done = await prefetch.promise;
-          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
+          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, { minRequests, maxRequests, timeout });
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }));
       }
       return { dbName, container };
     } catch (e: any) {
@@ -316,6 +321,7 @@ export class CheckpointManager {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
     try {
       // Open checkpoint for write
+      Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.None); // Ignores noisy error messages when applying changesets.
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
       try {
@@ -342,6 +348,7 @@ export class CheckpointManager {
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {
+        Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.Error); // Turn logging back on after applying changesets.
         db.saveChanges();
         db.close();
       }
