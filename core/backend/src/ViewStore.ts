@@ -843,7 +843,7 @@ export namespace ViewStore {
       return props;
     }
 
-    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDefinition: ViewDefinitionProps, group?: string, owner?: string }): Promise<RowString> {
+    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDefinition: ViewDefinitionProps, group?: string, owner?: string, isPrivate?: boolean }): Promise<RowString> {
       const viewDef = JSON.parse(JSON.stringify(args.viewDefinition)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -857,7 +857,7 @@ export namespace ViewStore {
       this.toGuidRowMember(args.elements, viewDef, "baseModelId");
       this.toGuidRowMember(args.elements, viewDef.jsonProperties?.viewDetails, "acs");
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
-      return tableRowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId, json: stringifyProps(viewDef) }));
+      return tableRowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId, isPrivate: args.isPrivate, json: stringifyProps(viewDef) }));
     }
 
     public loadViewDefinition(args: { elements: IModelDb.GuidMapper, id: RowString }): ViewDefinitionProps {
@@ -1023,6 +1023,42 @@ export namespace ViewStore {
         entries.push(entry);
       });
       return entries;
+    }
+
+    public async addNewView(args: {
+      elements: IModelDb.GuidMapper;
+      viewDefinition: ViewDefinitionProps;
+      categorySelectorProps?: CategorySelectorProps;
+      modelSelectorProps?: ModelSelectorProps;
+      displayStyleProps?: DisplayStyleProps;
+      owner?: string;
+      group?: ViewGroupSpec;
+      isPrivate?: boolean;
+    }): Promise<RowString> {
+      const { owner, elements } = args;
+      if (args.viewDefinition.categorySelectorId) {
+        this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
+      } else {
+        if (args.categorySelectorProps === undefined)
+          throw new Error("Must supply categorySelector");
+        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ elements, categories: args.categorySelectorProps.categories, owner });
+      }
+      const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
+      if (spatialDef.modelSelectorId) {
+        this.verifyRowId(tableName.modelSelectors, spatialDef.modelSelectorId);
+      } else if (args.modelSelectorProps) {
+        spatialDef.modelSelectorId = await this.addModelSelector({ elements, models: args.modelSelectorProps.models, owner });
+      } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
+        throw new Error("Must supply modelSelector for Spatial views");
+      }
+      if (spatialDef.displayStyleId) {
+        this.verifyRowId(tableName.displayStyles, spatialDef.displayStyleId);
+      } else {
+        if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
+          throw new Error("Must supply valid displayStyle");
+        spatialDef.displayStyleId = await this.addDisplayStyle({ elements, className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
+      }
+      return this.addViewDefinition(args);
     }
   }
 

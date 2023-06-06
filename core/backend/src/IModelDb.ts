@@ -2255,12 +2255,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (queryParams.group)
         return viewList;
 
+      // eslint-disable-next-line deprecation/deprecation
       const viewProps = this.queryProps(queryParams);
       for (const viewProp of viewProps)
         viewList.push({ id: viewProp.id!, name: viewProp.code.value!, groupId: "", class: viewProp.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
       return viewList;
     }
 
+    /** @deprecated in 4.1. Use [[getViewList]] */
     public queryProps(queryParams: ViewQueryParams): ViewDefinitionProps[] {
       const params: ViewQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ViewDefinition.classFullName; // use "BisCore:ViewDefinition" as default class name
