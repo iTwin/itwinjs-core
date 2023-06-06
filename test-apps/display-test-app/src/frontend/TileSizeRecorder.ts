@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { IModelTileTreeId, iModelTileTreeIdToString } from "@itwin/core-common";
+import { iModelTileTreeIdToString } from "@itwin/core-common";
 import { IModelApp, IModelTileTree, TileAdmin, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard, parseToggle } from "@itwin/frontend-devtools";
 
@@ -63,7 +63,8 @@ class TileSizeRecorder {
 }
 
 let recorder: TileSizeRecorder | undefined;
-let generateTileContent = TileAdmin.prototype.generateTileContent;
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const generateTileContent = TileAdmin.prototype.generateTileContent;
 
 /** A quick and dirty tool to record the sizes of tiles loaded during a recording session.
  * The size recorded is that of the encoded data - not of the decoded graphics.
@@ -80,7 +81,7 @@ export class RecordTileSizesTool extends Tool {
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      return await this.run(enable);
+      return this.run(enable);
 
     return false;
   }
