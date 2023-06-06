@@ -363,4 +363,37 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("createMiteredSweep", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = -1;
+    const y0 = -2;
+    const x1 = 2;
+    const y1 = 3;
+    const centerline: Point3d[] = [Point3d.create(0, 0, 0), Point3d.create(0, 0, 10), Point3d.create(0, 12, 10), Point3d.create(0, 15, 8)];
+    let x0Out = 0;
+    const y0Out = 0;
+    const dxOut = 20.0;
+    for (const radiusA of [undefined, 0.0, 3.0]) {
+      const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
+      const sweeps = CurveFactory.createMiteredSeepSections(centerline, rectangleA, false);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out);
+      if (sweeps !== undefined) {
+        if (sweeps.sections !== undefined)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweeps.sections, x0Out, y0Out);
+        if (sweeps.planes !== undefined) {
+          for (const plane of sweeps.planes) {
+            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, plane.getAnyPointOnPlane(), 0.25, x0Out, y0Out);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [plane.getOriginRef(), plane.getOriginRef().plus(plane.getNormalRef())], x0Out, y0Out);
+          }
+        }
+
+      }
+      x0Out += dxOut;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweep");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
