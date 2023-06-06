@@ -241,7 +241,7 @@ export enum ImdlEdgeVisibility {
   Silhouette,
   /** The edge is always visible. */
   Visible,
-};
+}
 
 /** A more compact representation of [[ImdlIndexedEdges]]. For each vertex index in the mesh, it encodes 2 bits indicating the visibility of the edge between
  * that vertex and the next vertex in the triangle. A second buffer holds oct-encoded normal pairs such that the pair at index N corresponds to the Nth edge

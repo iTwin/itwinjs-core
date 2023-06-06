@@ -48,7 +48,7 @@ function * compactEdgeIterator(visibilityFlags: Uint8Array, vertexIndices: Verte
   for (let i = 0; i < vertexIndices.length; i++) {
     const visibility = (visibilityFlags[flagsIndex] >> bitIndex) & 3;
     bitIndex += 2;
-    if (bitIndex == 8) {
+    if (bitIndex === 8) {
       bitIndex = 0;
       flagsIndex++;
     }

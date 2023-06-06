@@ -8,13 +8,13 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { BatchType } from "../FeatureTable";
 import {
-  ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, defaultTileOptions as realDefaultTileOptions, EdgeOptions, IModelTileTreeId, iModelTileTreeIdToString,
-  parseTileTreeIdAndContentId, PrimaryTileTreeId, TileMetadata, TileOptions, TreeFlags,
+  ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, EdgeOptions, IModelTileTreeId, iModelTileTreeIdToString,
+  parseTileTreeIdAndContentId, PrimaryTileTreeId, defaultTileOptions as realDefaultTileOptions, TileMetadata, TileOptions, TreeFlags,
 } from "../tile/TileMetadata";
 
 // NB: These tests were written when defaultTileOptions specified indexed edges as the default. Now, compact edges are the default.
 // Adjust the defaults used by the tests to continue to use indexed; additional tests for compact have been added.
-const defaultEdgeOptions: EdgeOptions = { ...(realDefaultTileOptions.edgeOptions as EdgeOptions), type: "indexed" };
+const defaultEdgeOptions: EdgeOptions = { ...realDefaultTileOptions.edgeOptions, type: "indexed" };
 const defaultTileOptions: TileOptions = { ...realDefaultTileOptions, edgeOptions: defaultEdgeOptions };
 
 describe("TileMetadata", () => {
