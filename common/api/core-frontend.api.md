@@ -5566,6 +5566,13 @@ export interface ImdlBufferView {
 export type ImdlColorDef = number[];
 
 // @internal
+export interface ImdlCompactEdges {
+    readonly normalPairs?: string;
+    readonly numVisible: number;
+    readonly visibility: string;
+}
+
+// @internal
 export interface ImdlDecodeArgs {
     // (undocumented)
     isCanceled?: () => boolean;
@@ -5654,6 +5661,13 @@ export interface ImdlDocument {
 }
 
 // @internal
+export enum ImdlEdgeVisibility {
+    Hidden = 0,
+    Silhouette = 1,
+    Visible = 2
+}
+
+// @internal
 export interface ImdlIndexedEdges {
     readonly edges: string;
     readonly height: number;
@@ -5696,7 +5710,9 @@ export interface ImdlMesh {
 // @internal
 export interface ImdlMeshEdges {
     // (undocumented)
+    readonly compact?: ImdlCompactEdges;
     readonly indexed?: ImdlIndexedEdges;
+    // (undocumented)
     readonly polylines?: ImdlPolyline;
     // (undocumented)
     readonly segments?: ImdlSegmentEdges;
@@ -6643,6 +6659,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     getTransformNodeRange(nodeId: number): Range3d | undefined;
     get hiddenElements(): Id64Array;
+    // (undocumented)
+    readonly iModelTileTreeId: IModelTileTreeId;
     // (undocumented)
     get is3d(): boolean;
     // (undocumented)
@@ -12852,7 +12870,7 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
-    get edgeOptions(): EdgeOptions;
+    readonly edgeOptions: EdgeOptions;
     // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
@@ -12862,15 +12880,10 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
-    get enableIndexedEdges(): boolean;
-    // @internal (undocumented)
     get enableInstancing(): boolean;
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
-    // @internal (undocumented)
-    get generateAllPolyfaceEdges(): boolean;
-    set generateAllPolyfaceEdges(val: boolean);
     // @internal (undocumented)
     generateTileContent(tile: {
         iModelTree: IModelTileTree;

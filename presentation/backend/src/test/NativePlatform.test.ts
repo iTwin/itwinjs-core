@@ -76,7 +76,7 @@ describe("default NativePlatform", () => {
     it("calls addon", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => { } }))
+        .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0") }), cancel: () => { } }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
@@ -118,7 +118,7 @@ describe("default NativePlatform", () => {
       const cancelEvent: BeEvent<() => void> = new BeEvent<() => void>();
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: cancelFunction }));
+        .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0") }), cancel: cancelFunction }));
       expect(await nativePlatform.handleRequest(undefined, "", cancelEvent)).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
       cancelEvent.raiseEvent();
@@ -134,7 +134,7 @@ describe("default NativePlatform", () => {
     };
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => { } }));
+      .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0"), diagnostics }), cancel: () => { } }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
   });
