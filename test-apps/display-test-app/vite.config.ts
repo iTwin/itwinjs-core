@@ -52,12 +52,6 @@ export default defineConfig(() => {
       replace({
         "process.env.NODE_ENV": JSON.stringify("development")
       }),
-      viteCommonjs({
-        include: [
-          "@itwin/core-electron",
-          "@itwin/core-frontend"
-        ],
-    }),
       viteInspect({ build: true }),
       svgrPlugin({
       svgrOptions: {
@@ -83,14 +77,16 @@ export default defineConfig(() => {
             electron: "window['electron']",
           }),
           esbuildCommonjs([
-            "@itwin/core-electron",
-            "@itwin/core-frontend",
             'react-s3'
           ]),
         ],
       },
       // overoptimized dependencies in the same monorepo
-      include: ["@itwin/core-electron/frontend", "@itwin/mobile"]
+      include: [
+        "@itwin/core-electron/lib/cjs/ElectronFrontend",
+        "@itwin/core-mobile/lib/cjs/MobileFrontend",
+        "@itwin/core-frontend"
+      ]
     },
   }
 })

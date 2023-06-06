@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, ProcessDetector } from "@itwin/core-bentley";
-// import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import * as ElectronFrontend from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -192,7 +191,7 @@ class ShutDownTool extends Tool {
 
   public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
-    const app = ElectronFrontend.ElectronApp.isValid ? ElectronFrontend.ElectronApp : IModelApp;
+    const app = ElectronApp.isValid ? ElectronApp : IModelApp;
     await app.shutdown();
 
     debugger; // eslint-disable-line no-debugger
@@ -234,7 +233,7 @@ export class DisplayTestApp {
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
       baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
     };
-    const opts: ElectronFrontend.ElectronAppOpts | LocalHostIpcAppOpts = {
+    const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
@@ -276,7 +275,7 @@ export class DisplayTestApp {
       if (!configuration.noElectronAuth)
         opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
 
-      await ElectronFrontend.startup(opts);
+      await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileFrontend.MobileApp.startup(opts as MobileFrontend.MobileAppOpts);
     } else {
