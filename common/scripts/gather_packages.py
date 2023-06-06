@@ -80,15 +80,6 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer):
 
   return distTag
 
-def getTags(tags):
-  splitTags = tags.decode().split('\n')
-  finalTags = {}
-  for tag in splitTags:
-    if not len(tag) == 0:
-      finalTags[tag.split(':')[0]] = tag.split(':')[1]
-
-  return finalTags
-
 ## Validate arguments
 if len(sys.argv) != 4:
   sys.exit("Invalid number of arguments to script provided.\nExpected: 3\nReceived: {0}".format(len(sys.argv) - 1))
@@ -146,9 +137,14 @@ for artifact in artifactPaths:
   if len(distTags) == 0:
     print("error getting dist-tags")
 
-  tags = getTags(distTags)
-  latestVer = tags.get("latest")
-  previousVer = tags.get("previous")
+  tags = distTags.decode().split('\n')
+  for tag in tags:
+    if not len(tag) == 0:
+      [distTag, ver] = tag.split(':')
+      if distTag == "latest":
+        latestVer = ver
+      elif distTag == "previous":
+        previousVer = ver
 
 if packagesToPublish:
   distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
