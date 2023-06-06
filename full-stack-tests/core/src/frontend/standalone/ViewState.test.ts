@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps,
 } from "@itwin/core-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
@@ -27,9 +27,9 @@ describe("ViewState", () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
+    const viewRows = await imodel.views.getViewList({ from: SpatialViewState.classFullName, limit: 1 });
     assert.exists(viewRows, "Should find some views");
-    viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
+    viewState = await imodel.views.load(viewRows[0].id) as SpatialViewState;
 
     imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await SnapshotConnection.openFile("ReadWriteTest.bim");

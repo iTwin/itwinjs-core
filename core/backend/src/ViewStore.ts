@@ -185,7 +185,7 @@ export namespace ViewStore {
 
     /** create all the tables for a new ViewDb */
     protected override createDDL() {
-      const baseCols = "Id INTEGER PRIMARY KEY,json TEXT,owner TEXT";
+      const baseCols = "Id INTEGER PRIMARY KEY AUTOINCREMENT,json TEXT,owner TEXT";
       this.createTable({
         tableName: tableName.views,
         columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,private BOOLEAN NOT NULL,` +
@@ -205,7 +205,7 @@ export namespace ViewStore {
 
       // for tables that have a "name" column, we want to enforce case-insensitive uniqueness. Names may be null.
       const makeTable = (table: string, extra?: string) => {
-        this.createTable({ tableName: table, columns: `${baseCols}, name TEXT UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
+        this.createTable({ tableName: table, columns: `${baseCols},name TEXT UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
       };
 
       makeTable(tableName.modelSelectors);

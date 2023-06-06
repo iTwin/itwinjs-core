@@ -46,12 +46,11 @@ describe.only("ViewStore", function (this: Suite) {
     const v1Updated = vs1.getViewByName({ name: "view1" })!;
     expect(v1Updated.isPrivate).to.be.false;
 
-
     const v1Id2 = vs1.addViewRow({ className: "spatial", name: "v2", json: "json-v2", owner: "owner1", groupId: 1 });
     expect(v1Id2).equals(2);
     const v2 = vs1.getViewRow(v1Id2)!;
     expect(v2.name).equals("v2");
-    await vs1.deleteView(v1Id2);
+    vs1.deleteView(v1Id2);
     expect(vs1.findViewByName({ name: "v2", groupId: 1 })).equals(0);
 
     expect(() => vs1.addViewGroupRow({ name: "", json: "" })).to.throw("illegal group");
@@ -68,7 +67,7 @@ describe.only("ViewStore", function (this: Suite) {
     const g3 = vs1.addViewGroupRow({ name: "group 3", parentId: g2, json: "group3-json" });
     const g4 = vs1.addViewGroupRow({ name: "group4", parentId: g3, json: "group3-json" });
     const v2Id = vs1.addViewRow({ className: "spatial2", name: "view2", json: "json2", groupId: g4 });
-    expect(v2Id).equals(2);
+    expect(v2Id).equals(3);
 
     for (let i = 0; i < 100; i++)
       vs1.addViewRow({ className: "spatial", name: `test view ${i}`, json: `json${i}`, owner: "owner1", groupId: g2 });
@@ -149,7 +148,7 @@ describe.only("ViewStore", function (this: Suite) {
     cat1 = vs1.getCategorySelector(cat1Id)!;
     expect(cat1.json).equals("cat1-json-updated");
 
-    await vs1.deleteCategorySelector(cat1Id);
+    vs1.deleteCategorySelector(cat1Id);
     expect(vs1.findCategorySelectorByName("cat1")).equals(0);
 
     vs1.addDisplayStyleRow({ name: "style1", json: "style1-json" });
@@ -167,7 +166,7 @@ describe.only("ViewStore", function (this: Suite) {
     const style1Updated = vs1.getDisplayStyle(style1Id)!;
     expect(style1Updated.json).equals("style1-json-updated");
 
-    await vs1.deleteDisplayStyle(style1Id);
+    vs1.deleteDisplayStyle(style1Id);
     expect(vs1.findDisplayStyleByName("style1")).equals(0);
     expect(vs1.findDisplayStyleByName("style2")).equals(2);
 
@@ -192,7 +191,7 @@ describe.only("ViewStore", function (this: Suite) {
     const model1Updated = vs1.getModelSelector(model1Id)!;
     expect(model1Updated.json).equals("model1-json-updated");
 
-    await vs1.deleteModelSelector(model1Id);
+    vs1.deleteModelSelector(model1Id);
     expect(vs1.findModelSelectorByName("model1")).equals(0);
 
     vs1.addTimelineRow({ name: "timeline1", json: "timeline1-json" });
@@ -212,11 +211,11 @@ describe.only("ViewStore", function (this: Suite) {
     const timeline1Updated = vs1.getTimelineRow(timeline1Id)!;
     expect(timeline1Updated.json).equals("timeline1-json-updated");
 
-    await vs1.deleteTimeline(timeline2Id);
+    vs1.deleteTimeline(timeline2Id);
     expect(vs1.findTimelineByName("timeline2")).equals(0);
 
-    const t1 = await vs1.addTag({ name: "tag1", json: "tag1-json", owner: "owner1" });
-    await vs1.addTag({ name: "tag2", json: "tag2-json" });
+    const t1 = vs1.addTag({ name: "tag1", json: "tag1-json", owner: "owner1" });
+    vs1.addTag({ name: "tag2", json: "tag2-json" });
     const tag1Id = vs1.findTagByName("tag1");
     expect(tag1Id).equals(t1);
     const tag1 = vs1.getTag(tag1Id)!;
@@ -224,13 +223,13 @@ describe.only("ViewStore", function (this: Suite) {
     expect(tag1.json).equals("tag1-json");
     expect(tag1.owner).equals("owner1");
     for (let i = 0; i < 5; i++)
-      await vs1.addTag({ name: `test tag ${i}`, json: `newTag${i}-json` });
+      vs1.addTag({ name: `test tag ${i}`, json: `newTag${i}-json` });
 
-    await vs1.addTagToView({ viewId: v1Id, tagId: tag1Id });
-    await vs1.addTagToView({ viewId: v1Id, tagId: 2 });
-    await vs1.addTagToView({ viewId: v103, tagId: 2 });
-    await vs1.addTagToView({ viewId: v104, tagId: 2 });
-    await vs1.addTagToView({ viewId: v1Id, tagId: 3 });
+    vs1.addTagToView({ viewId: v1Id, tagId: tag1Id });
+    vs1.addTagToView({ viewId: v1Id, tagId: 2 });
+    vs1.addTagToView({ viewId: v103, tagId: 2 });
+    vs1.addTagToView({ viewId: v104, tagId: 2 });
+    vs1.addTagToView({ viewId: v1Id, tagId: 3 });
     const taggedViewIds = vs1.findViewsForTag(tag1Id);
     expect(taggedViewIds.length).equals(1);
     expect(taggedViewIds[0]).equals(v1Id);
@@ -271,7 +270,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.queryViewList({ owner: "owner10", from: "BisCore:DrawingViewDefinition" }).length).equal(1);
     expect(vs1.queryViewList({ owner: "owner10", only: false, from: "BisCore:DrawingViewDefinition" }).length).equal(2);
 
-    await vs1.deleteTag(2);
+    vs1.deleteTag(2);
     const tagIdsAfterDelete = vs1.findTagsForView(v1Id);
     expect(tagIdsAfterDelete.length).equals(2);
     expect(tagIdsAfterDelete[0]).equals(tag1Id);
@@ -291,7 +290,7 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.updateSearchJson(search1Id, "search1-json-updated");
     const search1Updated = vs1.getSearch(search1Id)!;
     expect(search1Updated.json).equals("search1-json-updated");
-    await vs1.deleteSearch(search2);
+    vs1.deleteSearch(search2);
     expect(vs1.findSearchByName("search2")).equals(0);
 
     const guids: GuidString[] = [];

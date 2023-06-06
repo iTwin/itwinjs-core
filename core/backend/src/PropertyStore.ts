@@ -7,7 +7,6 @@
  * @module SQLiteDb
  */
 
-import { BentleyError, DbResult } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { SettingObject } from "./workspace/Settings";
