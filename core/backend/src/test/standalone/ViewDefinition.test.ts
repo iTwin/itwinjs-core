@@ -170,9 +170,9 @@ describe("ViewDefinition", () => {
     };
 
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
-    const viewDefId = await vs1.addViewDefinition({ elements: id1Mapper, viewDefinition: viewDefProps });
-    expect(viewDefId).equal("@1");
-    const viewDefOut = vs1.loadViewDefinition({ elements: id1Mapper, id: viewDefId }) as SpatialViewDefinitionProps;
+    const v1 = await vs1.addNewView({ elements: id1Mapper, viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
+    expect(v1).equal("@1");
+    const viewDefOut = vs1.loadViewDefinition({ elements: id1Mapper, id: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");
     expect(viewDefOut.classFullName).equal("BisCore:SpatialViewDefinition");
     expect(viewDefOut.modelSelectorId).equal(ms1Row);
@@ -183,6 +183,33 @@ describe("ViewDefinition", () => {
     expect(JSON.stringify(viewDefOut.extents)).equal(JSON.stringify(basicProps.extents));
     expect(JSON.stringify(viewDefOut.angles)).equal(JSON.stringify(basicProps.angles));
     expect(JSON.stringify(viewDefOut.camera)).equal(JSON.stringify(basicProps.camera));
+
+    viewDefProps.code.value = "TestViewDefinition2";
+    const v2 = await vs1.addNewView({ elements: id1Mapper, viewDefinition: viewDefProps, tags: ["big", "done"] });
+    await vs1.addTagsToView({ viewId: v2, tags: ["problems", "finished", "big"] });
+
+    let tags = vs1.getTagsForView(ViewStore.rowIdFromString(v2));
+    expect(tags?.length).equal(4);
+    expect(tags).includes("big");
+    expect(tags).includes("done");
+    await vs1.removeTagFromView({ viewId: v2, tag: "done" });
+    tags = vs1.getTagsForView(ViewStore.rowIdFromString(v2));
+    expect(tags).not.includes("done");
+    expect(tags?.length).equal(3);
+
+    // v1 and v2 share modelselector, categoryselector, and displaystyle so when v2 is deleted they should not be deleted
+    await vs1.removeView(v2);
+    expect(() => vs1.loadViewDefinition({ elements: id1Mapper, id: v2 })).throws("View not found");
+    expect(vs1.getDisplayStyle(1)).not.undefined;
+    expect(vs1.getModelSelector(1)).not.undefined;
+    expect(vs1.getCategorySelector(1)).not.undefined;
+
+    // the modelselector, categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
+    await vs1.removeView(v1);
+    expect(() => vs1.loadViewDefinition({ elements: id1Mapper, id: v1 })).throws("View not found");
+    expect(vs1.getDisplayStyle(1)).undefined;
+    expect(vs1.getModelSelector(1)).undefined;
+    expect(vs1.getCategorySelector(1)).undefined;
 
     // attempt to create a ViewDefinition element with invalid properties
     assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid");
@@ -205,5 +232,4 @@ describe("ViewDefinition", () => {
     viewDefinitionId = SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
     iModel.views.setDefaultViewId(viewDefinitionId);
   });
-
 });

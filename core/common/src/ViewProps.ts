@@ -141,7 +141,18 @@ export interface ViewListEntry {
   class: string;
   owner?: string;
   isPrivate?: boolean;
-  groupId: ViewStoreIdString;
+  groupId?: ViewStoreIdString;
+  tags?: string[];
+}
+
+export interface AddNewViewArgs {
+  viewDefinition: ViewDefinitionProps;
+  categorySelectorProps?: CategorySelectorProps;
+  modelSelectorProps?: ModelSelectorProps;
+  displayStyleProps?: DisplayStyleProps;
+  owner?: string;
+  group?: ViewGroupSpec;
+  isPrivate?: boolean;
   tags?: string[];
 }
 

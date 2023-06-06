@@ -8,6 +8,7 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
+  AddNewViewArgs,
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
   RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewGroupSpec, ViewListEntry, ViewName, ViewQueryParams, ViewStoreIdString,
@@ -48,7 +49,8 @@ import type { IModelDb } from "./IModelDb";
  * alo load the DisplayStyle from the ViewStore.
  *
  * Views are organized into hierarchical ViewGroups (like file and folder hierarchies on a file system). A View is always stored "in" a ViewGroup, and
- * views must have a name that is unique within the ViewGroup. The root ViewGroup is named "Root" and has a RowId of 1. The root ViewGroup can not be deleted.
+ * views must have a name that is unique within the ViewGroup. ViewGroups may each have a default ViewId.
+ * The root ViewGroup is named "Root" and has a RowId of 1. The root ViewGroup can not be deleted.
  * View names and ViewGroup names may not contain either "/" or "@". ViewGroups are stored in the "viewGroups" table.
  *
  * Views may be "tagged" with one or more Tags. Tags are named with an arbitrary string that can be used to group Views. A Tag may
@@ -111,6 +113,9 @@ export namespace ViewStore {
     className: string;
     groupId: RowId;
     isPrivate?: boolean;
+    modelSel?: RowId;
+    categorySel?: RowId;
+    displayStyle?: RowId;
   }
 
   export interface ViewGroupProps {
@@ -183,7 +188,11 @@ export namespace ViewStore {
       const baseCols = "Id INTEGER PRIMARY KEY,json TEXT,owner TEXT";
       this.createTable({
         tableName: tableName.views,
-        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,private BOOLEAN NOT NULL,groupId INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE`,
+        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,private BOOLEAN NOT NULL,` +
+          `groupId INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE, ` +
+          `modelSel INTEGER REFERENCES ${tableName.modelSelectors}(Id), ` +
+          `categorySel INTEGER REFERENCES ${tableName.categorySelectors}(Id), ` +
+          `displayStyle INTEGER REFERENCES ${tableName.displayStyles}(Id)`,
         constraints: "UNIQUE(groupId,name)",
         addTimestamp: true,
       });
@@ -196,7 +205,7 @@ export namespace ViewStore {
 
       // for tables that have a "name" column, we want to enforce case-insensitive uniqueness. Names may be null.
       const makeTable = (table: string, extra?: string) => {
-        this.createTable({ tableName: table, columns: `${baseCols},name TEXT UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
+        this.createTable({ tableName: table, columns: `${baseCols}, name TEXT UNIQUE COLLATE NOCASE${extra ?? ""}`, addTimestamp: true });
       };
 
       makeTable(tableName.modelSelectors);
@@ -205,9 +214,11 @@ export namespace ViewStore {
       makeTable(tableName.timelines);
       makeTable(tableName.tags);
       makeTable(tableName.searches);
-      this.createTable({ tableName: tableName.thumbnails, columns: `Id INTEGER PRIMARY KEY REFERENCES ${tableName.views}(Id) ON DELETE CASCADE,json,owner,data BLOB NOT NULL` });
+      this.createTable({ tableName: tableName.thumbnails, columns: `Id INTEGER PRIMARY KEY REFERENCES ${tableName.views} (Id) ON DELETE CASCADE,json,owner,data BLOB NOT NULL` });
       this.createTable({
-        tableName: tableName.taggedViews, columns: `viewId INTEGER NOT NULL REFERENCES ${tableName.views}(Id) ON DELETE CASCADE,tagId INTEGER NOT NULL REFERENCES ${tableName.tags}(Id) ON DELETE CASCADE`,
+        tableName: tableName.taggedViews, columns: `viewId INTEGER NOT NULL REFERENCES ${tableName.views} (Id) ON DELETE CASCADE,` +
+          `tagId INTEGER NOT NULL REFERENCES ${tableName.tags} (Id) ON DELETE CASCADE`,
+        constraints: `UNIQUE(tagId,viewId)`,
       });
       this.createTable({ tableName: tableName.guids, columns: `guid BLOB NOT NULL UNIQUE` });
       this.addViewGroupRow({ name: "Root", json: JSON.stringify({}) });
@@ -215,20 +226,20 @@ export namespace ViewStore {
 
     /** get the row in the "guids" table for a given guid. If the guid is not present, return 0 */
     private getGuidRow(guid: GuidString): RowId {
-      return this.withPreparedSqliteStatement(`SELECT rowId FROM ${tableName.guids} WHERE guid=?`, (stmt) => {
+      return this.withPreparedSqliteStatement(`SELECT rowId FROM ${tableName.guids} WHERE guid=? `, (stmt) => {
         stmt.bindGuid(1, guid);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
     public getGuid(rowid: RowId): GuidString | undefined {
-      return this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=? `, (stmt) => {
         stmt.bindInteger(1, rowid);
         return !stmt.nextRow() ? undefined : stmt.getValueGuid(0);
       });
     }
     /** @internal */
     public iterateGuids(rowIds: RowId[], fn: (guid: GuidString, row: RowId) => void) {
-      this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=?`, (stmt) => {
+      this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=? `, (stmt) => {
         for (const rowId of rowIds) {
           stmt.reset();
           stmt.bindInteger(1, rowId);
@@ -241,7 +252,7 @@ export namespace ViewStore {
     /** @internal */
     public addGuid(guid: GuidString): RowId {
       const existing = this.getGuidRow(guid);
-      return existing !== 0 ? existing : this.withPreparedSqliteStatement(`INSERT INTO ${tableName.guids}(guid) VALUES (?)`, (stmt) => {
+      return existing !== 0 ? existing : this.withPreparedSqliteStatement(`INSERT INTO ${tableName.guids} (guid) VALUES(?)`, (stmt) => {
         stmt.bindGuid(1, guid);
         this.stepForWrite(stmt);
         return this.nativeDb.getLastInsertRowId();
@@ -252,13 +263,16 @@ export namespace ViewStore {
     public addViewRow(args: ViewRow): RowId {
       validateName(args.name, "view");
 
-      return this.withSqliteStatement(`INSERT INTO ${tableName.views}(className,name,json,owner,private,groupId) VALUES (?,?,?,?,?,?)`, (stmt) => {
+      return this.withSqliteStatement(`INSERT INTO ${tableName.views} (className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle) VALUES(?,?,?,?,?,?,?,?,?)`, (stmt) => {
         stmt.bindString(1, args.className);
         stmt.bindString(2, args.name);
         stmt.bindString(3, args.json);
         stmt.maybeBindString(4, args.owner);
         stmt.bindBoolean(5, args.isPrivate ?? false);
         stmt.bindInteger(6, args.groupId ?? 1);
+        stmt.maybeBindInteger(7, args.modelSel);
+        stmt.maybeBindInteger(8, args.categorySel);
+        stmt.maybeBindInteger(9, args.displayStyle);
         this.stepForWrite(stmt);
         return this.nativeDb.getLastInsertRowId();
       });
@@ -267,7 +281,7 @@ export namespace ViewStore {
     /** @internal */
     public addViewGroupRow(args: Optional<ViewGroupRow, "parentId">): RowId {
       validateName(args.name, "group");
-      return this.withSqliteStatement(`INSERT INTO ${tableName.viewGroups}(name,owner,parent,json) VALUES (?,?,?,?)`, (stmt) => {
+      return this.withSqliteStatement(`INSERT INTO ${tableName.viewGroups} (name,owner,parent,json) VALUES(?,?,?,?)`, (stmt) => {
         stmt.bindString(1, args.name);
         stmt.maybeBindString(2, args.owner);
         stmt.bindInteger(3, args.parentId ?? 1);
@@ -278,7 +292,7 @@ export namespace ViewStore {
     }
 
     private addTableRow(table: string, args: TableRow): RowId {
-      return this.withSqliteStatement(`INSERT INTO ${table}(name,json,owner) VALUES (?,?,?)`, (stmt) => {
+      return this.withSqliteStatement(`INSERT INTO ${table} (name,json,owner) VALUES(?,?,?)`, (stmt) => {
         stmt.maybeBindString(1, args.name);
         stmt.bindString(2, args.json);
         stmt.maybeBindString(3, args.owner);
@@ -303,7 +317,7 @@ export namespace ViewStore {
       return this.addTableRow(tableName.timelines, args);
     }
     /** add a row to the "tags" table, return the RowId */
-    public async addTag(args: TagRow): Promise<RowId> {
+    public addTag(args: TagRow): RowId {
       return this.addTableRow(tableName.tags, args);
     }
     /** add a row to the "searches" table, return the RowId */
@@ -313,7 +327,7 @@ export namespace ViewStore {
 
     /** add or update a row in the "thumbnails" table, return the RowId */
     public addOrReplaceThumbnailRow(args: ThumbnailRow): RowId {
-      return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails}(Id,json,owner,data) VALUES (?,?,?,?)`, (stmt) => {
+      return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails} (Id,json,owner,data) VALUES(?,?,?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindString(2, JSON.stringify(args.format));
         stmt.maybeBindString(3, args.owner);
@@ -324,44 +338,45 @@ export namespace ViewStore {
     }
 
     private deleteFromTable(table: string, id: RowId): void {
-      this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=?`, (stmt) => {
+      this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, id);
         this.stepForWrite(stmt);
       });
     }
-    public async deleteView(id: RowId): Promise<void> {
+    public deleteView(id: RowId) {
       return this.deleteFromTable(tableName.views, id);
     }
-    public async deleteViewGroup(name: ViewGroupSpec): Promise<void> {
+
+    public async deleteViewGroup(name: ViewGroupSpec) {
       const rowId = this.findViewGroup(name);
       if (rowId === 1)
         throw new Error("Cannot delete root group");
       return this.deleteFromTable(tableName.viewGroups, rowId);
     }
-    public async deleteModelSelector(id: RowId): Promise<void> {
+    public deleteModelSelector(id: RowId) {
       return this.deleteFromTable(tableName.modelSelectors, id);
     }
-    public async deleteCategorySelector(id: RowId): Promise<void> {
+    public deleteCategorySelector(id: RowId) {
       return this.deleteFromTable(tableName.categorySelectors, id);
     }
-    public async deleteDisplayStyle(id: RowId): Promise<void> {
+    public deleteDisplayStyle(id: RowId) {
       return this.deleteFromTable(tableName.displayStyles, id);
     }
-    public async deleteTimeline(id: RowId): Promise<void> {
+    public deleteTimeline(id: RowId) {
       return this.deleteFromTable(tableName.timelines, id);
     }
-    public async deleteTag(id: RowId): Promise<void> {
+    public deleteTag(id: RowId) {
       return this.deleteFromTable(tableName.tags, id);
     }
-    public async deleteSearch(id: RowId): Promise<void> {
+    public deleteSearch(id: RowId) {
       return this.deleteFromTable(tableName.searches, id);
     }
-    public async deleteThumbnail(id: RowString): Promise<void> {
+    public async deleteThumbnail(id: RowString) {
       return this.deleteFromTable(tableName.thumbnails, rowIdFromString(id));
     }
     /** get the data for a view from the database */
     public getViewRow(viewId: RowId): undefined | ViewRow {
-      return this.withSqliteStatement(`SELECT className,name,json,owner,private,groupId FROM ${tableName.views} WHERE Id=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, viewId);
         return !stmt.nextRow() ? undefined : {
           className: stmt.getValueString(0),
@@ -370,11 +385,14 @@ export namespace ViewStore {
           owner: stmt.getValueStringMaybe(3),
           isPrivate: stmt.getValueBoolean(4),
           groupId: stmt.getValueInteger(5),
+          modelSel: stmt.getValueIntegerMaybe(6),
+          categorySel: stmt.getValueIntegerMaybe(7),
+          displayStyle: stmt.getValueIntegerMaybe(8),
         };
       });
     }
     public getThumbnailRow(viewId: RowId): undefined | ThumbnailRow {
-      return this.withSqliteStatement(`SELECT json,owner,data FROM ${tableName.thumbnails} WHERE Id=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT json,owner,data FROM ${tableName.thumbnails} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, viewId);
         return !stmt.nextRow() ? undefined : {
           viewId,
@@ -385,7 +403,7 @@ export namespace ViewStore {
       });
     }
     public getViewGroup(id: RowId): ViewGroupRow | undefined {
-      return this.withSqliteStatement(`SELECT name,owner,json,parent FROM ${tableName.viewGroups} WHERE Id=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT name,owner,json,parent FROM ${tableName.viewGroups} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
           name: stmt.getValueString(0),
@@ -397,7 +415,7 @@ export namespace ViewStore {
     }
 
     private getTableRow(table: string, id: RowId): SelectorRow | undefined {
-      return this.withSqliteStatement(`SELECT name,json,owner FROM ${table} WHERE Id=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT name,json,owner FROM ${table} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
           name: stmt.getValueStringMaybe(0),
@@ -430,14 +448,14 @@ export namespace ViewStore {
     }
 
     private async updateJson(table: string, id: RowId, json: string): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=?`, (stmt) => {
+      this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=? `, (stmt) => {
         stmt.bindString(1, json);
         stmt.bindInteger(2, id);
         this.stepForWrite(stmt);
       });
     }
     public async updateViewShared(viewId: RowId, isPrivate: boolean): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${tableName.views} SET private=? WHERE Id=?`, (stmt) => {
+      this.withSqliteStatement(`UPDATE ${tableName.views} SET private=? WHERE Id=? `, (stmt) => {
         stmt.bindBoolean(1, isPrivate);
         stmt.bindInteger(2, viewId);
         this.stepForWrite(stmt);
@@ -465,7 +483,7 @@ export namespace ViewStore {
       return this.updateJson(tableName.searches, searchId, json);
     }
     private async updateName(table: string, id: RowId, name?: string): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=?`, (stmt) => {
+      this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=? `, (stmt) => {
         stmt.maybeBindString(1, name);
         stmt.bindInteger(2, id);
         this.stepForWrite(stmt);
@@ -492,34 +510,22 @@ export namespace ViewStore {
     public async updateSearchName(searchId: RowId, name?: string): Promise<void> {
       return this.updateName(tableName.searches, searchId, name);
     }
-    public async addTagToView(args: { viewId: RowId, tagId: RowId }): Promise<void> {
-      this.withSqliteStatement(`INSERT INTO ${tableName.taggedViews}(viewId,tagId) VALUES (?,?)`, (stmt) => {
+    public addTagToView(args: { viewId: RowId, tagId: RowId }) {
+      this.withSqliteStatement(`INSERT OR IGNORE INTO ${tableName.taggedViews} (viewId, tagId) VALUES(?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
         this.stepForWrite(stmt);
       });
     }
-    public async deleteViewTag(args: { viewId: RowId, tagId: RowId }): Promise<void> {
-      this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=? AND tagId=?`, (stmt) => {
+    public deleteViewTag(args: { viewId: RowId, tagId: RowId }): void {
+      this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=? AND tagId=? `, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
-        this.stepForWrite(stmt);
-      });
-    }
-    public async deleteAllTagsForView(viewId: RowId): Promise<void> {
-      this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=?`, (stmt) => {
-        stmt.bindInteger(1, viewId);
-        this.stepForWrite(stmt);
-      });
-    }
-    public async deleteAllTaggedViews(tagId: RowId): Promise<void> {
-      this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE tagId=?`, (stmt) => {
-        stmt.bindInteger(1, tagId);
         this.stepForWrite(stmt);
       });
     }
     public findViewsForTag(tagId: RowId): RowId[] {
-      return this.withSqliteStatement(`SELECT viewId FROM ${tableName.taggedViews} WHERE tagId=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT viewId FROM ${tableName.taggedViews} WHERE tagId=? `, (stmt) => {
         stmt.bindInteger(1, tagId);
         const list: RowId[] = [];
         while (stmt.nextRow())
@@ -528,13 +534,13 @@ export namespace ViewStore {
       });
     }
     private findByName(table: string, name: string): RowId {
-      return this.withSqliteStatement(`SELECT Id FROM ${table} WHERE name=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT Id FROM ${table} WHERE name=? `, (stmt) => {
         stmt.bindString(1, name);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
     public getViewGroupByName(name: string, parentId: RowId): RowId {
-      return this.withSqliteStatement(`SELECT Id FROM ${tableName.viewGroups} WHERE name=? AND parent=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT Id FROM ${tableName.viewGroups} WHERE name=? AND parent=? `, (stmt) => {
         stmt.bindString(1, name);
         stmt.bindInteger(2, parentId);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
@@ -571,7 +577,7 @@ export namespace ViewStore {
     public findViewsByClass(className: string[]): RowId[] {
       if (className.length === 0)
         return [];
-      const sql = `SELECT Id FROM ${tableName.views} WHERE className IN (${className.map(() => "?").join(",")}) ORDER BY Id ASC`;
+      const sql = `SELECT Id FROM ${tableName.views} WHERE className IN(${className.map(() => "?").join(",")}) ORDER BY Id ASC`;
       return this.withSqliteStatement(sql, (stmt) => {
         for (let i = 0; i < className.length; ++i)
           stmt.bindString(i + 1, className[i]);
@@ -583,7 +589,7 @@ export namespace ViewStore {
       });
     }
     public findTagsForView(viewId: RowId): RowId[] {
-      return this.withSqliteStatement(`SELECT tagId FROM ${tableName.taggedViews} WHERE viewId=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT tagId FROM ${tableName.taggedViews} WHERE viewId=? `, (stmt) => {
         stmt.bindInteger(1, viewId);
         const list: RowId[] = [];
         while (stmt.nextRow())
@@ -633,7 +639,7 @@ export namespace ViewStore {
           return;
         }
       }
-      throw new Error(`invalid ${memberName}: ${id}`);
+      throw new Error(`invalid ${memberName}: ${id} `);
     }
 
     private fromGuidRowMember(elements: IModelDb.GuidMapper, base: any, memberName: string) {
@@ -647,20 +653,20 @@ export namespace ViewStore {
           return;
         }
       }
-      throw new Error(`invalid ${memberName}: ${id}`);
+      throw new Error(`invalid ${memberName}: ${id} `);
     }
 
     private verifyRowId(table: string, rowIdString: RowString): RowId {
       try {
         const rowId = rowIdFromString(rowIdString);
-        this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=?`, (stmt) => {
+        this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=? `, (stmt) => {
           stmt.bindInteger(1, rowId);
           if (!stmt.nextRow())
-            throw new Error(`missing: ${rowIdString}`);
+            throw new Error(`missing: ${rowIdString} `);
         });
         return rowId;
       } catch (err: any) {
-        throw new Error(`invalid Id for ${table}: ${err.message}`);
+        throw new Error(`invalid Id for ${table}: ${err.message} `);
       }
     }
     private scriptToGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
@@ -843,7 +849,7 @@ export namespace ViewStore {
       return props;
     }
 
-    public async addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDefinition: ViewDefinitionProps, group?: string, owner?: string, isPrivate?: boolean }): Promise<RowString> {
+    public addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDefinition: ViewDefinitionProps, group?: string, owner?: string, isPrivate?: boolean }): RowId {
       const viewDef = JSON.parse(JSON.stringify(args.viewDefinition)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -857,13 +863,25 @@ export namespace ViewStore {
       this.toGuidRowMember(args.elements, viewDef, "baseModelId");
       this.toGuidRowMember(args.elements, viewDef.jsonProperties?.viewDetails, "acs");
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
-      return tableRowIdToString(this.addViewRow({ name, className: viewDef.classFullName, owner: args.owner, groupId, isPrivate: args.isPrivate, json: stringifyProps(viewDef) }));
+      const maybeRow = (rowString: RowString) => rowString ? rowIdFromString(rowString) : undefined;
+
+      return this.addViewRow({
+        name,
+        className: viewDef.classFullName,
+        owner: args.owner,
+        groupId,
+        isPrivate: args.isPrivate,
+        json: stringifyProps(viewDef),
+        modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
+        categorySel: maybeRow(viewDef.categorySelectorId),
+        displayStyle: maybeRow(viewDef.displayStyleId),
+      });
     }
 
     public loadViewDefinition(args: { elements: IModelDb.GuidMapper, id: RowString }): ViewDefinitionProps {
       const row = this.getViewRow(rowIdFromString(args.id));
       if (undefined === row)
-        throw new Error("ViewDefinition not found");
+        throw new Error("View not found");
 
       const props = blankElementProps(JSON.parse(row.json), row.className, args.id, row.name) as ViewDefinitionProps;
       this.fromGuidRowMember(args.elements, props, "baseModelId");
@@ -901,7 +919,6 @@ export namespace ViewStore {
             return 0;
         }
       }
-
       return groupId;
     }
 
@@ -916,7 +933,7 @@ export namespace ViewStore {
           name = name.slice(slash + 1);
         }
       }
-      return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE name=? AND groupId=?`, (stmt) => {
+      return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE name=? AND groupId=? `, (stmt) => {
         stmt.bindString(1, name);
         stmt.bindInteger(2, groupId ?? defaultViewGroupId);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
@@ -957,7 +974,7 @@ export namespace ViewStore {
 
     public getTagsForView(viewId: RowId) {
       const tags: string[] = [];
-      this.withPreparedSqliteStatement(`SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id=v.tagId WHERE v.viewId=?`, (stmt) => {
+      this.withPreparedSqliteStatement(`SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id = v.tagId WHERE v.viewId=? `, (stmt) => {
         stmt.bindInteger(1, viewId);
         while (stmt.nextRow())
           tags.push(stmt.getValueString(0));
@@ -967,31 +984,31 @@ export namespace ViewStore {
 
     public iterateViewQuery(queryParams: ViewQueryParams, callback: (rowId: RowId, view: ViewListEntry) => void) {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,groupId,private FROM ${tableName.views} WHERE groupId=?`;
+      let sql = `SELECT Id, className, name, owner, groupId, private FROM ${tableName.views} WHERE groupId=? `;
       if (queryParams.owner)
         sql += " AND owner=@owner";
       else
         sql += " AND private!=1";
       if (queryParams.from) {
         if (queryParams.only !== false) {
-          sql += ` AND className='${queryParams.from}'`;
+          sql += ` AND className = '${queryParams.from}'`;
         } else {
           if (queryParams.from === "BisCore:DrawingViewDefinition")
-            sql += ` AND className IN ('BisCore:DrawingViewDefinition','BisCore:SheetViewDefinition')`;
+            sql += ` AND className IN('BisCore:DrawingViewDefinition', 'BisCore:SheetViewDefinition')`;
           else if (queryParams.from === "BisCore:SpatialViewDefinition")
-            sql += ` AND className IN ('BisCore:OrthographicViewDefinition','BisCore:SpatialViewDefinition')`;
+            sql += ` AND className IN('BisCore:OrthographicViewDefinition', 'BisCore:SpatialViewDefinition')`;
           else
-            sql += ` AND className='${queryParams.from}'`;
+            sql += ` AND className = '${queryParams.from}'`;
         }
       }
       if (queryParams.nameSearch)
         sql += ` AND name ${queryParams.nameCompare ?? "="} @name`;
       if (queryParams.tags)
-        sql += ` AND Id IN (SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN (SELECT Id FROM ${tableName.tags} WHERE name IN (${queryParams.tags.map((tag) => `'${tag}'`).join(",")})))`;
+        sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${queryParams.tags.map((tag) => `'${tag}'`).join(",")})))`;
       if (queryParams.limit)
-        sql += ` LIMIT ${queryParams.limit}`;
+        sql += ` LIMIT ${queryParams.limit} `;
       if (queryParams.offset)
-        sql += ` OFFSET ${queryParams.offset}`;
+        sql += ` OFFSET ${queryParams.offset} `;
 
       this.withSqliteStatement(sql, (stmt) => {
         stmt.bindInteger(1, groupId);
@@ -1025,16 +1042,23 @@ export namespace ViewStore {
       return entries;
     }
 
-    public async addNewView(args: {
-      elements: IModelDb.GuidMapper;
-      viewDefinition: ViewDefinitionProps;
-      categorySelectorProps?: CategorySelectorProps;
-      modelSelectorProps?: ModelSelectorProps;
-      displayStyleProps?: DisplayStyleProps;
-      owner?: string;
-      group?: ViewGroupSpec;
-      isPrivate?: boolean;
-    }): Promise<RowString> {
+    public async addTagsToView(args: { viewId: RowString, tags: string[], owner?: string }) {
+      const viewId = rowIdFromString(args.viewId);
+      for (const tag of args.tags) {
+        let tagId = this.findTagByName(tag);
+        if (tagId === 0)
+          tagId = this.addTag({ name: tag, owner: args.owner, json: "{}" });
+        this.addTagToView({ viewId, tagId });
+      }
+    }
+    public async removeTagFromView(args: { viewId: RowString, tag: string }) {
+      const viewId = rowIdFromString(args.viewId);
+      const tagId = this.findTagByName(args.tag);
+      if (tagId !== 0)
+        this.deleteViewTag({ viewId, tagId });
+    }
+
+    public async addNewView(args: AddNewViewArgs & { elements: IModelDb.GuidMapper }): Promise<RowString> {
       const { owner, elements } = args;
       if (args.viewDefinition.categorySelectorId) {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
@@ -1058,7 +1082,34 @@ export namespace ViewStore {
           throw new Error("Must supply valid displayStyle");
         spatialDef.displayStyleId = await this.addDisplayStyle({ elements, className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
       }
-      return this.addViewDefinition(args);
+      const viewId = tableRowIdToString(this.addViewDefinition(args));
+      if (args.tags)
+        await this.addTagsToView({ viewId, tags: args.tags, owner });
+
+      return viewId;
+    }
+
+    public async removeView(viewId: RowString) {
+      const rowId = rowIdFromString(viewId);
+      const viewRow = this.getViewRow(rowId);
+      if (viewRow === undefined)
+        throw new Error("View not found");
+
+      this.deleteView(rowId);
+      const tryDelete = (table: string, id?: RowId) => {
+        if (id !== undefined) {
+          try {
+            this.deleteFromTable(table, id);
+          } catch (err) {
+            // ignore constraint error if the row is still referenced by another view
+          }
+        }
+      };
+
+      // delete any selectors or display styles that are no longer referenced
+      tryDelete(tableName.categorySelectors, viewRow.categorySel);
+      tryDelete(tableName.modelSelectors, viewRow.modelSel);
+      tryDelete(tableName.displayStyles, viewRow.displayStyle);
     }
   }
 
