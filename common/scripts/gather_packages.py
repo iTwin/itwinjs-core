@@ -80,6 +80,15 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer):
 
   return distTag
 
+def getTags(tags):
+  splitTags = tags.decode().split('\n')
+  finalTags = {}
+  for tag in splitTags:
+    if not len(tag) == 0:
+      finalTags[tag.split(':')[0]] = tag.split(':')[1]
+
+  return finalTags
+
 ## Validate arguments
 if len(sys.argv) != 4:
   sys.exit("Invalid number of arguments to script provided.\nExpected: 3\nReceived: {0}".format(len(sys.argv) - 1))
@@ -133,15 +142,13 @@ for artifact in artifactPaths:
 
   command = "npm dist-tag ls " + packageName
   proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
-  res = proc.communicate()[0]
-  if len(res) == 0:
+  distTags = proc.communicate()[0]
+  if len(distTags) == 0:
     print("error getting dist-tags")
-  splitter = res.decode().split('\n')
-  for str in splitter:
-    if str.split(':')[0] == "latest":
-      latestVer = str.split(':')[1]
-    elif str.split(':')[0] == "previous":
-      previousVer = str.split(':')[1]
+
+  tags = getTags(distTags)
+  latestVer = tags.get("latest")
+  previousVer = tags.get("previous")
 
 if packagesToPublish:
   distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
