@@ -30,7 +30,7 @@ import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
 import {
   CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow,
-  ViewDefinitionProps, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "../ViewProps";
 import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcNotFoundResponse } from "./core/RpcControl";
@@ -138,5 +138,4 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
     return this.forward(arguments);
   }
   public async getViewList(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewListEntry[]> { return this.forward(arguments); }
-  public async queryViewProps(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> { return this.forward(arguments); }
 }

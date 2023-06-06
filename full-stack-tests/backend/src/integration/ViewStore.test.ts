@@ -185,7 +185,7 @@ function populateDb(sourceDb: IModelDb) {
   assert.isTrue(Id64.isValidId64(drawingViewId));
 }
 
-describe.only("ViewStore", function (this: Suite) {
+describe("ViewStore", function (this: Suite) {
   this.timeout(0);
 
   before(async () => {

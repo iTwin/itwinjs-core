@@ -2255,16 +2255,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (queryParams.group)
         return viewList;
 
-      // eslint-disable-next-line deprecation/deprecation
-      const viewProps = this.queryProps(queryParams);
-      for (const viewProp of viewProps)
-        viewList.push({ id: viewProp.id!, name: viewProp.code.value!, groupId: "", class: viewProp.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
-      return viewList;
-    }
-
-    /** @deprecated in 4.1. Use [[getViewList]] */
-    public queryProps(queryParams: ViewQueryParams): ViewDefinitionProps[] {
-      const params: ViewQueryParams = { ...queryParams }; // make a copy
+      const params = { ...queryParams }; // make a copy
       params.from = queryParams.from || ViewDefinition.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
@@ -2275,16 +2266,17 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
       const iModel = this._iModel;
       const ids = iModel.queryEntityIds(params);
-      const viewProps: ViewDefinitionProps[] = [];
       for (const id of ids) {
         try {
-          viewProps.push(iModel.elements.getElementJson({ id }));
+          const props = iModel.elements.getElementJson({ id });
+          viewList.push({ id, name: props.code.value!, class: props.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
         } catch (error) {
           if (ids.size === 1)
             throw error; // if they're asking for more than one view, don't throw on error.
         }
       }
-      return viewProps;
+
+      return viewList;
     }
   }
 

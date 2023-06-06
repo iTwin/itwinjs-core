@@ -55,7 +55,7 @@ describe("ViewDefinition", () => {
     vs1.closeDb(true);
   });
 
-  it.only("SpatialViewDefinition", async () => {
+  it("SpatialViewDefinition", async () => {
     const { modelId, modelId2, spatialCategoryId } = createNewModelAndCategory(iModel);
     const displayStyleId = DisplayStyle3d.insert(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") });
     const modelSelectorId = ModelSelector.insert(iModel, IModel.dictionaryId, "default", [modelId, modelId2]);

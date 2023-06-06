@@ -17,7 +17,7 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
-  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ThumbnailProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
@@ -367,9 +367,5 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getViewList(iModelToken: IModelRpcProps, queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
     const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, iModelToken);
     return db.views.getViewList(queryParams);
-  }
-  public async queryViewProps(iModelToken: IModelRpcProps, queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, iModelToken);
-    return db.views.queryProps(queryParams);
   }
 }

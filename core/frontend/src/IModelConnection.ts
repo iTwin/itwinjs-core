@@ -1056,7 +1056,21 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const iModel = this._iModel;
-      return iModel.isClosed ? [] : IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryViewProps(iModel.getRpcProps(), queryParams);
+      if (iModel.isClosed)
+        return [];
+
+      const params: ViewQueryParams = { ...queryParams }; // make a copy
+      params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
+      params.where = queryParams.where || "";
+      if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
+        if (params.where.length > 0)
+          params.where += " AND ";
+
+        params.where += "IsPrivate=FALSE ";
+      }
+      const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);
+      assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
+      return viewProps as ViewDefinitionProps[];
     }
 
     /** Get an array of the ViewSpecs for all views in this IModel that satisfy a ViewQueryParams.

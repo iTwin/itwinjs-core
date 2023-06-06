@@ -984,7 +984,7 @@ export namespace ViewStore {
 
     public iterateViewQuery(queryParams: ViewQueryParams, callback: (rowId: RowId, view: ViewListEntry) => void) {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id, className, name, owner, groupId, private FROM ${tableName.views} WHERE groupId=? `;
+      let sql = `SELECT Id,className,name,owner,groupId,private FROM ${tableName.views} WHERE groupId=? `;
       if (queryParams.owner)
         sql += " AND owner=@owner";
       else
