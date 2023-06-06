@@ -17,7 +17,7 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
-  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
@@ -315,11 +315,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
-   * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
+   * @deprecated in 3.x - Use queryViewThumbnail instead
    */
-  public async getViewThumbnail(_tokenProps: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, _tokenProps);
-    const thumbnail = iModelDb.views.getThumbnail(_viewId);
+  public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
 
@@ -329,16 +329,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return val;
   }
 
+  public async queryViewThumbnail(tokenProps: IModelRpcProps, viewId: ViewIdString): Promise<ThumbnailProps | undefined> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    return iModelDb.views.getThumbnail(viewId);
+  }
+
   public async getDefaultViewId(tokenProps: IModelRpcProps, groupId?: ViewIdString): Promise<Id64String> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
-    iModelDb.views.getDefaultViewId(groupId);
-    const spec = { namespace: "dgn_View", name: "DefaultView" };
-    const blob = iModelDb.queryFilePropertyBlob(spec);
-    if (undefined === blob || 8 !== blob.length)
-      return Id64.invalid;
-
-    const view = new Uint32Array(blob.buffer);
-    return Id64.fromUint32Pair(view[0], view[1]);
+    return iModelDb.views.getDefaultViewId(groupId);
   }
   public async getSpatialCategoryId(tokenProps: IModelRpcProps, categoryName: string): Promise<Id64String | undefined> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);

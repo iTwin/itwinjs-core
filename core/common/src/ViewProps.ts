@@ -139,10 +139,10 @@ export interface ViewListEntry {
   name: string;
   /** The fullClassName of the ViewDefinition. Useful for sorting the list of views. */
   class: string;
+  owner?: string;
   isPrivate?: boolean;
-  groupId?: ViewStoreIdString;
+  groupId: ViewStoreIdString;
   tags?: string[];
-
 }
 
 /** Properties that define a ModelSelector
@@ -166,13 +166,13 @@ export interface CategorySelectorProps extends DefinitionElementProps {
  * @extensions
  */
 export interface ViewQueryParams extends EntityQueryParams {
-  readonly value?: string;
-  /** The comparison operator for `value`. Default is `=` */
-  readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  readonly nameSearch?: string;
+  /** The comparison operator for `nameSearch`. Default is `=` */
+  readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
   readonly group?: ViewGroupSpec;
   readonly tags?: string[];
   readonly owner?: string;
-  wantPrivate?: boolean;
+  readonly wantPrivate?: boolean;
 }
 
 /** Parameters used to construct a ViewDefinition

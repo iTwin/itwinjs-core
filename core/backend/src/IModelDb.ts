@@ -2234,14 +2234,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._viewStore ? this._viewStore.writeLocker.changeDefaultViewId(args) : this.setDefaultViewId(args.defaultView);
     }
 
-    public getDefaultViewId(group?: ViewGroupSpec): ViewIdString | undefined {
+    public getDefaultViewId(group?: ViewGroupSpec): ViewIdString {
       if (this._viewStore)
-        return this._viewStore.reader.getDefaultViewId(group);
+        return this._viewStore.reader.getDefaultViewId(group) ?? Id64.invalid;
 
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob = this._iModel.queryFilePropertyBlob(spec);
       if (undefined === blob || 8 !== blob.length)
-        return undefined;
+        return Id64.invalid;
 
       const view = new Uint32Array(blob.buffer);
       return Id64.fromUint32Pair(view[0], view[1]);
@@ -2249,7 +2249,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     public getViewList(queryParams: ViewQueryParams): ViewListEntry[] {
       if (this._viewStore)
-        return this._viewStore.reader.getViewList(queryParams);
+        return this._viewStore.reader.queryViewList(queryParams);
 
       const viewList: ViewListEntry[] = [];
       if (queryParams.group)
@@ -2257,7 +2257,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
       const viewProps = this.queryProps(queryParams);
       for (const viewProp of viewProps)
-        viewList.push({ id: viewProp.id!, name: viewProp.code.value!, class: viewProp.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        viewList.push({ id: viewProp.id!, name: viewProp.code.value!, groupId: "", class: viewProp.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
       return viewList;
     }
 

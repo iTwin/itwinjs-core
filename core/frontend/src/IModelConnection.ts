@@ -1052,6 +1052,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
+     * @deprecated in 4.1. Use [[getViewList]] instead.
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const iModel = this._iModel;

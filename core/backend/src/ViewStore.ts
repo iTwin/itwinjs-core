@@ -183,7 +183,7 @@ export namespace ViewStore {
       const baseCols = "Id INTEGER PRIMARY KEY,json TEXT,owner TEXT";
       this.createTable({
         tableName: tableName.views,
-        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,private BOOLEAN,groupId INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE`,
+        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,private BOOLEAN NOT NULL,groupId INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE`,
         constraints: "UNIQUE(groupId,name)",
         addTimestamp: true,
       });
@@ -257,7 +257,7 @@ export namespace ViewStore {
         stmt.bindString(2, args.name);
         stmt.bindString(3, args.json);
         stmt.maybeBindString(4, args.owner);
-        stmt.maybeBindBoolean(5, args.isPrivate);
+        stmt.bindBoolean(5, args.isPrivate ?? false);
         stmt.bindInteger(6, args.groupId ?? 1);
         this.stepForWrite(stmt);
         return this.nativeDb.getLastInsertRowId();
@@ -965,13 +965,15 @@ export namespace ViewStore {
       return tags.length === 0 ? undefined : tags;
     }
 
-    public getViewList(queryParams: ViewQueryParams): ViewListEntry[] {
+    public iterateViewQuery(queryParams: ViewQueryParams, callback: (rowId: RowId, view: ViewListEntry) => void) {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,groupId,isPrivate FROM ${tableName.views} WHERE groupId=?`;
+      let sql = `SELECT Id,className,name,owner,groupId,private FROM ${tableName.views} WHERE groupId=?`;
       if (queryParams.owner)
-        sql += " AND (private!=1 OR owner=@owner)";
+        sql += " AND owner=@owner";
+      else
+        sql += " AND private!=1";
       if (queryParams.from) {
-        if (queryParams.only) {
+        if (queryParams.only !== false) {
           sql += ` AND className='${queryParams.from}'`;
         } else {
           if (queryParams.from === "BisCore:DrawingViewDefinition")
@@ -982,8 +984,8 @@ export namespace ViewStore {
             sql += ` AND className='${queryParams.from}'`;
         }
       }
-      if (queryParams.value)
-        sql += ` AND name ${queryParams.valueCompare ?? "="} @val`;
+      if (queryParams.nameSearch)
+        sql += ` AND name ${queryParams.nameCompare ?? "="} @name`;
       if (queryParams.tags)
         sql += ` AND Id IN (SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN (SELECT Id FROM ${tableName.tags} WHERE name IN (${queryParams.tags.map((tag) => `'${tag}'`).join(",")})))`;
       if (queryParams.limit)
@@ -991,25 +993,34 @@ export namespace ViewStore {
       if (queryParams.offset)
         sql += ` OFFSET ${queryParams.offset}`;
 
-      const entries: ViewListEntry[] = [];
       this.withSqliteStatement(sql, (stmt) => {
         stmt.bindInteger(1, groupId);
-        if (queryParams.value)
-          stmt.bindString("@val", queryParams.value);
+        if (queryParams.nameSearch)
+          stmt.bindString("@name", queryParams.nameSearch);
         if (queryParams.owner)
           stmt.bindString("@owner", queryParams.owner);
 
         while (stmt.nextRow()) {
           const rowId = stmt.getValueInteger(0);
-          entries.push({
-            id: tableRowIdToString(rowId),
-            class: stmt.getValueString(1),
-            name: stmt.getValueString(2),
-            groupId: tableRowIdToString(stmt.getValueInteger(6)),
-            isPrivate: stmt.getValueBoolean(6),
-            tags: this.getTagsForView(rowId),
-          });
+          callback(
+            rowId,
+            {
+              id: tableRowIdToString(rowId),
+              class: stmt.getValueString(1),
+              name: stmt.getValueString(2),
+              owner: stmt.getValueString(3),
+              groupId: tableRowIdToString(stmt.getValueInteger(4)),
+              isPrivate: stmt.getValueBoolean(5),
+            });
         }
+      });
+    }
+
+    public queryViewList(queryParams: ViewQueryParams): ViewListEntry[] {
+      const entries: ViewListEntry[] = [];
+      this.iterateViewQuery(queryParams, (rowId, entry) => {
+        entry.tags = this.getTagsForView(rowId);
+        entries.push(entry);
       });
       return entries;
     }
