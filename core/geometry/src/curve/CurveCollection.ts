@@ -115,10 +115,9 @@ export abstract class CurveCollection extends GeometryQuery {
     return CloneWithExpandedLineStrings.clone(this);
   }
   /**
-   * Recurse through children of the curve collection to collect CurvePrimitive's in flat array and pushes them
-   * onto the user-supplied array (i.e. `results`).
-   * * The function is recursive. For example, if we have a loop in the curve collection, all curve primitives
-   * of the loop are also pushed to the array.
+   * Push all CurvePrimitives contained in the instance onto the `results` array.
+   * * This method is recursive. For example, if the CurveCollection contains a Loop, all CurvePrimitives
+   * of the Loop are pushed onto `results`.
    */
   private collectCurvePrimitivesGo(
     results: CurvePrimitive[], smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false
@@ -133,9 +132,9 @@ export abstract class CurveCollection extends GeometryQuery {
     }
   }
   /**
-   * Recurse through children of the curve collection and return an array containing only the curve primitives.
-   * * The function is recursive. For example, if we have a loop in the curve collection, all curve primitives
-   * of the loop are also added to the returned array.
+   * Return an array containing all CurvePrimitives in the instance.
+   * * This method is recursive. For example, if the CurveCollection contains a Loop, all CurvePrimitives of
+   * the Loop are pushed onto the returned array.
    * @param collectorArray optional array to receive primitives. If present, new primitives are ADDED (without
    * clearing the array).
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself. If true,
@@ -188,8 +187,9 @@ export abstract class CurveCollection extends GeometryQuery {
   /** Return a child identified by by index */
   public abstract getChild(i: number): AnyCurve | undefined;
   /**
-   * Extend (increase) the range `rangeToExtend` as needed to include all curves in the curve collection
-   * (optionally transformed curves first and then extend the range)
+   * Extend (increase) the given range as needed to encompass all curves in the curve collection.
+   * @param rangeToExtend the given range.
+   * @param transform if supplied, the range is extended with transformed curves.
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const children = this.children;
@@ -200,8 +200,8 @@ export abstract class CurveCollection extends GeometryQuery {
     }
   }
   /**
-   * Find any curve primitive in the source and evaluate it at a fraction (which by default is an interior fraction)
-   * * The first curve primitive which is found is evaluated. Rest of curve primitives are ignored.
+   * Find any CurvePrimitive in the source and evaluate it at the given fraction.
+   * * The first CurvePrimitive found is evaluated. Any other CurvePrimitives are ignored.
    * @param source containing `CurvePrimitive` or `CurveCollection`
    * @param fraction fraction to use in `curve.fractionToPoint(fraction)`
    */
@@ -235,12 +235,11 @@ export abstract class CurveCollection extends GeometryQuery {
 
 /**
  * Shared base class for use by both open and closed paths.
- * - A `CurveChain` contains only curvePrimitives. No other paths, loops, or regions allowed.
- * - A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance)
- * `CurveChainWithDistanceIndex` which presents itself (through method interface) as a CurvePrimitive with well
- * defined mappings from fraction to xyz, but in fact does all the calculations over multiple primitives.
- * - The specific derived classes are `Path` and `Loop`
- * - `CurveChain` is an intermediate class.  It is not instantiable on its own.
+ * * A `CurveChain` contains only CurvePrimitives. No other paths, loops, or regions allowed.
+ * * The specific derived classes are `Path` and `Loop`
+ * * `CurveChain` is an intermediate class. It is not instantiable on its own.
+ * * The related class `CurveChainWithDistanceIndex` is a `CurvePrimitive` whose API presents well-defined mappings
+ * from fraction to xyz over the entire chain, but in fact does all the calculations over multiple primitives.
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.
  * @public
  */
@@ -291,22 +290,13 @@ export abstract class CurveChain extends CurveCollection {
       if (children.length === 1) {
         const ls = children[0];
         if (ls instanceof LineString3d)
-          return ls.packedPoints; // the points of the  LineString3d
+          return ls.packedPoints;
       }
     }
     return undefined;
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
   public abstract override cloneStroked(options?: StrokeOptions): AnyCurve;
-  /*  Path, Loop, CurveChainWithDistanceIndex all implement this. Reducing it to abstract.
-      Hypothetically, a derived class in the wild might be depending on this.
-   {
-    const strokes = LineString3d.create();
-    for (const curve of this.children)
-      curve.emitStrokes(strokes, options);
-    return strokes;
-  }
-  */
   /**
    * Add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
