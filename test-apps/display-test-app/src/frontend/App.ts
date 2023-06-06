@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+// import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import * as ElectronFrontend from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -18,7 +19,8 @@ import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
-import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import * as MobileFrontend from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+// import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -190,7 +192,7 @@ class ShutDownTool extends Tool {
 
   public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
-    const app = ElectronApp.isValid ? ElectronApp : IModelApp;
+    const app = ElectronFrontend.ElectronApp.isValid ? ElectronFrontend.ElectronApp : IModelApp;
     await app.shutdown();
 
     debugger; // eslint-disable-line no-debugger
@@ -232,7 +234,7 @@ export class DisplayTestApp {
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
       baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
     };
-    const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
+    const opts: ElectronFrontend.ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
@@ -274,9 +276,9 @@ export class DisplayTestApp {
       if (!configuration.noElectronAuth)
         opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
 
-      await ElectronApp.startup(opts);
+      await ElectronFrontend.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
-      await MobileApp.startup(opts as MobileAppOpts);
+      await MobileFrontend.MobileApp.startup(opts as MobileFrontend.MobileAppOpts);
     } else {
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);

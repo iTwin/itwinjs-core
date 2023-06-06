@@ -9,9 +9,11 @@ import envCompatible from 'vite-plugin-env-compatible';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { externalGlobalPlugin } from 'esbuild-plugin-external-global';
 import { esbuildCommonjs, viteCommonjs } from '@kckst8/vite-plugin-commonjs';
+// import { commonjs } from '@rollup/plugin-commonjs'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
 import ignore from 'rollup-plugin-ignore';
+import viteInspect from "vite-plugin-inspect";
 import replace from '@rollup/plugin-replace';
 import rollupNodeModulesPolyfillPlugin from "rollup-plugin-node-polyfills";
 
@@ -23,7 +25,8 @@ export default defineConfig(() => {
   process.env = {...process.env, ...loadEnv(mode, process.cwd())};
   return {
     server: {
-        open: '/public/index.html',
+        // open: false, // BROWSER = none
+        open: true,
         port: 3000,
         strictPort: true,
         fs: {
@@ -33,13 +36,14 @@ export default defineConfig(() => {
         },
     },
     envPrefix: "REACT_APP_",
-    build: { 
+    build: {
       outDir: './lib',
       commonjsOptions: {
-        include: [/node_modules/],
+        include: [/core\/electron/, /node_modules/],
       },
       rollupOptions: {
-        input: 'src/index.ts'
+        input: 'src/index.ts',
+        // plugins: [commonjs()]
       }
     },
     plugins: [
@@ -51,8 +55,10 @@ export default defineConfig(() => {
       viteCommonjs({
         include: [
           "@itwin/core-electron",
+          "@itwin/core-frontend"
         ],
-      }),
+    }),
+      viteInspect({ build: true }),
       svgrPlugin({
       svgrOptions: {
         icon: true,
@@ -62,7 +68,6 @@ export default defineConfig(() => {
       tsconfigPaths(),
     ],
     resolve: {
-        extensions: ['.js', '.ts'],
         alias: [
         ],
     },
@@ -79,9 +84,13 @@ export default defineConfig(() => {
           }),
           esbuildCommonjs([
             "@itwin/core-electron",
+            "@itwin/core-frontend",
+            'react-s3'
           ]),
         ],
       },
+      // overoptimized dependencies in the same monorepo
+      include: ["@itwin/core-electron/frontend", "@itwin/mobile"]
     },
   }
 })

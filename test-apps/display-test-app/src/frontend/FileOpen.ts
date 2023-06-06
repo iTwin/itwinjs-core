@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import * as ElectronFrontend from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
 export interface BrowserFileSelector {
@@ -76,7 +76,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
 
     };
-    const val = await ElectronApp.dialogIpc.showOpenDialog(opts);
+    const val = await ElectronFrontend.ElectronApp.dialogIpc.showOpenDialog(opts);
     return val.canceled ? undefined : val.filePaths[0];
   }
 

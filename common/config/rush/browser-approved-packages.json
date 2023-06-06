@@ -383,12 +383,20 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@rollup/plugin-commonjs",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@rollup/plugin-replace",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@vitejs/plugin-legacy",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@vitejs/plugin-react",
