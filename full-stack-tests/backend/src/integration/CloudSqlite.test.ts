@@ -158,6 +158,8 @@ describe("CloudSqlite", () => {
     const contain1 = testContainers[0];
     contain1.connect(caches[1]); // connect it to the second cloudCache
     expect(contain1.isConnected);
+    expect(contain1.storageType).equals("azure");
+    expect(contain1.baseUri).equals(AzuriteTest.baseUri);
 
     // first container has 2 databases
     let dbs = contain1.queryDatabases();

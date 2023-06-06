@@ -199,7 +199,7 @@ export function createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgePar
   let silhouettes: SilhouetteParams | undefined;
   let indexed: IndexedEdgeParams | undefined;
 
-  if (IModelApp.tileAdmin.enableIndexedEdges) {
+  if ("non-indexed" !== IModelApp.tileAdmin.edgeOptions.type) {
     indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
   } else {
     segments = convertPolylinesAndEdges(undefined, args.edges.edges);
