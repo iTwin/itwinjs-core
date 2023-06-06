@@ -830,8 +830,6 @@ export interface ECValueBinding extends BasePresentationQueryBinding {
     value: any;
     // (undocumented)
     valueType: string;
-    // (undocumented)
-    valueTypeExtended?: string;
 }
 
 // @alpha (undocumented)
@@ -842,8 +840,6 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
     value: any[];
     // (undocumented)
     valueType: string;
-    // (undocumented)
-    valueTypeExtended?: string;
 }
 
 // @public
