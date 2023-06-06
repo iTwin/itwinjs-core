@@ -652,7 +652,7 @@ describe("mirukuru TileTree", () => {
     const rootTile = treeProps.rootTile;
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
-    const edges = { indexed: false, smooth: false };
+    const edges = { smooth: false, type: "non-indexed" as const };
     const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
     const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
@@ -842,7 +842,7 @@ describe("TileAdmin", () => {
 
         const version = CurrentImdlVersion.Major.toString(16);
         await expectTreeId(false, `${version}_d-E:0_0x1c`);
-        await expectTreeId({ indexed: true, smooth: true }, `${version}_d-E:4_0x1c`);
+        await expectTreeId({ type: "compact" as const, smooth: true }, `${version}_d-E:6_0x1c`);
       }
     }
 
@@ -903,7 +903,7 @@ describe("TileAdmin", () => {
         if (undefined !== qualifier)
           expect(qualifier.length > 0).to.be.true;
 
-        const edges = { indexed: false, smooth: false };
+        const edges = { type: "non-indexed" as const, smooth: false };
         const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
         const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });

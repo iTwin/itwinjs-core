@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "New attributes on calculated properties: `renderer`, `editor`, `categoryId`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
