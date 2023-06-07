@@ -79,11 +79,6 @@ steps:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
 
-  - script: node common/scripts/install-run-rush.js extract-api
-    displayName: rush extract-api
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: ${{ parameters.nativePrVal }}
-
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
     displayName: Build & run iOS display-test-app
@@ -115,3 +110,8 @@ steps:
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}
+
+  - script: node common/scripts/install-run-rush.js extract-api
+    displayName: rush extract-api
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: ${{ parameters.nativePrVal }}
