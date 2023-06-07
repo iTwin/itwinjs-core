@@ -13,9 +13,10 @@ import { esbuildCommonjs, viteCommonjs } from '@kckst8/vite-plugin-commonjs';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
 import ignore from 'rollup-plugin-ignore';
-import viteInspect from "vite-plugin-inspect";
+// import viteInspect from "vite-plugin-inspect";
 import replace from '@rollup/plugin-replace';
 import rollupNodeModulesPolyfillPlugin from "rollup-plugin-node-polyfills";
+import includePaths from 'rollup-plugin-includepaths'
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
 
@@ -24,9 +25,11 @@ export default defineConfig(() => {
   // This changes the output dir from dist to build
   process.env = {...process.env, ...loadEnv(mode, process.cwd())};
   return {
+    // define: {
+    //   requireFromFile: null,
+    // },
     server: {
-        // open: false, // BROWSER = none
-        open: true,
+        open: false,
         port: 3000,
         strictPort: true,
         fs: {
@@ -38,13 +41,16 @@ export default defineConfig(() => {
     envPrefix: "REACT_APP_",
     build: {
       outDir: './lib',
+      sourcemap: true,
       commonjsOptions: {
-        include: [/core\/electron/, /node_modules/],
+        include: [/core\/electron/, /core\/mobile/, /node_modules/],
       },
       rollupOptions: {
         input: 'src/index.ts',
-        // plugins: [commonjs()]
       }
+    },
+    css: {
+      devSourcemap: true // enable CSS source maps during development
     },
     plugins: [
       ignore(["electron"]),
@@ -52,7 +58,7 @@ export default defineConfig(() => {
       replace({
         "process.env.NODE_ENV": JSON.stringify("development")
       }),
-      viteInspect({ build: true }),
+      // viteInspect({ build: true }),
       svgrPlugin({
       svgrOptions: {
         icon: true,
@@ -60,9 +66,24 @@ export default defineConfig(() => {
     }),
       envCompatible(),
       tsconfigPaths(),
+      includePaths({
+        paths: ['public'],
+      })
     ],
     resolve: {
         alias: [
+          // {
+          //   find: "type",
+          //   replacement: "rollup-plugin-node-polyfills/polyfills/type",
+          // },
+          // {
+          //   find: "release",
+          //   replacement: "rollup-plugin-node-polyfills/polyfills/release",
+          // },
+          // {
+          //   find: "requireFromFile",
+          //   replacement: "rollup-plugin-node-polyfills/polyfills/requireFromFile",
+          // },
         ],
     },
     optimizeDeps: {

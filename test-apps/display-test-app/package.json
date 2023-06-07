@@ -16,7 +16,7 @@
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
-    "build:frontend-vite": "vite build",
+    "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192 vite build",
     "build:frontend-webpack": "cross-env DISABLE_TERSER=true DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
     "build:webpack": "npm run build:frontend-webpack && npm run build:backend-webpack",
     "clean": "rimraf build lib .rush/temp/package-deps*.json ios/imodeljs-test-app/build android/imodeljs-test-app/app/build android/imodeljs-test-app/app/src/main/assets",
@@ -115,6 +115,7 @@
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-replace": "^5.0.2",
     "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-includepaths": "^0.2.4",
     "webpack": "^5.76.0"
   },
   "browserslist": [

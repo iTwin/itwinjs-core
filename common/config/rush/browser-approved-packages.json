@@ -807,6 +807,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "rollup-plugin-includepaths",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "rollup-plugin-node-polyfills",
       "allowedCategories": [ "internal" ]
     },

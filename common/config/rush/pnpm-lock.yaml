@@ -2504,6 +2504,7 @@ importers:
       react: ^18.0.0
       rimraf: ^3.0.2
       rollup-plugin-ignore: ^1.0.10
+      rollup-plugin-includepaths: ^0.2.4
       rollup-plugin-node-polyfills: ^0.2.1
       ts-node: ^10.8.2
       typescript: ~5.0.2
@@ -2578,6 +2579,7 @@ importers:
       react: 18.2.0
       rimraf: 3.0.2
       rollup-plugin-ignore: 1.0.10
+      rollup-plugin-includepaths: 0.2.4
       rollup-plugin-node-polyfills: 0.2.1
       ts-node: 10.9.1_typescript@5.0.4
       typescript: 5.0.4
@@ -17228,6 +17230,10 @@ packages:
 
   /rollup-plugin-ignore/1.0.10:
     resolution: {integrity: sha512-VsbnfwwaTv2Dxl2onubetX/3RnSnplNnjdix0hvF8y2YpqdzlZrjIq6zkcuVJ08XysS8zqW3gt3ORBndFDgsrg==}
+    dev: true
+
+  /rollup-plugin-includepaths/0.2.4:
+    resolution: {integrity: sha512-iZen+XKVExeCzk7jeSZPJKL7B67slZNr8GXSC5ROBXtDGXDBH8wdjMfdNW5hf9kPt+tHyIvWh3wlE9bPrZL24g==}
     dev: true
 
   /rollup-plugin-inject/3.0.2:
