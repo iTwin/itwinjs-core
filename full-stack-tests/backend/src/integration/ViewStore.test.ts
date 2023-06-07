@@ -27,6 +27,7 @@ let iModel: StandaloneDb;
 let vs1: ViewStore.CloudAccess;
 let drawingViewId: Id64String;
 let auxCoordSystemId: Id64String;
+let elements: IModelDb.GuidMapper;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -38,10 +39,10 @@ async function initializeContainer(containerId: string) {
 async function makeViewStore(moniker: string) {
   const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: viewContainer, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
-  const propStore = new ViewStore.CloudAccess({ ...props, accessToken });
-  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  propStore.lockParams.moniker = moniker;
-  return propStore;
+  const viewStore = new ViewStore.CloudAccess({ ...props, accessToken });
+  viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
+  viewStore.lockParams.moniker = moniker;
+  return viewStore;
 }
 
 function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, categoryName: string, color: ColorDef): Id64String {
@@ -185,7 +186,7 @@ function populateDb(sourceDb: IModelDb) {
   assert.isTrue(Id64.isValidId64(drawingViewId));
 }
 
-describe("ViewStore", function (this: Suite) {
+describe.only("ViewStore", function (this: Suite) {
   this.timeout(0);
 
   before(async () => {
@@ -201,22 +202,9 @@ describe("ViewStore", function (this: Suite) {
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });
-
-    populateDb(iModel);
-  });
-  after(async () => {
-    vs1.close();
-    iModel.close();
-    IModelHost.authorizationClient = undefined;
-  });
-
-  it("access ViewStore", async () => {
-    const vs1locker = vs1.writeLocker;
-    const vs1reader = vs1.reader;
-
     const guids: GuidString[] = [];
     const ids1: Id64String[] = [];
-    const elements: IModelDb.GuidMapper = {
+    elements = {
       getFederationGuidFromId(id: Id64String): GuidString | undefined {
         const index = ids1.indexOf(id);
         if (index >= 0)
@@ -234,6 +222,18 @@ describe("ViewStore", function (this: Suite) {
       guids.push(Guid.createValue());
       ids1.push(Id64.fromLocalAndBriefcaseIds(i, 0));
     }
+    vs1.getCloudDb().elements = elements;
+    populateDb(iModel);
+  });
+  after(async () => {
+    vs1.close();
+    iModel.close();
+    IModelHost.authorizationClient = undefined;
+  });
+
+  it("access ViewStore", async () => {
+    const vs1locker = vs1.writeLocker;
+    const vs1reader = vs1.reader;
 
     const c1 = { time: 3, interpolation: 2, value: { red: 0, green: 1, blue: 2 } };
     const c2 = { time: 4, interpolation: 2, value: { red: 255, green: 254, blue: 253 } };
@@ -277,19 +277,19 @@ describe("ViewStore", function (this: Suite) {
     const dsEl = DisplayStyle3d.create(iModel, IModel.dictionaryId, "test style 1", displayStyleProps);
     const styleProps = dsEl.toJSON() as DisplayStyle3dProps;
     const dsId = iModel.elements.insertElement(styleProps);
-    const ds1Row = await vs1locker.addDisplayStyle({ elements, className: dsEl.classFullName, name: dsEl.code.value, settings: styleProps.jsonProperties!.styles! });
+    const ds1Row = await vs1locker.addDisplayStyle({ className: dsEl.classFullName, name: dsEl.code.value, settings: styleProps.jsonProperties!.styles! });
     expect(ds1Row).equals("@1");
     expect(Id64.isValid(dsId)).true;
 
     const categories = ["0x101", "0x22"];
-    const cs1Row = await vs1locker.addCategorySelector({ elements, categories, name: "default" });
+    const cs1Row = await vs1locker.addCategorySelector({ categories, name: "default" });
     const cs1Id = CategorySelector.insert(iModel, IModel.dictionaryId, "default", categories);
     expect(Id64.isValid(cs1Id)).true;
     expect(cs1Row).equals("@1");
 
     const models = ["0x11", "0x32"];
     const ms1Id = ModelSelector.insert(iModel, IModel.dictionaryId, "default", models);
-    const ms1Row = await vs1locker.addModelSelector({ elements, models, name: "default" });
+    const ms1Row = await vs1locker.addModelSelector({ models, name: "default" });
     expect(Id64.isValid(ms1Id)).true;
     expect(ms1Row).equals("@1");
 
@@ -303,7 +303,7 @@ describe("ViewStore", function (this: Suite) {
     viewDef.code.value = "view1";
 
     expect(vs1reader.getViewByName({ name: "view1" })).to.be.undefined;
-    const v1Id = await vs1locker.addNewView({ elements, viewDefinition: viewDef, owner: "owner1" });
+    const v1Id = await vs1locker.addNewView({ viewDefinition: viewDef, owner: "owner1" });
     expect(v1Id).equals("@1");
 
     const v1 = vs1reader.getViewByName({ name: "view1" })!;
@@ -313,7 +313,7 @@ describe("ViewStore", function (this: Suite) {
     expect(v1.isPrivate).to.be.false;
     expect(v1.name).equals("view1");
 
-    const g1 = await vs1locker.addViewGroup({ name: "group1", props: {} });
+    const g1 = await vs1locker.addViewGroup({ name: "group1" });
 
     const standardView = StandardViewIndex.Iso;
     const rotation = Matrix3d.createStandardWorldToView(standardView);
@@ -344,7 +344,7 @@ describe("ViewStore", function (this: Suite) {
     props.categorySelectorId = cs1Row;
     props.displayStyleId = ds1Row;
     props.modelSelectorId = ms1Row;
-    const v2Id = await vs1locker.addNewView({ elements, viewDefinition: props, owner: "owner2", group: g1 });
+    const v2Id = await vs1locker.addNewView({ viewDefinition: props, owner: "owner2", group: g1 });
     expect(v2Id).equals("@2");
 
     sinon.stub(iModel.elements, "getFederationGuidFromId").callsFake((id) => elements.getFederationGuidFromId(id));
@@ -395,20 +395,21 @@ describe("ViewStore", function (this: Suite) {
     expect(vs1reader.findViewsByClass(["spatial", "BisCore:SpatialViewDefinition", "blah"]).length).equals(2);
     expect(vs1reader.findViewsByClass([]).length).equals(0);
     expect(vs1reader.findViewsByClass(["blah"]).length).equals(0);
-    expect(vs1reader.findViewsByOwner("owner1").length).equals(1);
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    expect((await vs1reader.findViewsByOwner({ owner: "owner1" })).length).equals(1);
 
     expect(vs1reader.getViewByName({ name: "group1/view2" })!.groupId).equals(ViewStore.rowIdFromString(g1));
-    await vs1locker.deleteViewGroup(g1);
+    await vs1locker.deleteViewGroup({ name: g1 });
     expect(vs1reader.getViewByName({ name: "group1/view2" })).to.be.undefined;
 
     // now test Drawing views.
     const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.
-    const dcs = await vs1locker.addCategorySelector({ elements, categories: dv.categorySelectorProps.categories });
-    const dds = await vs1locker.addDisplayStyle({ elements, className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
+    const dcs = await vs1locker.addCategorySelector({ categories: dv.categorySelectorProps.categories });
+    const dds = await vs1locker.addDisplayStyle({ className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
     dv.viewDefinitionProps.categorySelectorId = dcs;
     dv.viewDefinitionProps.displayStyleId = dds;
-    const dvId = await vs1locker.addNewView({ elements, viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
-    expect(dvId).equals("@2");
+    const dvId = await vs1locker.addNewView({ viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
+    expect(dvId).equals("@3");
     const dFromVs = await iModel.views.getViewStateProps(dvId);
     expect(dFromVs.categorySelectorProps.categories).to.deep.equal(dv.categorySelectorProps.categories);
     expect(dFromVs.displayStyleProps.jsonProperties!.styles!).to.deep.equal(dv.displayStyleProps.jsonProperties!.styles!);

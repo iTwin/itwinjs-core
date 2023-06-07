@@ -10,7 +10,7 @@ import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentle
 import { ViewStore } from "../../ViewStore";
 import { ThumbnailFormatProps } from "@itwin/core-common";
 
-describe("ViewStore", function (this: Suite) {
+describe.only("ViewStore", function (this: Suite) {
   this.timeout(0);
 
   let vs1: ViewStore.ViewDb;
@@ -19,7 +19,7 @@ describe("ViewStore", function (this: Suite) {
     Logger.setLevel("SQLite", LogLevel.None); // we're expecting errors
     const dbName = join(__dirname, "output", "viewStore.db");
     ViewStore.ViewDb.createNewDb(dbName);
-    vs1 = new ViewStore.ViewDb();
+    vs1 = new ViewStore.ViewDb({ elements: {} as any });
     vs1.openDb(dbName, OpenMode.ReadWrite);
   });
 
@@ -50,7 +50,7 @@ describe("ViewStore", function (this: Suite) {
     expect(v1Id2).equals(2);
     const v2 = vs1.getViewRow(v1Id2)!;
     expect(v2.name).equals("v2");
-    vs1.deleteView(v1Id2);
+    vs1.deleteViewRow(v1Id2);
     expect(vs1.findViewByName({ name: "v2", groupId: 1 })).equals(0);
 
     expect(() => vs1.addViewGroupRow({ name: "", json: "" })).to.throw("illegal group");
@@ -115,7 +115,7 @@ describe("ViewStore", function (this: Suite) {
     expect(vs1.findViewsByClass(["spatial", "spatial2", "blah"]).length).equals(102);
     expect(vs1.findViewsByClass([]).length).equals(0);
     expect(vs1.findViewsByClass(["blah"]).length).equals(0);
-    expect(vs1.findViewsByOwner("owner1").length).equals(101);
+    expect((await vs1.findViewsByOwner({ owner: "owner1" })).length).equals(101);
 
     const thumbnail1 = new Uint8Array([2, 33, 23, 0, 202]);
     const format1: ThumbnailFormatProps = { width: 100, height: 200, format: "jpeg" };
@@ -131,10 +131,10 @@ describe("ViewStore", function (this: Suite) {
     expect(thumbnail3?.data).deep.equals(thumb3);
     vs1.addOrReplaceThumbnailRow({ data: thumbnail1, viewId: 33, format: format1 });
     expect(vs1.getThumbnailRow(33)).to.not.be.undefined;
-    await vs1.deleteThumbnail(ViewStore.tableRowIdToString(33));
+    vs1.deleteThumbnailSync(ViewStore.tableRowIdToString(33));
     expect(vs1.getThumbnailRow(33)).to.be.undefined;
 
-    await vs1.deleteViewGroup("group1");
+    await vs1.deleteViewGroup({ name: "group1" });
     expect(vs1.getViewByName({ name: "view2", groupId: g1 })).to.be.undefined;
 
     vs1.addCategorySelectorRow({ name: "cat1", json: "cat1-json" });

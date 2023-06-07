@@ -805,8 +805,6 @@
       "runtimeArgs": [
         "run",
         "test:${input:integrationTestEnvironment}",
-        "--",
-        "--debug"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/core/lib/**/*.js",
@@ -1222,7 +1220,8 @@
       "default": "chrome",
       "options": [
         "chrome",
-        "electron"
+        "electron",
+        "electron:azurite"
       ]
     },
     {

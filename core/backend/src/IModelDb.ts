@@ -2104,10 +2104,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (isViewStoreId(viewDefId)) {
           const reader = this.viewStore.reader;
           return {
-            loadView: () => reader.loadViewDefinition({ elements, id: viewDefId }),
-            loadCategorySelector: (id: ViewIdString) => reader.loadCategorySelector({ elements, id }),
-            loadDisplayStyle: (id: ViewIdString) => reader.loadDisplayStyle({ elements, id, opts: options?.displayStyle }),
-            loadModelSelector: (id: ViewIdString) => reader.loadModelSelector({ elements, id }),
+            loadView: () => reader.loadViewDefinitionSync({ id: viewDefId }),
+            loadCategorySelector: (id: ViewIdString) => reader.loadCategorySelectorSync({ id }),
+            loadDisplayStyle: (id: ViewIdString) => reader.loadDisplayStyleSync({ id, opts: options?.displayStyle }),
+            loadModelSelector: (id: ViewIdString) => reader.loadModelSelectorSync({ id }),
           };
         }
         return {
@@ -2186,7 +2186,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getThumbnail(viewId: ViewIdString): ThumbnailProps | undefined {
       if (isViewStoreId(viewId))
-        return this.viewStore.reader.loadThumbnail(viewId);
+        return this.viewStore.reader.loadThumbnailSync({ viewId });
 
       const viewArg = this.getViewThumbnailArg(viewId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
@@ -2210,14 +2210,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return 0;
     }
 
-    public async addOrReplaceThumbnail(args: { viewId: ViewIdString, thumbnail: ThumbnailProps, owner?: string }) {
-      return this._viewStore ? this._viewStore.writeLocker.addOrReplaceThumbnail(args) : this.saveThumbnail(args.viewId, args.thumbnail);
-    }
-    public async deleteThumbnail(viewId: ViewIdString) {
-      if (this._viewStore)
-        return this._viewStore.writeLocker.deleteThumbnail(viewId);
-    }
-
     /** Set the default view property the iModel
      * @param viewId The Id of the ViewDefinition to use as the default
      */
@@ -2236,7 +2228,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     public getDefaultViewId(group?: ViewGroupSpec): ViewIdString {
       if (this._viewStore)
-        return this._viewStore.reader.getDefaultViewId(group) ?? Id64.invalid;
+        return this._viewStore.reader.getDefaultViewIdSync({ group }) ?? Id64.invalid;
 
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob = this._iModel.queryFilePropertyBlob(spec);
@@ -2247,7 +2239,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return Id64.fromUint32Pair(view[0], view[1]);
     }
 
-    public getViewList(queryParams: ViewQueryParams): ViewListEntry[] {
+    public async getViewList(queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
       if (this._viewStore)
         return this._viewStore.reader.queryViewList(queryParams);
 
@@ -2641,6 +2633,7 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
+  public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
@@ -2728,7 +2721,9 @@ export class SnapshotDb extends IModelDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     assert(undefined !== file.key);
-    return new SnapshotDb(nativeDb, file.key);
+    const db = new SnapshotDb(nativeDb, file.key);
+    this.onOpened.raiseEvent(db);
+    return db;
   }
 
   /** Open a previously downloaded V1 checkpoint file.

@@ -52,33 +52,33 @@ export abstract class RpcInterface {
   private static parseVer(version: string): SemverType {
     // Split the version string into major.minor.path and prerelease tag
     const split = version.split(/[:-]/);
-    // Split the major.minor.path into seperate components
+    // Split the major.minor.path into separate components
     const prefix = split[0].split(".");
-    if (split.length === 1) {
+    if (split.length === 1)
       return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
-    } else {
-      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]), prerelease: split[1] };
-    }
+    return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]), prerelease: split[1] };
   }
 
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
   public static isVersionCompatible(backend: string, frontend: string): boolean {
+    if (backend === frontend)
+      return true;
+
     const backendSemver = this.parseVer(backend);
     const frontendSemver = this.parseVer(frontend);
     const difference = this.findDiff(backendSemver, frontendSemver);
 
     // If the major versions are different, the versions are not compatible
-    // In the case of prerelease tags, they are compatible if the whole version string matches, otherwise it fails
-    if ((backendSemver.prerelease !== undefined || frontendSemver.prerelease !== undefined) || difference === "major") {
-      return difference === "same";
-    } else if (backendSemver.major === 0 || frontendSemver.major === 0) {
-      // If the major and minor versions match and major versions are 0, compatible as long as backend patch version is greater
-      return difference === "same" || (difference === "patch" && frontendSemver.patch < backendSemver.patch);
-    } else {
-      // If the strings match exactly, major and minor match but patch differs, versions are compatible
-      // If minor versions differ, compatible as long as backend patch versionn is greater
-      return difference === "same" || difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
-    }
+    // For prerelease tags, they must match.
+    if (backendSemver.prerelease || frontendSemver.prerelease || difference === "major")
+      return false;
+
+    // If the major and minor versions match and major versions are 0, compatible as long as backend patch version is greater
+    if (backendSemver.major === 0 || frontendSemver.major === 0)
+      return (difference === "patch" && frontendSemver.patch < backendSemver.patch);
+
+    // patch difference is fine. If minor versions differ, compatible as long as backend minor version is greater
+    return difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
   }
 
   /** The configuration for the RPC interface.

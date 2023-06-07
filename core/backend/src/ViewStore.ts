@@ -10,8 +10,8 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequire
 import {
   AddNewViewArgs,
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
-  DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewGroupSpec, ViewListEntry, ViewName, ViewQueryParams, ViewStoreIdString,
+  DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, ReadViewStoreRpc, RenderSchedule,
+  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewGroupSpec, ViewListEntry, ViewName, ViewQueryParams, ViewStoreIdString, WriteViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -180,8 +180,16 @@ export namespace ViewStore {
 
   export const defaultViewGroupId = 1 as const;
 
-  export class ViewDb extends VersionedSqliteDb {
+  export class ViewDb extends VersionedSqliteDb implements WriteViewStoreRpc, ReadViewStoreRpc {
     public override myVersion = "4.0.0";
+    private _elements?: IModelDb.GuidMapper;
+    public get elements() { return this._elements!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    public set elements(elements: IModelDb.GuidMapper) { this._elements = elements; }
+
+    public constructor(props?: { elements?: IModelDb.GuidMapper }) {
+      super();
+      this._elements = props?.elements;
+    }
 
     /** create all the tables for a new ViewDb */
     protected override createDDL() {
@@ -343,12 +351,11 @@ export namespace ViewStore {
         this.stepForWrite(stmt);
       });
     }
-    public deleteView(id: RowId) {
+    public deleteViewRow(id: RowId) {
       return this.deleteFromTable(tableName.views, id);
     }
-
-    public async deleteViewGroup(name: ViewGroupSpec) {
-      const rowId = this.findViewGroup(name);
+    public async deleteViewGroup(args: { name: ViewGroupSpec }) {
+      const rowId = this.findViewGroup(args.name);
       if (rowId === 1)
         throw new Error("Cannot delete root group");
       return this.deleteFromTable(tableName.viewGroups, rowId);
@@ -371,8 +378,11 @@ export namespace ViewStore {
     public deleteSearch(id: RowId) {
       return this.deleteFromTable(tableName.searches, id);
     }
-    public async deleteThumbnail(id: RowString) {
+    public deleteThumbnailSync(id: RowString) {
       return this.deleteFromTable(tableName.thumbnails, rowIdFromString(id));
+    }
+    public async deleteThumbnail(arg: { id: RowString }) {
+      return this.deleteThumbnailSync(arg.id);
     }
     /** get the data for a view from the database */
     public getViewRow(viewId: RowId): undefined | ViewRow {
@@ -565,12 +575,12 @@ export namespace ViewStore {
       return this.findByName(tableName.searches, name);
     }
 
-    public findViewsByOwner(owner: string): RowId[] {
+    public async findViewsByOwner(args: { owner: string }): Promise<RowString[]> {
       return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE owner=? ORDER BY Id ASC`, (stmt) => {
-        stmt.bindString(1, owner);
-        const list: RowId[] = [];
+        stmt.bindString(1, args.owner);
+        const list: RowString[] = [];
         while (stmt.nextRow())
-          list.push(stmt.getValueInteger(0));
+          list.push(tableRowIdToString(stmt.getValueInteger(0)));
         return list;
       });
     }
@@ -598,42 +608,42 @@ export namespace ViewStore {
       });
     }
 
-    private toGuidRow(elements: IModelDb.GuidMapper, id?: Id64String): RowId | undefined {
+    private toGuidRow(id?: Id64String): RowId | undefined {
       if (undefined === id)
         return undefined;
-      const fedGuid = elements.getFederationGuidFromId(id);
+      const fedGuid = this.elements.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
-    private toCompressedGuidRows(elements: IModelDb.GuidMapper, ids: Id64String[] | string): CompressedId64Set {
+    private toCompressedGuidRows(ids: Id64String[] | string): CompressedId64Set {
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
-        const guidRow = this.toGuidRow(elements, id);
+        const guidRow = this.toGuidRow(id);
         if (undefined !== guidRow)
           result.add(Id64.fromLocalAndBriefcaseIds(guidRow, 0));
       }
       return CompressedId64Set.compressSet(result);
     }
-    private fromGuidRow(elements: IModelDb.GuidMapper, guidRow: RowId): Id64String | undefined {
-      return elements.getIdFromFederationGuid(this.getGuid(guidRow));
+    private fromGuidRow(guidRow: RowId): Id64String | undefined {
+      return this.elements.getIdFromFederationGuid(this.getGuid(guidRow));
     }
-    private fromGuidRowString(elements: IModelDb.GuidMapper, id?: string) {
-      return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(elements, rowIdFromString(id));
+    private fromGuidRowString(id?: string) {
+      return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(rowIdFromString(id));
     }
-    private fromCompressedGuidRows(elements: IModelDb.GuidMapper, guidRows: CompressedId64Set): CompressedId64Set {
+    private fromCompressedGuidRows(guidRows: CompressedId64Set): CompressedId64Set {
       const result = new Set<Id64String>();
       for (const rowId64String of CompressedId64Set.iterable(guidRows)) {
-        const elId = this.fromGuidRow(elements, Id64.getLocalId(rowId64String));
+        const elId = this.fromGuidRow(Id64.getLocalId(rowId64String));
         if (undefined !== elId)
           result.add(elId);
       }
       return CompressedId64Set.compressSet(result);
     }
-    private toGuidRowMember(elements: IModelDb.GuidMapper, base: any, memberName: string) {
+    private toGuidRowMember(base: any, memberName: string) {
       const id = base?.[memberName];
       if (id === undefined)
         return;
       if (typeof id === "string" && Id64.isValidId64(id)) {
-        const guidRow = this.toGuidRow(elements, id);
+        const guidRow = this.toGuidRow(id);
         if (undefined !== guidRow) {
           base[memberName] = guidRowToString(guidRow);
           return;
@@ -642,12 +652,12 @@ export namespace ViewStore {
       throw new Error(`invalid ${memberName}: ${id} `);
     }
 
-    private fromGuidRowMember(elements: IModelDb.GuidMapper, base: any, memberName: string) {
+    private fromGuidRowMember(base: any, memberName: string) {
       const id = base?.[memberName];
       if (id === undefined)
         return;
       if (typeof id === "string" && id.startsWith("^")) {
-        const elId = this.fromGuidRow(elements, rowIdFromString(id));
+        const elId = this.fromGuidRow(rowIdFromString(id));
         if (undefined !== elId) {
           base[memberName] = elId;
           return;
@@ -669,103 +679,125 @@ export namespace ViewStore {
         throw new Error(`invalid Id for ${table}: ${err.message} `);
       }
     }
-    private scriptToGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+    private scriptToGuids(script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
-        const modelGuidRow = this.toGuidRow(elements, model.modelId);
+        const modelGuidRow = this.toGuidRow(model.modelId);
         if (modelGuidRow) {
           model.modelId = guidRowToString(modelGuidRow);
           scriptProps.push(model);
           for (const batch of model.elementTimelines)
-            batch.elementIds = this.toCompressedGuidRows(elements, batch.elementIds);
+            batch.elementIds = this.toCompressedGuidRows(batch.elementIds);
         }
       }
       return scriptProps;
     }
-    private scriptFromGuids(elements: IModelDb.GuidMapper, script: RenderSchedule.ScriptProps, omitElementIds: boolean): RenderSchedule.ScriptProps {
+    private scriptFromGuids(script: RenderSchedule.ScriptProps, omitElementIds: boolean): RenderSchedule.ScriptProps {
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
-        const modelId = this.fromGuidRow(elements, rowIdFromString(model.modelId));
+        const modelId = this.fromGuidRow(rowIdFromString(model.modelId));
         if (modelId) {
           model.modelId = modelId;
           scriptProps.push(model);
           for (const batch of model.elementTimelines) {
             if (undefined !== batch.elementIds)
-              batch.elementIds = omitElementIds ? "" : this.fromCompressedGuidRows(elements, batch.elementIds as CompressedId64Set);
+              batch.elementIds = omitElementIds ? "" : this.fromCompressedGuidRows(batch.elementIds as CompressedId64Set);
           }
         }
       }
       return scriptProps;
     }
 
-    public async addViewGroup(args: { name: string, parentId?: RowId, props: ViewGroupProps, owner?: string }): Promise<RowString> {
-      const json = JSON.stringify(args.props);
-      return tableRowIdToString(this.addViewGroupRow({ name: args.name, parentId: args.parentId, json, owner: args.owner }));
+    public async addViewGroup(args: { name: string, parentId?: RowString, owner?: string }): Promise<RowString> {
+      const parentId = args.parentId ? this.findViewGroup(args.parentId) : defaultViewGroupId;
+      const json = JSON.stringify({});
+      return tableRowIdToString(this.addViewGroupRow({ name: args.name, parentId, json, owner: args.owner }));
+    }
+    public async getViewGroups(args: { parent?: ViewGroupSpec }) {
+      const parentIdRow = args.parent ? this.findViewGroup(args.parent) : defaultViewGroupId;
+      const groups: { id: string, name: string }[] = [];
+      this.withSqliteStatement(`SELECT Id,Name FROM ${tableName.viewGroups} WHERE ParentId=?`, (stmt) => {
+        stmt.bindInteger(1, parentIdRow);
+        while (stmt.nextRow()) {
+          const id = stmt.getValueInteger(0);
+          if (id !== defaultViewGroupId) // don't include root group
+            groups.push({ id: tableRowIdToString(id), name: stmt.getValueString(1) });
+        }
+      });
+      return groups;
     }
 
-    public async addCategorySelector(args: { elements: IModelDb.GuidMapper, name?: string, categories: Id64Array, owner?: string }): Promise<RowString> {
+    public async addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<RowString> {
       if (args.categories.length === 0)
         throw new Error("Must specify at least one category");
 
-      const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.elements, args.categories) });
+      const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.categories) });
       return tableRowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadCategorySelector(args: { elements: IModelDb.GuidMapper, id: RowString }): CategorySelectorProps {
+    public loadCategorySelectorSync(args: { id: RowString }): CategorySelectorProps {
       const row = this.getCategorySelector(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
       const props = blankElementProps({}, "BisCore:CategorySelector", args.id, row.name) as CategorySelectorProps;
       const json = JSON.parse(row.json);
-      props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.elements, json.categories));
+      props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(json.categories));
       return props;
     }
+    public async loadCategorySelector(args: { id: RowString }): Promise<CategorySelectorProps> {
+      return this.loadCategorySelectorSync(args);
+    }
 
-    public async addModelSelector(args: { elements: IModelDb.GuidMapper, name?: string, models: Id64Array, owner?: string }): Promise<RowString> {
+    public async addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<RowString> {
       if (args.models.length === 0)
         throw new Error("Must specify at least one model");
 
-      const json = JSON.stringify({ models: this.toCompressedGuidRows(args.elements, args.models) });
+      const json = JSON.stringify({ models: this.toCompressedGuidRows(args.models) });
       return tableRowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadModelSelector(args: { elements: IModelDb.GuidMapper, id: RowString }): ModelSelectorProps {
+    public loadModelSelectorSync(args: { id: RowString }): ModelSelectorProps {
       const row = this.getModelSelector(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
       const props = blankElementProps({}, "BisCore:ModelSelector", args.id, row?.name) as ModelSelectorProps;
       const json = JSON.parse(row.json);
-      props.models = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(args.elements, json.models));
+      props.models = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(json.models));
       return props;
     }
-
-    public async addTimeline(args: { elements: IModelDb.GuidMapper, name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
+    public async loadModelSelector(args: { id: RowString }): Promise<ModelSelectorProps> {
+      return this.loadModelSelectorSync(args);
+    }
+    public async addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
       const timeline = JSON.parse(JSON.stringify(args.timeline));
       if (!Array.isArray(timeline))
         throw new Error("Timeline has no entries");
 
-      const json = JSON.stringify(this.scriptToGuids(args.elements, timeline));
+      const json = JSON.stringify(this.scriptToGuids(timeline));
       return tableRowIdToString(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
     }
 
-    public loadTimeline(args: { elements: IModelDb.GuidMapper, id: RowString }): RenderTimelineProps {
+    public loadTimelineSync(args: { id: RowString }): RenderTimelineProps {
       const row = this.getTimelineRow(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("Timeline not found");
 
       const props = blankElementProps({}, "BisCore:RenderTimeline", args.id, row?.name) as RenderTimelineProps;
-      props.script = JSON.stringify(this.scriptFromGuids(args.elements, JSON.parse(row.json), false));
+      props.script = JSON.stringify(this.scriptFromGuids(JSON.parse(row.json), false));
       return props;
+    }
+    public async loadTimeline(args: { id: RowString }): Promise<RenderTimelineProps> {
+      return this.loadTimelineSync(args);
     }
 
     /** add a DisplayStyleProps to the ViewStore */
-    public async addDisplayStyle(args: { elements: IModelDb.GuidMapper, name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
+    public async addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
       const settings = JSON.parse(JSON.stringify(args.settings)) as DisplayStyleSettingsProps; // make a copy
       const name = args.name;
       if (settings.subCategoryOvr) {
         const outOvr: DisplayStyleSubCategoryProps[] = [];
         for (const ovr of settings.subCategoryOvr) {
-          const subCategoryGuidRow = this.toGuidRow(args.elements, ovr.subCategory);
+          const subCategoryGuidRow = this.toGuidRow(ovr.subCategory);
           if (subCategoryGuidRow) {
             ovr.subCategory = guidRowToString(subCategoryGuidRow);
             outOvr.push(ovr);
@@ -775,13 +807,13 @@ export namespace ViewStore {
       }
 
       if (settings.excludedElements)
-        settings.excludedElements = this.toCompressedGuidRows(args.elements, settings.excludedElements);
+        settings.excludedElements = this.toCompressedGuidRows(settings.excludedElements);
 
       const settings3d = settings as DisplayStyle3dSettingsProps;
       if (settings3d.planProjections) {
         const planProjections = {} as { [modelId: string]: PlanProjectionSettingsProps };
         for (const entry of Object.entries(settings3d.planProjections)) {
-          const modelGuidRow = this.toGuidRow(args.elements, entry[0]);
+          const modelGuidRow = this.toGuidRow(entry[0]);
           if (modelGuidRow)
             planProjections[guidRowToString(modelGuidRow)] = entry[1];
         }
@@ -790,10 +822,10 @@ export namespace ViewStore {
 
       if (settings.renderTimeline) {
         if (!isViewStoreId(settings.renderTimeline))
-          this.toGuidRowMember(args.elements, settings, "renderTimeline");
+          this.toGuidRowMember(settings, "renderTimeline");
         delete settings.scheduleScript;
       } else if (settings.scheduleScript) {
-        const scriptProps = this.scriptToGuids(args.elements, settings.scheduleScript);
+        const scriptProps = this.scriptToGuids(settings.scheduleScript);
         if (scriptProps.length > 0)
           settings.scheduleScript = scriptProps;
       }
@@ -801,7 +833,7 @@ export namespace ViewStore {
       return tableRowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
     }
 
-    public loadDisplayStyle(args: { elements: IModelDb.GuidMapper, id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
+    public loadDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
       const row = this.getDisplayStyle(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("DisplayStyle not found");
@@ -813,7 +845,7 @@ export namespace ViewStore {
       if (settings.subCategoryOvr) {
         const subCatOvr: DisplayStyleSubCategoryProps[] = [];
         for (const ovr of settings.subCategoryOvr) {
-          const id = this.fromGuidRowString(args.elements, ovr.subCategory);
+          const id = this.fromGuidRowString(ovr.subCategory);
           if (undefined !== id) {
             ovr.subCategory = id;
             subCatOvr.push(ovr);
@@ -823,13 +855,13 @@ export namespace ViewStore {
       }
 
       if (settings.excludedElements)
-        settings.excludedElements = this.fromCompressedGuidRows(args.elements, settings.excludedElements as CompressedId64Set);
+        settings.excludedElements = this.fromCompressedGuidRows(settings.excludedElements as CompressedId64Set);
 
       const settings3d = settings;
       if (settings3d.planProjections) {
         const planProjections = {} as { [modelId: string]: PlanProjectionSettingsProps };
         for (const entry of Object.entries(settings3d.planProjections)) {
-          const modelId = this.fromGuidRowString(args.elements, entry[0]);
+          const modelId = this.fromGuidRowString(entry[0]);
           if (undefined !== modelId)
             planProjections[modelId] = entry[1];
         }
@@ -837,19 +869,23 @@ export namespace ViewStore {
       }
 
       if (isGuidRowString(settings.renderTimeline))
-        settings.renderTimeline = this.fromGuidRowString(args.elements, settings.renderTimeline);
+        settings.renderTimeline = this.fromGuidRowString(settings.renderTimeline);
 
       if (undefined !== settings.renderTimeline) {
         delete settings.scheduleScript;
       } else if (settings.scheduleScript) {
         delete settings.renderTimeline;
-        settings.scheduleScript = this.scriptFromGuids(args.elements, settings.scheduleScript, args.opts?.omitScheduleScriptElementIds === true);
+        settings.scheduleScript = this.scriptFromGuids(settings.scheduleScript, args.opts?.omitScheduleScriptElementIds === true);
       }
 
       return props;
     }
 
-    public addViewDefinition(args: { elements: IModelDb.GuidMapper, viewDefinition: ViewDefinitionProps, group?: string, owner?: string, isPrivate?: boolean }): RowId {
+    public async loadDisplayStyle(args: { id: RowString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps> {
+      return this.loadDisplayStyleSync(args);
+    }
+
+    public addViewDefinition(args: { viewDefinition: ViewDefinitionProps, group?: ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
       const viewDef = JSON.parse(JSON.stringify(args.viewDefinition)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -860,8 +896,8 @@ export namespace ViewStore {
       if ((viewDef as SpatialViewDefinitionProps).modelSelectorId)
         this.verifyRowId(tableName.modelSelectors, (viewDef as SpatialViewDefinitionProps).modelSelectorId);
 
-      this.toGuidRowMember(args.elements, viewDef, "baseModelId");
-      this.toGuidRowMember(args.elements, viewDef.jsonProperties?.viewDetails, "acs");
+      this.toGuidRowMember(viewDef, "baseModelId");
+      this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const maybeRow = (rowString: RowString) => rowString ? rowIdFromString(rowString) : undefined;
 
@@ -878,15 +914,18 @@ export namespace ViewStore {
       });
     }
 
-    public loadViewDefinition(args: { elements: IModelDb.GuidMapper, id: RowString }): ViewDefinitionProps {
+    public loadViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps {
       const row = this.getViewRow(rowIdFromString(args.id));
       if (undefined === row)
         throw new Error("View not found");
 
       const props = blankElementProps(JSON.parse(row.json), row.className, args.id, row.name) as ViewDefinitionProps;
-      this.fromGuidRowMember(args.elements, props, "baseModelId");
-      this.fromGuidRowMember(args.elements, props.jsonProperties?.viewDetails, "acs");
+      this.fromGuidRowMember(props, "baseModelId");
+      this.fromGuidRowMember(props.jsonProperties?.viewDetails, "acs");
       return props;
+    }
+    public async loadViewDefinition(args: { id: RowString }): Promise<ViewDefinitionProps> {
+      return this.loadViewDefinitionSync(args);
     }
 
     public async addOrReplaceThumbnail(args: { viewId: ViewStoreIdString, thumbnail: ThumbnailProps, owner?: string }) {
@@ -894,14 +933,16 @@ export namespace ViewStore {
       if (viewRow === undefined)
         throw new Error("View not found");
       const format: ThumbnailFormatProps = { format: args.thumbnail.format, height: args.thumbnail.height, width: args.thumbnail.width };
-      return this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: rowIdFromString(args.viewId), format, owner: args.owner });
+      return tableRowIdToString(this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: rowIdFromString(args.viewId), format, owner: args.owner }));
     }
 
-    public loadThumbnail(viewId: RowString): ThumbnailProps | undefined {
-      const row = this.getThumbnailRow(rowIdFromString(viewId));
+    public loadThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined {
+      const row = this.getThumbnailRow(rowIdFromString(args.viewId));
       return row ? { image: row.data, format: row.format.format, height: row.format.height, width: row.format.width } : undefined;
     }
-
+    public async loadThumbnail(args: { viewId: RowString }): Promise<ThumbnailProps | undefined> {
+      return this.loadThumbnailSync(args);
+    }
     // find a group with the specified name using path syntax (e.g., "group1/design/issues"). If the group does not exist, return 0.
     // If groupName starts with "@", then it is considered to be a group id and this function verifies that it exists and throws if it does not.
     public findViewGroup(groupName: ViewGroupSpec): RowId {
@@ -944,8 +985,8 @@ export namespace ViewStore {
       return id ? this.getViewRow(id) : undefined;
     }
 
-    public getDefaultViewId(group?: ViewGroupSpec): RowString | undefined {
-      const groupId = group ? this.findViewGroup(group) : defaultViewGroupId;
+    public getDefaultViewIdSync(args: { group?: ViewGroupSpec }): RowString | undefined {
+      const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const groupRow = groupId ? this.getViewGroup(groupId) : undefined;
       if (groupRow === undefined)
         return undefined;
@@ -954,6 +995,9 @@ export namespace ViewStore {
         return undefined;
       const viewRow = this.getViewRow(rowIdFromString(props.defaultViewId));
       return viewRow ? props.defaultViewId : undefined;
+    }
+    public async getDefaultViewId(args: { group?: ViewGroupSpec }): Promise<RowString | undefined> {
+      return this.getDefaultViewIdSync(args);
     }
 
     public async changeDefaultViewId(args: { defaultView: ViewStoreIdString, group?: ViewGroupSpec }) {
@@ -1058,20 +1102,20 @@ export namespace ViewStore {
         this.deleteViewTag({ viewId, tagId });
     }
 
-    public async addNewView(args: AddNewViewArgs & { elements: IModelDb.GuidMapper }): Promise<RowString> {
-      const { owner, elements } = args;
+    public async addNewView(args: AddNewViewArgs): Promise<RowString> {
+      const owner = args.owner;
       if (args.viewDefinition.categorySelectorId) {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
       } else {
         if (args.categorySelectorProps === undefined)
           throw new Error("Must supply categorySelector");
-        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ elements, categories: args.categorySelectorProps.categories, owner });
+        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ categories: args.categorySelectorProps.categories, owner });
       }
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
       if (spatialDef.modelSelectorId) {
         this.verifyRowId(tableName.modelSelectors, spatialDef.modelSelectorId);
       } else if (args.modelSelectorProps) {
-        spatialDef.modelSelectorId = await this.addModelSelector({ elements, models: args.modelSelectorProps.models, owner });
+        spatialDef.modelSelectorId = await this.addModelSelector({ models: args.modelSelectorProps.models, owner });
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
         throw new Error("Must supply modelSelector for Spatial views");
       }
@@ -1080,7 +1124,7 @@ export namespace ViewStore {
       } else {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
           throw new Error("Must supply valid displayStyle");
-        spatialDef.displayStyleId = await this.addDisplayStyle({ elements, className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
+        spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
       }
       const viewId = tableRowIdToString(this.addViewDefinition(args));
       if (args.tags)
@@ -1095,9 +1139,16 @@ export namespace ViewStore {
       if (viewRow === undefined)
         throw new Error("View not found");
 
-      this.deleteView(rowId);
+      this.deleteViewRow(rowId);
+      const hasName = (table: string, nameRow: RowId) => {
+        const name = this.withSqliteStatement(`SELECT name FROM ${table} WHERE Id=?`, (stmt) => {
+          stmt.bindInteger(1, nameRow);
+          return stmt.nextRow() ? stmt.getValueString(0) : undefined;
+        });
+        return name !== undefined && name?.length > 0;
+      };
       const tryDelete = (table: string, id?: RowId) => {
-        if (id !== undefined) {
+        if (id !== undefined && !hasName(table, id)) { // only delete if the row has no name
           try {
             this.deleteFromTable(table, id);
           } catch (err) {
@@ -1115,9 +1166,21 @@ export namespace ViewStore {
 
   const viewDbName = "ViewDb" as const;
 
+  export interface ReadViewStoreMethods extends ReadViewStoreRpc {
+    findViewsByClass(className: string[]): RowId[];
+    getDefaultViewIdSync(args: { group?: ViewGroupSpec }): RowString | undefined;
+    getViewByName(arg: { name: ViewName, groupId?: RowId }): ViewRow | undefined;
+    loadCategorySelectorSync(args: { id: RowString }): CategorySelectorProps;
+    loadDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps;
+    loadModelSelectorSync(args: { id: RowString }): ModelSelectorProps;
+    loadThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
+    loadViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
+    queryViewList(queryParams: ViewQueryParams): ViewListEntry[];
+  }
+
   /** Provides access to a cloud-based `ViewDb` */
-  export class CloudAccess extends CloudSqlite.DbAccess<ViewDb> {
-    public constructor(props: CloudSqlite.ContainerAccessProps) {
+  export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadViewStoreMethods, WriteViewStoreRpc> {
+    public constructor(props: CloudSqlite.ContainerAccessProps & { elements?: IModelDb.GuidMapper }) {
       super({ dbType: ViewDb, props, dbName: viewDbName });
     }
 

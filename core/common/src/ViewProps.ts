@@ -9,12 +9,14 @@
 import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
-import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
+import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSettings";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ModelProps } from "./ModelProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
+import { ThumbnailProps } from "./Thumbnail";
+import { RenderSchedule } from "./RenderSchedule";
 
 /** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore. Will be a base-36 number with a leading "@". */
 export type ViewStoreIdString = string;
@@ -273,4 +275,37 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   pitch?: AngleProps;
   /** Roll angle */
   roll?: AngleProps;
+}
+
+export const viewStoreRpcVersion = {
+  write: "4.0.0",
+  read: "4.0.0",
+} as const;
+
+export interface ReadViewStoreRpc {
+  findViewsByOwner(args: { owner: string }): Promise<ViewStoreIdString[]>;
+  getDefaultViewId(args: { group?: ViewGroupSpec }): Promise<ViewStoreIdString | undefined>;
+  getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: ViewStoreIdString, name: string }[]>;
+  loadCategorySelector(args: { id: ViewStoreIdString }): Promise<CategorySelectorProps>;
+  loadDisplayStyle(args: { id: ViewStoreIdString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
+  loadModelSelector(args: { id: ViewStoreIdString }): Promise<ModelSelectorProps>;
+  loadThumbnail(args: { viewId: ViewStoreIdString }): Promise<ThumbnailProps | undefined>;
+  loadTimeline(args: { id: ViewStoreIdString }): Promise<RenderTimelineProps>;
+  loadViewDefinition(args: { id: ViewStoreIdString }): Promise<ViewDefinitionProps>;
+}
+
+export interface WriteViewStoreRpc {
+  addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<ViewStoreIdString>;
+  addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<ViewStoreIdString>;
+  addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<ViewStoreIdString>;
+  addNewView(args: AddNewViewArgs): Promise<ViewStoreIdString>;
+  addOrReplaceThumbnail(args: { viewId: ViewStoreIdString, thumbnail: ThumbnailProps, owner?: string }): Promise<ViewStoreIdString>;
+  addTagsToView(args: { viewId: ViewStoreIdString, tags: string[], owner?: string }): Promise<void>;
+  addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<ViewStoreIdString>;
+  addViewGroup(args: { name: string, parentId?: ViewStoreIdString, owner?: string }): Promise<ViewStoreIdString>;
+  changeDefaultViewId(args: { defaultView: ViewStoreIdString, group?: ViewGroupSpec }): Promise<void>;
+  deleteThumbnail(args: { id: ViewStoreIdString }): Promise<void>;
+  deleteViewGroup(args: { name: ViewGroupSpec }): Promise<void>;
+  removeTagFromView(args: { viewId: ViewStoreIdString, tag: string }): Promise<void>;
+  removeView(viewId: ViewStoreIdString): Promise<void>;
 }

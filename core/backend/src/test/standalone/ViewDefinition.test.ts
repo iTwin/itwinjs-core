@@ -32,7 +32,7 @@ function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
 
 let vs1: ViewStore.ViewDb;
 
-describe("ViewDefinition", () => {
+describe.only("ViewDefinition", () => {
   let iModel: StandaloneDb;
   before(() => {
     iModel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("ViewDefinition", "ViewDefinition.bim"), {
@@ -45,7 +45,7 @@ describe("ViewDefinition", () => {
 
     const dbName = join(__dirname, "output", "viewDefTest.db");
     ViewStore.ViewDb.createNewDb(dbName);
-    vs1 = new ViewStore.ViewDb();
+    vs1 = new ViewStore.ViewDb({ elements: iModel.elements });
     vs1.openDb(dbName, OpenMode.ReadWrite);
   });
 
@@ -79,20 +79,19 @@ describe("ViewDefinition", () => {
       camera: new Camera(),
     };
 
-    const guidMap = iModel.elements;
     const ms1 = iModel.elements.getElement<ModelSelector>(modelSelectorId);
-    const ms1Row = await vs1.addModelSelector({ elements: guidMap, name: ms1.code.value, models: ms1.models });
+    const ms1Row = await vs1.addModelSelector({ name: ms1.code.value, models: ms1.models });
     expect(ms1Row).equal("@1");
-    const ms1out = vs1.loadModelSelector({ elements: guidMap, id: ms1Row });
+    const ms1out = vs1.loadModelSelectorSync({ id: ms1Row });
     expect(ms1out.classFullName).equal("BisCore:ModelSelector");
     expect(ms1out.models.length).equal(2);
     expect(ms1out.models[0]).equal(modelId);
     expect(ms1out.models[1]).equal(modelId2);
 
     const cs1 = iModel.elements.getElement<CategorySelector>(categorySelectorId);
-    const cs1Row = await vs1.addCategorySelector({ elements: guidMap, name: cs1.code.value, categories: cs1.categories });
+    const cs1Row = await vs1.addCategorySelector({ categories: cs1.categories });
     expect(cs1Row).equal("@1");
-    const cs1out = vs1.loadCategorySelector({ elements: guidMap, id: cs1Row });
+    const cs1out = vs1.loadCategorySelectorSync({ id: cs1Row });
     expect(cs1out.classFullName).equal("BisCore:CategorySelector");
     expect(cs1out.categories.length).equal(1);
     expect(cs1out.categories[0]).equal(spatialCategoryId);
@@ -147,16 +146,16 @@ describe("ViewDefinition", () => {
       ids1.push(Id64.fromLocalAndBriefcaseIds(i, 0));
     }
 
-    const ds1Row = await vs1.addDisplayStyle({ elements: id1Mapper, name: "default", className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
+    vs1.elements = id1Mapper;
+    const ds1Row = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
     expect(ds1Row).equal("@1");
-    const ds1out = vs1.loadDisplayStyle({ elements: id1Mapper, id: ds1Row });
+    const ds1out = vs1.loadDisplayStyleSync({ id: ds1Row });
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");
-    expect(ds1out.code.value).equal("default");
     expect(ds1out.jsonProperties?.styles).deep.equal(JSON.parse(JSON.stringify(styles)));
 
-    const tl1Row = await vs1.addTimeline({ elements: id1Mapper, name: "TestRenderTimeline", timeline: styles.scheduleScript, owner: "owner2" });
+    const tl1Row = await vs1.addTimeline({ name: "TestRenderTimeline", timeline: styles.scheduleScript, owner: "owner2" });
     expect(tl1Row).equal("@1");
-    const tl1out = vs1.loadTimeline({ elements: id1Mapper, id: tl1Row });
+    const tl1out = vs1.loadTimelineSync({ id: tl1Row });
     expect(tl1out.classFullName).equal("BisCore:RenderTimeline");
     expect(tl1out.id).equal(tl1Row);
     expect(tl1out.code.value).equal("TestRenderTimeline");
@@ -170,9 +169,9 @@ describe("ViewDefinition", () => {
     };
 
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
-    const v1 = await vs1.addNewView({ elements: id1Mapper, viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
+    const v1 = await vs1.addNewView({ viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
     expect(v1).equal("@1");
-    const viewDefOut = vs1.loadViewDefinition({ elements: id1Mapper, id: v1 }) as SpatialViewDefinitionProps;
+    const viewDefOut = vs1.loadViewDefinitionSync({ id: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");
     expect(viewDefOut.classFullName).equal("BisCore:SpatialViewDefinition");
     expect(viewDefOut.modelSelectorId).equal(ms1Row);
@@ -185,7 +184,7 @@ describe("ViewDefinition", () => {
     expect(JSON.stringify(viewDefOut.camera)).equal(JSON.stringify(basicProps.camera));
 
     viewDefProps.code.value = "TestViewDefinition2";
-    const v2 = await vs1.addNewView({ elements: id1Mapper, viewDefinition: viewDefProps, tags: ["big", "done"] });
+    const v2 = await vs1.addNewView({ viewDefinition: viewDefProps, tags: ["big", "done"] });
     await vs1.addTagsToView({ viewId: v2, tags: ["problems", "finished", "big"] });
 
     let tags = vs1.getTagsForView(ViewStore.rowIdFromString(v2));
@@ -199,17 +198,17 @@ describe("ViewDefinition", () => {
 
     // v1 and v2 share modelselector, categoryselector, and displaystyle so when v2 is deleted they should not be deleted
     await vs1.removeView(v2);
-    expect(() => vs1.loadViewDefinition({ elements: id1Mapper, id: v2 })).throws("View not found");
+    expect(() => vs1.loadViewDefinitionSync({ id: v2 })).throws("View not found");
     expect(vs1.getDisplayStyle(1)).not.undefined;
     expect(vs1.getModelSelector(1)).not.undefined;
     expect(vs1.getCategorySelector(1)).not.undefined;
 
-    // the modelselector, categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
+    // the categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
     await vs1.removeView(v1);
-    expect(() => vs1.loadViewDefinition({ elements: id1Mapper, id: v1 })).throws("View not found");
+    expect(() => vs1.loadViewDefinitionSync({ id: v1 })).throws("View not found");
     expect(vs1.getDisplayStyle(1)).undefined;
-    expect(vs1.getModelSelector(1)).undefined;
     expect(vs1.getCategorySelector(1)).undefined;
+    expect(vs1.getModelSelector(1)).not.undefined; // modelselector has a name so it should not be deleted
 
     // attempt to create a ViewDefinition element with invalid properties
     assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid");

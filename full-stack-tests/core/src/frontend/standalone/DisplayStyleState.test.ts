@@ -13,10 +13,10 @@ import {
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-describe("DisplayStyle", () => {
+describe.only("DisplayStyle", () => {
   let imodel: IModelConnection;
   const styleProps: DisplayStyle3dProps = {
-    classFullName: "bis.DisplayStyle3d",
+    classFullName: "BisCore:DisplayStyle3d",
     model: "0",
     code: {
       spec: "0x1",
@@ -45,7 +45,7 @@ describe("DisplayStyle", () => {
     // ###TODO More substantial tests (change style properties)
   });
 
-  it("should preserve sun direction", () => {
+  it("should preserve sun direction", async () => {
     const style1 = new DisplayStyle3dState(styleProps, imodel);
     expect(style1.sunDirection).not.to.be.undefined;
 
@@ -55,6 +55,11 @@ describe("DisplayStyle", () => {
     const style2 = style1.clone(imodel);
     expect(style2.sunDirection).not.to.be.undefined;
     expect(style2.sunDirection.isAlmostEqual(style1.sunDirection)).to.be.true;
+
+    const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
+    expect(id).equal("@1");
+    const style3 = await imodel.views.viewsStoreReader.loadDisplayStyle({ id });
+    expect(style3.jsonProperties?.styles).deep.equal(style1.settings.toJSON());
   });
 
   it("should read sun direction from json", () => {
@@ -284,6 +289,9 @@ describe("DisplayStyle", () => {
 
     // Also, while we have one constructed, test creation with reality model and script.
     const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
+    const s2 = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "newStyle", className: newStyle.classFullName, settings: newStyle.settings.toJSON() });
+    expect(s2).not.to.be.undefined;
+
     await newStyle.load();
     expect(newStyle.equals(style)).to.be.true;
     compareRealityModels(newStyle, style.settings.toJSON());

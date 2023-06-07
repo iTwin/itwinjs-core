@@ -7,22 +7,24 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
-  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  ElementMeshRequestProps, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
+  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, ReadViewStoreRpc, RpcManager, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
+  ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps, viewStoreRpcVersion, WriteViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
-import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
@@ -1048,6 +1050,25 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
+    private _writeViewStoreProxy?: PickAsyncMethods<WriteViewStoreRpc>;
+    private _readViewStoreProxy?: PickAsyncMethods<ReadViewStoreRpc>;
+
+    public get viewStoreWriter() {
+      return this._writeViewStoreProxy ??= new Proxy(this, {
+        get(views, methodName: string) {
+          const iModel = views._iModel;
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).writeViewStore(iModel.getRpcProps(), viewStoreRpcVersion.write, methodName, ...args);
+        },
+      }) as unknown as PickAsyncMethods<WriteViewStoreRpc>;
+    }
+    public get viewsStoreReader() {
+      return this._readViewStoreProxy ??= new Proxy(this, {
+        get(views, methodName: string) {
+          const iModel = views._iModel;
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).readViewStore(iModel.getRpcProps(), viewStoreRpcVersion.read, methodName, ...args);
+        },
+      }) as unknown as PickAsyncMethods<ReadViewStoreRpc>;
+    }
 
     /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
@@ -1091,7 +1112,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Query the Id of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection
      * within a view selection dialog, or similar purposes.
-     * @returns the ID of the default view, or an invalid ID if no default view is defined.
+     * @returns the Id of the default view, or an invalid ID if no default view is defined.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
@@ -1129,7 +1150,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
      * @throws "No content" error if invalid thumbnail.
-     * @deprecated in 3.x with no replacement; thumbnails are rarely added to the iModel.
+     * @deprecated in 3.x use viewstore.
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation
