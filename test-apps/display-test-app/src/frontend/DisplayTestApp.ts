@@ -130,6 +130,9 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   if (undefined !== configuration.gpuMemoryLimit)
     tileAdminProps.gpuMemoryLimits = configuration.gpuMemoryLimit as GpuMemoryLimit;
 
+  if (true === configuration.noImdlWorker)
+    tileAdminProps.decodeImdlInWorker = false;
+
   tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
   tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;

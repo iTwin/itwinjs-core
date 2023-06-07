@@ -763,7 +763,7 @@ export class ViewAttributes {
     slider.div.style.textAlign = "left";
 
     const smoothEdgesCb = this.addCheckbox("Smooth Polyface Edges", (enabled: boolean) => {
-      IModelApp.tileAdmin.generateAllPolyfaceEdges = enabled;
+      IModelApp.tileAdmin.edgeOptions.smooth = enabled;
       this._vp.invalidateScene();
       this.sync();
     }, edgeDisplayDiv);
@@ -803,7 +803,7 @@ export class ViewAttributes {
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
-      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.generateAllPolyfaceEdges;
+      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.edgeOptions.smooth;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");

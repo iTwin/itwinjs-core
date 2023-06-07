@@ -231,20 +231,54 @@ export interface ImdlIndexedEdges {
   readonly silhouettePadding: number;
 }
 
+/** As part of [[ImdlCompactEdges]], describes the visibility of an edge of a triangle.
+ * @internal
+ */
+export enum ImdlEdgeVisibility {
+  /** The edge is never visible. */
+  Hidden,
+  /** The edge is shared between two adjacent triangles. It is visible only if one triangle is facing away from the viewer and the other is facing toward the viewer. */
+  Silhouette,
+  /** The edge is always visible. */
+  Visible,
+}
+
+/** A more compact representation of [[ImdlIndexedEdges]]. For each vertex index in the mesh, it encodes 2 bits indicating the visibility of the edge between
+ * that vertex and the next vertex in the triangle. A second buffer holds oct-encoded normal pairs such that the pair at index N corresponds to the Nth edge
+ * with [[ImdlEdgeVisibility.Silhouette]] in the visibility buffer.
+ * This information is used to construct the edge table that would otherwise be described more verbosely by [[ImdlIndexedEdges]].
+ * @see [[CompactEdgeParams]].
+ * @internal
+ */
+export interface ImdlCompactEdges {
+  /** Id of the [[ImdlBufferView]] containing the [[ImdlEdgeVisibility]] of each edge of each triangle in the mesh.
+   * The order of the edges in the buffer is the same as the order of the corresponding [[ImdlSurface.indices]].
+   * 2 bits are allocated per edge.
+   */
+  readonly visibility: string;
+  /** Id of the [[ImdlBufferView]] containing the [OctEncodedNormalPair]($common)s of each silhouette edge in [[visibility]].
+   * Each pair is represented as a 32-bit unsigned integer - `normal1 | (normal2 << 16)`.
+   * If no silhouettes are present, this property will be `undefined`.
+   */
+  readonly normalPairs?: string;
+  /** The number of edges with [[ImdlVisibility.Visible]].
+   * @note The number of edges with [[ImdlVisibility.Silhouette]] is implicit in the number of [[normalPairs]].
+   */
+  readonly numVisible: number;
+}
+
 /** Describes the edges of an [[ImdlMeshPrimitive]].
  * @internal
  */
 export interface ImdlMeshEdges {
-  /** @see [[ImdlSegmentEdges]]. */
   readonly segments?: ImdlSegmentEdges;
-  /** @see [[ImdlSilhouetteEdges]]. */
   readonly silhouettes?: ImdlSilhouetteEdges;
   /** Line strings with additional joint triangles inserted to produce wide edges with rounded corners.
    * Typically only produced for 2d views.
    */
-  readonly polylines?: ImdlPolyline;
-  /** @see [[ImdlIndexedEdges]]. */
   readonly indexed?: ImdlIndexedEdges;
+  readonly compact?: ImdlCompactEdges;
+  readonly polylines?: ImdlPolyline;
 }
 
 /** Describes a collection of line strings with additional joint triangles inserted to produce wide line strings with rounded corners.
