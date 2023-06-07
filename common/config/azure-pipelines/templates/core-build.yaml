@@ -20,6 +20,9 @@ parameters:
   - name: runRushAudit
     type: boolean
     default: true
+  - name: prVal
+    type: boolean
+    default: false
 
 steps:
   - task: NodeTool@0
@@ -75,6 +78,11 @@ steps:
     env:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+
+  - script: node common/scripts/install-run-rush.js extract-api
+    displayName: rush extract-api
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: eq( ${{ parameters.prVal }})
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
