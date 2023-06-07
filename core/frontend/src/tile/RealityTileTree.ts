@@ -134,6 +134,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootTile: RealityTileParams;
   readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
+  readonly useContentBoundingVolumes?: boolean;
 }
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
@@ -341,7 +342,7 @@ export class RealityTileTree extends TileTree {
     const reprojectChildren = new Array<ChildReprojection>();
     for (const child of children) {
       const realityChild = child as RealityTile;
-      const childRange = rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
+      const childRange = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
       const dbCenter = childRange.center;
       const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
       const dbPoints = [dbCenter, dbCenter.plusXYZ(1), dbCenter.plusXYZ(0, 1), dbCenter.plusXYZ(0, 0, 1)];

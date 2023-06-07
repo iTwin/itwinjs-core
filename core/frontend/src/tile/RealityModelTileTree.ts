@@ -250,6 +250,7 @@ class RealityModelTileTreeProps {
   public rdSource: RealityDataSource;
   public yAxisUp = false;
   public root: any;
+  public useContentBoundingVolumes = false;
 
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
     this.tilesetJson = root;
@@ -258,6 +259,9 @@ class RealityModelTileTreeProps {
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
+    if (json.root.SMPublisherInfo) {
+      this.useContentBoundingVolumes = true;
+    }
   }
 }
 
@@ -273,7 +277,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   public get yAxisUp() { return this.loader.tree.yAxisUp; }
   public get priority() { return this.loader.priority; }
 
-  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined) {
+  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined, public readonly useContentBoundingVolumes: boolean | undefined) {
     this.loader = loader;
     this.id = tileTreeId;
     this.modelId = modelId;
@@ -285,6 +289,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
       // If not specified explicitly, additiveRefinement is inherited from parent tile.
       additiveRefinement: undefined !== refine ? "ADD" === refine : undefined,
       usesGeometricError: loader.tree.rdSource.usesGeometricError,
+      useContentBoundingVolumes,
     });
   }
 }
@@ -311,6 +316,7 @@ class RealityModelTileProps implements RealityTileParams {
     transformToRoot?: Transform;
     additiveRefinement?: boolean;
     usesGeometricError?: boolean;
+    useContentBoundingVolumes?: boolean;
   }) {
     this.contentId = args.id;
     this.parent = args.parent;
@@ -330,9 +336,17 @@ class RealityModelTileProps implements RealityTileParams {
 
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     const hasContents = undefined !== getUrl(json.content);
-    if (hasContents)
-      this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
-    else {
+    if (hasContents) {
+      const contentBoundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
+      if (undefined !== contentBoundingVolume) {
+        this.contentRange = contentBoundingVolume.range;
+        if (true === args.useContentBoundingVolumes) {
+          this.range = contentBoundingVolume.range;
+          this.rangeCorners = contentBoundingVolume.corners;
+          this.region = contentBoundingVolume.region;
+        }
+      }
+    } else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
       // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world building set.
       if (this.additiveRefinement || args.parent?.additiveRefinement)
@@ -476,6 +490,7 @@ class RealityModelTileLoader extends RealityTileLoader {
             // If not specified explicitly, additiveRefinement is inherited from parent tile.
             additiveRefinement: undefined !== refine ? refine === "ADD" : undefined,
             usesGeometricError: this.tree.rdSource.usesGeometricError,
+            useContentBoundingVolumes: this.tree.useContentBoundingVolumes,
           }));
         }
       }
@@ -711,7 +726,7 @@ export namespace RealityModelTileTree {
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
       const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), opts);
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
-      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
+      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, props.useContentBoundingVolumes);
       return new RealityModelTileTree(params);
     }
     return undefined;
