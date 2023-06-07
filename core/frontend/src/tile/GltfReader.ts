@@ -17,28 +17,28 @@ import {
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
-import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
-import { TextureImageSource } from "../render/RenderTexture";
-import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
+import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
+import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
+import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
+import { TextureImageSource } from "../common/render/TextureParams";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
-  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material,
-  traverseGltfNodes,
-} from "../gltf/GltfSchema";
+  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
+} from "../common/gltf/GltfSchema";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -135,11 +135,6 @@ class GltfBufferView {
     return GltfBufferData.create(this.data, this.type, desiredType, this.count);
   }
 }
-
-/* -----------------------------------
- * To restore the use of web workers to decode jpeg, locate and uncomment the three sections by searching for "webworker".
-  import { WorkerOperation, WebWorkerManager } from "../WebWorkerManager";
-  ------------------------------------ */
 
 /** The result of [[GltfReader.read]].
  * @internal
@@ -267,17 +262,6 @@ export class GltfMeshData {
  * @internal
  */
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
-
-/* -----------------------------------
-   This is part of the webworker option.
-
-  // input is Uint8Array, the result is an ImageBitMap.
-  class ImageDecodeWorkerOperation extends WorkerOperation {
-    constructor(imageBytes: ArrayBuffer, imageMimeType: string) {
-      super("imageBytesToImageBitmap", [imageBytes, imageMimeType], [imageBytes]);
-    }
-  }
--------------------------------------- */
 
 const emptyDict = { };
 
@@ -434,17 +418,6 @@ export abstract class GltfReader {
 
   protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: TextureImageSource }> { return this._glTF.images ?? emptyDict; }
   protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> { return this._glTF.buffers ?? emptyDict; }
-
-  /* -----------------------------------
-  private static _webWorkerManager: WebWorkerManager;
-
-  private static get webWorkerManager() {
-    if (!GltfReader._webWorkerManager) {
-      GltfReader._webWorkerManager = new WebWorkerManager("v" + BUILD_SEMVER + "/frontend-webworker.js", 4);
-    }
-    return GltfReader._webWorkerManager;
-  }
-  ------------------------------------- */
 
   /** Asynchronously deserialize the tile data and return the result. */
   public abstract read(): Promise<GltfReaderResult>;
@@ -939,15 +912,15 @@ export abstract class GltfReader {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
-        primitiveType = Mesh.PrimitiveType.Polyline;
+        primitiveType = MeshPrimitiveType.Polyline;
         break;
 
       case GltfMeshMode.Points:
-        primitiveType = Mesh.PrimitiveType.Point;
+        primitiveType = MeshPrimitiveType.Point;
         break;
 
       case GltfMeshMode.Triangles:
-        primitiveType = Mesh.PrimitiveType.Mesh;
+        primitiveType = MeshPrimitiveType.Mesh;
         break;
 
       default:
@@ -1016,7 +989,7 @@ export abstract class GltfReader {
       return undefined;
 
     switch (primitiveType) {
-      case Mesh.PrimitiveType.Mesh: {
+      case MeshPrimitiveType.Mesh: {
         if (!this.readMeshIndices(mesh, primitive))
           return undefined;
 
@@ -1037,9 +1010,9 @@ export abstract class GltfReader {
         break;
       }
 
-      case Mesh.PrimitiveType.Polyline:
-      case Mesh.PrimitiveType.Point: {
-        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", Mesh.PrimitiveType.Point === primitiveType))
+      case MeshPrimitiveType.Polyline:
+      case MeshPrimitiveType.Point: {
+        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", MeshPrimitiveType.Point === primitiveType))
           return undefined;
         break;
       }

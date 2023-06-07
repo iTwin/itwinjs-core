@@ -34,6 +34,7 @@ export interface DtaBooleanConfiguration {
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
   noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
   useFrontendTiles?: boolean; // if true, use @itwin/frontend-tiles to obtain tile trees for spatial views
+  noImdlWorker?: boolean; // if true, parse iMdl content on main thread instead of web worker (easier to debug).
 }
 
 export interface DtaStringConfiguration {
@@ -67,6 +68,7 @@ export interface DtaNumberConfiguration {
 
 export interface DtaOtherConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
+  gpuMemoryLimit?: string | number; // see GpuMemoryLimit in core-frontend for supported string values
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
@@ -155,6 +157,12 @@ export const getConfig = (): DtaConfiguration => {
   configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
   configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
   configuration.useFrontendTiles = undefined !== process.env.IMJS_USE_FRONTEND_TILES;
+  configuration.noImdlWorker = undefined !== process.env.IMJS_NO_IMDL_WORKER;
+  const gpuMemoryLimit = process.env.IMJS_GPU_MEMORY_LIMIT;
+  if (undefined !== gpuMemoryLimit) {
+    const gpuByteLimit = Number.parseInt(gpuMemoryLimit, 10);
+    configuration.gpuMemoryLimit = Number.isNaN(gpuByteLimit) ? gpuMemoryLimit : gpuByteLimit;
+  }
 
   const parseSeconds = (key: string) => {
     const env = process.env[key];

@@ -47,6 +47,7 @@ public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
+alpha;ContentFormatter
 public;ContentInstanceKeysRequestOptions
 public;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentInstancesOfSpecificClassesSpecification 
@@ -135,9 +136,6 @@ public;ElementPropertiesStructPropertyItem
 public;ElementSelectionScopeProps
 public;EnumerationChoice
 public;EnumerationInfo
-alpha;ExpandedNodeUpdateRecord
-alpha;ExpandedNodeUpdateRecord
-alpha;ExpandedNodeUpdateRecordJSON
 public;ExtendedDataRule 
 public;Field
 internal;FIELD_NAMES_SEPARATOR = "$"
@@ -174,12 +172,7 @@ beta;HierarchyLevelJSON
 deprecated;HierarchyLevelJSON
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
-alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[]
-alpha;HierarchyUpdateInfo
-alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[]
-alpha;HierarchyUpdateRecord
-alpha;HierarchyUpdateRecord
-alpha;HierarchyUpdateRecordJSON
+alpha;HierarchyUpdateInfo = typeof UPDATE_FULL
 public;IContentVisitor
 public;Id64RulesetVariable 
 public;Id64RulesetVariableJSON 
@@ -230,6 +223,7 @@ public;Keys = ReadonlyArray
 public;KeySet
 public;KeySetJSON
 public;KindOfQuantityInfo
+alpha;KoqPropertyValueFormatter
 public;LabelCompositeValue
 public;LabelCompositeValue
 public;LabelCompositeValueJSON
@@ -254,6 +248,7 @@ public;NamedFieldDescriptor
 beta;NavigationPropertyInfo
 beta;NavigationPropertyInfo
 beta;NavigationPropertyInfoJSON
+public;NavigationPropertyValue
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
@@ -304,7 +299,7 @@ deprecated;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeleti
 public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
 deprecated;PartialNodeJSON = AllOrNone
-internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
+internal;PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface"
 public;PresentationError 
 internal;PresentationIpcEvents
 internal;PresentationIpcInterface
@@ -349,7 +344,6 @@ public;PropertyRangeGroupSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat
-alpha;PropertyValueFormatter
 public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
 public;QuerySpecificationBase
 public;QuerySpecificationTypes
@@ -438,14 +432,11 @@ public;traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy)
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
 internal;UnsetRulesetVariableParams 
 alpha;UPDATE_FULL = "FULL"
-internal;UpdateHierarchyStateParams
 alpha;UpdateInfo
-alpha;UpdateInfo
-alpha;UpdateInfoJSON
-public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[]
+public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NavigationPropertyValue | NestedContentValue[]
 public;Value
-public;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[]
-deprecated;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[]
+public;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[]
+deprecated;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[]
 public;ValuesArray 
 public;ValuesArrayJSON 
 deprecated;ValuesArrayJSON 

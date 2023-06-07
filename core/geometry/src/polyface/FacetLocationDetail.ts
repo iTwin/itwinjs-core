@@ -20,11 +20,13 @@ import { NumberArray } from "../geometry3d/PointHelpers";
  * @param detail reference to the intersection data, with `detail.IsInsideOn === true`. Note that `detail` is owned by the caller; to persist, use `detail.clone`.
  * @param visitor at currently intersected facet
  * @returns true to accept this intersection and stop processing; false to continue to the next facet
+ * @public
  */
 export type FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean;
 
 /** Options for computing and processing facet intersection methods.
  * @see PolyfaceQuery.intersectRay3d
+ * @public
  */
 export class FacetIntersectOptions {
   /** distance tolerance for testing coincidence with facet boundary */

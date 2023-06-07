@@ -225,10 +225,8 @@ export class Model extends Entity {
   /** Delete this Model from the iModel. */
   public delete() { this.iModel.models.deleteModel(this.id); }
 
-  // NOTE: non-element entities do not yet have a concept of required references
-  /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    super.collectReferenceConcreteIds(referenceIds);
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
     if (this.parentModel)
       referenceIds.addModel(this.parentModel);
     referenceIds.addElement(this.modeledElement.id);

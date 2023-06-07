@@ -11,16 +11,17 @@ import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-ge
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
-import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
+import { AnimationNodeId } from "../../common/render/AnimationNodeId";
+import { ViewRect } from "../../common/ViewRect";
+import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";
-import { ViewRect } from "../../ViewRect";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { AnimationBranchStates, AnimationNodeId } from "../GraphicBranch";
+import { AnimationBranchStates } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -385,6 +386,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.currentViewFlags.thematicDisplay && this.is3d && undefined !== this.uniforms.thematic.thematicDisplay;
   }
 
+  public get wantAtmosphere(): boolean {
+    return undefined !== this.plan.atmosphere;
+  }
+
   public get wantThematicSensors(): boolean {
     const thematic = this.plan.thematic;
     return this.wantThematicDisplay && undefined !== thematic && ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode && thematic.sensorSettings.sensors.length > 0;
@@ -516,6 +521,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
 
     this.uniforms.thematic.update(this);
+
+    this.uniforms.atmosphere.update(this);
 
     // NB: This must be done after changeFrustum() as some of the uniforms depend on the frustum.
     this.uniforms.updateRenderPlan(plan);

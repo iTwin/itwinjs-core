@@ -255,7 +255,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
  * Get OAuth2 endpoint that must be cause to get the Oauth2 token
  * @internal
  */
-  private  cacheEndpoint(url: string, endpoint: ArcGisOAuth2EndpointType, obj: ArcGisOAuth2Endpoint) {
+  private cacheEndpoint(url: string, endpoint: ArcGisOAuth2EndpointType, obj: ArcGisOAuth2Endpoint) {
     if (endpoint === ArcGisOAuth2EndpointType.Authorize) {
       this._oauthAuthorizeEndPointsCache.set(url, obj);
     } else {
@@ -275,6 +275,18 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   /**
+  * Returns whether the ArcGis host is valid
+  * @internal
+  */
+  private isArcGisHostValid(url: URL): boolean {
+    const allowedHosts = [
+      "arcgis.com",
+    ];
+
+    return allowedHosts.some((host: string) => url.hostname.toLowerCase().endsWith(host));
+  }
+
+  /**
  * Get OAuth2 endpoint that must be cause to get the Oauth2 token
  * @internal
  */
@@ -286,8 +298,10 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     }
 
     const endpointStr = (endpointType === ArcGisOAuth2EndpointType.Authorize ? "authorize" : "token");
+
     const urlObj = new URL(url);
-    if (urlObj.hostname.toLowerCase().endsWith("arcgis.com")) {
+
+    if (this.isArcGisHostValid(urlObj)) {
       // ArcGIS Online (fixed)
       // Doc: https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/
 

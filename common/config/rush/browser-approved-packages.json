@@ -4,11 +4,23 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "@bentley/architectural-physical-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/bis-core-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/bis-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -55,20 +67,48 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/construction-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/core-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-map-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-schema-policies-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/formats-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/icons-generic-webfont",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@bentley/linear-referencing-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/physical-material-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/plant-custom-attributes-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/process-functional-schema",
@@ -80,7 +120,7 @@
     },
     {
       "name": "@bentley/quantity-takeoffs-aspects-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/react-scripts",
@@ -89,6 +129,14 @@
     {
       "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/spatial-composition-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/structural-physical-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/units-schema",
@@ -171,10 +219,6 @@
       "allowedCategories": [ "backend", "frontend" ]
     },
     {
-      "name": "@itwin/core-transformer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/core-webpack-tools",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -188,7 +232,7 @@
     },
     {
       "name": "@itwin/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
@@ -235,6 +279,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/imodel-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/imodels-access-backend",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -259,10 +307,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/node-cli-authorization",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/object-storage-azure",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -284,7 +328,7 @@
     },
     {
       "name": "@itwin/presentation-common",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/presentation-frontend",
@@ -325,18 +369,6 @@
     {
       "name": "@opentelemetry/api",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "@opentelemetry/resources",
-      "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "@opentelemetry/sdk-trace-base",
-      "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "@opentelemetry/semantic-conventions",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@svgdotjs/svg.js",
@@ -385,6 +417,10 @@
     {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "canonical-path",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "case-sensitive-paths-webpack-plugin",
@@ -439,6 +475,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "cpx2",
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -457,10 +497,6 @@
     {
       "name": "debug",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "deep-assign",
-      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -536,7 +572,7 @@
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "google-protobuf",
@@ -560,7 +596,7 @@
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "internal-tools",
@@ -572,7 +608,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "jsdom",
@@ -593,6 +629,54 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "karma",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-babel-preprocessor",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chai-plugins",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-chrome-launcher",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-instrumenter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-coverage-istanbul-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-jasmine",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-junit-reporter",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-mocha",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-sourcemap-loader",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "karma-webpack",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "lodash",
@@ -636,7 +720,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",
@@ -667,10 +751,6 @@
       "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
-      "name": "qs",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
     },
@@ -691,8 +771,12 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "sanitize-filename",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "sinon",
@@ -724,7 +808,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "supertest",

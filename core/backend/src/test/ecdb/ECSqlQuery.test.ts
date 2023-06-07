@@ -5,18 +5,17 @@
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../core-backend";
+import { ConcurrentQuery } from "../../ConcurrentQuery";
+import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import { ConcurrentQuery } from "../../ConcurrentQuery";
 
 // cspell:ignore mirukuru ibim
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  // eslint-disable-next-line deprecation/deprecation
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
-    rows.push(row);
+  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+    rows.push(queryRow.toRow());
   }
   return rows;
 }
@@ -27,6 +26,7 @@ describe("ECSql Query", () => {
   let imodel3: SnapshotDb;
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
+  let imodel6: SnapshotDb;
 
   before(async () => {
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
@@ -34,6 +34,7 @@ describe("ECSql Query", () => {
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel6 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test_ec_4003.bim"));
   });
 
   after(async () => {
@@ -42,6 +43,126 @@ describe("ECSql Query", () => {
     imodel3.close();
     imodel4.close();
     imodel5.close();
+    imodel6.close();
+  });
+
+  it("verify return values for system properties", async () => {
+    const testQueries = [
+      {
+        query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1", expected: {
+          id: "0x19",
+          className: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId FROM Bis.Element) LIMIT 1", expected: {
+          id: "0x19",
+          className: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+          id: "0x1",
+          className: "BisCore.PartitionOriginatesFromRepository",
+          sourceId: "0x1c",
+          sourceClassName: "BisCore.PhysicalPartition",
+          targetId: "0x12",
+          targetClassName: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+          id: "0x1",
+          className: "BisCore.PartitionOriginatesFromRepository",
+          sourceId: "0x1c",
+          sourceClassName: "BisCore.PhysicalPartition",
+          targetId: "0x12",
+          targetClassName: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId a, ECClassId b FROM Bis.Element LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b FROM Bis.Element) LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1", expected: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1", expected: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+    ];
+    const builder = new QueryOptionsBuilder();
+    builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+    builder.setConvertClassIdsToNames(true);
+    // With ECDb Profile 4002
+    for (const testQuery of testQueries) {
+      imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
+        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+      });
+
+      let hasRow = false;
+      for await (const row of imodel1.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
+        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        hasRow = true;
+      }
+      assert.isTrue(hasRow, "imodel1.query() must return latest one row");
+    }
+    // With ECDb Profile 4003
+    for (const testQuery of testQueries) {
+      imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
+        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+      });
+      let hasRow = false;
+      for await (const row of imodel6.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
+        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        hasRow = true;
+      }
+      assert.isTrue(hasRow, "imodel1.query() must return latest one row");
+    }
   });
 
   // new new addon build
@@ -103,8 +224,9 @@ describe("ECSql Query", () => {
           try {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
-            // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
-            for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions())) {
+            options.setRestartToken("tag");
+            const reader = imodel1.createQueryReader("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions());
+            while (await reader.step()) {
               rowCount++;
             }
             successful++;
@@ -153,8 +275,7 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
     }
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
@@ -217,8 +338,9 @@ describe("ECSql Query", () => {
     const dbs = [imodel1, imodel2, imodel3, imodel4, imodel5];
     const pendingRowCount = [];
     for (const db of dbs) {
-      // eslint-disable-next-line deprecation/deprecation
-      pendingRowCount.push(db.queryRowCount(query));
+      for await (const row of db.createQueryReader(`SELECT count(*) FROM (${query})`)) {
+        pendingRowCount.push(row[0] as number);
+      }
     }
 
     const rowCounts = await Promise.all(pendingRowCount);
@@ -240,8 +362,8 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        const row = queryRow.toRow();
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {

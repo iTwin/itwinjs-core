@@ -1,6 +1,73 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Wed, 08 Feb 2023 14:58:40 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Update to eslint@8
+- Documentation improvements
+- Update logging categories under `PresentationBackendNativeLoggerCategory`.
+- Modified supplemental rules to use new content modifier's attribute `applyOnNestedContent`
+- Update `BisCore` supplemental rules to include more `RepositoryLink` properties, including from subclasses.
+- Reduce default backend response timeout from 90 seconds to 5 seconds
+- Fixed diagnostics not being included in error responses
+- Removed IPC method used to track UI state on the backend
+- Added content values formatting to `PresentationManager.getContent`
+
+## 3.7.6
+Mon, 15 May 2023 18:23:41 GMT
+
+_Version update only_
+
+## 3.7.5
+Thu, 04 May 2023 19:43:18 GMT
+
+_Version update only_
+
+## 3.7.4
+Tue, 25 Apr 2023 17:50:35 GMT
+
+_Version update only_
+
+## 3.7.3
+Thu, 20 Apr 2023 13:19:29 GMT
+
+_Version update only_
+
+## 3.7.2
+Wed, 12 Apr 2023 13:12:42 GMT
+
+### Updates
+
+- Fix `BisCore` supplemental rules for related `bis.ExternalSource` properties
+
+## 3.7.1
+Mon, 03 Apr 2023 15:15:37 GMT
+
+_Version update only_
+
+## 3.7.0
+Wed, 29 Mar 2023 15:02:27 GMT
+
+_Version update only_
+
+## 3.6.3
+Mon, 27 Mar 2023 16:26:47 GMT
+
+_Version update only_
+
+## 3.6.2
+Fri, 17 Mar 2023 17:52:32 GMT
+
+_Version update only_
+
+## 3.6.1
+Fri, 24 Feb 2023 22:00:48 GMT
+
+_Version update only_
 
 ## 3.6.0
 Wed, 08 Feb 2023 14:58:40 GMT
@@ -1054,7 +1121,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

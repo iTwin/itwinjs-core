@@ -19,6 +19,11 @@ import { fakeViewState } from "./TileIO.test";
 use(sinonChai);
 
 describe("IModelTileRequestChannels", () => {
+  function getTileData() {
+    // The tile data's ArrayBuffer gets transferred to the parser on a worker thread, so cannot be reused for multiple tests - must clone.
+    return new Uint8Array(TILE_DATA_2_0.rectangle.bytes);
+  }
+
   function getCloudStorageChannel(): TileRequestChannel {
     const channels = IModelApp.tileAdmin.channels;
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
@@ -88,7 +93,7 @@ describe("IModelTileRequestChannels", () => {
       const tile = await getTile();
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
@@ -104,7 +109,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
     });
@@ -127,7 +132,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
       expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
 
@@ -181,7 +186,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(getChannel());
       expect(tile.requestChannel).to.be.undefined;
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
       expect(tile.channel).to.equal(getChannel());
@@ -240,7 +245,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(channels.rpc);
       expect(channels.getCachedContent(tile)).to.be.undefined;
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
 
       const content = channels.getCachedContent(tile)!;
@@ -284,7 +289,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
 

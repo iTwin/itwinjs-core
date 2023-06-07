@@ -3,85 +3,53 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ModelExtentsProps,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, RenderSchedule,
 } from "@itwin/core-common";
 import {
-  AttachToViewportArgs, SpatialViewState, TileTreeOwner, TileTreeReference,
+  AnimationNodeId, formatAnimationBranchId, SceneContext, TileDrawArgs, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
+import { BatchedModels } from "./BatchedModels";
 
 /** @internal */
-export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
-  private readonly _treeOwner: TileTreeOwner;
-  private readonly _view: SpatialViewState;
-  private readonly _viewedModels = new Id64.Uint32Set();
-  private readonly _modelRanges = new Map<Id64String, Range3d>();
-  private _modelRangePromise?: Promise<void>;
-  private _onModelSelectorChanged?: () => void;
+export abstract class BatchedTileTreeReference extends TileTreeReference {
+  protected readonly _treeOwner: TileTreeOwner;
 
-  private constructor(treeOwner: TileTreeOwner, view: SpatialViewState) {
+  protected constructor(treeOwner: TileTreeOwner) {
     super();
     this._treeOwner = treeOwner;
-    this._view = view;
-  }
-
-  public static create(view: SpatialViewState, baseUrl: URL): BatchedTileTreeReference {
-    const owner = getBatchedTileTreeOwner(view.iModel, baseUrl);
-    return new BatchedTileTreeReference(owner, view);
   }
 
   public override get treeOwner(): TileTreeOwner {
     return this._treeOwner;
   }
 
-  public attachToViewport(args: AttachToViewportArgs): void {
-    this._onModelSelectorChanged = () => args.invalidateSymbologyOverrides();
-    this.updateViewedModels();
+  protected computeBaseTransform(tree: TileTree): Transform {
+    return super.computeTransform(tree);
   }
 
-  public detachFromViewport(): void {
-    this._onModelSelectorChanged = undefined;
+  protected override computeTransform(tree: TileTree): Transform {
+    const baseTf = this.computeBaseTransform(tree);
+    // ###TODO this.view.modelDisplayTransformProvider?.getModelDisplayTransform(modelId...)
+    return baseTf;
+  }
+}
+
+export class PrimaryBatchedTileTreeReference extends BatchedTileTreeReference implements FeatureAppearanceProvider {
+  private readonly _models: BatchedModels;
+
+  public constructor(treeOwner: TileTreeOwner, models: BatchedModels) {
+    super(treeOwner);
+    this._models = models;
   }
 
-  public updateViewedModels(): void {
-    this._viewedModels.clear();
-    this._viewedModels.addIds(this._view.modelSelector.models);
-    if (!this._onModelSelectorChanged) {
-      // Don't bother updating model ranges if we're not attached to a viewport.
-      return;
-    }
-
-    this._onModelSelectorChanged();
-
-    this._modelRangePromise = undefined;
-    const modelIds = Array.from(this._view.modelSelector.models).filter((modelId) => !this._modelRanges.has(modelId));
-    if (modelIds.length === 0)
-      return;
-
-    const modelRangePromise = this._modelRangePromise = this._treeOwner.iModel.models.queryExtents(modelIds).then((extents: ModelExtentsProps[]) => {
-      if (modelRangePromise !== this._modelRangePromise)
-        return;
-
-      this._modelRangePromise = undefined;
-      for (const extent of extents)
-        this._modelRanges.set(extent.id, Range3d.fromJSON(extent.extents));
-    }).catch(() => { });
-  }
-
-  public override unionFitRange(union: Range3d): void {
-    this._viewedModels.forEach((low: number, high: number) => {
-      const id = Id64.fromUint32Pair(low, high);
-      const extent = this._modelRanges.get(id);
-      if (extent)
-        union.extendRange(extent);
-    });
+  public override unionFitRange(range: Range3d): void {
+    this._models.unionRange(range);
   }
 
   public override getAppearanceProvider(): FeatureAppearanceProvider | undefined {
-    return this._onModelSelectorChanged ? this : undefined;
+    return this;
   }
 
   public getFeatureAppearance(
@@ -93,10 +61,53 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     type: BatchType,
     animationNodeId: number
   ): FeatureAppearance | undefined {
-    // ###TODO: Until MultiModelPackedFeatureTable is hooked up we'll always get the transient model Id - remove check after that.
-    if (modelHi !== 0xffffff00 && !this._viewedModels.has(modelLo, modelHi))
+    if (!this._models.isViewed(modelLo, modelHi))
       return undefined;
 
     return source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+  }
+
+  public override getAnimationTransformNodeId() {
+    return AnimationNodeId.Untransformed;
+  }
+}
+
+export interface AnimationNode {
+  readonly timeline: RenderSchedule.ModelTimeline;
+  readonly nodeId: number;
+  getCurrentTimePoint(): number;
+}
+
+export class AnimatedBatchedTileTreeReference extends BatchedTileTreeReference {
+  private readonly _node: AnimationNode;
+  private readonly _branchId: string;
+
+  public constructor(treeOwner: TileTreeOwner, node: AnimationNode) {
+    super(treeOwner);
+    this._node = node;
+    this._branchId = formatAnimationBranchId(node.timeline.modelId, node.nodeId);
+  }
+
+  public override getAnimationTransformNodeId(): number {
+    return this._node.nodeId;
+  }
+
+  public override computeBaseTransform(tree: TileTree): Transform {
+    const tf = super.computeBaseTransform(tree);
+    const animTf = this._node.timeline.getTransform(this._node.nodeId, this._node.getCurrentTimePoint());
+    if (animTf)
+      animTf.multiplyTransformTransform(tf, tf);
+
+    return tf;
+  }
+
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const animBranch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
+    if (animBranch && animBranch.omit)
+      return undefined;
+
+    const args = super.createDrawArgs(context);
+    // ###TODO args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
+    return args;
   }
 }

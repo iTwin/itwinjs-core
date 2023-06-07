@@ -29,7 +29,10 @@ export class CurveCurve {
    * @param extendB true to allow geometryB to extend
    * @param tolerance optional distance tolerance for coincidence
    */
-  public static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance: number = Geometry.smallMetricDistance): CurveLocationDetailPair[] {
+  public static intersectionXYPairs(
+    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
+    tolerance: number = Geometry.smallMetricDistance
+  ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB, tolerance);
     if (geometryB instanceof CurvePrimitive) {
       geometryA.dispatchToGeometryHandler(handler);
@@ -50,7 +53,10 @@ export class CurveCurve {
    * @param extendB true to allow geometryB to extend
    * @param tolerance optional distance tolerance for coincidence
    */
-  public static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean, tolerance: number = Geometry.smallMetricDistance): CurveLocationDetailPair[] {
+  public static intersectionProjectedXYPairs(
+    worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean,
+    tolerance: number = Geometry.smallMetricDistance
+  ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB, tolerance);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabPairedResults();
@@ -65,7 +71,9 @@ export class CurveCurve {
    * @param geometryB second geometry
    * @param extendB true to allow geometryB to extend
    */
-  public static intersectionXYZ(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
+  public static intersectionXYZ(
+    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean
+  ): CurveLocationDetailArrayPair {
     const handler = new CurveCurveIntersectXYZ(geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
@@ -75,7 +83,9 @@ export class CurveCurve {
    * @param primitives input curves to intersect
    * @param tolerance optional distance tolerance for coincidence
    */
-  public static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance): CurveLocationDetailPair[] {
+  public static allIntersectionsAmongPrimitivesXY(
+    primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance
+  ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, undefined, false, undefined, false, tolerance);
     for (let i = 0; i < primitives.length; i++) {
       const geometryA = primitives[i];
@@ -92,7 +102,8 @@ export class CurveCurve {
    * @param geometryB second geometry
    */
   public static closeApproachProjectedXYPairs(
-    geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number): CurveLocationDetailPair[] {
+    geometryA: GeometryQuery, geometryB: GeometryQuery, maxDistance: number
+  ): CurveLocationDetailPair[] {
     const handler = new CurveCurveCloseApproachXY(geometryA, geometryB);
     handler.maxDistanceToAccept = maxDistance;
     geometryA.dispatchToGeometryHandler(handler);

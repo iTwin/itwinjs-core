@@ -29,8 +29,10 @@ app.use("/", (req, resp, next) => {
 // Handle a special route for serving absolute paths and files from node_modules
 app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
+  const canonicalPath = require("canonical-path");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
-  resp.sendFile(path.resolve("/", filePath), {
+  const fullPath = path.resolve("/", filePath);
+  resp.sendFile(canonicalPath.normalize(fullPath), {
     headers: (sourceMap) && {
       "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
     },

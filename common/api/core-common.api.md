@@ -41,6 +41,7 @@ import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
 import { LogFunction } from '@itwin/core-bentley';
+import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
@@ -68,6 +69,7 @@ import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
+import { UintArray } from '@itwin/core-bentley';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -330,6 +332,76 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export namespace Atmosphere {
+    export interface Props {
+        // @internal
+        atmosphereHeightAboveEarth?: number;
+        // @internal
+        densityFalloff?: number;
+        // @internal
+        depthBelowEarthForMaxDensity?: number;
+        display?: boolean;
+        exposure?: number;
+        numSunRaySamples?: number;
+        numViewRaySamples?: number;
+        // @internal
+        scatteringStrength?: number;
+        // @internal
+        wavelengths?: WavelengthsProps;
+    }
+    export class Settings {
+        // @internal
+        readonly atmosphereHeightAboveEarth: number;
+        // (undocumented)
+        static readonly defaults: Settings;
+        // @internal
+        readonly densityFalloff: number;
+        // @internal
+        readonly depthBelowEarthForMaxDensity: number;
+        // (undocumented)
+        equals(other: Settings): boolean;
+        readonly exposure: number;
+        // (undocumented)
+        static fromJSON(json?: Props): Settings;
+        // (undocumented)
+        static readonly highQuality: Settings;
+        readonly numSunRaySamples: number;
+        readonly numViewRaySamples: number;
+        // @internal
+        readonly scatteringStrength: number;
+        // (undocumented)
+        toJSON(display?: boolean): Props;
+        // @internal
+        readonly wavelengths: Wavelengths;
+    }
+    // @internal
+    export class Wavelengths {
+        constructor(props: WavelengthsProps);
+        // (undocumented)
+        readonly b: number;
+        // (undocumented)
+        equals(other: Wavelengths): boolean;
+        // (undocumented)
+        static fromJSON(json: WavelengthsProps | undefined): Wavelengths;
+        // (undocumented)
+        readonly g: number;
+        // (undocumented)
+        readonly r: number;
+        // (undocumented)
+        toJSON(): WavelengthsProps;
+    }
+    // @internal
+    export interface WavelengthsProps {
+        // (undocumented)
+        b: number;
+        // (undocumented)
+        g: number;
+        // (undocumented)
+        r: number;
+    }
+}
+
 // @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
@@ -389,7 +461,7 @@ export type BackendBuffer = Buffer_2;
 
 // @public (undocumented)
 export class BackendError extends IModelError {
-    constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public @deprecated (undocumented)
@@ -1013,7 +1085,7 @@ export enum ChangeOpCode {
     Update = 2
 }
 
-// @beta
+// @internal
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -1049,7 +1121,7 @@ export type ChangesetIndexOrId = ChangesetIndexAndId | {
     readonly index?: never;
 };
 
-// @beta
+// @public
 export interface ChangesetProps {
     briefcaseId: number;
     changesType: ChangesetType;
@@ -1058,7 +1130,7 @@ export interface ChangesetProps {
     index: ChangesetIndex;
     parentId: ChangesetId;
     pushDate: string;
-    size?: number;
+    size: number;
     userCreated: string;
 }
 
@@ -1078,7 +1150,7 @@ export enum ChangesetType {
 
 // @alpha
 export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: GetMetaDataFunction);
+    constructor(message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public
@@ -1175,6 +1247,8 @@ export class CodeSpec {
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
+    // (undocumented)
+    get isExternal(): boolean;
     // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
@@ -1493,8 +1567,8 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
     isEmpty: boolean;
 }>;
 
-// @alpha (undocumented)
-export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
+// @internal (undocumented)
+export type ComputeNodeId = (feature: PackedFeatureWithIndex) => number;
 
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
@@ -1676,8 +1750,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1966080,
-    Major = 30,
+    Combined = 2097152,
+    Major = 32,
     Minor = 0
 }
 
@@ -1885,6 +1959,25 @@ export enum DbValueFormat {
     JsNames = 1
 }
 
+// @internal (undocumented)
+export function decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription;
+
+// @internal (undocumented)
+export interface DecodeTileContentDescriptionArgs {
+    // (undocumented)
+    is2d?: boolean;
+    // (undocumented)
+    isLeaf?: boolean;
+    // (undocumented)
+    isVolumeClassifier?: boolean;
+    // (undocumented)
+    options: TileOptions;
+    // (undocumented)
+    sizeMultiplier?: number;
+    // (undocumented)
+    stream: ByteStream;
+}
+
 // @internal
 export interface DecorationGeometryProps {
     // (undocumented)
@@ -1989,6 +2082,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get sunTime(): number | undefined;
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
+    // @beta
+    toggleAtmosphere(display?: boolean): void;
     toggleGroundPlane(display?: boolean): void;
     toggleSkyBox(display?: boolean): void;
     toJSON(): DisplayStyle3dSettingsProps;
@@ -2359,33 +2454,28 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta (undocumented)
-export class ECSqlReader {
+// @beta
+export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
+    [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    // (undocumented)
     get current(): QueryRowProxy;
-    // (undocumented)
     get done(): boolean;
     // (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
-    // (undocumented)
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
+    next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
     // (undocumented)
     reset(options?: QueryOptions): void;
-    // (undocumented)
     resetBindings(): void;
     // (undocumented)
     setParams(param: QueryBinder): void;
-    // (undocumented)
     get stats(): QueryStats;
-    // (undocumented)
     step(): Promise<boolean>;
-    // (undocumented)
     toArray(): Promise<any[]>;
 }
 
@@ -2467,8 +2557,9 @@ export class EdgeArgs {
 
 // @internal
 export interface EdgeOptions {
-    indexed: boolean;
     smooth: boolean;
+    // (undocumented)
+    type: TileEdgeType;
 }
 
 // @internal
@@ -2827,9 +2918,13 @@ export class EntityReferenceSet extends Set<EntityReference> {
 // @public
 export class Environment {
     protected constructor(props?: Partial<EnvironmentProperties>);
+    // @beta
+    readonly atmosphere: Atmosphere.Settings;
     clone(changedProps?: Partial<EnvironmentProperties>): Environment;
     static create(props?: Partial<EnvironmentProperties>): Environment;
     static readonly defaults: Environment;
+    // @beta
+    readonly displayAtmosphere: boolean;
     readonly displayGround: boolean;
     readonly displaySky: boolean;
     static fromJSON(props?: EnvironmentProps): Environment;
@@ -2839,6 +2934,7 @@ export class Environment {
     withDisplay(display: {
         sky?: boolean;
         ground?: boolean;
+        atmosphere?: boolean;
     }): Environment;
 }
 
@@ -2847,6 +2943,8 @@ export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
 
 // @public
 export interface EnvironmentProps {
+    // @beta
+    atmosphere?: Atmosphere.Props;
     ground?: GroundPlaneProps;
     sky?: SkyBoxProps;
 }
@@ -4596,7 +4694,7 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public
@@ -4836,16 +4934,12 @@ export const Interpolation: {
 export type InterpolationFunction = (v: any, k: number) => number;
 
 // @internal (undocumented)
-export enum IpcAppChannel {
-    // (undocumented)
-    AppNotify = "ipcApp-notify",
-    // (undocumented)
-    EditingScope = "editing-scope",
-    // (undocumented)
-    Functions = "ipc-app",
-    // (undocumented)
-    Txns = "txns"
-}
+export const ipcAppChannels: {
+    readonly functions: "itwinjs-core/ipc-app";
+    readonly appNotify: "itwinjs-core/ipcApp-notify";
+    readonly txns: "itwinjs-core/txns";
+    readonly editingScope: "itwinjs-core/editing-scope";
+};
 
 // @internal
 export interface IpcAppFunctions {
@@ -5220,11 +5314,12 @@ export interface Localization {
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
-    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 
 export { LogFunction }
+
+export { LoggingMetaData }
 
 // @public
 export interface MapImageryProps {
@@ -5625,6 +5720,9 @@ export enum MonochromeMode {
 export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     constructor(features: PackedFeatureTable, models: PackedFeatureModelTable);
     // (undocumented)
+    get animationNodeIds(): UintArray | undefined;
+    set animationNodeIds(ids: UintArray | undefined);
+    // (undocumented)
     get batchModelId(): string;
     // (undocumented)
     get batchModelIdPair(): Id64.Uint32Pair;
@@ -5636,6 +5734,8 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     findElementId(featureIndex: number): Id64String | undefined;
     // (undocumented)
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
     // (undocumented)
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     // (undocumented)
@@ -5649,11 +5749,10 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     // (undocumented)
     get numFeatures(): number;
     // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
+    // (undocumented)
     get type(): BatchType;
 }
-
-// @internal (undocumented)
-export const nativeAppChannel = "nativeApp";
 
 // @internal
 export interface NativeAppFunctions {
@@ -5677,14 +5776,17 @@ export interface NativeAppFunctions {
     storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 
+// @internal (undocumented)
+export const nativeAppIpcStrings: {
+    readonly channelName: "itwinjs-core/nativeApp";
+    readonly notifyChannel: "itwinjs-core/nativeApp-notify";
+};
+
 // @internal
 export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
 }
-
-// @internal (undocumented)
-export const nativeAppNotify = "nativeApp-notify";
 
 // @public
 export interface NavigationBindingValue {
@@ -5724,7 +5826,8 @@ export class NonUniformColor {
 // @public
 export enum NormalMapFlags {
     GreenUp = 1,
-    None = 0
+    None = 0,
+    UseConstantLod = 2
 }
 
 // @beta
@@ -6066,9 +6169,9 @@ export class PackedFeatureModelTable {
 
 // @internal
 export class PackedFeatureTable implements RenderFeatureTable {
-    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray);
     // (undocumented)
-    get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined;
+    animationNodeIds?: UintArray;
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
@@ -6690,6 +6793,8 @@ export interface PullChangesOptions {
 export class QParams2d {
     clone(out?: QParams2d): QParams2d;
     copyFrom(src: QParams2d): void;
+    // @alpha (undocumented)
+    static fromJSON(src: QParams2dProps): QParams2d;
     static fromNormalizedRange(rangeScale?: number): QParams2d;
     static fromOriginAndScale(originX: number, originY: number, scaleX: number, scaleY: number): QParams2d;
     static fromRange(range: Range2d, out?: QParams2d, rangeScale?: number): QParams2d;
@@ -6700,7 +6805,17 @@ export class QParams2d {
     get rangeDiagonal(): Vector2d;
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
+    // @alpha (undocumented)
+    toJSON(): QParams2dProps;
     unquantize(x: number, y: number, out?: Point2d): Point2d;
+}
+
+// @alpha (undocumented)
+export interface QParams2dProps {
+    // (undocumented)
+    origin: XAndY;
+    // (undocumented)
+    scale: XAndY;
 }
 
 // @public
@@ -6708,6 +6823,8 @@ export class QParams3d {
     clone(out?: QParams3d): QParams3d;
     computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
+    // @alpha (undocumented)
+    static fromJSON(src: QParams3dProps, out?: QParams3d): QParams3d;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
     static fromRange(range: Range3d, out?: QParams3d, rangeScale?: number): QParams3d;
@@ -6719,7 +6836,17 @@ export class QParams3d {
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
     setFromRange(range: Range3d, rangeScale?: number): void;
+    // @alpha (undocumented)
+    toJSON(): QParams3dProps;
     unquantize(x: number, y: number, z: number, out?: Point3d): Point3d;
+}
+
+// @alpha (undocumented)
+export interface QParams3dProps {
+    // (undocumented)
+    origin: XYAndZ;
+    // (undocumented)
+    scale: XYAndZ;
 }
 
 // @public
@@ -6946,37 +7073,26 @@ export enum QueryRowFormat {
     UseJsPropertyNames = 2
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryRowProxy {
-    // (undocumented)
     [propertyName: string]: QueryValueType;
-    // (undocumented)
     [propertyIndex: number]: QueryValueType;
-    // (undocumented)
     getMetaData(): QueryPropertyMetaData[];
-    // (undocumented)
     toArray(): QueryValueType[];
-    // (undocumented)
     toRow(): any;
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryStats {
-    // (undocumented)
     backendCpuTime: number;
-    // (undocumented)
     backendMemUsed: number;
-    // (undocumented)
     backendRowsReturned: number;
-    // (undocumented)
     backendTotalTime: number;
-    // (undocumented)
     retryCount: number;
-    // (undocumented)
     totalTime: number;
 }
 
-// @beta (undocumented)
+// @beta
 export type QueryValueType = any;
 
 // @public
@@ -6998,7 +7114,7 @@ export interface ReadableFormData extends BackendReadable {
 // @beta
 export function readElementMeshes(data: Uint8Array): IndexedPolyface[];
 
-// @internal
+// @internal @deprecated
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
 // @beta
@@ -7115,16 +7231,22 @@ export type RemoveFunction = () => void;
 
 // @internal
 export interface RenderFeatureTable {
+    // (undocumented)
+    animationNodeIds?: UintArray;
     readonly batchModelId: Id64String;
     readonly batchModelIdPair: Id64.Uint32Pair;
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
+    // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
     getElementIdPair(featureIndex: number, out: Id64.Uint32Pair): Id64.Uint32Pair;
     getFeature(featureIndex: number, result: ModelFeature): ModelFeature;
     getPackedFeature(featureIndex: number, result: PackedFeature): PackedFeature;
     iterable(output: PackedFeatureWithIndex): Iterable<PackedFeatureWithIndex>;
     readonly numFeatures: number;
+    // (undocumented)
+    populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void;
     // (undocumented)
     readonly type: BatchType;
 }
@@ -7322,6 +7444,8 @@ export namespace RenderSchedule {
         findByBatchId(batchId: number): ElementTimeline | undefined;
         // (undocumented)
         static fromJSON(props?: ModelTimelineProps): ModelTimeline;
+        // @internal
+        getBatchIdForFeature(feature: PackedFeatureWithIndex): number;
         // @alpha
         getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined;
         getTransform(batchId: number, time: number): Readonly<Transform> | undefined;
@@ -7362,16 +7486,22 @@ export namespace RenderSchedule {
         readonly containsTransform: boolean;
         // @internal
         discloseIds(ids: EntityReferenceSet): void;
+        // @alpha
+        get discreteBatchIds(): Set<number>;
         readonly duration: Range1d;
         // (undocumented)
         equals(other: Script): boolean;
         find(modelId: Id64String): ModelTimeline | undefined;
         // (undocumented)
         static fromJSON(props: Readonly<ScriptProps>): Script | undefined;
+        // @internal
+        getBatchIdForFeature(feature: PackedFeatureWithIndex): number;
         // @internal (undocumented)
         getTransform(modelId: Id64String, batchId: number, time: number): Readonly<Transform> | undefined;
         // @internal (undocumented)
         getTransformBatchIds(modelId: Id64String): ReadonlyArray<number> | undefined;
+        // @alpha (undocumented)
+        get maxBatchId(): number;
         // @internal (undocumented)
         modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
@@ -7969,6 +8099,11 @@ export interface RpcOperationsProfile {
     // (undocumented)
     readonly lastResponse: number;
 }
+
+// @internal (undocumented)
+export const rpcOverIpcStrings: {
+    readonly channelName: "itwinjs-core/rpc-over-ipc";
+};
 
 // @internal
 export class RpcPendingQueue {
@@ -9164,7 +9299,7 @@ export namespace TextureMapping {
         Spherical = 5
     }
     export interface ParamProps {
-        constantLodParams?: ConstantLodParamProps;
+        constantLodProps?: ConstantLodParamProps;
         mapMode?: TextureMapping.Mode;
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
@@ -9194,12 +9329,17 @@ export namespace TextureMapping {
 // @public
 export interface TextureMapProps {
     pattern_angle?: number;
+    pattern_constantlod_maxdistanceclamp?: number;
+    pattern_constantlod_mindistanceclamp?: number;
+    pattern_constantlod_offset?: Point2dProps;
+    pattern_constantlod_repetitions?: number;
     pattern_flip?: boolean;
     pattern_mapping?: TextureMapping.Mode;
     pattern_offset?: Point2dProps;
     pattern_scale?: Point2dProps;
     pattern_scalemode?: TextureMapUnits;
     pattern_u_flip?: boolean;
+    pattern_useConstantLod?: boolean;
     pattern_weight?: number;
     TextureId: Id64String;
 }
@@ -9404,6 +9544,9 @@ export enum TileContentSource {
 }
 
 // @internal
+export type TileEdgeType = "compact" | "indexed" | "non-indexed";
+
+// @internal
 export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
@@ -9458,15 +9601,13 @@ export interface TileOptions {
     // (undocumented)
     readonly disableMagnification: boolean;
     // (undocumented)
+    readonly edgeOptions: EdgeOptions;
+    // (undocumented)
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)
-    readonly enableIndexedEdges: boolean;
-    // (undocumented)
     readonly enableInstancing: boolean;
-    // (undocumented)
-    readonly generateAllPolyfaceEdges: boolean;
     // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
@@ -9849,6 +9990,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    NoChange = 0,
     Parent = 32,
     Placement = 4,
     Property = 1

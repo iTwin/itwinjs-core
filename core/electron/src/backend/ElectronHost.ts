@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module Main
+ */
+
 // Note: only import *types* from electron so this file can be imported by apps that sometimes use Electron and sometimes not.
 import type { BrowserWindow, BrowserWindowConstructorOptions, WebPreferences } from "electron";
 import type * as ElectronModule from "electron";
@@ -13,7 +17,7 @@ import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { dialogChannel, DialogModuleMethod } from "../common/ElectronIpcInterface";
+import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -53,7 +57,7 @@ export interface ElectronHostOptions {
   frontendPort?: number;
   /** list of RPC interface definitions to register */
   rpcInterfaces?: RpcInterfaceDefinition[];
-  /** list of [IpcHandler]($common) classes to register */
+  /** list of [IpcHandler]($backend) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
 }
 
@@ -300,7 +304,7 @@ export class ElectronHost {
 }
 
 class ElectronDialogHandler extends IpcHandler {
-  public get channelName() { return dialogChannel; }
+  public get channelName() { return electronIpcStrings.dialogChannel; }
   public async callDialog(method: DialogModuleMethod, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
     const dialogMethod = dialog[method] as Function;

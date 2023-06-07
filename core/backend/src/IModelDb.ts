@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
@@ -510,7 +510,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -532,7 +532,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -542,8 +542,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
    */
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+    for await (const row of this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -555,7 +554,7 @@ export abstract class IModelDb extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
@@ -568,8 +567,7 @@ export abstract class IModelDb extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -654,9 +652,8 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        result.push(row);
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
       // We can ignore the error here, and just return whatever we were able to query.
@@ -971,12 +968,6 @@ export abstract class IModelDb extends IModel {
   public get codeSpecs(): CodeSpecs {
     return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
   }
-
-  /** @internal */
-  public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any); // TODO: Remove "as any" when NativeLibrary.ts is updated so "spec" isn't marked as required
-  }
-
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
@@ -1043,7 +1034,18 @@ export abstract class IModelDb extends IModel {
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
-    const meta = iModel.getMetaData(classFullName); // will load if necessary
+    iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
+  }
+
+  /** Invoke a callback on each property of the specified class, optionally including superclass properties.
+   * @param classFullName The full class name to load the metadata, if necessary
+   * @param wantSuper If true, superclass properties will also be processed
+   * @param func The callback to be invoked on each property
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   */
+  public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    const meta = this.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
       if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
@@ -1051,7 +1053,7 @@ export abstract class IModelDb extends IModel {
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
-      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(iModel, baseClass, true, func, includeCustom));
+      meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
   /** @internal */
@@ -1544,7 +1546,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._iModel.nativeDb.queryModelExtentsAsync(ids);
     }
 
-    /** Computes the union of the volumes of all geoemtric elements within any number of [[GeometricModel]]s, specified by model Id.
+    /** Computes the union of the volumes of all geometric elements within one or more [[GeometricModel]]s, specified by model Id.
      * @see [[queryExtents]] to obtain discrete volumes for each model.
      */
     public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
@@ -2336,7 +2338,7 @@ export class BriefcaseDb extends IModelDb {
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
   /** @alpha */
-  public static readonly onCodeServiceCreated = new BeEvent<(service: CodeService) => void>();
+  public static readonly onCodeServiceCreated = new BeEvent<(briefcase: BriefcaseDb) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
@@ -2423,11 +2425,10 @@ export class BriefcaseDb extends IModelDb {
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        const codeService = CodeService.createForIModel(briefcaseDb);
-        briefcaseDb._codeService = codeService;
-        this.onCodeServiceCreated.raiseEvent(codeService);
+        briefcaseDb._codeService = await CodeService.createForIModel(briefcaseDb);
+        this.onCodeServiceCreated.raiseEvent(briefcaseDb);
       } catch (e: any) {
-        if (e.errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
+        if ((e as CodeService.Error).errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
           throw e;
       }
     }

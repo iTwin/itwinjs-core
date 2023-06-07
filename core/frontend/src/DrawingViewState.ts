@@ -25,7 +25,7 @@ import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
 import { OffScreenViewport } from "./Viewport";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 import { AttachToViewportArgs, ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
@@ -383,8 +383,7 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of this.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;
         try {

@@ -133,20 +133,28 @@ export class TestUtility {
    * Otherwise, IModelApp.startup is used directly.
    */
   public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean, enableWebEdit?: boolean): Promise<void> {
-    opts = opts ? opts : TestUtility.iModelAppOptions;
+    const iopts = { ...TestUtility.iModelAppOptions, ...opts };
     if (mockRender)
-      opts.renderSys = this.systemFactory();
-    if (ProcessDetector.isElectronAppFrontend)
-      return ElectronApp.startup({ iModelApp: opts });
+      iopts.renderSys = this.systemFactory();
+
+    if (ProcessDetector.isElectronAppFrontend) {
+      // electron version of certa does not serve assets like worker scripts.
+      if (iopts.tileAdmin)
+        iopts.tileAdmin.decodeImdlInWorker = false;
+      else
+        iopts.tileAdmin = { decodeImdlInWorker: false };
+
+      return ElectronApp.startup({ iModelApp: iopts });
+    }
 
     if (enableWebEdit) {
       let socketUrl = new URL(window.location.toString());
       socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
       socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
-      return LocalhostIpcApp.startup({ iModelApp: opts, localhostIpcApp: { socketUrl } });
+      return LocalhostIpcApp.startup({ iModelApp: iopts, localhostIpcApp: { socketUrl } });
     } else {
-      return IModelApp.startup(opts);
+      return IModelApp.startup(iopts);
     }
   }
 

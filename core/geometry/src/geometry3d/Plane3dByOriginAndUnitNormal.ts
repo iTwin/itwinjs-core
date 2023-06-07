@@ -61,32 +61,40 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
       return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 1, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
   }
-  /** create a new  Plane3dByOriginAndUnitNormal with given origin and normal.
+  /** Create a new Plane3dByOriginAndUnitNormal with given origin and normal.
    * * The inputs are NOT captured.
-   * * Returns undefined if the normal vector is all zeros.
+   * * Returns undefined if `normal.normalize()` returns undefined.
    */
   public static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
-    const normalized = normal.normalize();
-    if (!normalized)
-      return undefined;
     if (result) {
-      result.set(origin, normalized);
+      if (normal.normalize(result._normal) === undefined)
+        return undefined;
+      origin.clone(result._origin);
       return result;
     }
+    const normalized = normal.normalize();
+    if (normalized === undefined)
+      return undefined;
     return new Plane3dByOriginAndUnitNormal(origin.clone(), normalized);
   }
-  /** create a new  Plane3dByOriginAndUnitNormal from a variety of plane types.
+  /** Create a new Plane3dByOriginAndUnitNormal from a variety of plane types.
    * * The inputs are NOT captured.
-   * * Returns undefined if the normal vector is all zeros.
+   * * Returns undefined if `source.getUnitNormal()` returns undefined.
    */
   public static createFrom(source: Plane3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     if (source instanceof Plane3dByOriginAndUnitNormal)
       return source.clone(result);
+    if (result) {
+      if (source.getUnitNormal(result._normal) === undefined)
+        return undefined;
+      source.getAnyPointOnPlane(result._origin);
+      return result;
+    }
     const normal = source.getUnitNormal();
     if (normal === undefined)
       return undefined;
     const origin = source.getAnyPointOnPlane();
-    return this.create(origin, normal, result);
+    return new Plane3dByOriginAndUnitNormal(origin, normal);
   }
 
   /** create a new  Plane3dByOriginAndUnitNormal with direct coordinates of origin and normal.

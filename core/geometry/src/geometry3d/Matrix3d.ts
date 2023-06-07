@@ -666,8 +666,8 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix from column vectors, shuffled into place per axisOrder
-   * For example, if axisOrder = XYZ then it returns [vectorU, vectorV, vectorW]
-   * Another example, if axisOrder = YZX then it returns [vectorW, vectorU, vectorV] because
+   * * For example, if axisOrder = XYZ then it returns [vectorU, vectorV, vectorW]
+   * * Another example, if axisOrder = YZX then it returns [vectorW, vectorU, vectorV] because
    * Y is at index 0 so vectorU goes to the column Y (column 2), Z is at index 1 so vectorV goes
    * to the column Z (column 3), and X is at index 2 so vectorW goes to the column X (column 1)
    */
@@ -1018,7 +1018,7 @@ export class Matrix3d implements BeJSONFunctions {
     const sii = lambda.at(i, i);
     const sjj = lambda.at(j, j);
     const sij = lambda.at(i, j);
-    if (Math.abs(sij) < 1.0e-15 * (sii + sjj))
+    if (Math.abs(sij) < Geometry.smallFloatingPoint * (sii + sjj))
       return 0.0;
     const jacobi = Angle.trigValuesToHalfAngleTrigValues(sii - sjj, 2.0 * sij);
     const c = jacobi.c;
@@ -1098,7 +1098,7 @@ export class Matrix3d implements BeJSONFunctions {
     const sii = this.coffs[indexII];
     const sjj = this.coffs[indexJJ];
     const sij = this.coffs[indexIJ];
-    if (Math.abs(sij) < 1.0e-15 * (sii + sjj))
+    if (Math.abs(sij) < Geometry.smallFloatingPoint * (sii + sjj))
       return 0.0;
     const jacobi = Angle.trigValuesToHalfAngleTrigValues(sii - sjj, 2.0 * sij);
     const c = jacobi.c;
@@ -1291,7 +1291,7 @@ export class Matrix3d implements BeJSONFunctions {
     const det = matrixVD.determinant();
     if (det < 0)
       scale.z = -scale.z;
-    const almostZero = 1.0e-15;
+    const almostZero = Geometry.smallFloatingPoint;
     const scaleXIsZero: boolean = Math.abs(scale.x) < almostZero;
     const scaleYIsZero: boolean = Math.abs(scale.y) < almostZero;
     const scaleZIsZero: boolean = Math.abs(scale.z) < almostZero;
@@ -1632,6 +1632,25 @@ export class Matrix3d implements BeJSONFunctions {
       );
     }
     return Matrix3d.createUniformScale(scale);
+  }
+  /**
+  * Multiply `matrix * point`, treating the point as a column vector on the right.
+  * ```
+  * equation
+  * \matrixXY{A}\columnSubXYZ{U}
+  * ```
+  * @return the point result
+  */
+  public multiplyPoint(point: Point3d, result?: Point3d): Point3d {
+    const x = point.x;
+    const y = point.y;
+    const z = point.z;
+    return Point3d.create(
+      this.coffs[0] * x + this.coffs[1] * y + this.coffs[2] * z,
+      this.coffs[3] * x + this.coffs[4] * y + this.coffs[5] * z,
+      this.coffs[6] * x + this.coffs[7] * y + this.coffs[8] * z,
+      result
+    );
   }
   /**
    * Multiply `matrix * vector`, treating the vector is a column vector on the right.
@@ -2592,7 +2611,7 @@ export class Matrix3d implements BeJSONFunctions {
    * almost independent and matrix is invertible).
    */
   public conditionNumber(): number {
-    const determinant = this.determinant();
+    const determinant = Math.abs(this.determinant());
     const columnMagnitudeSum =
       Geometry.hypotenuseXYZ(this.coffs[0], this.coffs[3], this.coffs[6])
       + Geometry.hypotenuseXYZ(this.coffs[1], this.coffs[4], this.coffs[7])

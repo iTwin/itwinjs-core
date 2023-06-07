@@ -142,7 +142,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     /** True if want to use constant LOD texture mapping for the surface texture. */
     useConstantLod?: boolean;
     /** Parameters for constantLod mapping mode. */
-    constantLodParams?: ConstantLodParamProps;
+    constantLodProps?: ConstantLodParamProps;
   }
 
   /** Parameters describing how a [[RenderTexture]]'s image is mapped to a surface. */
@@ -169,10 +169,10 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
       this.worldMapping = props?.worldMapping ?? false;
       this.useConstantLod = props?.useConstantLod ?? false;
       this.constantLodParams = {
-        repetitions: props?.constantLodParams?.repetitions ?? 1,
-        offset: props?.constantLodParams?.offset ?? { x: 0, y: 0 },
-        minDistClamp: props?.constantLodParams?.minDistClamp ?? 1,
-        maxDistClamp: props?.constantLodParams?.maxDistClamp ?? 4096 * 1024 * 1024,
+        repetitions: props?.constantLodProps?.repetitions ?? 1,
+        offset: props?.constantLodProps?.offset ?? { x: 0, y: 0 },
+        minDistClamp: props?.constantLodProps?.minDistClamp ?? 1,
+        maxDistClamp: props?.constantLodProps?.maxDistClamp ?? 4096 * 1024 * 1024,
       };
     }
 

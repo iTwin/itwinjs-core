@@ -29,7 +29,7 @@ import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
 import { FrontendHubAccess } from "./FrontendHubAccess";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
@@ -227,9 +227,7 @@ export class IModelApp {
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
   public static sessionId: GuidString;
-  /** The [[MapLayerProviderRegistry]] for this session.
-   * @internal
-   */
+  /** The [[MapLayerFormatRegistry]] for this session. */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
@@ -269,10 +267,9 @@ export class IModelApp {
   /** True after [[startup]] has been called, until [[shutdown]] is called. */
   public static get initialized() { return this._initialized; }
 
-  /** Provides access to the IModelHub implementation for this IModelApp.
-   * @internal
-   */
+  /** Provides access to IModelHub services. */
   public static get hubAccess(): FrontendHubAccess | undefined { return this._hubAccess; }
+
   /** Provides access to the RealityData service implementation for this IModelApp
    * @beta
    */

@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64, Id64String,
+  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, Id64, Id64String,
 } from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
@@ -50,6 +50,38 @@ export interface TileMetadata extends TileContentMetadata {
   readonly range: Range3d;
 }
 
+/** The type of edges to be produced for iMdl tiles.
+ * @see [[EdgeOptions]].
+ * @internal
+ */
+export type TileEdgeType = "compact" | "indexed" | "non-indexed";
+
+/** Describes how edges should be produced for tiles in a tile tree.
+ * @internal
+ */
+export interface EdgeOptions {
+  type: TileEdgeType;
+  /** For polyfaces that lack edge visibility information, generate edges for all faces; otherwise, infer edges from mesh topology. */
+  smooth: boolean;
+}
+
+function compareEdgeOptions(a: EdgeOptions | false, b: EdgeOptions | false): number {
+  if (typeof a !== typeof b)
+    return a ? 1 : -1;
+
+  if (typeof a === "boolean") {
+    assert(typeof b === "boolean");
+    return compareBooleans(a, b);
+  }
+
+  assert(typeof b === "object");
+  let cmp = compareStrings(a.type, b.type);
+  if (0 === cmp)
+    cmp = compareBooleans(a.smooth, b.smooth);
+
+  return cmp;
+}
+
 /** @internal */
 export interface TileOptions {
   readonly maximumMajorTileFormatVersion: number;
@@ -62,8 +94,7 @@ export interface TileOptions {
   readonly useLargerTiles: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
-  readonly enableIndexedEdges: boolean;
-  readonly generateAllPolyfaceEdges: boolean;
+  readonly edgeOptions: EdgeOptions;
 }
 
 /** @internal */
@@ -90,8 +121,7 @@ export namespace TileOptions {
       useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
-      enableIndexedEdges: edgeOptions && edgeOptions.indexed,
-      generateAllPolyfaceEdges: edgeOptions && edgeOptions.smooth,
+      edgeOptions,
     };
   }
 }
@@ -243,22 +273,16 @@ class Parser {
 
   private parseEdges(): EdgeOptions | false {
     if ("E" !== this.cur())
-      return { indexed: false, smooth: false };
+      return { type: "non-indexed", smooth: false };
 
     this.eat("E");
     this.eat(":");
 
-    const typeStr = this.cur();
-    this.eat(typeStr);
+    const flag = this.cur();
+    this.eat(flag);
     this.eat("_");
 
-    switch (typeStr) {
-      case "0": return false;
-      case "2": return { indexed: true, smooth: false };
-      case "3": return { indexed: false, smooth: true };
-      case "4": return { indexed: true, smooth: true };
-      default: this.reject();
-    }
+    return "0" === flag ? false : edgeOptionsFromFlag(flag);
   }
 
   private parseSectionCut(): string | undefined {
@@ -293,8 +317,10 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   useLargerTiles: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
-  enableIndexedEdges: true,
-  generateAllPolyfaceEdges: true,
+  edgeOptions: {
+    type: "compact" as const,
+    smooth: true,
+  },
 });
 
 function contentFlagsFromId(id: string): ContentFlags {
@@ -333,16 +359,46 @@ function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, versio
 function edgeOptionsFromTreeId(id: string): EdgeOptions {
   const pos = id.indexOf("E:");
   if (pos <= 0)
-    return { indexed: false, smooth: false };
+    return { type: "non-indexed", smooth: false };
 
-  switch (id[pos + 2]) {
-    case "0": return { indexed: defaultTileOptions.enableIndexedEdges, smooth: defaultTileOptions.generateAllPolyfaceEdges };
-    case "2": return { indexed: true, smooth: false };
-    case "3": return { indexed: false, smooth: true };
-    case "4": return { indexed: true, smooth: true };
+  return edgeOptionsFromFlag(id[pos + 2]);
+}
+
+function edgeOptionsFromFlag(flag: string): EdgeOptions {
+  if ("0" === flag)
+    return defaultTileOptions.edgeOptions;
+
+  const smooth = flag !== "2" && flag !== "5";
+  let type: TileEdgeType;
+  switch (flag) {
+    case "2":
+    case "4":
+      type = "indexed";
+      break;
+    case "3":
+      type = "non-indexed";
+      break;
+    case "5":
+    case "6":
+      type = "compact";
+      break;
+    default:
+      throw new Error("Invalid tree Id");
   }
 
-  throw new Error("Invalid tree Id");
+  return { type, smooth };
+}
+
+function edgeOptionsToString(options: EdgeOptions | false) {
+  if (!options)
+    return "E:0_";
+
+  switch (options.type) {
+    case "non-indexed": return options.smooth ? "E:3_" : "";
+    case "indexed": return options.smooth ? "E:4_" : "E:2_";
+    case "compact": return options.smooth ? "E:6_" : "E:5_";
+    default: throw new Error("Invalid tree Id");
+  }
 }
 
 /** @internal */
@@ -373,35 +429,6 @@ export enum TreeFlags {
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
   OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
   UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
-}
-
-/** Describes how edges should be produced for tiles in a tile tree.
- * @internal
- */
-export interface EdgeOptions {
-  /** Generate indexed edges. These use less memory and draw more efficiently than non-indexed edges, but require WebGL 2.
-   * Generally the display system will determine which to use based on the device's capabilities and application configuration.
-   */
-  indexed: boolean;
-  /** For polyfaces that lack edge visibility information, generate edges for all faces; otherwise, infer edges from mesh topology. */
-  smooth: boolean;
-}
-
-function compareEdgeOptions(a: EdgeOptions | false, b: EdgeOptions | false): number {
-  if (typeof a !== typeof b)
-    return a ? 1 : -1;
-
-  if (typeof a === "boolean") {
-    assert(typeof b === "boolean");
-    return compareBooleans(a, b);
-  }
-
-  assert(typeof b === "object");
-  let cmp = compareBooleans(a.indexed, b.indexed);
-  if (0 === cmp)
-    cmp = compareBooleans(a.smooth, b.smooth);
-
-  return cmp;
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -461,16 +488,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
-    let edges;
-    if (!treeId.edges) {
-      edges = "E:0_";
-    } else {
-      if (!treeId.edges.smooth)
-        edges = treeId.edges.indexed ? "E:2_" : "";
-      else
-        edges = treeId.edges.indexed ? "E:4_" : "E:3_";
-    }
-
+    const edges = edgeOptionsToString(treeId.edges);
     const sectionCut = treeId.sectionCut ? `S${treeId.sectionCut}s` : "";
     idStr = `${idStr}${edges}${sectionCut}`;
   } else {
@@ -822,8 +840,27 @@ export interface TileContentDescription extends TileContentMetadata {
 /** Deserializes tile content metadata.
  * @throws [[TileReadError]]
  * @internal
+ * @deprecated in 4.0. Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
  */
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription {
+  return decodeTileContentDescription({ stream, sizeMultiplier, is2d, options, isVolumeClassifier });
+}
+
+/** @internal */
+export interface DecodeTileContentDescriptionArgs {
+  stream: ByteStream;
+  options: TileOptions;
+  isVolumeClassifier?: boolean;
+  is2d?: boolean;
+  sizeMultiplier?: number;
+  isLeaf?: boolean;
+}
+
+/** @internal */
+export function decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription {
+  const { stream, options } = args;
+  const isVolumeClassifier = args.isVolumeClassifier ?? false;
+
   stream.reset();
 
   const header = new ImdlHeader(stream);
@@ -840,31 +877,35 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
 
   stream.curPos = featureTableStartPos + ftHeader.length;
 
-  // Determine subdivision based on header data.
-  const completeTile = 0 === (header.flags & ImdlFlags.Incomplete);
-  const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-  let isLeaf = (emptyTile || isVolumeClassifier); // Current classifier algorithm supports only a single tile.
-  if (!isLeaf) {
-    // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
-    // can be adversely affected by quantization issues when zooming in closely.
-    const maxLeafTolerance = 1.0;
+  let sizeMultiplier = args.sizeMultiplier;
+  let isLeaf = args.isLeaf;
+  if (undefined === isLeaf) {
+    // Determine subdivision based on header data.
+    const completeTile = 0 === (header.flags & ImdlFlags.Incomplete);
+    const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
+    isLeaf = (emptyTile || isVolumeClassifier); // Current classifier algorithm supports only a single tile.
+    if (!isLeaf) {
+      // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
+      // can be adversely affected by quantization issues when zooming in closely.
+      const maxLeafTolerance = 1.0;
 
-    // Must sub-divide if tile explicitly specifies...
-    let canSkipSubdivision = 0 === (header.flags & ImdlFlags.DisallowMagnification);
-    // ...or in 2d, or if app explicitly disabled magnification, or tolerance large enough to risk quantization error...
-    canSkipSubdivision = canSkipSubdivision && !is2d && !options.disableMagnification && header.tolerance <= maxLeafTolerance;
-    // ...or app specifies incomplete tiles must always be sub-divided.
-    canSkipSubdivision = canSkipSubdivision && (completeTile || !options.alwaysSubdivideIncompleteTiles);
-    if (canSkipSubdivision) {
-      const minElementsPerTile = 100;
-      if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
-        const containsCurves = 0 !== (header.flags & ImdlFlags.ContainsCurves);
-        if (!containsCurves)
-          isLeaf = true;
-        else if (undefined === sizeMultiplier)
+      // Must sub-divide if tile explicitly specifies...
+      let canSkipSubdivision = 0 === (header.flags & ImdlFlags.DisallowMagnification);
+      // ...or in 2d, or if app explicitly disabled magnification, or tolerance large enough to risk quantization error...
+      canSkipSubdivision = canSkipSubdivision && !args.is2d && !options.disableMagnification && header.tolerance <= maxLeafTolerance;
+      // ...or app specifies incomplete tiles must always be sub-divided.
+      canSkipSubdivision = canSkipSubdivision && (completeTile || !options.alwaysSubdivideIncompleteTiles);
+      if (canSkipSubdivision) {
+        const minElementsPerTile = 100;
+        if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
+          const containsCurves = 0 !== (header.flags & ImdlFlags.ContainsCurves);
+          if (!containsCurves)
+            isLeaf = true;
+          else if (undefined === sizeMultiplier)
+            sizeMultiplier = 1.0;
+        } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
           sizeMultiplier = 1.0;
-      } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
-        sizeMultiplier = 1.0;
+        }
       }
     }
   }
@@ -912,7 +953,14 @@ export class TileMetadataReader {
    * @throws [[TileReadError]]
    */
   public read(stream: ByteStream, props: TileProps): TileMetadata {
-    const content = readTileContentDescription(stream, props.sizeMultiplier, this._is2d, this._options, this._isVolumeClassifier);
+    const content = decodeTileContentDescription({
+      stream,
+      sizeMultiplier: props.sizeMultiplier,
+      is2d: this._is2d,
+      options: this._options,
+      isVolumeClassifier: this._isVolumeClassifier,
+    });
+
     return {
       contentRange: content.contentRange,
       isLeaf: content.isLeaf,

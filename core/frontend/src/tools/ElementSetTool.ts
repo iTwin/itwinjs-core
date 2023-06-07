@@ -19,7 +19,7 @@ import { Pixel } from "../render/Pixel";
 import { SelectionSet } from "../SelectionSet";
 import { DecorateContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
@@ -452,8 +452,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     try {
       const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (${id}))`;
-      // eslint-disable-next-line deprecation/deprecation
-      for await (const row of this.iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);
       }

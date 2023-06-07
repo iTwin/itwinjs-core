@@ -39,12 +39,12 @@ The following code instantiates a modal frontstage and calls `FrontstageManager.
 
 ```ts
 const modalFrontstage = new SampleModalFrontstage();
-FrontstageManager.openModalFrontstage(modalFrontstage);
+UiFramework.frontstages.openModalFrontstage(modalFrontstage);
 ```
 
 ## API Reference
 
 - [ModalFrontstage]($appui-react)
 - [ModalFrontstageInfo]($appui-react)
-- [FrontstageManager]($appui-react)
+- [FrameworkFrontstages]($appui-react)
 - [Frontstage]($appui-react:Frontstage)

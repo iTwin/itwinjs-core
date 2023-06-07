@@ -26,14 +26,14 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
 import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
+import { ViewRect } from "./common/ViewRect";
 
 // cSpell:ignore ovrs
 
@@ -203,7 +203,7 @@ class ViewAttachmentsInfo {
     const views = await Promise.all(promises);
 
     const attachmentProps = options.sheetViewAttachmentProps as ViewAttachmentInfo[];
-    assert (views.length === attachmentProps.length);
+    assert(views.length === attachmentProps.length);
     const attachments = [];
     for (let i = 0; i < views.length; i++) {
       const view = views[i];
@@ -477,8 +477,7 @@ export class SheetViewState extends ViewState2d {
   private async queryAttachmentIds(): Promise<Id64Array> {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
-    // eslint-disable-next-line deprecation/deprecation
-    for await (const row of this.iModel.query(ecsql))
+    for await (const row of this.iModel.createQueryReader(ecsql))
       ids.push(row[0]);
 
     return ids;

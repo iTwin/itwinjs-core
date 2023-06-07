@@ -6,11 +6,10 @@
  * @module Core
  */
 
-import { NodeKey } from "./hierarchy/Key";
 import { RulesetVariableJSON } from "./RulesetVariables";
 
 /** @internal */
-export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
+export const PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface";
 
 /** @internal */
 export interface CommonIpcParams {
@@ -30,24 +29,10 @@ export interface UnsetRulesetVariableParams extends CommonIpcParams {
 }
 
 /** @internal */
-export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
-  rulesetId: string;
-  imodelKey: string;
-  stateChanges: Array<{
-    nodeKey: TNodeKey | undefined;
-    isExpanded?: boolean;
-    instanceFilters?: string[];
-  }>;
-}
-
-/** @internal */
 export interface PresentationIpcInterface {
   /** Sets ruleset variable value. */
   setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void>;
 
   /** Unsets ruleset variable value. */
   unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
-
-  /** Updates hierarchy state saved on the backend. Hierarchy state is used when performing updates after iModel data changes */
-  updateHierarchyState(params: UpdateHierarchyStateParams<NodeKey>): Promise<void>;
 }

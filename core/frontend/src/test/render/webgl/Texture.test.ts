@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
-import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../ImageUtil";
+import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../common/ImageUtil";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { TextureHandle } from "../../../render/webgl/Texture";

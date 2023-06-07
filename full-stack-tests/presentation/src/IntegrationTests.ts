@@ -109,8 +109,7 @@ const initializeCommon = async (props: {
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
-        mode: HierarchyCacheMode.Disk,
-        directory: tempCachesDir,
+        mode: HierarchyCacheMode.Memory,
       },
     },
   };
