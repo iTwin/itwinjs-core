@@ -81,7 +81,15 @@ export class Checker {
     halfEdgeGraphFromIndexedLoops: false,
     offsetMesh: false,
   };
-  public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
+  public constructor(enableConsole: boolean = false, enableSave: boolean = false, enableLongTests: boolean = false) {
+    this._numErrors = 0;
+    this._numOK = 0;
+    this._savedErrors = 0;
+    this._savedOK = 0;
+    GeometryCoreTestIO.enableConsole = enableConsole;
+    GeometryCoreTestIO.enableSave = enableSave
+    GeometryCoreTestIO.enableLongTests = enableLongTests;
+  }
   public getNumErrors(): number {
     return this._savedErrors + this._numErrors;
   }
@@ -102,8 +110,8 @@ export class Checker {
   }
   public announceError(...params: any[]): boolean {
     this._numErrors++;
-    GeometryCoreTestIO.consoleLog("ERROR");
-    this.show(params);
+    GeometryCoreTestIO.consoleLogGo("ERROR");
+    this.showGo(params);
     return false;
   }
   public announceOK(): boolean {
@@ -523,6 +531,8 @@ export class Checker {
 
   // ===================================================================================
   // Output
+  // ck.show () -- obeys enableConsole
+  // ck.showGo () -- ignores enableConsole
   // ===================================================================================
 
   public show(...params: any[]) {
@@ -531,6 +541,14 @@ export class Checker {
       GeometryCoreTestIO.consoleLog(p);
     }
   }
+
+  public showGo(...params: any[]) {
+    let p;
+    for (p of params) {
+      GeometryCoreTestIO.consoleLogGo(p);
+    }
+  }
+
   public static clearGeometry(name: string, outDir: string) {
     GeometryCoreTestIO.saveGeometry(Checker._cache, outDir, name);
 

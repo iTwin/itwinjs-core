@@ -36,6 +36,16 @@ import { SmallSystem } from "../numerics/Polynomials";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { PolylineOps } from "../geometry3d/PolylineOps";
+import { AnyCurve } from "./CurveChain";
+export interface SectionSequenceWithPlanes {
+  planes: Plane3dByOriginAndUnitNormal[];
+  sections: AnyCurve[];
+}
+
+// cspell:word CCWXY
 
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
@@ -351,6 +361,42 @@ export class CurveFactory {
       }
     }
     return arcs;
+  }
+
+  /**
+   * * Sweep the section along each segment of the centerLine until it hits the bisector plane at the next vertex.
+   * @param centerline centerline of pipe
+   * @param startSection curve data to be swept.
+   * @param wrapIfPhysicallyClosed if true and centerline is closed, make a bisector at start and end.  If false, make first and last planes perpendicular to their edges.
+   * @return array of sections, starting with the input section projected along the first edge to the first plane.
+   */
+  public static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], section: AnyCurve, wrapIfPhysicallyClosed: boolean): SectionSequenceWithPlanes | undefined {
+    const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
+    const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, wrapIfPhysicallyClosed);
+    if (planes !== undefined && planes.length > 1) {
+      // Projection to target plane, constructing sweep direction from two given planes.
+      // If successful, push the target plane and swept section to the output arrays and return the swept section.
+      // If unsuccessful, leave the output arrays alone and return the input section.
+      const doSweepToPlane = function (edgePlane0: Plane3dByOriginAndUnitNormal, edgePlane1: Plane3dByOriginAndUnitNormal, targetPlane: Plane3dByOriginAndUnitNormal, section: AnyCurve) {
+        const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
+        const transform = Transform.createFlattenAlongVectorToPlane(sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef());
+        if (transform === undefined)
+          return section;
+        const section1: AnyCurve | undefined = section!.cloneTransformed(transform) as AnyCurve;
+        if (section1 === undefined)
+          return section;
+        sectionData.planes.push(targetPlane);
+        sectionData.sections.push(section1);
+        return section1;
+      }
+
+      let currentSection = doSweepToPlane(planes[0], planes[1], planes[0], section);
+      for (let i = 1; i < planes.length; i++) {
+        currentSection = doSweepToPlane(planes[i - 1], planes[i], planes[i], currentSection);
+      }
+      return sectionData;
+    }
+    return undefined;
   }
 
   /**

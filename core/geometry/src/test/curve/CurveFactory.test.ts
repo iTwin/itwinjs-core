@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import { AxisOrder } from "../../Geometry";
+import { AxisOrder, Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
@@ -25,6 +25,12 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { RuledSweep } from "../../solid/RuledSweep";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { Transform } from "../../geometry3d/Transform";
+import { Path } from "../../curve/Path";
 
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
@@ -364,36 +370,151 @@ describe("PipeConnections", () => {
   });
 
   it.only("createMiteredSweep", () => {
-    const ck = new Checker();
+    const ck = new Checker(false, true, true);
     const allGeometry: GeometryQuery[] = [];
     const x0 = -1;
     const y0 = -2;
     const x1 = 2;
     const y1 = 3;
-    const centerline: Point3d[] = [Point3d.create(0, 0, 0), Point3d.create(0, 0, 10), Point3d.create(0, 12, 10), Point3d.create(0, 15, 8)];
+    const centerlines: Point3d[][] = [];
+    const a = 10;
+    // Just 2 edges with a 90 degree turn
+    centerlines.push([Point3d.create(0, 0, 0), Point3d.create(0, 0, 10), Point3d.create(0, 12, 10)]);
+    // closed planar
+    centerlines.push(
+      [Point3d.create(0, 0, 0), Point3d.create(0, 0, a), Point3d.create(0, a, a), Point3d.create(0, a, 0), Point3d.create(0, 0, 0)]);
+    // closed non-planar
+    centerlines.push(
+      [Point3d.create(0, 0, 0), Point3d.create(0, 0, a), Point3d.create(0, a, a), Point3d.create(4, a, 0), Point3d.create(0, 0, 0)]);
+
+    // with duplicate points.
+    centerlines.push(
+      [Point3d.create(0, 0, 0),
+      Point3d.create(0, 0, a), Point3d.create(0, 0, a),
+      Point3d.create(0, a, a),
+      Point3d.create(4, a, 0),
+      Point3d.create(0, 0, 0), Point3d.create(0, 0, 0)]);
+
+
+    const numDuplicates: number[] = [];
+    for (const centerline of centerlines) {
+      let n = 0;
+      for (let i = 0; i + 1 < centerline.length; i++) {
+        if (Geometry.isSamePoint3d(centerline[i], centerline[i + 1]))
+          n++;
+      }
+      numDuplicates.push(n);
+    }
+    const wrapIfClosed = [false, false, true, false];
     let x0Out = 0;
-    const y0Out = 0;
-    const dxOut = 20.0;
+    const z0Out = -3.0;   // for input section
+    const outDelta = 20.0;
+    // sections with various corner conditions . .
     for (const radiusA of [undefined, 0.0, 3.0]) {
-      const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
-      const sweeps = CurveFactory.createMiteredSeepSections(centerline, rectangleA, false);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out);
-      if (sweeps !== undefined) {
-        if (sweeps.sections !== undefined)
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweeps.sections, x0Out, y0Out);
-        if (sweeps.planes !== undefined) {
-          for (const plane of sweeps.planes) {
-            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, plane.getAnyPointOnPlane(), 0.25, x0Out, y0Out);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [plane.getOriginRef(), plane.getOriginRef().plus(plane.getNormalRef())], x0Out, y0Out);
+      let y0Out = 0.0
+      // open, closed, closed(true)
+      for (let centerlineIndex = 0; centerlineIndex < centerlines.length; centerlineIndex++) {
+        const centerline = centerlines[centerlineIndex];
+        const wrap = wrapIfClosed[centerlineIndex];
+        const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
+        const sweeps = CurveFactory.createMiteredSweepSections(centerline, rectangleA, wrap);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out, z0Out);
+        if (sweeps !== undefined) {
+          if (ck.testDefined(sweeps.sections) && sweeps.sections !== undefined
+            && ck.testDefined(sweeps.planes) && sweeps.planes !== undefined
+            && ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
+
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweeps.sections, x0Out, y0Out);
+            ck.testExactNumber(centerline.length - numDuplicates[centerlineIndex], sweeps.sections.length, "confirm section count");
+
+            for (const plane of sweeps.planes) {
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, plane.getAnyPointOnPlane(), 0.25, x0Out, y0Out);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [plane.getOriginRef(), plane.getOriginRef().plus(plane.getNormalRef())], x0Out, y0Out);
+            }
+
+            for (let i = 0; i < sweeps.sections.length; i++)
+              ck.testTrue(isGeometryInPlane(sweeps.sections[i], sweeps.planes[i]), "geometry in plane");
           }
         }
-
+        y0Out += outDelta;
       }
-      x0Out += dxOut;
+      x0Out += outDelta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweep");
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("createMiteredSweepStadiumExample", () => {
+    const ck = new Checker(false, true, true);
+    const allGeometry: GeometryQuery[] = [];
+    // Make a filleted rectangle for the ground path . . . the middle of the y=ay edge goes through the origin . .
+    const ax = 60;
+    const ay = 80;
+    let x0 = 0;
+    const y0 = 0;
+    const y1 = -200;
+    const y2 = -400;
+    const ySurface = 200;
+    const yMesh = 400;
+    // quirky order for making the rectangle with intended edge on y=ay edge axis ... createRectangleXY starts at upper right arc
+    const path = CurveFactory.createRectangleXY(-ax, 0, ax, ay, 0, 30)!;
+    const arc = path.children.shift()!;
+    path.children.push(arc)!;
+
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y2);
+    // stoke it ..
+    const options = new StrokeOptions();
+    options.angleTol = Angle.createDegrees(30.0);
+
+    const sweepOrigin = Point3d.create(0, ay, 0);
+    const sweepShiftFraction = 0.25;
+    // build stair cross section in YZ plane with positive Y
+    const stepSize = 10;
+    const zigZag = Sample.createZigZag(sweepOrigin, [Vector3d.create(0, stepSize, 0), Vector3d.create(0, 0, stepSize)], 5);
+    const sectionA = LineString3d.create(zigZag);
+    // const lastPoint = zigZag[zigZag.length - 1];
+    // const sectionAExtension = LineSegment3d.create(lastPoint, lastPoint.plusXYZ(0, 0, 10));
+    const sectionA2 = Path.create(zigZag);
+    const sectionB = CurveFactory.createFilletsInLineString(zigZag, stepSize / 6.0, false)!;
+
+    const ovalSection = CurveFactory.createRectangleXY(-5, -2, 5, 2, 0, 2);
+    // transform to put it on yz plane
+    const yzTransform = Transform.createOriginAndMatrixColumns(sweepOrigin, Vector3d.unitY(), Vector3d.unitZ(), Vector3d.unitX());
+    ovalSection.tryTransformInPlace(yzTransform);
+
+    const strokedLoop = path.cloneStroked(options);
+    if (strokedLoop instanceof Loop && strokedLoop.children[0] instanceof LineString3d) {
+      const strokePoints = strokedLoop.children[0].points;
+
+      for (const section of [sectionA, sectionA2, sectionB, ovalSection]) {
+        x0 += 200;
+        const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, true)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sections.sections, x0, y0);
+
+        const sweptSurface = RuledSweep.create(sections.sections as Array<CurveCollection>, false)!;
+        const builder = PolyfaceBuilder.create();
+        builder.addRuledSweep(sweptSurface);
+        const mesh = builder.claimPolyface();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, x0, ySurface);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, yMesh);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, yMesh - ay * sweepShiftFraction);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, ySurface - ay * sweepShiftFraction);
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweepStadiumExample");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
+
+function isGeometryInPlane(geometry: GeometryQuery, plane: Plane3dByOriginAndUnitNormal): boolean {
+  const localToWOrld = plane.getLocalToWorld();
+  const worldToLocal = localToWOrld.inverse();
+  const range = geometry.range(worldToLocal);
+  return Geometry.isSameCoordinate(0, range.low.z) && Geometry.isSameCoordinate(0, range.high.z);
+}

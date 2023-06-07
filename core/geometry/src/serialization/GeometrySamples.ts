@@ -2837,4 +2837,32 @@ export class Sample {
     }
     return builder.claimPolyface(true);
   }
+  /**
+   *  alternately move in directions in the steps array, creating numStroke total strokes.
+   * * if start is a single point, create a new point array with start as its first entry.
+   * * if start is an array, add to it.
+   * * if start is an empty array, create a new one and start at 000
+   * @param start
+   * @param steps
+   * @param numStep
+   */
+  public static createZigZag(start: Point3d | Point3d[], steps: Vector3d[], numStroke: number): Point3d[] {
+    let result: Point3d[];
+    if (Array.isArray(start)) {
+      result = start;
+      if (result.length === 0)
+        result.push(Point3d.create(0, 0, 0));
+    } else {
+      result = [start.clone()];
+    }
+    let numAdded = 0;
+    for (; ;) {
+      for (const step of steps) {
+        if (++numAdded > numStroke)
+          return result;
+        result.push(result[result.length - 1].plus(step));
+      }
+    }
+    return result;
+  }
 }

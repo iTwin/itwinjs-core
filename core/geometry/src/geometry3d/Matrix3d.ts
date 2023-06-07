@@ -1634,6 +1634,33 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createUniformScale(scale);
   }
   /**
+   * Create a matrix which sweeps along the sweepVector until hitting the plane through the origin with given normal.
+   * * To sweep an arbitrary vector U0 along direction W to vector U1 it is on a plane (through the origin) with normal N:
+   *   *   `U1 = U0 + W * alpha`
+   *   *   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
+   *   *   `U0 DOT N = - alpha * W DOT N`
+   *   *   `alpha = - U0 DOT N / W DOT N`
+   * * Insert the alpha definition in U1:
+   *   *   `U1 = U0 -  W * N DOT U0 / W DOT N`
+   *   * Write vector dot expression N DOT U0 as matrix product of (N^T * U0)
+   *   *   `U1 = U0 -  W * N^T * U0 / W DOT N`
+   *   * Note W*N^T is an outer product, i.e. a 3x3 matrix:
+   *   *    ` U1 = (I - W * N^T / W DOT N) * U0`
+   *   * and the matrix to do the sweep for any vector in place of U0 is `(I - W * N^T)`
+   * @param sweepVector sweep direction
+   * @param planeNormal normal to the target plane
+   */
+  public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
+    const result = Matrix3d.createIdentity();
+    const dot = sweepVector.dotProduct(planeNormal);
+    const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
+    if (inverse !== undefined) {
+      result.addScaledOuterProductInPlace(sweepVector, planeNormal, inverse);
+      return result;
+    }
+    return undefined;
+  }
+  /**
   * Multiply `matrix * point`, treating the point as a column vector on the right.
   * ```
   * equation
