@@ -1,12 +1,14 @@
 # Format of a row returned from an [ECSQL](./ECSQL.md) SELECT query
 
+> Code examples showing off the use of different row formats can be found in [ECSQL Code Examples](./ECSQLCodeExamples.md#specifying-row-formats)
+
 When using Concurrent query a row format can be selected. By default ConcurrentQuery engine always render top level row as array of values and not object. But it also include meta data allowing array to be converted into two other formats. The format is controlled by flag [QueryRowFormat]($common) which can have one of following values.
 
-- **UseECsqlPropertyNames**: Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql. Null values are omitted.
+- **UseECSqlPropertyNames**: Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql. Null values are omitted.
 - **UseJsPropertyNames**: Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement. Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
 - **UseECSqlPropertyIndexes**: The default format if none is specified by the caller
 
-There is tiny overhead when accessing row as `UseECsqlPropertyNames` or `UseJsPropertyNames` as it require convert array values into a object with property name and values. We recommend using array values as is allowing much better performance.
+There is tiny overhead when accessing row as `UseECSqlPropertyNames` or `UseJsPropertyNames` as it require convert array values into a object with property name and values. We recommend using array values as is allowing much better performance.
 
 > **Note** that `ECSqlStatement.getRow()` function does not take row format as parameter and always return `UseJsPropertyNames`. In future the parameter will be added but we recommend using concurrent query on both frontend and backend as it is more efficient in term of memory and performance.
 
@@ -18,8 +20,8 @@ If the ECSQL select clause item
 - has no alias and is no ECSQL system property, the ECSQL select clause item, with the **first character lowered**, becomes the property name.
 - is an ECSQL system property (see also enum [ECSqlSystemProperty]($common)):
 
-
 ### System properties when `UseJsPropertyNames` options is used
+
   System property | JavaScript Type
   --- | ---
   [ECInstanceId](./ECSQL.md#ECInstanceId-and-ECClassId) | id
@@ -33,7 +35,8 @@ If the ECSQL select clause item
   --- | ---
   [Id](./ECSQL.md#navigation-properties) | id
   [RelClassId](./ECSQL.md#navigation-properties) | relClassName
-### System properties when `UseJsPropertyNames` options is used
+
+### System properties when `UseECSqlPropertyNames` options is used
 
 >Note: the property case will be same as specified in ECSQL
 

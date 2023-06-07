@@ -95,4 +95,22 @@ describe("ArcGisUtilities", () => {
     const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS",[]);
     expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
   });
+
+  it("should validate url", async () => {
+    let status = ArcGisUtilities.validateUrl("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/PhillyCityLandmarks/MapServer", "MapServer");
+    expect(status).to.equals(MapLayerSourceStatus.Valid);
+
+    status = ArcGisUtilities.validateUrl("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/PhillyCityLandmarks/MapServer", "mapserver");
+    expect(status).to.equals(MapLayerSourceStatus.Valid);
+
+    status = ArcGisUtilities.validateUrl("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/test/PhillyCityLandmarks/MapServer", "mapserver");
+    expect(status).to.equals(MapLayerSourceStatus.Valid);
+
+    status = ArcGisUtilities.validateUrl("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/rest/services/PhillyCityLandmarks/MapServer", "FeatureServer");
+    expect(status).to.equals(MapLayerSourceStatus.IncompatibleFormat);
+
+    status = ArcGisUtilities.validateUrl("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/restXYZ/services/PhillyCityLandmarks/MapServer", "FeatureServer");
+    expect(status).to.equals(MapLayerSourceStatus.InvalidUrl);
+
+  });
 });
