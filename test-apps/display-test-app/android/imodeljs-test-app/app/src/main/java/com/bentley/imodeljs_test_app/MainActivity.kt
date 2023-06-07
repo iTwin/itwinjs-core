@@ -121,6 +121,7 @@ class AssetsPathHandler(context: Context) : WebViewAssetLoader.PathHandler {
 @Suppress("SpellCheckingInspection")
 class MainActivity : AppCompatActivity() {
     private lateinit var host: IModelJsHost
+    private var authorizationClient: DtaOidcAuthorizationClient? = null
     private var promiseName: String = ""
     private lateinit var env: JSONObject
 
@@ -132,7 +133,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         WebView.setWebContentsDebuggingEnabled(true)
         val alwaysExtractAssets = true // for debugging, otherwise the host will only extract when app version changes
-        host = IModelJsHost(this, alwaysExtractAssets, true)
+        loadEnvJson()
+        if (env.optStringNotEmpty("IMJS_OIDC_CLIENT_ID") != null) {
+            // If the env.json includes IMJS_OIDC_CLIENT_ID, set up our DtaOidcAuthorizationClient.
+            val authorizationClient = DtaOidcAuthorizationClient(this.applicationContext, env).also { this.authorizationClient = it }
+            authorizationClient.associateWithResultCallerAndOwner(this, this, this)
+        }
+        host = IModelJsHost(this, alwaysExtractAssets, authorizationClient, true)
         host.startup()
 
         val webView = WebView(this)
@@ -175,7 +182,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(webView)
 
         var args = "&standalone=true"
-        loadEnvJson()
         env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
             // ensure fileName already exists in the external files
             getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
