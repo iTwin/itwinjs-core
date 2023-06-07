@@ -20,7 +20,7 @@ parameters:
   - name: runRushAudit
     type: boolean
     default: true
-  - name: prVal
+  - name: nativePrVal
     type: boolean
     default: false
 
@@ -82,7 +82,7 @@ steps:
   - script: node common/scripts/install-run-rush.js extract-api
     displayName: rush extract-api
     workingDirectory: ${{ parameters.workingDir }}
-    condition: eq( ${{ parameters.prVal }})
+    condition: ${{ parameters.nativePrVal }}
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
