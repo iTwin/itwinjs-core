@@ -27,7 +27,7 @@ declare global {
 class ElectronIpc implements IpcSocketFrontend {
   private _api: ITwinElectronApi | IpcRenderer;
   public addListener(channelName: string, listener: IpcListener) {
-    // Starting Electron 25, Electron Event no longer extends Node Event, and as a result, is missing some properties.
+    // Starting Electron 25, Electron Event no longer extends DOM Event, and as a result, is missing some properties.
     // From Electron side this was type only change and shouldn't affect runtime (see: https://github.com/electron/typescript-definitions/pull/218).
     // To properly fix types, we would need to break IpcListener type, so casting will have to work for now.
     this._api.addListener(channelName, listener as any as ElectronListener);
