@@ -9,7 +9,11 @@ Table of contents:
   - [Tile decoding in workers](#tile-decoding-in-workers)
   - [Smaller edge encoding](#smaller-edge-encoding)
 - [Presentation](#presentation)
-- [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+  - [Renderer, editor and category on calculated properties](#renderer-editor-and-category-on-calculated-properties)
+- [Geometry](#geometry)
+  - [Sweeping a section to a sequence of planes](#sweeping-a-section-to-a-sequence-of-planes)
+  - [New constructors](#new-constructors)
+  - [Bug Fix: Swept surface constructions](#bug-fix-swept-surface-constructions)
 
 ## Display
 
