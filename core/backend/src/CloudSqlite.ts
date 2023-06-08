@@ -321,6 +321,10 @@ export namespace CloudSqlite {
     onDisconnected?: (container: CloudContainer, detach: boolean) => void;
 
     readonly cache?: CloudCache;
+    /** the baseUri of this container */
+    get baseUri(): string;
+    /** the storageType of this container */
+    get storageType(): string;
     /** The ContainerId within a storage account. */
     get containerId(): string;
     /** The *alias* to identify this CloudContainer in a CloudCache. Usually just the ContainerId. */
@@ -349,7 +353,7 @@ export namespace CloudSqlite {
      * initialize a cloud blob-store container to be used as a new CloudContainer. This creates the container's manifest of its contents, and should be
      * performed on an empty container. If an existing manifest is present, it is destroyed and a new one is created (essentially emptying the container.)
      */
-    initializeContainer(opts?: { checksumBlockNames?: boolean, blockSize: number }): void;
+    initializeContainer(args: { checksumBlockNames?: boolean, blockSize: number }): void;
 
     /**
      * Connect this CloudContainer to a CloudCache for accessing and/or modifying its contents.
@@ -749,7 +753,7 @@ export namespace CloudSqlite {
     }
 
     /**
-     * Initialize a cloud container to hold a Cloud SQliteDb. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
+     * Initialize a cloud container to hold a Cloud SQliteDb. The container must first be created via its storage supplier api (e.g. Azure, or Google).
      * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty database into the container.
      * @note this deletes any existing content in the container.
      */

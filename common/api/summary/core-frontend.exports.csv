@@ -358,12 +358,14 @@ internal;ImdlAreaPatternSymbol
 internal;ImdlAuxChannelTable = Omit
 internal;ImdlBufferView
 internal;ImdlColorDef = number[]
+internal;ImdlCompactEdges
 internal;ImdlDecodeArgs
 internal;ImdlDecodeOptions
 internal;ImdlDecoder
 internal;ImdlDictionary
 internal;ImdlDisplayParams
 internal;ImdlDocument
+internal;ImdlEdgeVisibility
 internal;ImdlIndexedEdges
 internal;ImdlInstances
 internal;ImdlMaterialAtlas

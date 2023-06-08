@@ -61,12 +61,16 @@ export class StrokeOptions {
   public get needNormals(): boolean {
     return this._needNormals !== undefined ? this._needNormals : false;
   }
-  public set needNormals(value: boolean) { this._needNormals = value; }
+  public set needNormals(value: boolean) {
+    this._needNormals = value;
+  }
   /** Whether twoSided is requested. */
   public get needTwoSided(): boolean {
     return this._needTwoSided !== undefined ? this._needTwoSided : false;
   }
-  public set needTwoSided(value: boolean) { this._needTwoSided = value; }
+  public set needTwoSided(value: boolean) {
+    this._needTwoSided = value;
+  }
   /** Optional color request flag */
   public needColors?: boolean;
   /** Default number of strokes for a circle. */

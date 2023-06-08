@@ -350,6 +350,7 @@ export class IModelTileTree extends TileTree {
   public readonly contentIdProvider: ContentIdProvider;
   public readonly stringifiedSectionClip?: string;
   public readonly tileScreenSize: number;
+  public readonly iModelTileTreeId: IModelTileTreeId;
   /** Strictly for debugging/testing - forces tile selection to halt at the specified depth. */
   public debugMaxDepth?: number;
   /** A little hacky...we must not override selectTiles(), but draw() needs to distinguish between static and dynamic tiles.
@@ -360,6 +361,7 @@ export class IModelTileTree extends TileTree {
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
+    this.iModelTileTreeId = treeId;
     this.contentIdQualifier = params.contentIdQualifier;
     this.geometryGuid = params.geometryGuid;
     this.tileScreenSize = params.tileScreenSize;
