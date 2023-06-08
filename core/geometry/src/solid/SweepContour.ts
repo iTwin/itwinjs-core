@@ -12,9 +12,11 @@ import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { AnyCurve } from "../curve/CurveChain";
 import { CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
 import { RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -41,6 +43,12 @@ export class SweepContour {
   public axis: Ray3d | undefined;
 
   private constructor(contour: CurveCollection, map: Transform, axis: Ray3d | undefined) {
+    // hm it seems that bare CurvePrimitives slip through the type checking but some later steps go blank. Wrap them as Path ...
+    if (contour instanceof CurvePrimitive) {
+      const primitive = contour;
+      contour = new Path();
+      contour.tryAddChild(primitive);
+    }
     this.curves = contour;
     this.localToWorld = map;
     this.axis = axis;
@@ -52,7 +60,7 @@ export class SweepContour {
   public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
     if (localToWorld) {
-    return new SweepContour(contour, localToWorld, undefined);
+      return new SweepContour(contour, localToWorld, undefined);
     }
     return undefined;
   }
@@ -136,7 +144,7 @@ export class SweepContour {
 
   private _xyStrokes?: AnyCurve;
   private _facets?: IndexedPolyface;
-  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes;}
+  public get xyStrokes(): AnyCurve | undefined { return this._xyStrokes; }
   /**
    * build the (cached) internal facets.
    * @param options options for stroking the curves.
