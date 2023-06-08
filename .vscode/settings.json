@@ -110,6 +110,8 @@
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib",
   "cSpell.words": [
-    "AUTOINCREMENT"
+    "AUTOINCREMENT",
+    "FOREIGNKEY",
+    "subquery"
   ]
 }

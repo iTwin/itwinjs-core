@@ -10,7 +10,7 @@ import * as fs from "fs";
 import { dirname } from "path";
 import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BentleyError, DbResult, OpenMode } from "@itwin/core-bentley";
+import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";

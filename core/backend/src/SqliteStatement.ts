@@ -35,7 +35,6 @@ function checkBind(stat: DbResult) {
     throw new IModelError(stat, "SQLite Bind error");
 }
 
-
 /** Executes SQLite SQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
@@ -124,7 +123,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     return false; // unreachable
   }
 
-  protected throwSqlError(rc: DbResult) {
+  public throwSqlError(rc: DbResult) {
     throw new SqliteStatement.DbError(
       rc === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY ? "ValueIsInUse" :
         rc === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE ? "DuplicateValue" :
