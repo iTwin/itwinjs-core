@@ -35,7 +35,7 @@ A new method [CurveFactory.createMiteredSweepSections]($core-geometry) moves a s
 
 Here are two examples of sections moving along a (red) path.  The first section is alternating lines and arcs.  The second is a rectangle with rounded corners.
 
-![createMiteredSweepSectionsSections](./assets/sweepSequence.png.jpg)
+![createMiteredSweepSectionsSections](./assets/sweepSequence.png)
 
 Here are those result sections assembled into RuledSweep solids and then faceted as meshes.
 
