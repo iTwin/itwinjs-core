@@ -366,6 +366,12 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect same coordinate", dataA, dataB, params);
   }
+  public testNumberInRange1d(dataA: number, range: Range1d, ...params: any[]): boolean {
+    if (range.containsX(dataA))
+      return this.announceOK();
+    return this.announceError("Expect number in range", dataA, range, params);
+  }
+
   public testSmallRelative(dataA: number, ...params: any[]): boolean {
     if (Geometry.isSmallRelative(dataA))
       return this.announceOK();

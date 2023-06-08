@@ -30,8 +30,8 @@ import { StrokeOptions } from "../../curve/StrokeOptions";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { Transform } from "../../geometry3d/Transform";
-import { Path } from "../../curve/Path";
-
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Range1d } from "../../geometry3d/Range";
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
     const allGeometry: GeometryQuery[] = [];
@@ -369,8 +369,8 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("createMiteredSweep", () => {
-    const ck = new Checker(false, true, true);
+  it("createMiteredSweep", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const x0 = -1;
     const y0 = -2;
@@ -445,8 +445,8 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("createMiteredSweepStadiumExample", () => {
-    const ck = new Checker(false, true, true);
+  it("createMiteredSweepStadiumExample", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     // Make a filleted rectangle for the ground path . . . the middle of the y=ay edge goes through the origin . .
     const ax = 60;
@@ -471,11 +471,9 @@ describe("PipeConnections", () => {
     const sweepShiftFraction = 0.25;
     // build stair cross section in YZ plane with positive Y
     const stepSize = 10;
-    const zigZag = Sample.createZigZag(sweepOrigin, [Vector3d.create(0, stepSize, 0), Vector3d.create(0, 0, stepSize)], 5);
+    const numZigZagEdge = 5;
+    const zigZag = Sample.createZigZag(sweepOrigin, [Vector3d.create(0, stepSize, 0), Vector3d.create(0, 0, stepSize)], numZigZagEdge);
     const sectionA = LineString3d.create(zigZag);
-    // const lastPoint = zigZag[zigZag.length - 1];
-    // const sectionAExtension = LineSegment3d.create(lastPoint, lastPoint.plusXYZ(0, 0, 10));
-    const sectionA2 = Path.create(zigZag);
     const sectionB = CurveFactory.createFilletsInLineString(zigZag, stepSize / 6.0, false)!;
 
     const ovalSection = CurveFactory.createRectangleXY(-5, -2, 5, 2, 0, 2);
@@ -486,9 +484,18 @@ describe("PipeConnections", () => {
     const strokedLoop = path.cloneStroked(options);
     if (strokedLoop instanceof Loop && strokedLoop.children[0] instanceof LineString3d) {
       const strokePoints = strokedLoop.children[0].points;
-
-      for (const section of [sectionA, sectionA2, sectionB, ovalSection]) {
+      const sweepLength = strokedLoop.sumLengths();
+      for (const section of [sectionA, sectionB, ovalSection]) {
         x0 += 200;
+        let sweptGeometryLength = 0;
+        if (section instanceof CurvePrimitive) {
+          sweptGeometryLength = section.curveLength();
+        } else if (section instanceof CurveCollection) {
+          sweptGeometryLength = section.sumLengths();
+        } else {
+          ck.announceError("expect primitive or collection for section ", section);
+          break;
+        }
         const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, true)!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1);
@@ -503,6 +510,17 @@ describe("PipeConnections", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, yMesh);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, yMesh - ay * sweepShiftFraction);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, ySurface - ay * sweepShiftFraction);
+        // How to detect correctness for a complex operation . ..
+        // In these examples,
+        //    (a) the length of intermediate sections is larger than that of the original
+        //    (b) the sweep path lengths at various places along the sections are not too different from the centerline length.
+        // Check that the mesh area is fairly close to the product of those two ...
+        const fractionTolerance = 0.10;
+        const meshArea = PolyfaceQuery.sumFacetAreas(mesh);
+        const referenceArea = sweptGeometryLength * sweepLength;
+        ck.testNumberInRange1d(meshArea,
+          Range1d.createXX(0.9 & referenceArea, 1.3 * referenceArea),
+          "mesh area close to quick estimate");
       }
     }
 

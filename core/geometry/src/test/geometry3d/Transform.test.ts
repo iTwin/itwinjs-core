@@ -353,7 +353,7 @@ describe("Transform.CreateMatrixPickupPutdown", () => {
 });
 
 describe("Transform.createFlattenAlongVectorToPlane", () => {
-  it.only("Transform.createFlattenAlongVectorToPlane", () => {
+  it("Transform.createFlattenAlongVectorToPlane", () => {
     const ck = new Checker();
     const spacePoints = Sample.point3d;
     // const origins = [Point3d.createZero(), Point3d.create(1, 2, 3)];
