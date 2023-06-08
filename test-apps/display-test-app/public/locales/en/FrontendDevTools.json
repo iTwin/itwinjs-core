@@ -1,0 +1,486 @@
+{
+  "tools": {
+    "LoseWebGLContext": {
+      "keyin": "fdt webgl lose context"
+    },
+    "ToggleWiremesh": {
+      "keyin": "fdt wiremesh"
+    },
+    "ToggleDPIForLOD": {
+      "keyin": "fdt dpi lod"
+    },
+    "ToggleReadPixels": {
+      "keyin": "fdt toggle readpixels"
+    },
+    "ToggleLogZ": {
+      "keyin": "fdt toggle logz"
+    },
+    "ToggleDrapeFrustum": {
+      "keyin": "fdt toggle drapefrustum"
+    },
+    "ToggleNormalMaps": {
+      "keyin": "fdt toggle normalmaps"
+    },
+    "ReportWebGLCompatibility": {
+      "keyin": "fdt webgl report compatibility"
+    },
+    "EmphasizeSelectedElements": {
+      "keyin": "fdt emphasize selection"
+    },
+    "EmphasizeVisibleElements": {
+      "keyin": "fdt emphasize visible"
+    },
+    "IsolateSelectedElements": {
+      "keyin": "fdt isolate selection"
+    },
+    "ClearEmphasizedElements": {
+      "keyin": "fdt clear emphasized"
+    },
+    "ClearIsolatedElements": {
+      "keyin": "fdt clear isolate"
+    },
+    "ChangeViewFlags": {
+      "keyin": "fdt change viewflags"
+    },
+    "InspectElement": {
+      "keyin": "fdt inspect element"
+    },
+    "ToggleSkybox": {
+      "keyin": "fdt toggle skybox"
+    },
+    "SaveView": {
+      "keyin": "fdt save view"
+    },
+    "ApplyView": {
+      "keyin": "fdt apply view"
+    },
+    "ApplyViewById": {
+      "keyin": "fdt apply viewid"
+    },
+    "ToggleProjectExtents": {
+      "keyin": "fdt project extents"
+    },
+    "ToggleFrustumSnapshot": {
+      "keyin": "fdt frustum snapshot"
+    },
+    "ToggleSelectedViewFrustum": {
+      "keyin": "fdt frustum selected"
+    },
+    "FreezeScene": {
+      "keyin": "fdt freeze scene"
+    },
+    "ShowTileVolumes": {
+      "keyin": "fdt tile bounds"
+    },
+    "ToggleTileTreeBoundsDecoration": {
+      "keyin": "fdt tiletree bounds"
+    },
+    "TogglePrimitiveVisibility": {
+      "keyin": "fdt visibility"
+    },
+    "ToggleRealityTileBounds": {
+      "keyin": "fdt reality bounds"
+    },
+    "ToggleRealityTilePreload": {
+      "keyin": "fdt toggle reality preload"
+    },
+    "ToggleRealityTileFreeze": {
+      "keyin": "fdt toggle reality freeze"
+    },
+    "ToggleRealityTileLogging": {
+      "keyin": "fdt toggle reality logging"
+    },
+    "ToggleSectionCut": {
+      "keyin": "fdt section cut"
+    },
+    "SetAspectRatioSkew": {
+      "keyin": "fdt aspect skew"
+    },
+    "RealityTransition": {
+      "keyin": "fdt reality transition"
+    },
+    "ToggleToolTips": {
+      "keyin": "fdt tooltips"
+    },
+    "ToggleTerrain": {
+      "keyin": "fdt toggle terrain"
+    },
+    "ChangeHiliteSettings": {
+      "keyin": "fdt hilite settings"
+    },
+    "ChangeHiliteMode": {
+      "keyin": "fdt hilite mode"
+    },
+    "ChangeEmphasisSettings": {
+      "keyin": "fdt emphasis settings"
+    },
+    "ChangeFlashSettings": {
+      "keyin": "fdt flash settings"
+    },
+    "ChangeUnits": {
+      "keyin": "fdt metric"
+    },
+    "FadeOut": {
+      "keyin": "fdt fadeout"
+    },
+    "ToggleVCIntersect": {
+      "keyin": "fdt vcintersect"
+    },
+    "ToggleTileRequestDecoration": {
+      "keyin": "fdt tile requests"
+    },
+    "MeasureTileLoadTime": {
+      "keyin": "fdt time tile load"
+    },
+    "ToggleShadowFrustum": {
+      "keyin": "fdt shadow frustum"
+    },
+    "CompileShaders": {
+      "keyin": "fdt compile shaders"
+    },
+    "SelectElementsById": {
+      "keyin": "fdt select elements"
+    },
+    "DumpSelectionSet": {
+      "keyin": "fdt dump selection"
+    },
+    "AnimationInterval": {
+      "keyin": "fdt animation interval"
+    },
+    "DefaultTileSizeMod": {
+      "keyin": "fdt tilesize default"
+    },
+    "ViewportTileSizeMod": {
+      "keyin": "fdt tilesize viewport"
+    },
+    "ViewportAddRealityModel": {
+      "keyin": "fdt attach reality model"
+    },
+    "ViewportDetachRealityModel": {
+      "keyin": "fdt detach reality model"
+    },
+    "DumpLayerSettings": {
+      "keyin": "fdt layer dump"
+    },
+    "ChangeLayerSettings": {
+      "keyin": "fdt layer set"
+    },
+    "OverrideSubCategory": {
+      "keyin": "fdt subcat ovr"
+    },
+    "OverrideSubCategoryPriority": {
+      "keyin": "fdt subcat priority"
+    },
+    "ClipColorTool": {
+      "keyin": "fdt clip color"
+    },
+    "TestClipStyle": {
+      "keyin": "fdt test clip style"
+    },
+    "SourceAspectIdFromElementId": {
+      "keyin": "fdt sourceId from elemId"
+    },
+    "ElementIdFromSourceAspectId": {
+      "keyin": "fdt elemId from sourceId"
+    },
+    "AttachMapLayerTool": {
+      "Messages": {
+        "MapLayerAttached": "Map layer '{{sourceName}}' attached.",
+        "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
+        "MapLayerValidationFailed": "Validation failed for map layer '{{sourceName}}}'",
+        "MapLayerAttachError": "Error '{{error}}' occurred while attaching map layer '{{sourceName}}'",
+        "MapLayersIncompatibleFormat": "Format for map layer '{{sourceName}}' is not compatible with service type"
+      },
+      "keyin": "fdt attach maplayer"
+    },
+    "AttachMapOverlayTool": {
+      "keyin": "fdt attach mapoverlay"
+    },
+    "AttachWmsMapLayerTool": {
+      "keyin": "fdt attach wms maplayer"
+    },
+    "AttachWmtsMapLayerTool": {
+      "keyin": "fdt attach wmts maplayer"
+    },
+    "MapLayerZoom": {
+      "keyin": "fdt zoom maplayer"
+    },
+    "AttachArcGISMapLayerTool": {
+      "keyin": "fdt attach arcgis maplayer"
+    },
+    "AttachArcGISFeatureMapLayerTool": {
+      "keyin": "fdt attach arcgisfeature maplayer"
+    },
+    "AttachTileURLMapLayerTool": {
+      "keyin": "fdt attach tileurl maplayer"
+    },
+    "AttachModelMapLayerTool": {
+      "keyin": "fdt attach model maplayer"
+    },
+    "SetMapBaseTool": {
+      "keyin": "fdt set map base url"
+    },
+    "SetMapBaseColorTool": {
+      "keyin": "fdt set map base color"
+    },
+    "SetMapBaseTransparencyTool": {
+      "keyin": "fdt set map base transparency"
+    },
+    "SetMapBaseVisibilityTool": {
+      "keyin": "fdt set map base visibility"
+    },
+    "DetachMapLayersTool": {
+      "keyin": "fdt detach maplayers"
+    },
+    "SetMapLayerTransparency": {
+      "keyin": "fdt set mapLayer transparency"
+    },
+    "SetMapSubLayerVisibility": {
+      "keyin": "fdt set mapsublayer visibility"
+    },
+    "SetMapLayerVisibility": {
+      "keyin": "fdt set mapLayer visibility"
+    },
+    "ReorderMapLayers": {
+      "keyin": "fdt reorder maplayer"
+    },
+    "Toggle3dManipulations": {
+      "keyin": "fdt 3dmanip"
+    },
+    "AttachRealityModelTool": {
+      "keyin": "fdt attach reality properties"
+    },
+    "AttachCesiumAssetTool": {
+      "keyin": "fdt attach cesium asset"
+    },
+    "SetBuildingDisplay": {
+      "keyin": "fdt set building display"
+    },
+    "ExtensionService": {
+      "keyin": "fdt add extensionService"
+    },
+    "SaveRealityModelTool": {
+      "keyin": "fdt save reality properties"
+    },
+    "SetRealityModelColorTool": {
+      "keyin": "fdt set reality model color"
+    },
+    "SetRealityModelTransparencyTool": {
+      "keyin": "fdt set reality model transparency"
+    },
+    "SetRealityModelLocateTool": {
+      "keyin": "fdt set reality model locatable"
+    },
+    "SetRealityModelEmphasizedTool": {
+      "keyin": "fdt set reality model emphasized"
+    },
+    "SetModelColorTool": {
+      "keyin": "fdt set model color"
+    },
+    "SetModelTransparencyTool": {
+      "keyin": "fdt set model transparency"
+    },
+    "SetModelLocateTool": {
+      "keyin": "fdt set model locatable"
+    },
+    "SetModelEmphasizedTool": {
+      "keyin": "fdt set model emphasized"
+    },
+    "SetModelLineWeightTool": {
+      "keyin": "fdt set model line weight"
+    },
+    "SetModelLineCodeTool": {
+      "keyin": "fdt set model line code"
+    },
+    "SetModelIgnoresMaterialsTool": {
+      "keyin": "fdt set model ignores materials"
+    },
+    "ClearRealityModelAppearanceOverrides": {
+      "keyin": "fdt clear reality model overrides"
+    },
+    "ClearModelAppearanceOverrides": {
+      "keyin": "fdt clear model overrides"
+    },
+    "ToggleViewAttachments": {
+      "keyin": "fdt attachments"
+    },
+    "ToggleViewAttachmentBoundaries": {
+      "keyin": "fdt attachment bounds"
+    },
+    "ToggleViewAttachmentClipShapes": {
+      "keyin": "fdt attachment clip shapes"
+    },
+    "ApplyRenderingStyle": {
+      "keyin": "fdt apply rendering style"
+    },
+    "SaveRenderingStyle": {
+      "keyin": "fdt save rendering style"
+    },
+    "SetAASamples": {
+      "keyin": "fdt aasamples"
+    },
+    "ChangeCamera": {
+      "keyin": "fdt camera"
+    },
+    "ToggleDrawingGraphics": {
+      "keyin": "fdt drawing graphics"
+    },
+    "ToggleSectionDrawingSpatialView": {
+      "keyin": "fdt sectiondrawing display spatial"
+    },
+    "FlipImageEffect": {
+      "keyin": "fdt effect add flip"
+    },
+    "FlipImageConfig": {
+      "keyin": "fdt effect config flip"
+    },
+    "LensDistortionEffect": {
+      "keyin": "fdt effect add lensdistortion"
+    },
+    "LensDistortionConfig": {
+      "keyin": "fdt effect config lensdistortion"
+    },
+    "EmbossEffect": {
+      "keyin": "fdt effect add emboss"
+    },
+    "GaussianBlurEffect": {
+      "keyin": "fdt effect add blur"
+    },
+    "UnsharpenEffect": {
+      "keyin": "fdt effect add unsharpen"
+    },
+    "SharpenEffect": {
+      "keyin": "fdt effect add sharpen"
+    },
+    "SharpnessEffect": {
+      "keyin": "fdt effect add sharpness"
+    },
+    "EdgeDetectionEffect": {
+      "keyin": "fdt effect add edgedetect"
+    },
+    "SaturationConfig": {
+      "keyin": "fdt effect config saturation"
+    },
+    "SaturationEffect": {
+      "keyin": "fdt effect add saturation"
+    },
+    "VignetteEffect": {
+      "keyin": "fdt effect add vignette"
+    },
+    "VignetteConfig": {
+      "keyin": "fdt effect config vignette"
+    },
+    "SnowEffect": {
+      "keyin": "fdt particle snow"
+    },
+    "ExplosionEffect": {
+      "keyin": "fdt particle explosion"
+    },
+    "ClearEffects": {
+      "keyin": "fdt effect clear"
+    },
+    "SetGpuMemoryLimit": {
+      "keyin": "fdt gpu mem limit"
+    },
+    "SetHigherPriorityRealityModelMasking": {
+      "keyin": "fdt set reality model mask by priority",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask by priority"
+      }
+    },
+    "SetMapHigherPriorityMask": {
+      "keyin": "fdt set map mask by priority"
+    },
+    "UnmaskMap": {
+      "keyin": "fdt unmask map"
+    },
+    "UnmaskRealityModel": {
+      "keyin": "fdt unmask reality model",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to unmask"
+      }
+    },
+    "MaskRealityModelByModel": {
+      "keyin": "fdt set reality model mask models",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with BIM models",
+        "IdentifyMaskModel": "Identify BIM mask models",
+        "AcceptSelection": "Accept selected element Model"
+      }
+    },
+    "MaskRealityModelByElement": {
+      "keyin": "fdt set reality model mask elements",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with elements",
+        "IdentifyMaskElement": "Identify mask elements",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskRealityModelByExcludedElement": {
+      "keyin": "fdt set reality model mask exclude elements",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with excluded elements",
+        "IdentifyMaskElement": "Identify excluded mask elements",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskRealityModelBySubCategory": {
+      "keyin": "fdt set reality model mask subcategory",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with SubCategories",
+        "IdentifyMaskSubCategory": "Identify mask SubCategory"
+      }
+    },
+    "MaskBackgroundMapByElement": {
+      "keyin": "fdt set map mask elements",
+      "Prompts": {
+        "IdentifyMaskElement": "Identify mask element",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskBackgroundMapByExcludedElement": {
+      "keyin": "fdt set map mask exclude elements",
+      "Prompts": {
+        "IdentifyMaskElement": "Identify excluded mask element",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskBackgroundMapByModel": {
+      "keyin": "fdt set map mask models",
+      "Prompts": {
+        "IdentifyMaskModel": "Identify mask model",
+        "AcceptSelection": "Accept selected element models"
+      }
+    },
+    "MaskBackgroundMapBySubCategory": {
+      "keyin": "fdt set map mask subcategory",
+      "Prompts": {
+        "IdentifyMaskSubCategory": "Identify mask subCategory"
+      }
+    },
+    "QueryScheduleScript": {
+      "keyin": "fdt query schedule script"
+    },
+    "ReverseScheduleScript": {
+      "keyin": "fdt reverse schedule script"
+    },
+    "SetScheduleScript": {
+      "keyin": "fdt set schedule script"
+    },
+    "ToggleTileTreeReferences": {
+      "keyin": "fdt toggle treerefs"
+    },
+    "WoWIgnoreBackground": {
+      "keyin": "fdt wow ignore background"
+    },
+    "SetSkySphere": {
+      "keyin": "fdt sky sphere"
+    },
+    "SetSkyCube": {
+      "keyin": "fdt sky cube"
+    },
+    "ChangeBackgroundColor": {
+      "keyin": "fdt bgcolor"
+    }
+  }
+}

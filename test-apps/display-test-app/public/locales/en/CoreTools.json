@@ -1,0 +1,478 @@
+{
+  "tools": {
+    "View": {
+      "GlobeSatellite": {
+        "keyin": "view globe satellite",
+        "description": "View a location on the globe from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the globe",
+        "flyover": "View Globe Satellite"
+      },
+      "GlobeBird": {
+        "keyin": "view globe bird",
+        "description": "View a location on the globe from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the globe",
+        "flyover": "View Globe Bird"
+      },
+      "GlobeLocation": {
+        "keyin": "view globe location",
+        "description": "View a location on the globe corresponding to a specified string; this will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed",
+        "flyover": "View Globe Location"
+      },
+      "GlobeIModel": {
+        "keyin": "view globe imodel",
+        "description": "View the project iModel on the globe so that the extent of the project is visible",
+        "flyover": "View Globe IModel"
+      },
+      "LocalEntities": {
+        "keyin": "view local entities",
+        "description": "View markers representing local entities",
+        "flyover": "View Local Entities"
+      },
+      "Pan": {
+        "keyin": "pan view",
+        "description": "Moves origin of view",
+        "flyover": "Pan View",
+        "Prompts": {
+          "FirstPoint": "Define point to pan from",
+          "NextPoint": "Define point to pan to"
+        }
+      },
+      "Rotate": {
+        "keyin": "rotate view",
+        "description": "Rotates View about specified point",
+        "flyover": "Rotate About Point",
+        "Prompts": {
+          "FirstPoint": "Identify point on element to rotate about",
+          "NextPoint": "Define amount of rotation"
+        }
+      },
+      "Zoom": {
+        "keyin": "zoom",
+        "description": "Changes view magnification",
+        "flyover": "Zoom About Point",
+        "Prompts": {
+          "FirstPoint": "Define point to zoom view about",
+          "NextPoint": "Define amount of zoom"
+        }
+      },
+      "Look": {
+        "keyin": "look",
+        "description": "Look around the design",
+        "flyover": "Look Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to begin looking around",
+          "NextPoint": "Define new view direction"
+        }
+      },
+      "LookAndMove": {
+        "keyin": "navigate view",
+        "description": "Walk around in the design",
+        "flyover": "Walk Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to look around or start moving",
+          "NextPoint": "Enter point to accept current location"
+        },
+        "Inputs": {
+          "AcceptLookPoint": "Accept point to begin look or move",
+          "WalkKeys": "Move forward, backward, left, right",
+          "ElevateKeys": "Move up and down",
+          "VelocityChange": "Increase or decrease velocity",
+          "CollideKeys": "Toggle collisions and floor detection",
+          "TouchZoneLL": "Lower left to move forward, backward, left, right",
+          "TouchZoneLR": "Lower right to look around",
+          "TouchTapLL": "Lower left to toggle up, down, left, right movement",
+          "TouchTapLR": "Lower right to toggle 2x movement speed"
+        }
+      },
+      "Walk": {
+        "keyin": "walk",
+        "description": "Walk around in the design",
+        "flyover": "Walk Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to start walking",
+          "NextPoint": "Enter point to stop walking"
+        }
+      },
+      "Fly": {
+        "keyin": "fly",
+        "description": "Fly around in the design",
+        "flyover": "Fly Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to start flying",
+          "NextPoint": "Enter point to stop flying"
+        }
+      },
+      "WindowArea": {
+        "keyin": "window area",
+        "description": "Select viewing area",
+        "flyover": "Window Area",
+        "Prompts": {
+          "FirstPoint": "Define first corner point",
+          "NextPoint": "Define opposite corner point"
+        }
+      },
+      "Scroll": {
+        "keyin": "scroll view",
+        "description": "Scrolls view",
+        "flyover": "Scroll",
+        "Prompts": {
+          "FirstPoint": "Enter point to start scrolling",
+          "NextPoint": "Enter point to stop scrolling"
+        }
+      },
+      "Fit": {
+        "keyin": "fit view",
+        "description": "Displays entire model",
+        "flyover": "Fit View",
+        "Prompts": {
+          "FirstPoint": "Select view to fit"
+        },
+        "Model": {
+          "keyin": "fit model",
+          "description": "Fit all graphics in the chosen model"
+        }
+      },
+      "SetupCamera": {
+        "keyin": "set up camera",
+        "description": "Set up view camera",
+        "flyover": "Set Up Camera",
+        "Prompts": {
+          "FirstPoint": "Define camera position",
+          "NextPoint": "Define camera target point"
+        },
+        "Labels": {
+          "CameraHeight": "Camera Height",
+          "TargetHeight": "Target Height"
+        }
+      },
+      "SetupWalkCamera": {
+        "keyin": "set up walk camera",
+        "description": "Set up walk camera",
+        "flyover": "Set Up Walk Camera",
+        "Prompts": {
+          "FirstPoint": "Define floor position",
+          "NextPoint": "Define look direction"
+        }
+      },
+      "ToggleCamera": {
+        "keyin": "camera toggle",
+        "description": "Turns on camera if off, turns off camera if on.",
+        "flyover": "Camera On/Off"
+      },
+      "Undo": {
+        "keyin": "view undo",
+        "description": "Reverses the most recent change to the Viewport.",
+        "flyover": "View Previous"
+      },
+      "Redo": {
+        "keyin": "view redo",
+        "description": "Re-applies the most recently un-done change to the Viewport.",
+        "flyover": "View Next"
+      },
+      "Standard": {
+        "keyin": "rotate to standard view",
+        "description": "align view with standard rotation",
+        "flyover": "Standard View"
+      }
+    },
+    "ViewClip": {
+      "ByPlane": {
+        "keyin": "viewclip byplane",
+        "description": "Section a view with a plane",
+        "flyover": "Section View",
+        "Prompts": {
+          "FirstPoint": "Identify point on section plane"
+        }
+      },
+      "ByShape": {
+        "keyin": "viewclip byshape",
+        "description": "Create a clip volume by shape points",
+        "flyover": "Clip Volume From Shape",
+        "Prompts": {
+          "FirstPoint": "Identify shape start point",
+          "SecondPoint": "Identify first edge endpoint",
+          "ThirdPoint": "Identify opposite corner",
+          "NextPoint": "Identify shape point"
+        }
+      },
+      "ByRange": {
+        "keyin": "viewclip byrange",
+        "description": "Create a clip volume by range from 2 points",
+        "flyover": "Clip Volume From Range",
+        "Prompts": {
+          "FirstPoint": "Identify corner of clip volume",
+          "NextPoint": "Identify opposite corner of clip volume"
+        }
+      },
+      "ByElement": {
+        "keyin": "viewclip byelement",
+        "description": "Create a clip volume from an element or selection set",
+        "flyover": "Clip Volume From Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to use for clip volume"
+        }
+      },
+      "Clear": {
+        "keyin": "viewclip clear",
+        "description": "Remove clip volume or section planes from a view",
+        "flyover": "Unclip View",
+        "Prompts": {
+          "FirstPoint": "Identify view to unclip"
+        }
+      },
+      "Message": {
+        "Clip": "View Clip",
+        "ModifyClip": "Modify View Clip"
+      }
+    },
+    "SelectView": "Select view",
+    "Select": {
+      "keyin": "select elements",
+      "description": "Selects Element for inspection or manipulation",
+      "flyover": "Select Elements"
+    },
+    "AccuDraw": {
+      "SetOrigin": {
+        "keyin": "accudraw set origin",
+        "description": "Set AccuDraw origin",
+        "flyover": "Set Origin"
+      },
+      "LockSmart": {
+        "keyin": "accudraw lock smart",
+        "description": "Set AccuDraw locks based off current state",
+        "flyover": "Smart Lock"
+      },
+      "LockX": {
+        "keyin": "accudraw lock x",
+        "description": "Set AccuDraw x axis lock",
+        "flyover": "Lock X"
+      },
+      "LockY": {
+        "keyin": "accudraw lock y",
+        "description": "Set AccuDraw y axis lock",
+        "flyover": "Lock Y"
+      },
+      "LockZ": {
+        "keyin": "accudraw lock z",
+        "description": "Set AccuDraw z axis lock",
+        "flyover": "Lock Z"
+      },
+      "LockDistance": {
+        "keyin": "accudraw lock distance",
+        "description": "Set AccuDraw distance lock",
+        "flyover": "Lock Distance"
+      },
+      "LockAngle": {
+        "keyin": "accudraw lock angle",
+        "description": "Set AccuDraw angle lock",
+        "flyover": "Lock Angle"
+      },
+      "ChangeMode": {
+        "keyin": "accudraw mode",
+        "description": "Switch AccuDraw mode between polar and rectangular",
+        "flyover": "Change Mode"
+      },
+      "RotateCycle": {
+        "keyin": "accudraw rotate cycle",
+        "description": "Set AccuDraw rotation by cycling through top, front, and side relative to current rotation",
+        "flyover": "Rotate Cycle"
+      },
+      "RotateTop": {
+        "keyin": "accudraw rotate top",
+        "description": "Set AccuDraw rotation to top",
+        "flyover": "Rotate Top"
+      },
+      "RotateFront": {
+        "keyin": "accudraw rotate front",
+        "description": "Set AccuDraw rotation to front",
+        "flyover": "Rotate Front"
+      },
+      "RotateSide": {
+        "keyin": "accudraw rotate side",
+        "description": "Set AccuDraw rotation to side",
+        "flyover": "Rotate Side"
+      },
+      "RotateView": {
+        "keyin": "accudraw rotate view",
+        "description": "Set AccuDraw rotation to view",
+        "flyover": "Rotate View"
+      },
+      "RotateAxes": {
+        "keyin": "accudraw rotate quick",
+        "description": "Set AccuDraw rotation about current origin",
+        "flyover": "Rotate Quick",
+        "Prompts": {
+          "FirstPoint": "Define X axis"
+        }
+      },
+      "RotateElement": {
+        "keyin": "accudraw rotate element",
+        "description": "Set AccuDraw rotation from element",
+        "flyover": "Rotate To Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to define rotation"
+        }
+      },
+      "DefineACSByElement": {
+        "keyin": "define acs byelement",
+        "description": "Set view ACS from element",
+        "flyover": "Define ACS By Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to define rotation"
+        }
+      },
+      "DefineACSByPoints": {
+        "keyin": "define acs bypoints",
+        "description": "Set view ACS by 3 points",
+        "flyover": "Define ACS By Points",
+        "Prompts": {
+          "FirstPoint": "Define X axis origin",
+          "SecondPoint": "Define X axis",
+          "NextPoint": "Define Y axis"
+        }
+      }
+    },
+    "Measure": {
+      "Distance": {
+        "keyin": "measure distance",
+        "description": "Measure distance between points",
+        "flyover": "Measure Distance",
+        "Prompts": {
+          "FirstPoint": "Enter point to measure from",
+          "NextPoint": "Enter point to measure to"
+        }
+      },
+      "Location": {
+        "keyin": "measure location",
+        "description": "Show coordintate location",
+        "flyover": "Show Location",
+        "Prompts": {
+          "EnterPoint": "Enter point to show location"
+        }
+      },
+      "Length": {
+        "keyin": "measure length",
+        "description": "Measure length of elements",
+        "flyover": "Measure Length"
+      },
+      "Area": {
+        "keyin": "measure area",
+        "description": "Measure area of elements",
+        "flyover": "Measure Area"
+      },
+      "Volume": {
+        "keyin": "measure volume",
+        "description": "Measure volume of elements",
+        "flyover": "Measure Volume"
+      },
+      "AreaByPoints": {
+        "keyin": "measure points area",
+        "description": "Measure area defined by points",
+        "flyover": "Measure Area By Points",
+        "Prompts": {
+          "FirstPoint": "Identify shape start point",
+          "SecondPoint": "Identify first edge endpoint",
+          "ThirdPoint": "Identify opposite corner",
+          "NextPoint": "Identify shape point"
+        }
+      },
+      "Labels": {
+        "CumulativeDistance": "Cumulative Distance",
+        "Distance": "Distance",
+        "Slope": "Slope",
+        "StartCoord": "Start Coordinate",
+        "EndCoord": "End Coordinate",
+        "Delta": "Delta",
+        "Coordinate": "Model Coordinate",
+        "LatLong": "Latitude, Longitude",
+        "Altitude": "Altitude",
+        "N": "N",
+        "S": "S",
+        "E": "E",
+        "W": "W",
+        "Length": "Length",
+        "Perimeter": "Perimeter",
+        "Area": "Area",
+        "Volume": "Volume",
+        "Centroid": "Centroid"
+      }
+    },
+    "ElementSet": {
+      "Prompts": {
+        "IdentifyElement": "Identify element",
+        "IdentifyPoint": "Identify point",
+        "ConfirmSelection": "Confirm selection",
+        "InspectResult": "Inspect result",
+        "StartPoint": "Define start point",
+        "EndPoint": "Define endpoint",
+        "StartCorner": "Define corner point",
+        "OppositeCorner": "Define opposite corner"
+      },
+      "Inputs": {
+        "CrossingLine": "Define crossing line",
+        "BoxCorners": "Define box corners",
+        "InvertSelection": "Invert selection",
+        "OverlapSelection": "Reverse inside/overlap direction",
+        "ClearSelection": "Miss to clear selection",
+        "AcceptSelection": "Accept selection",
+        "RejectSelection": "Reject selection",
+        "AcceptElement": "Accept element",
+        "AcceptPoint": "Accept point",
+        "AdditionalElement": "Identify additional elements",
+        "AdditionalPoint": "Define additional points",
+        "UndoLastPoint": "Undo last point",
+        "Accept": "Accept",
+        "Complete": "Complete",
+        "Cancel": "Cancel",
+        "Restart": "Restart",
+        "Exit": "Exit"
+      },
+      "Error": {
+        "NoFence": "No fence defined",
+        "NoFenceElems": "No elements in fence",
+        "NoFenceElemsOutside": "No elements outside fence",
+        "NoSSElems": "No elements selected",
+        "AlreadySelected": "Element is already selected",
+        "NotSelected": "Element is not selected",
+        "NotSupportedElmType": "Element type not valid for this tool",
+        "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
+      },
+      "SelectionMethods": {
+        "Pick": "Select single",
+        "Line": "Select by crossing line",
+        "Box": "Select by box corners"
+      },
+      "SelectionModes": {
+        "Replace": "Replace current selection",
+        "Add": "Add to selection",
+        "Remove": "Remove from selection"
+      }
+    },
+    "Settings": {
+      "Orientation": {
+        "Label": "Orientation",
+        "Top": "Top",
+        "Front": "Front",
+        "Left": "Left",
+        "Bottom": "Bottom",
+        "Back": "Back",
+        "Right": "Right",
+        "View": "View",
+        "Face": "Face"
+      }
+    },
+    "Extension": {
+      "keyin": "load extension",
+      "description": "Loads a extension module"
+    }
+  },
+  "touchCursor": {
+    "Activate": "Activate touch cursor",
+    "AcceptPoint": "Accept point",
+    "IdentifyPoint": "Identify point"
+  },
+  "toolAssistance": {
+    "altKey": "Alt",
+    "ctrlKey": "Ctrl",
+    "shiftKey": "Shift",
+    "inputs": "Inputs"
+  }
+}

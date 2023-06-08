@@ -9,25 +9,46 @@ import envCompatible from 'vite-plugin-env-compatible';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { externalGlobalPlugin } from 'esbuild-plugin-external-global';
 import { esbuildCommonjs, viteCommonjs } from '@kckst8/vite-plugin-commonjs';
-// import { commonjs } from '@rollup/plugin-commonjs'
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
 import ignore from 'rollup-plugin-ignore';
-// import viteInspect from "vite-plugin-inspect";
+import viteInspect from "vite-plugin-inspect";
 import replace from '@rollup/plugin-replace';
-import rollupNodeModulesPolyfillPlugin from "rollup-plugin-node-polyfills";
-import includePaths from 'rollup-plugin-includepaths'
+import copy from "rollup-plugin-copy";
+import * as packageJson from "./package.json";
+import glob from 'glob';
+import fs from 'fs';
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
+const iTwinDeps = Object.keys(packageJson.dependencies)
+  .filter((pkgName) => pkgName.startsWith("@itwin"))
+  .flatMap((pkgName) => {
+    return [`./node_modules/${pkgName}/lib/public/**`, `${pkgName.replace("@itwin/core-", "../../core/")}/src/public/**`]
+  })
+  // use require.resolve for paths
+
+const publics = glob.sync('**/public', {nodir: false});
+  const files = publics.filter(path => fs.statSync(path).isFile());
+  const dirs = publics.filter(path => fs.statSync(path).isDirectory());
+  dirs.forEach(path => path += '/**')
+  // dirs.forEach(path => iTwinDeps.push(path += '/**'))
+  // console.log('hello', require.resolve.paths('/public'))
+  // console.log(require.resolve('public', {
+  //   paths: [
+  //     ...(require.resolve.paths('public') || []),
+  //   ],
+  // }))
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   // This changes the output dir from dist to build
   process.env = {...process.env, ...loadEnv(mode, process.cwd())};
   return {
-    // define: {
+    debug: true,
+    define: {
+      // __dirname: { dirname },
     //   requireFromFile: null,
-    // },
+    },
     server: {
         open: false,
         port: 3000,
@@ -55,10 +76,28 @@ export default defineConfig(() => {
     plugins: [
       ignore(["electron"]),
       react(),
-      replace({
-        "process.env.NODE_ENV": JSON.stringify("development")
+      copy({
+        targets: [
+          {
+            src: iTwinDeps,
+            dest: "public",
+            rename: (_name, _extension, fullPath) => {
+              const regex = new RegExp("(public(?:\\\\|/))(.*)");
+              console.log("fullPath", fullPath);
+              const x = regex.exec(fullPath)[2];
+              console.log("regex.exec: ", x);
+              return x;
+            },
+          },
+        ],
+        verbose: true,
+        overwrite: true,
       }),
-      // viteInspect({ build: true }),
+      replace({
+        "process.env.NODE_ENV": JSON.stringify("development"),
+        preventAssignment: true
+      }),
+      viteInspect({ build: true }),
       svgrPlugin({
       svgrOptions: {
         icon: true,
@@ -66,9 +105,6 @@ export default defineConfig(() => {
     }),
       envCompatible(),
       tsconfigPaths(),
-      includePaths({
-        paths: ['public'],
-      })
     ],
     resolve: {
         alias: [

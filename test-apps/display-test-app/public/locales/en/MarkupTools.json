@@ -1,0 +1,98 @@
+{
+  "actions": {
+    "modify": "Modify markup",
+    "group": "Group markups",
+    "ungroup": "Ungroup markup",
+    "delete": "Delete markup",
+    "copy": "Copy markup",
+    "toFront": "Bring to front",
+    "toBack": "Send To back"
+  },
+  "tools": {
+    "Markup": {
+      "Select": {
+        "keyin": "Markup Select",
+        "description": "Markup selection tool",
+        "Prompts": {
+          "IdentifyMarkup": "Identify markup element",
+          "AcceptMarkup": "Accept markup element"
+        }
+      },
+      "Line": {
+        "keyin": "Markup Line",
+        "description": "Draw line",
+        "flyover": "Line"
+      },
+      "Rectangle": {
+        "keyin": "Markup Rectangle",
+        "description": "Draw rectangle",
+        "flyover": "Rectangle"
+      },
+      "Polygon": {
+        "keyin": "Markup Polygon",
+        "description": "Draw polygon",
+        "flyover": "Polygon",
+        "Prompts": {
+          "FirstPoint": "Identify center",
+          "NextPoint": "Define point on edge"
+        }
+      },
+      "Circle": {
+        "keyin": "Markup Circle",
+        "description": "Draw circle",
+        "flyover": "Circle",
+        "Prompts": {
+          "FirstPoint": "Identify center",
+          "NextPoint": "Define radius"
+        }
+      },
+      "Ellipse": {
+        "keyin": "Markup Ellipse",
+        "description": "Draw ellipse",
+        "flyover": "Ellipse"
+      },
+      "Arrow": {
+        "keyin": "Markup Arrow",
+        "description": "Draw arrow",
+        "flyover": "Arrow"
+      },
+      "Distance": {
+        "keyin": "Markup Distance",
+        "description": "Markup distance between points"
+      },
+      "Cloud": {
+        "keyin": "Markup Cloud",
+        "description": "Draw cloud",
+        "flyover": "Cloud"
+      },
+      "Sketch": {
+        "keyin": "Markup Sketch",
+        "description": "Draw freehand sketch",
+        "flyover": "Sketch"
+      },
+      "Symbol": {
+        "keyin": "Markup Symbol",
+        "description": "Place symbol",
+        "Prompts": {
+          "FirstPoint": "Define center or drag to define corners"
+        }
+      },
+      "Text": {
+        "Place": {
+          "keyin": "Place Markup Text",
+          "description": "Add text box",
+          "Prompts": {
+            "FirstPoint": "Identify text location"
+          }
+        },
+        "Edit": {
+          "keyin": "Edit Markup Text",
+          "description": "Edit text",
+          "Prompts": {
+            "FirstPoint": "Enter text"
+          }
+        }
+      }
+    }
+  }
+}
