@@ -68,6 +68,10 @@ jobs:
         displayName: Setup git config
 
       # Only install, audit, and build the docs if not using the core artifact
+      - script: node common/scripts/validateNextVersion.js
+        displayName: Validate NextVersion.md
+        workingDirectory: ${{ parameters.workingDir }}
+
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
         workingDirectory: ${{ parameters.workingDir }}

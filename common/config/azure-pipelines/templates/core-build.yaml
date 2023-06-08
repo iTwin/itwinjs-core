@@ -63,10 +63,6 @@ steps:
       arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
       failOnStderr: true
 
-  - script: node common/scripts/validateNextVersion.js
-    displayName: Validate NextVersion.md
-    workingDirectory: ${{ parameters.workingDir }}
-
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
