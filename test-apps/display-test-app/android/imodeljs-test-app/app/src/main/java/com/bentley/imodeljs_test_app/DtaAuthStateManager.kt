@@ -6,7 +6,6 @@
  * - The unused updateAfterRegistration function was removed.
  * - The ITM prefix was added to various items.
  * - The constructor and getInstance were changed to take an ITMApplication instead of a Context.
- * - The Log.w() function call was replaced with ITMApplication.logger.log().
  * - Added clear() and updated() functions.
  * - Added documentation comments.
  * - Added disableSharedPreferences functionality.
@@ -33,6 +32,7 @@
 package com.bentley.imodeljs_test_app
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.AnyThread
 import net.openid.appauth.*
 import org.json.JSONException
@@ -153,7 +153,7 @@ class DtaAuthStateManager private constructor(private val context: Context) {
             try {
                 AuthState.jsonDeserialize(currentState)
             } catch (ex: JSONException) {
-//                itmApplication.logger.log(ITMLogger.Severity.Warning, "Failed to deserialize stored auth state - discarding")
+                Log.w(TAG, "Failed to deserialize stored auth state - discarding")
                 AuthState()
             }
         } finally {
@@ -178,6 +178,8 @@ class DtaAuthStateManager private constructor(private val context: Context) {
     }
 
     companion object {
+        private const val TAG = "DtaAuthStateManager"
+
         /**
          * Flag to disable reading and writing the managed [AuthState] to shared preferences. Set this
          * to `true` to disable storing the [AuthState] in shared preferences and remove any existing

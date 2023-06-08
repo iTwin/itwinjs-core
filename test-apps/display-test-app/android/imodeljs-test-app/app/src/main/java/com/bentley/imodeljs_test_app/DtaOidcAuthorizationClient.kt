@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCaller
@@ -115,6 +116,7 @@ open class DtaOidcAuthorizationClient(appContext: Context, configData: JSONObjec
     }
 
     companion object {
+        private const val TAG = "DtaOidcAuthorizationClient"
         private const val DEFAULT_SCOPES = "projects:read imodelaccess:read itwinjs organization profile email imodels:read realitydata:read savedviews:read savedviews:modify itwins:read openid offline_access"
         private const val DEFAULT_REDIRECT_URI = "imodeljs://app/signin-callback"
         private fun parseConfigData(configData: JSONObject): DtaAuthSettings {
@@ -174,7 +176,7 @@ open class DtaOidcAuthorizationClient(appContext: Context, configData: JSONObjec
             initAuthState()
             launchRequestAuthorization(authStateManager.current)
         } catch (ex: Exception) {
-//            itmApplication.logger.log(ITMLogger.Severity.Error, "Error fetching token: $ex")
+            Log.e(TAG, "Error fetching token: $ex")
             AccessToken()
         }
     }
