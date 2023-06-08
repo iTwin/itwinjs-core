@@ -231,7 +231,7 @@ export class Point4d implements BeJSONFunctions {
    * * other structure with members x,y and optional z,w
    * * array of numbers
    * * default z is 0.0
-   * * default 2 is 1.0  (array[3] can replace)
+   * * default w is 1.0  (array[3] can replace)
    */
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
     if (point instanceof Point2d)
