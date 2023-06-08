@@ -19,7 +19,16 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { AuxChannelDataType } from "../../polyface/AuxData";
 import { TaggedNumericData } from "../../polyface/TaggedNumericData";
+import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
+import { BGFBAccessors } from "../../serialization/BGFBAccessors";
 import { DeepCompare } from "../../serialization/DeepCompare";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 // cSpell:word flatbuffers
 // cSpell:word fbjs
 // cSpell:word BGFB
