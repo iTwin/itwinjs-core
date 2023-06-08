@@ -106,7 +106,7 @@ export class SchemaKey {
   constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
   constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
     this._name = new ECName(name);
-    if (readOrVersion !== undefined && typeof(readOrVersion) !== "number")
+    if (readOrVersion !== undefined && typeof (readOrVersion) !== "number")
       this._version = readOrVersion;
     else
       this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
@@ -165,7 +165,7 @@ export class SchemaKey {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
+  public matches(rhs: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
         // TODO: if (this.checksum && rhs.checksum)

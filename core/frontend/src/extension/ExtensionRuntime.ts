@@ -10,7 +10,6 @@
 /* eslint-disable @itwin/no-internal-barrel-imports */
 /* eslint-disable sort-imports */
 
-import { ExtensionImpl } from "./ExtensionImpl";
 import { ExtensionHost } from "./ExtensionHost";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
@@ -89,6 +88,7 @@ import {
   ChangeFlags,
   Cluster,
   ContextRealityModelState,
+  DecorateContext,
   Decorations,
   DisclosedTileTreeSet,
   DisplayStyle2dState,
@@ -130,16 +130,19 @@ import {
   NotificationHandler,
   NotificationManager,
   NotifyMessageDetails,
+  OffScreenViewport,
   OrthographicViewState,
   PerModelCategoryVisibility,
   PhysicalModelState,
   Pixel,
   PrimitiveTool,
   RenderClipVolume,
+  RenderContext,
   RenderGraphic,
   RenderGraphicOwner,
   RenderSystem,
   Scene,
+  ScreenViewport,
   SectionDrawingModelState,
   SelectionSet,
   SheetModelState,
@@ -169,6 +172,7 @@ import {
   TwoWayViewportFrustumSync,
   TwoWayViewportSync,
   ViewClipClearTool,
+  ViewClipDecoration,
   ViewClipDecorationProvider,
   ViewClipTool,
   ViewCreator2d,
@@ -184,6 +188,7 @@ import {
   ViewState3d,
   ViewTool,
   ViewingSpace,
+  Viewport,
   canvasToImageBuffer,
   canvasToResizedCanvasWithBars,
   connectViewportFrusta,
@@ -200,6 +205,7 @@ import {
   imageElementFromUrl,
   queryTerrainElevationOffset,
   readElementGraphics,
+  readGltfGraphics,
   synchronizeViewportFrusta,
   synchronizeViewportViews,
 } from "../core-frontend";
@@ -308,6 +314,7 @@ const extensionExports = {
   CoordSource,
   CoordSystem,
   CoordinateLockOverrides,
+  DecorateContext,
   Decorations,
   DisclosedTileTreeSet,
   DisplayStyle2dState,
@@ -387,6 +394,7 @@ const extensionExports = {
   NotificationManager,
   NotifyMessageDetails,
   Npc,
+  OffScreenViewport,
   OrthographicViewState,
   OutputMessageAlert,
   OutputMessagePriority,
@@ -412,11 +420,13 @@ const extensionExports = {
   QueryRowFormat,
   Rank,
   RenderClipVolume,
+  RenderContext,
   RenderGraphic,
   RenderGraphicOwner,
   RenderMode,
   RenderSystem,
   Scene,
+  ScreenViewport,
   SectionDrawingModelState,
   SectionType,
   SelectionMethod,
@@ -477,6 +487,7 @@ const extensionExports = {
   UniformType,
   VaryingType,
   ViewClipClearTool,
+  ViewClipDecoration,
   ViewClipDecorationProvider,
   ViewClipTool,
   ViewCreator2d,
@@ -493,6 +504,7 @@ const extensionExports = {
   ViewStatus,
   ViewTool,
   ViewingSpace,
+  Viewport,
   canvasToImageBuffer,
   canvasToResizedCanvasWithBars,
   connectViewportFrusta,
@@ -509,13 +521,14 @@ const extensionExports = {
   imageElementFromUrl,
   queryTerrainElevationOffset,
   readElementGraphics,
+  readGltfGraphics,
   synchronizeViewportFrusta,
   synchronizeViewportViews,
 };
 
 // END GENERATED CODE
 
-const getExtensionApi = (id: string) => {
+const getExtensionApi = (_id: string) => {
   return {
     exports: {
       // exceptions
@@ -523,7 +536,6 @@ const getExtensionApi = (id: string) => {
       // automated
       ...extensionExports,
     },
-    api: new ExtensionImpl(id),
   };
 };
 

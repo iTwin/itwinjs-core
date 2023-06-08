@@ -1,11 +1,12 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "4.0.0-dev.47",
+  "version": "4.1.0-dev.28",
   "description": "Configuration and scripts for iTwin.js agents and backends.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/backend-webpack"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "tools/backend-webpack"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -13,7 +14,6 @@
   },
   "scripts": {
     "build": "",
-    "build:ci": "",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "",

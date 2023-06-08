@@ -6,6 +6,7 @@ trigger:
       - master
       - release/*
     exclude:
+      - release/3*
       - release/2*
       - release/1*
 
@@ -19,6 +20,7 @@ pr:
       - master
       - release/*
     exclude:
+      - release/3*
       - release/2*
       - release/1*
   paths:

@@ -37,7 +37,7 @@ export class ECClassHierarchy {
       JOIN
         meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
       `;
-    for await (const row of imodel.query(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const row of imodel.createQueryReader(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const { classId, className, schemaName } = row;
       classInfosMap.set(classId, { id: classId, name: className, schemaName });
     }
@@ -51,7 +51,7 @@ export class ECClassHierarchy {
       FROM
         meta.ClassHasBaseClasses h
       `;
-    for await (const row of imodel.query(hierarchyQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (const row of imodel.createQueryReader(hierarchyQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const { baseClassId, classId } = row;
 
       const baseClasses = baseClassHierarchy.get(classId);

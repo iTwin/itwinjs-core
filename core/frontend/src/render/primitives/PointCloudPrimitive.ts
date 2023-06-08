@@ -9,7 +9,7 @@
 import { FeatureIndex, QParams3d } from "@itwin/core-common";
 
 export interface PointCloudArgs {
-  positions: Uint8Array | Uint16Array;
+  positions: Uint8Array | Uint16Array | Float32Array;
   qparams: QParams3d;
   colors: Uint8Array;
   features: FeatureIndex;

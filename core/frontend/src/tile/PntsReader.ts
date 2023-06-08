@@ -7,13 +7,14 @@
  */
 
 import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
-import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { RealityTile } from "./internal";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {
@@ -33,7 +34,7 @@ interface DracoPointCloud {
 
 interface PointCloudProps {
   params: QParams3d;
-  points: Uint16Array;
+  points: Uint16Array | Float32Array;
   colors?: Uint8Array;
 }
 
@@ -118,7 +119,7 @@ function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps)
 function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
   const nPts = pnts.POINTS_LENGTH;
   let params: QParams3d;
-  let points: Uint16Array;
+  let points: Uint16Array | Float32Array;
 
   if (pnts.POSITION_QUANTIZED) {
     const qpos = pnts.POSITION_QUANTIZED;
@@ -131,23 +132,10 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
     params = QParams3d.fromOriginAndScale(qOrigin, qScale);
     points = new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts);
   } else {
-    const nCoords = nPts * 3;
-    const fpts = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
-    const range = Range3d.createNull();
-    for (let i = 0; i < nCoords; i += 3)
-      range.extendXYZ(fpts[i], fpts[i + 1], fpts[i + 2]);
-
-    params = QParams3d.fromRange(range);
-    const qpt = new QPoint3d();
-    const fpt = new Point3d();
-    points = new Uint16Array(3 * nPts);
-    for (let i = 0; i < nCoords; i += 3) {
-      fpt.set(fpts[i], fpts[i + 1], fpts[i + 2]);
-      qpt.init(fpt, params);
-      points[i] = qpt.x;
-      points[i + 1] = qpt.y;
-      points[i + 2] = qpt.z;
-    }
+    const qOrigin = new Point3d(0, 0, 0);
+    const qScale = new Point3d(1, 1, 1);
+    params = QParams3d.fromOriginAndScale(qOrigin, qScale);
+    points = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
   }
 
   const colors = readPntsColors(stream, dataOffset, pnts);
@@ -157,7 +145,7 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
 async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps | undefined> {
   try {
     const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-    const mesh = await dracoLoader.parse(buf, { });
+    const mesh = await dracoLoader.parse(buf, {});
     if (mesh.topology !== "point-list")
       return undefined;
 
@@ -214,18 +202,21 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
-export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{ graphic: RenderGraphic | undefined, rtcCenter: Point3d | undefined }> {
+  let graphic;
+  let rtcCenter;
   const header = new PntsHeader(stream);
   if (!header.isValid)
-    return undefined;
+    return { graphic, rtcCenter };
 
+  const range = tile.contentRange;
   const featureTableJsonOffset = stream.curPos;
   const featureStrData = stream.nextBytes(header.featureTableJsonLength);
   const featureStr = utf8ToString(featureStrData);
   const featureValue = JSON.parse(featureStr as string) as PntsProps;
 
   if (undefined === featureValue)
-    return undefined;
+    return { graphic, rtcCenter };
 
   let props: PointCloudProps | undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
@@ -242,10 +233,15 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   }
 
   if (!props)
-    return undefined;
+    return { graphic, rtcCenter };
 
-  if (featureValue.RTC_CENTER)
-    props.params = QParams3d.fromOriginAndScale(props.params.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), props.params.scale);
+  let batchRange = range;
+  if (featureValue.RTC_CENTER) {
+    rtcCenter = Point3d.fromJSON(featureValue.RTC_CENTER);
+    batchRange = range.clone();
+    batchRange.low.minus(rtcCenter, batchRange.low);
+    batchRange.high.minus(rtcCenter, batchRange.high);
+  }
 
   if (!props.colors) {
     // ###TODO we really should support uniform color instead of allocating an RGB value per point...
@@ -267,9 +263,24 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
-  const voxelSize = props.params.rangeDiagonal.maxAbs() / 256;
+  let params = props.params;
+  if (props.points instanceof Float32Array) {
+    // we don't have a true range for unquantized points, so calc one here for voxelSize
+    const rng = Range3d.createNull();
+    for (let i = 0; i < props.points.length; i += 3)
+      rng.extendXYZ(props.points[i], props.points[i + 1], props.points[i + 2]);
+    params = QParams3d.fromRange(rng);
+  }
+  // 256 here is tile.maximumSize (on non-additive refinement tiles)
+  // If additiveRefinement, set voxelSize to 0 which will cause it draw to with minPixelsPerVoxel, which defaults to 2
+  // That way, it will draw as if in pixel mode, and voxelScale will still function
+  // Checking across a variety of 10 point clouds, 2 to 4 seems to work well for pixel settings (depending on the
+  // cloud), so 2 is a decent default
+  // (If voxelSize is used normally in this case, it draws different size pixels for different tiles, and since
+  // they can overlap ranges, no good way found to calculate a voxelSize)
+  const voxelSize = tile.additiveRefinement ? 0 : params.rangeDiagonal.maxAbs() / 256;
 
-  let renderGraphic = system.createPointCloud({
+  graphic = system.createPointCloud({
     positions: props.points,
     qparams: props.params,
     colors: props.colors,
@@ -278,6 +289,6 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     colorFormat: "rgb",
   }, iModel);
 
-  renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
-  return renderGraphic;
+  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), batchRange);
+  return { graphic, rtcCenter };
 }

@@ -2,12 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module RpcInterface
- */
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
@@ -38,12 +34,7 @@ export class ElectronRpcManager extends RpcManager {
   }
 
   private static performInitialization(ipcSocket: IpcSocket, rpcs?: RpcInterfaceDefinition[]): ElectronRpcConfiguration {
-    const interfaces = rpcs ?? [
-      IModelReadRpcInterface,
-      IModelTileRpcInterface,
-      SnapshotIModelRpcInterface,
-      PresentationRpcInterface,
-    ];
+    const interfaces = rpcs ?? [];
     const config = class extends ElectronRpcConfiguration {
       public interfaces = () => interfaces;
       public protocol: ElectronRpcProtocol = new ElectronRpcProtocol(this, ipcSocket);

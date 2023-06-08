@@ -6,21 +6,24 @@
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileParams, TileRequest,
-  TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
+  GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
-import { BatchedTileContentReader } from "./BatchedTileContentReader";
+import { getMaxLevelsToSkip } from "./FrontendTiles";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
   childrenProps: Tileset3dSchema.Tile[] | undefined;
 }
 
+let channel: TileRequestChannel | undefined;
+
 /** @internal */
 export class BatchedTile extends Tile {
   private readonly _childrenProps?: Tileset3dSchema.Tile[];
+  private readonly _unskippable: boolean;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
@@ -28,11 +31,18 @@ export class BatchedTile extends Tile {
 
   public constructor(params: BatchedTileParams, tree: BatchedTileTree) {
     super(params, tree);
+
+    // The root tile never has content, so it doesn't count toward max levels to skip.
+    this._unskippable = 0 === (this.depth % getMaxLevelsToSkip());
+
     if (params.childrenProps?.length)
       this._childrenProps = params.childrenProps;
 
-    if (!this.contentId)
+    if (!this.contentId) {
       this.setIsReady();
+      // mark "undisplayable"
+      this._maximumSize = 0;
+    }
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -44,38 +54,40 @@ export class BatchedTile extends Tile {
     return RealityTileLoader.computeTileLocationPriority(this, viewports, this.tree.iModelTransform);
   }
 
-  public selectTiles(selected: BatchedTile[], args: TileDrawArgs): void {
+  public selectTiles(selected: Set<BatchedTile>, args: TileDrawArgs, closestDisplayableAncestor: BatchedTile | undefined): void {
     const vis = this.computeVisibility(args);
     if (TileVisibility.OutsideFrustum === vis)
       return;
 
-    // ###TODO proper tile refinement. Currently we simply load each level of the tree in succession until we find a tile that
-    // meets screen space error. Moreover, while we wait for children to load we stop displaying the parent.
-    // Prefer to skip some levels where appropriate.
-    // More importantly, fix tile tree structure so that children can be substituted for (portions of) parents more quickly, especially near the camera
-    // (need non-overlapping child volumes).
-    if (!this.isReady) {
-      args.insertMissing(this);
-      return;
+    if (this._unskippable) {
+      // Prevent this tile's content from being unloaded due to memory pressure.
+      args.touchedTiles.add(this);
+      args.markUsed(this);
     }
 
-    if (TileVisibility.Visible === vis && this.hasGraphics) {
+    closestDisplayableAncestor = this.hasGraphics ? this : closestDisplayableAncestor;
+    if (TileVisibility.TooCoarse === vis && (this.isReady || !this._unskippable)) {
+      args.markUsed(this);
       args.markReady(this);
-      selected.push(this);
-      return;
-    }
-
-    args.markUsed(this);
-    if (this.isReady) {
-      const childrenStatus = this.loadChildren();
-      if (TileTreeLoadStatus.Loading === childrenStatus)
+      const childrenLoadStatus = this.loadChildren();
+      if (TileTreeLoadStatus.Loading === childrenLoadStatus)
         args.markChildrenLoading();
 
       const children = this._batchedChildren;
-      if (children)
+      if (children) {
         for (const child of children)
-          child.selectTiles(selected, args);
+          child.selectTiles(selected, args, closestDisplayableAncestor);
+
+        return;
+      }
     }
+
+    // We want to display this tile. Request its content if not already loaded.
+    if ((TileVisibility.Visible === vis || this._unskippable) && !this.isReady)
+      args.insertMissing(this);
+
+    if (closestDisplayableAncestor)
+      selected.add(closestDisplayableAncestor);
   }
 
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
@@ -100,7 +112,12 @@ export class BatchedTile extends Tile {
   }
 
   public override get channel(): TileRequestChannel {
-    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-batched-models");
+    if (!channel) {
+      channel = new TileRequestChannel("itwinjs-batched-models", 20);
+      IModelApp.tileAdmin.channels.add(channel);
+    }
+
+    return channel;
   }
 
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -110,43 +127,22 @@ export class BatchedTile extends Tile {
     return response.arrayBuffer();
   }
 
-  public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, shouldAbort?: () => boolean): Promise<TileContent> {
+  public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
     if (!(data instanceof Uint8Array))
       return { };
 
-    let reader: ImdlReader | BatchedTileContentReader | undefined = ImdlReader.create({
-      stream: ByteStream.fromUint8Array(data),
-      iModel: this.tree.iModel,
-      modelId: this.tree.modelId,
-      is3d: true,
-      system,
-      isCanceled: shouldAbort,
-      options: {
-        tileId: this.contentId,
-      },
-    });
-
-    if (!reader) {
-      const gltfProps = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
-      if (gltfProps) {
-        reader = new BatchedTileContentReader({
-          props: gltfProps,
-          iModel: this.tree.iModel,
-          system,
-          shouldAbort,
-          vertexTableRequired: true,
-          modelId: this.tree.modelId,
-          isLeaf: this.isLeaf,
-          range: this.range,
-        });
-      }
+    try {
+      return await this.batchedTree.decoder.decode({
+        stream: ByteStream.fromUint8Array(data),
+        options: { tileId: this.contentId },
+        system,
+        isCanceled,
+        isLeaf: this.isLeaf,
+      });
+    } catch {
+      return { isLeaf: true };
     }
-
-    if (!reader)
-      return { };
-
-    return reader.read();
   }
 
   protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {

@@ -17,6 +17,9 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
+beta;Atmosphere
+internal;Wavelengths
+internal;WavelengthsProps
 public;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
@@ -48,9 +51,9 @@ public;BaseMapLayerSettings
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
-internal;class BentleyCloudRpcConfiguration 
-internal;BentleyCloudRpcManager 
-internal;BentleyCloudRpcParams
+beta;class BentleyCloudRpcConfiguration 
+beta;BentleyCloudRpcManager 
+beta;BentleyCloudRpcParams
 internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
@@ -94,13 +97,13 @@ public;ChangedEntities
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
-beta;ChangesetFileProps 
+internal;ChangesetFileProps 
 public;ChangesetId = string
 public;ChangesetIdWithIndex
 public;ChangesetIndex = number
 public;ChangesetIndexAndId
 public;ChangesetIndexOrId = ChangesetIndexAndId |
-beta;ChangesetProps
+public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
 alpha;ChannelConstraintError 
@@ -109,18 +112,6 @@ internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
-beta;class CloudStorageCache
-deprecated;class CloudStorageCache
-beta;CloudStorageContainerDescriptor
-deprecated;CloudStorageContainerDescriptor
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageContainerUrl
-deprecated;CloudStorageContainerUrl
-beta;CloudStorageProvider
-deprecated;CloudStorageProvider
-beta;CloudStorageTileCache 
-deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
@@ -136,7 +127,7 @@ public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
+internal;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
@@ -177,6 +168,8 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DbValueFormat
+internal;decodeTileContentDescription(args: DecodeTileContentDescriptionArgs): TileContentDescription
+internal;DecodeTileContentDescriptionArgs
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -210,7 +203,7 @@ public;ECJsNames
 public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
-beta;ECSqlReader
+beta;ECSqlReader 
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -411,7 +404,7 @@ internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
-internal;IpcAppChannel
+internal;ipcAppChannels:
 internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
@@ -470,6 +463,8 @@ public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
 public;ModelExtentsProps
+internal;ModelFeature
+internal;ModelFeature
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -482,10 +477,10 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-internal;nativeAppChannel = "nativeApp"
+internal;MultiModelPackedFeatureTable 
 internal;NativeAppFunctions
+internal;nativeAppIpcStrings:
 internal;NativeAppNotifications
-internal;nativeAppNotify = "nativeApp-notify"
 public;NavigationBindingValue
 public;NavigationValue
 public;nextHighestPowerOfTwo(num: number): number
@@ -526,7 +521,10 @@ public;OverrideFeatureAppearanceOptions
 public;OverrideModelAppearanceOptions 
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
-internal;PackedFeatureTable
+internal;PackedFeature
+internal;PackedFeatureModelTable
+internal;PackedFeatureTable 
+internal;PackedFeatureWithIndex 
 internal;ParsedTileTreeIdAndContentId
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
@@ -553,7 +551,7 @@ beta;PointCloudDisplaySettings
 beta;PointCloudEDLMode = "off" | "on" | "full"
 beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
-beta;PointWithStatus
+public;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
 internal;PolylineEdgeArgs
@@ -574,7 +572,9 @@ beta;PropertyMetaDataMap
 beta;PropertyMetaDataProps
 internal;PullChangesOptions
 public;QParams2d
+alpha;QParams2dProps
 public;QParams3d
+alpha;QParams3dProps
 public;QPoint2d
 public;QPoint2dBuffer
 public;QPoint2dBuffer
@@ -603,6 +603,7 @@ public;Rank
 internal;ReadableFormData 
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+deprecated;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
 beta;RealityDataFormat
@@ -619,6 +620,7 @@ public;RelatedElementProps
 public;RelationshipProps 
 internal;RelTypeInfo
 public;RemoveFunction = () => void
+internal;RenderFeatureTable
 public;class RenderMaterial
 public;RenderMaterial
 public;RenderMaterialAssetMapsProps
@@ -640,7 +642,7 @@ public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
 internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
-internal;class RpcConfiguration
+beta;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 deprecated;RpcContentType
@@ -652,12 +654,12 @@ internal;RpcDirectRequest
 public;RpcEndpoint
 deprecated;RpcEndpoint
 public;class RpcInterface
-internal;RpcInterfaceDefinition
-internal;RpcInterfaceEndpoints
-internal;RpcInterfaceImplementation
+beta;RpcInterfaceDefinition
+beta;RpcInterfaceEndpoints
+beta;RpcInterfaceImplementation
 internal;RpcInvocation
 internal;RpcManagedStatus
-internal;RpcManager
+beta;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
@@ -667,6 +669,7 @@ internal;RpcOperation
 internal;RpcOperationPolicy
 internal;RpcOperationPolicyProps = Partial
 internal;RpcOperationsProfile
+internal;rpcOverIpcStrings:
 internal;RpcPendingQueue
 public;RpcPendingResponse 
 internal;class RpcProtocol
@@ -700,7 +703,7 @@ public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
-internal;RpcRoutingToken
+beta;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
 internal;RpcSessionInvocation 
@@ -795,6 +798,7 @@ internal;TileContentDescription
 beta;TileContentIdentifier
 internal;TileContentMetadata
 internal;TileContentSource
+internal;TileEdgeType = "compact" | "indexed" | "non-indexed"
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader

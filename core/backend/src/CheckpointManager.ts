@@ -9,6 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
+import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
@@ -17,10 +18,9 @@ import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CloudSqlite } from "./CloudSqlite";
-import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { NativeLoggerCategory } from "@bentley/imodeljs-native";
+import { SnapshotDb, TokenArg } from "./IModelDb";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -137,13 +137,14 @@ export class V2CheckpointManager {
     return cloudCachePath;
   }
 
-  /* only used by tests that reset the state of the v2checkpointmanager. all dbs should be closed before calling this function. */
+  /* only used by tests that reset the state of the v2CheckpointManager. all dbs should be closed before calling this function. */
   public static cleanup(): void {
     for (const [_, value] of this.containers.entries()) {
       if (value.isConnected)
-        value.detach();
+        value.disconnect({ detach: true });
     }
-    this._cloudCache?.destroy();
+
+    CloudSqlite.CloudCaches.dropCache(this.cloudCacheName)?.destroy();
     this._cloudCache = undefined;
     this.containers.clear();
   }
@@ -155,19 +156,19 @@ export class V2CheckpointManager {
 
   private static get cloudCache(): CloudSqlite.CloudCache {
     if (!this._cloudCache) {
-      let rootDir = process.env.CHECKPOINT_CACHE_DIR;
-      if (!rootDir) {
-        rootDir = this.getFolder();
-        Logger.logWarning(loggerCategory, `No CHECKPOINT_CACHE_DIR found in process.env, using ${rootDir} instead.`);
+      let cacheDir = process.env.CHECKPOINT_CACHE_DIR;
+      if (!cacheDir) {
+        cacheDir = this.getFolder();
+        Logger.logWarning(loggerCategory, `No CHECKPOINT_CACHE_DIR found in process.env, using ${cacheDir} instead.`);
       } else {
         // Make sure the checkpoint_cache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
-        if (!(IModelJsFs.existsSync(path.join(rootDir, "portnumber.bcv")))) {
-          rootDir = this.getFolder();
-          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${rootDir} instead.`);
+        if (!(IModelJsFs.existsSync(path.join(cacheDir, "portnumber.bcv")))) {
+          cacheDir = this.getFolder();
+          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${cacheDir} instead.`);
         }
       }
 
-      this._cloudCache = CloudSqlite.createCloudCache({ name: this.cloudCacheName, rootDir });
+      this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
@@ -178,13 +179,14 @@ export class V2CheckpointManager {
 
   /** Member names differ slightly between the V2Checkpoint api and the CloudSqlite api. Add aliases `accessName` for `accountName` and `accessToken` for `sasToken` */
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
-    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+    return { ...from, baseUri: `https://${from.accountName}.blob.core.windows.net`, accessToken: from.sasToken, storageType: "azure" };
   }
 
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
+      // note checkpoint tokens can't be auto-refreshed because they rely on user credentials supplied through RPC. They're refreshed in SnapshotDb._refreshSas.
+      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds: -1 });
       this.containers.set(v2Props.containerId, container);
     }
     return container;
@@ -207,14 +209,18 @@ export class V2CheckpointManager {
         container.connect(this.cloudCache);
       container.checkForChanges();
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
+        const getPrefetchConfig = (name: string, defaultVal: number) => IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
+        const minRequests = getPrefetchConfig("minRequests", 3);
+        const maxRequests = getPrefetchConfig("maxRequests", 6);
+        const timeout = getPrefetchConfig("timeout", 100);
         const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
-          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
+          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, { minRequests, maxRequests, timeout });
           const done = await prefetch.promise;
-          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
+          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, { minRequests, maxRequests, timeout });
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }));
       }
       return { dbName, container };
     } catch (e: any) {
@@ -228,7 +234,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({...request.checkpoint, allowPreceding: true});
+    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({ ...request.checkpoint, allowPreceding: true });
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
@@ -297,7 +303,7 @@ export class CheckpointManager {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       if (changesetId !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, {requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, { requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
       else
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, { iModelId: request.checkpoint.iModelId, changesetId: request.checkpoint.changeset.id, iTwinId: request.checkpoint.iTwinId });
       return changesetId;

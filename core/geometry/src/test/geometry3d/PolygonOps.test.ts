@@ -25,8 +25,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
-
 function makeLoop(range: Range2d, close: boolean, ySign: number = 1): GrowableXYZArray {
   const loop = new GrowableXYZArray();
   loop.pushXYZ(range.low.x, range.low.y * ySign, 0);
@@ -136,7 +134,7 @@ describe("PolygonOps", () => {
     let x0 = 0.0;
     const allGeometry: GeometryQuery[] = [];
     for (const numHole of [0, 1, 3, 13]) {
-      console.log({ numHoles: numHole });
+      GeometryCoreTestIO.consoleLog({ numHoles: numHole });
       const range1 = Range2d.createXYXY(0, 0, numHole * a, a);
       const loops: GrowableXYZArray[] = [];
       loops.push(makeLoop(range1, true));
@@ -297,12 +295,12 @@ describe("PolygonOps", () => {
     testPolygonRayIntersection(ck, allGeometry, nonConvexPolygon, xDelta);
 
     const degeneratePolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1)];
-    const ray = Ray3d.create(Point3d.create(0,0,5), Vector3d.create(0,0,-1));
+    const ray = Ray3d.create(Point3d.create(0, 0, 5), Vector3d.create(0, 0, -1));
     ck.testUndefined(PolygonOps.convexBarycentricCoordinates(degeneratePolygon, Point3d.createZero()));
     ck.testFalse(PolygonOps.intersectRay3d(degeneratePolygon, ray).isValid, "degenerate polygon intersection is invalid");
 
     const triangle = [Point3d.create(-2, -1), Point3d.create(0, 2), Point3d.create(1, 0)];
-    const parallelRay = Ray3d.create(Point3d.create(0,0,5), Vector3d.create(1,1));
+    const parallelRay = Ray3d.create(Point3d.create(0, 0, 5), Vector3d.create(1, 1));
     ck.testFalse(PolygonOps.intersectRay3d(triangle, parallelRay).isValid, "parallel ray intersection is invalid");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "intersectRay3d");

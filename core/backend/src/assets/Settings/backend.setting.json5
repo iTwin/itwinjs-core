@@ -1,15 +1,9 @@
 {
-  "cloud/accounts": [
-    {
-      "name": "gcs/account",
-      "accessName": "https://geocoord-workspace.itwinjs.org",
-      "storageType": "azure?customuri=1&sas=1"
-    }
-  ],
   "cloud/containers": [
     {
       "name": "gcs/container",
-      "accountName": "gcs/account",
+      "baseUri": "https://geocoord-workspace.itwinjs.org",
+      "storageType": "azure",
       "containerId": "gcs",
       "isPublic": true
     }

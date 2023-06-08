@@ -5,8 +5,6 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-
-import * as semver from "semver";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
@@ -21,26 +19,65 @@ import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @internal */
+/**
+ * Specifies the required static properties of an RpcInterface class.
+ * These properties are used to identify RPC requests and responses.
+ * @beta
+ */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
-/** @internal */
+/**
+ * A class that implements the operations of an RPC interface.
+ * @beta
+ */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
+
+interface SemverType {
+  major: number;
+  minor: number;
+  patch: number;
+  prerelease?: string;
+}
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
  * in a platform-independent way. TheRpcInterface class is the base class for RPC interface definitions and implementations.
  * @public
  */
 export abstract class RpcInterface {
+
+  private static findDiff(backend: SemverType, frontend: SemverType) {
+    return backend.major !== frontend.major ? "major" : backend.minor !== frontend.minor ? "minor" : backend.patch !== frontend.patch ? "patch" : backend.prerelease !== frontend.prerelease ? "prerelease" : "same";
+  }
+
+  private static parseVer(version: string): SemverType {
+    // Split the version string into major.minor.path and prerelease tag
+    const split = version.split(/[:-]/);
+    // Split the major.minor.path into seperate components
+    const prefix = split[0].split(".");
+    if (split.length === 1) {
+      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
+    } else {
+      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]), prerelease: split[1] };
+    }
+  }
+
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
   public static isVersionCompatible(backend: string, frontend: string): boolean {
-    const difference = semver.diff(backend, frontend);
-    if (semver.prerelease(backend) || semver.prerelease(frontend)) {
-      return difference === null;
-    } else if (semver.major(backend) === 0 || semver.major(frontend) === 0) {
-      return difference === null || (difference === "patch" && semver.patch(frontend) < semver.patch(backend));
+    const backendSemver = this.parseVer(backend);
+    const frontendSemver = this.parseVer(frontend);
+    const difference = this.findDiff(backendSemver, frontendSemver);
+
+    // If the major versions are different, the versions are not compatible
+    // In the case of prerelease tags, they are compatible if the whole version string matches, otherwise it fails
+    if ((backendSemver.prerelease !== undefined || frontendSemver.prerelease !== undefined) || difference === "major") {
+      return difference === "same";
+    } else if (backendSemver.major === 0 || frontendSemver.major === 0) {
+      // If the major and minor versions match and major versions are 0, compatible as long as backend patch version is greater
+      return difference === "same" || (difference === "patch" && frontendSemver.patch < backendSemver.patch);
     } else {
-      return difference === null || difference === "patch" || (difference === "minor" && semver.minor(frontend) < semver.minor(backend));
+      // If the strings match exactly, major and minor match but patch differs, versions are compatible
+      // If minor versions differ, compatible as long as backend patch versionn is greater
+      return difference === "same" || difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);
     }
   }
 

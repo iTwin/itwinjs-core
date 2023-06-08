@@ -27,6 +27,12 @@ const pngTransparent1x1 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQ
 
 describe("ArcGisFeatureProvider", () => {
   const sandbox = sinon.createSandbox();
+  let fetchStub: any;
+
+  beforeEach(async () => {
+    // Make sure no call to fetch is made, other it creates leaks
+    fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
+  });
 
   afterEach(async () => {
     sandbox.restore();
@@ -38,7 +44,7 @@ describe("ArcGisFeatureProvider", () => {
       return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities};
     });
 
-    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: number) {
+    sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
       return NewYorkDataset.streetsLayerCapabilities;
     });
 
@@ -121,7 +127,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (id: unknown) {
       if (id === 1 ) {
         return {defaultVisibility:true};
       }
@@ -157,7 +163,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return {accessTokenRequired: false, content:{capabilities: "Query"}};
     });
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return undefined;
     });
 
@@ -172,7 +178,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {defaultVisibility:true, supportedQueryFormats:"PBF, JSON"};
     });
 
@@ -190,7 +196,7 @@ describe("ArcGisFeatureProvider", () => {
       return {accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query"}};
     });
     getLayerMetadataStub.restore();
-    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {defaultVisibility:true, supportsCoordinatesQuantization:true, supportedQueryFormats:"PBF, JSON"};
     });
 
@@ -199,7 +205,7 @@ describe("ArcGisFeatureProvider", () => {
     expect(provider.format).to.equals("PBF");
 
     getLayerMetadataStub.restore();
-    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {defaultVisibility:true, supportedQueryFormats:"JSON"};
     });
 
@@ -213,7 +219,7 @@ describe("ArcGisFeatureProvider", () => {
     expect(provider.format).to.equals("JSON");
 
     getLayerMetadataStub.restore();
-    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {defaultVisibility:true, supportedQueryFormats:"JSON"};
     });
 
@@ -222,7 +228,7 @@ describe("ArcGisFeatureProvider", () => {
     expect(provider.format).to.equals("JSON");
 
     getLayerMetadataStub.restore();
-    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {defaultVisibility:true, supportedQueryFormats:""};
     });
 
@@ -237,7 +243,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
@@ -272,7 +278,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    let getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility: true,
         supportedQueryFormats:"PBF, JSON",
@@ -307,7 +313,7 @@ describe("ArcGisFeatureProvider", () => {
 
     // Now turn ON 'supportsCoordinatesQuantization' to ON
     getLayerMetadataStub.restore();
-    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility: true,
         supportedQueryFormats:"PBF, JSON",
@@ -370,7 +376,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
@@ -403,7 +409,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
@@ -416,7 +422,8 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return {accessTokenRequired: false, content:{currentVersion: 11, capabilities: "Query"}};
     });
-    sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async  function _(_url: URL, _options?: RequestInit) {
+    fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
+    sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async  function _(_url: unknown, _options?: unknown) {
       const test = {
         headers: { "content-type" : "pbf"},
         arrayBuffer: async () => {
@@ -444,7 +451,7 @@ describe("ArcGisFeatureProvider", () => {
       ...esriFeatureSampleSource,
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
@@ -476,7 +483,7 @@ describe("ArcGisFeatureProvider", () => {
       ...esriFeatureSampleSource,
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
@@ -508,7 +515,7 @@ describe("ArcGisFeatureProvider", () => {
       ...esriFeatureSampleSource,
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
@@ -590,7 +597,7 @@ describe("ArcGisFeatureProvider", () => {
       ...esriFeatureSampleSource,
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF",
@@ -640,7 +647,7 @@ describe("ArcGisFeatureProvider", () => {
       ...esriFeatureSampleSource,
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"JSON",
@@ -687,7 +694,7 @@ describe("ArcGisFeatureProvider", () => {
       ...esriFeatureSampleSource,
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"JSON",
@@ -777,7 +784,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"JSON",
@@ -786,7 +793,6 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _requireToken?: boolean) {
       return {accessTokenRequired: false, content:{capabilities: "Query"}};
     });
-    const fetchStub = sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch");
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return {url: settings.url};

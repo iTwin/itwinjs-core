@@ -28,16 +28,31 @@ import { SpatialViewState } from "./SpatialViewState";
  * @extensions
 */
 export interface ViewCreator3dOptions {
-  /** Turn [[Camera]] on when generating the view. Defaults to true (on) */
+  /** Turn the [[Camera]] on to produce a perspective view.
+   * Default: true
+   */
   cameraOn?: boolean;
-  /** Turn [[SkyBox]] on when generating the view. */
+  /** Enables display of a [[SkyBox]] in the view. */
   skyboxOn?: boolean;
-  /** [[StandardViewId]] for the view state. */
+  /** Orients the view to one of the standard view rotations. */
   standardViewId?: StandardViewId;
-  /** Merge in props from the seed view (default spatial view) of the iModel.  */
+  /** Merge in props from a persistent "seed" view obtained from the iModel.
+   * @note The selection of the seed view is somewhat arbitrary, and the contents and styling of that view are unpredictable, so this option is not recommended.
+   */
   useSeedView?: boolean;
-  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
+  /** The desired aspect ratio of the [[Viewport]] in which the view is to be displayed.
+   * This is used to adjust the view's frustum so that the viewed models are better centered within the viewport.
+   */
   vpAspect?: number;
+  /** Indicates that geometry belonging to every [SubCategory]($backend) should be visible within the view.
+   * Each subcategory has a [SubCategoryAppearance]($common) that specifies how its geometry is displayed. This includes a [SubCategoryAppearance.invisible]($common) property that,
+   * when set to `true`, indicates the geometry should not be displayed at all. A view can override the appearances of any subcategories using a [SubCategoryOverride]($common).
+   * If `allSubCategoriesVisible` is `true`, [[ViewCreator3d]] will apply such an override to every viewed subcategory to change [SubCategoryOverride.invisible]($common) to `false`, making
+   * every subcategory visible.
+   * @note Subcategories are typically set to invisible by default for a reason.
+   * Forcing them all to be visible may produce undesirable results, such as z-fighting between geometry on different subcategories that are not intended to be viewed together.
+   */
+  allSubCategoriesVisible?: boolean;
 }
 
 /**
@@ -51,7 +66,6 @@ export interface ViewCreator3dOptions {
  * @extensions
  */
 export class ViewCreator3d {
-
   /**
    * Constructs a ViewCreator3d using an [[IModelConnection]].
    * @param _imodel [[IModelConnection]] to query for categories and/or models.
@@ -66,7 +80,7 @@ export class ViewCreator3d {
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
     const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
-      modelIds === undefined ? {} : {modelIds: CompressedId64Set.sortAndCompress(modelIds)});
+      modelIds === undefined ? {} : { modelIds: CompressedId64Set.sortAndCompress(modelIds) });
     const props = await this._createViewStateProps(
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
@@ -81,6 +95,9 @@ export class ViewCreator3d {
 
     if (options?.standardViewId)
       viewState.setStandardRotation(options.standardViewId);
+
+    if (options?.allSubCategoriesVisible)
+      viewState.displayStyle.enableAllLoadedSubCategories(viewState.categorySelector.categories);
 
     const range = viewState.computeFitRange();
     viewState.lookAtVolume(range, options?.vpAspect);
@@ -251,7 +268,7 @@ export class ViewCreator3d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
     return rows;

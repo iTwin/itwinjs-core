@@ -9,7 +9,7 @@
 import { assert, Dictionary } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Feature, MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
 import { VertexKey, VertexKeyProps, VertexMap } from "../VertexKey";

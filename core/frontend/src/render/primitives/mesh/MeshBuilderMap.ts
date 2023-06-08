@@ -9,7 +9,8 @@
 import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
+import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
 import { GeometryList } from "../geometry/GeometryList";
 import { Geometry } from "../geometry/GeometryPrimitives";
 import { PolyfacePrimitive } from "../Polyface";
@@ -96,7 +97,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     if (pointCount === 0)
       return;
 
-    const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
+    const builder = this.getBuilder(displayParams, MeshPrimitiveType.Mesh, normalCount > 0, isPlanar);
     const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.edges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
     builder.addFromPolyface(indexedPolyface, { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping }, feature);
   }
@@ -120,12 +121,12 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadStrokesPrimitive(strokePrimitive: StrokesPrimitive, feature: Feature | undefined): void {
     const { displayParams, isDisjoint, isPlanar, strokes } = strokePrimitive;
 
-    const type = isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
+    const type = isDisjoint ? MeshPrimitiveType.Point : MeshPrimitiveType.Polyline;
     const builder = this.getBuilder(displayParams, type, false, isPlanar);
     builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr, feature);
   }
 
-  public getBuilder(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilder {
+  public getBuilder(displayParams: DisplayParams, type: MeshPrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilder {
     const { facetAreaTolerance, tolerance, is2d, range } = this;
     const key = this.getKey(displayParams, type, hasNormals, isPlanar);
 
@@ -143,7 +144,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     });
   }
 
-  public getKey(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {
+  public getKey(displayParams: DisplayParams, type: MeshPrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {
     const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
 
     if (this.options.preserveOrder)
@@ -173,11 +174,11 @@ export namespace MeshBuilderMap { // eslint-disable-line no-redeclare
   export class Key {
     public order: number = 0;
     public readonly params: DisplayParams;
-    public readonly type: Mesh.PrimitiveType;
+    public readonly type: MeshPrimitiveType;
     public readonly hasNormals: boolean;
     public readonly isPlanar: boolean;
 
-    constructor(params: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean) {
+    constructor(params: DisplayParams, type: MeshPrimitiveType, hasNormals: boolean, isPlanar: boolean) {
       this.params = params;
       this.type = type;
       this.hasNormals = hasNormals;

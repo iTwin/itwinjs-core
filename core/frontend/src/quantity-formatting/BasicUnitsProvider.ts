@@ -7,7 +7,7 @@
  */
 
 import {
-  BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, UnitConversionProps, UnitProps, UnitsProvider,
 } from "@itwin/core-quantity";
 import { UnitNameKey } from "./QuantityFormatter";
 import { UNIT_EXTRA_DATA } from "./UnitsData";
@@ -81,7 +81,7 @@ export class BasicUnitsProvider implements UnitsProvider {
   }
 
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 
@@ -100,10 +100,10 @@ export class BasicUnitsProvider implements UnitsProvider {
   }
 }
 
-/** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
+/** Class that implements the minimum UnitConversionProps interface to provide information needed to convert unit values.
  * @alpha
  */
-class ConversionData implements UnitConversion {
+class ConversionData implements UnitConversionProps {
   public factor: number = 1.0;
   public offset: number = 0.0;
   public error: boolean = false;
@@ -150,10 +150,10 @@ const UNIT_DATA: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", phenomenon: "Units.ANGLE", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad" },
   // 1 rad = 180.0/PI °
-  { name: "Units.ARC_DEG", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°" },
-  { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.14159265358979323846264338327950, offset: 0.0 }, displayLabel: "'" },
-  { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: '"' },
-  { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "grad" },
+  { name: "Units.ARC_DEG", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "°" },
+  { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'" },
+  { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"' },
+  { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "grad" },
   // Time ( base unit second )
   { name: "Units.S", phenomenon: "Units.TIME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "s" },
   { name: "Units.MIN", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 60.0, offset: 0.0 }, displayLabel: "min" },

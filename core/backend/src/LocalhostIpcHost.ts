@@ -7,9 +7,11 @@
  */
 
 import * as ws from "ws";
-import { InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RpcSessionInvocation } from "@itwin/core-common";
-import { IpcHandler, IpcHost } from "./IpcHost";
+import {
+  InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings, RpcSessionInvocation,
+} from "@itwin/core-common";
 import { IModelHostOptions } from "./IModelHost";
+import { IpcHandler, IpcHost } from "./IpcHost";
 
 /** @internal */
 export interface LocalhostIpcHostOpts {
@@ -61,7 +63,7 @@ class LocalTransport extends IpcWebSocketTransport {
 }
 
 class RpcHandler extends IpcHandler {
-  public channelName = "RPC";
+  public channelName = rpcOverIpcStrings.channelName;
 
   public async request(info: InterceptedRpcRequest) {
     const invocation = RpcSessionInvocation.create(info);
@@ -73,7 +75,7 @@ class RpcHandler extends IpcHandler {
 /** @internal */
 export class LocalhostIpcHost {
   private static _initialized = false;
-  private static _socket: IpcWebSocketBackend;
+  public static socket: IpcWebSocketBackend;
 
   public static connect(connection: ws) {
     (IpcWebSocket.transport as LocalTransport).connect(connection);
@@ -85,14 +87,13 @@ export class LocalhostIpcHost {
     if (!this._initialized) {
       registerHandler = true;
       IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
-      this._socket = new IpcWebSocketBackend();
+      this.socket = new IpcWebSocketBackend();
       this._initialized = true;
     }
 
-    await IpcHost.startup({ ipcHost: { socket: this._socket }, iModelHost: opts?.iModelHost });
+    await IpcHost.startup({ ipcHost: { socket: this.socket }, iModelHost: opts?.iModelHost });
 
-    if (registerHandler) {
+    if (registerHandler)
       RpcHandler.register();
-    }
   }
 }

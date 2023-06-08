@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Decode iMdl tile content in a web worker.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

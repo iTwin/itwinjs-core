@@ -1,17 +1,17 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "4.0.0-dev.47",
+  "version": "4.1.0-dev.28",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
   "typings": "lib/cjs/ecschema-locaters",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-locaters"
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "core/ecschema-locaters"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:test-assets",
-    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
@@ -33,9 +33,25 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
+    "@bentley/aec-units-schema": "^1.0.3",
+    "@bentley/architectural-physical-schema": "^1.0.3",
+    "@bentley/bis-core-schema": "^1.0.15",
+    "@bentley/bis-custom-attributes-schema": "^1.0.0",
+    "@bentley/construction-schema": "^1.0.4",
+    "@bentley/core-custom-attributes-schema": "^1.0.3",
+    "@bentley/ecdb-map-schema": "^2.0.1",
+    "@bentley/ecdb-schema-policies-schema": "^1.0.1",
+    "@bentley/formats-schema": "^1.0.0",
+    "@bentley/linear-referencing-schema": "^2.0.3",
+    "@bentley/physical-material-schema": "^1.0.2",
+    "@bentley/plant-custom-attributes-schema": "^1.0.1",
+    "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
+    "@bentley/spatial-composition-schema": "^1.0.1",
+    "@bentley/structural-physical-schema": "^1.0.1",
+    "@bentley/units-schema": "^1.0.5",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "nightly",
+    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
@@ -46,11 +62,12 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
-    "eslint": "^7.11.0",
+    "eslint": "^8.36.0",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "sinon": "^9.0.2",
+    "typescript": "~5.0.2"
   },
   "dependencies": {
     "glob": "^7.1.2",
@@ -58,7 +75,7 @@
     "@xmldom/xmldom": "~0.8.5"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^4.0.0-dev.47"
+    "@itwin/ecschema-metadata": "workspace:^4.1.0-dev.28"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

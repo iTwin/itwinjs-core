@@ -246,7 +246,7 @@ export class FrameBuffer implements WebGLDisposable {
    */
   public invalidate(invDepth: boolean, invStencil: boolean, withMultiSampling: boolean, indices?: number[]): void {
     const gl = System.instance.context;
-    const attachments = invDepth ? (invStencil ? [gl.DEPTH_STENCIL_ATTACHMENT] : [System.instance.context.DEPTH_ATTACHMENT]) : (invDepth ? [gl.STENCIL_ATTACHMENT] : []);
+    const attachments: number[] = invDepth ? (invStencil ? [gl.DEPTH_STENCIL_ATTACHMENT] : [System.instance.context.DEPTH_ATTACHMENT]) : (invDepth ? [gl.STENCIL_ATTACHMENT] : []);
     if (undefined !== indices) {
       if (indices.length > 0) {
         for (const i of indices)

@@ -6,9 +6,9 @@ import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, ServerTimeoutError, TileContentIdentifier } from "@itwin/core-common";
+import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
+  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
   TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
 import { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
@@ -19,6 +19,11 @@ import { fakeViewState } from "./TileIO.test";
 use(sinonChai);
 
 describe("IModelTileRequestChannels", () => {
+  function getTileData() {
+    // The tile data's ArrayBuffer gets transferred to the parser on a worker thread, so cannot be reused for multiple tests - must clone.
+    return new Uint8Array(TILE_DATA_2_0.rectangle.bytes);
+  }
+
   function getCloudStorageChannel(): TileRequestChannel {
     const channels = IModelApp.tileAdmin.channels;
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
@@ -88,7 +93,7 @@ describe("IModelTileRequestChannels", () => {
       const tile = await getTile();
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
@@ -104,7 +109,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
     });
@@ -127,7 +132,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
       expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
 
@@ -181,7 +186,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(getChannel());
       expect(tile.requestChannel).to.be.undefined;
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
       expect(tile.channel).to.equal(getChannel());
@@ -240,7 +245,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(channels.rpc);
       expect(channels.getCachedContent(tile)).to.be.undefined;
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
 
       const content = channels.getCachedContent(tile)!;
@@ -284,7 +289,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
-      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      tile.channel.requestContent = async () => Promise.resolve(getTileData());
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
 
@@ -421,72 +426,3 @@ describe("TileStorage", () => {
     expect(tileRpcInterfaceStub).to.have.been.calledTwice;
   });
 });
-
-/* eslint-disable deprecation/deprecation */
-describe("CloudStorageTileCache", () => {
-  let imodel: IModelConnection;
-  let cache: TestCloudStorageTileCache;
-  let tileProps: TileContentIdentifier;
-
-  class TestCloudStorageTileCache extends CloudStorageTileCache {
-    public constructor() { super(); }
-
-    public failOnContentRequest() {
-      this.requestResource = async () => expect.fail("Not supposed to fetch cached tile!");
-    }
-
-    public failOnContainerUrlRequest() {
-      this.obtainContainerUrl = async () => expect.fail("Not supposed to fetch container URL again!");
-    }
-  }
-
-  before(async () => {
-    await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("test.bim");
-    tileProps = {
-      tokenProps: imodel.getRpcProps(),
-      treeId: "treeId",
-      contentId: "contentId",
-      guid: undefined,
-    };
-  });
-
-  after(async () => {
-    await imodel.close();
-    await TestUtility.shutdownFrontend();
-  });
-
-  beforeEach(async () => {
-    cache = new TestCloudStorageTileCache();
-  });
-
-  it("loads undefined content when backend does not support caching", async () => {
-    const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
-    expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
-
-    const content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-  });
-
-  it("does not request tile content when backend does not support caching", async () => {
-    const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
-    expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
-
-    cache.failOnContentRequest();
-    const content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-  });
-
-  it("reuses empty storage container URL", async () => {
-    const containerUrl = await IModelTileRpcInterface.getClient().getTileCacheContainerUrl(imodel.getRpcProps(), { name: imodel.iModelId! });
-    expect(containerUrl).to.eql(CloudStorageContainerUrl.empty());
-
-    let content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-
-    cache.failOnContainerUrlRequest();
-    content = await cache.retrieve(tileProps);
-    expect(content).to.be.undefined;
-  });
-});
-/* eslint-enable deprecation/deprecation */

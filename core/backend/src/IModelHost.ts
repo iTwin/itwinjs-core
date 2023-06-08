@@ -6,21 +6,22 @@
  * @module IModelHost
  */
 
+// To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
+import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
+
+import * as os from "os";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { ServerStorage } from "@itwin/object-storage-core";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
-import { Container } from "inversify";
-import * as os from "os";
-import * as path from "path";
+import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
+import { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
+import { CloudSqlite } from "./CloudSqlite";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { GeoCoordConfig } from "./GeoCoordConfig";
@@ -35,19 +36,21 @@ import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { Container } from "inversify";
+import { join, normalize as normalizeDir } from "path";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
-// cspell:ignore nodereport fatalerror apicall alicloud rpcs
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs inversify
 
-/** @alpha */
+/** @internal */
 export interface CrashReportingConfigNameValuePair {
   name: string;
   value: string;
 }
 
 /** Configuration of the crash-reporting system.
- * @alpha
+ * @internal
  */
 export interface CrashReportingConfig {
   /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. This directory will be created if it does not already exist. */
@@ -73,11 +76,25 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
+/** @beta */
+export interface AzureBlobStorageCredentials {
+  account: string;
+  accessKey: string;
+  baseUrl?: string;
+}
+
 /**
  * Options for [[IModelHost.startup]]
  * @public
  */
 export interface IModelHostOptions {
+  /**
+   * The name of the *Profile* subdirectory of [[cacheDir]] for this process. If not present, "default" is used.
+   * @see [[IModelHost.profileName]]
+   * @beta
+   */
+  profileName?: string;
+
   /**
    * Root of the directory holding all the files that iTwin.js caches
    * - If not specified at startup a platform specific default is used -
@@ -86,10 +103,6 @@ export interface IModelHostOptions {
    *   - Linux:   $(HOMEDIR)/.cache/iModelJs/
    *   where $(HOMEDIR) is documented [here](https://nodejs.org/api/os.html#os_os_homedir)
    * - if specified, ensure it is set to a folder with read/write access.
-   * - Sub-folders within this folder organize various caches -
-   *   - bc/ -> Briefcases
-   *   - appSettings/ -> Offline application settings (only relevant in native applications)
-   *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
   cacheDir?: LocalDirName;
@@ -105,7 +118,7 @@ export interface IModelHostOptions {
 
   /**
    * The kind of iModel hub server to use.
-   * @beta
+   * @internal
    */
   hubAccess?: BackendHubAccess;
 
@@ -116,19 +129,13 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @deprecated in 3.x. Use [[tileCacheStorage]] instead.
-   */
-  tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
-
-  /**
-   * @beta
    * @note A reference implementation is set for AzureServerStorage from @itwin/object-storage-azure if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
    *       set this property with a custom ServerStorage.
    */
   tileCacheStorage?: ServerStorage;
 
   /** The maximum size in bytes to which a local sqlite database used for caching tiles can grow before it is purged of least-recently-used tiles.
-   * The local cache is used only if an external cache has not been configured via [[tileCacheService]], [[tileCacheStorage]], and [[tileCacheAzureCredentials]].
+   * The local cache is used only if an external cache has not been configured via [[tileCacheStorage]], and [[tileCacheAzureCredentials]].
    * Defaults to 1 GB. Must be an unsigned integer. A value of zero disables the local cache entirely.
    * @beta
    */
@@ -139,9 +146,8 @@ export interface IModelHostOptions {
    */
   restrictTileUrlsByClientIp?: boolean;
 
-  /**
-   * Whether to enable OpenTelemetry tracing
-   * @beta
+  /** Whether to enable OpenTelemetry tracing.
+   * Defaults to `false`.
    */
   enableOpenTelemetry?: boolean;
 
@@ -171,7 +177,7 @@ export interface IModelHostOptions {
   logTileSizeThreshold?: number;
 
   /** Crash-reporting configuration
-   * @alpha
+   * @internal
    */
   crashReportingConfig?: CrashReportingConfig;
 
@@ -194,12 +200,10 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
   /** @beta */
   public workspace?: WorkspaceOpts;
-  /** @beta */
+  /** @internal */
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
-  /** @beta @deprecated in 3.x. Use [[tileCacheStorage]] instead. */
-  public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
   /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
   public compressCachedTiles?: boolean;
@@ -213,7 +217,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public logTileLoadTimeThreshold = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
   /** @internal */
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
-  /** @alpha */
+  /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
 }
 
@@ -233,7 +237,7 @@ class ApplicationSettings extends BaseSettings {
       if (val.default)
         defaults[schemaName] = val.default;
     }
-    this.addDictionary("_default_", 0, defaults);
+    this.addDictionary("_default_", 0 as SettingsPriority, defaults);
   }
 
   public constructor() {
@@ -264,6 +268,7 @@ export class IModelHost {
   public static readonly telemetry = new TelemetryManager();
 
   public static backendVersion = "";
+  private static _profileName: string;
   private static _cacheDir = "";
   private static _appWorkspace?: Workspace;
 
@@ -276,6 +281,29 @@ export class IModelHost {
   }
 
   public static configuration?: IModelHostOptions;
+
+  /**
+   * The name of the *Profile* directory (a subdirectory of "[[cacheDir]]/profiles/") for this process.
+   *
+   * The *Profile* directory is used to cache data that is specific to a type-of-usage of the iTwin.js library.
+   * It is important that information in the profile cache be consistent but isolated across sessions (i.e.
+   * data for a profile is maintained between runs, but each profile is completely independent and
+   * unaffected by the presence ot use of others.)
+   * @note **Only one process at a time may be using a given profile**, and an exception will be thrown by [[startup]]
+   * if a second process attempts to use the same profile.
+   * @beta
+   */
+  public static get profileName(): string {
+    return this._profileName;
+  }
+
+  /** The full path of the Profile directory.
+   * @see [[profileName]]
+   * @beta
+   */
+  public static get profileDir(): LocalDirName {
+    return join(this._cacheDir, "profiles", this._profileName);
+  }
 
   /** Event raised during startup to allow loading settings data */
   public static readonly onWorkspaceStartup = new BeEvent<() => void>();
@@ -301,6 +329,9 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
+  /** A string that can identify the current user to other users when collaborating. */
+  public static userMoniker = "unknown";
+
   /** Root directory holding files that iTwin.js caches */
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
@@ -324,7 +355,7 @@ export class IModelHost {
    */
   public static async getAccessToken(): Promise<AccessToken> {
     try {
-      return (await this.authorizationClient?.getAccessToken()) ?? "";
+      return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
     } catch (e) {
       return "";
     }
@@ -332,105 +363,19 @@ export class IModelHost {
 
   /** @internal */
   public static flushLog() {
-    return this.platform.flushLog();
+    return IModelHost.platform.flushLog();
   }
-  /** @internal */
-  public static loadNative(): void {
-    const platform = Platform.load();
-    this.registerPlatform(platform);
-  }
+
   private static syncNativeLogLevels() {
     this.platform.clearLogLevelCache();
   }
-
-  private static registerPlatform(platform: typeof IModelJsNative): void {
-    this._platform = platform;
-    if (undefined === platform)
+  private static loadNative(options: IModelHostOptions) {
+    if (undefined !== this._platform)
       return;
 
-    platform.logger = Logger;
-    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
-  }
-
-  /**
-   * @internal
-   * @deprecated in 3.x. Use [[IModelHost.tileStorage]] instead.
-   * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
-   */
-  public static tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
-
-  /** @internal */
-  public static tileStorage?: TileStorage;
-
-  /**
-   * @internal
-   * @deprecated in 3.x. Use [[IModelHost.tileStorage]] instead.
-   */
-  public static tileUploader?: CloudStorageTileUploader; // eslint-disable-line deprecation/deprecation
-
-  private static _hubAccess?: BackendHubAccess;
-  /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
-
-  /** get the current hubAccess, if present.
-   * @beta
-   */
-  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
-
-  /** Provides access to the IModelHub for this IModelHost
-   * @beta
-   * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
-   * To determine whether one is present, use [[getHubAccess]].
-   */
-  public static get hubAccess(): BackendHubAccess {
-    if (this._hubAccess === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
-    return this._hubAccess;
-  }
-
-  private static initializeWorkspace(configuration: IModelHostOptions) {
-    const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
-    SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
-    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
-    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
-
-    GeoCoordConfig.onStartup();
-    // allow applications to load their default settings
-    this.onWorkspaceStartup.raiseEvent();
-  }
-
-  private static _isValid = false;
-  /** Returns true if IModelHost is started.  */
-  public static get isValid() { return this._isValid; }
-  /** This method must be called before any iTwin.js services are used.
-   * @param options Host configuration data.
-   * Raises [[onAfterStartup]].
-   * @see [[shutdown]].
-   */
-  public static async startup(options?: IModelHostOptions): Promise<void> {
-    if (this._isValid)
-      return; // we're already initialized
-    this._isValid = true;
-
-    options = options ?? {};
-    if (IModelHost.sessionId === "")
-      IModelHost.sessionId = Guid.createValue();
-
-    this.authorizationClient = options.authorizationClient;
-
-    this.logStartup();
-
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
-    initializeRpcBackend(options.enableOpenTelemetry);
-
-    if (this._platform === undefined) {
-      try {
-        this.loadNative();
-      } catch (error) {
-        Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (options));
-        throw error;
-      }
-    }
+    this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
+    this._platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
 
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this.platform.setCrashReporting(options.crashReportingConfig);
@@ -453,11 +398,81 @@ export class IModelHost {
         }
       }
     }
+  }
 
-    this.setupHostDirs(options);
+  /** @internal */
+  public static tileStorage?: TileStorage;
+
+  private static _hubAccess?: BackendHubAccess;
+  /** @internal */
+  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+
+  /** get the current hubAccess, if present.
+   * @internal
+   */
+  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
+
+  /** Provides access to the IModelHub for this IModelHost
+   * @internal
+   * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
+   * To determine whether one is present, use [[getHubAccess]].
+   */
+  public static get hubAccess(): BackendHubAccess {
+    if (IModelHost._hubAccess === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
+    return IModelHost._hubAccess;
+  }
+
+  private static initializeWorkspace(configuration: IModelHostOptions) {
+    const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
+    SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
+    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+
+    // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
+    try {
+      this.appWorkspace.getCloudCache();
+    } catch (e: any) {
+      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`) : e;
+    }
+
+    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
+
+    GeoCoordConfig.onStartup();
+    // allow applications to load their default settings
+    this.onWorkspaceStartup.raiseEvent();
+  }
+
+  private static _isValid = false;
+
+  /** true between a successful call to [[startup]] and before [[shutdown]] */
+  public static get isValid() {
+    return IModelHost._isValid;
+  }
+
+  /** This method must be called before any iTwin.js services are used.
+   * @param options Host configuration data.
+   * Raises [[onAfterStartup]].
+   * @see [[shutdown]].
+   */
+  public static async startup(options?: IModelHostOptions): Promise<void> {
+    if (this._isValid)
+      return; // we're already initialized
+    this._isValid = true;
+
+    options = options ?? {};
+    if (this.sessionId === "")
+      this.sessionId = Guid.createValue();
+
+    this.authorizationClient = options.authorizationClient;
+
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    initializeRpcBackend(options.enableOpenTelemetry);
+
+    this.loadNative(options);
+    this.setupCacheDir(options);
     this.initializeWorkspace(options);
 
-    BriefcaseManager.initialize(this._briefcaseCacheDir);
+    BriefcaseManager.initialize(join(this._cacheDir, "imodels"));
 
     [
       IModelReadRpcImpl,
@@ -483,93 +498,64 @@ export class IModelHost {
     this.onAfterStartup.raiseEvent();
   }
 
-  private static _briefcaseCacheDir: LocalDirName;
+  private static setupCacheDir(configuration: IModelHostOptions) {
+    this._cacheDir = normalizeDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
+    IModelJsFs.recursiveMkDirSync(this._cacheDir);
 
-  private static logStartup() {
-    if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
-      return;
-
-    // Extract the iModel details from environment - note this is very specific to Bentley hosted backends, but is quite useful for tracing
-    let startupInfo: any = {};
-    const serviceName = process.env.FABRIC_SERVICE_NAME;
-    if (serviceName) {
-      // e.g., fabric:/iModelWebViewer3.0/iModelJSGuest/1/08daaeb3-b56f-480b-9051-7efc834d18ae/512d971d-b641-4735-bb1c-c07ab3e44ce7/c1315fcce125ca40b2d405bb7809214daf8b4c85
-      const serviceNameComponents = serviceName.split("/");
-      if (serviceNameComponents.length === 7) {
-        startupInfo = {
-          ...startupInfo,
-          iTwinId: serviceNameComponents[4],
-          iModelId: serviceNameComponents[5],
-          changesetId: serviceNameComponents[6],
-        };
-      }
-    }
-
-    Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
-  }
-
-  private static setupHostDirs(configuration: IModelHostOptions) {
-    const setupDir = (dir: LocalDirName) => {
-      dir = path.normalize(dir);
-      IModelJsFs.recursiveMkDirSync(dir);
-      return dir;
-    };
-    this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
-    this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
+    this._profileName = configuration.profileName ?? "default";
+    Logger.logInfo(loggerCategory, `cacheDir: [${this.cacheDir}], profileDir: [${this.profileDir}]`);
   }
 
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
-    // NB: This method is set as a node listener where `this` is unbound
-    if (!IModelHost._isValid)
+    // Note: This method is set as a node listener where `this` is unbound. Call private method to
+    // ensure `this` is correct. Don't combine these methods.
+    return IModelHost.doShutdown();
+  }
+
+  private static async doShutdown() {
+    if (!this._isValid)
       return;
 
-    IModelHost._isValid = false;
-    IModelHost.onBeforeShutdown.raiseEvent();
-    IModelHost.configuration = undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileCacheService = undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileUploader = undefined;
-    IModelHost.tileStorage = undefined;
-    IModelHost._appWorkspace?.close();
-    IModelHost._appWorkspace = undefined;
-    ITwinWorkspace.finalize();
+    this._isValid = false;
+    this.onBeforeShutdown.raiseEvent();
+    this.configuration = undefined;
+    this.tileStorage = undefined;
+    this._appWorkspace?.close();
+    this._appWorkspace = undefined;
+
+    CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
   /**
    * Add or update a property that should be included in a crash report.
-   * @param name The name of the property
-   * @param value The value of the property
-   * @alpha
+   * @internal
    */
   public static setCrashReportProperty(name: string, value: string): void {
-    assert(undefined !== this._platform);
-    this._platform.setCrashReportProperty(name, value);
+    this.platform.setCrashReportProperty(name, value);
   }
 
   /**
    * Remove a previously defined property so that will not be included in a crash report.
-   * @param name The name of the property
-   * @alpha
+   * @internal
    */
   public static removeCrashReportProperty(name: string): void {
-    assert(undefined !== this._platform);
-    this._platform.setCrashReportProperty(name, undefined);
+    this.platform.setCrashReportProperty(name, undefined);
   }
 
   /**
    * Get all properties that will be included in a crash report.
-   * @alpha
+   * @internal
    */
   public static getCrashReportProperties(): CrashReportingConfigNameValuePair[] {
-    assert(undefined !== this._platform);
-    return this._platform.getCrashReportProperties();
+    return this.platform.getCrashReportProperties();
   }
 
   /** The directory where application assets may be found */
-  public static get appAssetsDir(): string | undefined { return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined; }
+  public static get appAssetsDir(): string | undefined {
+    return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined;
+  }
 
   /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileTreeProps should wait before returning a "pending" status.
    * @internal
@@ -585,9 +571,13 @@ export class IModelHost {
   }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
-  public static get logTileLoadTimeThreshold(): number { return IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
+  public static get logTileLoadTimeThreshold(): number {
+    return IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  }
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
-  public static get logTileSizeThreshold(): number { return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold; }
+  public static get logTileSizeThreshold(): number {
+    return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold;
+  }
 
   /** Whether external tile caching is active.
    * @internal
@@ -599,38 +589,33 @@ export class IModelHost {
   /** Whether to restrict tile cache URLs by client IP address.
    * @internal
    */
-  public static get restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
+  public static get restrictTileUrlsByClientIp(): boolean {
+    return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false);
+  }
 
   /** Whether to compress cached tiles.
    * @internal
    */
-  public static get compressCachedTiles(): boolean { return false !== IModelHost.configuration?.compressCachedTiles; }
+  public static get compressCachedTiles(): boolean {
+    return false !== IModelHost.configuration?.compressCachedTiles;
+  }
 
   private static setupTileCache() {
     assert(undefined !== IModelHost.configuration);
     const config = IModelHost.configuration;
-    // eslint-disable-next-line deprecation/deprecation
-    const service = config.tileCacheService;
     const storage = config.tileCacheStorage;
     const credentials = config.tileCacheAzureCredentials;
 
-    if (!service && !storage && !credentials) {
+    if (!storage && !credentials) {
       this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
 
     this.platform.setMaxTileCacheSize(0);
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileUploader = new CloudStorageTileUploader();
     if (credentials) {
-      if (storage || service)
+      if (storage)
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
       this.setupAzureTileCache(credentials);
-    }
-    if (service) {
-      if (!storage)
-        Logger.logWarning(loggerCategory, "Using tileCacheService without tileCacheStorage is unsupported");
-      IModelHost.tileCacheService = service; // eslint-disable-line deprecation/deprecation
     }
     if (storage)
       IModelHost.tileStorage = new TileStorage(storage);
@@ -650,8 +635,6 @@ export class IModelHost {
     ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
     new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
     IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
-    // eslint-disable-next-line deprecation/deprecation
-    IModelHost.tileCacheService = new AzureBlobStorage(credentials); // needed for backwards compatibility with old frontends
   }
 
   /** @internal */
@@ -660,7 +643,7 @@ export class IModelHost {
   }
 }
 
-/** Information about the platform on which the app is running. Also see [[KnownLocations]] and [[IModelJsFs]].
+/** Information about the platform on which the app is running.
  * @public
  */
 export class Platform {
@@ -668,28 +651,25 @@ export class Platform {
   public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
     return process.platform as any;
   }
-
-  /** @internal */
-  public static load(): typeof IModelJsNative {
-    return ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
-  }
 }
 
-/** Well known directories that may be used by the application. Also see [[Platform]]
+/** Well known directories that may be used by the application.
  * @public
  */
 export class KnownLocations {
 
   /** The directory where the imodeljs-native assets are stored. */
-  public static get nativeAssetsDir(): string { return IModelHost.platform.DgnDb.getAssetsDir(); }
+  public static get nativeAssetsDir(): LocalDirName {
+    return IModelHost.platform.DgnDb.getAssetsDir();
+  }
 
   /** The directory where the core-backend assets are stored. */
-  public static get packageAssetsDir(): string {
-    return path.join(__dirname, "assets");
+  public static get packageAssetsDir(): LocalDirName {
+    return join(__dirname, "assets");
   }
 
   /** The temporary directory. */
-  public static get tmpdir(): string {
+  public static get tmpdir(): LocalDirName {
     return os.tmpdir();
   }
 }

@@ -5,6 +5,7 @@
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
+  GpuMemoryLimit,
   IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
@@ -126,6 +127,12 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   if (configuration.disableBRepCache)
     tileAdminProps.optimizeBRepProcessing = false;
 
+  if (undefined !== configuration.gpuMemoryLimit)
+    tileAdminProps.gpuMemoryLimits = configuration.gpuMemoryLimit as GpuMemoryLimit;
+
+  if (true === configuration.noImdlWorker)
+    tileAdminProps.decodeImdlInWorker = false;
+
   tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
   tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
@@ -149,7 +156,18 @@ const dtaFrontendMain = async () => {
 
   if (configuration.useFrontendTiles) {
     initializeFrontendTiles({
-      computeSpatialTilesetBaseUrl: (iModel) => new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`),
+      computeSpatialTilesetBaseUrl: async (iModel) => {
+        const url = new URL(`http://localhost:8080${iModel.key}-tiles/3dft/`);
+        try {
+          // See if a tileset has been published for this iModel.
+          const response = await fetch(`${url}tileset.json`);
+          await response.json();
+          return url;
+        } catch (_) {
+          // No tileset available.
+          return undefined;
+        }
+      },
     });
   }
 

@@ -507,8 +507,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      verifyTestElement(row as TestElement, expectedValue);
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      verifyTestElement(row.toRow() as TestElement, expectedValue);
       rowCount++;
     }
     assert.equal(rowCount, 1);
@@ -538,8 +538,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      verifyTestElement(row as TestElement, actualValue);
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      verifyTestElement(row.toRow() as TestElement, actualValue);
       rowCount++;
     }
     assert.equal(rowCount, 1);
@@ -586,8 +586,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      verifyTestElementAspect(row as TestElementAspect, expectedAspectValue);
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      verifyTestElementAspect(row.toRow() as TestElementAspect, expectedAspectValue);
       rowCount++;
     }
     assert.equal(rowCount, 1);
@@ -618,8 +618,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      verifyTestElementAspect(row as TestElementAspect, actualAspectValue[0]);
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      verifyTestElementAspect(row.toRow() as TestElementAspect, actualAspectValue[0]);
       rowCount++;
     }
     assert.equal(rowCount, 1);
@@ -678,8 +678,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      const val = row as TestElementRefersToElements;
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      const val = row.toRow() as TestElementRefersToElements;
       verifyTestElementRefersToElements(val, expectedRelationshipValue);
       rowCount++;
     }
@@ -711,8 +711,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      verifyTestElementRefersToElements(row as TestElementRefersToElements, updatedExpectedValue);
+    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      verifyTestElementRefersToElements(row.toRow() as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;
     }
     assert.equal(rowCount, 1);
@@ -819,12 +819,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     // Previously, TypeScript BoxProps defined "origin" but native code only understood "baseOrigin".
     // Now, native code accepts either, preferring "origin" if both are specified.
     const testBox = (props: TestBoxProps, expectedXOffset: number) => {
-      const box: any = { };
+      const box: any = {};
       if (undefined !== props.originX)
-        box.origin = [ props.originX, 1, 2 ];
+        box.origin = [props.originX, 1, 2];
 
       if (undefined !== props.baseOriginX)
-        box.baseOrigin = [ props.baseOriginX, 1, 2 ];
+        box.baseOrigin = [props.baseOriginX, 1, 2];
 
       const geom = [
         { header: { flags: 0 } },

@@ -6,13 +6,9 @@
  * @module RpcInterface
  */
 
-import type { TransferConfig } from "@itwin/object-storage-core";
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
-import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
-  IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileContentIdentifier,
-  TileContentSource, TileTreeContentIds, TileVersionInfo,
-} from "@itwin/core-common";
+import { ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcManager, RpcPendingResponse, TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo } from "@itwin/core-common";
+import type { Metadata, TransferConfig } from "@itwin/object-storage-core";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -137,11 +133,14 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
   if (IModelHost.usingExternalTileCache) {
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, {
+    const tileMetadata: Metadata = {
       backendName: IModelHost.applicationId,
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
-    });
+    };
+    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    const { accessToken: _, ...safeProps } = props;
+    Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 
     return TileContentSource.ExternalCache;
   }
@@ -202,6 +201,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       modelIds = undefined;
 
     const db = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps);
+    if (!db.isOpen) {
+      return;
+    }
+
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
@@ -220,25 +223,6 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const iModelId = tokenProps.iModelId ?? (await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, tokenProps)).iModelId;
     return IModelHost.tileStorage.getDownloadConfig(iModelId);
   }
-
-  /* eslint-disable deprecation/deprecation */
-  public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
-    const invocation = RpcInvocation.current(this);
-
-    if (!IModelHost.usingExternalTileCache) {
-      return CloudStorageContainerUrl.empty();
-    }
-
-    const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
-    const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return IModelHost.tileCacheService!.obtainContainerUrl(id, expiry, clientIp);
-  }
-
-  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return IModelHost.tileCacheService !== undefined;
-  }
-  /* eslint-enable deprecation/deprecation */
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();

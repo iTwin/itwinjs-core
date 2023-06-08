@@ -187,7 +187,7 @@ export class HalfEdgeGraphOps {
           }
         }
       }
-    node.setMaskAroundEdge(visit);
+      node.setMaskAroundEdge(visit);
     }
     return numMarked;
   }
@@ -247,19 +247,20 @@ export class HalfEdgeGraphOps {
         continue;
       if (!node.isFaceConvex())
         return false;
-      }
+    }
     return true;
   }
 }
 
 /**
+ * Note: this class uses hardcoded micrometer coordinate/cluster tolerance throughout.
  * @internal
  */
 export class HalfEdgeGraphMerge {
   // return kC such that all angles k are equal, with kA <= k < kC <= kB.
   // * Assume: angles k are stored at extra data index 0.
   // * Note that the usual case (when angle at kA is not repeated) is kA+1 === kC
-  public static getCommonThetaEndIndex(clusters: ClusterableArray, order: Uint32Array, kA: number, kB: number): number{
+  public static getCommonThetaEndIndex(clusters: ClusterableArray, order: Uint32Array, kA: number, kB: number): number {
     let kC = kA + 1;
     const thetaA = clusters.getExtraData(order[kA], 0);
     while (kC < kB) {
@@ -267,25 +268,25 @@ export class HalfEdgeGraphMerge {
       if (!Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
         return kC;
       }
-     kC++;
+      kC++;
     }
     return kC;
   }
   private static _announceVertexNeighborhoodFunction?: AnnounceVertexNeighborhoodSortData;
-/**
- * public property setter for a function to be called with sorted edge data around a vertex.
- */
+  /**
+   * public property setter for a function to be called with sorted edge data around a vertex.
+   */
   public static set announceVertexNeighborhoodFunction(func: AnnounceVertexNeighborhoodSortData | undefined) { this._announceVertexNeighborhoodFunction = func; }
   private static doAnnounceVertexNeighborhood(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
     if (this._announceVertexNeighborhoodFunction) {
       const sortData: VertexNeighborhoodSortData[] = [];
       // build and share the entire vertex order
-      for (let k = k0; k < k1; k++){
-      const index = clusters.getExtraData(order[k], 1);
-      const theta = clusters.getExtraData(order[k], 0);
-      const node = allNodes[index];
-      const signedDistance = this.curvatureSortKey(node);
-      sortData.push(new VertexNeighborhoodSortData(order[k], signedDistance, node, theta));
+      for (let k = k0; k < k1; k++) {
+        const index = clusters.getExtraData(order[k], 1);
+        const theta = clusters.getExtraData(order[k], 0);
+        const node = allNodes[index];
+        const signedDistance = this.curvatureSortKey(node);
+        sortData.push(new VertexNeighborhoodSortData(order[k], signedDistance, node, theta));
       }
       this._announceVertexNeighborhoodFunction(sortData);
     }
@@ -301,7 +302,7 @@ export class HalfEdgeGraphMerge {
     const sortData: VertexNeighborhoodSortData[] = [];
 
     for (let k = k0; k < k1;) {
-      const kB = this.getCommonThetaEndIndex(clusters, order,k, k1);
+      const kB = this.getCommonThetaEndIndex(clusters, order, k, k1);
       if (k + 1 < kB) {
         sortData.length = 0;
         for (let kA = k; kA < kB; kA++) {
@@ -311,7 +312,7 @@ export class HalfEdgeGraphMerge {
           sortData.push(new VertexNeighborhoodSortData(order[kA], signedDistance, node));
         }
         sortData.sort((a: VertexNeighborhoodSortData, b: VertexNeighborhoodSortData) => (a.radiusOfCurvature - b.radiusOfCurvature));
-        for (let i = 0; i < sortData.length; i++){
+        for (let i = 0; i < sortData.length; i++) {
           order[k + i] = sortData[i].index;
         }
       }
@@ -402,8 +403,7 @@ export class HalfEdgeGraphMerge {
     const unmatchedNullFaceNodes: HalfEdge[] = [];
     k0 = 0;
     let thetaA, thetaB;
-      // eslint-disable-next-line no-console
-      // console.log("START VERTEX LINKS");
+    // GeometryCoreTestIO.consoleLog("START VERTEX LINKS");
 
     // now pinch each neighboring pair together
     for (let k1 = 0; k1 < numK; k1++) {
@@ -411,8 +411,7 @@ export class HalfEdgeGraphMerge {
         // nodes identified in order[k0]..order[k1-1] are properly sorted around a vertex.
         if (k1 > k0) {
           // const xy = clusters.getPoint2d(order[k0]);
-          // eslint-disable-next-line no-console
-          // console.log({ k0, k1, x: xy.x, y: xy.y });
+          // GeometryCoreTestIO.consoleLog({ k0, k1, x: xy.x, y: xy.y });
           if (k1 > k0 + 1)
             this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1);
           this.doAnnounceVertexNeighborhood(clusters, order, allNodes, k0, k1);
@@ -482,11 +481,11 @@ export class HalfEdgeGraphMerge {
     }
     return sweepHeap;
   }
-  private static snapFractionToNode(xy: Point2d, fraction: number, node: HalfEdge, nodeFraction: number): number{
+  private static snapFractionToNode(xy: Point2d, fraction: number, node: HalfEdge, nodeFraction: number): number {
     if (Geometry.isSameCoordinate(xy.x, node.x) && Geometry.isSameCoordinate(xy.y, node.y))
       return nodeFraction;
     return fraction;
-}
+  }
   private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
     const nodeA1 = nodeA0.faceSuccessor;
     const ax0 = nodeA0.x;

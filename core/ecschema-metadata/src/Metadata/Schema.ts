@@ -13,7 +13,7 @@ import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem } from "../Interfaces";
+import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
@@ -145,7 +145,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+  protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
     this.addItem(item);
     return item;
@@ -177,7 +177,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
+  protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
@@ -567,6 +567,9 @@ export class Schema implements CustomAttributeContainerProps {
     return schemaXml;
   }
 
+  /**
+   * Loads the schema header (name, version alias, label and description) from the input SchemaProps
+   */
   public fromJSONSync(schemaProps: SchemaProps) {
     if (undefined === this._schemaKey) {
       const schemaName = schemaProps.name;
@@ -595,8 +598,23 @@ export class Schema implements CustomAttributeContainerProps {
       this._description = schemaProps.description;
   }
 
+  /**
+   * Loads the schema header (name, version alias, label and description) from the input SchemaProps
+   */
   public async fromJSON(schemaProps: SchemaProps) {
     this.fromJSONSync(schemaProps);
+  }
+
+  /**
+   * Completely loads the SchemaInfo from the input json and starts loading the entire schema.  The complete schema can be retrieved from the
+   * schema context using the getCachedSchema method
+   */
+  public static async startLoadingFromJson(jsonObj: object | string, context: SchemaContext): Promise<SchemaInfo> {
+    const schema = new Schema(context);
+
+    const reader = new SchemaReadHelper(JsonParser, context);
+    const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
+    return reader.readSchemaInfo(schema, rawSchema);
   }
 
   public static async fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema> {
@@ -609,6 +627,9 @@ export class Schema implements CustomAttributeContainerProps {
     return schema;
   }
 
+  /**
+   * Completely loads the Schema from the input json. The schema is cached in the schema context.
+   */
   public static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema {
     let schema: Schema = new Schema(context);
 

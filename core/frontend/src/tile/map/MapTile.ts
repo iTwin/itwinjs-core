@@ -51,9 +51,9 @@ export type TilePatch = PlanarTilePatch | EllipsoidPatch;
  */
 export abstract class MapTileProjection {
   /** The extents of the volume of space associated with the projected [[MapTile]]. */
-  abstract get localRange(): Range3d;
+  public abstract get localRange(): Range3d;
   /** @alpha */
-  abstract get transformFromLocal(): Transform;
+  public abstract get transformFromLocal(): Transform;
 
   /** Given parametric coordinates in [0, 1] within the tile's rectangular region, and an elevation above the Earth,
    * compute the 3d position in space.
@@ -592,7 +592,7 @@ export class MapTile extends RealityTile {
       this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
     }
 
-    if (this.rangeCorners &&  this._patch instanceof PlanarTilePatch)
+    if (this.rangeCorners && this._patch instanceof PlanarTilePatch)
       this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
 
@@ -680,13 +680,20 @@ export class MapTile extends RealityTile {
    * they apparently intersect view frustum.   To avoid this force loading of terrain tiles if they exceed "_maxParentHightDepth".
    * @internal
    */
-  public override forceSelectRealityTile(): boolean {
+  protected override forceSelectRealityTile(): boolean {
     let parentHeightDepth = 0;
+
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     for (let parent: MapTile = this; parent !== undefined && parent._heightRange === undefined; parent = parent.parent as MapTile)
       parentHeightDepth++;
 
     return parentHeightDepth > MapTile._maxParentHeightDepth;
+  }
+
+  /** @internal */
+  protected override minimumVisibleFactor(): number {
+    // if minimumVisibleFactor is more than 0, it stops parents from loading when children are not ready, to fill in gaps
+    return 0.0;
   }
 
   private static _scratchThisDiagonal = Vector2d.create();
@@ -765,7 +772,7 @@ export class MapTile extends RealityTile {
     this._mesh = content.terrain?.mesh;
     if (this.mapTree.produceGeometry) {
       const iModelTransform = this.mapTree.iModelTransform;
-      const geometryTransform =  content.terrain?.renderGeometry?.transform;
+      const geometryTransform = content.terrain?.renderGeometry?.transform;
       const transform = geometryTransform ? iModelTransform.multiplyTransformTransform(geometryTransform) : iModelTransform;
       const polyface = content.terrain?.mesh ? RealityMeshParams.toPolyface(content.terrain.mesh, { transform }) : undefined;
       this._geometry = polyface ? { polyfaces: [polyface] } : undefined;
@@ -797,16 +804,21 @@ export class MapTile extends RealityTile {
   }
 }
 
-/** @internal */
+/** A child tile that has no content of its own available. It instead produces content by up-sampling the content of an ancestor tile.
+ * @internal
+  */
 export class UpsampledMapTile extends MapTile {
+  /** The ancestor tile whose content will be up-sampled. */
+  private readonly _loadableTile: MapTile;
+
+  constructor(params: RealityTileParams, mapTree: MapTileTree, quadId: QuadId, patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, cornerRays: Ray3d[] | undefined, loadableTile: MapTile) {
+    super(params, mapTree, quadId, patch, rectangle, heightRange, cornerRays);
+    this._loadableTile = loadableTile;
+  }
+
   public override get isUpsampled() { return true; }
   public override get isEmpty() { return false; }
-  public override get loadableTile(): RealityTile {
-    let parent = this.parent as MapTile;
-    for (; parent && parent.isUpsampled; parent = parent.parent as MapTile)
-      ;
-    return parent;
-  }
+  public override get loadableTile(): RealityTile { return this._loadableTile; }
 
   private upsampleFromParent() {
     const parent = this.loadableTerrainTile;

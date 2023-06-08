@@ -116,6 +116,26 @@ export class ArcGisUtilities {
   }
 
   /**
+   * Parse the URL to check if it represent a valid ArcGIS service
+   * @param url URL to validate.
+   * @param serviceType Service type to validate (i.e FeatureServer, MapServer)
+   * @return Validation Status.
+  */
+  public static validateUrl(url: string, serviceType: string): MapLayerSourceStatus {
+    const urlObj = new URL(url.toLowerCase());
+    if (urlObj.pathname.includes("/rest/services/")) {
+      // This seem to be an ArcGIS URL, lets check the service type
+      if (urlObj.pathname.endsWith(`${serviceType.toLowerCase()}`)) {
+        return MapLayerSourceStatus.Valid;
+      } else {
+        return MapLayerSourceStatus.IncompatibleFormat;
+      }
+    } else {
+      return MapLayerSourceStatus.InvalidUrl;
+    }
+  }
+
+  /**
    * Attempt to access an ArcGIS service, and validate its service metadata.
    * @param url URL of the source to validate.
    * @param formatId Format Id of the source.

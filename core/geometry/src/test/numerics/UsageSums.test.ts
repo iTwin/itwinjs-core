@@ -7,8 +7,6 @@ import { expect } from "chai";
 import { UsageSums } from "../../numerics/UsageSums";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
-
 describe("UsageSums", () => {
   it("HelloWorld", () => {
     const ck = new Checker();

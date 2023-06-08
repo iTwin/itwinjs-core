@@ -123,7 +123,7 @@ This package provides several keyins to control model overrides.  These override
 
 ### Map, map layer and terrain key-ins
 
-This package provides several keyins to control the display of background maps, map layers and terrain.  Thesese settings are stored in the display style and control how the background map is displayed when that display style is used.
+This package provides several keyins to control the display of background maps, map layers and terrain.  These settings are stored in the display style and control how the background map is displayed when that display style is used.
 
 * `fdt toggle terrain` - Toggle terrain display for background maps.
 

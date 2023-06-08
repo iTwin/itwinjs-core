@@ -28,7 +28,17 @@ export class TileUsageMarker {
 
   /** Returns true if this tile is currently in use by no [[TileUser]]s and its timestamp pre-dates `expirationTime`. */
   public isExpired(expirationTime: BeTimePoint): boolean {
-    return this._timePoint.before(expirationTime) && !IModelApp.tileAdmin.isTileInUse(this);
+    return this.isTimestampExpired(expirationTime) && !this.getIsTileInUse();
+  }
+
+  /** Returns true if this tile is currently in use by any [[TileUser]]. */
+  public getIsTileInUse(): boolean {
+    return IModelApp.tileAdmin.isTileInUse(this);
+  }
+
+  /** Returns true if this tile's timestamp pre-dates `expirationTime`, without checking if it is in use. */
+  public isTimestampExpired(expirationTime: BeTimePoint): boolean {
+    return this._timePoint.before(expirationTime);
   }
 
   /** Updates the timestamp to the specified time and marks the tile as being in use by the specified [[TileUser]]. */

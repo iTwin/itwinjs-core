@@ -6,7 +6,6 @@
  * @module Serialization
  */
 
-// import { Point2d } from "../Geometry2d";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineString3d } from "../curve/LineString3d";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
@@ -15,7 +14,6 @@ import { Geometry } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
