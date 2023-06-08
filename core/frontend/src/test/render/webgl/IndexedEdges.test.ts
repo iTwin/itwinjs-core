@@ -89,7 +89,7 @@ describe("IndexedEdgeParams", () => {
         tileAdmin: { enableIndexedEdges: false },
         localization: new EmptyLocalization(),
       });
-      expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
+      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("non-indexed");
 
       const args = createMeshArgs();
       const edges = createEdgeParams(args)!;
@@ -104,6 +104,7 @@ describe("IndexedEdgeParams", () => {
   describe("when enabled", () => {
     before(async () => {
       await IModelApp.startup({ localization: new EmptyLocalization() });
+      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("compact");
     });
 
     after(async () => {

@@ -79,8 +79,8 @@ export enum RegionBinaryOpType {
  *   * `ParityRegion` -- a collection of loops, interpreted by parity rules.
  * The common "One outer loop and many Inner loops" is a parity region.
  *   * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * * Most of the methods in this class ignore z-coordinates, so callers should ensure that input geometry has been
- * rotated parallel to the xy-plane.
+ * * **NOTE:** Most of the methods in this class ignore z-coordinates, so callers should ensure that input geometry has
+ * been rotated parallel to the xy-plane.
  * @public
  */
 export class RegionOps {
@@ -382,36 +382,31 @@ export class RegionOps {
     return RegionOps.sortOuterAndHoleLoopsXY(allLoops);
   }
   /**
-   * Construct a wire (not area!!) that is offset from given polyline or polygon.
-   * * This is a simple wire offset, not an area.
+   * Construct a wire that is offset from the given polyline or polygon.
+   * * This is a simple wire offset, not an area offset.
+   * * Since z-coordinates are ignored, for best results the input points should lie in (a plane parallel to)
+   * the xy-plane.
    * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not
    * guarantee a simple area offset.
-   * * The construction algorithm is subject to being changed, resulting in different (hopefully better)
-   * self-intersection behavior on the future.
+   * * If offsetDistance is given as a number, default OffsetOptions are applied.
+   * * See [[JointOptions]] class doc for offset construction rules.
    * @param points a single loop or path
    * @param wrap true to include wraparound
-   * @param offsetDistance distance of offset from wire.  Positive is left.
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or JointOptions
+   * object.
    */
   public static constructPolygonWireXYOffset(
-    points: Point3d[], wrap: boolean, offsetDistance: number
-  ): CurveCollection | undefined {
+    points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions
+  ): CurveChain | undefined {
     const context = new PolygonWireOffsetContext();
-    return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
+    return context.constructPolygonWireXYOffset(points, wrap, offsetDistanceOrOptions);
   }
   /**
    * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will
    * not detect self intersection among widely separated edges.
    * * If offsetDistance is given as a number, default OffsetOptions are applied.
-   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
-   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to
-   * single intersection point.
-   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight
-   * lines that are:
-   *      * outside the arc
-   *      * have uniform turn angle less than `options.maxChamferDegrees`
-   *      * each line segment (except first and last) touches the arc at its midpoint.
+   * * See [[JointOptions]] class doc for offset construction rules.
    * @param curves base curves.
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
