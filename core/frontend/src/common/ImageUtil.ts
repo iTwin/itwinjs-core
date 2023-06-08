@@ -183,6 +183,8 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
     case "image/jpeg": return ImageSourceFormat.Jpeg;
+    // not standard, but people accidentally use it anyway.
+    case "image/jpg": return ImageSourceFormat.Jpeg;
     case "image/png": return ImageSourceFormat.Png;
     case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
     default: return undefined;
