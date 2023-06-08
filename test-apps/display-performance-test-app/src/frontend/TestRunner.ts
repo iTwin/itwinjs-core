@@ -5,7 +5,7 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, Logger, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
@@ -168,6 +168,8 @@ export class TestRunner {
     this._savedViewsFetcher = savedViewsFetcher;
 
     ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
+    Logger.logException = (_category, err) => this.onException(err);
+    Logger.logError = (_category, msg) => DisplayPerfTestApp.log(`ERROR: ${msg}`, { dir: this.curConfig.outputPath, name: this._logFileName });
   }
 
   /** Run all the tests. */
