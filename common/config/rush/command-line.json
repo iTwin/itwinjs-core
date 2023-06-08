@@ -130,6 +130,12 @@
       "summary": "Run copyright linter using lintstaged",
       "autoinstallerName": "rush-lintstaged",
       "shellCommand": "lint-staged --quiet --config common/scripts/.lintstagedrc.json"
+    },
+    {
+      "name": "validate-next-version",
+      "commandKind": "global",
+      "summary": "Checks for relative links in NextVersion.md",
+      "shellCommand": "node common/scripts/validateNextVersion.js"
     }
   ]
 }
