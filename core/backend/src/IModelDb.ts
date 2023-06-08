@@ -1296,9 +1296,7 @@ export abstract class IModelDb extends IModel {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
       stmt.bindString(3, JSON.stringify(dict));
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "cannot save setting");
+      stmt.stepForWrite();
     });
     this.saveChanges("add settings");
   }
@@ -1311,9 +1309,7 @@ export abstract class IModelDb extends IModel {
     this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "cannot delete setting");
+      stmt.stepForWrite();
     });
     this.saveChanges("delete settings");
   }
@@ -1325,7 +1321,7 @@ export abstract class IModelDb extends IModel {
 
     this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      while (stmt.nextRow()) {
         try {
           const dict = JSON.parse(stmt.getValueString(1));
           this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);

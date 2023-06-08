@@ -255,38 +255,6 @@ export class SQLiteDb {
       stmt.dispose();
     }
   }
-
-  protected throwSqlError(rc: DbResult) {
-    throw new SQLiteDb.DbError(
-      rc === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY ? "ValueIsInUse" :
-        rc === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE ? "DuplicateValue" :
-          "SqlLogicError", rc, `SQL error: ${this.nativeDb.getLastError()}`);
-  }
-
-  public stepForWrite(stmt: SqliteStatement): void {
-    const rc = stmt.step();
-    if (rc !== DbResult.BE_SQLITE_DONE)
-      this.throwSqlError(rc);
-  }
-}
-
-export namespace SQLiteDb {
-
-  export class DbError extends BentleyError {
-    /** A string that indicates the type of problem that caused the exception. */
-    public readonly errorId: ErrorId;
-
-    /** @internal */
-    constructor(errorId: ErrorId, errNum: number, message: string) {
-      super(errNum, message);
-      this.errorId = errorId;
-    }
-  }
-
-  export type ErrorId =
-    "DuplicateValue" |
-    "SqlLogicError" |
-    "ValueIsInUse";
 }
 
 /**

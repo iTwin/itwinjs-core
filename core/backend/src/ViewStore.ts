@@ -262,7 +262,7 @@ export namespace ViewStore {
       const existing = this.getGuidRow(guid);
       return existing !== 0 ? existing : this.withPreparedSqliteStatement(`INSERT INTO ${tableName.guids} (guid) VALUES(?)`, (stmt) => {
         stmt.bindGuid(1, guid);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
         return this.nativeDb.getLastInsertRowId();
       });
     }
@@ -281,7 +281,7 @@ export namespace ViewStore {
         stmt.maybeBindInteger(7, args.modelSel);
         stmt.maybeBindInteger(8, args.categorySel);
         stmt.maybeBindInteger(9, args.displayStyle);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
         return this.nativeDb.getLastInsertRowId();
       });
     }
@@ -294,7 +294,7 @@ export namespace ViewStore {
         stmt.maybeBindString(2, args.owner);
         stmt.bindInteger(3, args.parentId ?? 1);
         stmt.bindString(4, args.json);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
         return this.nativeDb.getLastInsertRowId();
       });
     }
@@ -304,7 +304,7 @@ export namespace ViewStore {
         stmt.maybeBindString(1, args.name);
         stmt.bindString(2, args.json);
         stmt.maybeBindString(3, args.owner);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
         return this.nativeDb.getLastInsertRowId();
       });
     }
@@ -340,7 +340,7 @@ export namespace ViewStore {
         stmt.bindString(2, JSON.stringify(args.format));
         stmt.maybeBindString(3, args.owner);
         stmt.bindBlob(4, args.data);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
         return this.nativeDb.getLastInsertRowId();
       });
     }
@@ -348,7 +348,7 @@ export namespace ViewStore {
     private deleteFromTable(table: string, id: RowId): void {
       this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, id);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
       });
     }
     public deleteViewRow(id: RowId) {
@@ -461,14 +461,14 @@ export namespace ViewStore {
       this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=? `, (stmt) => {
         stmt.bindString(1, json);
         stmt.bindInteger(2, id);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
       });
     }
     public async updateViewShared(viewId: RowId, isPrivate: boolean): Promise<void> {
       this.withSqliteStatement(`UPDATE ${tableName.views} SET private=? WHERE Id=? `, (stmt) => {
         stmt.bindBoolean(1, isPrivate);
         stmt.bindInteger(2, viewId);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
       });
     }
     public async updateViewJson(viewId: RowId, json: string): Promise<void> {
@@ -496,7 +496,7 @@ export namespace ViewStore {
       this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=? `, (stmt) => {
         stmt.maybeBindString(1, name);
         stmt.bindInteger(2, id);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
       });
     }
     public async updateViewName(viewId: RowId, name?: string): Promise<void> {
@@ -524,14 +524,14 @@ export namespace ViewStore {
       this.withSqliteStatement(`INSERT OR IGNORE INTO ${tableName.taggedViews} (viewId, tagId) VALUES(?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
       });
     }
     public deleteViewTag(args: { viewId: RowId, tagId: RowId }): void {
       this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=? AND tagId=? `, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
-        this.stepForWrite(stmt);
+        stmt.stepForWrite();
       });
     }
     public findViewsForTag(tagId: RowId): RowId[] {

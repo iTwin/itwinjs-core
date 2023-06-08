@@ -35,6 +35,7 @@ function checkBind(stat: DbResult) {
     throw new IModelError(stat, "SQLite Bind error");
 }
 
+
 /** Executes SQLite SQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
@@ -119,7 +120,21 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
         return false;
     }
 
-    throw new BentleyError(rc, this._db!.getLastError());
+    this.throwSqlError(rc);
+    return false; // unreachable
+  }
+
+  protected throwSqlError(rc: DbResult) {
+    throw new SqliteStatement.DbError(
+      rc === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY ? "ValueIsInUse" :
+        rc === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE ? "DuplicateValue" :
+          "SqlLogicError", rc, `SQL error: ${this._db!.getLastError()}`);
+  }
+
+  public stepForWrite(): void {
+    const rc = this.step();
+    if (rc !== DbResult.BE_SQLITE_DONE)
+      this.throwSqlError(rc);
   }
 
   /** Binds a value to the specified SQL parameter.
@@ -642,4 +657,22 @@ export class StatementCache<Stmt extends Statement> {
     this._cache.forEach((stmt) => stmt.dispose());
     this._cache.clear();
   }
+}
+
+export namespace SqliteStatement {
+  export class DbError extends BentleyError {
+    /** A string that indicates the type of problem that caused the exception. */
+    public readonly errorId: ErrorId;
+
+    /** @internal */
+    constructor(errorId: ErrorId, errNum: number, message: string) {
+      super(errNum, message);
+      this.errorId = errorId;
+    }
+  }
+
+  export type ErrorId =
+    "DuplicateValue" |
+    "SqlLogicError" |
+    "ValueIsInUse";
 }
