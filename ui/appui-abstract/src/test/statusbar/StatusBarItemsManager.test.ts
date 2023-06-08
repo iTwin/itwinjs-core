@@ -54,7 +54,7 @@ describe("StatusBarItemsManager", () => {
     it("should instantiate with item", () => {
       const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
       const sut = new StatusBarItemsManager([item]);
-      sut.items.length.should.eq(1);
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add item without callback", () => {
@@ -65,8 +65,8 @@ describe("StatusBarItemsManager", () => {
       sut.onItemsChanged.addListener(spy);
       sut.loadItems([item]);
 
-      spy.calledOnce.should.false;
-      sut.items.length.should.eq(1);
+      expect(spy.calledOnce).to.false;
+      expect(sut.items.length).to.eq(1);
     });
 
     it("should add & remove one item", () => {
@@ -101,7 +101,7 @@ describe("StatusBarItemsManager", () => {
       const item1 = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
       const item2 = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
       sut.add([item1, item2]);
-      sut.items.length.should.eq(1);
+      expect(sut.items.length).to.eq(1);
     });
 
     it("attempt to add duplicate item ignores it", () => {
@@ -145,13 +145,13 @@ describe("StatusBarItemsManager", () => {
       const spy = sinon.spy();
       sut.onItemsChanged.addListener(spy);
       sut.loadItems(items);
-      spy.calledOnce.should.false;
+      expect(spy.calledOnce).to.false;
 
       expect(sut.items.length).to.eq(3);
 
       spy.resetHistory();
       sut.removeAll();
-      spy.calledOnce.should.false;
+      expect(spy.calledOnce).to.false;
       expect(sut.items.length).to.eq(0);
     });
   });

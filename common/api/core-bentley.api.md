@@ -28,7 +28,7 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
 export function assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition;
 
 // @public
-export type AsyncFunction = (...args: any) => Promise<any>;
+export type AsyncFunction = (...args: any[]) => Promise<unknown>;
 
 // @public
 export type AsyncMethodsOf<T> = {
@@ -1363,6 +1363,14 @@ export type PickAsyncMethods<T> = {
 };
 
 // @public
+export type PickMethods<T> = {
+    [P in keyof T]: T[P] extends Function ? T[P] : never;
+};
+
+// @public
+export type PickSyncMethods<T> = Omit<PickMethods<T>, AsyncMethodsOf<T>>;
+
+// @public
 export class PriorityQueue<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T>;
     constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
@@ -1512,7 +1520,7 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     slice(start?: number, end?: number): SortedArray<T>;
 }
 
-// @alpha
+// @public
 export enum SpanKind {
     // (undocumented)
     CLIENT = 2,
@@ -1571,7 +1579,7 @@ export abstract class SuccessCategory extends StatusCategory {
     error: boolean;
 }
 
-// @alpha
+// @public
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
     static setAttributes(attributes: SpanAttributes): void;

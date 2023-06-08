@@ -135,18 +135,18 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
   }
 
   /** Serializes JSON object containing format overrides for a specific quantity type. */
-  abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+  public abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
 
   /** Retrieves serialized JSON object containing format overrides for a specific quantity type. */
-  abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry|undefined>;
+  public abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry|undefined>;
 
   /** Removes the override formats for a specific quantity type. */
-  abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+  public abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
 
   /** Retrieves the active unit system typically based on the "active" iModelConnection. */
-  abstract  retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+  public abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
 
   /** Store the active unit system typically for the "active" iModelConnection. */
-  abstract  storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+  public abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
 }
 

@@ -7,6 +7,7 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { PackedFeature } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -18,7 +19,7 @@ import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
-import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
+import { EnableAtmosphere, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
 /* eslint-disable no-restricted-syntax */
@@ -218,7 +219,8 @@ export class PrimitiveCommand {
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
     const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType);
+    const enableAtmosphere = target.wantAtmosphere ? EnableAtmosphere.Yes : EnableAtmosphere.No;
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType, enableAtmosphere);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
@@ -279,6 +281,8 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
   return undefined;
 }
 
+const scratchFeature = PackedFeature.create();
+
 /** @internal */
 export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: DrawCommands): DrawCommands {
   // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
@@ -311,8 +315,8 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
           if (undefined === surface || undefined === surface.mesh.uniformFeatureId)
             continue;
 
-          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId);
-          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(batch.featureTable.modelId)))
+          const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId, scratchFeature);
+          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(Id64.fromUint32PairObject(feature.modelId))))
             continue;
 
           break;

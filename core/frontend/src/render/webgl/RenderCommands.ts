@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Decorations } from "../Decorations";
-import { SurfaceType } from "../primitives/SurfaceParams";
+import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { AnimationBranchState } from "../GraphicBranch";
 import { BranchStack } from "./BranchStack";
@@ -677,7 +677,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
       // If we have an active volume classifier then force all batches for the reality data being classified into a special render pass.
       let savedForcedRenderPass = RenderPass.None;
-      if (undefined !== this.target.activeVolumeClassifierModelId && batch.featureTable.modelId === this.target.activeVolumeClassifierModelId) {
+      if (undefined !== this.target.activeVolumeClassifierModelId && batch.featureTable.batchModelId === this.target.activeVolumeClassifierModelId) {
         savedForcedRenderPass = this._forcedRenderPass;
         this._forcedRenderPass = RenderPass.VolumeClassifiedRealityData;
       }

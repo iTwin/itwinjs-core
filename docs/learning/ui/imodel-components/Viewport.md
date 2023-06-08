@@ -16,7 +16,7 @@ The `viewState` is the [ViewState]($core-frontend) to use as a starting point.
 
 The `viewportRef` specifies a function that receives the [ScreenViewport]($core-frontend) created by the component and
 allows the component user a chance to save it. When using `@itwin/appui-react` and
-Frontstages, setting `ViewportContentControl.viewport` notifies the [FrontstageManager]($appui-react) that the
+Frontstages, setting `ViewportContentControl.viewport` notifies [FrameworkFrontstages]($appui-react), referenced through `UiFramework.frontstages`, that the
 content view is ready.
 
 ## Sample using Presentation Rules

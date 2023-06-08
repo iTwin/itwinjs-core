@@ -20,7 +20,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-/* eslint-disable no-console */
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes
  */
 function makeViewableGeometry(): GeometryQuery[] {
@@ -300,10 +299,10 @@ describe("RaggedMatrix", () => {
       0, 0.808703, -0.588217,
       0.706792, 0.416117, 0.572094);
     if (Checker.noisy.raggedViewMatrix) {
-      console.log(" ragged matrix ", raggedMatrix.toJSON());
-      console.log("   determinant", raggedMatrix.determinant());
-      console.log("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
-      console.log("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
+      GeometryCoreTestIO.consoleLog(" ragged matrix ", raggedMatrix.toJSON());
+      GeometryCoreTestIO.consoleLog("   determinant", raggedMatrix.determinant());
+      GeometryCoreTestIO.consoleLog("  column scales", raggedMatrix.columnX().magnitude(), raggedMatrix.columnY().magnitude(), raggedMatrix.columnZ().magnitude());
+      GeometryCoreTestIO.consoleLog("     row scales", raggedMatrix.rowX().magnitude(), raggedMatrix.rowY().magnitude(), raggedMatrix.rowZ().magnitude());
     }
     const yprA = YawPitchRollAngles.createDegrees(0, 0, 0);
     const yprB = YawPitchRollAngles.createFromMatrix3d(raggedMatrix, yprA);
@@ -320,10 +319,10 @@ describe("RaggedMatrix", () => {
     ck.testLT(diffBC, 5.0e-7, "ragged matrix YPR round trip versus cleanup rigid");
     ck.testLT(diffAB, 5.0e-7, "ragged matrix YPR round trip versus raggedMatrix");
     if (Checker.noisy.raggedViewMatrix) {
-      console.log(" clean matrix ", cleanMatrix.toJSON());
-      console.log(` maxDiff ${maxDiff}`);
-      console.log("Clean ypr", yprC);
-      console.log("maxDiff between ypr round trips", diffBC);
+      GeometryCoreTestIO.consoleLog(" clean matrix ", cleanMatrix.toJSON());
+      GeometryCoreTestIO.consoleLog(` maxDiff ${maxDiff}`);
+      GeometryCoreTestIO.consoleLog("Clean ypr", yprC);
+      GeometryCoreTestIO.consoleLog("maxDiff between ypr round trips", diffBC);
     }
     expect(ck.getNumErrors()).equals(0);
   });

@@ -25,7 +25,6 @@ import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
  * @extensions
  */
 export class SpatialViewState extends ViewState3d {
-  /** @internal */
   public static override get className() { return "SpatialViewDefinition"; }
 
   private readonly _treeRefs: SpatialTileTreeReferences;
@@ -218,11 +217,13 @@ export class SpatialViewState extends ViewState3d {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     this.registerModelSelectorListeners();
+    this._treeRefs.attachToViewport(args);
   }
 
   /** @internal */
   public override detachFromViewport(): void {
     super.detachFromViewport();
+    this._treeRefs.detachFromViewport();
     this.unregisterModelSelectorListeners();
   }
 
@@ -259,7 +260,6 @@ export class SpatialViewState extends ViewState3d {
  * @extensions
  */
 export class OrthographicViewState extends SpatialViewState {
-  /** @internal */
   public static override get className() { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }

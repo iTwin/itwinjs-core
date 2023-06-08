@@ -1,11 +1,4 @@
 function readPackage(pkg) {
-  if (
-    (pkg.name == "typedoc" || pkg.name == "@microsoft/api-extractor") &&
-    pkg.dependencies &&
-    pkg.dependencies["typescript"]
-  ) {
-    pkg.dependencies["typescript"] = "~4.4.0";
-  }
 
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages
   // in this repo, we need to do some magic in order to get the peerDeps to point to a correct
@@ -14,7 +7,7 @@ function readPackage(pkg) {
   // dependency of any published packages.
 
   // https://github.com/iTwin/imodels-clients
-  else if (pkg.name == "@itwin/imodels-access-backend") {
+  if (pkg.name == "@itwin/imodels-access-backend") {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
     pkg.dependencies["@itwin/core-backend"] = "workspace:*";
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
@@ -42,6 +35,16 @@ function readPackage(pkg) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
     pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
+  }
+
+  // https://github.com/iTwin/imodel-transformer/blob/main/packages/transformer/package.json
+  else if (pkg.name == "@itwin/imodel-transformer") {
+    pkg.dependencies["@itwin/core-backend"] = "workspace:*";
+    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
+    pkg.dependencies["@itwin/core-common"] = "workspace:*";
+    pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
+    pkg.dependencies["@itwin/core-quantity"] = "workspace:*";
+    pkg.dependencies["@itwin/ecschema-metadata"] = "workspace:*";
   }
 
   return pkg;

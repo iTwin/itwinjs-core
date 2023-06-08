@@ -6,6 +6,8 @@ publish: false
 Table of contents:
 
 - [Geometry](#geometry)
+  - [Mesh offset](#mesh-offset)
+  - [Mesh intersection with ray](#mesh-intersection-with-ray)
   - [B-spline deprecations](#b-spline-deprecations)
 - [Display](#display)
   - [Tile decoding in workers](#tile-decoding-in-workers)

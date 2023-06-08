@@ -55,7 +55,6 @@ import { TorusPipe } from "../solid/TorusPipe";
 import { SerializationHelpers } from "./SerializationHelpers";
 
 // cspell:word bagof
-/* eslint-disable no-console*/
 /**
  * `ImodelJson` namespace has classes for serializing and deserialization json objects
  * @public

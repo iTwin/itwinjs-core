@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { randomInt } from "crypto";
 import * as fs from "fs";
+import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -24,9 +25,11 @@ import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { MomentData } from "../../geometry4d/MomentData";
-import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -39,9 +42,6 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
-
-/* eslint-disable no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
@@ -115,8 +115,8 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
         const a = visitor1.point.getPoint3dAtUncheckedPointIndex(i).distance(visitor1.point.getPoint3dAtUncheckedPointIndex(i + 1));
         const v = visitor1.getEdgeVisible(i);
         if (!ck.testBoolean(a < perimeter / 3.0, v, "diagonals hidden")) {
-          console.log({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
-          console.log({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
+          GeometryCoreTestIO.consoleLog({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
+          GeometryCoreTestIO.consoleLog({ faceCounter: facetIndex, edgeIndex: i, edgeLength: a, visibilityFlag: v });
         }
       }
     }
@@ -167,7 +167,6 @@ function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParam
   }
 }
 
-/* eslint-disable no-console */
 describe("Polyface.HelloWorld", () => {
   it("Polyface.HelloWorld", () => {
     const origin = Point3d.create(1, 2, 3);
@@ -211,8 +210,8 @@ describe("Polyface.HelloWorld", () => {
     for (const pf of [polyface0, polyface1, polyface2]) {
       const loops = PolyfaceQuery.indexedPolyfaceToLoops(pf);
       ck.testExactNumber(pf.facetCount, loops.children.length, "facet count");
-      // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
-      // console.log(loops);
+      // GeometryCoreTestIO.consoleLog("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
+      // GeometryCoreTestIO.consoleLog(loops);
       ck.testCoordinate(expectedArea, PolyfaceQuery.sumFacetAreas(pf), "unit square facets area");
       ck.testCoordinate(expectedArea, PolyfaceQuery.sumFacetAreas(pf), "unit square facets area");
       ck.testCoordinate(loops.sumLengths(), expectedEdgeLength);
@@ -261,8 +260,8 @@ describe("Polyface.HelloWorld", () => {
     polyface.terminateFacet();
     polyface.data.compress();
     const loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
-    // console.log("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
-    // console.log(loops);
+    // GeometryCoreTestIO.consoleLog("polyface area", PolyfaceQuery.sumFacetAreas(polyface));
+    // GeometryCoreTestIO.consoleLog(loops);
     ck.testCoordinate(1.0, PolyfaceQuery.sumFacetAreas(polyface), "unit square facets area");
     ck.testCoordinate(loops.sumLengths(),
       4 + 2 * Math.sqrt(2));
@@ -305,14 +304,14 @@ describe("Polyface.Box", () => {
     expect(ck.getNumErrors()).equals(0);
 
     const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
-    // console.log("imjs polyface", jsPolyface);
+    // GeometryCoreTestIO.consoleLog("imjs polyface", jsPolyface);
     const polyfaceB = IModelJson.Reader.parse(jsPolyface) as IndexedPolyface;
     ck.testBoolean(true, polyface.isAlmostEqual(polyfaceB), "polyface round trip");
     polyfaceB.data.pointIndex[0] += 1;
     ck.testBoolean(false, polyface.isAlmostEqual(polyfaceB), "index change detection");
     polyfaceB.data.pointIndex[0] -= 1;
     ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
-    // console.log(polyfaceB);
+    // GeometryCoreTestIO.consoleLog(polyfaceB);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -375,6 +374,78 @@ describe("Polyface.Box", () => {
       const volumeData = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, zPlane);
       ck.testBoolean(expectSameMoments, MomentData.areEquivalentPrincipalAxes(volumeData.positiveProjectedFacetAreaMoments, volumeData.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Polyface.IntersectLocalRangeBoxes", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    interface TestCase {
+      data: {localRange: Range3d, localToWorld: Transform}[];
+      expectedClash: boolean; // each entry is a set of mutually clashing or non-clashing local ranges from iModel
+    }
+    const testCases: TestCase[] = [
+      { data: [
+          { localRange: Range3d.createXYZXYZ(-0.023434012896785816, -5.00413553129377, -9.650393591767262, 20.02343401289663, 5.03613553129378, 9.68239359176722), localToWorld: Transform.createRefs(Point3d.create(-108.12092516312605, 80.97820829881688, 67.15651552186583), YawPitchRollAngles.createDegrees(-47.95656913000159, 15.000000000006024, 90).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.024019658687571166, -0.020559836132079568, -0.047579717945438915, 0.10484869637410554, 0.09055983613204432, 0.0975797179454645), localToWorld: Transform.createRefs(Point3d.create(-95.29966304738043, 66.6762028551563, 72.28348554781851), YawPitchRollAngles.createDegrees(42.04343086998508, -4.9775680764904035e-11, 74.99999999999397).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.041116288886769325, -0.04342022062438389, -0.21911795212515983, 0.3411162888867949, 0.3434202206242212, 0.22911795212515074), localToWorld: Transform.createRefs(Point3d.create(-95.14478995681672, 66.78879158941069, 72.16981588733208), YawPitchRollAngles.createDegrees(132.0434308699035, 75.00000000001432, 8.799644912641437e-11).toMatrix3d())},
+        ],
+        expectedClash: true},
+      { data: [
+          { localRange: Range3d.createXYZXYZ(1.1546319456101628e-14, -1.4328815911568427e-14, -5.1535165024318985e-14, 11.999999999999943, 0.03199999999999116, 0.031999999999948535), localToWorld: Transform.createRefs(Point3d.create(-119.10528623043024, 43.39951280844136, 68.47662261522927), YawPitchRollAngles.createDegrees(-6.448039711171915, 15.000000000002194, 1.6754791257296069).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(0, 0, -1.4210854715202004e-14, 11.999999999999986, 0, -1.4210854715202004e-14), localToWorld: Transform.createRefs(Point3d.create(-107.5899903512084, 42.11371219204531, 71.59835123713896), YawPitchRollAngles.createDegrees(173.55196028882585, -14.99999999999978, 2.0579703138818464e-16).toMatrix3d()) },
+          { localRange: Range3d.createXYZXYZ(-0.02213513258379224, -0.018579865396888717, -0.19678412188787828, 0.5721351325838432, 0.5685798653970273, 0.22178412188785057), localToWorld: Transform.createRefs(Point3d.create(-107.61315829094143, 42.393081259141205, 71.29907515904608), YawPitchRollAngles.createDegrees(173.5519602888134, 74.99999999996545, 5.981534282323202e-12).toMatrix3d()) },
+        ],
+        expectedClash: true},
+      { data: [
+          { localRange: Range3d.createXYZXYZ(-5,-5,-5,5,5,5), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-3,-6,-9), Matrix3d.createRotationAroundVector(Vector3d.create(1,1,1), Angle.createDegrees(33)))},
+          { localRange: Range3d.createXYZXYZ(-2,-2,-2,2,2,2), localToWorld: Transform.createOriginAndMatrix(Point3d.create(5,5,5), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,-1), Angle.createDegrees(-115)))},
+          { localRange: Range3d.createXYZXYZ(-1,-1,-1,1,1,1), localToWorld: Transform.createOriginAndMatrix(Point3d.create(-10,4,3), Matrix3d.createRotationAroundVector(Vector3d.create(0,1,-1), Angle.createDegrees(245)))},
+        ],
+        expectedClash: false},
+      { data: [
+          { localRange: Range3d.createXYZXYZ(7.993605777301127e-15, 1.1483869410966463e-15, -8.895661984809067e-15, 11.999999999999961, 0.03200000000001247, 0.03200000000001958), localToWorld: Transform.createRefs(Point3d.create(-118.75022305842617, 45.954529463039, 68.47641991136159), YawPitchRollAngles.createDegrees(-9.408029798593397, 15.000000000007361, 2.455595252575587).toMatrix3d())},
+          { localRange: Range3d.createXYZXYZ(-0.03474118660066772, -3.3591167872492598, -1.714177531529474, 11.744741186600766, 3.4591167872486275, 1.8141775315289306), localToWorld: Transform.createRefs(Point3d.create(-118.82046236854137, 46.0485514387863, 68.44465610136753), YawPitchRollAngles.createDegrees(-9.40802979863332, 15.000000000003949, 113.91380925648686).toMatrix3d())},
+        ],
+        expectedClash: true},
+    ];
+    let z = 0;
+    for (const testCase of testCases) {
+      const maxRange = Point3d.createZero();
+      for (const datum of testCase.data)
+        maxRange.set(Math.max(maxRange.x, datum.localRange.xLength()), Math.max(maxRange.y, datum.localRange.yLength()), Math.max(maxRange.z, datum.localRange.zLength()));
+      const delta = maxRange.maxAbs();
+      const delta10 = 10 * delta;
+      let x = 0;
+      for (let i = 0; i < testCase.data.length; ++i) {
+        const j = (i + 1) % testCase.data.length;
+        let y = 0;
+        // lambda to exercise local range clash detector
+        const clashDetect = (index0: number, index1: number, captureLocal: boolean = true, captureWorld: boolean = false): boolean => {
+          if (captureLocal) {
+            // doLocalRangesIntersect converts range0 to a polyface transformed into range1's local coordinates
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index1].localToWorld.inverse()?.multiplyTransformTransform(testCase.data[index0].localToWorld), x, y, z);
+            GeometryCoreTestIO.captureRangeEdges(allGeometry, testCase.data[index1].localRange, x, y, z);
+          }
+          if (captureWorld) {
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index0].localRange, testCase.data[index0].localToWorld, x, y, z);
+            GeometryCoreTestIO.captureTransformedRangeEdges(allGeometry, testCase.data[index1].localRange, testCase.data[index1].localToWorld, x, y, z);
+          }
+          const isClash = ClipUtilities.doLocalRangesIntersect(testCase.data[index0].localRange, testCase.data[index0].localToWorld, testCase.data[index1].localRange, testCase.data[index1].localToWorld);
+          ck.testBoolean(isClash, testCase.expectedClash, `ranges clash as expected: i=${index0} j=${index1}`);
+          return isClash;
+          };
+        const clashIJ = clashDetect(i, j);
+        y += delta10;
+        const clashJI = clashDetect(j, i);
+        ck.testBoolean(clashIJ, clashJI, `symmetric arguments: i=${i} j=${j}`);
+        // cover the margin case, no output or test
+        ClipUtilities.doLocalRangesIntersect(testCase.data[i].localRange, testCase.data[i].localToWorld, testCase.data[j].localRange, testCase.data[j].localToWorld, 1.0);
+        x += delta10;
+      }
+      z += delta10;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectLocalRangeBoxes");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -442,12 +513,12 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
       }
       const isClosedSolid = g.isClosedVolume;
       if (polyface.isEmpty) {
-        console.log(fileName1, `${gCount}  of ${geometry.length} is empty polyface`);
+        GeometryCoreTestIO.consoleLog(fileName1, `${gCount}  of ${geometry.length} is empty polyface`);
       } else if (isClosedMesh !== isClosedSolid) {
-        console.log(fileName1, `${gCount} of ${geometry.length}`, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
+        GeometryCoreTestIO.consoleLog(fileName1, `${gCount} of ${geometry.length}`, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh });
         PolyfaceQuery.reorientVertexOrderAroundFacetsForConsistentOrientation(polyface);
         const isClosedMesh1 = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
-        // console.log("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
+        // GeometryCoreTestIO.consoleLog("After Reorient " + fileName1, { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
         if (isClosedSolid !== isClosedMesh1) {
           if (options.hasMaxEdgeLength) {
             // hm . we think there is a bug in edge length splits.  Let's see if we can fix it up with TVertex logic ...
@@ -458,12 +529,12 @@ function writeMeshes(ck: Checker, geometry: GeometryQuery[], fileName: string, c
             allMesh.push(polyface2);
             if (checkClosure)
               ck.testBoolean(isClosedSolid, isClosedMesh2, "Closure after TVertex Fixup");
-            console.log(`After Reorient AND T VERTEX ${fileName1}`,
+            GeometryCoreTestIO.consoleLog(`After Reorient AND T VERTEX ${fileName1}`,
               { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing2: isClosedMesh2 });
 
           } else if (checkClosure) {
             if (!ck.testBoolean(isClosedSolid, isClosedMesh1, " post-fixup solid closure"))
-              console.log(`After Reorient ${fileName1}`,
+              GeometryCoreTestIO.consoleLog(`After Reorient ${fileName1}`,
                 { isClosedBySolid: isClosedSolid, isClosedByEdgePairing: isClosedMesh, isClosedByEdgePairing1: isClosedMesh1 });
           }
         }
@@ -618,7 +689,7 @@ describe("Polyface.Facets", () => {
       allCountsB.push(countsB);
       allCountsC.push(countsC);
     }
-    console.log({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
+    GeometryCoreTestIO.consoleLog({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -882,7 +953,7 @@ it("PartialSawToothTriangulation", () => {
     const polyface = builder.claimPolyface(true);
     if (!ck.testExactNumber(polygonPoints.length - 2, polyface.facetCount, "Triangle count in polygon")) {
       const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
-      console.log(prettyPrint(jsPolyface));
+      GeometryCoreTestIO.consoleLog(prettyPrint(jsPolyface));
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygonPoints), x0, y0);
     GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0 += dy);
@@ -1035,7 +1106,7 @@ it("SolidPrimitiveBoundary", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
         if (capped) {
           if (!ck.testUndefined(boundary1, "capped solid should have no boundary"))
-            GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary1, x0, y1, z1);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundary1, x0, y1, z1);
         } else {
           ck.testDefined(boundary1, "uncapped solid should have boundary");
         }
@@ -1529,7 +1600,7 @@ it("synchroPolyface", () => {
     const pointIndexArray = enumerateToNumberArray(polyfaceJson.data.pointIndex);
     const paramIndexArray = enumerateToNumberArray(polyfaceJson.data.paramIndex);
     const normalIndexArray = enumerateToNumberArray(polyfaceJson.data.normalIndex);
-    console.log({ numXYZ: xyzArray.length });
+    GeometryCoreTestIO.consoleLog({ numXYZ: xyzArray.length });
     const polyfaceB = IndexedPolyface.create(true, true, false, true);
     polyfaceB.data.point.pushFrom(xyzArray);
     for (let i = 0; i + 1 < paramArray.length; i += 2)
@@ -1549,8 +1620,8 @@ it("synchroPolyface", () => {
     }
     const errors = checkPolyfaceIndexErrors(polyfaceB);
     if (!ck.testUndefined(errors, "index error description"))
-      console.log(errors);
-// EDL July 2021 twoSided is flipping?
+      GeometryCoreTestIO.consoleLog(errors);
+    // EDL July 2021 twoSided is flipping?
     polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
@@ -1621,7 +1692,7 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
       }
     }
     if (lastJ !== -1)
-      console.log(`lastJ error ${lastJ}`);
+      GeometryCoreTestIO.consoleLog(`lastJ error ${lastJ}`);
   }
   return polyface;
 }

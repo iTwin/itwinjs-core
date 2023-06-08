@@ -33,8 +33,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
-/* eslint-disable no-console */
-
 describe("Ellipsoid", () => {
   Checker.noisy.ellipsoid = true;
   it("patchRange", () => {
@@ -520,10 +518,10 @@ describe("Ellipsoid", () => {
               patch.longitudeSweep.endAngle,
               patch.latitudeSweep),
             x0, y1);
-          // console.log({ eccentricity: e });
+          // GeometryCoreTestIO.consoleLog({ eccentricity: e });
           for (const thetaFraction of fractions) {
             for (const phiFraction of fractions) {
-              // console.log("(thetaFraction " + thetaFraction + ") (phiFraction " + phiFraction + ") (distance " + distanceFromSurface + ")");
+              // GeometryCoreTestIO.consoleLog("(thetaFraction " + thetaFraction + ") (phiFraction " + phiFraction + ") (distance " + distanceFromSurface + ")");
               const anglesA = patch.uvFractionToAngles(thetaFraction, phiFraction, distanceFromSurface);
               const rayA = patch.anglesToUnitNormalRay(anglesA)!;
               const anglesB = patch.projectPointToSurface(rayA.origin);
@@ -581,7 +579,7 @@ describe("Ellipsoid", () => {
         AngleSweep.create360(),
         AngleSweep.createStartEndDegrees(-89, 89));
       if (Checker.noisy.ellipsoid)
-        console.log(" ELLIPSOID", prettyPrint(ellipsoid));
+        GeometryCoreTestIO.consoleLog(" ELLIPSOID", prettyPrint(ellipsoid));
       GeometryCoreTestIO.captureMesh(allGeometry, patch, 48, 16, x0, y0);
       for (const localPoint of originArray) {
         y0 += xShift;
@@ -646,16 +644,16 @@ describe("Ellipsoid", () => {
       const matrix = matrixNamePair[0] as Matrix3d;
       const name = matrixNamePair[1] as string;
       if (Checker.noisy.ellipsoid)
-        console.log("Ellipsoid Paths", name);
+        GeometryCoreTestIO.consoleLog("Ellipsoid Paths", name);
       const y0 = 0.0;
       const dy = 2.0 * (matrix.columnXMagnitude() + matrix.columnYMagnitude());
       const dx = 3.0 * dy;
       x0 += dx;     // dx shifts both before and after, to catch larger
       if (Checker.noisy.ellipsoid) {
-        console.log();
-        console.log("*****************************************************************");
-        console.log({ "  ELLIPSOID x magnitude ": matrix.columnXMagnitude() });
-        console.log(matrix.toJSON());
+        GeometryCoreTestIO.consoleLog();
+        GeometryCoreTestIO.consoleLog("*****************************************************************");
+        GeometryCoreTestIO.consoleLog({ "  ELLIPSOID x magnitude ": matrix.columnXMagnitude() });
+        GeometryCoreTestIO.consoleLog(matrix.toJSON());
       }
       const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(center, matrix));
       testEllipsoidPaths(ck, allGeometry, ellipsoid, anglePoints, dy, x0, y0);
@@ -677,16 +675,16 @@ describe("Ellipsoid", () => {
       const matrix = matrixNamePair[0] as Matrix3d;
       const name = matrixNamePair[1] as string;
       if (Checker.noisy.ellipsoid)
-        console.log("Ellipsoid Paths", name);
+        GeometryCoreTestIO.consoleLog("Ellipsoid Paths", name);
       const y0 = 0.0;
       const dy = 2.0 * (matrix.columnXMagnitude() + matrix.columnYMagnitude());
       const dx = 3.0 * dy;
       x0 += dx;     // dx shifts both before and after, to catch larger
       if (Checker.noisy.ellipsoid) {
-        console.log();
-        console.log("*****************************************************************");
-        console.log({ "  ELLIPSOID x magnitude ": matrix.columnXMagnitude() });
-        console.log(matrix.toJSON());
+        GeometryCoreTestIO.consoleLog();
+        GeometryCoreTestIO.consoleLog("*****************************************************************");
+        GeometryCoreTestIO.consoleLog({ "  ELLIPSOID x magnitude ": matrix.columnXMagnitude() });
+        GeometryCoreTestIO.consoleLog(matrix.toJSON());
       }
       const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(center, matrix));
       testEllipsoidPaths(ck, allGeometry, ellipsoid, anglePoints, dy, x0, y0);
@@ -878,7 +876,7 @@ describe("Ellipsoid", () => {
     const y0 = 0;
     const z0 = 0.0;
     for (const ellipsoidRadius of [1.0, 2.0]) {
-      console.log({ "*** ellipsoid radius ": ellipsoidRadius });
+      GeometryCoreTestIO.consoleLog({ "*** ellipsoid radius ": ellipsoidRadius });
       for (const ellipsoid of [
         Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), undefined, ellipsoidRadius, ellipsoidRadius, ellipsoidRadius),
         Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 1, 0), undefined, ellipsoidRadius, ellipsoidRadius, 0.6 * ellipsoidRadius)]) {
@@ -988,10 +986,10 @@ describe("Ellipsoid", () => {
         const diff10 = rangeA10.low.distance(rangeB.low) + rangeA10.high.distance(rangeB.high);
         maxDiff4 = Math.max(diff4, maxDiff4);
         maxDiff10 = Math.max(diff10, maxDiff10);
-        console.log({ offset: offsetDistance, diffs: [diff4, diff10] });
+        GeometryCoreTestIO.consoleLog({ offset: offsetDistance, diffs: [diff4, diff10] });
         ck.testLE(diff4, 0.005, "approximate range error");
       }
-      console.log({ offset: offsetDistance, finalMaxDiffs: [maxDiff4, maxDiff10] });
+      GeometryCoreTestIO.consoleLog({ offset: offsetDistance, finalMaxDiffs: [maxDiff4, maxDiff10] });
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
     expect(ck.getNumErrors()).equals(0);
@@ -1059,12 +1057,12 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y1);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y0);
             if (Checker.noisy.ellipsoid)
-              console.log({ greatArcTrueLength: arcLength, n: ls.numPoints(), l: ls.curveLength() });
+              GeometryCoreTestIO.consoleLog({ greatArcTrueLength: arcLength, n: ls.numPoints(), l: ls.curveLength() });
           }
           const arcPath = CurveFactory.assembleArcChainOnEllipsoid(ellipsoid, path, 0.5);
           const arcPathLength = arcPath.sumLengths();
           if (Checker.noisy.ellipsoid) {
-            console.log("path sums ", arcPathLength);
+            GeometryCoreTestIO.consoleLog("path sums ", arcPathLength);
           }
           GeometryCoreTestIO.captureGeometry(allGeometry, arcPath, x0, y0);
         }
@@ -1076,7 +1074,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, minLengthArcDataA.minLengthArc, x0, y1);
           const lA = minLengthArcDataA.minLengthArc.curveLength();
           if (Checker.noisy.ellipsoid)
-            console.log({ "approximate min section lengthA ": minLengthArcDataA.minLengthArc.curveLength(), "fraction ": minLengthArcDataA.minLengthNormalInterpolationFraction });
+            GeometryCoreTestIO.consoleLog({ "approximate min section lengthA ": minLengthArcDataA.minLengthArc.curveLength(), "fraction ": minLengthArcDataA.minLengthNormalInterpolationFraction });
           const minLengthArcDataB = GeodesicPathSolver.approximateMinimumLengthSectionArc(ellipsoid, angleA, angleB, numSample,
             minLengthArcDataA.minLengthNormalInterpolationFraction - 0.10, minLengthArcDataA.minLengthNormalInterpolationFraction + 0.10);
           if (minLengthArcDataB) {
@@ -1084,7 +1082,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, minLengthArcDataB.minLengthArc, x0, y1);
             ck.testLE(lB, lA * (1.0 + 1.0e-10), "Secondary search refines min length");
             if (Checker.noisy.ellipsoid)
-              console.log({
+              GeometryCoreTestIO.consoleLog({
                 "approximate min section lengthB ": minLengthArcDataB.minLengthArc.curveLength(),
                 "fraction ": minLengthArcDataB.minLengthNormalInterpolationFraction,
                 "ratio ": lB / lA,

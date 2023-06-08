@@ -9,7 +9,7 @@ import { Point2d } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
@@ -290,19 +290,19 @@ describe("Viewport", () => {
 
     const rgbwp1: TestCase = {
       width: 1,
-      image: [ ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple ],
+      image: [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple],
     };
 
     const rTransp50pct: TestCase = {
       width: 1,
       height: 2,
-      image: [ ColorDef.red.withTransparency(0x7f) ],
+      image: [ColorDef.red.withTransparency(0x7f)],
       bgColor: transpBlack,
     };
 
     const rTransp100pct: TestCase = {
       ...rTransp50pct,
-      image: [ ColorDef.red.withTransparency(0xff) ],
+      image: [ColorDef.red.withTransparency(0xff)],
     };
 
     const square3: TestCase = {
@@ -320,7 +320,7 @@ describe("Viewport", () => {
           // eslint-disable-next-line deprecation/deprecation
           const image = viewport.readImage()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
         });
       });
 
@@ -338,7 +338,7 @@ describe("Viewport", () => {
           // eslint-disable-next-line deprecation/deprecation
           const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.blue, ColorDef.white ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white]);
         });
       });
     });
@@ -356,7 +356,7 @@ describe("Viewport", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImageBuffer({ upsideDown: true })!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
         });
       });
 
@@ -364,7 +364,7 @@ describe("Viewport", () => {
         test(rgbwp1, (viewport) => {
           const image = viewport.readImageBuffer({ rect: new ViewRect(0, 1, 1, 3) })!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.green, ColorDef.blue ]);
+          expectColors(image, [ColorDef.green, ColorDef.blue]);
         });
       });
 
@@ -378,11 +378,11 @@ describe("Viewport", () => {
           };
 
           capture(0, 0, 3, 3, square3.image);
-          capture(0, 0, 2, 2, [ ColorDef.red, ColorDef.green, ColorDef.white, ColorDef.black ]);
-          capture(1, 1, 2, 2, [ ColorDef.black, grey, purple, yellow ]);
-          capture(2, 0, 1, 3, [ ColorDef.blue, grey, yellow ]);
-          capture(0, 2, 3, 1, [ cyan, purple, yellow ]);
-          capture(1, 2, 1, 1, [ purple ]);
+          capture(0, 0, 2, 2, [ColorDef.red, ColorDef.green, ColorDef.white, ColorDef.black]);
+          capture(1, 1, 2, 2, [ColorDef.black, grey, purple, yellow]);
+          capture(2, 0, 1, 3, [ColorDef.blue, grey, yellow]);
+          capture(0, 2, 3, 1, [cyan, purple, yellow]);
+          capture(1, 2, 1, 1, [purple]);
         });
       });
 
@@ -467,13 +467,13 @@ describe("Viewport", () => {
         test({ ...rTransp50pct, bgColor: undefined }, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ halfRed, ColorDef.black ]);
+          expectColors(image, [halfRed, ColorDef.black]);
         });
 
         test({ ...rTransp100pct, bgColor: undefined }, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.black, ColorDef.black ]);
+          expectColors(image, [ColorDef.black, ColorDef.black]);
         });
       });
 
@@ -481,7 +481,7 @@ describe("Viewport", () => {
         test(rTransp50pct, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ halfRed, transpBlack ]);
+          expectColors(image, [halfRed, transpBlack]);
         });
       });
 
@@ -538,11 +538,11 @@ describe("Viewport", () => {
           formatId: "BadFormat",
           url: "https://sampleUrl",
           name: "test",
-          subLayers: [{id: 0, name: "test", visible: true }],
+          subLayers: [{ id: 0, name: "test", visible: true }],
         });
 
         vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
-        expect(vp.displayStyle.attachMapLayer({settings})).not.to.throw;
+        expect(vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } })).not.to.throw;
         await vp.waitForSceneCompletion();
       });
     });

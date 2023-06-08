@@ -8,8 +8,8 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
-import { SurfaceType } from "../primitives/SurfaceParams";
-import { VertexIndices } from "../primitives/VertexTable";
+import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ShaderProgramParams } from "./DrawCommand";
@@ -238,6 +238,8 @@ export class SurfaceGeometry extends MeshGeometry {
 
     flags[SurfaceBitIndex.HasTexture] = this.useTexture(params) ? 1 : 0;
     flags[SurfaceBitIndex.HasNormalMap] = this.useNormalMap(params) ? 1 : 0;
+    flags[SurfaceBitIndex.UseConstantLodTextureMapping] = this.mesh.textureUsesConstantLod ? 1 : 0;
+    flags[SurfaceBitIndex.UseConstantLodNormalMapMapping] = this.mesh.normalMapUsesConstantLod ? 1 : 0;
 
     // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
     flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;

@@ -7,33 +7,34 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
-import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { ViewRect } from "../../ViewRect";
+import { imageElementFromImageSource } from "../../common/ImageUtil";
+import { MeshParams } from "../../common/render/primitives/MeshParams";
+import { PointStringParams } from "../../common/render/primitives/PointStringParams";
+import { PolylineParams } from "../../common/render/primitives/PolylineParams";
+import { TextureCacheKey } from "../../common/render/TextureParams";
+import { ViewRect } from "../../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { PointStringParams } from "../primitives/PointStringParams";
-import { PolylineParams } from "../primitives/PolylineParams";
-import { MeshParams } from "../primitives/VertexTable";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
-import { CreateRenderMaterialArgs } from "../RenderMaterial";
+import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 import { RenderMemory } from "../RenderMemory";
 import { RealityMeshParams } from "../RealityMeshParams";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs } from "../CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
@@ -511,7 +512,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new AnimationTransformBranch(graphic, nodeId);
   }
 
-  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
+  public createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
     return new Batch(graphic, features, range, options);
   }
 
@@ -608,6 +609,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         mapMode: args.textureMapping.mode,
         textureWeight: args.textureMapping.weight,
         worldMapping: args.textureMapping.worldMapping,
+        useConstantLod: args.textureMapping.useConstantLod,
+        constantLodProps: args.textureMapping.constantLodProps,
       }));
       params.textureMapping.normalMapParams = args.textureMapping.normalMapParams;
     }

@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { GeometryClass } from "@itwin/core-common";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 import { Pixel } from "./Pixel";
@@ -124,12 +124,12 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
       for (let x = rect.left; x < rect.right; x++) {
         for (let y = rect.top; y < rect.bottom; y++) {
           const pixel = pixels.getPixel(x, y);
-          if (pixel.feature && pixel.featureTable) {
+          if (pixel.feature && pixel.modelId) {
             yield {
               elementId: pixel.feature.elementId,
               subCategoryId: pixel.feature.subCategoryId,
               geometryClass: pixel.feature.geometryClass,
-              modelId: pixel.featureTable.modelId,
+              modelId: pixel.modelId,
               iModel: pixel.iModel ?? iModel,
             };
           }

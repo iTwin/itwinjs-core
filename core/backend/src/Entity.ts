@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
 /** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
@@ -20,7 +20,7 @@ export class Entity {
   /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
    * are never substitutable for one another. To obtain an EntityProps from an Entity, use [[Entity.toJSON]].
    */
-  public readonly isInstanceOfEntity: true = true;
+  public readonly isInstanceOfEntity = true as const;
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 
@@ -76,7 +76,9 @@ export class Entity {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
+  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
+    this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
+  }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */
   public static get classFullName(): string { return `${this.schema.schemaName}:${this.className}`; }
@@ -101,60 +103,43 @@ export class Entity {
    */
   public static get isGeneratedClass() { return false; }
 
-  // NOTE: will also consider using generated collectReferences everywhere and a separate collectJsonPropertyReferenceIds
-  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
+  /** Get the set of this entity's *entity references*, [EntityReferenceSet]($backend). An *entity reference* is any id
+   * stored on the entity, in its EC properties or json fields.
    * This is important for cloning operations but can be useful in other situations as well.
-   * @note In the next breaking change, the behavior of this function will change to return a EntityReferenceSet
-   *       which does not iterate plain Id64s, see [EntityReferenceSet]($backend).
-   * @see collectReferenceIds
+   * @see this.collectReferenceIds
    * @beta
    */
-  public getReferenceIds(): Set<Id64String> {
-    const referenceIds = new Set<Id64String>();
-    this.collectReferenceIds(referenceIds); // eslint-disable-line deprecation/deprecation
+  public getReferenceIds(): EntityReferenceSet {
+    const referenceIds = new EntityReferenceSet();
+    this.collectReferenceIds(referenceIds);
     return referenceIds;
   }
 
-  /** This is the intended and future behavior of [[getReferenceIds]].
-   * In the next breaking change it will replace getReferenceIds, and is already used by the transformer
+  /** kept rename for older transformer versions
+   * @deprecated in 3.x . Use [[getReferenceIds]] instead
    * @internal
    */
-  public getReferenceConcreteIds(): EntityReferenceSet {
-    const referenceIds = new EntityReferenceSet();
-    this.collectReferenceConcreteIds(referenceIds);
-    return referenceIds;
-  }
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  public getReferenceConcreteIds = this.getReferenceIds;
 
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
-   * A *reference* is any entity referenced by this entity's EC Data
+   * A *reference* is any entity referenced by this entity's EC Data, including json fields.
    * This is important for cloning operations but can be useful in other situations as well.
    * @param _referenceIds The Id64Set to populate with reference Ids.
-   * @note In the next breaking change, the behavior of this function will change to require a EntityReferenceSet argument,
-   *       which does not accept plain Id64s, see EntityReferenceSet.
-   * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
    * @beta
    */
-  protected collectReferenceIds(referenceIds: Set<Id64String>): void {
-    const concreteEntityIds = this.getReferenceConcreteIds();
-    for (const entity of concreteEntityIds) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention
-      const EntityReferences = (require("./EntityReferences") as typeof import("./EntityReferences")).EntityReferences;
-      // the old [[collectReferenceIds]] only supported elements/models, and the id spaces can overlap so dont include anything else
-      if (EntityReferences.isElement(entity) || EntityReferences.isModel(entity)) {
-        referenceIds.add(EntityReferences.toId64(entity));
-      }
-    }
-  }
-
-  /** This is the intended and future behavior of [[getReferenceIds]], and is used in the transformer already.
-   * In the next breaking change it will replace getReferenceIds
-   * @internal
-   */
-  protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void {
+  protected collectReferenceIds(_referenceIds: EntityReferenceSet): void {
     return; // no references by default
   }
+
+  /** kept rename for older transformer versions
+   * @deprecated in 3.x . Use [[collectReferenceIds]] instead
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  protected collectReferenceConcreteIds = this.collectReferenceIds;
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.

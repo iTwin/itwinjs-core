@@ -8,10 +8,10 @@
 
 import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
-  UnitProps, UnitsProvider, UnitSystemKey,
+  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
+  UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
@@ -479,8 +479,7 @@ export class QuantityFormatter implements UnitsProvider {
       }
     });
 
-    this._unitFormattingSettingsProvider &&
-      this._unitFormattingSettingsProvider.storeFormatOverrides({ typeKey, overrideEntry });
+    await this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, overrideEntry });
 
     const formatProps = this.getOverrideFormatPropsByQuantityType(typeKey, this.activeUnitSystem);
     if (formatProps) {
@@ -500,8 +499,7 @@ export class QuantityFormatter implements UnitsProvider {
       const overrideMap = this._overrideFormatPropsByUnitSystem.get(unitSystem);
       if (overrideMap && overrideMap.has(type)) {
         overrideMap.delete(type);
-        this._unitFormattingSettingsProvider &&
-          this._unitFormattingSettingsProvider.storeFormatOverrides({ typeKey: type, unitSystem });
+        await this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey: type, unitSystem });
 
         await this.loadDefaultFormatAndParserSpecForQuantity(type);
         // trigger a message to let callers know the format has changed.
@@ -610,7 +608,7 @@ export class QuantityFormatter implements UnitsProvider {
     unitSystemKey && (this._activeUnitSystem = unitSystemKey);
     await this.loadFormatAndParsingMapsForSystem(this._activeUnitSystem);
     fireUnitSystemChanged && this.onActiveFormattingUnitSystemChanged.emit({ system: this._activeUnitSystem });
-    IModelApp.toolAdmin && startDefaultTool && IModelApp.toolAdmin.startDefaultTool();
+    IModelApp.toolAdmin && startDefaultTool && await IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** Set the Active unit system to one of the supported types. This will asynchronously load the formatter and parser specs for the activated system. */
@@ -627,7 +625,7 @@ export class QuantityFormatter implements UnitsProvider {
     this._activeUnitSystem = systemType;
     await this.loadFormatAndParsingMapsForSystem(systemType);
     // allow settings provider to store the change
-    this._unitFormattingSettingsProvider && this._unitFormattingSettingsProvider.storeUnitSystemSetting({ system: systemType });
+    await this._unitFormattingSettingsProvider?.storeUnitSystemSetting({ system: systemType });
     // fire current event
     this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
@@ -672,11 +670,12 @@ export class QuantityFormatter implements UnitsProvider {
       const overrides = this._overrideFormatPropsByUnitSystem.get(this.activeUnitSystem);
       const typesRemoved: string[] = [];
       if (overrides && overrides.size) {
+        const promises = new Array<Promise<void> | undefined>();
         overrides.forEach((_props, typeKey) => {
           typesRemoved.push(typeKey);
-          this._unitFormattingSettingsProvider &&
-            this._unitFormattingSettingsProvider.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem });
+          promises.push(this._unitFormattingSettingsProvider?.storeFormatOverrides({ typeKey, unitSystem: this.activeUnitSystem }));
         });
+        await Promise.all(promises);
       }
 
       if (typesRemoved.length) {
@@ -881,7 +880,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
-  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }
 }

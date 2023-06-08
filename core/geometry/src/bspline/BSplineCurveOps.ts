@@ -6,17 +6,15 @@
  * @module Bspline
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
-
+import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BandedSystem } from "../numerics/BandedSystem";
 import { BSplineCurve3d } from "./BSplineCurve";
-import { BSplineWrapMode, KnotVector } from "./KnotVector";
 import { InterpolationCurve3dOptions, InterpolationCurve3dProps } from "./InterpolationCurve3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
+import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /**
  * A class with static methods for creating B-spline curves.

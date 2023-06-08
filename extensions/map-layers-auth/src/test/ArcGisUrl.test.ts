@@ -34,7 +34,7 @@ describe("ArcGisUrl", () => {
   });
 
   it("should extract RestUrl From GenerateToken Url", async () => {
-    const fetchJsonStub = sandbox.stub(ArcGisUrl, "fetchJson" as any).callsFake(async function _(_url: URL) {
+    const fetchJsonStub = sandbox.stub(ArcGisUrl, "fetchJson" as any).callsFake(async function _(_url: unknown) {
       return Promise.resolve({
         authInfo: { tokenServicesUrl: sampleGenerateTokenUrl },
       });

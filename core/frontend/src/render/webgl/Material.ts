@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/SurfaceParams";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/render/primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
@@ -43,7 +43,7 @@ export class Material extends RenderMaterial {
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
   // Used for type-switching vs MaterialAtlas
-  public readonly isAtlas: false = false;
+  public readonly isAtlas = false as const;
   public readonly fragUniforms = new Float32Array(4);
   public readonly rgba = new Float32Array(4);
 

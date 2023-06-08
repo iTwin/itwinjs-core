@@ -11,7 +11,6 @@ import { Geometry } from "../../Geometry";
 // import { Point3d, Transform } from "../PointVector";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
 describe("CurveLocationDetail", () => {
   it("HelloWorld", () => {
     const ck = new Checker();

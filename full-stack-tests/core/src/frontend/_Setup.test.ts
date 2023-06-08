@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
@@ -95,11 +95,9 @@ Assertion.addMethod(
       isDeep
         ? deepEqualWithFpTolerance(expected, actual, options)
         : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${
-        isDeep ? "deep equality of " : " "
+      `expected ${isDeep ? "deep equality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${
-        isDeep ? "deep inequality of " : " "
+      `expected ${isDeep ? "deep inequality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
       actual
@@ -108,14 +106,18 @@ Assertion.addMethod(
 );
 
 if (!ProcessDetector.isElectronAppFrontend) {
-  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
+  const params: BentleyCloudRpcParams = {
+    info: { title: "full-stack-test", version: "v1.0" },
+    pathPrefix: `http://${window.location.hostname}:${Number(window.location.port) + 2000}`,
+  };
+
+  BentleyCloudRpcManager.initializeClient(params, rpcInterfaces);
 
   // This is a web-only test
   describe("Web Test Fixture", () => {
     it("Backend server should be accessible", async () => {
       const req = new XMLHttpRequest();
-      req.open("GET", `${config.protocol.pathPrefix}/v3/swagger.json`);
+      req.open("GET", `${params.pathPrefix}/v3/swagger.json`);
       const loaded = new Promise((resolve) => req.addEventListener("load", resolve));
       req.send();
       await loaded;

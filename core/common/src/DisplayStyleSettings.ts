@@ -156,11 +156,11 @@ export interface DisplayStyleSettingsProps {
  * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-  /** See [[DisplayStyle3dSettings.environment. */
+  /** See [[DisplayStyle3dSettings.environment]]. */
   environment?: EnvironmentProps;
-  /** See [[DisplayStyle3dSettings.thematic. */
+  /** See [[DisplayStyle3dSettings.thematic]]. */
   thematic?: ThematicDisplayProps;
-  /** See [[DisplayStyle3dSettings.hiddenLineSettings. */
+  /** See [[DisplayStyle3dSettings.hiddenLineSettings]]. */
   hline?: HiddenLine.SettingsProps;
   /** See [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
   ao?: AmbientOcclusion.Props;
@@ -168,7 +168,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   solarShadows?: SolarShadowSettingsProps;
   /** See [[DisplayStyle3dSettings.lights]]. */
   lights?: LightSettingsProps;
-  /** See [[DisplayStyle3dSettings.planProjections. */
+  /** See [[DisplayStyle3dSettings.planProjections]]. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
   /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
    * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
@@ -903,7 +903,7 @@ export class DisplayStyleSettings {
       this._json.clipStyle = style.toJSON();
   }
 
-  /** @internal */
+  /** Convert these settings to their JSON representation. */
   public toJSON(): DisplayStyleSettingsProps {
     return this._json;
   }
@@ -1128,12 +1128,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }
   }
 
-  /** @internal */
+  /** Convert these settings to their JSON representation. */
   public override toJSON(): DisplayStyle3dSettingsProps {
     return this._json3d;
   }
 
-  /** @internal */
+  /** See [[DisplayStyleSettings.toOverrides]]. */
   public override toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
     const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
     if (options?.includeAll)
@@ -1257,7 +1257,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** Controls the display of a [[SkyBox]] and [[GroundPlane]].
+  /** Controls the display of a [[SkyBox]], [[GroundPlane]], and [[Atmosphere]].
    * @public
    */
   public get environment(): Environment {
@@ -1287,6 +1287,16 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     display = display ?? this.environment.displayGround;
     if (display !== this.environment.displayGround)
       this.environment = this.environment.withDisplay({ ground: display });
+  }
+
+  /** Toggle display of the [[environment]]'s [[Atmosphere]].
+   * @beta
+   * @param display Whether to display the atmosphere, or `undefined` to toggle the current display.
+   */
+  public toggleAtmosphere(display?: boolean): void {
+    display = display ?? this.environment.displayAtmosphere;
+    if (display !== this.environment.displayAtmosphere)
+      this.environment = this.environment.withDisplay({ atmosphere: display });
   }
 
   public get lights(): LightSettings {

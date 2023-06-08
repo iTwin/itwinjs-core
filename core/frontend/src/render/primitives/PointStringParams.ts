@@ -8,43 +8,35 @@
 
 import { assert } from "@itwin/core-bentley";
 import { PolylineArgs } from "./mesh/MeshPrimitives";
-import { VertexIndices, VertexTable } from "./VertexTable";
+import { VertexTableBuilder } from "./VertexTableBuilder";
+import { PointStringParams } from "../../common/render/primitives/PointStringParams";
+import { VertexIndices } from "../../common/render/primitives/VertexIndices";
+import { IModelApp } from "../../IModelApp";
 
-/** Describes point string geometry to be submitted to the rendering system.
- * @internal
- */
-export class PointStringParams {
-  public readonly vertices: VertexTable;
-  public readonly indices: VertexIndices;
-  public readonly weight: number;
+export function createPointStringParams(args: PolylineArgs): PointStringParams | undefined {
+  if (!args.flags.isDisjoint)
+    return undefined;
 
-  public constructor(vertices: VertexTable, indices: VertexIndices, weight: number) {
-    this.vertices = vertices;
-    this.indices = indices;
-    this.weight = weight;
+  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  if (undefined === vertices)
+    return undefined;
+
+  const polylines = args.polylines;
+  let vertIndices = polylines[0].vertIndices;
+  if (1 < polylines.length) {
+    // We used to assert this wouldn't happen - apparently it does...
+    vertIndices = [];
+    for (const polyline of polylines)
+      for (const vertIndex of polyline.vertIndices)
+        vertIndices.push(vertIndex);
   }
 
-  public static create(args: PolylineArgs): PointStringParams | undefined {
-    if (!args.flags.isDisjoint)
-      return undefined;
+  const vertexIndices = VertexIndices.fromArray(vertIndices);
+  assert(vertexIndices.length === vertIndices.length);
 
-    const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
-
-    const polylines = args.polylines;
-    let vertIndices = polylines[0].vertIndices;
-    if (1 < polylines.length) {
-      // We used to assert this wouldn't happen - apparently it does...
-      vertIndices = [];
-      for (const polyline of polylines)
-        for (const vertIndex of polyline.vertIndices)
-          vertIndices.push(vertIndex);
-    }
-
-    const vertexIndices = VertexIndices.fromArray(vertIndices);
-    assert(vertexIndices.length === vertIndices.length);
-
-    return new PointStringParams(vertices, vertexIndices, args.width);
-  }
+  return {
+    vertices,
+    indices: vertexIndices,
+    weight: args.width,
+  };
 }

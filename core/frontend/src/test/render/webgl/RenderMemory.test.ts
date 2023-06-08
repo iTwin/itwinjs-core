@@ -11,7 +11,7 @@ import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
-import { MeshParams } from "../../../render/primitives/VertexTable";
+import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams } from "../../../core-frontend";
@@ -58,7 +58,7 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
     textureMapping,
   };
 
-  const params = MeshParams.create(args);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
   const geom = IModelApp.renderSystem.createMeshGeometry(params);
   expect(geom).not.to.be.undefined;
   return geom!;

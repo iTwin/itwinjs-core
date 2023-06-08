@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
+import { KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel, tryGetFieldByLabel } from "../../../Utils";
+import { getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
@@ -39,8 +39,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               // load content for all `bis.SpatialCategory` and `bis.GeometricModel` instances
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory", "GeometricModel"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory", "GeometricModel"], arePolymorphic: true },
             }],
           }, {
             ruleType: "ContentModifier",
@@ -136,8 +135,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               // load content of all `bis.SpatialCategory` instances
               specType: "ContentInstancesOfSpecificClasses",
-              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"] },
-              handleInstancesPolymorphically: true,
+              classes: { schemaName: "BisCore", classNames: ["SpatialCategory"], arePolymorphic: true },
             }],
           }, {
             ruleType: "ContentModifier",
@@ -174,6 +172,97 @@ describe("Learning Snippets", () => {
         expect(content!.descriptor.fields).to.containSubset([{
           label: "Code",
         }]).and.to.have.lengthOf(1);
+      });
+
+      it("uses 'applyOnNestedContent' attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.ApplyOnNestedContent.Ruleset
+        // The ruleset has a content rule that returns content of given input instances. The produced content
+        // additionally include properties of parent element by following the `bis.SpatialViewDefinitionUsesModelSelector`
+        // relationship. There's also a content modifier that includes properties of the related `DisplayStyle` and
+        // creates a calculated property for nested `bis.SpatialViewDefinition`.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: "Content",
+            specifications: [{
+              // load content for given input instances
+              specType: "SelectedNodeInstances",
+              relatedProperties: [{
+                propertiesSource: {
+                  relationship: {
+                    schemaName: "BisCore",
+                    className: "SpatialViewDefinitionUsesModelSelector",
+                  },
+                  direction: "Backward",
+                },
+              }],
+            }],
+          }, {
+            // add a content modifier for `SpatialViewDefinition` elements
+            ruleType: "ContentModifier",
+            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+            relatedProperties: [{
+              propertiesSource: {
+                relationship: {
+                  schemaName: "BisCore",
+                  className: "ViewDefinitionUsesDisplayStyle",
+                },
+                direction: "Forward",
+              },
+            }],
+            calculatedProperties: [{
+              label: "Calculated for SpatialViewDefinition",
+              value: "this.Pitch",
+            }],
+            // set `applyOnNestedContent: true` to get this modifier applied when `SpatialViewDefinition` content is loaded indirectly
+            applyOnNestedContent: true,
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x35" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(1);
+        expect(content!.descriptor.fields).to.containSubset([
+          { label: "Model" },
+          { label: "Is Private" },
+          { label: "User Label" },
+          {
+            label: "Spatial View Definition",
+            nestedFields: [
+              { label: "Model" },
+              { label: "Is Private" },
+              { label: "User Label" },
+              {
+                label: "Calculated for SpatialViewDefinition",
+                category: { name: "SpatialViewDefinition" },
+              },
+              {
+                label: "Display Style",
+                category: { name: "SpatialViewDefinition-DisplayStyle" },
+                nestedFields: [
+                  { label: "Model" },
+                  { label: "Is Private" },
+                  { label: "Code" },
+                  { label: "User Label" },
+                ],
+              },
+            ],
+          },
+        ]);
+        const spatialViewDefinition = content!.contentSet[0].values[getFieldByLabel(content!.descriptor.fields, "Spatial View Definition").name] as NestedContentValue[];
+        expect(spatialViewDefinition.length).to.eq(1);
+        expect(spatialViewDefinition[0].values[getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name]).to.not.be.empty;
+        const nestedDisplayStyle = getFieldsByLabel(content!.descriptor.fields, "Display Style").find((field) => field.isNestedContentField());
+        const displayStyle = spatialViewDefinition[0].values[nestedDisplayStyle!.name] as NestedContentValue[];
+        expect(displayStyle.length).to.eq(1);
+        expect(displayStyle[0].values).to.not.be.empty;
       });
 
       it("uses `relatedProperties` attribute", async () => {

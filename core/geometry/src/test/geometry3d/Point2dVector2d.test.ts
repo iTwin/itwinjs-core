@@ -12,7 +12,6 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
-/* eslint-disable no-console */
 describe("Point2d", () => {
   it("zeros", () => {
     const ck = new bsiChecker.Checker();
@@ -347,6 +346,15 @@ describe("Point2d", () => {
     ck.testUndefined(carrier.crossProductIndexIndexIndex(0, 1, 20));
     ck.testUndefined(carrier.crossProductIndexIndexIndex(10, 1, 0));
     ck.testUndefined(carrier.crossProductIndexIndexIndex(0, 21, 2));
+
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(0), 0);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(0), 0);
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(1), 1);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(1), 0);
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(2), 1);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(2), 1);
+    ck.testExactNumber(carrier.getXAtUncheckedPointIndex(3), 0);
+    ck.testExactNumber(carrier.getYAtUncheckedPointIndex(3), 1);
 
     expect(ck.getNumErrors()).equals(0);
   });

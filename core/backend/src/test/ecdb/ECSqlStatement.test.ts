@@ -18,24 +18,21 @@ const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
   ecdb.saveChanges();
   let rowCount: number = 0;
-  for await (const row of ecdb.query(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+  for await (const queryRow of ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rowCount++;
     if (callback)
-      callback(row);
+      callback(queryRow.toRow());
   }
   return rowCount;
 }
 async function queryRows(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions) {
   ecdb.saveChanges();
-  const rows = [];
-  for await (const row of ecdb.query(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-    rows.push(row);
-  }
-  return rows;
+  const reader = ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames });
+  return reader.toArray();
 }
 async function queryCount(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions): Promise<number> {
   ecdb.saveChanges();
-  for await (const row of ecdb.query(`SELECT COUNT(*) FROM (${ecsql})`, params, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+  for await (const row of ecdb.createQueryReader(`SELECT COUNT(*) FROM (${ecsql})`, params, { ...config, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
     return row[0] as number;
   }
   return -1;
@@ -180,10 +177,10 @@ describe("ECSqlStatement", () => {
       ecdb.clearStatementCache();
       const rca = await queryRows(ecdb, "SELECT count(*) as nRows FROM ts.Foo");
       assert.equal(rca[0].nRows, 100); // expe
-      const rc = await ecdb.queryRowCount("SELECT * FROM ts.Foo");
+      const rc = await queryCount(ecdb, "SELECT * FROM ts.Foo");
       assert.equal(rc, 100); // expe
       let rowNo = 0;
-      for await (const row of ecdb.query("SELECT * FROM ts.Foo", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.n, rowNo + 1);
         rowNo = rowNo + 1;
       }
@@ -219,7 +216,8 @@ describe("ECSqlStatement", () => {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
             options.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-            for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo", undefined, options.getOptions())) {
+            options.setRestartToken("tag");
+            for await (const _row of ecdb.createQueryReader("SELECT * FROM ts.Foo", undefined, options.getOptions())) {
               rowCount++;
             }
             successful++;
@@ -268,7 +266,7 @@ describe("ECSqlStatement", () => {
       ecdb.clearStatementCache();
       for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) { // eslint-disable-line @typescript-eslint/no-unused-vars
         let rowNo = 1;
-        for await (const row of ecdb.query("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        for await (const row of ecdb.createQueryReader("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.equal(row.n, rowNo);
           rowNo = rowNo + 1;
         }
@@ -292,16 +290,16 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
-      for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.cnt, 3);
       }
-      for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", new QueryBinder().bindInt(1, 1).bindInt(2, 2).bindInt(3, 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", new QueryBinder().bindInt(1, 1).bindInt(2, 2).bindInt(3, 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.cnt, 3);
       }
       const slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("No parameter index found for parameter name: d.");
       try {
-        for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        for await (const row of ecdb.createQueryReader("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", new QueryBinder().bindInt("a", 1).bindInt("b", 2).bindInt("c", 3).bindInt("d", 3), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.equal(row.cnt, 3);
         }
         assert.isFalse(true);
@@ -324,7 +322,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
-      for await (const row of ecdb.query("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of ecdb.createQueryReader("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", new QueryBinder().bindInt(1, 1), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         assert.equal(row.hexId, row.id);
         assert.equal(row.hexId, row.idhex);
       }
@@ -361,7 +359,7 @@ describe("ECSqlStatement", () => {
         const part = [0, 4, 6, 8, 10, 16];
         for (let z = 0; z < part.length - 1; z++) {
           guidArray.subarray(part[z], part[z + 1]).forEach((c) => {
-            guidStr += (`00${c.toString(16)}`).substr(-2);
+            guidStr += (`00${c.toString(16)}`).slice(-2);
           });
           if (z < part.length - 2)
             guidStr += "-";
@@ -376,7 +374,7 @@ describe("ECSqlStatement", () => {
         const t = v.split("-").join("");
         let i = 0;
         for (let z = 0; z < 32; z += 2) {
-          ar[i++] = parseInt(t.substr(z, 2), 16);
+          ar[i++] = parseInt(t.substring(z, z + 2), 16);
         }
         return ar;
       };
@@ -624,7 +622,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, new QueryBinder().bindString(1, dtStr)), 1);
+        assert.equal(await queryCount(ecdb, ecsqldt, new QueryBinder().bindString(1, dtStr)), 1);
         stmt.bindString(1, dtStr);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         stmt.reset();
@@ -648,7 +646,7 @@ describe("ECSqlStatement", () => {
         assert.throw(() => stmt.bindInteger(1, num));
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([num])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([num])), 0);
         assert.throw(() => stmt.bindValue(1, num));
         stmt.clearBindings();
 
@@ -664,7 +662,7 @@ describe("ECSqlStatement", () => {
         assert.throw(() => stmt.bindValue(1, str));
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([str])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([str])), 0);
 
         assert.throw(() => stmt.getBinder(1).bind(str));
         stmt.clearBindings();
@@ -675,7 +673,7 @@ describe("ECSqlStatement", () => {
         assert.throw(() => stmt.bindString(1, hexStr));
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([hexStr])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([hexStr])), 0);
 
         assert.throw(() => stmt.bindValue(1, hexStr));
         stmt.clearBindings();
@@ -699,7 +697,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([hexStr])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([hexStr])), 0);
 
         stmt.bindValues([hexStr]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -731,7 +729,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([str])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([str])), 0);
 
         stmt.bindValue(1, str);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -753,7 +751,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([num])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([num])), 0);
 
         stmt.bindValue(1, num);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -775,7 +773,7 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
-        assert.equal(await ecdb.queryRowCount(ecsqldt, QueryBinder.from([dt])), 0);
+        assert.equal(await queryCount(ecdb, ecsqldt, QueryBinder.from([dt])), 0);
 
         stmt.bindValue(1, dt);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE, "DateTime string is not parsed into what it means. SQlite just uses its regular string conversion routines which don't match here");
@@ -865,6 +863,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, "3");
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       const largeUnsafeNumber: number = 12312312312312323654; // too large for int64, but fits into uint64
       assert.isFalse(Number.isSafeInteger(largeUnsafeNumber));
       const largeUnsafeNumberStr: string = "12312312312312323654";
@@ -979,6 +978,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeUnsafeNumberHexStr);
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       const largeNegUnsafeNumber: number = -123123123123123236;
       assert.isFalse(Number.isSafeInteger(largeNegUnsafeNumber));
       const largeNegUnsafeNumberStr: string = "-123123123123123236";

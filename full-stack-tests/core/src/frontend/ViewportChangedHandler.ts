@@ -105,7 +105,7 @@ export class ViewportChangedHandler {
   /** Assert that executing the supplied function causes events to be omitted resulting in the specified flags. */
   public expect(flags: ChangeFlag, state: ViewportState | undefined, func: () => void): void {
     if (undefined === state)
-      state = 0;
+      state = 0 as ViewportState;
 
     this._vp.setAllValid();
     func();

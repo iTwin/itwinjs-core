@@ -20,8 +20,6 @@ import { Transform } from "../../geometry3d/Transform";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
-/* eslint-disable no-console */
-
 describe("GrowableXYArray", () => {
   it("PointMoments", () => {
     const ck = new Checker();
@@ -169,7 +167,7 @@ describe("GrowableXYArray", () => {
 
     const pointH1 = pointB.clone();
     const pointH2 = pointB.clone();
-    const factor = 2.3423478238907987;
+    const factor = 2.342347823890799;
     pointH1.scaleInPlace(factor);
     pointH2.multiplyMatrix3dInPlace(Matrix3d.createScale(factor, factor, factor));
     ck.testTrue(pointH1.isAlmostEqual(pointH2));

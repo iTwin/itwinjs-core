@@ -10,7 +10,7 @@ import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
 import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
 
 describe("default NativePlatform", () => {
 
@@ -76,7 +76,7 @@ describe("default NativePlatform", () => {
     it("calls addon", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => { } }))
+        .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0") }), cancel: () => { } }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
@@ -86,21 +86,31 @@ describe("default NativePlatform", () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
     });
 
     it("throws on error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
     });
 
     it("throws on `ResultSetTooLarge` error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.ResultSetTooLarge, message: "test" } }), cancel: () => { } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test").with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test").with.property("errorNumber", PresentationStatus.ResultSetTooLarge);
+    });
+
+    it("throws with diagnostics", async () => {
+      const diagnostics: DiagnosticsScopeLogs = {
+        scope: "x",
+      };
+      addonMock
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "" }, diagnostics }), cancel: () => { } }));
+      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError).and.have.property("diagnostics", diagnostics);
     });
 
     it("adds listener to cancel event and calls it only after first invocation", async () => {
@@ -108,7 +118,7 @@ describe("default NativePlatform", () => {
       const cancelEvent: BeEvent<() => void> = new BeEvent<() => void>();
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: cancelFunction }));
+        .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0") }), cancel: cancelFunction }));
       expect(await nativePlatform.handleRequest(undefined, "", cancelEvent)).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
       cancelEvent.raiseEvent();
@@ -124,7 +134,7 @@ describe("default NativePlatform", () => {
     };
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => { } }));
+      .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0"), diagnostics }), cancel: () => { } }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
   });
@@ -228,14 +238,6 @@ describe("default NativePlatform", () => {
     const result = nativePlatform.getUpdateInfo();
     addonMock.verifyAll();
     expect(result).to.deep.equal({ result: updates });
-  });
-
-  it("calls addon's updateHierarchyState", async () => {
-    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", []))
-      .returns(() => ({ result: undefined }))
-      .verifiable();
-    nativePlatform.updateHierarchyState({}, "test-ruleset-id", []);
-    addonMock.verifyAll();
   });
 
   it("returns imodel addon from IModelDb", () => {

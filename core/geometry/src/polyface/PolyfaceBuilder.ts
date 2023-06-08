@@ -122,7 +122,7 @@ class FacetSector {
       packedDerivatives.getVector3dAtCheckedVectorIndex(i, this.sectionDerivative);
   }
   private static suppressSmallUnitVectorComponents(uvw: XYZ) {
-    const tol = 1.0e-15;
+    const tol = Geometry.smallFloatingPoint;
     if (Math.abs(uvw.x) < tol) uvw.x = 0.0;
     if (Math.abs(uvw.y) < tol) uvw.y = 0.0;
     if (Math.abs(uvw.z) < tol) uvw.z = 0.0;
@@ -234,8 +234,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addTransformedRangeMesh(transform, Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1));
   }
 
-  /** add facets for a transformed unit box.
-   * * for each face in the order of BoxTopology.cornerIndexCCW, faceSelector[i]===false skips that facet.
+  /** Add facets for a transformed range box.
+   * @param transform applied to the range points before adding to the polyface
+   * @param range sides become 6 quad polyface facets
+   * @param faceSelector for each face in the order of BoxTopology.cornerIndexCCW, faceSelector[i]===false skips that facet.
   */
   public addTransformedRangeMesh(transform: Transform, range: Range3d, faceSelector?: boolean[]) {
     const pointIndex0 = this._polyface.data.pointCount;
@@ -246,8 +248,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let faceCounter = 0;
     for (const facet of BoxTopology.cornerIndexCCW) {
       if (!faceSelector || (faceCounter < faceSelector.length && faceSelector[faceCounter])) {
-        for (const pointIndex of facet)
-          this._polyface.addPointIndex(pointIndex0 + pointIndex);
+        const myFacet = facet.map((pointIndex) => pointIndex + pointIndex0);
+        if (this._reversed)
+          myFacet.reverse();
+        if (this._options.shouldTriangulate) {
+          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[1], myFacet[2], false);
+          this.addIndexedTrianglePointIndexes(myFacet[0], myFacet[2], myFacet[3], false);
+        } else {
+          this.addIndexedQuadPointIndexes(myFacet[0], myFacet[1], myFacet[3], myFacet[2], false);
+        }
         this._polyface.terminateFacet();
       }
       faceCounter++;
@@ -599,10 +608,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Announce a single quad facet's point indexes.
-   *
    * * The actual quad may be reversed or triangulated based on builder setup.
-   * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
-   * *  indexB0 and indexB1 are in the forward order at the "B" end of the quad.
+   * * indexA0 and indexA1 are in the forward order at the "A" end of the quad
+   * * indexB0 and indexB1 are in the forward order at the "B" end of the quad.
+   * * This means ccw/cw ordered vertices v[i] should be passed into this function as i=[0,1,3,2]
    */
   private addIndexedQuadPointIndexes(indexA0: number, indexA1: number, indexB0: number, indexB1: number, terminate: boolean = true) {
     if (this._reversed) {

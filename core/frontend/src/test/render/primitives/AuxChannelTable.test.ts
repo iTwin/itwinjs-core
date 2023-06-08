@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { AuxChannelTable } from "../../../render/primitives/AuxChannelTable";
+import { AuxChannelTable } from "../../../common/render/primitives/AuxChannelTable";
 
 describe("AuxChannelTable", () => {
   class System extends MockRender.System {
@@ -32,7 +32,7 @@ describe("AuxChannelTable", () => {
     const data = new AuxChannelData(3, [0, 1000, 100, 0x7fff]);
     const channel = new AuxChannel([data], AuxChannelDataType.Scalar, "s");
 
-    const table = AuxChannelTable.fromChannels([channel], 4)!;
+    const table = AuxChannelTable.fromChannels([channel], 4, System.maxTextureSize)!;
     expect(table).not.to.be.undefined;
     expect(table.data.length).to.equal(8);
     expect(Array.from(new Uint16Array(table.data.buffer))).to.deep.equal([0, 2000, 200, 0xffff]);
@@ -58,7 +58,7 @@ describe("AuxChannelTable", () => {
     const data = new AuxChannelData(1, [0, 0, 0x8000, 0x7fff, 0, 0xffff]);
     const channel = new AuxChannel([data], AuxChannelDataType.Vector, "v");
 
-    const table = AuxChannelTable.fromChannels([channel], 2)!;
+    const table = AuxChannelTable.fromChannels([channel], 2, System.maxTextureSize)!;
     expect(table).not.to.be.undefined;
 
     expect(table.data.length).to.equal(12);
@@ -89,7 +89,7 @@ describe("AuxChannelTable", () => {
     const data2 = new AuxChannelData(2, [1, 0, 0, 0, 0, 1]);
     const channel = new AuxChannel([data1, data2], AuxChannelDataType.Normal, "n");
 
-    const table = AuxChannelTable.fromChannels([channel], 2)!;
+    const table = AuxChannelTable.fromChannels([channel], 2, System.maxTextureSize)!;
     expect(table).not.to.be.undefined;
 
     const nx = OctEncodedNormal.encode(Vector3d.unitX());
@@ -111,7 +111,7 @@ describe("AuxChannelTable", () => {
     const data2 = new AuxChannelData(2, [0xffff, 0x8000 + 100, 0x8000 + 1000, 0x8000]);
     const channels = [new AuxChannel([data1], AuxChannelDataType.Distance, "d"), new AuxChannel([data2], AuxChannelDataType.Scalar, "s")];
 
-    const table = AuxChannelTable.fromChannels(channels, 4)!;
+    const table = AuxChannelTable.fromChannels(channels, 4, System.maxTextureSize)!;
     expect(table).not.to.be.undefined;
     const tableData = Array.from(new Uint16Array(table.data.buffer));
     expect(tableData).to.deep.equal([0, 0xffff, 2, 200, 20, 2000, 0xffff, 0]);
@@ -133,7 +133,7 @@ describe("AuxChannelTable", () => {
     const channel = new AuxChannel([data], AuxChannelDataType.Scalar, "s");
     function test(maxSize: number, expectedWidth: number, expectedHeight: number): void {
       System.maxTextureSize = maxSize;
-      const table = AuxChannelTable.fromChannels([channel], data.values.length)!;
+      const table = AuxChannelTable.fromChannels([channel], data.values.length, System.maxTextureSize)!;
       expect(table.width).to.equal(expectedWidth);
       expect(table.height).to.equal(expectedHeight);
     }

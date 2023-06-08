@@ -6,7 +6,7 @@ import type {
   ExtensionManifest,
   ExtensionProvider,
 } from "../Extension";
-import { request, RequestOptions } from "../../request/Request";
+import { request } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 
 /**
@@ -47,14 +47,7 @@ export class RemoteExtensionProvider implements ExtensionProvider {
    * Throws an error if the provided manifestUrl is not accessible.
    */
   public async getManifest(): Promise<ExtensionManifest> {
-    const options: RequestOptions = { method: "GET" };
-    const response = await request(this._props.manifestUrl, options);
-    const data = response.body || (() => {
-      if (!response.text)
-        throw new Error("Manifest file was empty.");
-      return JSON.parse(response.text);
-    })();
-    return data;
+    return request(this._props.manifestUrl, "json");
   }
 
 }

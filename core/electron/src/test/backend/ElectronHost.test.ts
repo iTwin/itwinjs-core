@@ -8,8 +8,7 @@ import { assert } from "chai";
 import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { RpcInterface, RpcRegistry } from "@itwin/core-common";
 import { ElectronHost, ElectronHostOptions } from "../../ElectronBackend";
 import { TestSuite } from "./ElectronBackendTests";
 
@@ -31,10 +30,6 @@ export const electronHostTestSuite: TestSuite = {
     {
       title: "Should initialize provided RPC interface.",
       func: testInitializeProvidedRpcInterface,
-    },
-    {
-      title: "Should initialize default RPC interface.",
-      func: testInitializeDefaultRpcInterface,
     },
     {
       title: "Should open main window.",
@@ -77,7 +72,7 @@ async function testStartWithOptions() {
 
 async function testRegisterIpcHandler() {
   class IpcHandlerMock extends IpcHandler {
-    public override get channelName() { return "IpcHandlerMock-channel"; }
+    public override get channelName() { return "electron-test/mock-channel"; }
     public static wasRegisterCalled = false;
 
     public static override register() {
@@ -108,20 +103,6 @@ async function testInitializeProvidedRpcInterface() {
   });
 
   assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
-}
-
-async function testInitializeDefaultRpcInterface() {
-  const defaultInterfaces = [
-    IModelReadRpcInterface,
-    IModelTileRpcInterface,
-    SnapshotIModelRpcInterface,
-    PresentationRpcInterface,
-  ];
-
-  await ElectronHost.startup();
-
-  for (const interfaceDef of defaultInterfaces)
-    assert(RpcRegistry.instance.definitionClasses.has(interfaceDef.interfaceName));
 }
 
 async function testOpenMainWindow() {

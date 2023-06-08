@@ -296,7 +296,7 @@ export class LocalHub {
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: ChangesetIndex): ChangesetProps {
     if (index <= 0)
-      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
+      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0 };
 
     return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindInteger(1, index);

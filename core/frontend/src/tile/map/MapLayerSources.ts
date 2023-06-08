@@ -13,11 +13,10 @@ import {
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { getJson, RequestBasicCredentials } from "../../request/Request";
+import { request, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
-/**
- * Values for return codes from [[MapLayerSource.validateSource]]
+/** Values for return codes from [[MapLayerSource.validateSource]]
  * @public
  */
 export enum MapLayerSourceStatus {
@@ -35,10 +34,13 @@ export enum MapLayerSourceStatus {
   RequireAuth,
   /** Map-layer coordinate system is not supported */
   InvalidCoordinateSystem,
+  /** Format is not compatible with the URL provided.
+   */
+  IncompatibleFormat,
 }
 
 /** JSON representation of a map layer source.
- *  * @see [ImageryMapLayerFormatId]($common)
+ * @see [ImageryMapLayerFormatId]($common)
  * @public
  */
 interface MapLayerSourceProps {
@@ -54,7 +56,7 @@ interface MapLayerSourceProps {
   baseMap?: boolean;
 }
 
-/** A source for map layers.  These may be catalogued for convenient use by users or applications.
+/** A source for map layers. These may be catalogued for convenient use by users or applications.
  * @public
  */
 export class MapLayerSource {
@@ -119,7 +121,7 @@ export class MapLayerSource {
 }
 
 /** A collection of [[MapLayerSource]] objects.
- * @internal
+ * @beta
  */
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
@@ -207,7 +209,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await getJson(`${IModelApp.publicPath}assets/MapLayerSources.json`);
+      const sourcesJson = await request(`${IModelApp.publicPath}assets/MapLayerSources.json`, "json");
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
