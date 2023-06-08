@@ -27,28 +27,12 @@ const iTwinDeps = Object.keys(packageJson.dependencies)
   })
   // use require.resolve for paths
 
-const publics = glob.sync('**/public', {nodir: false});
-  const files = publics.filter(path => fs.statSync(path).isFile());
-  const dirs = publics.filter(path => fs.statSync(path).isDirectory());
-  dirs.forEach(path => path += '/**')
-  // dirs.forEach(path => iTwinDeps.push(path += '/**'))
-  // console.log('hello', require.resolve.paths('/public'))
-  // console.log(require.resolve('public', {
-  //   paths: [
-  //     ...(require.resolve.paths('public') || []),
-  //   ],
-  // }))
-
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   // This changes the output dir from dist to build
   process.env = {...process.env, ...loadEnv(mode, process.cwd())};
   return {
     debug: true,
-    define: {
-      // __dirname: { dirname },
-    //   requireFromFile: null,
-    },
     server: {
         open: false,
         port: 3000,
@@ -106,22 +90,6 @@ export default defineConfig(() => {
       envCompatible(),
       tsconfigPaths(),
     ],
-    resolve: {
-        alias: [
-          // {
-          //   find: "type",
-          //   replacement: "rollup-plugin-node-polyfills/polyfills/type",
-          // },
-          // {
-          //   find: "release",
-          //   replacement: "rollup-plugin-node-polyfills/polyfills/release",
-          // },
-          // {
-          //   find: "requireFromFile",
-          //   replacement: "rollup-plugin-node-polyfills/polyfills/requireFromFile",
-          // },
-        ],
-    },
     optimizeDeps: {
       esbuildOptions: {
         plugins: [
