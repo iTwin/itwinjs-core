@@ -364,10 +364,19 @@ export class CurveFactory {
   }
 
   /**
-   * * Sweep the section along each segment of the centerLine until it hits the bisector plane at the next vertex.
+   * Sweep the section along each segment of the centerLine until it hits the bisector plane at the next vertex.
+   * * The caller should place the section on a plane perpendicular to the first edge.
+   *   * This plane of the input is commonly (but not necessarily) through the start point itself.
+   *   * If the geometry is not "on a perpendicular plane", the output geometry will still be flattened onto the various planes.
+   * * In the "open path" case (i.e when wrapIfPhysicallyClosed is false or the path does not have matched first and last points)
+   *       the first output plane will be a the base of the first edge and on a perpendicular plane.
+   *   * Hence if the section is already on a plane perpendicular to the
+   * * In the "closed path" case, the output plane for the first and last point is the bisector of the two planes perpendicular to the first and last edges,
+   *    and teh first/last section geometry are different from the input section on its perpendicular plane.
+   * * The centerline path does NOT have to be planar -- twisting effects effects will appear in the various bisector planes.
    * @param centerline centerline of pipe
-   * @param startSection curve data to be swept.
-   * @param wrapIfPhysicallyClosed if true and centerline is closed, make a bisector at start and end.  If false, make first and last planes perpendicular to their edges.
+   * @param startSection curve data to be swept.  As noted above, this should be on
+   * @param wrapIfPhysicallyClosed If false, make first and last planes perpendicular to their edges. If true and centerline is closed, make a bisector at start and end.
    * @return array of sections, starting with the input section projected along the first edge to the first plane.
    */
   public static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], section: AnyCurve, wrapIfPhysicallyClosed: boolean): SectionSequenceWithPlanes | undefined {
