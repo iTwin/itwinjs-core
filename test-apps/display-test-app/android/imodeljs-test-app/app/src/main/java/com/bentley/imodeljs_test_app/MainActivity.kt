@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         if (env.optStringNotEmpty("IMJS_OIDC_CLIENT_ID") != null) {
             // If the env.json includes IMJS_OIDC_CLIENT_ID, set up our DtaOidcAuthorizationClient.
             val authorizationClient = DtaOidcAuthorizationClient(this.applicationContext, env).also { this.authorizationClient = it }
-            authorizationClient.associateWithResultCallerAndOwner(this, this, this)
+            authorizationClient.associateWithActivity(this)
         }
         host = IModelJsHost(this, alwaysExtractAssets, authorizationClient, true)
         host.startup()

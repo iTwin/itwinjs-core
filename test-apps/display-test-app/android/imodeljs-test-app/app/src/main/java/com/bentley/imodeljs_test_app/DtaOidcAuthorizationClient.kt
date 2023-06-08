@@ -71,6 +71,15 @@ open class DtaOidcAuthorizationClient(appContext: Context, configData: JSONObjec
     }
 
     /**
+     * Associates with the given activity.
+     *
+     * @param activity The [ComponentActivity] to associate with.
+     */
+    fun associateWithActivity(activity: ComponentActivity) {
+        associateWithResultCallerAndOwner(activity, activity, activity)
+    }
+
+    /**
      * Associates with the given objects (usually an Activity or Fragment).
      *
      * @param resultCaller The [ActivityResultCaller] to use for location permission and services requests.
