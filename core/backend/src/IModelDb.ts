@@ -2034,6 +2034,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
     private _viewStore?: ViewStore.CloudAccess;
+
     public get viewStore(): ViewStore.CloudAccess {
       if (undefined === this._viewStore) {
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
@@ -2047,6 +2048,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
      * @param className Query for view definitions of this class.
      * @param wantPrivate If true, include private view definitions.
+     * @deprecated in 4.1 Use ViewStore.queryViewList instead.
      */
     public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
       const where = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
@@ -2075,6 +2077,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * ``` ts
      * [[include:IModelDb.Views.iterateViews]]
      * ```
+     * @deprecated in 4.1 Use ViewStore.queryViewList instead.
      */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
@@ -2179,6 +2182,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Get the thumbnail for a view.
      * @param viewId The Id of the view for thumbnail
      * @returns the ThumbnailProps, or undefined if no thumbnail exists.
+     * @deprecated in 4.1 Use ViewStore.loadThumbnail instead.
      */
     public getThumbnail(viewId: ViewIdString): ThumbnailProps | undefined {
       if (isViewStoreId(viewId))
@@ -2198,6 +2202,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param viewDefinitionId The Id of the view for thumbnail
      * @param thumbnail The thumbnail data.
      * @returns 0 if successful
+     * @deprecated in 4.1 Use ViewStore.writeLocker.addOrReplaceThumbnail instead.
      */
     public saveThumbnail(viewId: ViewIdString, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewId);
@@ -2208,6 +2213,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Set the default view property the iModel
      * @param viewId The Id of the ViewDefinition to use as the default
+     * @deprecated in 4.1 Use ViewStore.writeLocker.changeDefaultViewId instead
      */
     public setDefaultViewId(viewId: ViewIdString): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
@@ -2218,10 +2224,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       this._iModel.saveFileProperty(spec, undefined, blob8);
     }
 
-    public async changeDefaultViewId(args: { defaultView: ViewIdString, group?: ViewGroupSpec }) {
-      return this._viewStore ? this._viewStore.writeLocker.changeDefaultViewId(args) : this.setDefaultViewId(args.defaultView);
-    }
-
+    /** @deprecated in 4.1 use ViewStore.getDefaultViewId instead */
     public getDefaultViewId(group?: ViewGroupSpec): ViewIdString {
       if (this._viewStore)
         return this._viewStore.reader.getDefaultViewIdSync({ group }) ?? Id64.invalid;
@@ -2235,6 +2238,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return Id64.fromUint32Pair(view[0], view[1]);
     }
 
+    /** @internal */
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
       if (this._viewStore)
         return this._viewStore.reader.queryViewList(queryParams);
