@@ -180,7 +180,6 @@ function populateDb(sourceDb: IModelDb) {
   // Insert ViewDefinitions
   const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
   assert.isTrue(Id64.isValidId64(viewId));
-  sourceDb.views.setDefaultViewId(viewId);
   const drawingViewRange = new Range2d(0, 0, 100, 100);
   drawingViewId = DrawingViewDefinition.insert(sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
   assert.isTrue(Id64.isValidId64(drawingViewId));
@@ -303,7 +302,7 @@ describe.only("ViewStore", function (this: Suite) {
     viewDef.code.value = "view1";
 
     expect(vs1reader.getViewByName({ name: "view1" })).to.be.undefined;
-    const v1Id = await vs1locker.addNewView({ viewDefinition: viewDef, owner: "owner1" });
+    const v1Id = await vs1locker.addView({ viewDefinition: viewDef, owner: "owner1" });
     expect(v1Id).equals("@1");
 
     const v1 = vs1reader.getViewByName({ name: "view1" })!;
@@ -344,7 +343,7 @@ describe.only("ViewStore", function (this: Suite) {
     props.categorySelectorId = cs1Row;
     props.displayStyleId = ds1Row;
     props.modelSelectorId = ms1Row;
-    const v2Id = await vs1locker.addNewView({ viewDefinition: props, owner: "owner2", group: g1 });
+    const v2Id = await vs1locker.addView({ viewDefinition: props, owner: "owner2", group: g1 });
     expect(v2Id).equals("@2");
 
     sinon.stub(iModel.elements, "getFederationGuidFromId").callsFake((id) => elements.getFederationGuidFromId(id));
@@ -408,7 +407,7 @@ describe.only("ViewStore", function (this: Suite) {
     const dds = await vs1locker.addDisplayStyle({ className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
     dv.viewDefinitionProps.categorySelectorId = dcs;
     dv.viewDefinitionProps.displayStyleId = dds;
-    const dvId = await vs1locker.addNewView({ viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
+    const dvId = await vs1locker.addView({ viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
     expect(dvId).equals("@3");
     const dFromVs = await iModel.views.getViewStateProps(dvId);
     expect(dFromVs.categorySelectorProps.categories).to.deep.equal(dv.categorySelectorProps.categories);

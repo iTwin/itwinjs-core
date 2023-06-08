@@ -8,10 +8,10 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
-  AddNewViewArgs,
-  CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
-  DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, ReadViewStoreRpc, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewGroupSpec, ViewListEntry, ViewName, ViewQueryParams, ViewStoreIdString, WriteViewStoreRpc,
+  AddViewArgs, CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
+  DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, ReadViewStoreRpc,
+  RenderSchedule, RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewGroupSpec,
+  ViewListEntry, ViewName, ViewQueryParams, ViewStoreIdString, WriteViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -1102,7 +1102,7 @@ export namespace ViewStore {
         this.deleteViewTag({ viewId, tagId });
     }
 
-    public async addNewView(args: AddNewViewArgs): Promise<RowString> {
+    public async addView(args: AddViewArgs): Promise<RowString> {
       const owner = args.owner;
       if (args.viewDefinition.categorySelectorId) {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
@@ -1133,7 +1133,7 @@ export namespace ViewStore {
       return viewId;
     }
 
-    public async removeView(viewId: RowString) {
+    public async deleteView(viewId: RowString) {
       const rowId = rowIdFromString(viewId);
       const viewRow = this.getViewRow(rowId);
       if (viewRow === undefined)

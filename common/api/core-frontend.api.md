@@ -250,6 +250,7 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
 import { ReadonlySortedArray } from '@itwin/core-bentley';
+import { ReadViewStoreRpc } from '@itwin/core-common';
 import { RealityData } from '@itwin/core-common';
 import { RealityDataAccess } from '@itwin/core-common';
 import { RealityDataFormat } from '@itwin/core-common';
@@ -333,6 +334,8 @@ import { ViewDetails3d } from '@itwin/core-common';
 import { ViewFlagOverrides } from '@itwin/core-common';
 import { ViewFlags } from '@itwin/core-common';
 import { ViewFlagsProperties } from '@itwin/core-common';
+import { ViewIdString } from '@itwin/core-common';
+import { ViewListEntry } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
 import { WebGLContext } from '@itwin/webgl-compatibility';
@@ -340,6 +343,7 @@ import { WebGLExtensionName } from '@itwin/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@itwin/webgl-compatibility';
 import { WhiteOnWhiteReversalSettings } from '@itwin/core-common';
 import { WritableXYAndZ } from '@itwin/core-geometry';
+import { WriteViewStoreRpc } from '@itwin/core-common';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
 import { XYProps } from '@itwin/core-geometry';
@@ -6499,15 +6503,16 @@ export namespace IModelConnection {
         // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
-        load(viewDefinitionId: Id64String): Promise<ViewState>;
+        load(viewDefinitionId: ViewIdString): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
+        // @deprecated
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
+        // (undocumented)
+        get viewsStoreReader(): PickAsyncMethods<ReadViewStoreRpc>;
+        // (undocumented)
+        get viewStoreWriter(): PickAsyncMethods<WriteViewStoreRpc>;
     }
-    export interface ViewSpec {
-        class: string;
-        id: string;
-        name: string;
-    }
+    export type ViewSpec = ViewListEntry;
 }
 
 // @internal (undocumented)

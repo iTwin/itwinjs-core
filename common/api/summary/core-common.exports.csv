@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 public;AdditionalTransform 
 public;AdditionalTransformProps
+beta;AddViewArgs
 public;AffineTransform 
 public;AffineTransformProps
 internal;aggregateLoad:
@@ -425,6 +426,7 @@ public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
 public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
+beta;isViewStoreId: (id?: ViewIdString) => boolean
 internal;iTwinChannel: (channel: string) => string
 public;JsonGeometryStream
 internal;LegacyAnalysisStyleProps
@@ -604,6 +606,7 @@ internal;ReadableFormData
 beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 deprecated;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+beta;ReadViewStoreRpc
 beta;RealityData
 beta;RealityDataAccess
 beta;RealityDataFormat
@@ -843,9 +846,15 @@ public;ViewFlagOverrides = Partial
 public;ViewFlagProps
 public;ViewFlags
 public;ViewFlagsProperties = Mutable
+beta;ViewGroupSpec = ViewStoreIdString | string
+public;ViewIdString = Id64String | ViewStoreIdString
+beta;ViewListEntry
+beta;ViewName = string
 public;ViewQueryParams 
 public;ViewStateLoadProps
 public;ViewStateProps
+public;ViewStoreIdString = string
+internal;viewStoreRpcVersion:
 internal;WEB_RPC_CONSTANTS:
 internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 
@@ -853,5 +862,6 @@ internal;WebAppRpcRequest
 public;WhiteOnWhiteReversalProps
 public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 
+beta;WriteViewStoreRpc
 public;XyzRotation 
 public;XyzRotationProps

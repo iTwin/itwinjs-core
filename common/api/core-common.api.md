@@ -94,6 +94,26 @@ export interface AdditionalTransformProps {
     helmert2DWithZOffset?: Helmert2DWithZOffsetProps;
 }
 
+// @beta (undocumented)
+export interface AddViewArgs {
+    // (undocumented)
+    categorySelectorProps?: CategorySelectorProps;
+    // (undocumented)
+    displayStyleProps?: DisplayStyleProps;
+    // (undocumented)
+    group?: ViewGroupSpec;
+    // (undocumented)
+    isPrivate?: boolean;
+    // (undocumented)
+    modelSelectorProps?: ModelSelectorProps;
+    // (undocumented)
+    owner?: string;
+    // (undocumented)
+    tags?: string[];
+    // (undocumented)
+    viewDefinition: ViewDefinitionProps;
+}
+
 // @public
 export class AffineTransform implements AffineTransformProps {
     constructor(data?: AffineTransformProps);
@@ -4754,6 +4774,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
+    getViewList(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewListEntry[]>;
+    // (undocumented)
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // @deprecated (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
@@ -4784,7 +4806,11 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps>;
     // (undocumented)
+    readViewStore(_iModelToken: IModelRpcProps, _version: string, _methodName: string, ..._args: any[]): Promise<any>;
+    // (undocumented)
     requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
+    // (undocumented)
+    writeViewStore(_iModelToken: IModelRpcProps, _version: string, _methodName: string, ..._args: any[]): Promise<any>;
 }
 
 // @public
@@ -5131,6 +5157,9 @@ export function isPowerOfTwo(num: number): boolean;
 
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
+
+// @beta
+export const isViewStoreId: (id?: ViewIdString) => boolean;
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
@@ -7116,6 +7145,50 @@ export function readElementMeshes(data: Uint8Array): IndexedPolyface[];
 // @internal @deprecated
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
+// @beta (undocumented)
+export interface ReadViewStoreRpc {
+    // (undocumented)
+    findViewsByOwner(args: {
+        owner: string;
+    }): Promise<ViewStoreIdString[]>;
+    // (undocumented)
+    getDefaultViewId(args: {
+        group?: ViewGroupSpec;
+    }): Promise<ViewStoreIdString | undefined>;
+    // (undocumented)
+    getViewGroups(args: {
+        parent?: ViewGroupSpec;
+    }): Promise<{
+        id: ViewStoreIdString;
+        name: string;
+    }[]>;
+    // (undocumented)
+    loadCategorySelector(args: {
+        id: ViewStoreIdString;
+    }): Promise<CategorySelectorProps>;
+    // (undocumented)
+    loadDisplayStyle(args: {
+        id: ViewStoreIdString;
+        opts?: DisplayStyleLoadProps;
+    }): Promise<DisplayStyleProps>;
+    // (undocumented)
+    loadModelSelector(args: {
+        id: ViewStoreIdString;
+    }): Promise<ModelSelectorProps>;
+    // (undocumented)
+    loadThumbnail(args: {
+        viewId: ViewStoreIdString;
+    }): Promise<ThumbnailProps | undefined>;
+    // (undocumented)
+    loadTimeline(args: {
+        id: ViewStoreIdString;
+    }): Promise<RenderTimelineProps>;
+    // (undocumented)
+    loadViewDefinition(args: {
+        id: ViewStoreIdString;
+    }): Promise<ViewDefinitionProps>;
+}
+
 // @beta
 export interface RealityData {
     // (undocumented)
@@ -9007,7 +9080,7 @@ export interface SpatialClassifiersContainer {
 // @public
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
     // (undocumented)
-    modelSelectorId: Id64String;
+    modelSelectorId: ViewIdString;
 }
 
 // @public
@@ -10078,11 +10151,11 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 // @public
 export interface ViewDefinitionProps extends DefinitionElementProps {
     // (undocumented)
-    categorySelectorId: Id64String;
+    categorySelectorId: ViewIdString;
     // (undocumented)
     description?: string;
     // (undocumented)
-    displayStyleId: Id64String;
+    displayStyleId: ViewIdString;
     // (undocumented)
     jsonProperties?: {
         viewDetails?: ViewDetailsProps;
@@ -10228,10 +10301,43 @@ export class ViewFlags {
 // @public
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
+// @beta
+export type ViewGroupSpec = ViewStoreIdString | string;
+
+// @public
+export type ViewIdString = Id64String | ViewStoreIdString;
+
+// @beta (undocumented)
+export interface ViewListEntry {
+    class: string;
+    // (undocumented)
+    groupId?: ViewStoreIdString;
+    id: ViewIdString;
+    // (undocumented)
+    isPrivate?: boolean;
+    name: string;
+    // (undocumented)
+    owner?: string;
+    // (undocumented)
+    tags?: string[];
+}
+
+// @beta
+export type ViewName = string;
+
 // @public
 export interface ViewQueryParams extends EntityQueryParams {
+    // @beta (undocumented)
+    readonly group?: ViewGroupSpec;
+    readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
     // (undocumented)
-    wantPrivate?: boolean;
+    readonly nameSearch?: string;
+    // (undocumented)
+    readonly owner?: string;
+    // (undocumented)
+    readonly tags?: string[];
+    // (undocumented)
+    readonly wantPrivate?: boolean;
 }
 
 // @public
@@ -10254,6 +10360,15 @@ export interface ViewStateProps {
     // (undocumented)
     viewDefinitionProps: ViewDefinitionProps;
 }
+
+// @public
+export type ViewStoreIdString = string;
+
+// @internal (undocumented)
+export const viewStoreRpcVersion: {
+    readonly write: "4.0.0";
+    readonly read: "4.0.0";
+};
 
 // @internal (undocumented)
 export const WEB_RPC_CONSTANTS: {
@@ -10370,6 +10485,75 @@ export abstract class WipRpcInterface extends RpcInterface {
     isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean>;
     // (undocumented)
     placeholder(_iModelToken: IModelRpcProps): Promise<string>;
+}
+
+// @beta (undocumented)
+export interface WriteViewStoreRpc {
+    // (undocumented)
+    addCategorySelector(args: {
+        name?: string;
+        categories: Id64Array;
+        owner?: string;
+    }): Promise<ViewStoreIdString>;
+    // (undocumented)
+    addDisplayStyle(args: {
+        name?: string;
+        className: string;
+        settings: DisplayStyleSettingsProps;
+        owner?: string;
+    }): Promise<ViewStoreIdString>;
+    // (undocumented)
+    addModelSelector(args: {
+        name?: string;
+        models: Id64Array;
+        owner?: string;
+    }): Promise<ViewStoreIdString>;
+    // (undocumented)
+    addOrReplaceThumbnail(args: {
+        viewId: ViewStoreIdString;
+        thumbnail: ThumbnailProps;
+        owner?: string;
+    }): Promise<ViewStoreIdString>;
+    // (undocumented)
+    addTagsToView(args: {
+        viewId: ViewStoreIdString;
+        tags: string[];
+        owner?: string;
+    }): Promise<void>;
+    // (undocumented)
+    addTimeline(args: {
+        name?: string;
+        timeline: RenderSchedule.ScriptProps;
+        owner?: string;
+    }): Promise<ViewStoreIdString>;
+    // (undocumented)
+    addView(args: AddViewArgs): Promise<ViewStoreIdString>;
+    // (undocumented)
+    addViewGroup(args: {
+        name: string;
+        parentId?: ViewStoreIdString;
+        owner?: string;
+    }): Promise<ViewStoreIdString>;
+    // (undocumented)
+    changeDefaultViewId(args: {
+        defaultView: ViewStoreIdString;
+        group?: ViewGroupSpec;
+    }): Promise<void>;
+    // (undocumented)
+    deleteThumbnail(args: {
+        id: ViewStoreIdString;
+    }): Promise<void>;
+    // (undocumented)
+    deleteView(viewId: ViewStoreIdString): Promise<void>;
+    // (undocumented)
+    deleteViewGroup(args: {
+        name: ViewGroupSpec;
+    }): Promise<void>;
+    // (undocumented)
+    removeTagFromView(args: {
+        viewId: ViewStoreIdString;
+        tag: string;
+    }): Promise<void>;
 }
 
 // @public

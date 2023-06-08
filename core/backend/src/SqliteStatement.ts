@@ -658,6 +658,7 @@ export class StatementCache<Stmt extends Statement> {
   }
 }
 
+/** @public */
 export namespace SqliteStatement {
   export class DbError extends BentleyError {
     /** A string that indicates the type of problem that caused the exception. */

@@ -2035,6 +2035,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
     private _viewStore?: ViewStore.CloudAccess;
 
+    /** @beta */
     public get viewStore(): ViewStore.CloudAccess {
       if (undefined === this._viewStore) {
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
@@ -2072,11 +2073,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param params Specifies the query by which views are selected.
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
      * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
-     *
-     * **Example: Finding all views of a specific DrawingModel**
-     * ``` ts
-     * [[include:IModelDb.Views.iterateViews]]
-     * ```
      * @deprecated in 4.1 Use ViewStore.queryViewList instead.
      */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {

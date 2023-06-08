@@ -18,21 +18,32 @@ import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 import { ThumbnailProps } from "./Thumbnail";
 import { RenderSchedule } from "./RenderSchedule";
 
-/** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore. Will be a base-36 number with a leading "@". */
+/** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore.
+ * Will be a base-36 number with a leading "@".
+ * @public
+ */
 export type ViewStoreIdString = string;
 
-/** The id of either an element or an entry in a ViewStore. */
+/** The id of either an element or an entry in a ViewStore.
+ * @public
+ */
 export type ViewIdString = Id64String | ViewStoreIdString;
 
 /**
  * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
- * The syntax is not ambiguous because a RowString start with "@" and  Group names can never contain "@".
+ * The syntax is not ambiguous because ViewStoreIdStrings always start with "@" and  Group names can never contain "@".
+ * @beta
  */
 export type ViewGroupSpec = ViewStoreIdString | string;
 
+/** The name for a view.
+ * @beta
+ */
 export type ViewName = string;
 
-/** determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@") */
+/** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@")
+ * @beta
+ */
 export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
@@ -97,7 +108,7 @@ export interface HydrateViewStateRequestProps {
 export interface HydrateViewStateResponseProps {
   acsElementProps?: ElementProps;
   modelSelectorStateModels?: ModelProps[];
-  // cast this to viewattachmentInfo[] on the frontend.
+  // cast this to viewAttachmentInfo[] on the frontend.
   sheetViewAttachmentProps?: ViewAttachmentProps[];
   sheetViewViews?: (ViewStateProps | undefined)[];
   baseModelProps?: ModelProps;
@@ -134,6 +145,7 @@ export interface ViewStateLoadProps {
   displayStyle?: DisplayStyleLoadProps;
 }
 
+/** @beta */
 export interface ViewListEntry {
   /** The Id of the ViewDefinition. This string may be passed to [[IModelConnection.Views.load]]. */
   id: ViewIdString;
@@ -147,7 +159,8 @@ export interface ViewListEntry {
   tags?: string[];
 }
 
-export interface AddNewViewArgs {
+/** @beta */
+export interface AddViewArgs {
   viewDefinition: ViewDefinitionProps;
   categorySelectorProps?: CategorySelectorProps;
   modelSelectorProps?: ModelSelectorProps;
@@ -182,6 +195,7 @@ export interface ViewQueryParams extends EntityQueryParams {
   readonly nameSearch?: string;
   /** The comparison operator for `nameSearch`. Default is `=` */
   readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+  /** @beta */
   readonly group?: ViewGroupSpec;
   readonly tags?: string[];
   readonly owner?: string;
@@ -277,11 +291,13 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   roll?: AngleProps;
 }
 
+/** @internal */
 export const viewStoreRpcVersion = {
   write: "4.0.0",
   read: "4.0.0",
 } as const;
 
+/** @beta */
 export interface ReadViewStoreRpc {
   findViewsByOwner(args: { owner: string }): Promise<ViewStoreIdString[]>;
   getDefaultViewId(args: { group?: ViewGroupSpec }): Promise<ViewStoreIdString | undefined>;
@@ -294,18 +310,19 @@ export interface ReadViewStoreRpc {
   loadViewDefinition(args: { id: ViewStoreIdString }): Promise<ViewDefinitionProps>;
 }
 
+/** @beta */
 export interface WriteViewStoreRpc {
   addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<ViewStoreIdString>;
   addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<ViewStoreIdString>;
   addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<ViewStoreIdString>;
-  addNewView(args: AddNewViewArgs): Promise<ViewStoreIdString>;
   addOrReplaceThumbnail(args: { viewId: ViewStoreIdString, thumbnail: ThumbnailProps, owner?: string }): Promise<ViewStoreIdString>;
   addTagsToView(args: { viewId: ViewStoreIdString, tags: string[], owner?: string }): Promise<void>;
   addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<ViewStoreIdString>;
+  addView(args: AddViewArgs): Promise<ViewStoreIdString>;
   addViewGroup(args: { name: string, parentId?: ViewStoreIdString, owner?: string }): Promise<ViewStoreIdString>;
   changeDefaultViewId(args: { defaultView: ViewStoreIdString, group?: ViewGroupSpec }): Promise<void>;
   deleteThumbnail(args: { id: ViewStoreIdString }): Promise<void>;
+  deleteView(viewId: ViewStoreIdString): Promise<void>;
   deleteViewGroup(args: { name: ViewGroupSpec }): Promise<void>;
   removeTagFromView(args: { viewId: ViewStoreIdString, tag: string }): Promise<void>;
-  removeView(viewId: ViewStoreIdString): Promise<void>;
 }

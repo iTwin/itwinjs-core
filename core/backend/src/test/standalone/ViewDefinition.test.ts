@@ -169,7 +169,7 @@ describe.only("ViewDefinition", () => {
     };
 
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
-    const v1 = await vs1.addNewView({ viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
+    const v1 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
     expect(v1).equal("@1");
     const viewDefOut = vs1.loadViewDefinitionSync({ id: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");
@@ -184,7 +184,7 @@ describe.only("ViewDefinition", () => {
     expect(JSON.stringify(viewDefOut.camera)).equal(JSON.stringify(basicProps.camera));
 
     viewDefProps.code.value = "TestViewDefinition2";
-    const v2 = await vs1.addNewView({ viewDefinition: viewDefProps, tags: ["big", "done"] });
+    const v2 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "done"] });
     await vs1.addTagsToView({ viewId: v2, tags: ["problems", "finished", "big"] });
 
     let tags = vs1.getTagsForView(ViewStore.rowIdFromString(v2));
@@ -197,14 +197,14 @@ describe.only("ViewDefinition", () => {
     expect(tags?.length).equal(3);
 
     // v1 and v2 share modelselector, categoryselector, and displaystyle so when v2 is deleted they should not be deleted
-    await vs1.removeView(v2);
+    await vs1.deleteView(v2);
     expect(() => vs1.loadViewDefinitionSync({ id: v2 })).throws("View not found");
     expect(vs1.getDisplayStyle(1)).not.undefined;
     expect(vs1.getModelSelector(1)).not.undefined;
     expect(vs1.getCategorySelector(1)).not.undefined;
 
     // the categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
-    await vs1.removeView(v1);
+    await vs1.deleteView(v1);
     expect(() => vs1.loadViewDefinitionSync({ id: v1 })).throws("View not found");
     expect(vs1.getDisplayStyle(1)).undefined;
     expect(vs1.getCategorySelector(1)).undefined;
