@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "fix bug in reality mesh shader",
+      "comment": "Fix background map layers failing to blend with an opaque solid base layer.",
       "type": "none"
     }
   ],
