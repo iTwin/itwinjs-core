@@ -72,6 +72,10 @@ export class CoordinateConverter {
   protected readonly _maxPointsPerRequest: number;
   protected readonly _isIModelClosed: () => boolean;
   protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+  // If true, [[dispatch]] will schedule another dispatch after it receives a response.
+  // This is needed when all the points requested after the most recent dispatch were included in the currently-in-flight request -
+  // _pending will be empty but new callers will be awaiting the results of the in-flight request.
+  protected _redispatchOnCompletion = false;
 
   public get isIdle(): boolean {
     return "idle" === this._state;
@@ -150,8 +154,10 @@ export class CoordinateConverter {
     this._inflight.clear();
 
     // If any more pending conversions arrived while awaiting this request, schedule another request.
-    if (!this._pending.isEmpty)
+    if (!this._pending.isEmpty || this._redispatchOnCompletion) {
+      this._redispatchOnCompletion = false;
       this.scheduleDispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
 
     // Resolve promises of all callers who were awaiting this request.
     onCompleted.raiseEvent();
@@ -165,7 +171,9 @@ export class CoordinateConverter {
       const xyz = this.toXYAndZ(point, this._scratchXYZ);
       if (this._cache.get(xyz))
         ++numInCache;
-      else if (!this._inflight.contains(xyz))
+      else if (this._inflight.contains(xyz))
+        this._redispatchOnCompletion = true;
+      else
         this._pending.insert(xyz);
     }
 
