@@ -2198,6 +2198,8 @@ export class CoordinateConverter {
     // (undocumented)
     protected _pending: SortedArray<XYAndZ>;
     // (undocumented)
+    protected _redispatchOnCompletion: boolean;
+    // (undocumented)
     protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
     // (undocumented)
     protected scheduleDispatch(): Promise<void>;
