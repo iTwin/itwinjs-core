@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-const assertionsEnabled = true; // process.env.NODE_ENV === "development";
+const assertionsEnabled = process.env.NODE_ENV === "development";
 
 /** Asserts that a condition is `true` and - when enabled - throws an error if it is not.
  * Assertions are enabled only if the build configuration defines `process.env.NODE_ENV` as `development` at build time.

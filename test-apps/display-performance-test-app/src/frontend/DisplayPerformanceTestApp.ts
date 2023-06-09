@@ -61,10 +61,6 @@ export class DisplayPerfTestApp {
   public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<void> {
     const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
     const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
-    return DisplayPerfTestApp.log(msg, logFile);
-  }
-
-  public static async log(msg: string, logFile?: { dir: string, name: string }): Promise<void> {
     const client = DisplayPerfRpcInterface.getClient();
     await client.consoleLog(msg);
     if (logFile)
