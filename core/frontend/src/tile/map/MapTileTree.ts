@@ -1072,7 +1072,7 @@ export class MapTileTreeReference extends TileTreeReference {
     const worldPoint = hit.hitPoint.clone();
     let cartoGraphic: Cartographic | undefined;
     try {
-      cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+      cartoGraphic = (await backgroundMapGeometry.dbToCartographicFromGcs([worldPoint]))[0];
     } catch {
     }
     if (!cartoGraphic) {
