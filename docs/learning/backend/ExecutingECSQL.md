@@ -14,11 +14,11 @@ Executing an ECSQL statement typically consists of these steps:
 
 There are two ways to execute an ECSQL statement:
 
-- [IModelDb.query]($backend) is the high-level API which does all the above steps in a single asynchronous call.
+- [IModelDb.createQueryReader]($backend) is the high-level API which does all the above steps in a single asynchronous call.
 - [ECSqlStatement]($backend) is the lower-level API in case you need more flexibility,
   e.g. when iterating over the query results. Use [IModelDb.withPreparedStatement]($backend)
   or [ECDb.withPreparedStatement]($backend) in that case.
 
-See [Code Examples](./ECSQLCodeExamples.md) for examples of how the API is used.
-
 See [frequently used ECSQL queries](./ECSQL-queries.md) for the specific ECSQL queries that app backends and services often run.
+
+> See [General Code Examples](../ECSQLCodeExamples.md) and [Backend Code Examples](./ECSQLCodeExamples.md) for examples of how the API is used.

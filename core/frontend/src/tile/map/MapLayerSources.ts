@@ -34,6 +34,9 @@ export enum MapLayerSourceStatus {
   RequireAuth,
   /** Map-layer coordinate system is not supported */
   InvalidCoordinateSystem,
+  /** Format is not compatible with the URL provided.
+   */
+  IncompatibleFormat,
 }
 
 /** JSON representation of a map layer source.

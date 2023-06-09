@@ -4,10 +4,11 @@ A [CurveCollection]($core-geometry) is a an abstract base class for various coll
 
 There are 5 concrete derived types:
 
-- [Path]($core-geometry) - curve primitives joining head to tail
-- [Loop]($core-geometry) - curve primitives joining head to tail and closing to form a loop
+- [Path]($core-geometry) - curve primitives joining head to tail.
+- [Loop]($core-geometry) - coplanar  curve primitives joining head to tail and closing to form a loop.
 - [ParityRegion]($core-geometry) - `Loop`s that bound a planar area by parity rules.
-- [UnionRegion]($core-geometry) - boolean union of areas of `Loop`s and/or `ParityRegion`s
+- [UnionRegion]($core-geometry) - boolean union of areas of `Loop`s and/or `ParityRegion`s.
+- BagOfCurves - a collection of `AnyCurve` with no implied structure.
 
 ![>](./figs/CurveCollections/CurveCollectionClasses.png)
 
@@ -24,7 +25,7 @@ There are 5 concrete derived types:
 - In a `Loop`, the last member's head must match the first member's tail.
 - Throughout the library, a `Loop` is expected to be a "filled" planar region.
 - A `Path` is usually does _not_ return to its start point.
-  - If a `Path` _does_ return to its start point, it is _not_ interpreted as enclosing area.  The path is still just a wire that happens to come back to its start.
+- If a `Path` _does_ return to its start point, it is _not_ interpreted as enclosing area. The path is still just a wire that happens to come back to its start.
 
  The immediate base class for both `Path` and `Loop` is `CurveChain`.   The `CurveChain` base class implements various methods that depend on the internal head-to-tail matching but _not_ on the closure of a `Loop`.
 
@@ -47,13 +48,13 @@ A `ParityRegion` is a curve collection whose immediate children are
 "Inside" and "Outside" of a parity region is determined by the rule commonly called "even/odd", "exclusive or" or "parity":
 
 - A point is "inside" the parity region if and only if it is classified as "inside" of an odd number of its `Loop`s.
-- A point is "inside" if and only if performing "exclusive or" among the (boolean) "inside" classification of all of its `Loop`s.
+- A point is "inside" the parity region if and only if performing XOR (exclusive or) among the (boolean) "inside" classification of all of its `Loop`s.
 
 In nearly all uses, the various loops in a `ParityRegion`
 
 - have no intersections among any pair of loops.
 - have exactly one that can be called `outer`
-- all other than the `outer`
+- are either the `outer` loop or inside the `outer` loop
 
 ## `UnionRegion`
 

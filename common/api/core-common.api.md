@@ -1750,8 +1750,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2031616,
-    Major = 31,
+    Combined = 2097152,
+    Major = 32,
     Minor = 0
 }
 
@@ -2454,37 +2454,28 @@ export interface ECSchemaReferenceProps {
     readonly version: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
-    // (undocumented)
     [Symbol.asyncIterator](): AsyncIterableIterator<QueryRowProxy>;
     // @internal
     constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
-    // (undocumented)
     get current(): QueryRowProxy;
-    // (undocumented)
     get done(): boolean;
     // (undocumented)
     formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
-    // (undocumented)
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
-    // (undocumented)
     next(): Promise<IteratorResult<QueryRowProxy, any>>;
     // (undocumented)
     readonly query: string;
     // (undocumented)
     reset(options?: QueryOptions): void;
-    // (undocumented)
     resetBindings(): void;
     // (undocumented)
     setParams(param: QueryBinder): void;
-    // (undocumented)
     get stats(): QueryStats;
-    // (undocumented)
     step(): Promise<boolean>;
-    // (undocumented)
     toArray(): Promise<any[]>;
 }
 
@@ -2566,8 +2557,9 @@ export class EdgeArgs {
 
 // @internal
 export interface EdgeOptions {
-    indexed: boolean;
     smooth: boolean;
+    // (undocumented)
+    type: TileEdgeType;
 }
 
 // @internal
@@ -7081,37 +7073,26 @@ export enum QueryRowFormat {
     UseJsPropertyNames = 2
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryRowProxy {
-    // (undocumented)
     [propertyName: string]: QueryValueType;
-    // (undocumented)
     [propertyIndex: number]: QueryValueType;
-    // (undocumented)
     getMetaData(): QueryPropertyMetaData[];
-    // (undocumented)
     toArray(): QueryValueType[];
-    // (undocumented)
     toRow(): any;
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryStats {
-    // (undocumented)
     backendCpuTime: number;
-    // (undocumented)
     backendMemUsed: number;
-    // (undocumented)
     backendRowsReturned: number;
-    // (undocumented)
     backendTotalTime: number;
-    // (undocumented)
     retryCount: number;
-    // (undocumented)
     totalTime: number;
 }
 
-// @beta (undocumented)
+// @beta
 export type QueryValueType = any;
 
 // @public
@@ -9563,6 +9544,9 @@ export enum TileContentSource {
 }
 
 // @internal
+export type TileEdgeType = "compact" | "indexed" | "non-indexed";
+
+// @internal
 export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
@@ -9617,15 +9601,13 @@ export interface TileOptions {
     // (undocumented)
     readonly disableMagnification: boolean;
     // (undocumented)
+    readonly edgeOptions: EdgeOptions;
+    // (undocumented)
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)
-    readonly enableIndexedEdges: boolean;
-    // (undocumented)
     readonly enableInstancing: boolean;
-    // (undocumented)
-    readonly generateAllPolyfaceEdges: boolean;
     // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
@@ -10008,6 +9990,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    NoChange = 0,
     Parent = 32,
     Placement = 4,
     Property = 1
