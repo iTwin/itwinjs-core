@@ -128,17 +128,17 @@ describe("GeoServices", () => {
       fromIModelCoords: async () => resolveOnEvent(curNumPoints++),
     });
 
-      const cv = gs.getConverter()!;
-      const p1 = cv.convertToIModelCoords([[0, 0, 0]]);
-      await waitOneFrame();
-      resolveEvent.raiseEvent();
+    const cv = gs.getConverter()!;
+    const p1 = cv.convertToIModelCoords([[0, 0, 0]]);
+    await waitOneFrame();
+    resolveEvent.raiseEvent();
 
-      const p2 = cv.convertToIModelCoords([[0, 0, 0]]);
-      const r1 = await p1;
-      expect(r1.length).to.equal(1);
-      resolveEvent.raiseEvent();
-      const r2 = await p2;
-      expect(r2.length).to.equal(1);
+    const p2 = cv.convertToIModelCoords([[0, 0, 0]]);
+    const r1 = await p1;
+    expect(r1.length).to.equal(1);
+    resolveEvent.raiseEvent();
+    const r2 = await p2;
+    expect(r2.length).to.equal(1);
   });
 
   it("removes converter from cache even if requests produce an exception", async () => {
