@@ -180,15 +180,19 @@ export namespace ViewStore {
 
   export const defaultViewGroupId = 1 as const;
 
+  export interface ViewDbCtorArgs {
+    elements?: IModelDb.GuidMapper;
+  }
+
   export class ViewDb extends VersionedSqliteDb implements WriteViewStoreRpc, ReadViewStoreRpc {
     public override myVersion = "4.0.0";
     private _elements?: IModelDb.GuidMapper;
     public get elements() { return this._elements!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
     public set elements(elements: IModelDb.GuidMapper) { this._elements = elements; }
 
-    public constructor(props?: { elements?: IModelDb.GuidMapper }) {
+    public constructor(arg?: ViewDbCtorArgs) {
       super();
-      this._elements = props?.elements;
+      this._elements = arg?.elements;
     }
 
     /** create all the tables for a new ViewDb */
@@ -1178,9 +1182,11 @@ export namespace ViewStore {
     queryViewList(queryParams: ViewQueryParams): ViewListEntry[];
   }
 
+  export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
+
   /** Provides access to a cloud-based `ViewDb` */
   export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadViewStoreMethods, WriteViewStoreRpc> {
-    public constructor(props: CloudSqlite.ContainerAccessProps & { elements?: IModelDb.GuidMapper }) {
+    public constructor(props: ViewStoreCtorProps) {
       super({ dbType: ViewDb, props, dbName: viewDbName });
     }
 

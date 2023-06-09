@@ -238,14 +238,14 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabases().length).equals(2);
 
     contain1.disconnect();
-    await azSqlite.setSasToken(contain1, false); // don't ask for delete permission
+    await azSqlite.setSasToken(contain1, "read"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock(user1, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
     contain1.disconnect();
-    await azSqlite.setSasToken(contain1, true); // now ask for delete permission
+    await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
     await CloudSqlite.withWriteLock(user1, contain1, async () => contain1.cleanDeletedBlocks());
@@ -256,7 +256,7 @@ describe("CloudSqlite", () => {
 
     // can't connect two containers with same name
     const cont2 = await azSqlite.makeContainer({ containerId: contain1.containerId, isPublic: false });
-    await azSqlite.setSasToken(cont2, true);
+    await azSqlite.setSasToken(cont2, "write");
 
     expect(() => cont2.connect(caches[1])).throws("container with that name already attached");
     expect(cont2.isConnected).false;
@@ -295,7 +295,7 @@ describe("CloudSqlite", () => {
     expect(() => contain1.connect(caches[0])).throws("403").property("errorNumber", 403);
 
     // Now attempt to obtain the write lock with a token that doesn't authorize it, expecting auth error
-    await azSqlite.setSasToken(contain1, false); // get a read-only token
+    await azSqlite.setSasToken(contain1, "read"); // get a read-only token
     contain1.connect(caches[0]); // connect works with readonly token
     expect(contain1.isConnected);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -351,8 +351,9 @@ describe("CloudSqlite", () => {
   it("Auto refresh container tokens", async () => {
     const contain1 = testContainers[0];
 
-    const contProps: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
-    const accessToken = await CloudSqlite.requestToken(contProps); // must be valid token so property store can connect
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    // must be valid token so property store can connect
+    const accessToken = await CloudSqlite.requestToken({ address: { baseUri: contProps.baseUri, id: contProps.containerId }, storageType: contProps.storageType });
 
     let refreshedToken = "refreshed token";
     sinon.stub(CloudSqlite, "requestToken").callsFake(async () => refreshedToken);

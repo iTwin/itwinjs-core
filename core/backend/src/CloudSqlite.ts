@@ -9,11 +9,13 @@
 import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, PickAsyncMethods, PickMethods, StopWatch } from "@itwin/core-bentley";
+import {
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+} from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { BlobContainer } from "./BlobContainerService";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
 
@@ -32,9 +34,10 @@ export namespace CloudSqlite {
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
    * If the service is unavailable or returns an error, an empty token is returned.
    */
-  export async function requestToken(args: ContainerTokenProps): Promise<AccessToken> {
-    const userToken = await IModelHost.getAccessToken();
-    const response = await BlobContainer.service?.requestToken({ address: { id: args.containerId, baseUri: args.baseUri }, userToken, forWriteAccess: args.writeable });
+  export async function requestToken(args: Optional<BlobContainer.RequestTokenProps, "userToken">): Promise<AccessToken> {
+    // allow the userToken to be supplied via Rpc. If not supplied, or blank, use the backend's accessToken.
+    const userToken = args.userToken ? args.userToken : (await IModelHost.getAccessToken());
+    const response = await BlobContainer.service?.requestToken({ ...args, userToken });
     return response?.token ?? "";
   }
 
@@ -44,16 +47,16 @@ export namespace CloudSqlite {
    * @note After the container is successfully connected to a CloudCache, it will begin auto-refreshing its accessToken every `tokenRefreshSeconds` seconds (default is 1 hour)
    * until it is disconnected. However, if the container is public, or if `tokenRefreshSeconds` is <=0, auto-refresh is not enabled.
    */
-  export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
+  export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel }): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise?: Promise<void> };
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
 
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
-      const tokenProps: ContainerTokenProps = { baseUri: args.baseUri, storageType: args.storageType, containerId: args.containerId, writeable: args.writeable };
+      const tokenProps = { address: { baseUri: args.baseUri, id: args.containerId }, storageType: args.storageType, accessLevel: args.accessLevel };
       const doRefresh = async () => {
         let newToken: AccessToken | undefined;
-        const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
+        const url = `[${tokenProps.address.baseUri}/${tokenProps.address.id}]`;
         try {
           newToken = await CloudSqlite.requestToken(tokenProps);
           logInfo(`Refreshed token for container ${url}`);
@@ -85,30 +88,34 @@ export namespace CloudSqlite {
   export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch {
     return new NativeLibrary.nativeLib.CloudPrefetch(container, dbName, args);
   }
-
-  /** Properties of a CloudContainer. */
   export interface ContainerProps {
-    /** blob storage provider */
+    /** The type of storage provider. */
     storageType: "azure" | "google";
-    /** base URI for container. */
+    /** The base URI for the container. */
     baseUri: string;
-    /** the name of the container. */
+    /** The name of the container. */
     containerId: string;
+    /** true if the container is public (doesn't require authorization) */
+    isPublic?: boolean;
+  }
+
+  /** Properties to access a CloudContainer. */
+  export interface ContainerAccessProps extends ContainerProps {
     /** an alias for the container. Defaults to `containerId` */
     alias?: string;
     /** SAS token that grants access to the container. */
     accessToken: string;
-    /** if true, container is attached with write permissions, and accessToken must provide write access to the cloud container. */
+    /** if true, container is allowed to request the write lock. */
     writeable?: boolean;
     /** if true, container is attached in "secure" mode (blocks are encrypted). Only supported in daemon mode. */
     secure?: boolean;
-    /** true if the container is public (doesn't require authorization) */
-    isPublic?: boolean;
     /** string attached to log messages from CloudSQLite. This is most useful for identifying usage from daemon mode. */
     logId?: string;
+    /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
+    lockExpireSeconds?: number;
+    /** number of seconds between auto-refresh of access token. If <=0 no auto-refresh. Default is 1 hour (60*60) */
+    tokenRefreshSeconds?: number;
   }
-
-  export type ContainerTokenProps = Omit<ContainerProps, "accessToken">;
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
   export interface CachedDbProps {
@@ -157,14 +164,6 @@ export namespace CloudSqlite {
     /** HTTP response code (e.g. 200) */
     readonly httpcode: number;
   }
-
-  /** Properties for accessing a CloudContainer */
-  export type ContainerAccessProps = ContainerProps & {
-    /** Duration for holding write lock, in seconds. After this time the write lock expires if not refreshed. Default is one hour. */
-    lockExpireSeconds?: number;
-    /** number of seconds between auto-refresh of access token. If <=0 no auto-refresh. Default is 1 hour (60*60) */
-    tokenRefreshSeconds?: number;
-  };
 
   /** The name of a CloudSqlite database within a CloudContainer. */
   export interface DbNameProp {

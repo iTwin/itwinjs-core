@@ -46,7 +46,11 @@ interface SemverType {
 export abstract class RpcInterface {
 
   private static findDiff(backend: SemverType, frontend: SemverType) {
-    return backend.major !== frontend.major ? "major" : backend.minor !== frontend.minor ? "minor" : backend.patch !== frontend.patch ? "patch" : backend.prerelease !== frontend.prerelease ? "prerelease" : "same";
+    return backend.major !== frontend.major ? "major" :
+      backend.minor !== frontend.minor ? "minor" :
+        backend.patch !== frontend.patch ? "patch" :
+          backend.prerelease !== frontend.prerelease ? "prerelease" :
+            "same";
   }
 
   private static parseVer(version: string): SemverType {

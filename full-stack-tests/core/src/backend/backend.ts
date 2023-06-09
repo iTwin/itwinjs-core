@@ -12,12 +12,14 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
+  BriefcaseDb,
   CloudSqlite,
   FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory,
+  StandaloneDb,
   SubjectOwnsPartitionElements,
   ViewStore,
 } from "@itwin/core-backend";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -48,21 +50,12 @@ function loadEnv(envFile: string) {
 
 let vs1: ViewStore.CloudAccess;
 const viewContainer = "views-itwin1";
+const storageType = "azure" as const;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  await ViewStore.CloudAccess.initializeDb({ ...props, accessToken });
-}
-
-async function makeViewStore(moniker: string) {
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: viewContainer, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  const viewStore = new ViewStore.CloudAccess({ ...props, accessToken });
-  viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  viewStore.lockParams.moniker = moniker;
-  return viewStore;
+  const accessToken = await CloudSqlite.requestToken({ address: { baseUri: AzuriteTest.baseUri, id: containerId }, storageType });
+  await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
@@ -150,10 +143,10 @@ async function init() {
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
   await initializeContainer(viewContainer);
-  vs1 = await makeViewStore("viewStore1");
-  SnapshotDb.onOpened.addListener((db) => {
-    vs1.getCloudDb().elements = db.elements;
-    db.views.viewStore = vs1;
+  SnapshotDb.onOpen.addListener((dbName) => {
+    const db = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
+    db.views.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType });
+    db.close();
   });
 
   Logger.initializeToConsole();

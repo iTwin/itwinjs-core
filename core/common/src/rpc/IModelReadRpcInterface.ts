@@ -138,6 +138,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
     return this.forward(arguments);
   }
   public async getViewList(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewListEntry[]> { return this.forward(arguments); }
-  public async writeViewStore(_iModelToken: IModelRpcProps, _version: string, _methodName: string, ..._args: any[]): Promise<any> { return this.forward(arguments); }
-  public async readViewStore(_iModelToken: IModelRpcProps, _version: string, _methodName: string, ..._args: any[]): Promise<any> { return this.forward(arguments); }
+
+  /** @internal */
+  public async callViewStore(_iModelToken: IModelRpcProps, _version: string, _forWrite: boolean, _methodName: string, ..._args: any[]): Promise<any> { return this.forward(arguments); }
 }

@@ -223,12 +223,11 @@ describe.only("ViewDefinition", () => {
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
     const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
-    let viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
+    const viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
     assert.isNotEmpty(viewDefinitionId);
     assert.isTrue(Id64.isValid(viewDefinitionId));
 
     // Best way to create and insert
-    viewDefinitionId = SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
-    iModel.views.setDefaultViewId(viewDefinitionId);
+    SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
   });
 });

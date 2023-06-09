@@ -15,7 +15,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace AzuriteTest {
 
-  export const storageType = "azure";
+  export const storageType = "azure" as const;
   export const httpAddr = "127.0.0.1:10000";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
@@ -33,8 +33,8 @@ export namespace AzuriteTest {
   export namespace Sqlite {
     export type TestContainer = CloudSqlite.CloudContainer;
 
-    export const setSasToken = async (container: CloudSqlite.CloudContainer, requestWriteAccess: boolean) => {
-      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, storageType, writeable: requestWriteAccess });
+    export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
+      container.accessToken = await CloudSqlite.requestToken({ address: { baseUri, id: container.containerId }, storageType, accessLevel });
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
@@ -77,8 +77,8 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
-      const containerProps: CloudSqlite.ContainerTokenProps = { ...arg, writeable: true, baseUri, storageType };
-      const accessToken = await CloudSqlite.requestToken(containerProps);
+      const containerProps = { ...arg, writeable: true, baseUri, storageType };
+      const accessToken = await CloudSqlite.requestToken({ address: { baseUri, id: arg.containerId }, storageType });
       return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
     };
 
@@ -153,13 +153,19 @@ export namespace AzuriteTest {
     },
 
     requestToken: async (arg: BlobContainer.RequestTokenProps): Promise<BlobContainer.TokenProps> => {
+      let accessLevel = arg.accessLevel;
       switch (arg.userToken) {
         case service.userToken.admin:
+          break;
         case service.userToken.readWrite:
+          if (accessLevel !== "admin")
+            break;
           break;
         case service.userToken.readOnly:
-          if (!arg.forWriteAccess)
+          if (accessLevel === "read" || accessLevel === "writeIfPossible") {
+            accessLevel = "read"; // simulate fail, then retry with no write access
             break;
+          }
         // eslint-disable-next-line no-fallthrough
         default:
           throw new Error("unauthorized user");
@@ -167,7 +173,7 @@ export namespace AzuriteTest {
       const azCont = createAzClient(arg.address.id);
       const startsOn = new Date();
       const expiresOn = new Date(startsOn.valueOf() + ((arg.durationSeconds ?? 12 * 60 * 60) * 1000));
-      const permissions = azureBlob.ContainerSASPermissions.parse(arg.forWriteAccess ? "racwdl" : "rl");
+      const permissions = azureBlob.ContainerSASPermissions.parse(accessLevel === "read" ? "rl" : "racwdl");
       const sasUrl = await azCont.generateSasUrl({ permissions, startsOn, expiresOn });
       const contProps = await azCont.getProperties();
       const metadata = contProps.metadata as any;

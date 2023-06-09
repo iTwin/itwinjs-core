@@ -1614,6 +1614,7 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
+      '@azure/storage-blob': ^12.7.0
       '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1665,7 +1666,9 @@ importers:
       glob: ^7.1.2
       https-browserify: ^1.0.0
       internal-tools: workspace:*
+      mkdirp: ^1.0.4
       nock: ^12.0.3
+      npm-run-all: ^4.1.5
       null-loader: ^4.0.1
       nyc: ^15.1.0
       path-browserify: ^1.0.1
@@ -1679,6 +1682,7 @@ importers:
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
+      '@azure/storage-blob': 12.14.0
       '@itwin/browser-authorization': 0.5.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1733,7 +1737,9 @@ importers:
       glob: 7.2.3
       https-browserify: 1.0.0
       internal-tools: link:../../tools/internal
+      mkdirp: 1.0.4
       nock: 12.0.3
+      npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.81.0
       nyc: 15.1.0
       path-browserify: 1.0.1

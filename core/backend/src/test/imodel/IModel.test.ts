@@ -803,10 +803,12 @@ describe("iModel", () => {
   });
 
   it("should be able to query for ViewDefinitionProps", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const viewDefinitionProps: ViewDefinitionProps[] = imodel2.views.queryViewDefinitionProps(); // query for all ViewDefinitions
     assert.isAtLeast(viewDefinitionProps.length, 3);
     assert.isTrue(viewDefinitionProps[0].classFullName.includes("ViewDefinition"));
     assert.isFalse(viewDefinitionProps[1].isPrivate);
+    // eslint-disable-next-line deprecation/deprecation
     const spatialViewDefinitionProps = imodel2.views.queryViewDefinitionProps("BisCore.SpatialViewDefinition") as SpatialViewDefinitionProps[]; // limit query to SpatialViewDefinitions
     assert.isAtLeast(spatialViewDefinitionProps.length, 3);
     assert.exists(spatialViewDefinitionProps[2].modelSelectorId);
@@ -815,6 +817,7 @@ describe("iModel", () => {
   it("should iterate ViewDefinitions", () => {
     // imodel2 contains 3 SpatialViewDefinitions and no other views.
     let numViews = 0;
+    // eslint-disable-next-line deprecation/deprecation
     let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
       ++numViews;
       return true;
@@ -825,6 +828,7 @@ describe("iModel", () => {
 
     // Query specifically for spatial views
     numViews = 0;
+    // eslint-disable-next-line deprecation/deprecation
     result = imodel2.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
       if (view.isSpatialView())
         ++numViews;
@@ -836,6 +840,7 @@ describe("iModel", () => {
 
     // Query specifically for 2d views
     numViews = 0;
+    // eslint-disable-next-line deprecation/deprecation
     result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => {
       ++numViews;
       return true;
@@ -846,6 +851,7 @@ describe("iModel", () => {
 
     // Terminate iteration on first view
     numViews = 0;
+    // eslint-disable-next-line deprecation/deprecation
     result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
       ++numViews;
       return false;
@@ -1049,6 +1055,7 @@ describe("iModel", () => {
 
   it("read view thumbnail", () => {
     const viewId = "0x24";
+    // eslint-disable-next-line deprecation/deprecation
     const thumbnail = imodel5.views.getThumbnail(viewId);
     assert.exists(thumbnail);
     if (!thumbnail)
@@ -1063,8 +1070,10 @@ describe("iModel", () => {
     thumbnail.format = "png";
     thumbnail.image = new Uint8Array(200);
     thumbnail.image.fill(12);
+    // eslint-disable-next-line deprecation/deprecation
     const stat = imodel5.views.saveThumbnail(viewId, thumbnail);
     assert.equal(stat, 0, "save thumbnail");
+    // eslint-disable-next-line deprecation/deprecation
     const thumbnail2 = imodel5.views.getThumbnail(viewId);
     assert.exists(thumbnail2);
     if (!thumbnail2)

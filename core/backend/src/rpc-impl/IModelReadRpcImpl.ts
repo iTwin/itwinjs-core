@@ -325,6 +325,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
    */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const iModelDb = await getIModelForRpc(tokenProps);
+    // eslint-disable-next-line deprecation/deprecation
     const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
@@ -337,6 +338,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getDefaultViewId(tokenProps: IModelRpcProps, groupId?: ViewIdString): Promise<Id64String> {
     const iModelDb = await getIModelForRpc(tokenProps);
+    // eslint-disable-next-line deprecation/deprecation
     return iModelDb.views.getDefaultViewId(groupId);
   }
   public async getSpatialCategoryId(tokenProps: IModelRpcProps, categoryName: string): Promise<Id64String | undefined> {
@@ -370,28 +372,19 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return db.views.getViewList(queryParams);
   }
 
-  public async writeViewStore(tokenProps: IModelRpcProps, version: string, methodName: string, ...args: any[]): Promise<any> {
-    if (!RpcInterface.isVersionCompatible(viewStoreRpcVersion.write, version))
-      throw new Error("WriteViewStoreRpc version mismatch");
+  /** @internal */
+  public async callViewStore(tokenProps: IModelRpcProps, version: string, forWrite: boolean, methodName: string, ...args: any[]): Promise<any> {
+    if (!RpcInterface.isVersionCompatible(viewStoreRpcVersion, version))
+      throw new Error("ViewStoreRpc version mismatch");
 
     const db = await getIModelForRpc(tokenProps);
-    const locker = db.views.viewStore.writeLocker as any;
-    const func = locker[methodName];
+    const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read", userToken: RpcTrace.currentActivity?.accessToken });
+    const access = viewStore[forWrite ? "writeLocker" : "reader"] as any;
+
+    const func = access[methodName];
     if (typeof func !== "function")
-      throw new IModelError(IModelStatus.FunctionNotFound, `Method "${methodName}" not found on ViewStore`);
+      throw new IModelError(IModelStatus.FunctionNotFound, `Illegal ViewStore RPC call "${methodName}"`);
 
-    return func.call(locker, ...args);
-  }
-  public async readViewStore(tokenProps: IModelRpcProps, version: string, methodName: string, ...args: any[]): Promise<any> {
-    if (!RpcInterface.isVersionCompatible(viewStoreRpcVersion.write, version))
-      throw new Error("WriteViewStoreRpc version mismatch");
-
-    const db = await getIModelForRpc(tokenProps);
-    const reader = db.views.viewStore.reader as any;
-    const func = reader[methodName];
-    if (typeof func !== "function")
-      throw new IModelError(IModelStatus.FunctionNotFound, `Method "${methodName}" not found on ViewStore`);
-
-    return func.call(reader, ...args);
+    return func.call(access, ...args);
   }
 }

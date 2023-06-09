@@ -292,10 +292,7 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
 }
 
 /** @internal */
-export const viewStoreRpcVersion = {
-  write: "4.0.0",
-  read: "4.0.0",
-} as const;
+export const viewStoreRpcVersion = "4.0.0" as const;
 
 /** @beta */
 export interface ReadViewStoreRpc {

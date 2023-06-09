@@ -23,6 +23,7 @@ import { LineString3d, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardVie
 import { AzuriteTest } from "./AzuriteTest";
 
 const viewContainer = "views-itwin1";
+const storageType = "azure" as const;
 let iModel: StandaloneDb;
 let vs1: ViewStore.CloudAccess;
 let drawingViewId: Id64String;
@@ -31,14 +32,14 @@ let elements: IModelDb.GuidMapper;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
+  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
+  const accessToken = await CloudSqlite.requestToken({ address: { baseUri: AzuriteTest.baseUri, id: containerId }, storageType });
   await ViewStore.CloudAccess.initializeDb({ ...props, accessToken });
 }
 
 async function makeViewStore(moniker: string) {
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: viewContainer, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
+  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: viewContainer, writeable: true };
+  const accessToken = await CloudSqlite.requestToken({ address: { baseUri: AzuriteTest.baseUri, id: viewContainer }, storageType });
   const viewStore = new ViewStore.CloudAccess({ ...props, accessToken });
   viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
   viewStore.lockParams.moniker = moniker;

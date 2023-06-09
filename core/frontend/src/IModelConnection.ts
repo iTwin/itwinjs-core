@@ -1057,7 +1057,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       return this._writeViewStoreProxy ??= new Proxy(this, {
         get(views, methodName: string) {
           const iModel = views._iModel;
-          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).writeViewStore(iModel.getRpcProps(), viewStoreRpcVersion.write, methodName, ...args);
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), viewStoreRpcVersion, true, methodName, ...args);
         },
       }) as unknown as PickAsyncMethods<WriteViewStoreRpc>;
     }
@@ -1065,7 +1065,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       return this._readViewStoreProxy ??= new Proxy(this, {
         get(views, methodName: string) {
           const iModel = views._iModel;
-          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).readViewStore(iModel.getRpcProps(), viewStoreRpcVersion.read, methodName, ...args);
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), viewStoreRpcVersion, false, methodName, ...args);
         },
       }) as unknown as PickAsyncMethods<ReadViewStoreRpc>;
     }

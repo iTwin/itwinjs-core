@@ -50,7 +50,7 @@ export namespace WorkspaceContainer {
   export interface Alias { containerName: string }
 
   /** Properties that specify a WorkspaceContainer. */
-  export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
+  export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
     /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
     syncOnConnect?: boolean;
   }
@@ -317,11 +317,11 @@ export class ITwinWorkspace implements Workspace {
 
   public async getWorkspaceDb(dbAlias: string) {
     const dbProps = this.resolveDatabase(dbAlias);
-    const containerProps = this.resolveContainer(dbProps.containerName);
-    let container: WorkspaceContainer | undefined = this.findContainer(containerProps.containerId);
+    const props = this.resolveContainer(dbProps.containerName);
+    let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
-      containerProps.accessToken = await CloudSqlite.requestToken(containerProps);
-      container = this.getContainer(containerProps);
+      props.accessToken = await CloudSqlite.requestToken({ address: { baseUri: props.baseUri, id: props.containerId }, storageType: props.storageType, accessLevel: "read" });
+      container = this.getContainer(props);
     }
     return container?.getWorkspaceDb(dbProps);
   }

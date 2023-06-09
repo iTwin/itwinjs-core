@@ -55,6 +55,8 @@ import { ViewStore } from "./ViewStore";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
+import type { BlobContainer } from "./BlobContainerService";
+
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -2033,17 +2035,43 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
+    private static viewStoreProperty = { namespace: "itwinjs", name: "DefaultViewStore" };
     private _viewStore?: ViewStore.CloudAccess;
+    public get hasViewStore(): boolean { return undefined !== this._viewStore; }
 
     /** @beta */
     public get viewStore(): ViewStore.CloudAccess {
-      if (undefined === this._viewStore) {
+      if (undefined === this._viewStore)
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
-      }
       return this._viewStore;
     }
+    /** @internal */
     public set viewStore(viewStore: ViewStore.CloudAccess) {
       this._viewStore = viewStore;
+    }
+    public async accessViewStore(args: { userToken?: AccessToken, props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
+      let props = args.props;
+      if (undefined === props) {
+        const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
+        if (!propsString)
+          throw new Error("iModel does not have a default ViewStore");
+
+        props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
+      }
+      const accessToken = await CloudSqlite.requestToken({ address: { baseUri: props.baseUri, id: props.containerId }, storageType: props.storageType, userToken: args.userToken, accessLevel: args.accessLevel });
+      if (!this._viewStore) {
+        this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, elements: this._iModel.elements });
+      } else {
+        this._viewStore.container.accessToken = accessToken;
+      }
+
+      return this._viewStore;
+    }
+
+    public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
+      const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
+      this._iModel.saveFileProperty(Views.viewStoreProperty, JSON.stringify(props));
+      this._iModel.saveChanges("update default ViewStore");
     }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
@@ -2629,6 +2657,7 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
   private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
+  public static readonly onOpen = new BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>();
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
@@ -2714,6 +2743,7 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
   public static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb {
+    this.onOpen.raiseEvent(path, opts);
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     assert(undefined !== file.key);
