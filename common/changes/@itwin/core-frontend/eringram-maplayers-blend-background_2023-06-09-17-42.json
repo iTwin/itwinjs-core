@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "fix bug in reality mesh shader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
