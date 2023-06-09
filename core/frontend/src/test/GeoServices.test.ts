@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@itwin/core-bentley";
+import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
@@ -69,15 +69,15 @@ describe("GeoServices", () => {
     expect(gs.getConverter()).not.to.equal(cv2);
   });
 
-  it("retains converter in cache until all requests complete", async () => {
-    async function waitOneFrame(): Promise<void> {
-      return new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          resolve();
-        });
+  async function waitOneFrame(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        resolve();
       });
-    }
+    });
+  }
 
+  it("retains converter in cache until all requests complete", async () => {
     async function resolveAfter2Frames(): Promise<PointWithStatus[]> {
       await waitOneFrame();
       return new Promise<PointWithStatus[]>((resolve) => {
@@ -108,6 +108,37 @@ describe("GeoServices", () => {
 
     await Promise.all(promises);
     expect(gs.getConverter()).not.to.equal(cv);
+  });
+
+  it("resolves all requests to the same result if a request arrives while another request for same point is in flight", async () => {
+    const resolveEvent = new BeEvent<() => void>();
+    async function resolveOnEvent(numPoints: number): Promise<PointWithStatus[]> {
+      return new Promise((resolve) => {
+        const result: PointWithStatus[] = [];
+        for (let i = 0; i < numPoints; i++)
+          result.push({ p: [0, 0, 0], s: 0 });
+
+        resolveEvent.addOnce(() => resolve(result));
+      });
+    }
+
+    let curNumPoints = 1;
+    const gs = makeGeoServices({
+      toIModelCoords: async () => resolveOnEvent(curNumPoints++),
+      fromIModelCoords: async () => resolveOnEvent(curNumPoints++),
+    });
+
+      const cv = gs.getConverter()!;
+      const p1 = cv.convertToIModelCoords([[0, 0, 0]]);
+      await waitOneFrame();
+      resolveEvent.raiseEvent();
+
+      const p2 = cv.convertToIModelCoords([[0, 0, 0]]);
+      const r1 = await p1;
+      expect(r1.length).to.equal(1);
+      resolveEvent.raiseEvent();
+      const r2 = await p2;
+      expect(r2.length).to.equal(1);
   });
 
   it("removes converter from cache even if requests produce an exception", async () => {
