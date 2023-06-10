@@ -801,6 +801,7 @@ internal;TileContentDescription
 beta;TileContentIdentifier
 internal;TileContentMetadata
 internal;TileContentSource
+internal;TileEdgeType = "compact" | "indexed" | "non-indexed"
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader

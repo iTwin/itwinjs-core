@@ -424,7 +424,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     );
   }
 
-  /** Multiply the point x,y,z by transform and use the coordinate to extend this range. */
+  /** Multiply the point x,y,z by the inverse of the transform and use the coordinate to extend this range. */
   public extendInverseTransformedXYZ(transform: Transform, x: number, y: number, z: number): boolean {
     const origin = transform.origin;
     if (!transform.matrix.computeCachedInverse(true))

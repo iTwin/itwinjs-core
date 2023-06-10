@@ -226,12 +226,14 @@ public;FuzzySearchResult
 public;FuzzySearchResults
 beta;GenericAbortSignal
 public;GeoConverter
+internal;GeoConverterOptions
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
 beta;GeometryTileTreeReference 
 public;GeoServices
+internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
@@ -358,12 +360,14 @@ internal;ImdlAreaPatternSymbol
 internal;ImdlAuxChannelTable = Omit
 internal;ImdlBufferView
 internal;ImdlColorDef = number[]
+internal;ImdlCompactEdges
 internal;ImdlDecodeArgs
 internal;ImdlDecodeOptions
 internal;ImdlDecoder
 internal;ImdlDictionary
 internal;ImdlDisplayParams
 internal;ImdlDocument
+internal;ImdlEdgeVisibility
 internal;ImdlIndexedEdges
 internal;ImdlInstances
 internal;ImdlMaterialAtlas

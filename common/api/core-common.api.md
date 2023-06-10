@@ -1770,8 +1770,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2031616,
-    Major = 31,
+    Combined = 2097152,
+    Major = 32,
     Minor = 0
 }
 
@@ -2577,8 +2577,9 @@ export class EdgeArgs {
 
 // @internal
 export interface EdgeOptions {
-    indexed: boolean;
     smooth: boolean;
+    // (undocumented)
+    type: TileEdgeType;
 }
 
 // @internal
@@ -9616,6 +9617,9 @@ export enum TileContentSource {
 }
 
 // @internal
+export type TileEdgeType = "compact" | "indexed" | "non-indexed";
+
+// @internal
 export enum TileFormat {
     // (undocumented)
     A3x = 5780289,
@@ -9670,15 +9674,13 @@ export interface TileOptions {
     // (undocumented)
     readonly disableMagnification: boolean;
     // (undocumented)
+    readonly edgeOptions: EdgeOptions;
+    // (undocumented)
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
     // (undocumented)
-    readonly enableIndexedEdges: boolean;
-    // (undocumented)
     readonly enableInstancing: boolean;
-    // (undocumented)
-    readonly generateAllPolyfaceEdges: boolean;
     // (undocumented)
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
