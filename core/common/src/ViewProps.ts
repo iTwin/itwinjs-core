@@ -18,33 +18,10 @@ import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 import { ThumbnailProps } from "./Thumbnail";
 import { RenderSchedule } from "./RenderSchedule";
 
-/** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore.
- * Will be a base-36 number with a leading "@".
- * @public
- */
-export type ViewStoreIdString = string;
-
 /** The id of either an element or an entry in a ViewStore.
  * @public
  */
-export type ViewIdString = Id64String | ViewStoreIdString;
-
-/**
- * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
- * The syntax is not ambiguous because ViewStoreIdStrings always start with "@" and  Group names can never contain "@".
- * @beta
- */
-export type ViewGroupSpec = ViewStoreIdString | string;
-
-/** The name for a view.
- * @beta
- */
-export type ViewName = string;
-
-/** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@")
- * @beta
- */
-export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
+export type ViewIdString = Id64String | ViewStoreRpc.ViewId;
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
@@ -155,19 +132,7 @@ export interface ViewListEntry {
   class: string;
   owner?: string;
   isPrivate?: boolean;
-  groupId?: ViewStoreIdString;
-  tags?: string[];
-}
-
-/** @beta */
-export interface AddViewArgs {
-  viewDefinition: ViewDefinitionProps;
-  categorySelectorProps?: CategorySelectorProps;
-  modelSelectorProps?: ModelSelectorProps;
-  displayStyleProps?: DisplayStyleProps;
-  owner?: string;
-  group?: ViewGroupSpec;
-  isPrivate?: boolean;
+  groupId?: ViewStoreRpc.ViewId;
   tags?: string[];
 }
 
@@ -196,7 +161,7 @@ export interface ViewQueryParams extends EntityQueryParams {
   /** The comparison operator for `nameSearch`. Default is `=` */
   readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
   /** @beta */
-  readonly group?: ViewGroupSpec;
+  readonly group?: ViewStoreRpc.ViewGroupSpec;
   readonly tags?: string[];
   readonly owner?: string;
   readonly wantPrivate?: boolean;
@@ -291,35 +256,108 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   roll?: AngleProps;
 }
 
-/** @internal */
-export const viewStoreRpcVersion = "4.0.0" as const;
+export namespace ViewStoreRpc {
 
-/** @beta */
-export interface ReadViewStoreRpc {
-  findViewsByOwner(args: { owner: string }): Promise<ViewStoreIdString[]>;
-  getDefaultViewId(args: { group?: ViewGroupSpec }): Promise<ViewStoreIdString | undefined>;
-  getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: ViewStoreIdString, name: string }[]>;
-  loadCategorySelector(args: { id: ViewStoreIdString }): Promise<CategorySelectorProps>;
-  loadDisplayStyle(args: { id: ViewStoreIdString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
-  loadModelSelector(args: { id: ViewStoreIdString }): Promise<ModelSelectorProps>;
-  loadThumbnail(args: { viewId: ViewStoreIdString }): Promise<ThumbnailProps | undefined>;
-  loadTimeline(args: { id: ViewStoreIdString }): Promise<RenderTimelineProps>;
-  loadViewDefinition(args: { id: ViewStoreIdString }): Promise<ViewDefinitionProps>;
-}
+  /** @internal */
+  export const version = "4.0.0" as const;
 
-/** @beta */
-export interface WriteViewStoreRpc {
-  addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<ViewStoreIdString>;
-  addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<ViewStoreIdString>;
-  addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<ViewStoreIdString>;
-  addOrReplaceThumbnail(args: { viewId: ViewStoreIdString, thumbnail: ThumbnailProps, owner?: string }): Promise<ViewStoreIdString>;
-  addTagsToView(args: { viewId: ViewStoreIdString, tags: string[], owner?: string }): Promise<void>;
-  addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<ViewStoreIdString>;
-  addView(args: AddViewArgs): Promise<ViewStoreIdString>;
-  addViewGroup(args: { name: string, parentId?: ViewStoreIdString, owner?: string }): Promise<ViewStoreIdString>;
-  changeDefaultViewId(args: { defaultView: ViewStoreIdString, group?: ViewGroupSpec }): Promise<void>;
-  deleteThumbnail(args: { id: ViewStoreIdString }): Promise<void>;
-  deleteView(viewId: ViewStoreIdString): Promise<void>;
-  deleteViewGroup(args: { name: ViewGroupSpec }): Promise<void>;
-  removeTagFromView(args: { viewId: ViewStoreIdString, tag: string }): Promise<void>;
+  /** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore.
+   * Will be a base-36 number with a leading "@".
+   * @public
+   */
+  export type ViewId = string;
+
+  /**
+   * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
+   * The syntax is not ambiguous because ViewStoreIdStrings always start with "@" and  Group names can never contain "@".
+   * @beta
+   */
+  export type ViewGroupSpec = ViewId | ViewGroupPath;
+
+  /** The name for a view.
+   * @beta
+   */
+  export type ViewName = string;
+
+  export type ViewGroupPath = string;
+
+  /** The name for a view group.
+   * @beta
+   */
+  export type ViewGroupName = string;
+
+  /** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@")
+ * @beta
+ */
+  export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
+
+  export interface ViewInfo {
+    id: ViewId;
+    name?: ViewName;
+    owner?: string;
+    className: string;
+    groupId: ViewId;
+    isPrivate: boolean;
+    modelSel?: ViewId;
+    categorySel?: ViewId;
+    displayStyle?: ViewId;
+    tags?: string[];
+  }
+
+  export interface ViewGroupInfo {
+    id: ViewId;
+    name: ViewGroupPath;
+    parent?: ViewId;
+    defaultView?: ViewId;
+  }
+
+  export interface AddViewArgs {
+    viewDefinition: ViewDefinitionProps;
+    categorySelectorProps?: CategorySelectorProps;
+    modelSelectorProps?: ModelSelectorProps;
+    displayStyleProps?: DisplayStyleProps;
+    owner?: string;
+    group?: ViewGroupSpec;
+    isPrivate?: boolean;
+    tags?: string[];
+  }
+
+  /**
+   * Methods for reading from a ViewStore via Rpc from a frontend. These methods use the current ViewStore for the iModel, and
+   * attempts to load the default ViewStore if no current ViewStore is loaded. They all require an accessToken, and
+   * will throw exceptions if the request cannot be fulfilled.
+   * @note The user's accessToken is validated against the ViewStore's container for every request.
+   * @beta
+   */
+  export interface Reader {
+    /** Find all "owned by" views for an owner. */
+    findViewsByOwner(args: { owner: string }): Promise<ViewInfo[]>;
+
+    getViewInfo(args: { id: ViewId }): Promise<ViewInfo | undefined>;
+    getViewGroupInfo(args: { id?: ViewId }): Promise<ViewGroupInfo | undefined>;
+    getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: ViewId, name: string }[]>;
+    loadCategorySelector(args: { id: ViewId }): Promise<CategorySelectorProps>;
+    loadDisplayStyle(args: { id: ViewId, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
+    loadModelSelector(args: { id: ViewId }): Promise<ModelSelectorProps>;
+    loadThumbnail(args: { viewId: ViewId }): Promise<ThumbnailProps | undefined>;
+    loadTimeline(args: { id: ViewId }): Promise<RenderTimelineProps>;
+    loadViewDefinition(args: { id: ViewId }): Promise<ViewDefinitionProps>;
+  }
+
+  /** @beta */
+  export interface Writer {
+    addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<ViewId>;
+    addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<ViewId>;
+    addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<ViewId>;
+    addOrReplaceThumbnail(args: { viewId: ViewId, thumbnail: ThumbnailProps, owner?: string }): Promise<ViewId>;
+    addTagsToView(args: { viewId: ViewId, tags: string[], owner?: string }): Promise<void>;
+    addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<ViewId>;
+    addView(args: AddViewArgs): Promise<ViewId>;
+    addViewGroup(args: { name: string, parentId?: ViewId, owner?: string }): Promise<ViewId>;
+    changeDefaultViewId(args: { defaultView: ViewId, group?: ViewGroupSpec }): Promise<void>;
+    deleteThumbnail(args: { id: ViewId }): Promise<void>;
+    deleteView(viewId: ViewId): Promise<void>;
+    deleteViewGroup(args: { name: ViewGroupSpec }): Promise<void>;
+    removeTagFromView(args: { viewId: ViewId, tag: string }): Promise<void>;
+  }
 }

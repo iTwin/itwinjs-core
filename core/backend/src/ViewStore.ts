@@ -8,10 +8,10 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
-  AddViewArgs, CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
-  DisplayStyleSubCategoryProps, ElementProps, IModel, isViewStoreId, ModelSelectorProps, PlanProjectionSettingsProps, ReadViewStoreRpc,
-  RenderSchedule, RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewGroupSpec,
-  ViewListEntry, ViewName, ViewQueryParams, ViewStoreIdString, WriteViewStoreRpc,
+  CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
+  DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
+  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewListEntry,
+  ViewQueryParams, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -153,7 +153,7 @@ export namespace ViewStore {
   const isGuidRowString = (id?: string) => true === id?.startsWith("^");
 
   export const rowIdFromString = (id: RowString): RowId => {
-    if (!isViewStoreId(id) && !isGuidRowString(id))
+    if (!ViewStoreRpc.isViewStoreId(id) && !isGuidRowString(id))
       throw new Error(`invalid value: ${id}`);
     return parseInt(id.slice(1), 36);
   };
@@ -184,7 +184,7 @@ export namespace ViewStore {
     elements?: IModelDb.GuidMapper;
   }
 
-  export class ViewDb extends VersionedSqliteDb implements WriteViewStoreRpc, ReadViewStoreRpc {
+  export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ViewStoreRpc.Reader {
     public override myVersion = "4.0.0";
     private _elements?: IModelDb.GuidMapper;
     public get elements() { return this._elements!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -358,7 +358,7 @@ export namespace ViewStore {
     public deleteViewRow(id: RowId) {
       return this.deleteFromTable(tableName.views, id);
     }
-    public async deleteViewGroup(args: { name: ViewGroupSpec }) {
+    public async deleteViewGroup(args: { name: ViewStoreRpc.ViewGroupSpec }) {
       const rowId = this.findViewGroup(args.name);
       if (rowId === 1)
         throw new Error("Cannot delete root group");
@@ -579,15 +579,42 @@ export namespace ViewStore {
       return this.findByName(tableName.searches, name);
     }
 
-    public async findViewsByOwner(args: { owner: string }): Promise<RowString[]> {
-      return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE owner=? ORDER BY Id ASC`, (stmt) => {
-        stmt.bindString(1, args.owner);
-        const list: RowString[] = [];
-        while (stmt.nextRow())
-          list.push(tableRowIdToString(stmt.getValueInteger(0)));
-        return list;
+    private getViewInfoSync(args: { id: ViewStoreRpc.ViewId }): ViewStoreRpc.ViewInfo | undefined {
+      const maybeId = (rowId?: RowId): string | undefined => rowId ? tableRowIdToString(rowId) : undefined;
+      return this.withPreparedSqliteStatement(`SELECT owner,className,name,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE id=?`, (stmt) => {
+        const viewId = rowIdFromString(args.id);
+        stmt.bindInteger(1, viewId);
+        return stmt.nextRow() ? {
+          id: args.id,
+          owner: stmt.getValueString(0),
+          className: stmt.getValueString(1),
+          name: stmt.getValueStringMaybe(2),
+          isPrivate: stmt.getValueBoolean(3),
+          groupId: tableRowIdToString(stmt.getValueInteger(4)),
+          modelSel: maybeId(stmt.getValueInteger(5)),
+          categorySel: maybeId(stmt.getValueInteger(6)),
+          displayStyle: maybeId(stmt.getValueInteger(7)),
+          tags: this.getTagsForView(viewId),
+        } : undefined;
       });
     }
+    public async getViewInfo(args: { id: ViewStoreRpc.ViewId }): Promise<ViewStoreRpc.ViewInfo | undefined> {
+      return this.getViewInfoSync(args);
+    }
+
+    public async findViewsByOwner(args: { owner: string }): Promise<ViewStoreRpc.ViewInfo[]> {
+      const list: ViewStoreRpc.ViewInfo[] = [];
+      this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE owner=? ORDER BY Id ASC`, (stmt) => {
+        stmt.bindString(1, args.owner);
+        while (stmt.nextRow()) {
+          const info = this.getViewInfoSync({ id: tableRowIdToString(stmt.getValueInteger(0)) });
+          if (info)
+            list.push(info);
+        }
+      });
+      return list;
+    }
+
     public findViewsByClass(className: string[]): RowId[] {
       if (className.length === 0)
         return [];
@@ -717,7 +744,7 @@ export namespace ViewStore {
       const json = JSON.stringify({});
       return tableRowIdToString(this.addViewGroupRow({ name: args.name, parentId, json, owner: args.owner }));
     }
-    public async getViewGroups(args: { parent?: ViewGroupSpec }) {
+    public async getViewGroups(args: { parent?: ViewStoreRpc.ViewGroupSpec }) {
       const parentIdRow = args.parent ? this.findViewGroup(args.parent) : defaultViewGroupId;
       const groups: { id: string, name: string }[] = [];
       this.withSqliteStatement(`SELECT Id,Name FROM ${tableName.viewGroups} WHERE ParentId=?`, (stmt) => {
@@ -825,7 +852,7 @@ export namespace ViewStore {
       }
 
       if (settings.renderTimeline) {
-        if (!isViewStoreId(settings.renderTimeline))
+        if (!ViewStoreRpc.isViewStoreId(settings.renderTimeline))
           this.toGuidRowMember(settings, "renderTimeline");
         delete settings.scheduleScript;
       } else if (settings.scheduleScript) {
@@ -889,7 +916,7 @@ export namespace ViewStore {
       return this.loadDisplayStyleSync(args);
     }
 
-    public addViewDefinition(args: { viewDefinition: ViewDefinitionProps, group?: ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
+    public addViewDefinition(args: { viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
       const viewDef = JSON.parse(JSON.stringify(args.viewDefinition)) as ViewDefinitionProps; // make a copy
       const name = viewDef.code.value;
       if (name === undefined)
@@ -932,7 +959,7 @@ export namespace ViewStore {
       return this.loadViewDefinitionSync(args);
     }
 
-    public async addOrReplaceThumbnail(args: { viewId: ViewStoreIdString, thumbnail: ThumbnailProps, owner?: string }) {
+    public async addOrReplaceThumbnail(args: { viewId: ViewStoreRpc.ViewId, thumbnail: ThumbnailProps, owner?: string }) {
       const viewRow = this.getViewRow(rowIdFromString(args.viewId));
       if (viewRow === undefined)
         throw new Error("View not found");
@@ -949,7 +976,7 @@ export namespace ViewStore {
     }
     // find a group with the specified name using path syntax (e.g., "group1/design/issues"). If the group does not exist, return 0.
     // If groupName starts with "@", then it is considered to be a group id and this function verifies that it exists and throws if it does not.
-    public findViewGroup(groupName: ViewGroupSpec): RowId {
+    public findViewGroup(groupName: ViewStoreRpc.ViewGroupSpec): RowId {
       // if it starts with "@", then it is a group id
       if (groupName.startsWith("@"))
         return this.verifyRowId(tableName.viewGroups, groupName);
@@ -984,27 +1011,27 @@ export namespace ViewStore {
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
-    public getViewByName(arg: { name: ViewName, groupId?: RowId }): ViewRow | undefined {
+    public getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewRow | undefined {
       const id = this.findViewByName(arg);
       return id ? this.getViewRow(id) : undefined;
     }
 
-    public getDefaultViewIdSync(args: { group?: ViewGroupSpec }): RowString | undefined {
-      const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
+    public async getViewGroupInfo(args: { id: ViewStoreRpc.ViewId }): Promise<ViewStoreRpc.ViewGroupInfo | undefined> {
+      const groupId = args.id ? this.findViewGroup(args.id) : defaultViewGroupId;
       const groupRow = groupId ? this.getViewGroup(groupId) : undefined;
       if (groupRow === undefined)
         return undefined;
       const props = JSON.parse(groupRow.json) as ViewGroupProps;
-      if (props.defaultViewId === undefined)
-        return undefined;
-      const viewRow = this.getViewRow(rowIdFromString(props.defaultViewId));
-      return viewRow ? props.defaultViewId : undefined;
-    }
-    public async getDefaultViewId(args: { group?: ViewGroupSpec }): Promise<RowString | undefined> {
-      return this.getDefaultViewIdSync(args);
+      const info: ViewStoreRpc.ViewGroupInfo = {
+        id: args.id,
+        name: groupRow.name,
+        defaultView: props.defaultViewId,
+        parent: tableRowIdToString(groupRow.parentId),
+      };
+      return info;
     }
 
-    public async changeDefaultViewId(args: { defaultView: ViewStoreIdString, group?: ViewGroupSpec }) {
+    public async changeDefaultViewId(args: { defaultView: ViewStoreRpc.ViewId, group?: ViewStoreRpc.ViewGroupSpec }) {
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const viewRow = this.getViewRow(rowIdFromString(args.defaultView));
       if (viewRow === undefined)
@@ -1081,13 +1108,16 @@ export namespace ViewStore {
       });
     }
 
-    public queryViewList(queryParams: ViewQueryParams): ViewListEntry[] {
+    public queryViewListSync(queryParams: ViewQueryParams): ViewListEntry[] {
       const entries: ViewListEntry[] = [];
       this.iterateViewQuery(queryParams, (rowId, entry) => {
         entry.tags = this.getTagsForView(rowId);
         entries.push(entry);
       });
       return entries;
+    }
+    public async queryViewList(queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
+      return this.queryViewListSync(queryParams);
     }
 
     public async addTagsToView(args: { viewId: RowString, tags: string[], owner?: string }) {
@@ -1106,7 +1136,7 @@ export namespace ViewStore {
         this.deleteViewTag({ viewId, tagId });
     }
 
-    public async addView(args: AddViewArgs): Promise<RowString> {
+    public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.ViewId> {
       const owner = args.owner;
       if (args.viewDefinition.categorySelectorId) {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
@@ -1170,10 +1200,10 @@ export namespace ViewStore {
 
   const viewDbName = "ViewDb" as const;
 
-  export interface ReadViewStoreMethods extends ReadViewStoreRpc {
+  export interface ReadMethods extends ViewStoreRpc.Reader {
     findViewsByClass(className: string[]): RowId[];
-    getDefaultViewIdSync(args: { group?: ViewGroupSpec }): RowString | undefined;
-    getViewByName(arg: { name: ViewName, groupId?: RowId }): ViewRow | undefined;
+    getDefaultViewIdSync(args: { group?: ViewStoreRpc.ViewGroupSpec }): RowString | undefined;
+    getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewRow | undefined;
     loadCategorySelectorSync(args: { id: RowString }): CategorySelectorProps;
     loadDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps;
     loadModelSelectorSync(args: { id: RowString }): ModelSelectorProps;
@@ -1185,7 +1215,7 @@ export namespace ViewStore {
   export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
 
   /** Provides access to a cloud-based `ViewDb` */
-  export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadViewStoreMethods, WriteViewStoreRpc> {
+  export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadMethods, ViewStoreRpc.Writer> {
     public constructor(props: ViewStoreCtorProps) {
       super({ dbType: ViewDb, props, dbName: viewDbName });
     }

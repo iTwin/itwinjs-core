@@ -18,11 +18,11 @@ import {
   DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, isViewStoreId, LocalFileName, MassPropertiesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
   SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
-  ViewDefinition2dProps, ViewDefinitionProps, ViewGroupSpec, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -2124,7 +2124,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const iModel = this._iModel;
       const elements = iModel.elements;
       const loader = (() => {
-        if (isViewStoreId(viewDefId)) {
+        if (ViewStoreRpc.isViewStoreId(viewDefId)) {
           const reader = this.viewStore.reader;
           return {
             loadView: () => reader.loadViewDefinitionSync({ id: viewDefId }),
@@ -2209,7 +2209,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @deprecated in 4.1 Use ViewStore.loadThumbnail instead.
      */
     public getThumbnail(viewId: ViewIdString): ThumbnailProps | undefined {
-      if (isViewStoreId(viewId))
+      if (ViewStoreRpc.isViewStoreId(viewId))
         return this.viewStore.reader.loadThumbnailSync({ viewId });
 
       const viewArg = this.getViewThumbnailArg(viewId);
@@ -2249,10 +2249,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** @deprecated in 4.1 use ViewStore.getDefaultViewId instead */
-    public getDefaultViewId(group?: ViewGroupSpec): ViewIdString {
-      if (this._viewStore)
-        return this._viewStore.reader.getDefaultViewIdSync({ group }) ?? Id64.invalid;
-
+    public getDefaultViewId(): ViewIdString {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob = this._iModel.queryFilePropertyBlob(spec);
       if (undefined === blob || 8 !== blob.length)

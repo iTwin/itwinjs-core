@@ -17,9 +17,8 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
-  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps,
-  viewStoreRpcVersion,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -27,12 +26,12 @@ import { SpatialCategory } from "../Category";
 import { ConcurrentQuery } from "../ConcurrentQuery";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { generateGeometrySummaries } from "../GeometrySummary";
+import { IModelDb } from "../IModelDb";
 import { DictionaryModel } from "../Model";
 import { PromiseMemoizer } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { ViewStateHydrator } from "../ViewStateHydrator";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { IModelDb } from "../IModelDb";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;
@@ -336,10 +335,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return val;
   }
 
-  public async getDefaultViewId(tokenProps: IModelRpcProps, groupId?: ViewIdString): Promise<Id64String> {
+  public async getDefaultViewId(tokenProps: IModelRpcProps): Promise<Id64String> {
     const iModelDb = await getIModelForRpc(tokenProps);
     // eslint-disable-next-line deprecation/deprecation
-    return iModelDb.views.getDefaultViewId(groupId);
+    return iModelDb.views.getDefaultViewId();
   }
   public async getSpatialCategoryId(tokenProps: IModelRpcProps, categoryName: string): Promise<Id64String | undefined> {
     const iModelDb = await getIModelForRpc(tokenProps);
@@ -374,11 +373,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   /** @internal */
   public async callViewStore(tokenProps: IModelRpcProps, version: string, forWrite: boolean, methodName: string, ...args: any[]): Promise<any> {
-    if (!RpcInterface.isVersionCompatible(viewStoreRpcVersion, version))
+    if (!RpcInterface.isVersionCompatible(ViewStoreRpc.version, version))
       throw new Error("ViewStoreRpc version mismatch");
 
     const db = await getIModelForRpc(tokenProps);
     const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read", userToken: RpcTrace.currentActivity?.accessToken });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const access = viewStore[forWrite ? "writeLocker" : "reader"] as any;
 
     const func = access[methodName];

@@ -54,32 +54,37 @@ export abstract class RpcInterface {
   }
 
   private static parseVer(version: string): SemverType {
-    // Split the version string into major.minor.path and prerelease tag
-    const split = version.split(/[:-]/);
+    // separate the version from the prerelease tag
+    const parts = version.split(/[:-]/);
     // Split the major.minor.path into separate components
-    const prefix = split[0].split(".");
-    if (split.length === 1)
-      return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
-    return { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]), prerelease: split[1] };
+    const prefix = parts[0].split(".");
+
+    const ver: SemverType = { major: Number(prefix[0]), minor: Number(prefix[1]), patch: Number(prefix[2]) };
+    if (parts.length > 1)
+      ver.prerelease = parts[1];
+    return ver;
   }
 
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */
   public static isVersionCompatible(backend: string, frontend: string): boolean {
     if (backend === frontend)
-      return true;
+      return true; // most common case, versions are identical
 
     const backendSemver = this.parseVer(backend);
     const frontendSemver = this.parseVer(frontend);
-    const difference = this.findDiff(backendSemver, frontendSemver);
 
-    // If the major versions are different, the versions are not compatible
-    // For prerelease tags, they must match.
-    if (backendSemver.prerelease || frontendSemver.prerelease || difference === "major")
+    // if either has a prerelease tag, they are not compatible unless version strings are identical
+    if (backendSemver.prerelease || frontendSemver.prerelease)
       return false;
 
-    // If the major and minor versions match and major versions are 0, compatible as long as backend patch version is greater
-    if (backendSemver.major === 0 || frontendSemver.major === 0)
-      return (difference === "patch" && frontendSemver.patch < backendSemver.patch);
+    const difference = this.findDiff(backendSemver, frontendSemver);
+    // If the major versions are different, the versions are not compatible
+    if (difference === "major")
+      return false;
+
+    // special case for major version 0. If patch difference, backend patch must be greater than frontend patch
+    if (backendSemver.major === 0 && difference === "patch")
+      return frontendSemver.patch < backendSemver.patch;
 
     // patch difference is fine. If minor versions differ, compatible as long as backend minor version is greater
     return difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);

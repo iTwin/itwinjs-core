@@ -16,9 +16,9 @@ import {
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, ReadViewStoreRpc, RpcManager, SnapRequestProps, SnapResponseProps,
+  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
-  ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps, viewStoreRpcVersion, WriteViewStoreRpc,
+  ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -1050,24 +1050,24 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   export class Views {
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
-    private _writeViewStoreProxy?: PickAsyncMethods<WriteViewStoreRpc>;
-    private _readViewStoreProxy?: PickAsyncMethods<ReadViewStoreRpc>;
+    private _writeViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Writer>;
+    private _readViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Reader>;
 
     public get viewStoreWriter() {
       return this._writeViewStoreProxy ??= new Proxy(this, {
         get(views, methodName: string) {
           const iModel = views._iModel;
-          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), viewStoreRpcVersion, true, methodName, ...args);
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, true, methodName, ...args);
         },
-      }) as unknown as PickAsyncMethods<WriteViewStoreRpc>;
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Writer>;
     }
     public get viewsStoreReader() {
       return this._readViewStoreProxy ??= new Proxy(this, {
         get(views, methodName: string) {
           const iModel = views._iModel;
-          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), viewStoreRpcVersion, false, methodName, ...args);
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, false, methodName, ...args);
         },
-      }) as unknown as PickAsyncMethods<ReadViewStoreRpc>;
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Reader>;
     }
 
     /** Query for an array of ViewDefinitionProps
@@ -1150,7 +1150,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
      * @throws "No content" error if invalid thumbnail.
-     * @deprecated in 3.x use viewstore.
+     * @deprecated in 3.x use ViewStore apis
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation
