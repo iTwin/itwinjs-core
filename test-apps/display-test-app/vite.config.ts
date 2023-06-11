@@ -46,16 +46,14 @@ export default defineConfig(() => {
     envPrefix: "REACT_APP_",
     build: {
       outDir: './lib',
-      sourcemap: true,
+      sourcemap: mode === "development",
+      minify: mode === "production" && "esbuild",
       commonjsOptions: {
         include: [/core\/electron/, /core\/mobile/, /node_modules/],
       },
       rollupOptions: {
         input: 'src/index.ts',
       }
-    },
-    css: {
-      devSourcemap: true // enable CSS source maps during development
     },
     plugins: [
       ignore(["electron"]),
@@ -106,6 +104,7 @@ export default defineConfig(() => {
           ]),
         ],
       },
+      force: true, // for debugging, TODO: remove line
       // overoptimized dependencies in the same monorepo
       include: [
         "@itwin/core-electron/lib/cjs/ElectronFrontend",
