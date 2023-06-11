@@ -22,7 +22,7 @@ import {
   MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions,
   PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
   SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
-  ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
+  ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -2077,7 +2077,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
      * @param className Query for view definitions of this class.
      * @param wantPrivate If true, include private view definitions.
-     * @deprecated in 4.1 Use ViewStore.queryViewList instead.
      */
     public queryViewDefinitionProps(className: string = "BisCore.ViewDefinition", limit = IModelDb.defaultLimit, offset = 0, wantPrivate: boolean = false): ViewDefinitionProps[] {
       const where = (wantPrivate === false) ? "IsPrivate=FALSE" : "";
@@ -2101,7 +2100,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param params Specifies the query by which views are selected.
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
      * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
-     * @deprecated in 4.1 Use ViewStore.queryViewList instead.
+     *
+     * **Example: Finding all views of a specific DrawingModel**
+     * ``` ts
+     * [[include:IModelDb.Views.iterateViews]]
+     * ```
      */
     public iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean {
       const ids = this._iModel.queryEntityIds(params);
@@ -2127,10 +2130,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         if (ViewStoreRpc.isViewStoreId(viewDefId)) {
           const reader = this.viewStore.reader;
           return {
-            loadView: () => reader.loadViewDefinitionSync({ id: viewDefId }),
-            loadCategorySelector: (id: ViewIdString) => reader.loadCategorySelectorSync({ id }),
-            loadDisplayStyle: (id: ViewIdString) => reader.loadDisplayStyleSync({ id, opts: options?.displayStyle }),
-            loadModelSelector: (id: ViewIdString) => reader.loadModelSelectorSync({ id }),
+            loadView: () => reader.getViewDefinitionSync({ id: viewDefId }),
+            loadCategorySelector: (id: ViewIdString) => reader.getCategorySelectorSync({ id }),
+            loadDisplayStyle: (id: ViewIdString) => reader.getDisplayStyleSync({ id, opts: options?.displayStyle }),
+            loadModelSelector: (id: ViewIdString) => reader.getModelSelectorSync({ id }),
           };
         }
         return {
@@ -2204,15 +2207,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** Get the thumbnail for a view.
-     * @param viewId The Id of the view for thumbnail
+     * @param viewDefinitionId The Id of the view for thumbnail
      * @returns the ThumbnailProps, or undefined if no thumbnail exists.
-     * @deprecated in 4.1 Use ViewStore.loadThumbnail instead.
      */
-    public getThumbnail(viewId: ViewIdString): ThumbnailProps | undefined {
-      if (ViewStoreRpc.isViewStoreId(viewId))
-        return this.viewStore.reader.loadThumbnailSync({ viewId });
-
-      const viewArg = this.getViewThumbnailArg(viewId);
+    public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
+      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
       if (undefined === sizeProps)
         return undefined;
@@ -2226,10 +2225,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param viewDefinitionId The Id of the view for thumbnail
      * @param thumbnail The thumbnail data.
      * @returns 0 if successful
-     * @deprecated in 4.1 Use ViewStore.writeLocker.addOrReplaceThumbnail instead.
      */
-    public saveThumbnail(viewId: ViewIdString, thumbnail: ThumbnailProps): number {
-      const viewArg = this.getViewThumbnailArg(viewId);
+    public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
+      const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
       return 0;
@@ -2237,9 +2235,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** Set the default view property the iModel
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @deprecated in 4.1 Use ViewStore.writeLocker.changeDefaultViewId instead
      */
-    public setDefaultViewId(viewId: ViewIdString): void {
+    public setDefaultViewId(viewId: Id64String): void {
       const spec = { namespace: "dgn_View", name: "DefaultView" };
       const blob32 = new Uint32Array(2);
       blob32[0] = Id64.getLowerUint32(viewId);
@@ -2247,56 +2244,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const blob8 = new Uint8Array(blob32.buffer);
       this._iModel.saveFileProperty(spec, undefined, blob8);
     }
-
-    /** @deprecated in 4.1 use ViewStore.getDefaultViewId instead */
-    public getDefaultViewId(): ViewIdString {
-      const spec = { namespace: "dgn_View", name: "DefaultView" };
-      const blob = this._iModel.queryFilePropertyBlob(spec);
-      if (undefined === blob || 8 !== blob.length)
-        return Id64.invalid;
-
-      const view = new Uint32Array(blob.buffer);
-      return Id64.fromUint32Pair(view[0], view[1]);
-    }
-
-    /** @internal */
-    public async getViewList(queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
-      if (this._viewStore)
-        return this._viewStore.reader.queryViewList(queryParams);
-
-      const viewList: ViewListEntry[] = [];
-      if (queryParams.group)
-        return viewList;
-
-      const params = { ...queryParams }; // make a copy
-      params.from = queryParams.from || ViewDefinition.classFullName; // use "BisCore:ViewDefinition" as default class name
-      params.where = queryParams.where || "";
-      if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
-        if (params.where.length > 0)
-          params.where += " AND ";
-
-        params.where += "IsPrivate=FALSE ";
-      }
-      const iModel = this._iModel;
-      const ids = iModel.queryEntityIds(params);
-      for (const id of ids) {
-        try {
-          const props = iModel.elements.getElementJson({ id });
-          viewList.push({ id, name: props.code.value!, class: props.classFullName }); // eslint-disable-line @typescript-eslint/no-non-null-assertion
-        } catch (error) {
-          if (ids.size === 1)
-            throw error; // if they're asking for more than one view, don't throw on error.
-        }
-      }
-
-      return viewList;
-    }
   }
 
   /** Represents the current state of a pollable tile content request.
-* Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
-* @internal
-*/
+   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+   * @internal
+   */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.

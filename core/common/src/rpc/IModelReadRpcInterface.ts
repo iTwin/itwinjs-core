@@ -30,7 +30,7 @@ import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
 import {
   CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow,
-  ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ViewStateLoadProps, ViewStateProps,
 } from "../ViewProps";
 import { RpcResponseCacheControl } from "./core/RpcConstants";
 import { RpcNotFoundResponse } from "./core/RpcControl";
@@ -113,7 +113,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
-  /** @deprecated in 3.x use queryViewThumbnail. */
+  /** @deprecated in 3.x use ViewStore apis. */
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
@@ -137,8 +137,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-di
   public async generateElementMeshes(_iModelToken: IModelRpcProps, _props: ElementMeshRequestProps): Promise<Uint8Array> {
     return this.forward(arguments);
   }
-  public async getViewList(_iModelToken: IModelRpcProps, _queryParams: ViewQueryParams): Promise<ViewListEntry[]> { return this.forward(arguments); }
-
   /** @internal */
   public async callViewStore(_iModelToken: IModelRpcProps, _version: string, _forWrite: boolean, _methodName: string, ..._args: any[]): Promise<any> { return this.forward(arguments); }
 }

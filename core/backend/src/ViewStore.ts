@@ -10,13 +10,13 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequire
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewListEntry,
-  ViewQueryParams, ViewStoreRpc,
+  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 
 import type { IModelDb } from "./IModelDb";
+import { SqliteStatement } from "./SqliteStatement";
 
 // cspell:ignore nocase rowid
 
@@ -43,7 +43,7 @@ import type { IModelDb } from "./IModelDb";
  * When you load a ViewDefinition from the ViewStore, the member may be used to load the DisplayStyle, CategorySelector,
  * ModelSelector, RenderTimeline, etc.
  *
- * A ViewStoreId is a string that uniquely identifies a row in one of the ViewStore's internal tables. The string holds a base-36 integer
+ * A IdString is a string that uniquely identifies a row in one of the ViewStore's internal tables. The string holds a base-36 integer
  * that starts with "@" (vs. "0x" for ElementIds). For example, if you store a DisplayStyle and it is assigned the ViewStore Id "@y1", then you
  * should set the ViewDefinitionProps's displayStyle member to "@y1". When you load the ViewDefinition from the ViewStore, the "@Y1" may be used to
  * alo load the DisplayStyle from the ViewStore.
@@ -152,7 +152,12 @@ export namespace ViewStore {
   /** determine if a string is a guid row string (base-36 integer with a leading "^") */
   const isGuidRowString = (id?: string) => true === id?.startsWith("^");
 
-  export const rowIdFromString = (id: RowString): RowId => {
+  type RowIdOrString = RowId | RowString;
+
+  export const toRowId = (id: RowIdOrString): RowId => {
+    if (typeof id === "number")
+      return id;
+
     if (!ViewStoreRpc.isViewStoreId(id) && !isGuidRowString(id))
       throw new Error(`invalid value: ${id}`);
     return parseInt(id.slice(1), 36);
@@ -383,7 +388,7 @@ export namespace ViewStore {
       return this.deleteFromTable(tableName.searches, id);
     }
     public deleteThumbnailSync(id: RowString) {
-      return this.deleteFromTable(tableName.thumbnails, rowIdFromString(id));
+      return this.deleteFromTable(tableName.thumbnails, toRowId(id));
     }
     public async deleteThumbnail(arg: { id: RowString }) {
       return this.deleteThumbnailSync(arg.id);
@@ -440,15 +445,15 @@ export namespace ViewStore {
     }
 
     /** read a ModelSelector given a rowId */
-    public getModelSelector(id: RowId): SelectorRow | undefined {
+    public getModelSelectorRow(id: RowId): SelectorRow | undefined {
       return this.getTableRow(tableName.modelSelectors, id);
     }
     /** read a CategorySelector given a rowId */
-    public getCategorySelector(id: RowId): SelectorRow | undefined {
+    public getCategorySelectorRow(id: RowId): SelectorRow | undefined {
       return this.getTableRow(tableName.categorySelectors, id);
     }
     /** read a DisplayStyle given a rowId */
-    public getDisplayStyle(id: RowId): DisplayStyleRow | undefined {
+    public getDisplayStyleRow(id: RowId): DisplayStyleRow | undefined {
       return this.getTableRow(tableName.displayStyles, id);
     }
     public getTimelineRow(id: RowId): TimelineRow | undefined {
@@ -579,10 +584,10 @@ export namespace ViewStore {
       return this.findByName(tableName.searches, name);
     }
 
-    private getViewInfoSync(args: { id: ViewStoreRpc.ViewId }): ViewStoreRpc.ViewInfo | undefined {
+    private getViewInfoSync(args: { id: ViewStoreRpc.IdString }): ViewStoreRpc.ViewInfo | undefined {
       const maybeId = (rowId?: RowId): string | undefined => rowId ? tableRowIdToString(rowId) : undefined;
       return this.withPreparedSqliteStatement(`SELECT owner,className,name,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE id=?`, (stmt) => {
-        const viewId = rowIdFromString(args.id);
+        const viewId = toRowId(args.id);
         stmt.bindInteger(1, viewId);
         return stmt.nextRow() ? {
           id: args.id,
@@ -598,7 +603,7 @@ export namespace ViewStore {
         } : undefined;
       });
     }
-    public async getViewInfo(args: { id: ViewStoreRpc.ViewId }): Promise<ViewStoreRpc.ViewInfo | undefined> {
+    public async getViewInfo(args: { id: ViewStoreRpc.IdString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
       return this.getViewInfoSync(args);
     }
 
@@ -615,21 +620,7 @@ export namespace ViewStore {
       return list;
     }
 
-    public findViewsByClass(className: string[]): RowId[] {
-      if (className.length === 0)
-        return [];
-      const sql = `SELECT Id FROM ${tableName.views} WHERE className IN(${className.map(() => "?").join(",")}) ORDER BY Id ASC`;
-      return this.withSqliteStatement(sql, (stmt) => {
-        for (let i = 0; i < className.length; ++i)
-          stmt.bindString(i + 1, className[i]);
-
-        const list: RowId[] = [];
-        while (stmt.nextRow())
-          list.push(stmt.getValueInteger(0));
-        return list;
-      });
-    }
-    public findTagsForView(viewId: RowId): RowId[] {
+    public findTagIdsForView(viewId: RowId): RowId[] {
       return this.withSqliteStatement(`SELECT tagId FROM ${tableName.taggedViews} WHERE viewId=? `, (stmt) => {
         stmt.bindInteger(1, viewId);
         const list: RowId[] = [];
@@ -658,7 +649,7 @@ export namespace ViewStore {
       return this.elements.getIdFromFederationGuid(this.getGuid(guidRow));
     }
     private fromGuidRowString(id?: string) {
-      return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(rowIdFromString(id));
+      return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(toRowId(id));
     }
     private fromCompressedGuidRows(guidRows: CompressedId64Set): CompressedId64Set {
       const result = new Set<Id64String>();
@@ -688,7 +679,7 @@ export namespace ViewStore {
       if (id === undefined)
         return;
       if (typeof id === "string" && id.startsWith("^")) {
-        const elId = this.fromGuidRow(rowIdFromString(id));
+        const elId = this.fromGuidRow(toRowId(id));
         if (undefined !== elId) {
           base[memberName] = elId;
           return;
@@ -699,7 +690,7 @@ export namespace ViewStore {
 
     private verifyRowId(table: string, rowIdString: RowString): RowId {
       try {
-        const rowId = rowIdFromString(rowIdString);
+        const rowId = toRowId(rowIdString);
         this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=? `, (stmt) => {
           stmt.bindInteger(1, rowId);
           if (!stmt.nextRow())
@@ -726,7 +717,7 @@ export namespace ViewStore {
     private scriptFromGuids(script: RenderSchedule.ScriptProps, omitElementIds: boolean): RenderSchedule.ScriptProps {
       const scriptProps: RenderSchedule.ScriptProps = [];
       for (const model of script) {
-        const modelId = this.fromGuidRow(rowIdFromString(model.modelId));
+        const modelId = this.fromGuidRow(toRowId(model.modelId));
         if (modelId) {
           model.modelId = modelId;
           scriptProps.push(model);
@@ -765,8 +756,8 @@ export namespace ViewStore {
       const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.categories) });
       return tableRowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadCategorySelectorSync(args: { id: RowString }): CategorySelectorProps {
-      const row = this.getCategorySelector(rowIdFromString(args.id));
+    public getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps {
+      const row = this.getCategorySelectorRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
@@ -775,8 +766,8 @@ export namespace ViewStore {
       props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(json.categories));
       return props;
     }
-    public async loadCategorySelector(args: { id: RowString }): Promise<CategorySelectorProps> {
-      return this.loadCategorySelectorSync(args);
+    public async getCategorySelector(args: { id: RowString }): Promise<CategorySelectorProps> {
+      return this.getCategorySelectorSync(args);
     }
 
     public async addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<RowString> {
@@ -786,8 +777,8 @@ export namespace ViewStore {
       const json = JSON.stringify({ models: this.toCompressedGuidRows(args.models) });
       return tableRowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
-    public loadModelSelectorSync(args: { id: RowString }): ModelSelectorProps {
-      const row = this.getModelSelector(rowIdFromString(args.id));
+    public getModelSelectorSync(args: { id: RowString }): ModelSelectorProps {
+      const row = this.getModelSelectorRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
@@ -796,8 +787,8 @@ export namespace ViewStore {
       props.models = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(json.models));
       return props;
     }
-    public async loadModelSelector(args: { id: RowString }): Promise<ModelSelectorProps> {
-      return this.loadModelSelectorSync(args);
+    public async getModelSelector(args: { id: RowString }): Promise<ModelSelectorProps> {
+      return this.getModelSelectorSync(args);
     }
     public async addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
       const timeline = JSON.parse(JSON.stringify(args.timeline));
@@ -808,8 +799,8 @@ export namespace ViewStore {
       return tableRowIdToString(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
     }
 
-    public loadTimelineSync(args: { id: RowString }): RenderTimelineProps {
-      const row = this.getTimelineRow(rowIdFromString(args.id));
+    public getTimelineSync(args: { id: RowString }): RenderTimelineProps {
+      const row = this.getTimelineRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("Timeline not found");
 
@@ -817,8 +808,8 @@ export namespace ViewStore {
       props.script = JSON.stringify(this.scriptFromGuids(JSON.parse(row.json), false));
       return props;
     }
-    public async loadTimeline(args: { id: RowString }): Promise<RenderTimelineProps> {
-      return this.loadTimelineSync(args);
+    public async getTimeline(args: { id: RowString }): Promise<RenderTimelineProps> {
+      return this.getTimelineSync(args);
     }
 
     /** add a DisplayStyleProps to the ViewStore */
@@ -864,8 +855,8 @@ export namespace ViewStore {
       return tableRowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
     }
 
-    public loadDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
-      const row = this.getDisplayStyle(rowIdFromString(args.id));
+    public getDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
+      const row = this.getDisplayStyleRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("DisplayStyle not found");
 
@@ -912,8 +903,8 @@ export namespace ViewStore {
       return props;
     }
 
-    public async loadDisplayStyle(args: { id: RowString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps> {
-      return this.loadDisplayStyleSync(args);
+    public async getDisplayStyle(args: { id: RowString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps> {
+      return this.getDisplayStyleSync(args);
     }
 
     public addViewDefinition(args: { viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
@@ -930,23 +921,30 @@ export namespace ViewStore {
       this.toGuidRowMember(viewDef, "baseModelId");
       this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
-      const maybeRow = (rowString: RowString) => rowString ? rowIdFromString(rowString) : undefined;
+      const maybeRow = (rowString: RowString) => rowString ? toRowId(rowString) : undefined;
 
-      return this.addViewRow({
-        name,
-        className: viewDef.classFullName,
-        owner: args.owner,
-        groupId,
-        isPrivate: args.isPrivate,
-        json: stringifyProps(viewDef),
-        modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
-        categorySel: maybeRow(viewDef.categorySelectorId),
-        displayStyle: maybeRow(viewDef.displayStyleId),
-      });
+      try {
+        return this.addViewRow({
+          name,
+          className: viewDef.classFullName,
+          owner: args.owner,
+          groupId,
+          isPrivate: args.isPrivate,
+          json: stringifyProps(viewDef),
+          modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
+          categorySel: maybeRow(viewDef.categorySelectorId),
+          displayStyle: maybeRow(viewDef.displayStyleId),
+        });
+      } catch (e) {
+        const err = e as SqliteStatement.DbError;
+        if (err.errorId === "DuplicateValue")
+          err.message = `View "${name}" already exists`;
+        throw e;
+      }
     }
 
-    public loadViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps {
-      const row = this.getViewRow(rowIdFromString(args.id));
+    public getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps {
+      const row = this.getViewRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("View not found");
 
@@ -955,24 +953,24 @@ export namespace ViewStore {
       this.fromGuidRowMember(props.jsonProperties?.viewDetails, "acs");
       return props;
     }
-    public async loadViewDefinition(args: { id: RowString }): Promise<ViewDefinitionProps> {
-      return this.loadViewDefinitionSync(args);
+    public async getViewDefinition(args: { id: RowString }): Promise<ViewDefinitionProps> {
+      return this.getViewDefinitionSync(args);
     }
 
-    public async addOrReplaceThumbnail(args: { viewId: ViewStoreRpc.ViewId, thumbnail: ThumbnailProps, owner?: string }) {
-      const viewRow = this.getViewRow(rowIdFromString(args.viewId));
+    public async addOrReplaceThumbnail(args: { viewId: ViewStoreRpc.IdString, thumbnail: ThumbnailProps, owner?: string }) {
+      const viewRow = this.getViewRow(toRowId(args.viewId));
       if (viewRow === undefined)
         throw new Error("View not found");
       const format: ThumbnailFormatProps = { format: args.thumbnail.format, height: args.thumbnail.height, width: args.thumbnail.width };
-      return tableRowIdToString(this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: rowIdFromString(args.viewId), format, owner: args.owner }));
+      return tableRowIdToString(this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner }));
     }
 
-    public loadThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined {
-      const row = this.getThumbnailRow(rowIdFromString(args.viewId));
+    public getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined {
+      const row = this.getThumbnailRow(toRowId(args.viewId));
       return row ? { image: row.data, format: row.format.format, height: row.format.height, width: row.format.width } : undefined;
     }
-    public async loadThumbnail(args: { viewId: RowString }): Promise<ThumbnailProps | undefined> {
-      return this.loadThumbnailSync(args);
+    public async getThumbnail(args: { viewId: RowString }): Promise<ThumbnailProps | undefined> {
+      return this.getThumbnailSync(args);
     }
     // find a group with the specified name using path syntax (e.g., "group1/design/issues"). If the group does not exist, return 0.
     // If groupName starts with "@", then it is considered to be a group id and this function verifies that it exists and throws if it does not.
@@ -1016,7 +1014,7 @@ export namespace ViewStore {
       return id ? this.getViewRow(id) : undefined;
     }
 
-    public async getViewGroupInfo(args: { id: ViewStoreRpc.ViewId }): Promise<ViewStoreRpc.ViewGroupInfo | undefined> {
+    public async getViewGroupInfo(args: { id: ViewStoreRpc.IdString }): Promise<ViewStoreRpc.ViewGroupInfo | undefined> {
       const groupId = args.id ? this.findViewGroup(args.id) : defaultViewGroupId;
       const groupRow = groupId ? this.getViewGroup(groupId) : undefined;
       if (groupRow === undefined)
@@ -1031,9 +1029,9 @@ export namespace ViewStore {
       return info;
     }
 
-    public async changeDefaultViewId(args: { defaultView: ViewStoreRpc.ViewId, group?: ViewStoreRpc.ViewGroupSpec }) {
+    public async changeDefaultViewId(args: { defaultView: ViewStoreRpc.IdString, group?: ViewStoreRpc.ViewGroupSpec }) {
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
-      const viewRow = this.getViewRow(rowIdFromString(args.defaultView));
+      const viewRow = this.getViewRow(toRowId(args.defaultView));
       if (viewRow === undefined)
         throw new Error("View not found");
       if (viewRow.groupId !== groupId)
@@ -1047,39 +1045,30 @@ export namespace ViewStore {
       return this.updateViewGroupJson(groupId, groupRow.json);
     }
 
-    public getTagsForView(viewId: RowId) {
-      const tags: string[] = [];
+    public getTagsForView(viewId: RowIdOrString): ViewStoreRpc.TagName[] | undefined {
+      const tags: ViewStoreRpc.TagName[] = [];
       this.withPreparedSqliteStatement(`SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id = v.tagId WHERE v.viewId=? `, (stmt) => {
-        stmt.bindInteger(1, viewId);
+        stmt.bindInteger(1, toRowId(viewId));
         while (stmt.nextRow())
           tags.push(stmt.getValueString(0));
       });
       return tags.length === 0 ? undefined : tags;
     }
 
-    public iterateViewQuery(queryParams: ViewQueryParams, callback: (rowId: RowId, view: ViewListEntry) => void) {
+    public iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void) {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,groupId,private FROM ${tableName.views} WHERE groupId=? `;
+      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=?`;
       if (queryParams.owner)
         sql += " AND owner=@owner";
       else
         sql += " AND private!=1";
-      if (queryParams.from) {
-        if (queryParams.only !== false) {
-          sql += ` AND className = '${queryParams.from}'`;
-        } else {
-          if (queryParams.from === "BisCore:DrawingViewDefinition")
-            sql += ` AND className IN('BisCore:DrawingViewDefinition', 'BisCore:SheetViewDefinition')`;
-          else if (queryParams.from === "BisCore:SpatialViewDefinition")
-            sql += ` AND className IN('BisCore:OrthographicViewDefinition', 'BisCore:SpatialViewDefinition')`;
-          else
-            sql += ` AND className = '${queryParams.from}'`;
-        }
-      }
+      if (queryParams.classNames)
+        sql += ` AND className IN(${queryParams.classNames.map((className) => `'${className}'`).join(",")})`;
       if (queryParams.nameSearch)
         sql += ` AND name ${queryParams.nameCompare ?? "="} @name`;
       if (queryParams.tags)
         sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${queryParams.tags.map((tag) => `'${tag}'`).join(",")})))`;
+      sql += " ORDER BY name";
       if (queryParams.limit)
         sql += ` LIMIT ${queryParams.limit} `;
       if (queryParams.offset)
@@ -1092,36 +1081,26 @@ export namespace ViewStore {
         if (queryParams.owner)
           stmt.bindString("@owner", queryParams.owner);
 
-        while (stmt.nextRow()) {
-          const rowId = stmt.getValueInteger(0);
-          callback(
-            rowId,
-            {
-              id: tableRowIdToString(rowId),
-              class: stmt.getValueString(1),
-              name: stmt.getValueString(2),
-              owner: stmt.getValueString(3),
-              groupId: tableRowIdToString(stmt.getValueInteger(4)),
-              isPrivate: stmt.getValueBoolean(5),
-            });
-        }
+        while (stmt.nextRow())
+          callback(stmt.getValueInteger(0));
       });
     }
 
-    public queryViewListSync(queryParams: ViewQueryParams): ViewListEntry[] {
-      const entries: ViewListEntry[] = [];
-      this.iterateViewQuery(queryParams, (rowId, entry) => {
-        entry.tags = this.getTagsForView(rowId);
-        entries.push(entry);
+    public queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[] {
+      const entries: ViewStoreRpc.ViewInfo[] = [];
+      this.iterateViewQuery(queryParams, (rowId) => {
+        const view = this.getViewInfoSync({ id: tableRowIdToString(rowId) });
+        if (view !== undefined)
+          entries.push(view);
       });
       return entries;
     }
-    public async queryViewList(queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
-      return this.queryViewListSync(queryParams);
+    public async queryViews(queryParams: ViewStoreRpc.QueryParams): Promise<ViewStoreRpc.ViewInfo[]> {
+      return this.queryViewsSync(queryParams);
     }
 
-    public async addTagsToView(args: { viewId: RowString, tags: string[], owner?: string }) {
-      const viewId = rowIdFromString(args.viewId);
+    public async addTagsToView(args: { viewId: RowIdOrString, tags: string[], owner?: string }) {
+      const viewId = toRowId(args.viewId);
       for (const tag of args.tags) {
         let tagId = this.findTagByName(tag);
         if (tagId === 0)
@@ -1129,14 +1108,14 @@ export namespace ViewStore {
         this.addTagToView({ viewId, tagId });
       }
     }
-    public async removeTagFromView(args: { viewId: RowString, tag: string }) {
-      const viewId = rowIdFromString(args.viewId);
+    public async removeTagFromView(args: { viewId: RowIdOrString, tag: string }) {
+      const viewId = toRowId(args.viewId);
       const tagId = this.findTagByName(args.tag);
       if (tagId !== 0)
         this.deleteViewTag({ viewId, tagId });
     }
 
-    public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.ViewId> {
+    public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString> {
       const owner = args.owner;
       if (args.viewDefinition.categorySelectorId) {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
@@ -1167,8 +1146,8 @@ export namespace ViewStore {
       return viewId;
     }
 
-    public async deleteView(viewId: RowString) {
-      const rowId = rowIdFromString(viewId);
+    public async deleteView(viewId: RowIdOrString) {
+      const rowId = toRowId(viewId);
       const viewRow = this.getViewRow(rowId);
       if (viewRow === undefined)
         throw new Error("View not found");
@@ -1201,15 +1180,13 @@ export namespace ViewStore {
   const viewDbName = "ViewDb" as const;
 
   export interface ReadMethods extends ViewStoreRpc.Reader {
-    findViewsByClass(className: string[]): RowId[];
-    getDefaultViewIdSync(args: { group?: ViewStoreRpc.ViewGroupSpec }): RowString | undefined;
     getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewRow | undefined;
-    loadCategorySelectorSync(args: { id: RowString }): CategorySelectorProps;
-    loadDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps;
-    loadModelSelectorSync(args: { id: RowString }): ModelSelectorProps;
-    loadThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
-    loadViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
-    queryViewList(queryParams: ViewQueryParams): ViewListEntry[];
+    getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps;
+    getDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps;
+    getModelSelectorSync(args: { id: RowString }): ModelSelectorProps;
+    getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
+    getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
+    queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewGroupInfo[];
   }
 
   export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;

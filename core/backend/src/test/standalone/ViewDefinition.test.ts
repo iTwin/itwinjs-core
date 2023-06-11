@@ -82,7 +82,7 @@ describe.only("ViewDefinition", () => {
     const ms1 = iModel.elements.getElement<ModelSelector>(modelSelectorId);
     const ms1Row = await vs1.addModelSelector({ name: ms1.code.value, models: ms1.models });
     expect(ms1Row).equal("@1");
-    const ms1out = vs1.loadModelSelectorSync({ id: ms1Row });
+    const ms1out = vs1.getModelSelectorSync({ id: ms1Row });
     expect(ms1out.classFullName).equal("BisCore:ModelSelector");
     expect(ms1out.models.length).equal(2);
     expect(ms1out.models[0]).equal(modelId);
@@ -91,7 +91,7 @@ describe.only("ViewDefinition", () => {
     const cs1 = iModel.elements.getElement<CategorySelector>(categorySelectorId);
     const cs1Row = await vs1.addCategorySelector({ categories: cs1.categories });
     expect(cs1Row).equal("@1");
-    const cs1out = vs1.loadCategorySelectorSync({ id: cs1Row });
+    const cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
     expect(cs1out.classFullName).equal("BisCore:CategorySelector");
     expect(cs1out.categories.length).equal(1);
     expect(cs1out.categories[0]).equal(spatialCategoryId);
@@ -149,13 +149,13 @@ describe.only("ViewDefinition", () => {
     vs1.elements = id1Mapper;
     const ds1Row = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
     expect(ds1Row).equal("@1");
-    const ds1out = vs1.loadDisplayStyleSync({ id: ds1Row });
+    const ds1out = vs1.getDisplayStyleSync({ id: ds1Row });
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");
     expect(ds1out.jsonProperties?.styles).deep.equal(JSON.parse(JSON.stringify(styles)));
 
     const tl1Row = await vs1.addTimeline({ name: "TestRenderTimeline", timeline: styles.scheduleScript, owner: "owner2" });
     expect(tl1Row).equal("@1");
-    const tl1out = vs1.loadTimelineSync({ id: tl1Row });
+    const tl1out = vs1.getTimelineSync({ id: tl1Row });
     expect(tl1out.classFullName).equal("BisCore:RenderTimeline");
     expect(tl1out.id).equal(tl1Row);
     expect(tl1out.code.value).equal("TestRenderTimeline");
@@ -171,7 +171,7 @@ describe.only("ViewDefinition", () => {
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
     const v1 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
     expect(v1).equal("@1");
-    const viewDefOut = vs1.loadViewDefinitionSync({ id: v1 }) as SpatialViewDefinitionProps;
+    const viewDefOut = vs1.getViewDefinitionSync({ id: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");
     expect(viewDefOut.classFullName).equal("BisCore:SpatialViewDefinition");
     expect(viewDefOut.modelSelectorId).equal(ms1Row);
@@ -187,28 +187,28 @@ describe.only("ViewDefinition", () => {
     const v2 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "done"] });
     await vs1.addTagsToView({ viewId: v2, tags: ["problems", "finished", "big"] });
 
-    let tags = vs1.getTagsForView(ViewStore.rowIdFromString(v2));
+    let tags = vs1.getTagsForView(v2);
     expect(tags?.length).equal(4);
     expect(tags).includes("big");
     expect(tags).includes("done");
     await vs1.removeTagFromView({ viewId: v2, tag: "done" });
-    tags = vs1.getTagsForView(ViewStore.rowIdFromString(v2));
+    tags = vs1.getTagsForView(v2);
     expect(tags).not.includes("done");
     expect(tags?.length).equal(3);
 
     // v1 and v2 share modelselector, categoryselector, and displaystyle so when v2 is deleted they should not be deleted
     await vs1.deleteView(v2);
-    expect(() => vs1.loadViewDefinitionSync({ id: v2 })).throws("View not found");
-    expect(vs1.getDisplayStyle(1)).not.undefined;
-    expect(vs1.getModelSelector(1)).not.undefined;
-    expect(vs1.getCategorySelector(1)).not.undefined;
+    expect(() => vs1.getViewDefinitionSync({ id: v2 })).throws("View not found");
+    expect(vs1.getDisplayStyleRow(1)).not.undefined;
+    expect(vs1.getModelSelectorRow(1)).not.undefined;
+    expect(vs1.getCategorySelectorRow(1)).not.undefined;
 
     // the categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
     await vs1.deleteView(v1);
-    expect(() => vs1.loadViewDefinitionSync({ id: v1 })).throws("View not found");
-    expect(vs1.getDisplayStyle(1)).undefined;
-    expect(vs1.getCategorySelector(1)).undefined;
-    expect(vs1.getModelSelector(1)).not.undefined; // modelselector has a name so it should not be deleted
+    expect(() => vs1.getViewDefinitionSync({ id: v1 })).throws("View not found");
+    expect(vs1.getDisplayStyleRow(1)).undefined;
+    expect(vs1.getCategorySelectorRow(1)).undefined;
+    expect(vs1.getModelSelectorRow(1)).not.undefined; // modelselector has a name so it should not be deleted
 
     // attempt to create a ViewDefinition element with invalid properties
     assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid");

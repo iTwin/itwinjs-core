@@ -110,11 +110,11 @@ describe.only("ViewStore", function (this: Suite) {
     expect(g3Updated.name).equals("group3-updated");
     expect(g3Updated.json).equals("group3-json-updated");
 
-    expect(vs1.findViewsByClass(["spatial"]).length).equals(101);
-    expect(vs1.findViewsByClass(["spatial2"]).length).equals(1);
-    expect(vs1.findViewsByClass(["spatial", "spatial2", "blah"]).length).equals(102);
-    expect(vs1.findViewsByClass([]).length).equals(0);
-    expect(vs1.findViewsByClass(["blah"]).length).equals(0);
+    expect(vs1.queryViewsSync({ group: "group2", classNames: ["spatial"] }).length).equals(100);
+    expect(vs1.queryViewsSync({ group: ViewStore.tableRowIdToString(g4), classNames: ["spatial2"] }).length).equals(1);
+    expect(vs1.queryViewsSync({ classNames: ["spatial", "spatial3", "blah"] }).length).equals(3);
+    expect(vs1.queryViewsSync({ classNames: [] }).length).equals(0);
+    expect(vs1.queryViewsSync({ classNames: ["blah"] }).length).equals(0);
     expect((await vs1.findViewsByOwner({ owner: "owner1" })).length).equals(101);
 
     const thumbnail1 = new Uint8Array([2, 33, 23, 0, 202]);
@@ -141,11 +141,11 @@ describe.only("ViewStore", function (this: Suite) {
     vs1.addCategorySelectorRow({ name: "cat2", json: "cat2-json" });
     const cat1Id = vs1.findCategorySelectorByName("cat1");
     expect(cat1Id).equals(1);
-    let cat1 = vs1.getCategorySelector(cat1Id)!;
+    let cat1 = vs1.getCategorySelectorRow(cat1Id)!;
     expect(cat1.name).equals("cat1");
     expect(cat1.json).equals("cat1-json");
     await vs1.updateCategorySelectorJson(cat1Id, "cat1-json-updated");
-    cat1 = vs1.getCategorySelector(cat1Id)!;
+    cat1 = vs1.getCategorySelectorRow(cat1Id)!;
     expect(cat1.json).equals("cat1-json-updated");
 
     vs1.deleteCategorySelector(cat1Id);
@@ -155,7 +155,7 @@ describe.only("ViewStore", function (this: Suite) {
     vs1.addDisplayStyleRow({ name: "style2", json: "style2-json" });
     const style1Id = vs1.findDisplayStyleByName("style1");
     expect(style1Id).equals(1);
-    const style1 = vs1.getDisplayStyle(style1Id)!;
+    const style1 = vs1.getDisplayStyleRow(style1Id)!;
     expect(style1.name).equals("style1");
     expect(style1.json).equals("style1-json");
     await vs1.updateDisplayStyleName(style1Id, "style1-updated");
@@ -163,7 +163,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(style1UpdatedNameId).equals(style1Id);
 
     await vs1.updateDisplayStyleJson(style1Id, "style1-json-updated");
-    const style1Updated = vs1.getDisplayStyle(style1Id)!;
+    const style1Updated = vs1.getDisplayStyleRow(style1Id)!;
     expect(style1Updated.json).equals("style1-json-updated");
 
     vs1.deleteDisplayStyle(style1Id);
@@ -174,10 +174,10 @@ describe.only("ViewStore", function (this: Suite) {
     const ms2 = vs1.addModelSelectorRow({ json: "model2-json" });
     const model1Id = vs1.findModelSelectorByName("model1");
     expect(model1Id).equals(1);
-    const model1 = vs1.getModelSelector(model1Id)!;
+    const model1 = vs1.getModelSelectorRow(model1Id)!;
     expect(model1.name).equals("model1");
     expect(model1.json).equals("model1-json");
-    const model2 = vs1.getModelSelector(ms2)!;
+    const model2 = vs1.getModelSelectorRow(ms2)!;
     expect(model2.name).undefined;
     expect(model2.json).equals("model2-json");
 
@@ -185,10 +185,10 @@ describe.only("ViewStore", function (this: Suite) {
     const model1UpdatedNameId = vs1.findModelSelectorByName("model1-updated");
     expect(model1UpdatedNameId).equals(model1Id);
     await vs1.updateModelSelectorName(model1Id, undefined);
-    expect(vs1.getModelSelector(model1Id)!.name).undefined;
+    expect(vs1.getModelSelectorRow(model1Id)!.name).undefined;
 
     await vs1.updateModelSelectorJson(model1Id, "model1-json-updated");
-    const model1Updated = vs1.getModelSelector(model1Id)!;
+    const model1Updated = vs1.getModelSelectorRow(model1Id)!;
     expect(model1Updated.json).equals("model1-json-updated");
 
     vs1.deleteModelSelector(model1Id);
@@ -244,37 +244,37 @@ describe.only("ViewStore", function (this: Suite) {
     vs1.addViewRow({ className: "BisCore:SheetViewDefinition", name: "sheet 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
     vs1.addViewRow({ className: "BisCore:DrawingViewDefinition", name: "drawing 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
 
-    let views = vs1.queryViewListSync({ group: "/" });
+    let views = vs1.queryViewsSync({ group: "/" });
     expect(views.length).equals(3);
     expect(views[0].name).equals("another view");
-    expect(vs1.queryViewListSync({ group: "group1" }).length).equals(0);
-    expect(vs1.queryViewListSync({ group: "group2" }).length).equal(100);
-    expect(vs1.queryViewListSync({ group: "group2", offset: 20, limit: 10 }).length).equals(10);
-    expect(vs1.queryViewListSync({ group: "group2", offset: 20, limit: 100 }).length).equals(80);
-    views = vs1.queryViewListSync({ group: "group2", nameSearch: "%20%", nameCompare: "LIKE" });
+    expect(vs1.queryViewsSync({ group: "group1" }).length).equals(0);
+    expect(vs1.queryViewsSync({ group: "group2" }).length).equal(100);
+    expect(vs1.queryViewsSync({ group: "group2", offset: 20, limit: 10 }).length).equals(10);
+    expect(vs1.queryViewsSync({ group: "group2", offset: 20, limit: 100 }).length).equals(80);
+    views = vs1.queryViewsSync({ group: "group2", nameSearch: "%20%", nameCompare: "LIKE" });
     expect(views.length).equals(1);
-    views = vs1.queryViewListSync({ group: "group2", nameSearch: "*2*", nameCompare: "GLOB" });
+    expect(views[0].name).equals("test view 20");
+    views = vs1.queryViewsSync({ group: "group2", nameSearch: "*2*", nameCompare: "GLOB" });
     expect(views.length).equals(19);
-    expect(vs1.queryViewListSync({ group: "group2", tags: ["tag1"] }).length).equal(0);
-    expect(vs1.queryViewListSync({ tags: ["tag1"] }).length).equal(1);
-    views = vs1.queryViewListSync({ tags: ["tag2", "tag1"] });
+    expect(vs1.queryViewsSync({ group: "group2", tags: ["tag1"] }).length).equal(0);
+    expect(vs1.queryViewsSync({ tags: ["tag1"] }).length).equal(1);
+    views = vs1.queryViewsSync({ tags: ["tag2", "tag1"] });
     expect(views.length).equal(3);
     expect(views[2].tags?.length).equal(3);
-    views = vs1.queryViewListSync({ owner: "owner10" });
+    views = vs1.queryViewsSync({ owner: "owner10" });
     expect(views.length).equal(6);
-    views = vs1.queryViewListSync({ owner: "owner10", nameSearch: "my%", nameCompare: "LIKE" });
+    views = vs1.queryViewsSync({ owner: "owner10", nameSearch: "my%", nameCompare: "LIKE" });
     expect(views.length).equal(2);
-    expect(vs1.queryViewListSync({ owner: "owner10", from: "BisCore:SpatialViewDefinition" }).length).equal(1);
-    expect(vs1.queryViewListSync({ owner: "owner10", only: true, from: "BisCore:SpatialViewDefinition" }).length).equal(1);
-    expect(vs1.queryViewListSync({ owner: "owner10", only: false, from: "BisCore:SpatialViewDefinition" }).length).equal(2);
-    expect(vs1.queryViewListSync({ owner: "owner10", from: "BisCore:DrawingViewDefinition" }).length).equal(1);
-    expect(vs1.queryViewListSync({ owner: "owner10", only: false, from: "BisCore:DrawingViewDefinition" }).length).equal(2);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:SpatialViewDefinition"] }).length).equal(1);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:SpatialViewDefinition", "BisCore:OrthographicViewDefinition"] }).length).equal(2);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition"] }).length).equal(1);
+    expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition", "BisCore:SheetViewDefinition"] }).length).equal(2);
 
     vs1.deleteTag(2);
-    const tagIdsAfterDelete = vs1.findTagsForView(v1Id);
+    const tagIdsAfterDelete = vs1.getTagsForView(v1Id)!;
     expect(tagIdsAfterDelete.length).equals(2);
-    expect(tagIdsAfterDelete[0]).equals(tag1Id);
-    expect(tagIdsAfterDelete[1]).equals(3);
+    expect(tagIdsAfterDelete[0]).equals("tag1");
+    expect(tagIdsAfterDelete[1]).equals("test tag 0");
 
     await vs1.addSearch({ name: "search1", json: "search1-json" });
     const search2 = await vs1.addSearch({ name: "search2", json: "search2-json" });
@@ -314,12 +314,12 @@ describe.only("ViewStore", function (this: Suite) {
       expect(guids.indexOf(guid)).not.equals(-1);
       const rowString1 = ViewStore.tableRowIdToString(row);
       expect(rowString1.startsWith("@")).true;
-      expect(ViewStore.rowIdFromString(rowString1)).equals(row); // round trip
+      expect(ViewStore.toRowId(rowString1)).equals(row); // round trip
     });
     expect(count).equals(nGuids);
 
     const largeNumber = 0x7ffffffffffff;
-    expect(ViewStore.rowIdFromString(ViewStore.tableRowIdToString(largeNumber))).equals(largeNumber);
+    expect(ViewStore.toRowId(ViewStore.tableRowIdToString(largeNumber))).equals(largeNumber);
 
     vs1.vacuum();
   });

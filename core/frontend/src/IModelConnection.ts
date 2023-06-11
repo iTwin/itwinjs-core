@@ -18,7 +18,7 @@ import {
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
-  ViewIdString, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
+  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -775,7 +775,14 @@ export class SnapshotConnection extends IModelConnection {
 export namespace IModelConnection { // eslint-disable-line no-redeclare
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
-  export type ViewSpec = ViewListEntry;
+  export interface ViewSpec {
+    /** The element id of the ViewDefinition. This string may be passed to [[IModelConnection.Views.load]]. */
+    id: string;
+    /** The name of the view. This string may be used to create a list with the possible view names. */
+    name: string;
+    /** The fullClassName of the ViewDefinition. Useful for sorting the list of views. */
+    class: string;
+  }
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models implements Iterable<ModelState> {
@@ -1154,7 +1161,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Query for an array of ViewDefinitionProps
      * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
-     * @deprecated in 4.1. Use [[getViewList]] instead.
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const iModel = this._iModel;
@@ -1187,8 +1193,13 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
-      const iModel = this._iModel;
-      return iModel.isClosed ? [] : IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getViewList(iModel.getRpcProps(), queryParams);
+      const views: ViewSpec[] = [];
+      const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
+      viewProps.forEach((viewProp) => {
+        views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName });
+      });
+
+      return views;
     }
 
     /** Query the Id of the default view associated with this iModel. Applications can choose to use this as the default view to which to open a viewport upon startup, or the initial selection

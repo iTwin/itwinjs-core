@@ -21,7 +21,7 @@ import { RenderSchedule } from "./RenderSchedule";
 /** The id of either an element or an entry in a ViewStore.
  * @public
  */
-export type ViewIdString = Id64String | ViewStoreRpc.ViewId;
+export type ViewIdString = Id64String | ViewStoreRpc.IdString;
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
@@ -122,20 +122,6 @@ export interface ViewStateLoadProps {
   displayStyle?: DisplayStyleLoadProps;
 }
 
-/** @beta */
-export interface ViewListEntry {
-  /** The Id of the ViewDefinition. This string may be passed to [[IModelConnection.Views.load]]. */
-  id: ViewIdString;
-  /** The name of the view. This string may be used to create a list with the possible view names. */
-  name: string;
-  /** The fullClassName of the ViewDefinition. Useful for sorting the list of views. */
-  class: string;
-  owner?: string;
-  isPrivate?: boolean;
-  groupId?: ViewStoreRpc.ViewId;
-  tags?: string[];
-}
-
 /** Properties that define a ModelSelector
  * @public
  * @extensions
@@ -157,13 +143,6 @@ export interface CategorySelectorProps extends DefinitionElementProps {
  * @extensions
  */
 export interface ViewQueryParams extends EntityQueryParams {
-  readonly nameSearch?: string;
-  /** The comparison operator for `nameSearch`. Default is `=` */
-  readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
-  /** @beta */
-  readonly group?: ViewStoreRpc.ViewGroupSpec;
-  readonly tags?: string[];
-  readonly owner?: string;
   readonly wantPrivate?: boolean;
 }
 
@@ -265,19 +244,19 @@ export namespace ViewStoreRpc {
    * Will be a base-36 number with a leading "@".
    * @public
    */
-  export type ViewId = string;
+  export type IdString = string;
 
   /**
    * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
    * The syntax is not ambiguous because ViewStoreIdStrings always start with "@" and  Group names can never contain "@".
    * @beta
    */
-  export type ViewGroupSpec = ViewId | ViewGroupPath;
+  export type ViewGroupSpec = IdString | ViewGroupPath;
 
-  /** The name for a view.
-   * @beta
-   */
+  /** The name for a view. */
   export type ViewName = string;
+
+  export type TagName = string;
 
   export type ViewGroupPath = string;
 
@@ -291,24 +270,38 @@ export namespace ViewStoreRpc {
  */
   export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
 
+  export interface QueryParams {
+    readonly classNames?: string[]; // list of classFullNames
+    /** Optional "LIMIT" clause to limit the number of rows returned. */
+    readonly limit?: number;
+    /** Optional "OFFSET" clause. Only valid if Limit is also present. */
+    readonly offset?: number;
+    readonly nameSearch?: string;
+    /** The comparison operator for `nameSearch`. Default is `=` */
+    readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    readonly group?: ViewStoreRpc.ViewGroupSpec;
+    readonly tags?: string[];
+    readonly owner?: string;
+  }
+
   export interface ViewInfo {
-    id: ViewId;
+    id: IdString;
     name?: ViewName;
     owner?: string;
     className: string;
-    groupId: ViewId;
+    groupId: IdString;
     isPrivate: boolean;
-    modelSel?: ViewId;
-    categorySel?: ViewId;
-    displayStyle?: ViewId;
+    modelSel?: IdString;
+    categorySel?: IdString;
+    displayStyle?: IdString;
     tags?: string[];
   }
 
   export interface ViewGroupInfo {
-    id: ViewId;
+    id: IdString;
     name: ViewGroupPath;
-    parent?: ViewId;
-    defaultView?: ViewId;
+    parent?: IdString;
+    defaultView?: IdString;
   }
 
   export interface AddViewArgs {
@@ -330,34 +323,35 @@ export namespace ViewStoreRpc {
    * @beta
    */
   export interface Reader {
-    /** Find all "owned by" views for an owner. */
+    /** Find all "owned by" views. */
     findViewsByOwner(args: { owner: string }): Promise<ViewInfo[]>;
 
-    getViewInfo(args: { id: ViewId }): Promise<ViewInfo | undefined>;
-    getViewGroupInfo(args: { id?: ViewId }): Promise<ViewGroupInfo | undefined>;
-    getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: ViewId, name: string }[]>;
-    loadCategorySelector(args: { id: ViewId }): Promise<CategorySelectorProps>;
-    loadDisplayStyle(args: { id: ViewId, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
-    loadModelSelector(args: { id: ViewId }): Promise<ModelSelectorProps>;
-    loadThumbnail(args: { viewId: ViewId }): Promise<ThumbnailProps | undefined>;
-    loadTimeline(args: { id: ViewId }): Promise<RenderTimelineProps>;
-    loadViewDefinition(args: { id: ViewId }): Promise<ViewDefinitionProps>;
+    getViewInfo(args: { id: IdString }): Promise<ViewInfo | undefined>;
+    getViewGroupInfo(args: { id?: IdString }): Promise<ViewGroupInfo | undefined>;
+    getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: IdString, name: string }[]>;
+    getCategorySelector(args: { id: IdString }): Promise<CategorySelectorProps>;
+    getDisplayStyle(args: { id: IdString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
+    getModelSelector(args: { id: IdString }): Promise<ModelSelectorProps>;
+    getThumbnail(args: { viewId: IdString }): Promise<ThumbnailProps | undefined>;
+    getTimeline(args: { id: IdString }): Promise<RenderTimelineProps>;
+    getViewDefinition(args: { id: IdString }): Promise<ViewDefinitionProps>;
+    queryViews(queryParams: ViewStoreRpc.QueryParams): Promise<ViewStoreRpc.ViewInfo[]>;
   }
 
   /** @beta */
   export interface Writer {
-    addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<ViewId>;
-    addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<ViewId>;
-    addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<ViewId>;
-    addOrReplaceThumbnail(args: { viewId: ViewId, thumbnail: ThumbnailProps, owner?: string }): Promise<ViewId>;
-    addTagsToView(args: { viewId: ViewId, tags: string[], owner?: string }): Promise<void>;
-    addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<ViewId>;
-    addView(args: AddViewArgs): Promise<ViewId>;
-    addViewGroup(args: { name: string, parentId?: ViewId, owner?: string }): Promise<ViewId>;
-    changeDefaultViewId(args: { defaultView: ViewId, group?: ViewGroupSpec }): Promise<void>;
-    deleteThumbnail(args: { id: ViewId }): Promise<void>;
-    deleteView(viewId: ViewId): Promise<void>;
+    addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<IdString>;
+    addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<IdString>;
+    addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<IdString>;
+    addOrReplaceThumbnail(args: { viewId: IdString, thumbnail: ThumbnailProps, owner?: string }): Promise<IdString>;
+    addTagsToView(args: { viewId: IdString, tags: string[], owner?: string }): Promise<void>;
+    addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<IdString>;
+    addView(args: AddViewArgs): Promise<IdString>;
+    addViewGroup(args: { name: string, parentId?: IdString, owner?: string }): Promise<IdString>;
+    changeDefaultViewId(args: { defaultView: IdString, group?: ViewGroupSpec }): Promise<void>;
+    deleteThumbnail(args: { id: IdString }): Promise<void>;
+    deleteView(viewId: IdString): Promise<void>;
     deleteViewGroup(args: { name: ViewGroupSpec }): Promise<void>;
-    removeTagFromView(args: { viewId: ViewId, tag: string }): Promise<void>;
+    removeTagFromView(args: { viewId: IdString, tag: string }): Promise<void>;
   }
 }

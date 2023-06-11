@@ -58,7 +58,7 @@ describe.only("DisplayStyle", () => {
 
     const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
     expect(id).equal("@1");
-    const style3 = await imodel.views.viewsStoreReader.loadDisplayStyle({ id });
+    const style3 = await imodel.views.viewsStoreReader.getDisplayStyle({ id });
     expect(style3.jsonProperties?.styles).deep.equal(style1.settings.toJSON());
   });
 

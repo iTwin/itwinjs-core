@@ -347,6 +347,11 @@ describe.only("ViewStore", function (this: Suite) {
     const v2Id = await vs1locker.addView({ viewDefinition: props, owner: "owner2", group: g1 });
     expect(v2Id).equals("@2");
 
+    props.classFullName = "spatial";
+    props.code.value = "view3";
+    const v3Id = await vs1locker.addView({ viewDefinition: props, owner: "owner2", group: g1 });
+    expect(v3Id).equals("@3");
+
     sinon.stub(iModel.elements, "getFederationGuidFromId").callsFake((id) => elements.getFederationGuidFromId(id));
     sinon.stub(iModel.elements, "getIdFromFederationGuid").callsFake((id) => elements.getIdFromFederationGuid(id));
 
@@ -390,15 +395,15 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vd1.cameraOn).to.deep.equal(vd2.cameraOn);
     expect(vd1.jsonProperties).to.deep.equal(vd2.jsonProperties);
 
-    expect(vs1reader.findViewsByClass(["spatial"]).length).equals(1);
-    expect(vs1reader.findViewsByClass(["BisCore:SpatialViewDefinition"]).length).equals(1);
-    expect(vs1reader.findViewsByClass(["spatial", "BisCore:SpatialViewDefinition", "blah"]).length).equals(2);
-    expect(vs1reader.findViewsByClass([]).length).equals(0);
-    expect(vs1reader.findViewsByClass(["blah"]).length).equals(0);
+    expect(vs1reader.queryViewsSync({ classNames: ["spatial"] }).length).equals(1);
+    expect(vs1reader.queryViewsSync({ group: g1, classNames: ["BisCore:SpatialViewDefinition"] }).length).equals(1);
+    expect(vs1reader.queryViewsSync({ group: g1, classNames: ["spatial", "BisCore:SpatialViewDefinition", "blah"] }).length).equals(2);
+    expect(vs1reader.queryViewsSync({ classNames: [] }).length).equals(0);
+    expect(vs1reader.queryViewsSync({ classNames: ["blah"] }).length).equals(0);
     // eslint-disable-next-line @typescript-eslint/await-thenable
     expect((await vs1reader.findViewsByOwner({ owner: "owner1" })).length).equals(1);
 
-    expect(vs1reader.getViewByName({ name: "group1/view2" })!.groupId).equals(ViewStore.rowIdFromString(g1));
+    expect(vs1reader.getViewByName({ name: "group1/view2" })!.groupId).equals(ViewStore.toRowId(g1));
     await vs1locker.deleteViewGroup({ name: g1 });
     expect(vs1reader.getViewByName({ name: "group1/view2" })).to.be.undefined;
 
@@ -409,7 +414,7 @@ describe.only("ViewStore", function (this: Suite) {
     dv.viewDefinitionProps.categorySelectorId = dcs;
     dv.viewDefinitionProps.displayStyleId = dds;
     const dvId = await vs1locker.addView({ viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
-    expect(dvId).equals("@3");
+    expect(dvId).equals("@4");
     const dFromVs = await iModel.views.getViewStateProps(dvId);
     expect(dFromVs.categorySelectorProps.categories).to.deep.equal(dv.categorySelectorProps.categories);
     expect(dFromVs.displayStyleProps.jsonProperties!.styles!).to.deep.equal(dv.displayStyleProps.jsonProperties!.styles!);

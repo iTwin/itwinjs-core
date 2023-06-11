@@ -17,7 +17,7 @@ import {
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps,
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelExtentsProps, ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps,
-  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewListEntry, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
   ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
@@ -337,8 +337,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getDefaultViewId(tokenProps: IModelRpcProps): Promise<Id64String> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    // eslint-disable-next-line deprecation/deprecation
-    return iModelDb.views.getDefaultViewId();
+    const spec = { namespace: "dgn_View", name: "DefaultView" };
+    const blob = iModelDb.queryFilePropertyBlob(spec);
+    if (undefined === blob || 8 !== blob.length)
+      return Id64.invalid;
+
+    const view = new Uint32Array(blob.buffer);
+    return Id64.fromUint32Pair(view[0], view[1]);
   }
   public async getSpatialCategoryId(tokenProps: IModelRpcProps, categoryName: string): Promise<Id64String | undefined> {
     const iModelDb = await getIModelForRpc(tokenProps);
@@ -364,11 +369,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async generateElementMeshes(tokenProps: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
     const db = await getIModelForRpc(tokenProps);
     return db.nativeDb.generateElementMeshes(props);
-  }
-
-  public async getViewList(tokenProps: IModelRpcProps, queryParams: ViewQueryParams): Promise<ViewListEntry[]> {
-    const db = await getIModelForRpc(tokenProps);
-    return db.views.getViewList(queryParams);
   }
 
   /** @internal */
