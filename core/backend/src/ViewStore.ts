@@ -118,13 +118,10 @@ export namespace ViewStore {
     displayStyle?: RowId;
   }
 
-  export interface ViewGroupProps {
-    defaultViewId?: RowString;
-  }
-
   /** a row in the "viewGroups" table */
   export interface ViewGroupRow extends MarkRequired<TableRow, "name"> {
     parentId: RowId;
+    defaultViewId?: RowId;
   }
 
   /** a row in the "thumbnails" table */
@@ -161,6 +158,9 @@ export namespace ViewStore {
     if (!ViewStoreRpc.isViewStoreId(id) && !isGuidRowString(id))
       throw new Error(`invalid value: ${id}`);
     return parseInt(id.slice(1), 36);
+  };
+  export const maybeToRowId = (id?: RowIdOrString): RowId | undefined => {
+    return undefined === id ? undefined : toRowId(id);
   };
 
   const blankElementProps = (from: any, classFullName: string, idString: RowString, name?: string): ElementProps => {
@@ -215,7 +215,8 @@ export namespace ViewStore {
       });
       this.createTable({
         tableName: tableName.viewGroups,
-        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,parent INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE`,
+        columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,parent INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE` +
+          `,defaultViewId INTEGER REFERENCES ${tableName.views}(Id)`,
         constraints: "UNIQUE(parent,name)",
         addTimestamp: true,
       });
@@ -422,13 +423,14 @@ export namespace ViewStore {
       });
     }
     public getViewGroup(id: RowId): ViewGroupRow | undefined {
-      return this.withSqliteStatement(`SELECT name,owner,json,parent FROM ${tableName.viewGroups} WHERE Id=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT name,owner,json,parent,defaultViewId FROM ${tableName.viewGroups} WHERE Id=? `, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
           name: stmt.getValueString(0),
           owner: stmt.getValueStringMaybe(1),
           json: stmt.getValueString(2),
           parentId: stmt.getValueInteger(3),
+          defaultViewId: stmt.getValueIntegerMaybe(4),
         };
       });
     }
@@ -584,13 +586,13 @@ export namespace ViewStore {
       return this.findByName(tableName.searches, name);
     }
 
-    private getViewInfoSync(args: { id: ViewStoreRpc.IdString }): ViewStoreRpc.ViewInfo | undefined {
+    private getViewInfoSync(id: RowIdOrString): ViewStoreRpc.ViewInfo | undefined {
       const maybeId = (rowId?: RowId): string | undefined => rowId ? tableRowIdToString(rowId) : undefined;
       return this.withPreparedSqliteStatement(`SELECT owner,className,name,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE id=?`, (stmt) => {
-        const viewId = toRowId(args.id);
+        const viewId = toRowId(id);
         stmt.bindInteger(1, viewId);
         return stmt.nextRow() ? {
-          id: args.id,
+          id: tableRowIdToString(viewId),
           owner: stmt.getValueString(0),
           className: stmt.getValueString(1),
           name: stmt.getValueStringMaybe(2),
@@ -603,8 +605,8 @@ export namespace ViewStore {
         } : undefined;
       });
     }
-    public async getViewInfo(args: { id: ViewStoreRpc.IdString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
-      return this.getViewInfoSync(args);
+    public async getViewInfo(args: { id: RowIdOrString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
+      return this.getViewInfoSync(args.id);
     }
 
     public async findViewsByOwner(args: { owner: string }): Promise<ViewStoreRpc.ViewInfo[]> {
@@ -612,7 +614,7 @@ export namespace ViewStore {
       this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE owner=? ORDER BY Id ASC`, (stmt) => {
         stmt.bindString(1, args.owner);
         while (stmt.nextRow()) {
-          const info = this.getViewInfoSync({ id: tableRowIdToString(stmt.getValueInteger(0)) });
+          const info = this.getViewInfoSync(stmt.getValueInteger(0));
           if (info)
             list.push(info);
         }
@@ -992,7 +994,7 @@ export namespace ViewStore {
       return groupId;
     }
 
-    public findViewByName(arg: { name: string, groupId?: RowId }): RowId {
+    public findViewIdByName(arg: { name: string, groupId?: RowIdOrString }): RowId {
       let name = arg.name;
       let groupId = arg.groupId;
       if (groupId === undefined) {
@@ -1005,13 +1007,16 @@ export namespace ViewStore {
       }
       return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE name=? AND groupId=? `, (stmt) => {
         stmt.bindString(1, name);
-        stmt.bindInteger(2, groupId ?? defaultViewGroupId);
+        stmt.bindInteger(2, maybeToRowId(groupId) ?? defaultViewGroupId);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
-    public getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewRow | undefined {
-      const id = this.findViewByName(arg);
-      return id ? this.getViewRow(id) : undefined;
+    public getViewByNameSync(arg: { name: ViewStoreRpc.ViewName, groupId?: RowIdOrString }): ViewStoreRpc.ViewInfo | undefined {
+      const id = this.findViewIdByName(arg);
+      return id ? this.getViewInfoSync(id) : undefined;
+    }
+    public async getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: RowIdOrString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
+      return this.getViewByNameSync(arg);
     }
 
     public async getViewGroupInfo(args: { id: ViewStoreRpc.IdString }): Promise<ViewStoreRpc.ViewGroupInfo | undefined> {
@@ -1019,17 +1024,16 @@ export namespace ViewStore {
       const groupRow = groupId ? this.getViewGroup(groupId) : undefined;
       if (groupRow === undefined)
         return undefined;
-      const props = JSON.parse(groupRow.json) as ViewGroupProps;
       const info: ViewStoreRpc.ViewGroupInfo = {
         id: args.id,
         name: groupRow.name,
-        defaultView: props.defaultViewId,
+        defaultView: groupRow.defaultViewId ? tableRowIdToString(groupRow.defaultViewId) : undefined,
         parent: tableRowIdToString(groupRow.parentId),
       };
       return info;
     }
 
-    public async changeDefaultViewId(args: { defaultView: ViewStoreRpc.IdString, group?: ViewStoreRpc.ViewGroupSpec }) {
+    public async changeDefaultViewId(args: { defaultView: RowIdOrString, group?: ViewStoreRpc.ViewGroupSpec }) {
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const viewRow = this.getViewRow(toRowId(args.defaultView));
       if (viewRow === undefined)
@@ -1039,10 +1043,11 @@ export namespace ViewStore {
       const groupRow = this.getViewGroup(groupId);
       if (groupRow === undefined)
         throw new Error("View group not found");
-      const props = JSON.parse(groupRow.json) as ViewGroupProps;
-      props.defaultViewId = args.defaultView;
-      groupRow.json = JSON.stringify(props);
-      return this.updateViewGroupJson(groupId, groupRow.json);
+      this.withSqliteStatement(`UPDATE ${tableName.viewGroups} SET defaultViewId=? WHERE Id=? `, (stmt) => {
+        stmt.bindInteger(1, groupId);
+        stmt.bindInteger(2, toRowId(args.defaultView));
+        stmt.stepForWrite();
+      });
     }
 
     public getTagsForView(viewId: RowIdOrString): ViewStoreRpc.TagName[] | undefined {
@@ -1089,7 +1094,7 @@ export namespace ViewStore {
     public queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[] {
       const entries: ViewStoreRpc.ViewInfo[] = [];
       this.iterateViewQuery(queryParams, (rowId) => {
-        const view = this.getViewInfoSync({ id: tableRowIdToString(rowId) });
+        const view = this.getViewInfoSync(rowId);
         if (view !== undefined)
           entries.push(view);
       });
@@ -1180,13 +1185,13 @@ export namespace ViewStore {
   const viewDbName = "ViewDb" as const;
 
   export interface ReadMethods extends ViewStoreRpc.Reader {
-    getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewRow | undefined;
+    getViewByNameSync(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewStoreRpc.ViewInfo | undefined;
     getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps;
     getDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps;
     getModelSelectorSync(args: { id: RowString }): ModelSelectorProps;
     getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
     getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
-    queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewGroupInfo[];
+    queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
   }
 
   export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;

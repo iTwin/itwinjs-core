@@ -302,14 +302,14 @@ describe.only("ViewStore", function (this: Suite) {
     };
     viewDef.code.value = "view1";
 
-    expect(vs1reader.getViewByName({ name: "view1" })).to.be.undefined;
+    expect(vs1reader.getViewByNameSync({ name: "view1" })).to.be.undefined;
     const v1Id = await vs1locker.addView({ viewDefinition: viewDef, owner: "owner1" });
     expect(v1Id).equals("@1");
 
-    const v1 = vs1reader.getViewByName({ name: "view1" })!;
+    const v1 = vs1reader.getViewByNameSync({ name: "view1" })!;
     expect(v1.owner).equals("owner1");
     expect(v1.className).equals("spatial");
-    expect(v1.groupId).equals(ViewStore.defaultViewGroupId);
+    expect(v1.groupId).equals("@1");
     expect(v1.isPrivate).to.be.false;
     expect(v1.name).equals("view1");
 
@@ -400,12 +400,11 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1reader.queryViewsSync({ group: g1, classNames: ["spatial", "BisCore:SpatialViewDefinition", "blah"] }).length).equals(2);
     expect(vs1reader.queryViewsSync({ classNames: [] }).length).equals(0);
     expect(vs1reader.queryViewsSync({ classNames: ["blah"] }).length).equals(0);
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     expect((await vs1reader.findViewsByOwner({ owner: "owner1" })).length).equals(1);
 
-    expect(vs1reader.getViewByName({ name: "group1/view2" })!.groupId).equals(ViewStore.toRowId(g1));
+    expect(vs1reader.getViewByNameSync({ name: "group1/view2" })!.groupId).equals(g1);
     await vs1locker.deleteViewGroup({ name: g1 });
-    expect(vs1reader.getViewByName({ name: "group1/view2" })).to.be.undefined;
+    expect(vs1reader.getViewByNameSync({ name: "group1/view2" })).to.be.undefined;
 
     // now test Drawing views.
     const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.

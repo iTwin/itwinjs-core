@@ -325,16 +325,16 @@ export namespace ViewStoreRpc {
   export interface Reader {
     /** Find all "owned by" views. */
     findViewsByOwner(args: { owner: string }): Promise<ViewInfo[]>;
-
-    getViewInfo(args: { id: IdString }): Promise<ViewInfo | undefined>;
-    getViewGroupInfo(args: { id?: IdString }): Promise<ViewGroupInfo | undefined>;
-    getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: IdString, name: string }[]>;
     getCategorySelector(args: { id: IdString }): Promise<CategorySelectorProps>;
     getDisplayStyle(args: { id: IdString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
     getModelSelector(args: { id: IdString }): Promise<ModelSelectorProps>;
     getThumbnail(args: { viewId: IdString }): Promise<ThumbnailProps | undefined>;
     getTimeline(args: { id: IdString }): Promise<RenderTimelineProps>;
+    getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: IdString }): Promise<ViewStoreRpc.ViewInfo | undefined>;
     getViewDefinition(args: { id: IdString }): Promise<ViewDefinitionProps>;
+    getViewGroupInfo(args: { id?: IdString }): Promise<ViewGroupInfo | undefined>;
+    getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: IdString, name: string }[]>;
+    getViewInfo(args: { id: IdString }): Promise<ViewInfo | undefined>;
     queryViews(queryParams: ViewStoreRpc.QueryParams): Promise<ViewStoreRpc.ViewInfo[]>;
   }
 

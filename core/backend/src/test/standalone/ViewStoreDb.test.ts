@@ -29,21 +29,20 @@ describe.only("ViewStore", function (this: Suite) {
   });
 
   it("ViewDb", async () => {
-    expect(vs1.getViewByName({ name: "view1" })).to.be.undefined;
+    expect(vs1.getViewByNameSync({ name: "view1" })).to.be.undefined;
     const v1Id = vs1.addViewRow({ className: "spatial", name: "view1", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
     expect(v1Id).equals(1);
 
-    const v1 = vs1.getViewByName({ name: "view1" })!;
-    expect(vs1.findViewByName({ name: "view1" })).equals(v1Id);
-    expect(vs1.findViewByName({ name: "/view1" })).equals(v1Id);
-    expect(v1.json).equals("json1");
+    const v1 = vs1.getViewByNameSync({ name: "view1" })!;
+    expect(vs1.findViewIdByName({ name: "view1" })).equals(v1Id);
+    expect(vs1.findViewIdByName({ name: "/view1" })).equals(v1Id);
     expect(v1.owner).equals("owner10");
     expect(v1.className).equals("spatial");
-    expect(v1.groupId).equals(1);
+    expect(v1.groupId).equals("@1");
     expect(v1.isPrivate).to.be.true;
     expect(v1.name).equals("view1");
     await vs1.updateViewShared(v1Id, false);
-    const v1Updated = vs1.getViewByName({ name: "view1" })!;
+    const v1Updated = vs1.getViewByNameSync({ name: "view1" })!;
     expect(v1Updated.isPrivate).to.be.false;
 
     const v1Id2 = vs1.addViewRow({ className: "spatial", name: "v2", json: "json-v2", owner: "owner1", groupId: 1 });
@@ -51,7 +50,7 @@ describe.only("ViewStore", function (this: Suite) {
     const v2 = vs1.getViewRow(v1Id2)!;
     expect(v2.name).equals("v2");
     vs1.deleteViewRow(v1Id2);
-    expect(vs1.findViewByName({ name: "v2", groupId: 1 })).equals(0);
+    expect(vs1.findViewIdByName({ name: "v2", groupId: 1 })).equals(0);
 
     expect(() => vs1.addViewGroupRow({ name: "", json: "" })).to.throw("illegal group");
     expect(() => vs1.addViewGroupRow({ name: " ", json: "" })).to.throw("illegal group");
@@ -93,12 +92,12 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.findViewGroup("/")).equals(1);
     expect(vs1.findViewGroup("")).equals(1);
 
-    expect(vs1.getViewByName({ name: "view2", groupId: g4 })?.groupId).equals(g4);
-    expect(vs1.findViewByName({ name: "/group2/group 3/group4/view2" })).equals(v2Id);
-    expect(vs1.findViewByName({ name: "group2/group 3/group4/view2" })).equals(v2Id);
-    expect(vs1.findViewByName({ name: `${ViewStore.tableRowIdToString(g4)}/view2` })).equals(v2Id);
-    expect(vs1.findViewByName({ name: "group2/group 3/group4/not there" })).equals(0);
-    expect(vs1.findViewByName({ name: "group2/test view 3" })).not.equal(0);
+    expect(vs1.getViewByNameSync({ name: "view2", groupId: g4 })?.groupId).equals(ViewStore.tableRowIdToString(g4));
+    expect(vs1.findViewIdByName({ name: "/group2/group 3/group4/view2" })).equals(v2Id);
+    expect(vs1.findViewIdByName({ name: "group2/group 3/group4/view2" })).equals(v2Id);
+    expect(vs1.findViewIdByName({ name: `${ViewStore.tableRowIdToString(g4)}/view2` })).equals(v2Id);
+    expect(vs1.findViewIdByName({ name: "group2/group 3/group4/not there" })).equals(0);
+    expect(vs1.findViewIdByName({ name: "group2/test view 3" })).not.equal(0);
 
     const group3 = vs1.getViewGroup(g3Id)!;
     expect(group3.name).equals("group 3");
@@ -135,7 +134,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.getThumbnailRow(33)).to.be.undefined;
 
     await vs1.deleteViewGroup({ name: "group1" });
-    expect(vs1.getViewByName({ name: "view2", groupId: g1 })).to.be.undefined;
+    expect(vs1.getViewByNameSync({ name: "view2", groupId: g1 })).to.be.undefined;
 
     vs1.addCategorySelectorRow({ name: "cat1", json: "cat1-json" });
     vs1.addCategorySelectorRow({ name: "cat2", json: "cat2-json" });
