@@ -21,7 +21,7 @@ import { RenderSchedule } from "./RenderSchedule";
 /** The id of either an element or an entry in a ViewStore.
  * @public
  */
-export type ViewIdString = Id64String | ViewStoreRpc.IdString;
+export type ViewIdString = Id64String; // should also include ViewStoreRpc.IdString when that's @public
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]

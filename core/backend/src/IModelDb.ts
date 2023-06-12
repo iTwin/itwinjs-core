@@ -2045,10 +2045,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
       return this._viewStore;
     }
-    /** @internal */
     public set viewStore(viewStore: ViewStore.CloudAccess) {
       this._viewStore = viewStore;
     }
+    /** @beta */
     public async accessViewStore(args: { userToken?: AccessToken, props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
       let props = args.props;
       if (undefined === props) {
@@ -2068,6 +2068,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._viewStore;
     }
 
+    /** @beta */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
       const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
       this._iModel.saveFileProperty(Views.viewStoreProperty, JSON.stringify(props));

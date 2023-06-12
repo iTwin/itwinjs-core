@@ -7,7 +7,6 @@
 /// <reference types="node" />
 
 import { AccessToken } from '@itwin/core-bentley';
-import { AddViewArgs } from '@itwin/core-common';
 import { Angle } from '@itwin/core-geometry';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
@@ -174,7 +173,6 @@ import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
-import { ReadViewStoreRpc } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
@@ -231,15 +229,11 @@ import { ViewDefinitionProps } from '@itwin/core-common';
 import { ViewDetails } from '@itwin/core-common';
 import { ViewDetails3d } from '@itwin/core-common';
 import { ViewFlags } from '@itwin/core-common';
-import { ViewGroupSpec } from '@itwin/core-common';
 import { ViewIdString } from '@itwin/core-common';
-import { ViewListEntry } from '@itwin/core-common';
-import { ViewName } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateLoadProps } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
-import { ViewStoreIdString } from '@itwin/core-common';
-import { WriteViewStoreRpc } from '@itwin/core-common';
+import { ViewStoreRpc } from '@itwin/core-common';
 import * as ws from 'ws';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
@@ -432,9 +426,7 @@ export class BisCoreSchema extends Schema {
 // @beta
 export namespace BlobContainer {
     let service: BlobContainer.ContainerService | undefined;
-    export interface AccessContainerProps {
-        // (undocumented)
-        address: UriAndId;
+    export interface AccessContainerProps extends UriAndId {
         // (undocumented)
         userToken: UserToken;
     }
@@ -447,7 +439,7 @@ export namespace BlobContainer {
     export type ContainerToken = AccessToken;
     export interface CreateNewContainerProps {
         // @internal
-        id?: ContainerId;
+        containerId?: ContainerId;
         metadata: Metadata;
         scope: Scope;
         userToken: UserToken;
@@ -458,10 +450,13 @@ export namespace BlobContainer {
         description: string;
         format: string;
     }
-    export type Provider = "azure" | "google" | "aws";
+    export type Provider = "azure" | "google";
+    export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
     export interface RequestTokenProps extends AccessContainerProps {
+        accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
-        forWriteAccess?: boolean;
+        // (undocumented)
+        storageType: Provider;
     }
     export interface Scope {
         iModelId?: Id64String;
@@ -479,7 +474,7 @@ export namespace BlobContainer {
         // (undocumented)
         baseUri: string;
         // (undocumented)
-        id: ContainerId;
+        containerId: ContainerId;
     }
     export type UserToken = AccessToken;
 }
@@ -918,29 +913,30 @@ export namespace CloudSqlite {
         readonly dbName: string;
         promise: Promise<boolean>;
     }
-    export type ContainerAccessProps = ContainerProps & {
-        lockExpireSeconds?: number;
-        tokenRefreshSeconds?: number;
-    };
-    export interface ContainerProps {
+    export interface ContainerAccessProps extends ContainerProps {
         accessToken: string;
         alias?: string;
-        baseUri: string;
-        containerId: string;
-        isPublic?: boolean;
+        lockExpireSeconds?: number;
         logId?: string;
         secure?: boolean;
-        storageType: "azure" | "google";
+        tokenRefreshSeconds?: number;
         writeable?: boolean;
     }
     // (undocumented)
-    export type ContainerTokenProps = Omit<ContainerProps, "accessToken">;
+    export interface ContainerProps {
+        baseUri: string;
+        containerId: string;
+        isPublic?: boolean;
+        storageType: "azure" | "google";
+    }
     export interface CreateCloudCacheArg {
         cacheDir?: string;
         cacheName: string;
         cacheSize?: string;
     }
-    export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
+    export function createCloudContainer(args: ContainerAccessProps & {
+        accessLevel?: BlobContainer.RequestAccessLevel;
+    }): CloudContainer;
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
             dbType: Constructor<DbType>;
@@ -1014,7 +1010,7 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
-    export function requestToken(args: ContainerTokenProps): Promise<AccessToken>;
+    export function requestToken(args: Optional<BlobContainer.RequestTokenProps, "userToken">): Promise<AccessToken>;
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
@@ -3132,24 +3128,25 @@ export namespace IModelDb {
     export class Views {
         // @internal
         constructor(_iModel: IModelDb);
+        // @beta (undocumented)
+        accessViewStore(args: {
+            userToken?: AccessToken;
+            props?: CloudSqlite.ContainerProps;
+            accessLevel?: BlobContainer.RequestAccessLevel;
+        }): Promise<ViewStore.CloudAccess>;
         static readonly defaultQueryParams: ViewQueryParams;
-        // @deprecated (undocumented)
-        getDefaultViewId(group?: ViewGroupSpec): ViewIdString;
-        // @deprecated
-        getThumbnail(viewId: ViewIdString): ThumbnailProps | undefined;
-        // @internal (undocumented)
-        getViewList(queryParams: ViewQueryParams): Promise<ViewListEntry[]>;
+        getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
         // @deprecated (undocumented)
         getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps;
         getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps>;
-        // @deprecated
+        // (undocumented)
+        get hasViewStore(): boolean;
         iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean;
-        // @deprecated
         queryViewDefinitionProps(className?: string, limit?: number, offset?: number, wantPrivate?: boolean): ViewDefinitionProps[];
-        // @deprecated
-        saveThumbnail(viewId: ViewIdString, thumbnail: ThumbnailProps): number;
-        // @deprecated
-        setDefaultViewId(viewId: ViewIdString): void;
+        // @beta (undocumented)
+        saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void;
+        saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
+        setDefaultViewId(viewId: Id64String): void;
         // @beta (undocumented)
         get viewStore(): ViewStore.CloudAccess;
         set viewStore(viewStore: ViewStore.CloudAccess);
@@ -4846,6 +4843,8 @@ export class SnapshotDb extends IModelDb {
     // (undocumented)
     get isSnapshot(): boolean;
     // (undocumented)
+    static readonly onOpen: BeEvent<(path: LocalFileName, opts?: SnapshotDbOpenArgs) => void>;
+    // (undocumented)
     static readonly onOpened: BeEvent<(_iModelDb: SnapshotDb) => void>;
     // @internal
     static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
@@ -5664,53 +5663,47 @@ export namespace ViewStore {
         readonly searches: "searches";
         readonly views: "views";
     };
-    export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadViewStoreMethods, WriteViewStoreRpc> {
-        constructor(props: CloudSqlite.ContainerAccessProps & {
-            elements?: IModelDb.GuidMapper;
-        });
+    export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadMethods, ViewStoreRpc.Writer> {
+        constructor(props: ViewStoreCtorProps);
         static initializeDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     }
     // (undocumented)
     export type DisplayStyleRow = TableRow;
     export type GuidRowString = string;
     // (undocumented)
-    export interface ReadViewStoreMethods extends ReadViewStoreRpc {
+    export interface ReadMethods extends ViewStoreRpc.Reader {
         // (undocumented)
-        findViewsByClass(className: string[]): RowId[];
-        // (undocumented)
-        getDefaultViewIdSync(args: {
-            group?: ViewGroupSpec;
-        }): RowString | undefined;
-        // (undocumented)
-        getViewByName(arg: {
-            name: ViewName;
-            groupId?: RowId;
-        }): ViewRow | undefined;
-        // (undocumented)
-        loadCategorySelectorSync(args: {
+        getCategorySelectorSync(args: {
             id: RowString;
         }): CategorySelectorProps;
         // (undocumented)
-        loadDisplayStyleSync(args: {
+        getDisplayStyleSync(args: {
             id: RowString;
             opts?: DisplayStyleLoadProps;
         }): DisplayStyleProps;
         // (undocumented)
-        loadModelSelectorSync(args: {
+        getModelSelectorSync(args: {
             id: RowString;
         }): ModelSelectorProps;
         // (undocumented)
-        loadThumbnailSync(args: {
+        getThumbnailSync(args: {
             viewId: RowString;
         }): ThumbnailProps | undefined;
         // (undocumented)
-        loadViewDefinitionSync(args: {
+        getViewByNameSync(arg: {
+            name: ViewStoreRpc.ViewName;
+            groupId?: RowId;
+        }): ViewStoreRpc.ViewInfo | undefined;
+        // (undocumented)
+        getViewDefinitionSync(args: {
             id: RowString;
         }): ViewDefinitionProps;
         // (undocumented)
-        queryViewList(queryParams: ViewQueryParams): ViewListEntry[];
+        queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
     }
     export type RowId = number;
+    // (undocumented)
+    export type RowIdOrString = RowId | RowString;
     export type RowString = string;
     // (undocumented)
     export type SearchRow = TableRow;
@@ -5743,13 +5736,19 @@ export namespace ViewStore {
         // (undocumented)
         viewId: RowId;
     }
+    const tableRowIdToString: (rowId: RowId) => RowString;
+    const guidRowToString: (rowId: RowId) => GuidRowString;
     // (undocumented)
     export type TimelineRow = TableRow;
+    const // (undocumented)
+    toRowId: (id: RowIdOrString) => RowId;
+    const // (undocumented)
+    maybeToRowId: (id?: RowIdOrString) => RowId | undefined;
+    const // (undocumented)
+    defaultViewGroupId: 1;
     // (undocumented)
-    export class ViewDb extends VersionedSqliteDb implements WriteViewStoreRpc, ReadViewStoreRpc {
-        constructor(props?: {
-            elements?: IModelDb.GuidMapper;
-        });
+    export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ViewStoreRpc.Reader {
+        constructor(arg?: ViewDbCtorArgs);
         // (undocumented)
         addCategorySelector(args: {
             name?: string;
@@ -5775,7 +5774,7 @@ export namespace ViewStore {
         addModelSelectorRow(args: SelectorRow): RowId;
         // (undocumented)
         addOrReplaceThumbnail(args: {
-            viewId: ViewStoreIdString;
+            viewId: ViewStoreRpc.IdString;
             thumbnail: ThumbnailProps;
             owner?: string;
         }): Promise<string>;
@@ -5784,7 +5783,7 @@ export namespace ViewStore {
         addTag(args: TagRow): RowId;
         // (undocumented)
         addTagsToView(args: {
-            viewId: RowString;
+            viewId: RowIdOrString;
             tags: string[];
             owner?: string;
         }): Promise<void>;
@@ -5801,11 +5800,11 @@ export namespace ViewStore {
         }): Promise<RowString>;
         addTimelineRow(args: TimelineRow): RowId;
         // (undocumented)
-        addView(args: AddViewArgs): Promise<RowString>;
+        addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString>;
         // (undocumented)
         addViewDefinition(args: {
             viewDefinition: ViewDefinitionProps;
-            group?: ViewGroupSpec;
+            group?: ViewStoreRpc.ViewGroupSpec;
             owner?: string;
             isPrivate?: boolean;
         }): RowId;
@@ -5821,20 +5820,38 @@ export namespace ViewStore {
         addViewRow(args: ViewRow): RowId;
         // (undocumented)
         changeDefaultViewId(args: {
-            defaultView: ViewStoreIdString;
-            group?: ViewGroupSpec;
+            defaultView: RowIdOrString;
+            group?: ViewStoreRpc.ViewGroupSpec;
         }): Promise<void>;
         protected createDDL(): void;
         // (undocumented)
-        deleteCategorySelector(id: RowId): void;
+        deleteCategorySelector(args: {
+            id: RowIdOrString;
+        }): Promise<void>;
         // (undocumented)
-        deleteDisplayStyle(id: RowId): void;
+        deleteCategorySelectorSync(id: RowIdOrString): void;
         // (undocumented)
-        deleteModelSelector(id: RowId): void;
+        deleteDisplayStyle(args: {
+            id: RowIdOrString;
+        }): Promise<void>;
+        // (undocumented)
+        deleteDisplayStyleSync(id: RowIdOrString): void;
+        // (undocumented)
+        deleteModelSelector(args: {
+            id: RowIdOrString;
+        }): Promise<void>;
+        // (undocumented)
+        deleteModelSelectorSync(id: RowIdOrString): void;
         // (undocumented)
         deleteSearch(id: RowId): void;
         // (undocumented)
-        deleteTag(id: RowId): void;
+        deleteTag(arg: {
+            name: ViewStoreRpc.TagName;
+        }): Promise<void>;
+        // (undocumented)
+        deleteTagSync(arg: {
+            name: ViewStoreRpc.TagName;
+        }): void;
         // (undocumented)
         deleteThumbnail(arg: {
             id: RowString;
@@ -5842,15 +5859,21 @@ export namespace ViewStore {
         // (undocumented)
         deleteThumbnailSync(id: RowString): void;
         // (undocumented)
-        deleteTimeline(id: RowId): void;
-        // (undocumented)
-        deleteView(viewId: RowString): Promise<void>;
-        // (undocumented)
-        deleteViewGroup(args: {
-            name: ViewGroupSpec;
+        deleteTimeline(args: {
+            id: RowIdOrString;
         }): Promise<void>;
         // (undocumented)
-        deleteViewRow(id: RowId): void;
+        deleteTimelineSync(id: RowIdOrString): void;
+        // (undocumented)
+        deleteView(arg: {
+            viewId: RowIdOrString;
+        }): Promise<void>;
+        // (undocumented)
+        deleteViewGroup(args: {
+            name: ViewStoreRpc.ViewGroupSpec;
+        }): Promise<void>;
+        // (undocumented)
+        deleteViewRow(id: RowIdOrString): void;
         // (undocumented)
         deleteViewTag(args: {
             viewId: RowId;
@@ -5870,129 +5893,139 @@ export namespace ViewStore {
         // (undocumented)
         findTagByName(name: string): RowId;
         // (undocumented)
-        findTagsForView(viewId: RowId): RowId[];
+        findTagIdsForView(viewId: RowId): RowId[];
         // (undocumented)
         findTimelineByName(name: string): RowId;
         // (undocumented)
-        findViewByName(arg: {
+        findViewGroup(groupName: ViewStoreRpc.ViewGroupSpec): RowId;
+        // (undocumented)
+        findViewIdByName(arg: {
             name: string;
-            groupId?: RowId;
+            groupId?: RowIdOrString;
         }): RowId;
-        // (undocumented)
-        findViewGroup(groupName: ViewGroupSpec): RowId;
-        // (undocumented)
-        findViewsByClass(className: string[]): RowId[];
         // (undocumented)
         findViewsByOwner(args: {
             owner: string;
-        }): Promise<RowString[]>;
+        }): Promise<ViewStoreRpc.ViewInfo[]>;
         // (undocumented)
         findViewsForTag(tagId: RowId): RowId[];
-        getCategorySelector(id: RowId): SelectorRow | undefined;
         // (undocumented)
-        getDefaultViewId(args: {
-            group?: ViewGroupSpec;
-        }): Promise<RowString | undefined>;
+        getCategorySelector(args: {
+            id: RowString;
+        }): Promise<CategorySelectorProps>;
+        getCategorySelectorRow(id: RowId): SelectorRow | undefined;
         // (undocumented)
-        getDefaultViewIdSync(args: {
-            group?: ViewGroupSpec;
-        }): RowString | undefined;
-        getDisplayStyle(id: RowId): DisplayStyleRow | undefined;
+        getCategorySelectorSync(args: {
+            id: RowString;
+        }): CategorySelectorProps;
+        // (undocumented)
+        getDisplayStyle(args: {
+            id: RowString;
+            opts?: DisplayStyleLoadProps;
+        }): Promise<DisplayStyleProps>;
+        getDisplayStyleRow(id: RowId): DisplayStyleRow | undefined;
+        // (undocumented)
+        getDisplayStyleSync(args: {
+            id: RowString;
+            opts?: DisplayStyleLoadProps;
+        }): DisplayStyleProps;
         // (undocumented)
         getGuid(rowid: RowId): GuidString | undefined;
-        getModelSelector(id: RowId): SelectorRow | undefined;
+        // (undocumented)
+        getModelSelector(args: {
+            id: RowString;
+        }): Promise<ModelSelectorProps>;
+        getModelSelectorRow(id: RowId): SelectorRow | undefined;
+        // (undocumented)
+        getModelSelectorSync(args: {
+            id: RowString;
+        }): ModelSelectorProps;
         // (undocumented)
         getSearch(id: RowId): SearchRow | undefined;
         // (undocumented)
         getTag(id: RowId): TagRow | undefined;
         // (undocumented)
-        getTagsForView(viewId: RowId): string[] | undefined;
+        getTagsForView(viewId: RowIdOrString): ViewStoreRpc.TagName[] | undefined;
+        // (undocumented)
+        getThumbnail(args: {
+            viewId: RowString;
+        }): Promise<ThumbnailProps | undefined>;
         // (undocumented)
         getThumbnailRow(viewId: RowId): undefined | ThumbnailRow;
         // (undocumented)
+        getThumbnailSync(args: {
+            viewId: RowString;
+        }): ThumbnailProps | undefined;
+        // (undocumented)
+        getTimeline(args: {
+            id: RowString;
+        }): Promise<RenderTimelineProps>;
+        // (undocumented)
         getTimelineRow(id: RowId): TimelineRow | undefined;
         // (undocumented)
+        getTimelineSync(args: {
+            id: RowString;
+        }): RenderTimelineProps;
+        // (undocumented)
         getViewByName(arg: {
-            name: ViewName;
-            groupId?: RowId;
-        }): ViewRow | undefined;
+            name: ViewStoreRpc.ViewName;
+            groupId?: RowIdOrString;
+        }): Promise<ViewStoreRpc.ViewInfo | undefined>;
+        // (undocumented)
+        getViewByNameSync(arg: {
+            name: ViewStoreRpc.ViewName;
+            groupId?: RowIdOrString;
+        }): ViewStoreRpc.ViewInfo | undefined;
+        // (undocumented)
+        getViewDefinition(args: {
+            id: RowString;
+        }): Promise<ViewDefinitionProps>;
+        // (undocumented)
+        getViewDefinitionSync(args: {
+            id: RowString;
+        }): ViewDefinitionProps;
         // (undocumented)
         getViewGroup(id: RowId): ViewGroupRow | undefined;
         // (undocumented)
         getViewGroupByName(name: string, parentId: RowId): RowId;
         // (undocumented)
+        getViewGroupInfo(args: {
+            id: ViewStoreRpc.IdString;
+        }): Promise<ViewStoreRpc.ViewGroupInfo | undefined>;
+        // (undocumented)
         getViewGroups(args: {
-            parent?: ViewGroupSpec;
+            parent?: ViewStoreRpc.ViewGroupSpec;
         }): Promise<{
             id: string;
             name: string;
         }[]>;
+        // (undocumented)
+        getViewInfo(args: {
+            id: RowIdOrString;
+        }): Promise<ViewStoreRpc.ViewInfo | undefined>;
         getViewRow(viewId: RowId): undefined | ViewRow;
         // @internal (undocumented)
         iterateGuids(rowIds: RowId[], fn: (guid: GuidString, row: RowId) => void): void;
         // (undocumented)
-        iterateViewQuery(queryParams: ViewQueryParams, callback: (rowId: RowId, view: ViewListEntry) => void): void;
-        // (undocumented)
-        loadCategorySelector(args: {
-            id: RowString;
-        }): Promise<CategorySelectorProps>;
-        // (undocumented)
-        loadCategorySelectorSync(args: {
-            id: RowString;
-        }): CategorySelectorProps;
-        // (undocumented)
-        loadDisplayStyle(args: {
-            id: RowString;
-            opts?: DisplayStyleLoadProps;
-        }): Promise<DisplayStyleProps>;
-        // (undocumented)
-        loadDisplayStyleSync(args: {
-            id: RowString;
-            opts?: DisplayStyleLoadProps;
-        }): DisplayStyleProps;
-        // (undocumented)
-        loadModelSelector(args: {
-            id: RowString;
-        }): Promise<ModelSelectorProps>;
-        // (undocumented)
-        loadModelSelectorSync(args: {
-            id: RowString;
-        }): ModelSelectorProps;
-        // (undocumented)
-        loadThumbnail(args: {
-            viewId: RowString;
-        }): Promise<ThumbnailProps | undefined>;
-        // (undocumented)
-        loadThumbnailSync(args: {
-            viewId: RowString;
-        }): ThumbnailProps | undefined;
-        // (undocumented)
-        loadTimeline(args: {
-            id: RowString;
-        }): Promise<RenderTimelineProps>;
-        // (undocumented)
-        loadTimelineSync(args: {
-            id: RowString;
-        }): RenderTimelineProps;
-        // (undocumented)
-        loadViewDefinition(args: {
-            id: RowString;
-        }): Promise<ViewDefinitionProps>;
-        // (undocumented)
-        loadViewDefinitionSync(args: {
-            id: RowString;
-        }): ViewDefinitionProps;
+        iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void): void;
         // (undocumented)
         myVersion: string;
         // (undocumented)
-        queryViewList(queryParams: ViewQueryParams): ViewListEntry[];
+        queryViews(queryParams: ViewStoreRpc.QueryParams): Promise<ViewStoreRpc.ViewInfo[]>;
+        // (undocumented)
+        queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
         // (undocumented)
         removeTagFromView(args: {
-            viewId: RowString;
+            viewId: RowIdOrString;
             tag: string;
         }): Promise<void>;
         // (undocumented)
-        updateCategorySelectorJson(categorySelectorId: RowId, json: string): Promise<void>;
+        updateCategorySelector(args: {
+            id: RowIdOrString;
+            selector: CategorySelectorProps;
+        }): Promise<void>;
+        // (undocumented)
+        updateCategorySelectorJson(categorySelectorId: RowIdOrString, json: string): void;
         // (undocumented)
         updateCategorySelectorName(selectorId: RowId, name?: string): Promise<void>;
         // (undocumented)
@@ -6000,7 +6033,7 @@ export namespace ViewStore {
         // (undocumented)
         updateDisplayStyleName(styleId: RowId, name?: string): Promise<void>;
         // (undocumented)
-        updateModelSelectorJson(modelSelectorId: RowId, json: string): Promise<void>;
+        updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string): Promise<void>;
         // (undocumented)
         updateModelSelectorName(selectorId: RowId, name?: string): Promise<void>;
         // (undocumented)
@@ -6012,28 +6045,28 @@ export namespace ViewStore {
         // (undocumented)
         updateTimelineName(timelineId: RowId, name?: string): Promise<void>;
         // (undocumented)
-        updateViewGroupJson(groupId: RowId, json: string): Promise<void>;
+        updateViewGroupJson(groupId: RowIdOrString, json: string): Promise<void>;
         // (undocumented)
         updateViewGroupName(groupId: RowId, name?: string): Promise<void>;
         // (undocumented)
-        updateViewJson(viewId: RowId, json: string): Promise<void>;
+        updateViewJson(viewId: RowIdOrString, json: string): Promise<void>;
         // (undocumented)
         updateViewName(viewId: RowId, name?: string): Promise<void>;
         // (undocumented)
-        updateViewShared(viewId: RowId, isPrivate: boolean): Promise<void>;
+        updateViewShared(arg: {
+            viewId: RowIdOrString;
+            isShared: boolean;
+            owner: string;
+        }): Promise<void>;
     }
-    const tableRowIdToString: (rowId: RowId) => RowString;
-    const guidRowToString: (rowId: RowId) => GuidRowString;
-    const // (undocumented)
-    rowIdFromString: (id: RowString) => RowId;
-    const // (undocumented)
-    defaultViewGroupId: 1;
     // (undocumented)
-    export interface ViewGroupProps {
+    export interface ViewDbCtorArgs {
         // (undocumented)
-        defaultViewId?: RowString;
+        elements?: IModelDb.GuidMapper;
     }
     export interface ViewGroupRow extends MarkRequired<TableRow, "name"> {
+        // (undocumented)
+        defaultViewId?: RowId;
         // (undocumented)
         parentId: RowId;
     }
@@ -6051,6 +6084,9 @@ export namespace ViewStore {
         // (undocumented)
         modelSel?: RowId;
     }
+    // (undocumented)
+    export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
+        {};
 }
 
 // @public
@@ -6095,7 +6131,7 @@ export namespace WorkspaceContainer {
     }
     export type Id = string;
     export type Name = string;
-    export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
+    export interface Props extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
         syncOnConnect?: boolean;
     }
     export type TokenFunc = (props: Props) => Promise<AccessToken>;
