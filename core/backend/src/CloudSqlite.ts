@@ -53,10 +53,10 @@ export namespace CloudSqlite {
 
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
-      const tokenProps = { address: { baseUri: args.baseUri, id: args.containerId }, storageType: args.storageType, accessLevel: args.accessLevel };
+      const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, storageType: args.storageType, accessLevel: args.accessLevel };
       const doRefresh = async () => {
         let newToken: AccessToken | undefined;
-        const url = `[${tokenProps.address.baseUri}/${tokenProps.address.id}]`;
+        const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
         try {
           newToken = await CloudSqlite.requestToken(tokenProps);
           logInfo(`Refreshed token for container ${url}`);

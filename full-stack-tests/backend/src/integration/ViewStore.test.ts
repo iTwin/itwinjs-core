@@ -33,13 +33,13 @@ let elements: IModelDb.GuidMapper;
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
   const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken({ address: { baseUri: AzuriteTest.baseUri, id: containerId }, storageType });
+  const accessToken = await CloudSqlite.requestToken(props);
   await ViewStore.CloudAccess.initializeDb({ ...props, accessToken });
 }
 
 async function makeViewStore(moniker: string) {
   const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: viewContainer, writeable: true };
-  const accessToken = await CloudSqlite.requestToken({ address: { baseUri: AzuriteTest.baseUri, id: viewContainer }, storageType });
+  const accessToken = await CloudSqlite.requestToken(props);
   const viewStore = new ViewStore.CloudAccess({ ...props, accessToken });
   viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
   viewStore.lockParams.moniker = moniker;

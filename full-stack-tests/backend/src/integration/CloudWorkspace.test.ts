@@ -53,7 +53,7 @@ describe("Cloud workspace containers", () => {
 
     await initializeContainer(containerId);
     const props = { containerId, writeable: true, baseUri: AzuriteTest.baseUri, storageType: "azure" as const };
-    const accessToken = await CloudSqlite.requestToken({ address: { baseUri: props.baseUri, id: props.containerId }, storageType: "azure", accessLevel: "write" });
+    const accessToken = await CloudSqlite.requestToken(props);
     const wsCont1 = workspace1.getContainer({ ...props, accessToken });
 
     const makeVersion = async (version?: string) => {
@@ -84,7 +84,7 @@ describe("Cloud workspace containers", () => {
     expect(wsCont1.cloudContainer?.hasWriteLock).false;
 
     const props2 = { containerId, writeable: false, baseUri: AzuriteTest.baseUri, storageType: "azure" as const };
-    const accessToken2 = await CloudSqlite.requestToken({ address: { baseUri: props2.baseUri, id: props2.containerId }, storageType: "azure", accessLevel: "read" });
+    const accessToken2 = await CloudSqlite.requestToken(props2);
     const wsCont2 = workspace2.getContainer({ ...props2, accessToken: accessToken2 });
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);

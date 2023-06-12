@@ -355,7 +355,7 @@ describe("CloudSqlite", () => {
 
     const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
     // must be valid token so property store can connect
-    const accessToken = await CloudSqlite.requestToken({ address: { baseUri: contProps.baseUri, id: contProps.containerId }, storageType: contProps.storageType });
+    const accessToken = await CloudSqlite.requestToken(contProps);
 
     let refreshedToken = "refreshed token";
     sinon.stub(CloudSqlite, "requestToken").callsFake(async () => refreshedToken);

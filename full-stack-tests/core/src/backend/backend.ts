@@ -5,31 +5,27 @@
 import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+
 import * as fs from "fs";
 import * as path from "path";
+import {
+  CloudSqlite, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
+  SnapshotDb, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements, ViewStore,
+} from "@itwin/core-backend";
+import { Id64String, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import {
-  BriefcaseDb,
-  CloudSqlite,
-  FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory,
-  StandaloneDb,
-  SubjectOwnsPartitionElements,
-  ViewStore,
-} from "@itwin/core-backend";
-import { Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
+import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import * as testCommands from "./TestEditCommands";
-import { exposeBackendCallbacks } from "../certa/certaBackend";
-import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
-
 import { AzuriteTest } from "./AzuriteTest";
+import * as testCommands from "./TestEditCommands";
 
 /* eslint-disable no-console */
 
@@ -41,20 +37,18 @@ function loadEnv(envFile: string) {
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
   const envResult = dotenv.config({ path: envFile });
-  if (envResult.error) {
+  if (envResult.error)
     throw envResult.error;
-  }
 
   dotenvExpand(envResult);
 }
 
-let vs1: ViewStore.CloudAccess;
 const viewContainer = "views-itwin1";
 const storageType = "azure" as const;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const accessToken = await CloudSqlite.requestToken({ address: { baseUri: AzuriteTest.baseUri, id: containerId }, storageType });
+  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, containerId, storageType });
   await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
@@ -150,9 +144,6 @@ async function init() {
   });
 
   Logger.initializeToConsole();
-  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
   return shutdown;
 }
 

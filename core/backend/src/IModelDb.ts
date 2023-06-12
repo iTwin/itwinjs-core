@@ -2058,7 +2058,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
-      const accessToken = await CloudSqlite.requestToken({ address: { baseUri: props.baseUri, id: props.containerId }, storageType: props.storageType, userToken: args.userToken, accessLevel: args.accessLevel });
+      const accessToken = await CloudSqlite.requestToken(props);
       if (!this._viewStore) {
         this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, elements: this._iModel.elements });
       } else {

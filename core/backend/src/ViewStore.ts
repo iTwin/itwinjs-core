@@ -355,13 +355,13 @@ export namespace ViewStore {
       });
     }
 
-    private deleteFromTable(table: string, id: RowId): void {
+    private deleteFromTable(table: string, id: RowIdOrString): void {
       this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=? `, (stmt) => {
-        stmt.bindInteger(1, id);
+        stmt.bindInteger(1, toRowId(id));
         stmt.stepForWrite();
       });
     }
-    public deleteViewRow(id: RowId) {
+    public deleteViewRow(id: RowIdOrString) {
       return this.deleteFromTable(tableName.views, id);
     }
     public async deleteViewGroup(args: { name: ViewStoreRpc.ViewGroupSpec }) {
@@ -370,20 +370,36 @@ export namespace ViewStore {
         throw new Error("Cannot delete root group");
       return this.deleteFromTable(tableName.viewGroups, rowId);
     }
-    public deleteModelSelector(id: RowId) {
+    public deleteModelSelectorSync(id: RowIdOrString) {
       return this.deleteFromTable(tableName.modelSelectors, id);
     }
-    public deleteCategorySelector(id: RowId) {
+    public async deleteModelSelector(args: { id: RowIdOrString }): Promise<void> {
+      return this.deleteModelSelectorSync(args.id);
+    }
+    public deleteCategorySelectorSync(id: RowIdOrString) {
       return this.deleteFromTable(tableName.categorySelectors, id);
     }
-    public deleteDisplayStyle(id: RowId) {
+    public deleteDisplayStyleSync(id: RowIdOrString) {
       return this.deleteFromTable(tableName.displayStyles, id);
     }
-    public deleteTimeline(id: RowId) {
+    public deleteTimelineSync(id: RowIdOrString) {
       return this.deleteFromTable(tableName.timelines, id);
     }
-    public deleteTag(id: RowId) {
+    public deleteTagSync(arg: { name: ViewStoreRpc.TagName }) {
+      const id = this.findTagByName(arg.name);
       return this.deleteFromTable(tableName.tags, id);
+    }
+    public async deleteTag(arg: { name: ViewStoreRpc.TagName }) {
+      return this.deleteTagSync(arg);
+    }
+    public async deleteCategorySelector(args: { id: RowIdOrString }): Promise<void> {
+      return this.deleteCategorySelectorSync(args.id);
+    }
+    public async deleteDisplayStyle(args: { id: RowIdOrString }): Promise<void> {
+      return this.deleteDisplayStyleSync(args.id);
+    }
+    public async deleteTimeline(args: { id: RowIdOrString }): Promise<void> {
+      return this.deleteTimelineSync(args.id);
     }
     public deleteSearch(id: RowId) {
       return this.deleteFromTable(tableName.searches, id);
@@ -468,32 +484,37 @@ export namespace ViewStore {
       return this.getTableRow(tableName.searches, id);
     }
 
-    private async updateJson(table: string, id: RowId, json: string): Promise<void> {
+    private updateJson(table: string, id: RowIdOrString, json: string) {
       this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=? `, (stmt) => {
         stmt.bindString(1, json);
-        stmt.bindInteger(2, id);
+        stmt.bindInteger(2, toRowId(id));
         stmt.stepForWrite();
       });
     }
-    public async updateViewShared(viewId: RowId, isPrivate: boolean): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${tableName.views} SET private=? WHERE Id=? `, (stmt) => {
-        stmt.bindBoolean(1, isPrivate);
-        stmt.bindInteger(2, viewId);
+    public async updateViewShared(arg: { viewId: RowIdOrString, isShared: boolean, owner: string }): Promise<void> {
+      this.withSqliteStatement(`UPDATE ${tableName.views} SET private=?,owner=? WHERE Id=? `, (stmt) => {
+        stmt.bindBoolean(1, !arg.isShared);
+        stmt.bindString(1, arg.owner);
+        stmt.bindInteger(2, toRowId(arg.viewId));
         stmt.stepForWrite();
       });
     }
-    public async updateViewJson(viewId: RowId, json: string): Promise<void> {
+    public async updateViewJson(viewId: RowIdOrString, json: string): Promise<void> {
       return this.updateJson(tableName.views, viewId, json);
     }
-    public async updateViewGroupJson(groupId: RowId, json: string): Promise<void> {
+    public async updateViewGroupJson(groupId: RowIdOrString, json: string): Promise<void> {
       return this.updateJson(tableName.viewGroups, groupId, json);
     }
-    public async updateModelSelectorJson(modelSelectorId: RowId, json: string): Promise<void> {
+    public async updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string): Promise<void> {
       return this.updateJson(tableName.modelSelectors, modelSelectorId, json);
     }
-    public async updateCategorySelectorJson(categorySelectorId: RowId, json: string): Promise<void> {
+    public updateCategorySelectorJson(categorySelectorId: RowIdOrString, json: string) {
       return this.updateJson(tableName.categorySelectors, categorySelectorId, json);
     }
+    public async updateCategorySelector(args: { id: RowIdOrString, selector: CategorySelectorProps }): Promise<void> {
+      return this.updateCategorySelectorJson(args.id, JSON.stringify(args.selector.categories));
+    }
+
     public async updateDisplayStyleJson(styleId: RowId, json: string): Promise<void> {
       return this.updateJson(tableName.displayStyles, styleId, json);
     }
@@ -1151,8 +1172,8 @@ export namespace ViewStore {
       return viewId;
     }
 
-    public async deleteView(viewId: RowIdOrString) {
-      const rowId = toRowId(viewId);
+    public async deleteView(arg: { viewId: RowIdOrString }) {
+      const rowId = toRowId(arg.viewId);
       const viewRow = this.getViewRow(rowId);
       if (viewRow === undefined)
         throw new Error("View not found");

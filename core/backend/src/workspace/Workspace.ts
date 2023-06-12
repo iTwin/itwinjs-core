@@ -320,7 +320,7 @@ export class ITwinWorkspace implements Workspace {
     const props = this.resolveContainer(dbProps.containerName);
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
-      props.accessToken = await CloudSqlite.requestToken({ address: { baseUri: props.baseUri, id: props.containerId }, storageType: props.storageType, accessLevel: "read" });
+      props.accessToken = await CloudSqlite.requestToken(props);
       container = this.getContainer(props);
     }
     return container?.getWorkspaceDb(dbProps);

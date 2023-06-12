@@ -87,12 +87,11 @@ export namespace BlobContainer {
   /** The URI and Id of the container. */
   export interface UriAndId {
     baseUri: string;
-    id: ContainerId;
+    containerId: ContainerId;
   }
 
   /** Information required to access an existing container. */
-  export interface AccessContainerProps {
-    address: UriAndId;
+  export interface AccessContainerProps extends UriAndId {
     userToken: UserToken;
   }
 
@@ -129,7 +128,7 @@ export namespace BlobContainer {
      * the id for the container. Useful for tests.
      * @internal
      */
-    id?: ContainerId;
+    containerId?: ContainerId;
   }
 
   /** Methods to create, delete, and access blob containers. */

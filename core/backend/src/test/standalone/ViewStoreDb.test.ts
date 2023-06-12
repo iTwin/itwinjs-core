@@ -41,7 +41,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(v1.groupId).equals("@1");
     expect(v1.isPrivate).to.be.true;
     expect(v1.name).equals("view1");
-    await vs1.updateViewShared(v1Id, false);
+    await vs1.updateViewShared({ viewId: v1Id, isShared: true, owner: "owner10" });
     const v1Updated = vs1.getViewByNameSync({ name: "view1" })!;
     expect(v1Updated.isPrivate).to.be.false;
 
@@ -143,11 +143,11 @@ describe.only("ViewStore", function (this: Suite) {
     let cat1 = vs1.getCategorySelectorRow(cat1Id)!;
     expect(cat1.name).equals("cat1");
     expect(cat1.json).equals("cat1-json");
-    await vs1.updateCategorySelectorJson(cat1Id, "cat1-json-updated");
+    await vs1.updateCategorySelectorJson(cat1Id, "cat1-json-updated");// eslint-disable-line @typescript-eslint/await-thenable
     cat1 = vs1.getCategorySelectorRow(cat1Id)!;
     expect(cat1.json).equals("cat1-json-updated");
 
-    vs1.deleteCategorySelector(cat1Id);
+    vs1.deleteCategorySelectorSync(cat1Id);
     expect(vs1.findCategorySelectorByName("cat1")).equals(0);
 
     vs1.addDisplayStyleRow({ name: "style1", json: "style1-json" });
@@ -165,7 +165,7 @@ describe.only("ViewStore", function (this: Suite) {
     const style1Updated = vs1.getDisplayStyleRow(style1Id)!;
     expect(style1Updated.json).equals("style1-json-updated");
 
-    vs1.deleteDisplayStyle(style1Id);
+    vs1.deleteDisplayStyleSync(style1Id);
     expect(vs1.findDisplayStyleByName("style1")).equals(0);
     expect(vs1.findDisplayStyleByName("style2")).equals(2);
 
@@ -190,7 +190,7 @@ describe.only("ViewStore", function (this: Suite) {
     const model1Updated = vs1.getModelSelectorRow(model1Id)!;
     expect(model1Updated.json).equals("model1-json-updated");
 
-    vs1.deleteModelSelector(model1Id);
+    vs1.deleteModelSelectorSync(model1Id);
     expect(vs1.findModelSelectorByName("model1")).equals(0);
 
     vs1.addTimelineRow({ name: "timeline1", json: "timeline1-json" });
@@ -210,7 +210,7 @@ describe.only("ViewStore", function (this: Suite) {
     const timeline1Updated = vs1.getTimelineRow(timeline1Id)!;
     expect(timeline1Updated.json).equals("timeline1-json-updated");
 
-    vs1.deleteTimeline(timeline2Id);
+    vs1.deleteTimelineSync(timeline2Id);
     expect(vs1.findTimelineByName("timeline2")).equals(0);
 
     const t1 = vs1.addTag({ name: "tag1", json: "tag1-json", owner: "owner1" });
@@ -269,7 +269,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition"] }).length).equal(1);
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:DrawingViewDefinition", "BisCore:SheetViewDefinition"] }).length).equal(2);
 
-    vs1.deleteTag(2);
+    vs1.deleteTagSync({ name: "tag2" });
     const tagIdsAfterDelete = vs1.getTagsForView(v1Id)!;
     expect(tagIdsAfterDelete.length).equals(2);
     expect(tagIdsAfterDelete[0]).equals("tag1");

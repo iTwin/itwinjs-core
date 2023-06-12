@@ -197,14 +197,14 @@ describe.only("ViewDefinition", () => {
     expect(tags?.length).equal(3);
 
     // v1 and v2 share modelselector, categoryselector, and displaystyle so when v2 is deleted they should not be deleted
-    await vs1.deleteView(v2);
+    await vs1.deleteView({ viewId: v2 });
     expect(() => vs1.getViewDefinitionSync({ id: v2 })).throws("View not found");
     expect(vs1.getDisplayStyleRow(1)).not.undefined;
     expect(vs1.getModelSelectorRow(1)).not.undefined;
     expect(vs1.getCategorySelectorRow(1)).not.undefined;
 
     // the categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
-    await vs1.deleteView(v1);
+    await vs1.deleteView({ viewId: v1 });
     expect(() => vs1.getViewDefinitionSync({ id: v1 })).throws("View not found");
     expect(vs1.getDisplayStyleRow(1)).undefined;
     expect(vs1.getCategorySelectorRow(1)).undefined;

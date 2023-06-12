@@ -235,6 +235,10 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   roll?: AngleProps;
 }
 
+/**
+ * Access to a [ViewStore]($learning/ViewStore) from the frontend.
+ * @beta
+ */
 export namespace ViewStoreRpc {
 
   /** @internal */
@@ -249,7 +253,6 @@ export namespace ViewStoreRpc {
   /**
    * A string identifying a group. This may either be a "group name path" or the RowString of a group (e.g. either "group1/design/issues" or "@4e3")
    * The syntax is not ambiguous because ViewStoreIdStrings always start with "@" and  Group names can never contain "@".
-   * @beta
    */
   export type ViewGroupSpec = IdString | ViewGroupPath;
 
@@ -258,36 +261,36 @@ export namespace ViewStoreRpc {
 
   export type TagName = string;
 
+  export type OwnerName = string;
+
   export type ViewGroupPath = string;
 
-  /** The name for a view group.
-   * @beta
-   */
+  /** The name for a view group.   */
   export type ViewGroupName = string;
 
-  /** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@")
- * @beta
- */
+  /** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@") */
   export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
 
   export interface QueryParams {
-    readonly classNames?: string[]; // list of classFullNames
+    /** a list of classFullNames to filter the query by. */
+    readonly classNames?: string[];
     /** Optional "LIMIT" clause to limit the number of rows returned. */
     readonly limit?: number;
     /** Optional "OFFSET" clause. Only valid if Limit is also present. */
     readonly offset?: number;
+    /** A string to filter view names. May include wildcards if the `nameCompare` operator supports them. */
     readonly nameSearch?: string;
     /** The comparison operator for `nameSearch`. Default is `=` */
     readonly nameCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
     readonly group?: ViewStoreRpc.ViewGroupSpec;
-    readonly tags?: string[];
-    readonly owner?: string;
+    readonly tags?: TagName[];
+    readonly owner?: OwnerName;
   }
 
   export interface ViewInfo {
     id: IdString;
     name?: ViewName;
-    owner?: string;
+    owner?: OwnerName;
     className: string;
     groupId: IdString;
     isPrivate: boolean;
@@ -309,49 +312,136 @@ export namespace ViewStoreRpc {
     categorySelectorProps?: CategorySelectorProps;
     modelSelectorProps?: ModelSelectorProps;
     displayStyleProps?: DisplayStyleProps;
-    owner?: string;
+    owner?: OwnerName;
     group?: ViewGroupSpec;
     isPrivate?: boolean;
-    tags?: string[];
+    tags?: TagName[];
   }
 
   /**
-   * Methods for reading from a ViewStore via Rpc from a frontend. These methods use the current ViewStore for the iModel, and
-   * attempts to load the default ViewStore if no current ViewStore is loaded. They all require an accessToken, and
-   * will throw exceptions if the request cannot be fulfilled.
-   * @note The user's accessToken is validated against the ViewStore's container for every request.
-   * @beta
+   * Methods for reading from a ViewStore via Rpc from a frontend. These methods use the *current* ViewStore for the iModel, and
+   * attempt to load the default ViewStore if no ViewStore is currently loaded. They will throw exceptions if the request cannot be fulfilled.
+   * @note The user's accessToken is validated against the ViewStore for every request. For each of these
+   * methods, the user only needs read permission to the ViewStore.
    */
   export interface Reader {
-    /** Find all "owned by" views. */
-    findViewsByOwner(args: { owner: string }): Promise<ViewInfo[]>;
+    /** Find all views owned by the supplied owner name. */
+    findViewsByOwner(args: { owner: OwnerName }): Promise<ViewInfo[]>;
+    /** Get a category selector by Id. Throws if it does not exist. */
     getCategorySelector(args: { id: IdString }): Promise<CategorySelectorProps>;
+    /** Get a display style by Id. Throws if it does not exist. */
     getDisplayStyle(args: { id: IdString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
+    /** Get a model selector by Id. Throws if it does not exist. */
     getModelSelector(args: { id: IdString }): Promise<ModelSelectorProps>;
+    /** Get a thumbnail for a view. */
     getThumbnail(args: { viewId: IdString }): Promise<ThumbnailProps | undefined>;
+    /** Get a render timeline by Id. Throws if it does not exist. */
     getTimeline(args: { id: IdString }): Promise<RenderTimelineProps>;
+    /** Get a view by name. The name can include the *view group path*, if no `groupId` is supplied. */
     getViewByName(arg: { name: ViewStoreRpc.ViewName, groupId?: IdString }): Promise<ViewStoreRpc.ViewInfo | undefined>;
     getViewDefinition(args: { id: IdString }): Promise<ViewDefinitionProps>;
+    /** get the properties of a ViewGroup by id. This will include the defaultViewId, if one exists. */
     getViewGroupInfo(args: { id?: IdString }): Promise<ViewGroupInfo | undefined>;
     getViewGroups(args: { parent?: ViewGroupSpec }): Promise<{ id: IdString, name: string }[]>;
     getViewInfo(args: { id: IdString }): Promise<ViewInfo | undefined>;
+    /** @note The array will be sorted by name, ascending. */
     queryViews(queryParams: ViewStoreRpc.QueryParams): Promise<ViewStoreRpc.ViewInfo[]>;
   }
 
-  /** @beta */
+  /**
+   * Methods for writing to a ViewStore via Rpc from a frontend. These methods use the *current* ViewStore for the iModel, and
+   * attempt to load the default ViewStore if no ViewStore is currently loaded. They will throw exceptions if the request cannot be fulfilled.
+   * @note The user's accessToken is validated against the ViewStore for every request. For each of these
+   * methods, the user must have write permission to the ViewStore.
+   */
   export interface Writer {
-    addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<IdString>;
-    addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<IdString>;
-    addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<IdString>;
-    addOrReplaceThumbnail(args: { viewId: IdString, thumbnail: ThumbnailProps, owner?: string }): Promise<IdString>;
-    addTagsToView(args: { viewId: IdString, tags: string[], owner?: string }): Promise<void>;
-    addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<IdString>;
+    addCategorySelector(args: { name?: string, categories: Id64Array, owner?: OwnerName }): Promise<IdString>;
+    addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: OwnerName }): Promise<IdString>;
+    addModelSelector(args: { name?: string, models: Id64Array, owner?: OwnerName }): Promise<IdString>;
+    addOrReplaceThumbnail(args: { viewId: IdString, thumbnail: ThumbnailProps, owner?: OwnerName }): Promise<IdString>;
+    addTagsToView(args: { viewId: IdString, tags: TagName[], owner?: OwnerName }): Promise<void>;
+    addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: OwnerName }): Promise<IdString>;
+
+    /** Add a new view to a ViewStore. If no group is supplied, the new view is added to the root view group.
+     * @returns the Id of new view
+     */
     addView(args: AddViewArgs): Promise<IdString>;
-    addViewGroup(args: { name: string, parentId?: IdString, owner?: string }): Promise<IdString>;
+
+    /** Add a new view group to a ViewStore. If no parent is supplied, the new group is added to the root view group.
+     * @returns the Id of new view group
+     */
+    addViewGroup(args: { name: string, parentId?: IdString, owner?: OwnerName }): Promise<IdString>;
+
+    /** Change the default view for a view group. If no group is supplied, this changes the default view for the root view group. */
     changeDefaultViewId(args: { defaultView: IdString, group?: ViewGroupSpec }): Promise<void>;
+
+    /** delete the thumbnail for a view. */
     deleteThumbnail(args: { id: IdString }): Promise<void>;
-    deleteView(viewId: IdString): Promise<void>;
+
+    /**
+     * Delete a view from a ViewStore. If this is the default view for a view group, it cannot be deleted until another view is set as the default.
+     * @note If this view references a category selector, model selector, or display style that is not referenced by any other view,
+     * *and do not have a name*, they will each also be deleted.
+     */
+    deleteView(args: { viewId: IdString }): Promise<void>;
+
+    /** Delete a view group from a ViewStore. This will also delete all views in the group. */
     deleteViewGroup(args: { name: ViewGroupSpec }): Promise<void>;
-    removeTagFromView(args: { viewId: IdString, tag: string }): Promise<void>;
+
+    /** Delete a display style from a ViewStore. If the display style is referenced by any view, it cannot be deleted and an exception will be thrown. */
+    deleteDisplayStyle(args: { id: IdString }): Promise<void>;
+
+    /** Delete a model selector from a ViewStore. If the model selector is referenced by any view, it cannot be deleted and an exception will be thrown. */
+    deleteModelSelector(args: { id: IdString }): Promise<void>;
+
+    /** Delete a category selector from a ViewStore. If the category selector is referenced by any view, it cannot be deleted and an exception will be thrown. */
+    deleteCategorySelector(args: { id: IdString }): Promise<void>;
+
+    /** Delete a render timeline from a ViewStore. */
+    deleteTimeline(args: { id: IdString }): Promise<void>;
+
+    /** Delete a tag. This removes it from all views where it was used. */
+    deleteTag(args: { name: TagName }): Promise<void>;
+
+    /** remove a tag from a view. */
+    removeTagFromView(args: { viewId: IdString, tag: TagName }): Promise<void>;
+
+    // /** Update the properties of a category selector. */
+    // updateCategorySelector(args: { id: IdString, categories: Id64Array }): Promise<void>;
+
+    // /** Update the properties of a display style. */
+    // updateDisplayStyle(args: { id: IdString, style: DisplayStyleSettingsProps, owner?: OwnerName }): Promise<void>;
+
+    // /** Update the properties of a model selector. */
+    // updateModelSelector(args: { id: IdString, selector: ModelSelectorProps, owner?: OwnerName }): Promise<void>;
+
+    // /** Update the properties of a render timeline. */
+    // updateTimeline(args: { id: IdString, timeline: RenderTimelineProps, owner?: OwnerName }): Promise<void>;
+
+    // /** Update the properties of a view. */
+    // updateView(args: { viewId: IdString, viewDefinition: ViewDefinitionProps, owner?: OwnerName }): Promise<void>;
+
+    // updateViewShared(arg: { viewId: IdString, isShared: boolean, owner: string }): Promise<void>;
+
+    // /** Set the name of a category selector. */
+    // renameCategorySelector(args: { id: IdString, name: string }): Promise<void>;
+
+    // /** Set the name of a display style. */
+    // renameDisplayStyle(args: { id: IdString, name: string }): Promise<void>;
+
+    // /** Set the name of a model selector. */
+    // renameModelSelector(args: { id: IdString, name: string }): Promise<void>;
+
+    // /** Set the name of a render timeline. */
+    // renameTimeline(args: { id: IdString, name: string }): Promise<void>;
+
+    // /** Set the name of a view. */
+    // renameView(args: { id: IdString, name: string }): Promise<void>;
+
+    // /** Set the name of a view group. */
+    // renameViewGroup(args: { id: IdString, name: string }): Promise<void>;
+
+    // /** rename an existing tag. */
+    // renameTag(args: { oldName: TagName, newName: TagName }): Promise<void>;
   }
 }
