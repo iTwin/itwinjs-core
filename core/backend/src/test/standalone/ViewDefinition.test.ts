@@ -171,7 +171,7 @@ describe.only("ViewDefinition", () => {
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
     const v1 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
     expect(v1).equal("@1");
-    const viewDefOut = vs1.getViewDefinitionSync({ id: v1 }) as SpatialViewDefinitionProps;
+    const viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");
     expect(viewDefOut.classFullName).equal("BisCore:SpatialViewDefinition");
     expect(viewDefOut.modelSelectorId).equal(ms1Row);
@@ -198,14 +198,14 @@ describe.only("ViewDefinition", () => {
 
     // v1 and v2 share modelselector, categoryselector, and displaystyle so when v2 is deleted they should not be deleted
     await vs1.deleteView({ viewId: v2 });
-    expect(() => vs1.getViewDefinitionSync({ id: v2 })).throws("View not found");
+    expect(() => vs1.getViewDefinitionSync({ viewId: v2 })).throws("View not found");
     expect(vs1.getDisplayStyleRow(1)).not.undefined;
     expect(vs1.getModelSelectorRow(1)).not.undefined;
     expect(vs1.getCategorySelectorRow(1)).not.undefined;
 
     // the categoryselector, and displaystyle are no longer shared, so they should be deleted when v1 is deleted
     await vs1.deleteView({ viewId: v1 });
-    expect(() => vs1.getViewDefinitionSync({ id: v1 })).throws("View not found");
+    expect(() => vs1.getViewDefinitionSync({ viewId: v1 })).throws("View not found");
     expect(vs1.getDisplayStyleRow(1)).undefined;
     expect(vs1.getCategorySelectorRow(1)).undefined;
     expect(vs1.getModelSelectorRow(1)).not.undefined; // modelselector has a name so it should not be deleted

@@ -208,8 +208,8 @@ export namespace ViewStore {
         columns: `${baseCols},name TEXT NOT NULL COLLATE NOCASE,className TEXT NOT NULL,private BOOLEAN NOT NULL,` +
           `groupId INTEGER NOT NULL REFERENCES ${tableName.viewGroups}(Id) ON DELETE CASCADE, ` +
           `modelSel INTEGER REFERENCES ${tableName.modelSelectors}(Id), ` +
-          `categorySel INTEGER REFERENCES ${tableName.categorySelectors}(Id), ` +
-          `displayStyle INTEGER REFERENCES ${tableName.displayStyles}(Id)`,
+          `categorySel INTEGER  NOT NULL REFERENCES ${tableName.categorySelectors}(Id), ` +
+          `displayStyle INTEGER NOT NULL REFERENCES ${tableName.displayStyles}(Id)`,
         constraints: "UNIQUE(groupId,name)",
         addTimestamp: true,
       });
@@ -407,8 +407,8 @@ export namespace ViewStore {
     public deleteThumbnailSync(id: RowString) {
       return this.deleteFromTable(tableName.thumbnails, toRowId(id));
     }
-    public async deleteThumbnail(arg: { id: RowString }) {
-      return this.deleteThumbnailSync(arg.id);
+    public async deleteThumbnail(arg: { viewId: RowString }) {
+      return this.deleteThumbnailSync(arg.viewId);
     }
     /** get the data for a view from the database */
     public getViewRow(viewId: RowId): undefined | ViewRow {
@@ -494,8 +494,8 @@ export namespace ViewStore {
     public async updateViewShared(arg: { viewId: RowIdOrString, isShared: boolean, owner: string }): Promise<void> {
       this.withSqliteStatement(`UPDATE ${tableName.views} SET private=?,owner=? WHERE Id=? `, (stmt) => {
         stmt.bindBoolean(1, !arg.isShared);
-        stmt.bindString(1, arg.owner);
-        stmt.bindInteger(2, toRowId(arg.viewId));
+        stmt.bindString(2, arg.owner);
+        stmt.bindInteger(3, toRowId(arg.viewId));
         stmt.stepForWrite();
       });
     }
@@ -619,15 +619,15 @@ export namespace ViewStore {
           name: stmt.getValueStringMaybe(2),
           isPrivate: stmt.getValueBoolean(3),
           groupId: tableRowIdToString(stmt.getValueInteger(4)),
-          modelSel: maybeId(stmt.getValueInteger(5)),
-          categorySel: maybeId(stmt.getValueInteger(6)),
-          displayStyle: maybeId(stmt.getValueInteger(7)),
+          modelSelectorId: maybeId(stmt.getValueInteger(5)),
+          categorySelectorId: tableRowIdToString(stmt.getValueInteger(6)),
+          displayStyleId: tableRowIdToString(stmt.getValueInteger(7)),
           tags: this.getTagsForView(viewId),
         } : undefined;
       });
     }
-    public async getViewInfo(args: { id: RowIdOrString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
-      return this.getViewInfoSync(args.id);
+    public async getViewInfo(args: { viewId: RowIdOrString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
+      return this.getViewInfoSync(args.viewId);
     }
 
     public async findViewsByOwner(args: { owner: string }): Promise<ViewStoreRpc.ViewInfo[]> {
@@ -955,8 +955,8 @@ export namespace ViewStore {
           isPrivate: args.isPrivate,
           json: stringifyProps(viewDef),
           modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
-          categorySel: maybeRow(viewDef.categorySelectorId),
-          displayStyle: maybeRow(viewDef.displayStyleId),
+          categorySel: toRowId(viewDef.categorySelectorId),
+          displayStyle: toRowId(viewDef.displayStyleId),
         });
       } catch (e) {
         const err = e as SqliteStatement.DbError;
@@ -966,17 +966,17 @@ export namespace ViewStore {
       }
     }
 
-    public getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps {
-      const row = this.getViewRow(toRowId(args.id));
+    public getViewDefinitionSync(args: { viewId: RowString }): ViewDefinitionProps {
+      const row = this.getViewRow(toRowId(args.viewId));
       if (undefined === row)
         throw new Error("View not found");
 
-      const props = blankElementProps(JSON.parse(row.json), row.className, args.id, row.name) as ViewDefinitionProps;
+      const props = blankElementProps(JSON.parse(row.json), row.className, args.viewId, row.name) as ViewDefinitionProps;
       this.fromGuidRowMember(props, "baseModelId");
       this.fromGuidRowMember(props.jsonProperties?.viewDetails, "acs");
       return props;
     }
-    public async getViewDefinition(args: { id: RowString }): Promise<ViewDefinitionProps> {
+    public async getViewDefinition(args: { viewId: RowString }): Promise<ViewDefinitionProps> {
       return this.getViewDefinitionSync(args);
     }
 
@@ -985,7 +985,7 @@ export namespace ViewStore {
       if (viewRow === undefined)
         throw new Error("View not found");
       const format: ThumbnailFormatProps = { format: args.thumbnail.format, height: args.thumbnail.height, width: args.thumbnail.width };
-      return tableRowIdToString(this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner }));
+      this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner });
     }
 
     public getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined {
@@ -1040,13 +1040,13 @@ export namespace ViewStore {
       return this.getViewByNameSync(arg);
     }
 
-    public async getViewGroupInfo(args: { id: ViewStoreRpc.IdString }): Promise<ViewStoreRpc.ViewGroupInfo | undefined> {
-      const groupId = args.id ? this.findViewGroup(args.id) : defaultViewGroupId;
+    public async getViewGroupInfo(args: { groupId?: ViewStoreRpc.IdString }): Promise<ViewStoreRpc.ViewGroupInfo | undefined> {
+      const groupId = args.groupId ? this.findViewGroup(args.groupId) : defaultViewGroupId;
       const groupRow = groupId ? this.getViewGroup(groupId) : undefined;
       if (groupRow === undefined)
         return undefined;
       const info: ViewStoreRpc.ViewGroupInfo = {
-        id: args.id,
+        id: tableRowIdToString(groupId),
         name: groupRow.name,
         defaultView: groupRow.defaultViewId ? tableRowIdToString(groupRow.defaultViewId) : undefined,
         parent: tableRowIdToString(groupRow.parentId),
@@ -1085,7 +1085,7 @@ export namespace ViewStore {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
       let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=?`;
       if (queryParams.owner)
-        sql += " AND owner=@owner";
+        sql += " AND (owner=@owner OR private!=1)";
       else
         sql += " AND private!=1";
       if (queryParams.classNames)
@@ -1143,7 +1143,7 @@ export namespace ViewStore {
 
     public async addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString> {
       const owner = args.owner;
-      if (args.viewDefinition.categorySelectorId) {
+      if (ViewStoreRpc.isViewStoreId(args.viewDefinition.categorySelectorId)) {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
       } else {
         if (args.categorySelectorProps === undefined)
@@ -1151,14 +1151,14 @@ export namespace ViewStore {
         args.viewDefinition.categorySelectorId = await this.addCategorySelector({ categories: args.categorySelectorProps.categories, owner });
       }
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
-      if (spatialDef.modelSelectorId) {
+      if (ViewStoreRpc.isViewStoreId(spatialDef.modelSelectorId)) {
         this.verifyRowId(tableName.modelSelectors, spatialDef.modelSelectorId);
       } else if (args.modelSelectorProps) {
         spatialDef.modelSelectorId = await this.addModelSelector({ models: args.modelSelectorProps.models, owner });
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
         throw new Error("Must supply modelSelector for Spatial views");
       }
-      if (spatialDef.displayStyleId) {
+      if (ViewStoreRpc.isViewStoreId(spatialDef.displayStyleId)) {
         this.verifyRowId(tableName.displayStyles, spatialDef.displayStyleId);
       } else {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)

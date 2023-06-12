@@ -29,8 +29,11 @@ describe.only("ViewStore", function (this: Suite) {
   });
 
   it("ViewDb", async () => {
+    const c1 = vs1.addCategorySelectorRow({ name: "first cat", json: "cat1-json" });
+    const ds1 = vs1.addDisplayStyleRow({ name: "first style", json: "style1-json" });
+
     expect(vs1.getViewByNameSync({ name: "view1" })).to.be.undefined;
-    const v1Id = vs1.addViewRow({ className: "spatial", name: "view1", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
+    const v1Id = vs1.addViewRow({ className: "spatial", name: "view1", json: "json1", owner: "owner10", isPrivate: true, groupId: 1, categorySel: c1, displayStyle: ds1 });
     expect(v1Id).equals(1);
 
     const v1 = vs1.getViewByNameSync({ name: "view1" })!;
@@ -45,7 +48,7 @@ describe.only("ViewStore", function (this: Suite) {
     const v1Updated = vs1.getViewByNameSync({ name: "view1" })!;
     expect(v1Updated.isPrivate).to.be.false;
 
-    const v1Id2 = vs1.addViewRow({ className: "spatial", name: "v2", json: "json-v2", owner: "owner1", groupId: 1 });
+    const v1Id2 = vs1.addViewRow({ className: "spatial", name: "v2", json: "json-v2", owner: "owner1", groupId: 1, categorySel: c1, displayStyle: ds1 });
     expect(v1Id2).equals(2);
     const v2 = vs1.getViewRow(v1Id2)!;
     expect(v2.name).equals("v2");
@@ -65,17 +68,17 @@ describe.only("ViewStore", function (this: Suite) {
     const g2 = vs1.addViewGroupRow({ name: "group2", json: "group2-json" });
     const g3 = vs1.addViewGroupRow({ name: "group 3", parentId: g2, json: "group3-json" });
     const g4 = vs1.addViewGroupRow({ name: "group4", parentId: g3, json: "group3-json" });
-    const v2Id = vs1.addViewRow({ className: "spatial2", name: "view2", json: "json2", groupId: g4 });
+    const v2Id = vs1.addViewRow({ className: "spatial2", name: "view2", json: "json2", groupId: g4, categorySel: c1, displayStyle: ds1 });
     expect(v2Id).equals(3);
 
     for (let i = 0; i < 100; i++)
-      vs1.addViewRow({ className: "spatial", name: `test view ${i}`, json: `json${i}`, owner: "owner1", groupId: g2 });
+      vs1.addViewRow({ className: "spatial", name: `test view ${i}`, json: `json${i}`, owner: "owner1", groupId: g2, categorySel: c1, displayStyle: ds1 });
 
     // duplicate name in a group should throw
-    expect(() => vs1.addViewRow({ className: "spatial3", name: "test view 0", json: "json-blah", owner: "owner1", groupId: g2 })).to.throw("UNIQUE");
+    expect(() => vs1.addViewRow({ className: "spatial3", name: "test view 0", json: "json-blah", owner: "owner1", groupId: g2, categorySel: c1, displayStyle: ds1 })).to.throw("UNIQUE");
     // allow the same name in different groups
-    const v103 = vs1.addViewRow({ className: "spatial3", name: "test view 0", json: "json-blah", owner: "owner1", groupId: 1 });
-    const v104 = vs1.addViewRow({ className: "spatial3", name: "another view", json: "json-blah", owner: "owner10", groupId: 1 });
+    const v103 = vs1.addViewRow({ className: "spatial3", name: "test view 0", json: "json-blah", owner: "owner1", groupId: 1, categorySel: c1, displayStyle: ds1 });
+    const v104 = vs1.addViewRow({ className: "spatial3", name: "another view", json: "json-blah", owner: "owner10", groupId: 1, categorySel: c1, displayStyle: ds1 });
 
     const g3Id = vs1.getViewGroupByName("group 3", g2);
 
@@ -136,10 +139,10 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.deleteViewGroup({ name: "group1" });
     expect(vs1.getViewByNameSync({ name: "view2", groupId: g1 })).to.be.undefined;
 
-    vs1.addCategorySelectorRow({ name: "cat1", json: "cat1-json" });
+    const cat01 = vs1.addCategorySelectorRow({ name: "cat1", json: "cat1-json" });
     vs1.addCategorySelectorRow({ name: "cat2", json: "cat2-json" });
     const cat1Id = vs1.findCategorySelectorByName("cat1");
-    expect(cat1Id).equals(1);
+    expect(cat1Id).equals(cat01);
     let cat1 = vs1.getCategorySelectorRow(cat1Id)!;
     expect(cat1.name).equals("cat1");
     expect(cat1.json).equals("cat1-json");
@@ -150,10 +153,10 @@ describe.only("ViewStore", function (this: Suite) {
     vs1.deleteCategorySelectorSync(cat1Id);
     expect(vs1.findCategorySelectorByName("cat1")).equals(0);
 
-    vs1.addDisplayStyleRow({ name: "style1", json: "style1-json" });
+    const ds01 = vs1.addDisplayStyleRow({ name: "style1", json: "style1-json" });
     vs1.addDisplayStyleRow({ name: "style2", json: "style2-json" });
     const style1Id = vs1.findDisplayStyleByName("style1");
-    expect(style1Id).equals(1);
+    expect(style1Id).equals(ds01);
     const style1 = vs1.getDisplayStyleRow(style1Id)!;
     expect(style1.name).equals("style1");
     expect(style1.json).equals("style1-json");
@@ -167,7 +170,7 @@ describe.only("ViewStore", function (this: Suite) {
 
     vs1.deleteDisplayStyleSync(style1Id);
     expect(vs1.findDisplayStyleByName("style1")).equals(0);
-    expect(vs1.findDisplayStyleByName("style2")).equals(2);
+    expect(vs1.findDisplayStyleByName("style2")).equals(3);
 
     vs1.addModelSelectorRow({ name: "model1", json: "model1-json" });
     const ms2 = vs1.addModelSelectorRow({ json: "model2-json" });
@@ -238,10 +241,10 @@ describe.only("ViewStore", function (this: Suite) {
     expect(tags[1]).equals("tag2");
     expect(tags[2]).equals("test tag 0");
 
-    vs1.addViewRow({ className: "BisCore:SpatialViewDefinition", name: "my private 2", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
-    vs1.addViewRow({ className: "BisCore:OrthographicViewDefinition", name: "my private 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
-    vs1.addViewRow({ className: "BisCore:SheetViewDefinition", name: "sheet 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
-    vs1.addViewRow({ className: "BisCore:DrawingViewDefinition", name: "drawing 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1 });
+    vs1.addViewRow({ className: "BisCore:SpatialViewDefinition", name: "my private 2", json: "json1", owner: "owner10", isPrivate: true, groupId: 1, categorySel: c1, displayStyle: ds1 });
+    vs1.addViewRow({ className: "BisCore:OrthographicViewDefinition", name: "my private 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1, categorySel: c1, displayStyle: ds1 });
+    vs1.addViewRow({ className: "BisCore:SheetViewDefinition", name: "sheet 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1, categorySel: c1, displayStyle: ds1 });
+    vs1.addViewRow({ className: "BisCore:DrawingViewDefinition", name: "drawing 3", json: "json1", owner: "owner10", isPrivate: true, groupId: 1, categorySel: c1, displayStyle: ds1 });
 
     let views = vs1.queryViewsSync({ group: "/" });
     expect(views.length).equals(3);
@@ -261,7 +264,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(views.length).equal(3);
     expect(views[2].tags?.length).equal(3);
     views = vs1.queryViewsSync({ owner: "owner10" });
-    expect(views.length).equal(6);
+    expect(views.length).equal(7);
     views = vs1.queryViewsSync({ owner: "owner10", nameSearch: "my%", nameCompare: "LIKE" });
     expect(views.length).equal(2);
     expect(vs1.queryViewsSync({ owner: "owner10", classNames: ["BisCore:SpatialViewDefinition"] }).length).equal(1);
