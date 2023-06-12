@@ -12,7 +12,7 @@ import { IModelApp } from "../IModelApp";
 import { TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
-describe.only("SpatialViewState", () => {
+describe("SpatialViewState", () => {
   const projectExtents = new Range3d(-100, -50, -25, 25, 50, 100);
   let iModel: IModelConnection;
 
@@ -55,8 +55,8 @@ describe.only("SpatialViewState", () => {
     return view;
   }
 
-  function expectFitRange(view: SpatialViewState, expected: Range3d): void {
-    const actual = view.computeFitRange();
+  function expectFitRange(view: SpatialViewState, expected: Range3d, baseExtents?: Range3d): void {
+    const actual = view.computeFitRange({ baseExtents });
     expect(actual.low.x).to.equal(expected.low.x);
     expect(actual.low.y).to.equal(expected.low.y);
     expect(actual.low.z).to.equal(expected.low.z);
@@ -68,12 +68,22 @@ describe.only("SpatialViewState", () => {
   describe("computeFitRange", () => {
     it("unions ranges of all tile trees", () => {
       expectFitRange(createView([new Range3d(0, 1, 2, 3, 4, 5)]), new Range3d(0, 1, 2, 3, 4, 5));
+      expectFitRange(createView([
+        new Range3d(0, 1, 2, 3, 4, 5),
+        new Range3d(-1, 2, 2, 2, 5, 7),
+      ]), new Range3d(-1, 1, 2, 3, 5, 7));
     });
 
-    it("falls back to project extents upon null range", () => {
+    it("falls back to slightly-expanded project extents upon null range", () => {
+      const expanded = projectExtents.clone();
+      expanded.scaleAboutCenterInPlace(1.0001);
+      expectFitRange(createView([]), expanded);
     });
 
     it("unions with base extents if provided", () => {
+      const baseExtents = new Range3d(0, 1, 2, 3, 4, 5);
+      expectFitRange(createView([]), baseExtents, baseExtents);
+      expectFitRange(createView([new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7), baseExtents);
     });
   });
 });
