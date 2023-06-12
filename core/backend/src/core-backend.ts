@@ -43,6 +43,7 @@ export * from "./IModelDb";
 export * from "./IModelElementCloneContext";
 export * from "./IModelHost";
 export * from "./IModelJsFs";
+export * from "./IModelSyncDataStore";
 export * from "./IpcHost";
 export * from "./LineStyle";
 export * from "./LocalhostIpcHost";

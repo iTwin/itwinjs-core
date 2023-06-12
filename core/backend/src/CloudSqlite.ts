@@ -802,7 +802,7 @@ export namespace CloudSqlite {
      * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
      * do any avoidable or time consuming work in your operation function.
      */
-    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
+    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>, openMode = OpenMode.ReadWrite): Promise<T> {
       let nRetries = this.lockParams.nRetries;
       const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const moniker = this.lockParams.moniker ?? cacheGuid;
@@ -827,7 +827,7 @@ export namespace CloudSqlite {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
-        });
+        }, openMode);
       } finally {
         if (lockObtained)
           logInfo(`lock released by ${cacheGuid} after ${operationName} ${showMs()} `);
