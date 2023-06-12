@@ -395,7 +395,6 @@ describe("PipeConnections", () => {
       Point3d.create(4, a, 0),
       Point3d.create(0, 0, 0), Point3d.create(0, 0, 0)]);
 
-
     const numDuplicates: number[] = [];
     for (const centerline of centerlines) {
       let n = 0;
@@ -411,7 +410,7 @@ describe("PipeConnections", () => {
     const outDelta = 20.0;
     // sections with various corner conditions . .
     for (const radiusA of [undefined, 0.0, 3.0]) {
-      let y0Out = 0.0
+      let y0Out = 0.0;
       // open, closed, closed(true)
       for (let centerlineIndex = 0; centerlineIndex < centerlines.length; centerlineIndex++) {
         const centerline = centerlines[centerlineIndex];
@@ -515,7 +514,6 @@ describe("PipeConnections", () => {
         //    (a) the length of intermediate sections is larger than that of the original
         //    (b) the sweep path lengths at various places along the sections are not too different from the centerline length.
         // Check that the mesh area is fairly close to the product of those two ...
-        const fractionTolerance = 0.10;
         const meshArea = PolyfaceQuery.sumFacetAreas(mesh);
         const referenceArea = sweptGeometryLength * sweepLength;
         ck.testNumberInRange1d(meshArea,

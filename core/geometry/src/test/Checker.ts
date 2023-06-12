@@ -87,7 +87,7 @@ export class Checker {
     this._savedErrors = 0;
     this._savedOK = 0;
     GeometryCoreTestIO.enableConsole = enableConsole;
-    GeometryCoreTestIO.enableSave = enableSave
+    GeometryCoreTestIO.enableSave = enableSave;
     GeometryCoreTestIO.enableLongTests = enableLongTests;
   }
   public getNumErrors(): number {

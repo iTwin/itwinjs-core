@@ -2838,13 +2838,14 @@ export class Sample {
     return builder.claimPolyface(true);
   }
   /**
-   *  alternately move in directions in the steps array, creating numStroke total strokes.
+   *  Successively move in directions in the steps array, creating numStroke total strokes.
+   * * In typical use there are two entries in the steps vector, giving the effect of stair steps if they are perpendicular.
    * * if start is a single point, create a new point array with start as its first entry.
    * * if start is an array, add to it.
-   * * if start is an empty array, create a new one and start at 000
-   * @param start
-   * @param steps
-   * @param numStep
+   * * if start is an empty array, push 000 as starting point.
+   * @param start start point or prior array of points whose last is start point.
+   * @param steps array of vectors giving step vectors.
+   * @param numStroke number of steps to take.
    */
   public static createZigZag(start: Point3d | Point3d[], steps: Vector3d[], numStroke: number): Point3d[] {
     let result: Point3d[];

@@ -982,6 +982,8 @@ export class Vector3d extends XYZ {
   }
   /**
    * Create a normalized vector from startPoint to endPoint
+   * @param startPoint start point of vector
+   * @param endPoint end point of vector
    * @param result optional result
    * @returns undefined if and only if normalization fails.
   */

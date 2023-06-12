@@ -135,6 +135,8 @@ export class PolylineOps {
   /**
      * Return a simplified subset of given points, omitting points on "danglers" that depart and return on a single path.
      * @param source input points
+     * @param closed if true, an edge returning to point 0 is implied even if final point does not match.
+     * @param tolerance tolerance for near-zero distance.
      */
   public static compressDanglers(source: Point3d[], closed: boolean = false, tolerance: number = Geometry.smallMetricDistance): Point3d[] {
     let n = source.length;
