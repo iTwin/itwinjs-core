@@ -439,6 +439,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "browserslist-to-esbuild",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "buffer",
       "allowedCategories": [ "integration-testing", "internal" ]
     },

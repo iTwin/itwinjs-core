@@ -7,6 +7,7 @@ import react from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
 import envCompatible from 'vite-plugin-env-compatible';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
 import { externalGlobalPlugin } from 'esbuild-plugin-external-global';
 import { esbuildCommonjs, viteCommonjs } from '@kckst8/vite-plugin-commonjs';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
@@ -16,7 +17,6 @@ import viteInspect from "vite-plugin-inspect";
 import replace from '@rollup/plugin-replace';
 import copy from "rollup-plugin-copy";
 import * as packageJson from "./package.json";
-import glob from 'glob';
 import fs from 'fs';
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
@@ -26,13 +26,14 @@ const iTwinDeps = Object.keys(packageJson.dependencies)
     return [`./node_modules/${pkgName}/lib/public/**`, `${pkgName.replace("@itwin/core-", "../../core/")}/src/public/**`]
   })
   // use require.resolve for paths
+  console.log(iTwinDeps);
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   // This changes the output dir from dist to build
   process.env = {...process.env, ...loadEnv(mode, process.cwd())};
   return {
-    debug: true,
+    debug: mode === "development",
     server: {
         open: false,
         port: 3000,
@@ -47,7 +48,8 @@ export default defineConfig(() => {
     build: {
       outDir: './lib',
       sourcemap: mode === "development",
-      minify: mode === "production" && "esbuild",
+      minify: mode !== "development",
+      target: browserslistToEsbuild(),
       commonjsOptions: {
         include: [/core\/electron/, /core\/mobile/, /node_modules/],
       },
@@ -65,10 +67,7 @@ export default defineConfig(() => {
             dest: "public",
             rename: (_name, _extension, fullPath) => {
               const regex = new RegExp("(public(?:\\\\|/))(.*)");
-              console.log("fullPath", fullPath);
-              const x = regex.exec(fullPath)[2];
-              console.log("regex.exec: ", x);
-              return x;
+              return regex.exec(fullPath)[2];
             },
           },
         ],
@@ -79,7 +78,7 @@ export default defineConfig(() => {
         "process.env.NODE_ENV": JSON.stringify("development"),
         preventAssignment: true
       }),
-      viteInspect({ build: true }),
+      ...(mode === "development" ? [viteInspect({ build: true })] : []),
       svgrPlugin({
       svgrOptions: {
         icon: true,
@@ -104,7 +103,7 @@ export default defineConfig(() => {
           ]),
         ],
       },
-      force: true, // for debugging, TODO: remove line
+      // force: true, // TODO: remove line
       // overoptimized dependencies in the same monorepo
       include: [
         "@itwin/core-electron/lib/cjs/ElectronFrontend",

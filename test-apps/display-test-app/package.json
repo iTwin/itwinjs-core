@@ -116,7 +116,7 @@
     "rollup-plugin-includepaths": "^0.2.4",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-replace": "^5.0.2",
-    "glob": "^7.1.2",
+    "browserslist-to-esbuild": "^1.2.0",
     "webpack": "^5.76.0"
   },
   "browserslist": [
