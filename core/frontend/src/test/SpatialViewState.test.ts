@@ -85,5 +85,16 @@ describe("SpatialViewState", () => {
       expectFitRange(createView([]), baseExtents, baseExtents);
       expectFitRange(createView([new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7), baseExtents);
     });
+
+    it("does not modify input baseExtents", () => {
+      const baseExtents = new Range3d(0, 1, 2, 3, 4, 5);
+      expectFitRange(createView([new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7), baseExtents);
+      expect(baseExtents.low.x).to.equal(0);
+      expect(baseExtents.low.y).to.equal(1);
+      expect(baseExtents.low.z).to.equal(2);
+      expect(baseExtents.high.x).to.equal(3);
+      expect(baseExtents.high.y).to.equal(4);
+      expect(baseExtents.high.z).to.equal(5);
+    });
   });
 });
