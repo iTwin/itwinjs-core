@@ -12,7 +12,8 @@ import {
 } from "@itwin/core-bentley";
 import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesResponseProps, IModelReadRpcInterface, PointWithStatus,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
+  IModelReadRpcInterface, PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -21,8 +22,7 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
  * @internal exported strictly for tests.
  */
 export interface CoordinateConverterOptions {
-  /** The iModel for which to perform the conversions. */
-  iModel: IModelConnection;
+  isIModelClosed: () => boolean;
   /** Asynchronously convert each point. The resultant array should have the same number and order of points as the input. */
   requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
   /** Maximum number of points to include in each request. Default: 300. */
@@ -70,8 +70,16 @@ export class CoordinateConverter {
   // Used for creating cache keys (XYAndZ) from XYZProps without having to allocate temporary objects.
   protected readonly _scratchXYZ = { x: 0, y: 0, z: 0 };
   protected readonly _maxPointsPerRequest: number;
-  protected readonly _iModel: IModelConnection;
+  protected readonly _isIModelClosed: () => boolean;
   protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
+  // If true, [[dispatch]] will schedule another dispatch after it receives a response.
+  // This is needed when all the points requested after the most recent dispatch were included in the currently-in-flight request -
+  // _pending will be empty but new callers will be awaiting the results of the in-flight request.
+  protected _redispatchOnCompletion = false;
+
+  public get isIdle(): boolean {
+    return "idle" === this._state;
+  }
 
   protected toXYAndZ(input: XYZProps, output: WritableXYAndZ): XYAndZ {
     if (Array.isArray(input)) {
@@ -89,7 +97,7 @@ export class CoordinateConverter {
 
   public constructor(opts: CoordinateConverterOptions) {
     this._maxPointsPerRequest = Math.max(1, opts.maxPointsPerRequest ?? 300);
-    this._iModel = opts.iModel;
+    this._isIModelClosed = opts.isIModelClosed;
     this._requestPoints = opts.requestPoints;
 
     this._cache = new Dictionary<XYAndZ, PointWithStatus>(compareXYAndZ, cloneXYAndZ);
@@ -99,7 +107,7 @@ export class CoordinateConverter {
 
   protected async dispatch(): Promise<void> {
     assert(this._state === "scheduled");
-    if (this._iModel.isClosed || this._pending.isEmpty) {
+    if (this._isIModelClosed() || this._pending.isEmpty) {
       this._state = "idle";
       this._onCompleted.raiseEvent();
       return;
@@ -122,7 +130,7 @@ export class CoordinateConverter {
     for (let i = 0; i < inflight.length; i += this._maxPointsPerRequest) {
       const requests = inflight.slice(i, i + this._maxPointsPerRequest).extractArray();
       const promise = this._requestPoints(requests).then((results) => {
-        if (this._iModel.isClosed)
+        if (this._isIModelClosed())
           return;
 
         if (results.length !== requests.length)
@@ -146,8 +154,10 @@ export class CoordinateConverter {
     this._inflight.clear();
 
     // If any more pending conversions arrived while awaiting this request, schedule another request.
-    if (!this._pending.isEmpty)
+    if (!this._pending.isEmpty || this._redispatchOnCompletion) {
+      this._redispatchOnCompletion = false;
       this.scheduleDispatch(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
 
     // Resolve promises of all callers who were awaiting this request.
     onCompleted.raiseEvent();
@@ -161,7 +171,9 @@ export class CoordinateConverter {
       const xyz = this.toXYAndZ(point, this._scratchXYZ);
       if (this._cache.get(xyz))
         ++numInCache;
-      else if (!this._inflight.contains(xyz))
+      else if (this._inflight.contains(xyz))
+        this._redispatchOnCompletion = true;
+      else
         this._pending.insert(xyz);
     }
 
@@ -239,6 +251,16 @@ export interface CachedIModelCoordinatesResponseProps {
   missing?: XYZProps[];
 }
 
+/** Options used to create a [[GeoConverter]].
+ * @internal exported strictly for tests.
+ */
+export interface GeoConverterOptions {
+  readonly datum: string;
+  isIModelClosed: () => boolean;
+  toIModelCoords: (request: IModelCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+  fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+}
+
 /** An object capable of communicating with the backend to convert between coordinates in a geographic coordinate system and coordinates in an [[IModelConnection]]'s own coordinate system.
  * @see [[GeoServices.getConverter]] to obtain a converter.
  * @see [GeographicCRS]($common) for more information about geographic coordinate reference systems.
@@ -247,29 +269,22 @@ export interface CachedIModelCoordinatesResponseProps {
 export class GeoConverter {
   private readonly _geoToIModel: CoordinateConverter;
   private readonly _iModelToGeo: CoordinateConverter;
+  /** Used for removing this converter from GeoServices' cache after all requests are completed.
+   * @internal
+   */
+  public readonly onAllRequestsCompleted = new BeEvent<() => void>();
 
   /** @internal */
-  constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
-    const datum = typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS;
-
+  constructor(opts: GeoConverterOptions) {
+    const isIModelClosed = opts.isIModelClosed;
     this._geoToIModel = new CoordinateConverter({
-      iModel,
-      requestPoints: async (geoCoords: XYAndZ[]) => {
-        const request = { source: datum, geoCoords };
-        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
-        const response = await rpc.getIModelCoordinatesFromGeoCoordinates(iModel.getRpcProps(), request);
-        return response.iModelCoords;
-      },
+      isIModelClosed,
+      requestPoints: async (geoCoords: XYAndZ[]) => opts.toIModelCoords({ source: opts.datum, geoCoords }),
     });
 
     this._iModelToGeo = new CoordinateConverter({
-      iModel,
-      requestPoints: async (iModelCoords: XYAndZ[]) => {
-        const request = { target: datum, iModelCoords };
-        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
-        const response = await rpc.getGeoCoordinatesFromIModelCoordinates(iModel.getRpcProps(), request);
-        return response.geoCoords;
-      },
+      isIModelClosed,
+      requestPoints: async (iModelCoords: XYAndZ[]) => opts.fromIModelCoords({ target: opts.datum, iModelCoords }),
     });
   }
 
@@ -288,6 +303,7 @@ export class GeoConverter {
   /** @internal */
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
     const result = await this._geoToIModel.convert(geoPoints);
+    this.checkCompletion();
     return {
       iModelCoords: result.points,
       fromCache: result.fromCache,
@@ -297,10 +313,16 @@ export class GeoConverter {
   /** @internal */
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
     const result = await this._iModelToGeo.convert(iModelPoints);
+    this.checkCompletion();
     return {
       geoCoords: result.points,
       fromCache: result.fromCache,
     };
+  }
+
+  private checkCompletion(): void {
+    if (this._geoToIModel.isIdle && this._iModelToGeo.isIdle)
+      this.onAllRequestsCompleted.raiseEvent();
   }
 
   /** @internal */
@@ -309,16 +331,47 @@ export class GeoConverter {
   }
 }
 
+/** @internal */
+export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
+
 /** The Geographic Services available for an [[IModelConnection]].
  * @see [[IModelConnection.geoServices]] to obtain the GeoServices for a specific iModel.
  * @public
  */
 export class GeoServices {
-  private _iModel: IModelConnection;
+  private readonly _options: GeoServicesOptions;
+  /** Each GeoConverter has its own independent request queue and cache of previously-converted points.
+   * Some callers like RealityTileTree obtain a single GeoConverter and reuse it throughout their own lifetime. Therefore they benefit from both batching and caching, and
+   * the cache gets deleted once the RealityTileTree becomes disused.
+   *
+   * Other callers like IModelConnection.spatialToCartographic obtain a new GeoConverter every time they need one, use it to convert a single point(!), and then discard the converter.
+   * This entirely prevents batching - e.g., calling spatialToCartographic 20 times in one frame results in 20 http requests.
+   * To address that, we cache each GeoConverter returned by getConverter until it has converted at least one point and has no further outstanding conversion requests.
+   * In this way, the converter lives for as long as (and no longer than) any caller is awaiting conversion to/from its datum - it and its cache are deleted once it becomes disused.
+   * This makes the coordinate caching generally less useful, but at least bounded - and maximizes batching of requests.
+   */
+  private readonly _cache = new Map<string, GeoConverter>();
 
   /** @internal */
-  constructor(iModel: IModelConnection) {
-    this._iModel = iModel;
+  public constructor(options: GeoServicesOptions) {
+    this._options = options;
+  }
+
+  /** @internal */
+  public static createForIModel(iModel: IModelConnection): GeoServices {
+    return new GeoServices({
+      isIModelClosed: () => iModel.isClosed,
+      toIModelCoords: async (request) => {
+        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
+        const response = await rpc.getIModelCoordinatesFromGeoCoordinates(iModel.getRpcProps(), request);
+        return response.iModelCoords;
+      },
+      fromIModelCoords: async (request) => {
+        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
+        const response = await rpc.getGeoCoordinatesFromIModelCoordinates(iModel.getRpcProps(), request);
+        return response.geoCoords;
+      },
+    });
   }
 
   /** Obtain a converter that can convert between a geographic coordinate system and the iModel's own coordinate system.
@@ -327,6 +380,22 @@ export class GeoServices {
    * @note A [[BlankConnection]] has no connection to a backend, so it is never "open"; therefore it always returns `undefined`.
    */
   public getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined {
-    return this._iModel.isOpen ? new GeoConverter(this._iModel, datumOrGCRS ? datumOrGCRS : "") : undefined;
+    if (this._options.isIModelClosed())
+      return undefined;
+
+    const datum = (typeof datumOrGCRS === "object" ? JSON.stringify(datumOrGCRS) : datumOrGCRS) ?? "";
+
+    let converter = this._cache.get(datum);
+    if (!converter) {
+      converter = new GeoConverter({ ...this._options, datum });
+      this._cache.set(datum, converter);
+
+      converter.onAllRequestsCompleted.addOnce(() => {
+        if (converter === this._cache.get(datum))
+          this._cache.delete(datum);
+      });
+    }
+
+    return converter;
   }
 }
