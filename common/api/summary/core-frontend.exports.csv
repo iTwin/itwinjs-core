@@ -108,6 +108,7 @@ internal;ComputeAnimationNodeId = (featureIndex: number) => number
 public;ComputeChordToleranceArgs
 internal;computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions
 beta;ComputeDisplayTransformArgs
+public;ComputeSpatialViewFitRangeOptions
 public;connectViewportFrusta(viewports: Iterable
 public;connectViewports(viewports: Iterable
 public;connectViewportViews(viewports: Iterable
