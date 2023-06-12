@@ -19,6 +19,10 @@ import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 
+export interface ComputeSpatialViewFitRangeOptions {
+  baseExtents?: Range3d;
+}
+
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
  * @public
@@ -136,9 +140,9 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** Compute world-space range appropriate for fitting the view. If that range is null, use the displayed extents. */
-  public computeFitRange(): AxisAlignedBox3d {
+  public computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d {
     // Fit to the union of the ranges of all loaded tile trees.
-    const range = new Range3d();
+    const range = options?.baseExtents ?? new Range3d();
     this.forEachTileTreeRef((ref) => {
       ref.unionFitRange(range);
     });
