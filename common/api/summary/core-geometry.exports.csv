@@ -259,6 +259,7 @@ public;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample
+public;SectionSequenceWithPlanes
 public;Segment1d
 public;SignedLoops
 internal;SimpleNewton
