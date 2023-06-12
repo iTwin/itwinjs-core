@@ -22,7 +22,6 @@ async function initializeContainer(containerId: string) {
   await IModelSyncDataStore.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
 }
 
-
 async function makeIModelSyncDataStore(moniker: string) {
   const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: propContainer, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);

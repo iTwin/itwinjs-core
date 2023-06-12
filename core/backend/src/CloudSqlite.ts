@@ -15,7 +15,7 @@ import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { BlobContainer } from "./BlobContainerService";
 
-import type { VersionedSqliteDb } from "./SQLiteDb";
+import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
 // spell:ignore logmsg httpcode
 
@@ -229,12 +229,10 @@ export namespace CloudSqlite {
   }
 
   /** @internal */
-  export interface LockAndOpenArgs {
+  export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
     moniker: string;
-    /** the name of the database within the container */
-    dbName: string;
-    /** the CloudContainer on which the operation will be performed */
+    /** @internal */
     container: CloudContainer;
     /** if present, function called when the write lock is currently held by another user. */
     busyHandler?: WriteLockBusyHandler;
@@ -802,7 +800,7 @@ export namespace CloudSqlite {
      * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
      * do any avoidable or time consuming work in your operation function.
      */
-    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>, openMode = OpenMode.ReadWrite): Promise<T> {
+    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>, openMode?: OpenMode): Promise<T> {
       let nRetries = this.lockParams.nRetries;
       const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const moniker = this.lockParams.moniker ?? cacheGuid;
@@ -823,11 +821,11 @@ export namespace CloudSqlite {
       this.closeDb(); // in case it is currently open for read.
       let lockObtained = false;
       try {
-        return await this._cloudDb.withLockedContainer({ moniker, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ moniker, dbName: this.dbName, container: this.container, busyHandler, openMode }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
-        }, openMode);
+        });
       } finally {
         if (lockObtained)
           logInfo(`lock released by ${cacheGuid} after ${operationName} ${showMs()} `);
