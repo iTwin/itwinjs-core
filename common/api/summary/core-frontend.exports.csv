@@ -226,12 +226,14 @@ public;FuzzySearchResult
 public;FuzzySearchResults
 beta;GenericAbortSignal
 public;GeoConverter
+internal;GeoConverterOptions
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
 beta;GeometryTileTreeReference 
 public;GeoServices
+internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
