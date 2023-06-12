@@ -7,7 +7,7 @@ import { Point3d, Range3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordStatus, PointWithStatus } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { CoordinateConverter } from "../GeoServices";
+import { CoordinateConverter, CoordinateConverterOptions } from "../GeoServices";
 
 class Connection extends BlankConnection {
   private _isClosed = false;
@@ -32,6 +32,13 @@ class Connection extends BlankConnection {
 }
 
 class Converter extends CoordinateConverter {
+  public constructor(opts: Omit<CoordinateConverterOptions, "isIModelClosed"> & { iModel: BlankConnection }) {
+    super({
+      ...opts,
+      isIModelClosed: () => opts.iModel.isClosed,
+    });
+  }
+
   public get cache() { return this._cache; }
   public get pending() { return this._pending; }
   public get inflight() { return this._inflight; }
