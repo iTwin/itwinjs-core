@@ -2092,6 +2092,11 @@ export interface ComputeDisplayTransformArgs {
 }
 
 // @public
+export interface ComputeSpatialViewFitRangeOptions {
+    baseExtents?: Range3d;
+}
+
+// @public
 export function connectViewportFrusta(viewports: Iterable<Viewport>): () => void;
 
 // @public
@@ -11953,7 +11958,7 @@ export class SpatialViewState extends ViewState3d {
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
-    computeFitRange(): AxisAlignedBox3d;
+    computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
