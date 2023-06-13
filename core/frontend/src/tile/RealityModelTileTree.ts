@@ -493,6 +493,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   private _minMaxContentZ?: { minZ: number, maxZ: number };
 
   public async loadChildren(tile: RealityTile): Promise<Tile[] | undefined> {
+    console.log("loadChildren");
     let props = await this.getChildrenProps(tile);
     if (undefined === props)
       return undefined;
@@ -502,28 +503,29 @@ class RealityModelTileLoader extends RealityTileLoader {
 
     if (SMBoundingVolumeWorkaround.ClampByContentBoundingVolumesZ === this.tree.smBoundingVolumeWorkaround) {
       // find min/max Z
-      this._minMaxContentZ = {
-        maxZ: (props[0] as RealityModelTileProps).range.high.z,
-        minZ: (props[0] as RealityModelTileProps).range.low.z,
-      };
-      for (let i = 1; i < props.length; i++) {
-        const highZ = (props[i] as RealityModelTileProps).range.high.z;
-        const lowZ = (props[i] as RealityModelTileProps).range.low.z;
-        if (highZ > this._minMaxContentZ.maxZ)
-          this._minMaxContentZ.maxZ = highZ;
-        else if (lowZ < this._minMaxContentZ.minZ)
-          this._minMaxContentZ.minZ = lowZ;
+      this._minMaxContentZ = { maxZ: -Number.MAX_VALUE, minZ: Number.MAX_VALUE };
+      for (const prop of props) {
+        const rmProp = (prop as RealityModelTileProps);
+        if (undefined !== rmProp.contentRange) {
+          const highZ = rmProp.contentRange.high.z;
+          const lowZ = rmProp.contentRange.low.z;
+          if (highZ > this._minMaxContentZ.maxZ)
+            this._minMaxContentZ.maxZ = highZ;
+          if (lowZ < this._minMaxContentZ.minZ)
+            this._minMaxContentZ.minZ = lowZ;
+        }
       }
-      // this makes it work....
-      // this._minMaxContentZ.minZ /= 50;
-      // this._minMaxContentZ.maxZ /= 50;
-      console.log(`maxZ = ${  this._minMaxContentZ.maxZ  }, minZ = ${  this._minMaxContentZ.minZ}`);
+      if (this._minMaxContentZ.maxZ > -Number.MAX_VALUE && this._minMaxContentZ.minZ < Number.MAX_VALUE) {
+        console.log(`maxZ = ${  this._minMaxContentZ.maxZ  }, minZ = ${  this._minMaxContentZ.minZ}`);
 
-      // get children props again, clamping the Zs this time.
-      props = await this.getChildrenProps(tile);
+        // get children props again, clamping the Zs this time.
+        props = await this.getChildrenProps(tile);
+        if (undefined === props) {
+          this._minMaxContentZ = undefined;
+          return undefined;
+        }
+      }
       this._minMaxContentZ = undefined;
-      if (undefined === props)
-        return undefined;
     }
 
     const children = [];
