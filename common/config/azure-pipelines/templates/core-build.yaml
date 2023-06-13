@@ -20,6 +20,9 @@ parameters:
   - name: runRushAudit
     type: boolean
     default: true
+  - name: nativePrVal
+    type: boolean
+    default: false
 
 steps:
   - task: NodeTool@0
@@ -107,3 +110,8 @@ steps:
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}
+
+  - script: node common/scripts/install-run-rush.js extract-api
+    displayName: rush extract-api
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: ${{ parameters.nativePrVal }}

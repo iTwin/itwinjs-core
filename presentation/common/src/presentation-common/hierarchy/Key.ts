@@ -337,6 +337,7 @@ export interface IdSetBinding extends BasePresentationQueryBinding {
 export interface ECValueBinding extends BasePresentationQueryBinding {
   type: "ECValue";
   valueType: string;
+  valueTypeExtended?: string;
   value: any;
 }
 
@@ -344,6 +345,7 @@ export interface ECValueBinding extends BasePresentationQueryBinding {
 export interface ECValueSetBinding extends BasePresentationQueryBinding {
   type: "ValueSet";
   valueType: string;
+  valueTypeExtended?: string;
   value: any[];
 }
 
