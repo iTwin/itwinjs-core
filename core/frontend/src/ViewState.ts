@@ -1620,28 +1620,62 @@ export abstract class ViewState3d extends ViewState {
     return eyePoint.distance(origEyePoint);
   }
 
-  /** Convert a point in spatial space to a cartographic coordinate. */
+  /** Convert a point in spatial coordinates to a cartographic coordinate. */
   public rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographic(root, result) : undefined;
   }
 
-  /** Convert a cartographic coordinate to a point in spatial space. */
+  /** Convert a cartographic coordinate to a point in spatial coordinates. */
   public cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
   }
 
-  /** Convert a point in spatial space to a cartographic coordinate using the GCS reprojection. */
+  /** Convert a point in spatial coordinates to a cartographic coordinate using the GCS reprojection.
+   * @see [[rootToCartographicUsingGcs]] to convert multiple points at once.
+   * @see [[cartographicToRootFromGcs]] for the inverse conversion.
+   */
   public async rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographicFromGcs(root, result) : undefined;
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const carto = (await backgroundMapGeometry.dbToCartographicFromGcs([root]))[0];
+    return carto.clone(result);
   }
 
-  /** Convert a cartographic coordinate to a point in spatial space using the GCS reprojection. */
+  /** Convert spatial coordinates to cartographic coordinates using the GCS reprojection.
+   * @param root Spatial coordinates to be converted
+   * @returns the converted coordinates of the same length and order as `root`, or `undefined` if the conversion cannot be performed.
+   * @see [[cartographicToRootUsingGcs]] for the inverse conversion.
+   */
+  public async rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.dbToCartographicFromGcs(root);
+  }
+
+  /** Convert a cartographic coordinate to a point in spatial coordinates using the GCS reprojection.
+   * @see [[cartographicToRootUsingGcs]] to convert multiple points at once.
+   * @see [[rootToCartographicFromGcs]] for the inverse conversion.
+   */
   public async cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined> {
     const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
-    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const root = (await backgroundMapGeometry.cartographicToDbFromGcs([cartographic]))[0];
+    return root.clone(result);
+  }
+
+  /** Convert cartographic coordinates to spatial coordinates using the GCS reprojection.
+   * @param cartographic Cartographic coordinates to be converted
+   * @returns the converted coordinates of the same length and order as `cartographic`, or `undefined` if the conversion cannot be performed.
+   * @see [[rootToCartographicUsingGcs]] for the inverse conversion.
+   */
+  public async cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined> {
+    const bgmap = this.displayStyle.getBackgroundMapGeometry();
+    return bgmap?.cartographicToDbFromGcs(cartographic);
   }
 
   public override setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus {

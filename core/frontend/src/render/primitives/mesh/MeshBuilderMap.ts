@@ -43,7 +43,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       this.features = new FeatureTable(2048 * 1024, pickable.modelId);
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String} | undefined): MeshBuilderMap {
+  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String } | undefined): MeshBuilderMap {
     const map = new MeshBuilderMap(tolerance, range, is2d, options, pickable);
 
     for (const geom of geometries)
@@ -54,9 +54,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
   public toMeshes(): MeshList {
     const meshes = new MeshList(this.features, this.range);
-    for (const builder of this._values)
-      meshes.push(builder.mesh);
-
+    for (const builder of this._values) {
+      if (builder.mesh.points.length > 0)
+        meshes.push(builder.mesh);
+    }
     return meshes;
   }
 
