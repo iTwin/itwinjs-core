@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { Suite } from "mocha";
-import { CloudSqlite, HubMock, IModelHost, IModelSyncDataStore } from "@itwin/core-backend";
+import { CloudSqlite, HubMock, IModelHost, SchemaSync } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubWrappers, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid } from "@itwin/core-bentley";
@@ -17,27 +17,27 @@ const propContainer = "imodel-sync-itwin1";
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
+  const
+    props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
-  await IModelSyncDataStore.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
+  await SchemaSync.CloudAccess.initializeDb({ props: { ...props, accessToken }, initContainer: { blockSize } });
 }
 
-
-async function makeIModelSyncDataStore(moniker: string) {
+async function makeSchemaSync(moniker: string) {
   const props: CloudSqlite.ContainerTokenProps = { baseUri: AzuriteTest.baseUri, storageType: "azure", containerId: propContainer, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
-  const propStore = new IModelSyncDataStore.CloudAccess({ ...props, accessToken });
-  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  propStore.lockParams.moniker = moniker;
-  return propStore;
+  const syncSchema = new SchemaSync.CloudAccess({ ...props, accessToken });
+  syncSchema.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
+  syncSchema.lockParams.moniker = moniker;
+  return syncSchema;
 }
 
-describe.only("iModel sync datastore", function (this: Suite) {
+describe("shared schema channel", function (this: Suite) {
   this.timeout(0);
 
-  let sds1: IModelSyncDataStore.CloudAccess;
-  let sds2: IModelSyncDataStore.CloudAccess;
-  let sds3: IModelSyncDataStore.CloudAccess;
+  let sds1: SchemaSync.CloudAccess;
+  let sds2: SchemaSync.CloudAccess;
+  let sds3: SchemaSync.CloudAccess;
 
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
@@ -45,17 +45,16 @@ describe.only("iModel sync datastore", function (this: Suite) {
 
     await initializeContainer(propContainer);
 
-    sds1 = await makeIModelSyncDataStore("sync_b1");
-    sds2 = await makeIModelSyncDataStore("sync_b2");
-    sds3 = await makeIModelSyncDataStore("sync_b3");
-
+    sds1 = await makeSchemaSync("ss_b1");
+    sds2 = await makeSchemaSync("ss_b2");
+    sds3 = await makeSchemaSync("ss_b3");
   });
 
   after(async () => {
     IModelHost.authorizationClient = undefined;
   });
 
-  it("Shared schema channel", async () => {
+  it("multiuser workflow", async () => {
     const iTwinId: string = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";
@@ -70,9 +69,9 @@ describe.only("iModel sync datastore", function (this: Suite) {
     const b2 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user2AccessToken, iTwinId, iModelId });
     const b3 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user3AccessToken, iTwinId, iModelId });
 
-    b1.setSyncDataStore(sds1);
-    b2.setSyncDataStore(sds2);
-    b3.setSyncDataStore(sds3);
+    b1.setSchemaSyncAccess(sds1);
+    b2.setSchemaSyncAccess(sds2);
+    b3.setSchemaSyncAccess(sds3);
 
     // initialize shared schema channel
     await b1.initSharedSchemaChannel();
@@ -83,7 +82,6 @@ describe.only("iModel sync datastore", function (this: Suite) {
     //! b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
     assert.isTrue(b2.usesSharedSchemaChannel());
-
 
     //! Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -104,6 +102,7 @@ describe.only("iModel sync datastore", function (this: Suite) {
     //! pull schema change into b2 from shared schema channel
     b2.syncSharedSchemaChanges();
     b2.saveChanges();
+
     // ensure b2 have class and its properties
     assert.sameOrderedMembers(['p1', 'p2'], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
@@ -128,6 +127,7 @@ describe.only("iModel sync datastore", function (this: Suite) {
     //! pull schema change into b1 from shared schema channel
     b1.syncSharedSchemaChanges();
     b1.saveChanges();
+
     // ensure b1 have class and its properties
     assert.sameOrderedMembers(['p1', 'p2', 'p3', 'p4'], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
@@ -144,6 +144,7 @@ describe.only("iModel sync datastore", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close()
+
     HubMock.shutdown();
   });
 });

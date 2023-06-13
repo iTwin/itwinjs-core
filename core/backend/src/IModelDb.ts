@@ -53,7 +53,7 @@ import { BaseSettings, SettingDictionary, SettingName, SettingResolver, Settings
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 import { ChannelAdmin, ChannelControl } from "./ChannelControl";
-import { IModelSyncDataStore } from "./IModelSyncDataStore";
+import { SchemaSync } from "./SchemaSync";
 
 // spell:ignore fontid fontmap
 
@@ -236,7 +236,7 @@ export abstract class IModelDb extends IModel {
   private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
-  private _syncDataStore?: IModelSyncDataStore.CloudAccess;
+  private _schemaSyncAccess?: SchemaSync.CloudAccess;
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
 
@@ -802,18 +802,18 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public setSyncDataStore(store: IModelSyncDataStore.CloudAccess) {
-    this._syncDataStore = store;
+  public setSchemaSyncAccess(store: SchemaSync.CloudAccess) {
+    this._schemaSyncAccess = store;
   }
 
   /** @internal */
-  public getSyncDataStore() {
-    return this._syncDataStore;
+  public getSchemaSyncAccess() {
+    return this._schemaSyncAccess;
   }
 
   /** @internal */
   public async initSharedSchemaChannel() {
-    const store = this._syncDataStore;
+    const store = this._schemaSyncAccess;
     if (!store) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
     }
@@ -822,10 +822,12 @@ export abstract class IModelDb extends IModel {
       await this.nativeDb.sharedChannelInit(store.getUri());
     }, OpenMode.Readonly);
   }
+
   /** @internal */
   public usesSharedSchemaChannel() {
     return this.nativeDb.sharedChannelEnabled();
   }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -841,7 +843,7 @@ export abstract class IModelDb extends IModel {
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this.usesSharedSchemaChannel()) {
-      const store = this._syncDataStore;
+      const store = this._schemaSyncAccess;
       if (!store) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
       }
@@ -879,7 +881,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public syncSharedSchemaChanges() {
     if (this.usesSharedSchemaChannel()) {
-      const store = this._syncDataStore;
+      const store = this._schemaSyncAccess;
       if (!store) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
       }
@@ -905,7 +907,7 @@ export abstract class IModelDb extends IModel {
       return;
 
     if (this.usesSharedSchemaChannel()) {
-      const store = this._syncDataStore;
+      const store = this._schemaSyncAccess;
       if (!store) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
       }
