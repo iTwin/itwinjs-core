@@ -48,7 +48,7 @@ const dtaElectronMain = async () => {
 
   const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
-    iconName: "display-test-app.ico",
+    iconName: "../public/display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
