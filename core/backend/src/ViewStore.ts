@@ -138,11 +138,11 @@ export namespace ViewStore {
   }
 
   /** convert a RowId to a RowString (base-36 integer with a leading "@") */
-  export const tableRowIdToString = (rowId: RowId): RowString => {
+  export const fromRowId = (rowId: RowId): RowString => {
     return `@${rowId.toString(36)}`;
   };
   /** convert a guid RowId to a GuidRowString (base-36 integer with a leading "^") */
-  export const guidRowToString = (rowId: RowId): GuidRowString => {
+  const guidRowToString = (rowId: RowId): GuidRowString => {
     return `^${rowId.toString(36)}`;
   };
 
@@ -159,12 +159,12 @@ export namespace ViewStore {
       throw new Error(`invalid value: ${id}`);
     return parseInt(id.slice(1), 36);
   };
-  export const maybeToRowId = (id?: RowIdOrString): RowId | undefined => {
-    return undefined === id ? undefined : toRowId(id);
-  };
 
-  const blankElementProps = (from: any, classFullName: string, idString: RowString, name?: string): ElementProps => {
-    from.id = idString;
+  const maybeToRowId = (id?: RowIdOrString) => undefined === id ? undefined : toRowId(id);
+  const cloneProps = <T extends object>(from: T) => JSON.parse(JSON.stringify(from)) as T;
+
+  const blankElementProps = (from: any, classFullName: string, idString: RowIdOrString, name?: string): ElementProps => {
+    from.id = fromRowId(toRowId(idString));
     from.classFullName = classFullName;
     from.model = IModel.dictionaryId;
     from.code = { spec: "0x1", scope: "0x1", value: name };
@@ -244,20 +244,21 @@ export namespace ViewStore {
 
     /** get the row in the "guids" table for a given guid. If the guid is not present, return 0 */
     private getGuidRow(guid: GuidString): RowId {
-      return this.withPreparedSqliteStatement(`SELECT rowId FROM ${tableName.guids} WHERE guid=? `, (stmt) => {
+      return this.withPreparedSqliteStatement(`SELECT rowId FROM ${tableName.guids} WHERE guid=?`, (stmt) => {
         stmt.bindGuid(1, guid);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
+    /** @internal */
     public getGuid(rowid: RowId): GuidString | undefined {
-      return this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=?`, (stmt) => {
         stmt.bindInteger(1, rowid);
         return !stmt.nextRow() ? undefined : stmt.getValueGuid(0);
       });
     }
     /** @internal */
     public iterateGuids(rowIds: RowId[], fn: (guid: GuidString, row: RowId) => void) {
-      this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=? `, (stmt) => {
+      this.withSqliteStatement(`SELECT guid FROM ${tableName.guids} WHERE rowId=?`, (stmt) => {
         for (const rowId of rowIds) {
           stmt.reset();
           stmt.bindInteger(1, rowId);
@@ -280,7 +281,6 @@ export namespace ViewStore {
     /** @internal */
     public addViewRow(args: ViewRow): RowId {
       validateName(args.name, "view");
-
       return this.withSqliteStatement(`INSERT INTO ${tableName.views} (className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle) VALUES(?,?,?,?,?,?,?,?,?)`, (stmt) => {
         stmt.bindString(1, args.className);
         stmt.bindString(2, args.name);
@@ -318,19 +318,27 @@ export namespace ViewStore {
         return this.nativeDb.getLastInsertRowId();
       });
     }
-    /** add a row to the "modelSelectors" table, return the RowId */
+    /** add a row to the "modelSelectors" table, return the RowId
+     * @internal
+     */
     public addModelSelectorRow(args: SelectorRow): RowId {
       return this.addTableRow(tableName.modelSelectors, args);
     }
-    /** add a row to the "categorySelectors" table, return the RowId */
+    /** add a row to the "categorySelectors" table, return the RowId
+     * @internal
+     */
     public addCategorySelectorRow(args: SelectorRow): RowId { // for tests
       return this.addTableRow(tableName.categorySelectors, args);
     }
-    /** add a row to the "displayStyles" table, return the RowId */
+    /** add a row to the "displayStyles" table, return the RowId
+     * @internal
+     */
     public addDisplayStyleRow(args: DisplayStyleRow): RowId {
       return this.addTableRow(tableName.displayStyles, args);
     }
-    /** add a row to the "timelines" table, return the RowId */
+    /** add a row to the "timelines" table, return the RowId
+     * @internal
+     */
     public addTimelineRow(args: TimelineRow): RowId {
       return this.addTableRow(tableName.timelines, args);
     }
@@ -338,12 +346,16 @@ export namespace ViewStore {
     public addTag(args: TagRow): RowId {
       return this.addTableRow(tableName.tags, args);
     }
-    /** add a row to the "searches" table, return the RowId */
+    /** add a row to the "searches" table, return the RowId
+     * @internal
+     */
     public async addSearch(args: SearchRow): Promise<RowId> {
       return this.addTableRow(tableName.searches, args);
     }
 
-    /** add or update a row in the "thumbnails" table, return the RowId */
+    /** add or update a row in the "thumbnails" table, return the RowId
+     * @internal
+     */
     public addOrReplaceThumbnailRow(args: ThumbnailRow): RowId {
       return this.withSqliteStatement(`INSERT OR REPLACE INTO ${tableName.thumbnails} (Id,json,owner,data) VALUES(?,?,?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
@@ -356,11 +368,12 @@ export namespace ViewStore {
     }
 
     private deleteFromTable(table: string, id: RowIdOrString): void {
-      this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=? `, (stmt) => {
+      this.withSqliteStatement(`DELETE FROM ${table} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, toRowId(id));
         stmt.stepForWrite();
       });
     }
+    /** @internal */
     public deleteViewRow(id: RowIdOrString) {
       return this.deleteFromTable(tableName.views, id);
     }
@@ -412,7 +425,7 @@ export namespace ViewStore {
     }
     /** get the data for a view from the database */
     public getViewRow(viewId: RowId): undefined | ViewRow {
-      return this.withSqliteStatement(`SELECT className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE Id=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
         return !stmt.nextRow() ? undefined : {
           className: stmt.getValueString(0),
@@ -427,8 +440,9 @@ export namespace ViewStore {
         };
       });
     }
+    /** @internal */
     public getThumbnailRow(viewId: RowId): undefined | ThumbnailRow {
-      return this.withSqliteStatement(`SELECT json,owner,data FROM ${tableName.thumbnails} WHERE Id=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT json,owner,data FROM ${tableName.thumbnails} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
         return !stmt.nextRow() ? undefined : {
           viewId,
@@ -438,8 +452,9 @@ export namespace ViewStore {
         };
       });
     }
+    /** @internal */
     public getViewGroup(id: RowId): ViewGroupRow | undefined {
-      return this.withSqliteStatement(`SELECT name,owner,json,parent,defaultViewId FROM ${tableName.viewGroups} WHERE Id=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT name,owner,json,parent,defaultViewId FROM ${tableName.viewGroups} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
           name: stmt.getValueString(0),
@@ -452,7 +467,7 @@ export namespace ViewStore {
     }
 
     private getTableRow(table: string, id: RowId): SelectorRow | undefined {
-      return this.withSqliteStatement(`SELECT name,json,owner FROM ${table} WHERE Id=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT name,json,owner FROM ${table} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, id);
         return !stmt.nextRow() ? undefined : {
           name: stmt.getValueStringMaybe(0),
@@ -462,112 +477,138 @@ export namespace ViewStore {
       });
     }
 
-    /** read a ModelSelector given a rowId */
+    /** read a ModelSelector given a rowId
+     * @internal
+     */
     public getModelSelectorRow(id: RowId): SelectorRow | undefined {
       return this.getTableRow(tableName.modelSelectors, id);
     }
-    /** read a CategorySelector given a rowId */
+    /** read a CategorySelector given a rowId
+     * @internal
+     */
     public getCategorySelectorRow(id: RowId): SelectorRow | undefined {
       return this.getTableRow(tableName.categorySelectors, id);
     }
-    /** read a DisplayStyle given a rowId */
+    /** read a DisplayStyle given a rowId
+     * @internal
+     */
     public getDisplayStyleRow(id: RowId): DisplayStyleRow | undefined {
       return this.getTableRow(tableName.displayStyles, id);
     }
+    /** @internal */
     public getTimelineRow(id: RowId): TimelineRow | undefined {
       return this.getTableRow(tableName.timelines, id);
     }
+    /** @internal */
     public getTag(id: RowId): TagRow | undefined {
       return this.getTableRow(tableName.tags, id);
     }
+    /** @internal */
     public getSearch(id: RowId): SearchRow | undefined {
       return this.getTableRow(tableName.searches, id);
     }
 
     private updateJson(table: string, id: RowIdOrString, json: string) {
-      this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=? `, (stmt) => {
+      this.withSqliteStatement(`UPDATE ${table} SET json=? WHERE Id=?`, (stmt) => {
         stmt.bindString(1, json);
         stmt.bindInteger(2, toRowId(id));
         stmt.stepForWrite();
       });
     }
-    public async updateViewShared(arg: { viewId: RowIdOrString, isShared: boolean, owner: string }): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${tableName.views} SET private=?,owner=? WHERE Id=? `, (stmt) => {
+    public async updateViewShared(arg: { viewId: RowIdOrString, isShared: boolean, owner?: string }): Promise<void> {
+      if (!arg.isShared && arg.owner === undefined)
+        throw new Error("owner must be defined for private views");
+
+      this.withSqliteStatement(`UPDATE ${tableName.views} SET private=?,owner=? WHERE Id=?`, (stmt) => {
         stmt.bindBoolean(1, !arg.isShared);
-        stmt.bindString(2, arg.owner);
+        stmt.maybeBindString(2, arg.owner);
         stmt.bindInteger(3, toRowId(arg.viewId));
         stmt.stepForWrite();
       });
     }
+    /** @internal */
     public async updateViewJson(viewId: RowIdOrString, json: string): Promise<void> {
       return this.updateJson(tableName.views, viewId, json);
     }
+    /** @internal */
     public async updateViewGroupJson(groupId: RowIdOrString, json: string): Promise<void> {
       return this.updateJson(tableName.viewGroups, groupId, json);
     }
+    /** @internal */
     public async updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string): Promise<void> {
       return this.updateJson(tableName.modelSelectors, modelSelectorId, json);
     }
+    /** @internal */
     public updateCategorySelectorJson(categorySelectorId: RowIdOrString, json: string) {
       return this.updateJson(tableName.categorySelectors, categorySelectorId, json);
     }
+    /** @internal */
     public async updateCategorySelector(args: { id: RowIdOrString, selector: CategorySelectorProps }): Promise<void> {
       return this.updateCategorySelectorJson(args.id, JSON.stringify(args.selector.categories));
     }
-
+    /** @internal */
     public async updateDisplayStyleJson(styleId: RowId, json: string): Promise<void> {
       return this.updateJson(tableName.displayStyles, styleId, json);
     }
+    /** @internal */
     public async updateTimelineJson(timelineId: RowId, json: string): Promise<void> {
       return this.updateJson(tableName.timelines, timelineId, json);
     }
+    /** @internal */
     public async updateSearchJson(searchId: RowId, json: string): Promise<void> {
       return this.updateJson(tableName.searches, searchId, json);
     }
-    private async updateName(table: string, id: RowId, name?: string): Promise<void> {
-      this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=? `, (stmt) => {
+    private async updateName(table: string, id: RowIdOrString, name?: string): Promise<void> {
+      this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=?`, (stmt) => {
         stmt.maybeBindString(1, name);
-        stmt.bindInteger(2, id);
+        stmt.bindInteger(2, toRowId(id));
         stmt.stepForWrite();
       });
     }
-    public async updateViewName(viewId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.views, viewId, name);
+    public async renameView(args: { viewId: RowIdOrString, name: string }): Promise<void> {
+      return this.updateName(tableName.views, args.viewId, args.name);
     }
-    public async updateViewGroupName(groupId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.viewGroups, groupId, name);
+    public async renameViewGroup(args: { groupId: RowIdOrString, name: string }): Promise<void> {
+      return this.updateName(tableName.viewGroups, args.groupId, args.name);
     }
-    public async updateModelSelectorName(selectorId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.modelSelectors, selectorId, name);
+    public async renameModelSelector(args: { id: RowIdOrString, name?: string }): Promise<void> {
+      return this.updateName(tableName.modelSelectors, args.id, args.name);
     }
-    public async updateCategorySelectorName(selectorId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.categorySelectors, selectorId, name);
+    public async renameCategorySelector(args: { id: RowIdOrString, name?: string }): Promise<void> {
+      return this.updateName(tableName.categorySelectors, args.id, args.name);
     }
-    public async updateDisplayStyleName(styleId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.displayStyles, styleId, name);
+    public async renameDisplayStyle(args: { id: RowIdOrString, name?: string }): Promise<void> {
+      return this.updateName(tableName.displayStyles, args.id, args.name);
     }
-    public async updateTimelineName(timelineId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.timelines, timelineId, name);
+    public async renameTimeline(args: { id: RowIdOrString, name?: string }): Promise<void> {
+      return this.updateName(tableName.timelines, args.id, args.name);
     }
-    public async updateSearchName(searchId: RowId, name?: string): Promise<void> {
-      return this.updateName(tableName.searches, searchId, name);
+    public async renameSearch(args: { id: RowIdOrString, name: string }): Promise<void> {
+      return this.updateName(tableName.searches, args.id, args.name);
+    }
+    public async renameTag(args: { oldName: string, newName: string }): Promise<void> {
+      this.withSqliteStatement(`UPDATE ${tableName.tags} SET name=? WHERE name=?`, (stmt) => {
+        stmt.bindString(1, args.newName);
+        stmt.bindString(2, args.oldName);
+        stmt.stepForWrite();
+      });
     }
     public addTagToView(args: { viewId: RowId, tagId: RowId }) {
-      this.withSqliteStatement(`INSERT OR IGNORE INTO ${tableName.taggedViews} (viewId, tagId) VALUES(?,?)`, (stmt) => {
+      this.withSqliteStatement(`INSERT OR IGNORE INTO ${tableName.taggedViews} (viewId,tagId) VALUES(?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
         stmt.stepForWrite();
       });
     }
     public deleteViewTag(args: { viewId: RowId, tagId: RowId }): void {
-      this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=? AND tagId=? `, (stmt) => {
+      this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=? AND tagId=?`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
         stmt.stepForWrite();
       });
     }
     public findViewsForTag(tagId: RowId): RowId[] {
-      return this.withSqliteStatement(`SELECT viewId FROM ${tableName.taggedViews} WHERE tagId=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT viewId FROM ${tableName.taggedViews} WHERE tagId=?`, (stmt) => {
         stmt.bindInteger(1, tagId);
         const list: RowId[] = [];
         while (stmt.nextRow())
@@ -576,13 +617,13 @@ export namespace ViewStore {
       });
     }
     private findByName(table: string, name: string): RowId {
-      return this.withSqliteStatement(`SELECT Id FROM ${table} WHERE name=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT Id FROM ${table} WHERE name=?`, (stmt) => {
         stmt.bindString(1, name);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
     public getViewGroupByName(name: string, parentId: RowId): RowId {
-      return this.withSqliteStatement(`SELECT Id FROM ${tableName.viewGroups} WHERE name=? AND parent=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT Id FROM ${tableName.viewGroups} WHERE name=? AND parent=?`, (stmt) => {
         stmt.bindString(1, name);
         stmt.bindInteger(2, parentId);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
@@ -608,20 +649,20 @@ export namespace ViewStore {
     }
 
     private getViewInfoSync(id: RowIdOrString): ViewStoreRpc.ViewInfo | undefined {
-      const maybeId = (rowId?: RowId): string | undefined => rowId ? tableRowIdToString(rowId) : undefined;
+      const maybeId = (rowId?: RowId): string | undefined => rowId ? fromRowId(rowId) : undefined;
       return this.withPreparedSqliteStatement(`SELECT owner,className,name,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE id=?`, (stmt) => {
         const viewId = toRowId(id);
         stmt.bindInteger(1, viewId);
         return stmt.nextRow() ? {
-          id: tableRowIdToString(viewId),
+          id: fromRowId(viewId),
           owner: stmt.getValueString(0),
           className: stmt.getValueString(1),
           name: stmt.getValueStringMaybe(2),
           isPrivate: stmt.getValueBoolean(3),
-          groupId: tableRowIdToString(stmt.getValueInteger(4)),
+          groupId: fromRowId(stmt.getValueInteger(4)),
           modelSelectorId: maybeId(stmt.getValueInteger(5)),
-          categorySelectorId: tableRowIdToString(stmt.getValueInteger(6)),
-          displayStyleId: tableRowIdToString(stmt.getValueInteger(7)),
+          categorySelectorId: fromRowId(stmt.getValueInteger(6)),
+          displayStyleId: fromRowId(stmt.getValueInteger(7)),
           tags: this.getTagsForView(viewId),
         } : undefined;
       });
@@ -644,7 +685,7 @@ export namespace ViewStore {
     }
 
     public findTagIdsForView(viewId: RowId): RowId[] {
-      return this.withSqliteStatement(`SELECT tagId FROM ${tableName.taggedViews} WHERE viewId=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT tagId FROM ${tableName.taggedViews} WHERE viewId=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
         const list: RowId[] = [];
         while (stmt.nextRow())
@@ -714,7 +755,7 @@ export namespace ViewStore {
     private verifyRowId(table: string, rowIdString: RowString): RowId {
       try {
         const rowId = toRowId(rowIdString);
-        this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=? `, (stmt) => {
+        this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=?`, (stmt) => {
           stmt.bindInteger(1, rowId);
           if (!stmt.nextRow())
             throw new Error(`missing: ${rowIdString} `);
@@ -756,7 +797,7 @@ export namespace ViewStore {
     public async addViewGroup(args: { name: string, parentId?: RowString, owner?: string }): Promise<RowString> {
       const parentId = args.parentId ? this.findViewGroup(args.parentId) : defaultViewGroupId;
       const json = JSON.stringify({});
-      return tableRowIdToString(this.addViewGroupRow({ name: args.name, parentId, json, owner: args.owner }));
+      return fromRowId(this.addViewGroupRow({ name: args.name, parentId, json, owner: args.owner }));
     }
     public async getViewGroups(args: { parent?: ViewStoreRpc.ViewGroupSpec }) {
       const parentIdRow = args.parent ? this.findViewGroup(args.parent) : defaultViewGroupId;
@@ -766,7 +807,7 @@ export namespace ViewStore {
         while (stmt.nextRow()) {
           const id = stmt.getValueInteger(0);
           if (id !== defaultViewGroupId) // don't include root group
-            groups.push({ id: tableRowIdToString(id), name: stmt.getValueString(1) });
+            groups.push({ id: fromRowId(id), name: stmt.getValueString(1) });
         }
       });
       return groups;
@@ -777,7 +818,7 @@ export namespace ViewStore {
         throw new Error("Must specify at least one category");
 
       const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.categories) });
-      return tableRowIdToString(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
+      return fromRowId(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
     public getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps {
       const row = this.getCategorySelectorRow(toRowId(args.id));
@@ -798,7 +839,7 @@ export namespace ViewStore {
         throw new Error("Must specify at least one model");
 
       const json = JSON.stringify({ models: this.toCompressedGuidRows(args.models) });
-      return tableRowIdToString(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
+      return fromRowId(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
     public getModelSelectorSync(args: { id: RowString }): ModelSelectorProps {
       const row = this.getModelSelectorRow(toRowId(args.id));
@@ -819,7 +860,7 @@ export namespace ViewStore {
         throw new Error("Timeline has no entries");
 
       const json = JSON.stringify(this.scriptToGuids(timeline));
-      return tableRowIdToString(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
+      return fromRowId(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
     }
 
     public getTimelineSync(args: { id: RowString }): RenderTimelineProps {
@@ -837,7 +878,7 @@ export namespace ViewStore {
 
     /** add a DisplayStyleProps to the ViewStore */
     public async addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
-      const settings = JSON.parse(JSON.stringify(args.settings)) as DisplayStyleSettingsProps; // make a copy
+      const settings = cloneProps(args.settings); // don't modify input
       const name = args.name;
       if (settings.subCategoryOvr) {
         const outOvr: DisplayStyleSubCategoryProps[] = [];
@@ -875,7 +916,7 @@ export namespace ViewStore {
           settings.scheduleScript = scriptProps;
       }
 
-      return tableRowIdToString(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
+      return fromRowId(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
     }
 
     public getDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
@@ -930,8 +971,8 @@ export namespace ViewStore {
       return this.getDisplayStyleSync(args);
     }
 
-    public addViewDefinition(args: { viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
-      const viewDef = JSON.parse(JSON.stringify(args.viewDefinition)) as ViewDefinitionProps; // make a copy
+    public addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
+      const viewDef = cloneProps(args.viewDefinition); // don't modify input
       const name = viewDef.code.value;
       if (name === undefined)
         throw new Error("ViewDefinition must have a name");
@@ -966,21 +1007,22 @@ export namespace ViewStore {
       }
     }
 
-    public getViewDefinitionSync(args: { viewId: RowString }): ViewDefinitionProps {
-      const row = this.getViewRow(toRowId(args.viewId));
+    public getViewDefinitionSync(args: { viewId: RowIdOrString }): ViewDefinitionProps {
+      const viewId = toRowId(args.viewId);
+      const row = this.getViewRow(viewId);
       if (undefined === row)
         throw new Error("View not found");
 
-      const props = blankElementProps(JSON.parse(row.json), row.className, args.viewId, row.name) as ViewDefinitionProps;
+      const props = blankElementProps(JSON.parse(row.json), row.className, viewId, row.name) as ViewDefinitionProps;
       this.fromGuidRowMember(props, "baseModelId");
       this.fromGuidRowMember(props.jsonProperties?.viewDetails, "acs");
       return props;
     }
-    public async getViewDefinition(args: { viewId: RowString }): Promise<ViewDefinitionProps> {
+    public async getViewDefinition(args: { viewId: RowIdOrString }): Promise<ViewDefinitionProps> {
       return this.getViewDefinitionSync(args);
     }
 
-    public async addOrReplaceThumbnail(args: { viewId: ViewStoreRpc.IdString, thumbnail: ThumbnailProps, owner?: string }) {
+    public async addOrReplaceThumbnail(args: { viewId: RowIdOrString, readonly thumbnail: ThumbnailProps, owner?: string }) {
       const viewRow = this.getViewRow(toRowId(args.viewId));
       if (viewRow === undefined)
         throw new Error("View not found");
@@ -988,15 +1030,17 @@ export namespace ViewStore {
       this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner });
     }
 
-    public getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined {
+    public getThumbnailSync(args: { viewId: RowIdOrString }): ThumbnailProps | undefined {
       const row = this.getThumbnailRow(toRowId(args.viewId));
       return row ? { image: row.data, format: row.format.format, height: row.format.height, width: row.format.width } : undefined;
     }
-    public async getThumbnail(args: { viewId: RowString }): Promise<ThumbnailProps | undefined> {
+    public async getThumbnail(args: { viewId: RowIdOrString }): Promise<ThumbnailProps | undefined> {
       return this.getThumbnailSync(args);
     }
-    // find a group with the specified name using path syntax (e.g., "group1/design/issues"). If the group does not exist, return 0.
-    // If groupName starts with "@", then it is considered to be a group id and this function verifies that it exists and throws if it does not.
+
+    /** find a group with the specified name using path syntax (e.g., "group1/design/issues"). If the group does not exist, return 0.
+     * If groupName starts with "@", then it is considered to be a group id and this function verifies that it exists and throws if it does not.
+     */
     public findViewGroup(groupName: ViewStoreRpc.ViewGroupSpec): RowId {
       // if it starts with "@", then it is a group id
       if (groupName.startsWith("@"))
@@ -1015,6 +1059,10 @@ export namespace ViewStore {
       return groupId;
     }
 
+    /**
+     * find a view by name using path syntax (e.g., "group1/design/issues/issue113"). If the view does not exist, return 0.
+     * If a groupId is specified, then the view is searched for in that group and the name should not contain a path.
+     */
     public findViewIdByName(arg: { name: string, groupId?: RowIdOrString }): RowId {
       let name = arg.name;
       let groupId = arg.groupId;
@@ -1026,7 +1074,7 @@ export namespace ViewStore {
           name = name.slice(slash + 1);
         }
       }
-      return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE name=? AND groupId=? `, (stmt) => {
+      return this.withSqliteStatement(`SELECT Id FROM ${tableName.views} WHERE name=? AND groupId=?`, (stmt) => {
         stmt.bindString(1, name);
         stmt.bindInteger(2, maybeToRowId(groupId) ?? defaultViewGroupId);
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
@@ -1046,10 +1094,10 @@ export namespace ViewStore {
       if (groupRow === undefined)
         return undefined;
       const info: ViewStoreRpc.ViewGroupInfo = {
-        id: tableRowIdToString(groupId),
+        id: fromRowId(groupId),
         name: groupRow.name,
-        defaultView: groupRow.defaultViewId ? tableRowIdToString(groupRow.defaultViewId) : undefined,
-        parent: tableRowIdToString(groupRow.parentId),
+        defaultView: groupRow.defaultViewId ? fromRowId(groupRow.defaultViewId) : undefined,
+        parent: fromRowId(groupRow.parentId),
       };
       return info;
     }
@@ -1064,16 +1112,16 @@ export namespace ViewStore {
       const groupRow = this.getViewGroup(groupId);
       if (groupRow === undefined)
         throw new Error("View group not found");
-      this.withSqliteStatement(`UPDATE ${tableName.viewGroups} SET defaultViewId=? WHERE Id=? `, (stmt) => {
+      this.withSqliteStatement(`UPDATE ${tableName.viewGroups} SET defaultViewId=? WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, groupId);
         stmt.bindInteger(2, toRowId(args.defaultView));
         stmt.stepForWrite();
       });
     }
-
+    /** get the array of tags for the specified view. Returns undefined if the view has no tags. */
     public getTagsForView(viewId: RowIdOrString): ViewStoreRpc.TagName[] | undefined {
       const tags: ViewStoreRpc.TagName[] = [];
-      this.withPreparedSqliteStatement(`SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id = v.tagId WHERE v.viewId=? `, (stmt) => {
+      this.withPreparedSqliteStatement(`SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id = v.tagId WHERE v.viewId=?`, (stmt) => {
         stmt.bindInteger(1, toRowId(viewId));
         while (stmt.nextRow())
           tags.push(stmt.getValueString(0));
@@ -1081,13 +1129,9 @@ export namespace ViewStore {
       return tags.length === 0 ? undefined : tags;
     }
 
-    public iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void) {
+    private iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void) {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=?`;
-      if (queryParams.owner)
-        sql += " AND (owner=@owner OR private!=1)";
-      else
-        sql += " AND private!=1";
+      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=? ${queryParams.owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"}`;
       if (queryParams.classNames)
         sql += ` AND className IN(${queryParams.classNames.map((className) => `'${className}'`).join(",")})`;
       if (queryParams.nameSearch)
@@ -1165,7 +1209,7 @@ export namespace ViewStore {
           throw new Error("Must supply valid displayStyle");
         spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
       }
-      const viewId = tableRowIdToString(this.addViewDefinition(args));
+      const viewId = fromRowId(this.addViewDefinition(args));
       if (args.tags)
         await this.addTagsToView({ viewId, tags: args.tags, owner });
 
