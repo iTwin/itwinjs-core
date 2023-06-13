@@ -823,6 +823,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "rollup-plugin-visualizer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-webpack-stats",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "sanitize-filename",
       "allowedCategories": [ "internal" ]
     },

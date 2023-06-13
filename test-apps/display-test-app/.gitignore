@@ -2,3 +2,5 @@ Package.resolved
 .env.local.mobile
 .vite-inspect/
 public/
+
+stats.html
