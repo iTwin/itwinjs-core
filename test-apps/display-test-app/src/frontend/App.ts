@@ -18,8 +18,7 @@ import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
-import * as MobileFrontend from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-// import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -277,7 +276,7 @@ export class DisplayTestApp {
 
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
-      await MobileFrontend.MobileApp.startup(opts as MobileFrontend.MobileAppOpts);
+      await MobileApp.startup(opts as MobileAppOpts);
       // await MobileApp.startup(opts as MobileAppOpts);
     } else {
       const redirectUri = "http://localhost:3000/signin-callback";
@@ -293,7 +292,7 @@ export class DisplayTestApp {
     }
 
     IModelApp.applicationLogoCard =
-      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
+      () => IModelApp.makeLogoCard({ iconSrc: "../../public/DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
