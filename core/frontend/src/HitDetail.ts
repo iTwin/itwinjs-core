@@ -106,42 +106,12 @@ export enum HitDetailType {
   Intersection = 3,
 }
 
-export interface HitDetailCreateArgs {
-  testPoint: Point3d;
-  viewport: ScreenViewport;
-  hitSource: HitSource;
-  hitPoint: Point3d;
-  sourceId: string;
-  priority: HitPriority;
-  distXY: number;
-  distFraction: number;
-  subCategoryId?: string;
-  geometryClass?: GeometryClass;
-  modelId?: string;
-  iModel?: IModelConnection;
-  /** @internal chiefly for debugging. */
-  tileId?: string;
-  /** @alpha */
-  isClassifier?: boolean;
-}
-
 /** A HitDetail stores the result when locating geometry displayed in a view.
  * It holds an approximate location on an element (or decoration) from a *pick*.
  * @public
  * @extensions
  */
 export class HitDetail {
-  public readonly testPoint: Point3d;
-  public readonly viewport: ScreenViewport;
-  public readonly hitSource: HitSource;
-  public readonly hitPoint: Point3d;
-  public readonly sourceId: string;
-  public readonly priority: HitPriority;
-  public readonly distXY: number;
-  public readonly distFraction: number;
-  public readonly subCategoryId?: string;
-  public readonly geometryClass?: GeometryClass;
-  public readonly modelId?: string;
   private readonly _iModel?: IModelConnection;
   /** @internal chiefly for debugging. */
   public readonly tileId?: string;
@@ -164,29 +134,12 @@ export class HitDetail {
    * @param tileId Optionally the Id of the Tile from which the hit originated.
    * @param isClassifier Optionally whether the hit originated from a reality model classification.
    */
-  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority,
-    distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, iModel?: IModelConnection,
-    tileId?: string, isClassifier?: boolean) {
+  public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
+    public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number,
+    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
     this._iModel = iModel;
-    this.testPoint = testPoint;
-    this.viewport = viewport;
-    this.hitSource = hitSource;
-    this.hitPoint = hitPoint;
-    this.sourceId = sourceId;
-    this.priority = priority;
-    this.distXY = distXY;
-    this.distFraction = distFraction;
-    this.subCategoryId = subCategoryId;
-    this.geometryClass = geometryClass;
-    this.modelId = modelId;
     this.tileId = tileId;
     this.isClassifier = undefined !== isClassifier ? isClassifier : false;
-  }
-
-  public static create(args: HitDetailCreateArgs): HitDetail {
-    return new HitDetail(args.testPoint, args.viewport, args.hitSource, args.hitPoint, args.sourceId, args.priority, args.distXY, args.distFraction,
-      args.subCategoryId, args.geometryClass, args.modelId, args.iModel, args.tileId, args.isClassifier
-    );
   }
 
   /** Get the type of HitDetail.
