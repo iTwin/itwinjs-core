@@ -44,6 +44,7 @@ function makeHitDetail(noGcsDefined: boolean) {
 }
 
 function stubJsonFetch(sandbox: sinon.SinonSandbox, json: string) {
+
   sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
     const test = {
       headers: { "content-type": "application/json" },
@@ -74,12 +75,15 @@ function stubGetServiceJson(sandbox: sinon.SinonSandbox) {
   });
 }
 
-async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, expectedPrimitiveType: string, noGcsDefined: boolean, dataset: any, nbGraphics: number = 1) {
+async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, fetchStub: any, expectedPrimitiveType: string, noGcsDefined: boolean, dataset: any, nbGraphics: number = 1) {
 
   const settings = ImageMapLayerSettings.fromJSON({
     ...esriFeatureSampleSource,
     subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
   });
+
+  // sandbox.resetBehavior();    // Reset default stub made by 'beforeEach'
+  fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
 
   stubGetLayerMetadata(sandbox);
   stubGetServiceJson(sandbox);
@@ -547,35 +551,35 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should process polygon data in getFeatureInfo (ECF)", async () => {
 
-    await testGetFeatureInfoGeom(sandbox, "loop", false, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", false, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
   });
 
   it("should process polygon data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "loop", true, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "loop", true, PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson);
   });
 
   it("should process multi path data in getFeatureInfo (ECF)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", false, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
   });
 
   it("should process multi path data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", true, PhillyLandmarksDataset.phillyMultiPathQueryJson, 2);
   });
 
   it("should process linestring data in getFeatureInfo (ECF)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", false, PhillyLandmarksDataset.phillySimplePathQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", false, PhillyLandmarksDataset.phillySimplePathQueryJson);
   });
 
   it("should process linestring data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "linestring", true, PhillyLandmarksDataset.phillySimplePathQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "linestring", true, PhillyLandmarksDataset.phillySimplePathQueryJson);
   });
 
   it("should process pointstring data in getFeatureInfo (ECF)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "pointstring", false, PhillyLandmarksDataset.phillySimplePointQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", false, PhillyLandmarksDataset.phillySimplePointQueryJson);
   });
 
   it("should process pointstring data in getFeatureInfo (GCS)", async () => {
-    await testGetFeatureInfoGeom(sandbox, "pointstring", true, PhillyLandmarksDataset.phillySimplePointQueryJson);
+    await testGetFeatureInfoGeom(sandbox, fetchStub, "pointstring", true, PhillyLandmarksDataset.phillySimplePointQueryJson);
   });
 
   it("should log error when exceed transfer limit", async () => {
