@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
@@ -294,6 +294,7 @@ export class Branch extends Graphic {
   public readonly frustum?: GraphicBranchFrustum;
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
+  public readonly viewAttachmentId?: Id64String;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -310,6 +311,7 @@ export class Branch extends Graphic {
     this.clips = opts.clipVolume as ClipVolume | undefined;
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
+    this.viewAttachmentId = opts.viewAttachmentId;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);

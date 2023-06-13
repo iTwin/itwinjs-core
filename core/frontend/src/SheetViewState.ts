@@ -788,6 +788,7 @@ class OrthographicAttachment {
 
     // Extract scene graphics and insert into on-screen scene context.
     const options = {
+      viewAttachmentId: this._props.id,
       clipVolume: this._clipVolume,
       hline: this._hiddenLineSettings,
       frustum: {
