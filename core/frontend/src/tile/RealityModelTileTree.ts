@@ -529,10 +529,8 @@ class RealityModelTileLoader extends RealityTileLoader {
     }
 
     const children = [];
-    for (const prop of props) {
-      prop.range;
+    for (const prop of props)
       children.push(tile.realityRoot.createTile(prop));
-    }
 
     return children;
   }
