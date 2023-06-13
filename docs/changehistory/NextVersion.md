@@ -51,7 +51,7 @@ Here are those result sections assembled into RuledSweep solids and then faceted
 - [Matrix3d.createFlattenAlongVectorToPlane]($core-geometry) returns a matrix which sweeps vectors along given sweep vector to a plane (through the origin) through described by its normal
 - [Transform.createFlattenAlongVectorToPlane]($core-geometry) returns a matrix which sweeps points along given sweep vector to a plane with given origin and normal.
 
-- [PolylineOps.createBisectorPlanesForDistinctPoints(centerline:]($core-geometry) For each point on a polyline, constructs a plane which bisects the angle between inbound and outbound
+- [PolylineOps.createBisectorPlanesForDistinctPoints]($core-geometry) For each point on a polyline, constructs a plane which bisects the angle between inbound and outbound
 
 ### Bug Fix: Swept surface constructions
 
