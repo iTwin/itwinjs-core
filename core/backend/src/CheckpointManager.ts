@@ -214,7 +214,7 @@ export class V2CheckpointManager {
         const minRequests = getPrefetchConfig("minRequests", 3);
         const maxRequests = getPrefetchConfig("maxRequests", 6);
         const timeout = getPrefetchConfig("timeout", 100);
-        const maxBlocks = getPrefetchConfig("maxBlocks", 500); // default size of 2GB. Assumes a checkpoint block size of 4mb.
+        const maxBlocks = getPrefetchConfig("maxBlocks", 500); // default size of 2GB. Assumes a checkpoint block size of 4MB.
         if (dbStats?.totalBlocks <= maxBlocks) {
           const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
             const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
