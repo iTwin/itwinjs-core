@@ -166,7 +166,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected async queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined> {
     try {
-      return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+      const omitScriptElementIds = !IModelApp.tileAdmin.enableFrontendScheduleScripts;
+      return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds } }) as RenderTimelineProps;
     } catch (_) {
       return undefined;
     }
