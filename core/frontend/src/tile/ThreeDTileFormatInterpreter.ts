@@ -6,7 +6,7 @@
 import { JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { PublisherProductInfo, RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;

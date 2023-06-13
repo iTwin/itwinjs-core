@@ -10,9 +10,10 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 
 /** @internal */
-export const nativeAppChannel = "nativeApp";
-/** @internal */
-export const nativeAppNotify = "nativeApp-notify";
+export const nativeAppIpcStrings = {
+  channelName: "itwinjs-core/nativeApp",
+  notifyChannel: "itwinjs-core/nativeApp-notify",
+} as const;
 
 /**
  * Type of value for storage values

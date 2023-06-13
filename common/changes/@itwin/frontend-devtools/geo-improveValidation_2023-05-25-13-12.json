@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Removed URL parameters from localization strings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools"
+}

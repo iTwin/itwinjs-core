@@ -59,7 +59,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation, viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewPose } from "./ViewPose";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./common/ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
@@ -1059,7 +1059,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const worldPoint = hit.hitPoint.clone();
     const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+      featureInfo.hitPoint = (await backgroundMapGeometry.dbToCartographicFromGcs([worldPoint]))[0];
     }
 
     const results = await Promise.all(promises);

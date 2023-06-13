@@ -13,14 +13,18 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
+import { imageElementFromImageSource } from "../common/ImageUtil";
+import { MeshParams } from "../common/render/primitives/MeshParams";
+import { PointStringParams } from "../common/render/primitives/PointStringParams";
+import { PolylineParams } from "../common/render/primitives/PolylineParams";
+import { TextureCacheKey } from "../common/render/TextureParams";
+import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
@@ -28,17 +32,17 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { PointStringParams } from "./primitives/PointStringParams";
-import { PolylineParams } from "./primitives/PolylineParams";
-import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
-import { CreateRenderMaterialArgs } from "./RenderMaterial";
+import { CreateRenderMaterialArgs } from "./CreateRenderMaterialArgs";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { createMeshParams } from "./primitives/VertexTableBuilder";
+import { createPointStringParams } from "./primitives/PointStringParams";
+import { createPolylineParams } from "./primitives/PolylineParams";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -353,17 +357,17 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    const params = MeshParams.create(args);
+    const params = createMeshParams(args, this.maxTextureSize);
     return this.createMesh(params, instances);
   }
 
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams = PointStringParams.create(args);
+      const pointStringParams = createPointStringParams(args);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
-      const polylineParams = PolylineParams.create(args);
+      const polylineParams = createPolylineParams(args);
       return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
     }
   }

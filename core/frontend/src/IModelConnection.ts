@@ -22,7 +22,7 @@ import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@it
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
@@ -224,7 +224,7 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-    this.geoServices = new GeoServices(this);
+    this.geoServices = GeoServices.createForIModel(this);
     /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
@@ -283,7 +283,7 @@ export abstract class IModelConnection extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -304,7 +304,7 @@ export abstract class IModelConnection extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
@@ -326,7 +326,7 @@ export abstract class IModelConnection extends IModel {
    *
    * See also:
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [Code Examples]($docs/learning/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
@@ -427,6 +427,7 @@ export abstract class IModelConnection extends IModel {
    * @param result If defined, use this for output
    * @returns A Cartographic location (Horizontal datum depends on iModel's GCS)
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
+   * @see [[cartographicFromSpatial]] if you have more than one point to convert, or you don't know whether the iModel has a GCS.
    */
   public async spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return this.toCartographicFromGcs(spatial, undefined, result);
@@ -468,8 +469,8 @@ export abstract class IModelConnection extends IModel {
    * @param result If defined, use this for output
    * @returns A Cartographic location (Horizontal datum depends on iModel's GCS)
    * @throws IModelError if [[isGeoLocated]] is false or point could not be converted.
-   * @see [[spatialToCartographicFromGcs]]
-   * @see [[spatialToCartographicFromEcef]]
+   * @see [[cartographicFromSpatial]] to convert multiple points at once.
+   * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
@@ -488,11 +489,52 @@ export abstract class IModelConnection extends IModel {
     return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToWGS84CartographicFromGcs(spatial, result));
   }
 
-  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection.
+  /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param spatial Coordiantes to be converted from the iModel's spatial coordinate system
+   * @returns The `spatial` coordinates converted to cartographic coordinates, of the same length and order as the `spatial`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[spatialFromCartographic]] to perform the inverse conversion.
+   * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
+   */
+  public async cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    if (this.noGcsDefined)
+      return spatial.map((p) => this.spatialToCartographicFromEcef(p));
+
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (spatial.length === 0)
+      return [];
+
+    const geoConverter = this.geoServices.getConverter();
+    assert(undefined !== geoConverter);
+
+    const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates(spatial);
+    if (coordResponse.geoCoords.length !== spatial.length)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    return coordResponse.geoCoords.map((coord) => {
+      switch (coord.s) {
+        case GeoCoordStatus.NoGCSDefined:
+          throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+        case GeoCoordStatus.Success:
+          const llh = Point3d.fromJSON(coord.p);
+          return Cartographic.fromDegrees({ longitude: llh.x, latitude: llh.y, height: llh.z });
+        default:
+          throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting spatial to cartographic");
+      }
+    });
+  }
+
+  /** Convert a [Cartographic]($common) to a point in this iModel's spatial coordinate system using a [[GeoConverter]].
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
+   * @see [[spatialFromCartographic]] to convert multiple points at once, or you don't know whether the iModel has a GCS.
    */
   public async cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     if (!this.isGeoLocated && this.noGcsDefined)
@@ -534,16 +576,55 @@ export abstract class IModelConnection extends IModel {
     return results;
   }
 
-  /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
+  /** Convert a [Cartographic]($common) to a point in this iModel's Spatial coordinates using a [[GeoConverter]] or[[IModel.ecefLocation]($common).
    * @param cartographic A cartographic location
    * @param result If defined, use this for output
    * @returns A point in this iModel's spatial coordinates
    * @throws IModelError if [[isGeoLocated]] is false or cartographic location could not be converted.
-   * @see [[cartographicToSpatialFromGcs]]
-   * @see [[cartographicToSpatialFromEcef]]
+   * @see [[spatialFromCartographic]] to convert multiple points at once.
+   * @see [[cartographicToSpatialFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
     return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+  }
+
+  /** Convert [Cartographic]($common) coordinates into points in this iModel's spatial coordinate system using a [[GeoConverter]] or the iModel's [EcefLocation]($common).
+   * @param cartographic Coordinates to be converted to the iModel's spatial coordinate system.
+   * @returns The `cartographic` coordinates converted to spatial coordinates, of the same length and order as `cartographic`.
+   * @throws IModelError if [[isGeoLocated]] is false or any point could not be converted.
+   * @see [[cartographicFromSpatial]] to perform the inverse conversion.
+   */
+  public async spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]> {
+    if (this.noGcsDefined)
+      return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
+
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (cartographic.length === 0)
+      return [];
+
+    const geoConverter = this.geoServices.getConverter();
+    assert(undefined !== geoConverter);
+
+    const geoCoords = cartographic.map((p) => Point3d.create(p.longitudeDegrees, p.latitudeDegrees, p.height));
+    const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates(geoCoords);
+    if (coordResponse.iModelCoords.length !== cartographic.length)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+
+    return coordResponse.iModelCoords.map((coord) => {
+      switch (coord.s) {
+        case GeoCoordStatus.NoGCSDefined:
+          throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+        case GeoCoordStatus.Success:
+          return Point3d.fromJSON(coord.p);
+        default:
+          throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting cartographic to spatial");
+      }
+    });
   }
 
   /** Expand this iModel's [[displayedExtents]] to include the specified range.

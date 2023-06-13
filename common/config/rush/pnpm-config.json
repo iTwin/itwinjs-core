@@ -24,7 +24,7 @@
     "pnpm": {
       "auditConfig": {
         "ignoreCves": [
-          "CVE-2023-0842" // https://github.com/advisories/GHSA-776f-qx25-q3cc full-stack-tests__backend>azurite>xml2js
+          "CVE-2023-26132" // https://github.com/advisories/GHSA-4gxf-g5gf-22h4 full-stack-tests__backend>azurite>sequelize>dottie
         ]
       }
     }

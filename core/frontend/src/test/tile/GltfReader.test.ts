@@ -8,7 +8,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../gltf/GltfSchema";
+import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 

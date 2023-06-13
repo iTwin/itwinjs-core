@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { GeometryClass } from "@itwin/core-common";
-import { ViewRect } from "../ViewRect";
+import { ViewRect } from "../common/ViewRect";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 import { Pixel } from "./Pixel";

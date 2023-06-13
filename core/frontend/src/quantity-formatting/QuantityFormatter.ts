@@ -11,7 +11,7 @@ import {
   AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
   UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";

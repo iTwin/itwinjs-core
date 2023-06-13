@@ -16,4 +16,4 @@ export const fakeContext = ({
 
 } as CanvasRenderingContext2D);
 
-export const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId};
+export const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/ArcGIS/rest/services/PhillyRailLines/FeatureServer", formatId: ArcGisFeatureMapLayerFormat.formatId};

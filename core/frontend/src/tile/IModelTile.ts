@@ -15,7 +15,7 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
-  addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
+  addRangeGraphic, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
   TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
@@ -112,24 +112,17 @@ export class IModelTile extends Tile {
     if (format !== TileFormat.IModel)
       return content;
 
-    const tree = this.iModelTree;
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const { iModel, modelId, is3d, containsTransformNodes } = tree;
-    const reader = ImdlReader.create({
-      stream: streamBuffer,
-      type: tree.batchType,
-      loadEdges: false !== tree.edgeOptions,
-      options: { tileId: this.contentId },
-      timeline: tree.timeline,
-      iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
-    });
-
-    if (undefined !== reader) {
-      try {
-        content = await reader.read();
-      } catch {
-        //
-      }
+    try {
+      content = await this.iModelTree.decoder.decode({
+        stream: streamBuffer,
+        options: { tileId: this.contentId },
+        system,
+        isCanceled,
+        sizeMultiplier,
+      });
+    } catch {
+      //
     }
 
     return content;

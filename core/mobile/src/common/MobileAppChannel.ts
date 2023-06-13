@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @internal */
-export const mobileAppChannel = "mobileApp";
-/** @internal */
-export const mobileAppNotify = "mobileApp-notify";
+export const mobileAppStrings = {
+  mobileAppChannel: "itwinjs-core/mobileApp",
+  mobileAppNotify: "itwinjs-core/mobileApp-notify",
+} as const;

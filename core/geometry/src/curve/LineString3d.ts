@@ -1058,7 +1058,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return ls;
   }
   /**
-   * Evaluate a curve at uniform fractions.  Append the evaluations to this linestring.
+   * Evaluate a curve at uniform fractions. Append the evaluations to this linestring.
    * @param curve primitive to evaluate.
    * @param numStrokes number of strokes (edges).
    * @param fraction0 starting fraction coordinate
@@ -1066,11 +1066,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param include01 if false, points at fraction0 and fraction1 are omitted.
    */
   public appendFractionalStrokePoints(
-    curve: CurvePrimitive,
-    numStrokes: number,
-    fraction0: number = 0,
-    fraction1: number = 1,
-    include01: boolean = true): void {
+    curve: CurvePrimitive, numStrokes: number, fraction0: number = 0, fraction1: number = 1, include01: boolean = true
+  ): void {
     let i0 = 1;
     let i1 = numStrokes - 1;
     if (include01) {
@@ -1108,7 +1105,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const n = this._points.length;
     const pointA = LineString3d._workPointA;
     const pointB = LineString3d._workPointB;
-
     if (n > 0) {
       // This is a linestring.
       // There is no need for chordTol and angleTol within a segment.

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
-import { ViewRect } from "../../../ViewRect";
+import { ViewRect } from "../../../common/ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";

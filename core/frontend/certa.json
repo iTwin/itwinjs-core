@@ -15,8 +15,9 @@
   },
   "chromeOptions": {
     "publicDirs": [
-      "src/public",
+      "lib/public",
       "src/test/public",
+      "lib/test"
     ],
     "args": [
       "--disable-web-security",

@@ -853,6 +853,7 @@ export namespace CloudSqlite {
         set accessToken(val: string);
         acquireWriteLock(user: string): void;
         get alias(): string;
+        get baseUri(): string;
         get blockSize(): number;
         // (undocumented)
         readonly cache?: CloudCache;
@@ -869,7 +870,7 @@ export namespace CloudSqlite {
         get garbageBlocks(): number;
         get hasLocalChanges(): boolean;
         get hasWriteLock(): boolean;
-        initializeContainer(opts?: {
+        initializeContainer(args: {
             checksumBlockNames?: boolean;
             blockSize: number;
         }): void;
@@ -891,6 +892,7 @@ export namespace CloudSqlite {
         // @internal
         queryHttpLog(filterOptions?: BcvHttpLogFilterOptions): CloudSqlite.BcvHttpLog[];
         releaseWriteLock(): void;
+        get storageType(): string;
         uploadChanges(): Promise<void>;
     }
     // (undocumented)

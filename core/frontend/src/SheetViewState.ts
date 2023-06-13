@@ -26,14 +26,14 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
 import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
+import { ViewRect } from "./common/ViewRect";
 
 // cSpell:ignore ovrs
 

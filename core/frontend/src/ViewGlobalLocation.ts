@@ -99,9 +99,11 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
  * @internal
  */
 export async function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset = 0): Promise<number> {
-  const ne = await view3d.cartographicToRootFromGcs(area.northeast);
-  const sw = await view3d.cartographicToRootFromGcs(area.southwest);
-  return _areaToEyeHeight(view3d, ne, sw, offset);
+  const corners = await view3d.cartographicToRootUsingGcs([area.northeast, area.southwest]);
+  if (!corners)
+    return 0;
+
+  return _areaToEyeHeight(view3d, corners[0], corners[1], offset);
 }
 
 /** Converts a root range (often project extents) to a cartographic area.

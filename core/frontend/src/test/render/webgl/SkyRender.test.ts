@@ -11,7 +11,7 @@ import { createBlankConnection } from "../../createBlankConnection";
 import { expectColors, expectNotTheseColors } from "../../ExpectColors";
 import { BeDuration } from "@itwin/core-bentley";
 import { EnvironmentDecorations } from "../../../EnvironmentDecorations";
-import { imageElementFromImageSource } from "../../../ImageUtil";
+import { imageElementFromImageSource } from "../../../common/ImageUtil";
 import { expect } from "chai";
 import { Texture2DHandle, TextureCubeHandle } from "../../../webgl";
 
