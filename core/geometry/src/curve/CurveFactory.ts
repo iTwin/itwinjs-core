@@ -396,7 +396,7 @@ export class CurveFactory {
         const transform = Transform.createFlattenAlongVectorToPlane(sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef());
         if (transform === undefined)
           return section;
-        const section1 = section!.cloneTransformed(transform);
+        const section1 = section.cloneTransformed(transform);
         if (section1 === undefined)
           return section;
         sectionData.planes.push(targetPlane);
