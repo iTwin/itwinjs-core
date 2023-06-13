@@ -45,7 +45,12 @@ export class TileStorage {
    */
   public async getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig> {
     try {
-      return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, expiresInSeconds);
+      if (expiresInSeconds !== undefined)
+        return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, { expiresInSeconds });
+      const expiresOn = new Date();
+      expiresOn.setDate(expiresOn.getDate() + (7 - expiresOn.getDay())); // next Sunday
+      expiresOn.setHours(0, 0, 0, 0); // exactly at midnight
+      return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, { expiresOn });
     } catch (err) {
       this.logException("Failed to get download config", err);
       throw err;

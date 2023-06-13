@@ -42,7 +42,7 @@
     "@itwin/imodels-access-frontend": "^3.0.0",
     "@itwin/imodels-client-authoring": "^3.0.0",
     "@itwin/imodels-client-management": "^3.0.0",
-    "@itwin/object-storage-core": "^1.5.0",
+    "@itwin/object-storage-core": "2.0.0-dev.1",
     "@itwin/reality-data-client": "0.9.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
