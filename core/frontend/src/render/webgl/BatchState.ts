@@ -109,7 +109,7 @@ export class BatchState {
 
   private getBatchId(batch: Batch, allowAdd: boolean): number {
     if (allowAdd && 0 === batch.batchId) {
-      batch.setContext(this.nextBatchId, this._stack.top.iModel);
+      batch.setContext(this.nextBatchId, this._stack.top);
       this._batches.push(batch);
     }
 
