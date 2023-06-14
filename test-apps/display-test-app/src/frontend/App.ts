@@ -277,7 +277,6 @@ export class DisplayTestApp {
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
-      // await MobileApp.startup(opts as MobileAppOpts);
     } else {
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
