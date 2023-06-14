@@ -436,7 +436,7 @@ export namespace ViewStoreRpc {
     getModelSelector(args: NameOrId): Promise<ModelSelectorProps>;
 
     /** Get a thumbnail for a view. */
-    getThumbnail(args: NameOrId): Promise<ThumbnailProps | undefined>;
+    getThumbnail(args: { viewId: IdString }): Promise<ThumbnailProps | undefined>;
 
     /** Get a render timeline by Id. Throws if it does not exist. */
     getTimeline(args: NameOrId): Promise<RenderTimelineProps>;

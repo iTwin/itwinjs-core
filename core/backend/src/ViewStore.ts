@@ -1096,11 +1096,11 @@ export namespace ViewStore {
       this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner });
     }
 
-    public getThumbnailSync(args: ViewStoreRpc.NameOrId): ThumbnailProps | undefined {
-      const row = this.getThumbnailRow(this.getRowId(tableName.thumbnails, args));
+    public getThumbnailSync(args: { viewId: RowIdOrString }): ThumbnailProps | undefined {
+      const row = this.getThumbnailRow(toRowId(args.viewId));
       return row ? { image: row.data, format: row.format.format, height: row.format.height, width: row.format.width } : undefined;
     }
-    public async getThumbnail(args: ViewStoreRpc.NameOrId): Promise<ThumbnailProps | undefined> {
+    public async getThumbnail(args: { viewId: RowIdOrString }): Promise<ThumbnailProps | undefined> {
       return this.getThumbnailSync(args);
     }
 
