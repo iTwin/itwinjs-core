@@ -16,15 +16,20 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
-  const modelId = IModelTestUtils.createAndInsertPhysicalPartition(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), parent);
-  const modelId2 = IModelTestUtils.createAndInsertPhysicalPartition(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "2PhysicalModel"), parent);
+function createNewModelAndCategory(rwIModel: IModelDb) {
+  const modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
+  const modelId2 = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "PhysicalModel2"), true)[1];
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
-  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "TestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-
   const spatialCategoryId = category.insert();
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
+
+  newCategoryCode.value = "spatial category 2";
+  SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value).insert();
+
+  rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, modelId2, spatialCategoryId).toJSON());
+
   return { modelId, modelId2, spatialCategoryId };
 }
 
@@ -126,13 +131,41 @@ describe.only("ViewDefinition", () => {
     expect(cs2).equal("@2");
     const cs3 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", adds: longElementList } } }));
     const cs4 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", removes: ["0x233", "0x21"], adds: longElementList } } }));
+    const cs5 = (await vs1.addCategorySelector({
+      name: "only used spatial categories",
+      selector: {
+        query: {
+          from: "BisCore.Category",
+          where: "ECInstanceId IN (SELECT DISTINCT Category.Id FROM BisCore.GeometricElement3d)",
+        },
+      },
+    }));
 
     let selected = vs1.getCategorySelectorSync({ id: cs2 });
-    expect(selected.categories.length).equal(1);
+    expect(selected.categories.length).equal(2);
     selected = vs1.getCategorySelectorSync({ id: cs3 });
-    expect(selected.categories.length).equal(97);
+    expect(selected.categories.length).equal(98);
     selected = vs1.getCategorySelectorSync({ id: cs4 });
-    expect(selected.categories.length).equal(96);
+    expect(selected.categories.length).equal(97);
+    selected = vs1.getCategorySelectorSync({ id: cs5 });
+    expect(selected.categories.length).equal(1);
+    expect(selected.categories[0]).equal(spatialCategoryId);
+
+    const ms3 = (await vs1.addModelSelector({ name: "model selector 2", selector: { query: { from: "Bis.GeometricModel3d" } } }));
+    let selectedModels = vs1.getModelSelectorSync({ id: ms3 });
+    expect(selectedModels.models.length).equal(2);
+    const ms4 = (await vs1.addModelSelector({
+      name: "spatial, non-private models",
+      selector: {
+        query: {
+          from: "BisCore.GeometricModel3d",
+          where: "IsPrivate=false AND IsTemplate=false AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated=false)",
+        },
+      },
+    }));
+    selectedModels = vs1.getModelSelectorSync({ id: ms4 });
+    expect(selectedModels.models.length).equal(1);
+    expect(selectedModels.models[0]).equal(modelId);
 
     const ds1 = iModel.elements.getElement<DisplayStyle3d>(displayStyleId);
     ds1.settings.setPlanProjectionSettings("0x1", new PlanProjectionSettings({ elevation: 1 }));
@@ -150,13 +183,13 @@ describe.only("ViewDefinition", () => {
       },
       ];
 
-    styles.excludedElements = CompressedId64Set.compressArray(["0x8", "0x12", "0x22"]);
+    styles.excludedElements = CompressedId64Set.sortAndCompress(["0x8", "0x12", "0x22"]);
     styles.scheduleScript = [{
       modelId: "0x21",
       realityModelUrl: "altavista.com",
       elementTimelines: [{
         batchId: 64,
-        elementIds: CompressedId64Set.compressArray(["0x1a", "0x1d"]),
+        elementIds: CompressedId64Set.sortAndCompress(["0x1a", "0x1d"]),
       }, {
         batchId: 65,
         elementIds: longElementList,

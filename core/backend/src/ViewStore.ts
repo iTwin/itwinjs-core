@@ -832,6 +832,7 @@ export namespace ViewStore {
       const selector = { ...props }; // shallow copy
       if (selector.query) {
         selector.query = { ...selector.query }; // shallow copy
+        selector.query.from = selector.query.from.toLowerCase().replace(".", ":").replace("bis:", "biscore:");
         if (!this.iModel.getJsClass(selector.query.from).is(entity))
           throw new Error(`query must select from ${entity.classFullName}`);
         if (selector.query.adds)
@@ -858,12 +859,7 @@ export namespace ViewStore {
       }
 
       const query = props.query;
-      let sql = "SELECT ECInstanceId FROM ";
-      if (query.only)
-        sql += "ONLY ";
-      sql += query.from;
-      if (query.where)
-        sql += ` WHERE ${query.where}`;
+      const sql = `SELECT ECInstanceId FROM ${query.only ? "ONLY " : ""}${query.from}${query.where ? ` WHERE ${query.where}` : ""}`;
 
       const ids = new Set<string>();
       try {
@@ -874,7 +870,7 @@ export namespace ViewStore {
           }
         });
         this.iterateCompressedGuidRows(props.query.adds, (id) => ids.add(id));
-        this.iterateCompressedGuidRows(props.query.removes, (id) => ids.delete(id));
+        this.iterateCompressedGuidRows(props.query.removes, (id) => ids.delete(id)); // removes take precedence over adds
       } catch (err: any) {
         Logger.logError("ViewStore", `querySelectorValues: ${err.message}`);
       }
