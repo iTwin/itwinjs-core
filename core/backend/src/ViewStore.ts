@@ -882,16 +882,21 @@ export namespace ViewStore {
       return fromRowId(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
 
-    public getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps {
-      const row = this.getCategorySelectorRow(toRowId(args.id));
+    private getRowId(table: string, arg: ViewStoreRpc.NameOrId): RowId {
+      return undefined !== arg.name ? this.findByName(table, arg.name) : toRowId(arg.id);
+    }
+
+    public getCategorySelectorSync(args: ViewStoreRpc.NameOrId): CategorySelectorProps {
+      const rowId = this.getRowId(tableName.categorySelectors, args);
+      const row = this.getCategorySelectorRow(rowId);
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
-      const props = blankElementProps({}, "BisCore:CategorySelector", args.id, row.name) as CategorySelectorProps;
+      const props = blankElementProps({}, "BisCore:CategorySelector", rowId, row.name) as CategorySelectorProps;
       props.categories = this.querySelectorValues(JSON.parse(row.json));
       return props;
     }
-    public async getCategorySelector(args: { id: RowString }): Promise<CategorySelectorProps> {
+    public async getCategorySelector(args: ViewStoreRpc.NameOrId): Promise<CategorySelectorProps> {
       return this.getCategorySelectorSync(args);
     }
 
@@ -900,16 +905,17 @@ export namespace ViewStore {
       return fromRowId(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
 
-    public getModelSelectorSync(args: { id: RowString }): ModelSelectorProps {
-      const row = this.getModelSelectorRow(toRowId(args.id));
+    public getModelSelectorSync(args: ViewStoreRpc.NameOrId): ModelSelectorProps {
+      const rowId = this.getRowId(tableName.modelSelectors, args);
+      const row = this.getModelSelectorRow(rowId);
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
-      const props = blankElementProps({}, "BisCore:ModelSelector", args.id, row?.name) as ModelSelectorProps;
+      const props = blankElementProps({}, "BisCore:ModelSelector", rowId, row?.name) as ModelSelectorProps;
       props.models = this.querySelectorValues(JSON.parse(row.json) as ViewStoreRpc.SelectorProps);
       return props;
     }
-    public async getModelSelector(args: { id: RowString }): Promise<ModelSelectorProps> {
+    public async getModelSelector(args: ViewStoreRpc.NameOrId): Promise<ModelSelectorProps> {
       return this.getModelSelectorSync(args);
     }
     public async addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
@@ -921,16 +927,17 @@ export namespace ViewStore {
       return fromRowId(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
     }
 
-    public getTimelineSync(args: { id: RowString }): RenderTimelineProps {
-      const row = this.getTimelineRow(toRowId(args.id));
+    public getTimelineSync(args: ViewStoreRpc.NameOrId): RenderTimelineProps {
+      const rowId = this.getRowId(tableName.timelines, args);
+      const row = this.getTimelineRow(rowId);
       if (undefined === row)
         throw new Error("Timeline not found");
 
-      const props = blankElementProps({}, "BisCore:RenderTimeline", args.id, row?.name) as RenderTimelineProps;
+      const props = blankElementProps({}, "BisCore:RenderTimeline", rowId, row?.name) as RenderTimelineProps;
       props.script = JSON.stringify(this.scriptFromGuids(JSON.parse(row.json), false));
       return props;
     }
-    public async getTimeline(args: { id: RowString }): Promise<RenderTimelineProps> {
+    public async getTimeline(args: ViewStoreRpc.NameOrId): Promise<RenderTimelineProps> {
       return this.getTimelineSync(args);
     }
 
@@ -977,13 +984,14 @@ export namespace ViewStore {
       return fromRowId(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
     }
 
-    public getDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps {
-      const row = this.getDisplayStyleRow(toRowId(args.id));
+    public getDisplayStyleSync(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): DisplayStyleProps {
+      const rowId = this.getRowId(tableName.displayStyles, args);
+      const row = this.getDisplayStyleRow(rowId);
       if (undefined === row)
         throw new Error("DisplayStyle not found");
 
       const val = JSON.parse(row.json) as { settings: DisplayStyle3dSettingsProps, className: string };
-      const props = blankElementProps({}, val.className, args.id, row.name);
+      const props = blankElementProps({}, val.className, rowId, row.name);
       props.jsonProperties = { styles: val.settings };
       const settings = val.settings;
       if (settings.subCategoryOvr) {
@@ -1025,7 +1033,7 @@ export namespace ViewStore {
       return props;
     }
 
-    public async getDisplayStyle(args: { id: RowString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps> {
+    public async getDisplayStyle(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps> {
       return this.getDisplayStyleSync(args);
     }
 
@@ -1088,11 +1096,11 @@ export namespace ViewStore {
       this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner });
     }
 
-    public getThumbnailSync(args: { viewId: RowIdOrString }): ThumbnailProps | undefined {
-      const row = this.getThumbnailRow(toRowId(args.viewId));
+    public getThumbnailSync(args: ViewStoreRpc.NameOrId): ThumbnailProps | undefined {
+      const row = this.getThumbnailRow(this.getRowId(tableName.thumbnails, args));
       return row ? { image: row.data, format: row.format.format, height: row.format.height, width: row.format.width } : undefined;
     }
-    public async getThumbnail(args: { viewId: RowIdOrString }): Promise<ThumbnailProps | undefined> {
+    public async getThumbnail(args: ViewStoreRpc.NameOrId): Promise<ThumbnailProps | undefined> {
       return this.getThumbnailSync(args);
     }
 
@@ -1311,9 +1319,9 @@ export namespace ViewStore {
 
   export interface ReadMethods extends ViewStoreRpc.Reader {
     getViewByNameSync(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewStoreRpc.ViewInfo | undefined;
-    getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps;
-    getDisplayStyleSync(args: { id: RowString, opts?: DisplayStyleLoadProps }): DisplayStyleProps;
-    getModelSelectorSync(args: { id: RowString }): ModelSelectorProps;
+    getCategorySelectorSync(args: ViewStoreRpc.NameOrId): CategorySelectorProps;
+    getDisplayStyleSync(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): DisplayStyleProps;
+    getModelSelectorSync(args: ViewStoreRpc.NameOrId): ModelSelectorProps;
     getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
     getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
     queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];

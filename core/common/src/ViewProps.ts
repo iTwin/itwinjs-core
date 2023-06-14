@@ -412,6 +412,9 @@ export namespace ViewStoreRpc {
     readonly thumbnail?: ThumbnailProps;
   }
 
+  /** Argument for finding a category selector, model selector, display style, or timeline by name or Id. */
+  export type NameOrId = { name: string, id?: never } | { id: IdString, name?: never };
+
   /**
    * Methods for reading from a ViewStore via Rpc from a frontend via `IModelConnection.views.viewsStoreReader`. These
    * methods use the *current* ViewStore for the iModel, and attempt to load the default ViewStore if no ViewStore is
@@ -424,19 +427,19 @@ export namespace ViewStoreRpc {
     findViewsByOwner(args: { owner: OwnerName }): Promise<ViewInfo[]>;
 
     /** Get a category selector by Id. Throws if it does not exist. */
-    getCategorySelector(args: { id: IdString }): Promise<CategorySelectorProps>;
+    getCategorySelector(args: NameOrId): Promise<CategorySelectorProps>;
 
     /** Get a display style by Id. Throws if it does not exist. */
-    getDisplayStyle(args: { id: IdString, opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
+    getDisplayStyle(args: NameOrId & { opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
 
     /** Get a model selector by Id. Throws if it does not exist. */
-    getModelSelector(args: { id: IdString }): Promise<ModelSelectorProps>;
+    getModelSelector(args: NameOrId): Promise<ModelSelectorProps>;
 
     /** Get a thumbnail for a view. */
-    getThumbnail(args: { viewId: IdString }): Promise<ThumbnailProps | undefined>;
+    getThumbnail(args: NameOrId): Promise<ThumbnailProps | undefined>;
 
     /** Get a render timeline by Id. Throws if it does not exist. */
-    getTimeline(args: { id: IdString }): Promise<RenderTimelineProps>;
+    getTimeline(args: NameOrId): Promise<RenderTimelineProps>;
 
     /** Get a view by name. The name can include the *view group path*, if no `groupId` is supplied. */
     getViewByName(arg: { name: ViewName, groupId?: IdString }): Promise<ViewInfo | undefined>;

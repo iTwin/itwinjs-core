@@ -131,7 +131,7 @@ describe.only("ViewDefinition", () => {
     expect(cs2).equal("@2");
     const cs3 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", adds: longElementList } } }));
     const cs4 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", removes: ["0x233", "0x21"], adds: longElementList } } }));
-    const cs5 = (await vs1.addCategorySelector({
+    const onlyUsedProps = {
       name: "only used spatial categories",
       selector: {
         query: {
@@ -139,22 +139,22 @@ describe.only("ViewDefinition", () => {
           where: "ECInstanceId IN (SELECT DISTINCT Category.Id FROM BisCore.GeometricElement3d)",
         },
       },
-    }));
-
+    };
+    await vs1.addCategorySelector(onlyUsedProps);
     let selected = vs1.getCategorySelectorSync({ id: cs2 });
     expect(selected.categories.length).equal(2);
     selected = vs1.getCategorySelectorSync({ id: cs3 });
     expect(selected.categories.length).equal(98);
     selected = vs1.getCategorySelectorSync({ id: cs4 });
     expect(selected.categories.length).equal(97);
-    selected = vs1.getCategorySelectorSync({ id: cs5 });
+    selected = vs1.getCategorySelectorSync({ name: onlyUsedProps.name });
     expect(selected.categories.length).equal(1);
     expect(selected.categories[0]).equal(spatialCategoryId);
 
     const ms3 = (await vs1.addModelSelector({ name: "model selector 2", selector: { query: { from: "Bis.GeometricModel3d" } } }));
     let selectedModels = vs1.getModelSelectorSync({ id: ms3 });
     expect(selectedModels.models.length).equal(2);
-    const ms4 = (await vs1.addModelSelector({
+    const ms4Props = {
       name: "spatial, non-private models",
       selector: {
         query: {
@@ -162,8 +162,10 @@ describe.only("ViewDefinition", () => {
           where: "IsPrivate=false AND IsTemplate=false AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated=false)",
         },
       },
-    }));
-    selectedModels = vs1.getModelSelectorSync({ id: ms4 });
+    };
+
+    await vs1.addModelSelector(ms4Props);
+    selectedModels = vs1.getModelSelectorSync({ name: ms4Props.name });
     expect(selectedModels.models.length).equal(1);
     expect(selectedModels.models[0]).equal(modelId);
 
