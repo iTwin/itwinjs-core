@@ -241,7 +241,24 @@ export class HitDetail {
         isClassifier,
       };
     } else {
-      this._props = { ...arg0 };
+      // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
+      this._props = {
+        testPoint: arg0.testPoint,
+        viewport: arg0.viewport,
+        hitSource: arg0.hitSource,
+        hitPoint: arg0.hitPoint,
+        sourceId: arg0.sourceId,
+        priority: arg0.priority,
+        distXY: arg0.distXY,
+        distFraction: arg0.distFraction,
+        subCategoryId: arg0.subCategoryId,
+        geometryClass: arg0.geometryClass,
+        modelId: arg0.modelId,
+        sourceIModel: arg0.sourceIModel,
+        tileId: arg0.tileId,
+        isClassifier: arg0.isClassifier,
+        viewAttachment: arg0.viewAttachment,
+      };
     }
   }
 
