@@ -24,6 +24,66 @@ describe("Default supplemental rules", async () => {
   describe("Content modifiers", () => {
     describe("bis.Element", () => {
       describe("Related properties", () => {
+        it("loads `Element -> ExternalSourceAspect.Identifier` property into 'Source Information' group", async function () {
+          let elementKey: InstanceKey | undefined;
+          const { db: imodel } = await buildTestIModelDb(
+            this.test!.fullTitle(),
+            async (db) => {
+              elementKey = insertPhysicalElement(db);
+              db.elements.insertAspect({
+                classFullName: "BisCore:ExternalSourceAspect",
+                element: {
+                  relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+                  id: elementKey.id,
+                },
+                kind: "",
+                identifier: "test identifier",
+              } as ElementAspectProps);
+            }
+          );
+          const rules: Ruleset = {
+            id: "test",
+            rules: [
+              {
+                ruleType: "Content",
+                specifications: [
+                  {
+                    specType: "SelectedNodeInstances",
+                  },
+                ],
+              },
+            ],
+          };
+          const content = await Presentation.getManager().getContent({
+            imodel,
+            rulesetOrId: rules,
+            descriptor: {},
+            keys: new KeySet([elementKey!]),
+          });
+          assert(!!content);
+          const externalSourceAspectField = getFieldByLabel(
+            content.descriptor.fields,
+            "External Source Aspect"
+          );
+          assert(externalSourceAspectField.isNestedContentField());
+          const identifierField = getFieldByLabel(
+            externalSourceAspectField.nestedFields,
+            "Source Element ID"
+          );
+          expect(identifierField.category.label).to.eq("Source Information");
+          expect(content.contentSet[0]).to.containSubset({
+            values: {
+              [externalSourceAspectField.name]: [
+                {
+                  values: {
+                    [identifierField.name]: "test identifier",
+                  },
+                },
+              ],
+            },
+          });
+        });
+        
         it("loads `Element -> ExternalSourceAspect -> ExternalSource -> RepositoryLink` properties into 'Source Information' group", async function () {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(
