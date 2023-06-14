@@ -2089,7 +2089,6 @@ export interface ComputeDisplayTransformArgs {
     modelId: Id64String;
     output?: Transform;
     timePoint?: number;
-    // @alpha
     viewAttachmentId?: Id64String;
 }
 
@@ -5266,7 +5265,7 @@ export class HitDetail {
     get testPoint(): Point3d;
     // @internal
     get tileId(): string | undefined;
-    // @alpha
+    // @beta
     get viewAttachment(): ViewAttachmentHitInfo | undefined;
     get viewport(): ScreenViewport;
 }
@@ -5289,7 +5288,7 @@ export interface HitDetailProps {
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
-    // @alpha
+    // @beta
     readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
 }
@@ -9510,7 +9509,7 @@ export namespace Pixel {
         // @internal (undocumented)
         readonly tileId?: string;
         readonly type: GeometryType;
-        // @internal
+        // @beta
         readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
@@ -14354,9 +14353,10 @@ export interface ViewAnimationOptions {
     easingFunction?: EasingFunction;
 }
 
-// @alpha
+// @beta
 export interface ViewAttachmentHitInfo {
     readonly id: Id64String;
+    // @alpha
     readonly viewport: Viewport;
 }
 

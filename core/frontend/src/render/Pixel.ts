@@ -34,7 +34,7 @@ export namespace Pixel {
     /** @internal */
     public readonly tileId?: string;
     /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
-     * @internal
+     * @beta
      */
     public readonly viewAttachmentId?: Id64String;
     /** @internal */

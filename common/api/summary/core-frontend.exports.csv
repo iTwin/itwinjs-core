@@ -863,7 +863,7 @@ internal;VertexIndices
 internal;VertexTable
 internal;VertexTableWithIndices
 public;ViewAnimationOptions
-alpha;ViewAttachmentHitInfo
+beta;ViewAttachmentHitInfo
 public;ViewChangeOptions 
 public;ViewClipByElementTool 
 public;ViewClipByPlaneTool 

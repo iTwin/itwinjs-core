@@ -108,7 +108,7 @@ export enum HitDetailType {
 
 /** Describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
  * @note Only [[SheetViewState]]s contain view attachments.
- * @alpha
+ * @beta
  */
 export interface ViewAttachmentHitInfo {
   /** The element Id of the [ViewAttachment]($backend) from which the hit originated. */
@@ -159,7 +159,7 @@ export interface HitDetailProps {
   readonly isClassifier?: boolean;
   /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
    * @note Only [[SheetViewState]]s can have view attachments.
-   * @alpha
+   * @beta
    */
   readonly viewAttachment?: ViewAttachmentHitInfo;
 }
@@ -208,7 +208,7 @@ export class HitDetail {
   public get isClassifier(): boolean | undefined { return this._props.isClassifier; }
   /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
    * @note Only [[SheetViewState]]s can have view attachments.
-   * @alpha
+   * @beta
    */
   public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
 
