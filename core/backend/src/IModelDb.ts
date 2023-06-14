@@ -2130,9 +2130,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           const reader = this.viewStore.reader;
           return {
             loadView: () => reader.getViewDefinitionSync({ id: viewDefId }),
-            loadCategorySelector: (id: ViewIdString) => reader.getCategorySelectorSync({ id }),
+            loadCategorySelector: (id: ViewIdString) => reader.getCategorySelectorSync({ id, bindings: options?.queryBindings?.categorySelector }),
             loadDisplayStyle: (id: ViewIdString) => reader.getDisplayStyleSync({ id, opts: options?.displayStyle }),
-            loadModelSelector: (id: ViewIdString) => reader.getModelSelectorSync({ id }),
+            loadModelSelector: (id: ViewIdString) => reader.getModelSelectorSync({ id, bindings: options?.queryBindings?.modelSelector }),
           };
         }
         return {

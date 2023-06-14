@@ -61,8 +61,8 @@ describe.only("ViewStore", function (this: Suite) {
     expect(() => vs1.addViewGroupRow({ name: "bad/name", json: "" })).to.throw("illegal group");
     expect(() => vs1.addViewGroupRow({ name: "^fd", json: "" })).to.throw("illegal group");
     expect(() => vs1.addViewGroupRow({ name: "sd#fd", json: "" })).to.throw("illegal group");
-    expect(() => vs1.addViewRow({ className: "spatial", name: "@bad", json: "json-v2", owner: "owner1", groupId: 1 })).to.throw("illegal view");
-    expect(() => vs1.addViewRow({ className: "spatial", name: "bad/name", json: "json-v2", owner: "owner1", groupId: 1 })).to.throw("illegal view");
+    expect(() => vs1.addViewRow({ className: "spatial", name: "@bad", json: "json-v2", owner: "owner1", groupId: 1, categorySel: c1, displayStyle: ds1 })).to.throw("illegal view");
+    expect(() => vs1.addViewRow({ className: "spatial", name: "bad/name", json: "json-v2", owner: "owner1", groupId: 1, categorySel: c1, displayStyle: ds1 })).to.throw("illegal view");
 
     const g1 = vs1.addViewGroupRow({ name: "group1", json: "group1-json" });
     const g2 = vs1.addViewGroupRow({ name: "group2", json: "group2-json" });
@@ -107,7 +107,7 @@ describe.only("ViewStore", function (this: Suite) {
     expect(group3.parentId).equals(g2);
     expect(group3.json).equals("group3-json");
     await vs1.renameViewGroup({ groupId: g3Id, name: "group3-updated" });
-    await vs1.updateViewGroupJson(g3Id, "group3-json-updated");
+    vs1.updateViewGroupJson(g3Id, "group3-json-updated");
     const g3Updated = vs1.getViewGroup(g3Id)!;
     expect(g3Updated.name).equals("group3-updated");
     expect(g3Updated.json).equals("group3-json-updated");
@@ -164,7 +164,7 @@ describe.only("ViewStore", function (this: Suite) {
     const style1UpdatedNameId = vs1.findDisplayStyleByName("style1-updated");
     expect(style1UpdatedNameId).equals(style1Id);
 
-    await vs1.updateDisplayStyleJson(style1Id, "style1-json-updated");
+    vs1.updateDisplayStyleJson(style1Id, "style1-json-updated");
     const style1Updated = vs1.getDisplayStyleRow(style1Id)!;
     expect(style1Updated.json).equals("style1-json-updated");
 
@@ -189,7 +189,7 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.renameModelSelector({ id: model1Id, name: undefined });
     expect(vs1.getModelSelectorRow(model1Id)!.name).undefined;
 
-    await vs1.updateModelSelectorJson(model1Id, "model1-json-updated");
+    vs1.updateModelSelectorJson(model1Id, "model1-json-updated");
     const model1Updated = vs1.getModelSelectorRow(model1Id)!;
     expect(model1Updated.json).equals("model1-json-updated");
 
@@ -209,7 +209,7 @@ describe.only("ViewStore", function (this: Suite) {
     const timeline1UpdatedNameId = vs1.findTimelineByName("timeline1-updated");
     expect(timeline1UpdatedNameId).equals(timeline1Id);
 
-    await vs1.updateTimelineJson(timeline1Id, "timeline1-json-updated");
+    vs1.updateTimelineJson(timeline1Id, "timeline1-json-updated");
     const timeline1Updated = vs1.getTimelineRow(timeline1Id)!;
     expect(timeline1Updated.json).equals("timeline1-json-updated");
 
@@ -293,7 +293,7 @@ describe.only("ViewStore", function (this: Suite) {
     await vs1.renameSearch({ id: search1Id, name: "search1-updated" });
     const search1UpdatedNameId = vs1.findSearchByName("search1-updated");
     expect(search1UpdatedNameId).equals(search1Id);
-    await vs1.updateSearchJson(search1Id, "search1-json-updated");
+    vs1.updateSearchJson(search1Id, "search1-json-updated");
     const search1Updated = vs1.getSearch(search1Id)!;
     expect(search1Updated.json).equals("search1-json-updated");
     vs1.deleteSearch(search2);

@@ -120,6 +120,11 @@ export interface ViewStateProps {
 export interface ViewStateLoadProps {
   /** Options for loading the view's [[DisplayStyleProps]]. */
   displayStyle?: DisplayStyleLoadProps;
+  /** bindings for query-based selectors */
+  queryBindings?: {
+    modelSelector?: ViewStoreRpc.QueryBindings;
+    categorySelector?: ViewStoreRpc.QueryBindings;
+  };
 }
 
 /** Properties that define a ModelSelector
@@ -415,6 +420,13 @@ export namespace ViewStoreRpc {
   /** Argument for finding a category selector, model selector, display style, or timeline by name or Id. */
   export type NameOrId = { name: string, id?: never } | { id: IdString, name?: never };
 
+  /** Bindings for parameterized values in where clause of SelectorQuery
+   * @see[[ECSqlStatement.bindValues]]
+   */
+  export interface QueryBindings {
+    bindings?: any[] | object;
+  }
+
   /**
    * Methods for reading from a ViewStore via Rpc from a frontend via `IModelConnection.views.viewsStoreReader`. These
    * methods use the *current* ViewStore for the iModel, and attempt to load the default ViewStore if no ViewStore is
@@ -427,13 +439,13 @@ export namespace ViewStoreRpc {
     findViewsByOwner(args: { owner: OwnerName }): Promise<ViewInfo[]>;
 
     /** Get a category selector by Id. Throws if it does not exist. */
-    getCategorySelector(args: NameOrId): Promise<CategorySelectorProps>;
+    getCategorySelector(args: NameOrId & QueryBindings): Promise<CategorySelectorProps>;
 
     /** Get a display style by Id. Throws if it does not exist. */
     getDisplayStyle(args: NameOrId & { opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps>;
 
     /** Get a model selector by Id. Throws if it does not exist. */
-    getModelSelector(args: NameOrId): Promise<ModelSelectorProps>;
+    getModelSelector(args: NameOrId & QueryBindings): Promise<ModelSelectorProps>;
 
     /** Get a thumbnail for a view. */
     getThumbnail(args: { viewId: IdString }): Promise<ThumbnailProps | undefined>;
@@ -555,20 +567,20 @@ export namespace ViewStoreRpc {
     /** remove a tag from a view. */
     removeTagFromView(args: { viewId: IdString, tag: TagName }): Promise<void>;
 
-    // /** Update the properties of a category selector. */
-    // updateCategorySelector(args: { id: IdString, categories: Id64Array }): Promise<void>;
+    /** Update the properties of a category selector. */
+    updateCategorySelector(args: NameOrId & { selector: SelectorProps }): Promise<void>;
 
-    // /** Update the properties of a display style. */
-    // updateDisplayStyle(args: { id: IdString, style: DisplayStyleSettingsProps, owner?: OwnerName }): Promise<void>;
+    /** Update the properties of a display style. */
+    updateDisplayStyle(args: NameOrId & { className: string, settings: DisplayStyleSettingsProps }): Promise<void>;
 
-    // /** Update the properties of a model selector. */
-    // updateModelSelector(args: { id: IdString, selector: ModelSelectorProps, owner?: OwnerName }): Promise<void>;
+    /** Update the properties of a model selector. */
+    updateModelSelector(args: NameOrId & { selector: SelectorProps }): Promise<void>;
 
-    // /** Update the properties of a render timeline. */
-    // updateTimeline(args: { id: IdString, timeline: RenderTimelineProps, owner?: OwnerName }): Promise<void>;
+    /** Update the properties of a render timeline. */
+    updateTimeline(args: NameOrId & { timeline: RenderSchedule.ScriptProps }): Promise<void>;
 
-    // /** Update the properties of a view. */
-    // updateViewDefinition(args: { viewId: IdString, viewDefinition: ViewDefinitionProps, owner?: OwnerName }): Promise<void>;
+    /** Update the properties of a view definition. */
+    updateViewDefinition(args: { viewId: IdString, viewDefinition: ViewDefinitionProps }): Promise<void>;
 
     /** Change a view from shared to private, or vice versa. If changing to private, the owner must be supplied. */
     updateViewShared(arg: { viewId: IdString, isShared: boolean, owner?: string }): Promise<void>;

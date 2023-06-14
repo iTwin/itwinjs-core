@@ -118,8 +118,8 @@ export namespace ViewStore {
     groupId: RowId;
     isPrivate?: boolean;
     modelSel?: RowId;
-    categorySel?: RowId;
-    displayStyle?: RowId;
+    categorySel: RowId;
+    displayStyle: RowId;
   }
 
   /** a row in the "viewGroups" table */
@@ -173,14 +173,6 @@ export namespace ViewStore {
     from.model = IModel.dictionaryId;
     from.code = { spec: "0x1", scope: "0x1", value: name };
     return from;
-  };
-  const stringifyProps = (props: Partial<ElementProps>): string => {
-    delete props.id;
-    delete props.federationGuid;
-    delete props.parent;
-    delete props.code;
-    delete props.model;
-    return JSON.stringify(props);
   };
   const validateName = (name: string, msg: string) => {
     if (name.trim().length === 0 || (/[@^#<>:"/\\"`'|?*\u0000-\u001F]/g.test(name)))
@@ -298,8 +290,8 @@ export namespace ViewStore {
         stmt.bindBoolean(5, args.isPrivate ?? false);
         stmt.bindInteger(6, args.groupId ?? 1);
         stmt.maybeBindInteger(7, args.modelSel);
-        stmt.maybeBindInteger(8, args.categorySel);
-        stmt.maybeBindInteger(9, args.displayStyle);
+        stmt.bindInteger(8, args.categorySel);
+        stmt.bindInteger(9, args.displayStyle);
         stmt.stepForWrite();
         return this.nativeDb.getLastInsertRowId();
       });
@@ -444,8 +436,8 @@ export namespace ViewStore {
           isPrivate: stmt.getValueBoolean(4),
           groupId: stmt.getValueInteger(5),
           modelSel: stmt.getValueIntegerMaybe(6),
-          categorySel: stmt.getValueIntegerMaybe(7),
-          displayStyle: stmt.getValueIntegerMaybe(8),
+          categorySel: stmt.getValueInteger(7),
+          displayStyle: stmt.getValueInteger(8),
         };
       });
     }
@@ -536,15 +528,11 @@ export namespace ViewStore {
       });
     }
     /** @internal */
-    public async updateViewJson(viewId: RowIdOrString, json: string): Promise<void> {
-      return this.updateJson(tableName.views, viewId, json);
-    }
-    /** @internal */
-    public async updateViewGroupJson(groupId: RowIdOrString, json: string): Promise<void> {
+    public updateViewGroupJson(groupId: RowIdOrString, json: string) {
       return this.updateJson(tableName.viewGroups, groupId, json);
     }
     /** @internal */
-    public async updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string): Promise<void> {
+    public updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string) {
       return this.updateJson(tableName.modelSelectors, modelSelectorId, json);
     }
     /** @internal */
@@ -552,22 +540,18 @@ export namespace ViewStore {
       return this.updateJson(tableName.categorySelectors, categorySelectorId, json);
     }
     /** @internal */
-    public async updateCategorySelector(args: { id: RowIdOrString, selector: CategorySelectorProps }): Promise<void> {
-      return this.updateCategorySelectorJson(args.id, JSON.stringify(args.selector.categories));
-    }
-    /** @internal */
-    public async updateDisplayStyleJson(styleId: RowId, json: string): Promise<void> {
+    public updateDisplayStyleJson(styleId: RowId, json: string) {
       return this.updateJson(tableName.displayStyles, styleId, json);
     }
     /** @internal */
-    public async updateTimelineJson(timelineId: RowId, json: string): Promise<void> {
+    public updateTimelineJson(timelineId: RowId, json: string) {
       return this.updateJson(tableName.timelines, timelineId, json);
     }
     /** @internal */
-    public async updateSearchJson(searchId: RowId, json: string): Promise<void> {
+    public updateSearchJson(searchId: RowId, json: string) {
       return this.updateJson(tableName.searches, searchId, json);
     }
-    private async updateName(table: string, id: RowIdOrString, name?: string): Promise<void> {
+    private updateName(table: string, id: RowIdOrString, name?: string) {
       this.withSqliteStatement(`UPDATE ${table} SET name=? WHERE Id=?`, (stmt) => {
         stmt.maybeBindString(1, name);
         stmt.bindInteger(2, toRowId(id));
@@ -722,7 +706,7 @@ export namespace ViewStore {
       return this.guidMap.getIdFromFederationGuid(this.getGuid(guidRow));
     }
     private fromGuidRowString(id?: string) {
-      return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(toRowId(id));
+      return (typeof id !== "string" || !isGuidRowString(id)) ? id : this.fromGuidRow(toRowId(id));
     }
 
     private iterateCompressedGuidRows(guidRows: unknown, callback: (id: Id64String) => void) {
@@ -743,7 +727,14 @@ export namespace ViewStore {
       const id = base?.[memberName];
       if (id === undefined)
         return;
-      if (typeof id === "string" && Id64.isValidId64(id)) {
+
+      if (typeof id === "string") {
+        if (isGuidRowString(id)) {
+          // member is already a guid row. Make sure it exists.
+          if (undefined === this.getGuid(toRowId(id)))
+            throw new Error(`${memberName} id does not exist`);
+          return;
+        }
         const guidRow = this.toGuidRow(id);
         if (undefined !== guidRow) {
           base[memberName] = guidRowToString(guidRow);
@@ -757,7 +748,7 @@ export namespace ViewStore {
       const id = base?.[memberName];
       if (id === undefined)
         return;
-      if (typeof id === "string" && id.startsWith("^")) {
+      if (typeof id === "string" && isGuidRowString(id)) {
         const elId = this.fromGuidRow(toRowId(id));
         if (undefined !== elId) {
           base[memberName] = elId;
@@ -848,7 +839,7 @@ export namespace ViewStore {
       return JSON.stringify(selector);
     }
 
-    private querySelectorValues(json: unknown): Id64Array {
+    private querySelectorValues(json: unknown, bindings?: any[] | object): Id64Array {
       if (typeof json !== "object")
         throw new Error("invalid selector");
 
@@ -864,6 +855,8 @@ export namespace ViewStore {
       const ids = new Set<string>();
       try {
         this.iModel.withStatement(sql, (stmt) => {
+          if (bindings)
+            stmt.bindValues(bindings);
           for (const el of stmt) {
             if (typeof el.id === "string")
               ids.add(el.id);
@@ -881,22 +874,27 @@ export namespace ViewStore {
       const json = this.makeSelectorJson(args.selector, Category);
       return fromRowId(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
+    public async updateCategorySelector(args: ViewStoreRpc.NameOrId & { selector: ViewStoreRpc.SelectorProps }): Promise<void> {
+      const rowId = this.getRowId(tableName.categorySelectors, args);
+      const json = this.makeSelectorJson(args.selector, Category);
+      return this.updateCategorySelectorJson(rowId, json);
+    }
 
     private getRowId(table: string, arg: ViewStoreRpc.NameOrId): RowId {
       return undefined !== arg.name ? this.findByName(table, arg.name) : toRowId(arg.id);
     }
 
-    public getCategorySelectorSync(args: ViewStoreRpc.NameOrId): CategorySelectorProps {
+    public getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps {
       const rowId = this.getRowId(tableName.categorySelectors, args);
       const row = this.getCategorySelectorRow(rowId);
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
       const props = blankElementProps({}, "BisCore:CategorySelector", rowId, row.name) as CategorySelectorProps;
-      props.categories = this.querySelectorValues(JSON.parse(row.json));
+      props.categories = this.querySelectorValues(JSON.parse(row.json), args.bindings);
       return props;
     }
-    public async getCategorySelector(args: ViewStoreRpc.NameOrId): Promise<CategorySelectorProps> {
+    public async getCategorySelector(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): Promise<CategorySelectorProps> {
       return this.getCategorySelectorSync(args);
     }
 
@@ -904,27 +902,40 @@ export namespace ViewStore {
       const json = this.makeSelectorJson(args.selector, Model);
       return fromRowId(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
+    public async updateModelSelector(args: ViewStoreRpc.NameOrId & { selector: ViewStoreRpc.SelectorProps }): Promise<void> {
+      const rowId = this.getRowId(tableName.modelSelectors, args);
+      const json = this.makeSelectorJson(args.selector, Model);
+      return this.updateModelSelectorJson(rowId, json);
+    }
 
-    public getModelSelectorSync(args: ViewStoreRpc.NameOrId): ModelSelectorProps {
+    public getModelSelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): ModelSelectorProps {
       const rowId = this.getRowId(tableName.modelSelectors, args);
       const row = this.getModelSelectorRow(rowId);
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
       const props = blankElementProps({}, "BisCore:ModelSelector", rowId, row?.name) as ModelSelectorProps;
-      props.models = this.querySelectorValues(JSON.parse(row.json) as ViewStoreRpc.SelectorProps);
+      props.models = this.querySelectorValues(JSON.parse(row.json), args.bindings);
       return props;
     }
-    public async getModelSelector(args: ViewStoreRpc.NameOrId): Promise<ModelSelectorProps> {
+    public async getModelSelector(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): Promise<ModelSelectorProps> {
       return this.getModelSelectorSync(args);
     }
-    public async addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
-      const timeline = JSON.parse(JSON.stringify(args.timeline));
+    private makeTimelineJson(timeline: RenderSchedule.ScriptProps): string {
+      timeline = cloneProps(timeline);
       if (!Array.isArray(timeline))
         throw new Error("Timeline has no entries");
 
-      const json = JSON.stringify(this.scriptToGuids(timeline));
+      return JSON.stringify(this.scriptToGuids(timeline));
+    }
+    public async addTimeline(args: { name?: string, timeline: RenderSchedule.ScriptProps, owner?: string }): Promise<RowString> {
+      const json = this.makeTimelineJson(args.timeline);
       return fromRowId(this.addTimelineRow({ name: args.name, owner: args.owner, json }));
+    }
+    public async updateTimeline(args: ViewStoreRpc.NameOrId & { timeline: RenderSchedule.ScriptProps }): Promise<void> {
+      const rowId = this.getRowId(tableName.timelines, args);
+      const json = this.makeTimelineJson(args.timeline);
+      return this.updateTimelineJson(rowId, json);
     }
 
     public getTimelineSync(args: ViewStoreRpc.NameOrId): RenderTimelineProps {
@@ -941,10 +952,9 @@ export namespace ViewStore {
       return this.getTimelineSync(args);
     }
 
-    /** add a DisplayStyleProps to the ViewStore */
-    public async addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
+    /** make a JSON string for a DisplayStyle */
+    private makeDisplayStyleJson(args: { className: string, settings: DisplayStyleSettingsProps }): string {
       const settings = cloneProps(args.settings); // don't modify input
-      const name = args.name;
       if (settings.subCategoryOvr) {
         const outOvr: DisplayStyleSubCategoryProps[] = [];
         for (const ovr of settings.subCategoryOvr) {
@@ -980,10 +990,17 @@ export namespace ViewStore {
         if (scriptProps.length > 0)
           settings.scheduleScript = scriptProps;
       }
-
-      return fromRowId(this.addDisplayStyleRow({ name, owner: args.owner, json: JSON.stringify({ settings, className: args.className }) }));
+      return JSON.stringify({ settings, className: args.className });
     }
-
+    public async addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
+      const json = this.makeDisplayStyleJson(args);
+      return fromRowId(this.addDisplayStyleRow({ name: args.name, owner: args.owner, json }));
+    }
+    public async updateDisplayStyle(args: ViewStoreRpc.NameOrId & { className: string, settings: DisplayStyleSettingsProps }): Promise<void> {
+      const rowId = this.getRowId(tableName.displayStyles, args);
+      const json = this.makeDisplayStyleJson(args);
+      return this.updateDisplayStyleJson(rowId, json);
+    }
     public getDisplayStyleSync(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): DisplayStyleProps {
       const rowId = this.getRowId(tableName.displayStyles, args);
       const row = this.getDisplayStyleRow(rowId);
@@ -1032,17 +1049,12 @@ export namespace ViewStore {
 
       return props;
     }
-
     public async getDisplayStyle(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): Promise<DisplayStyleProps> {
       return this.getDisplayStyleSync(args);
     }
 
-    public addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
-      const viewDef = cloneProps(args.viewDefinition); // don't modify input
-      const name = viewDef.code.value;
-      if (name === undefined)
-        throw new Error("ViewDefinition must have a name");
-
+    private makeViewDefinitionProps(viewDefinition: ViewDefinitionProps) {
+      const viewDef = cloneProps(viewDefinition); // don't modify input
       this.verifyRowId(tableName.categorySelectors, viewDef.categorySelectorId);
       this.verifyRowId(tableName.displayStyles, viewDef.displayStyleId);
       if ((viewDef as SpatialViewDefinitionProps).modelSelectorId)
@@ -1050,8 +1062,22 @@ export namespace ViewStore {
 
       this.toGuidRowMember(viewDef, "baseModelId");
       this.toGuidRowMember(viewDef.jsonProperties?.viewDetails, "acs");
+      const props = viewDef as Partial<ViewDefinitionProps>;
+      delete props.id;
+      delete props.federationGuid;
+      delete props.parent;
+      delete props.code;
+      delete props.model;
+      return viewDef;
+    }
+
+    public addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
+      const name = args.viewDefinition.code.value;
+      if (name === undefined)
+        throw new Error("ViewDefinition must have a name");
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const maybeRow = (rowString: RowString) => rowString ? toRowId(rowString) : undefined;
+      const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
 
       try {
         return this.addViewRow({
@@ -1060,7 +1086,7 @@ export namespace ViewStore {
           owner: args.owner,
           groupId,
           isPrivate: args.isPrivate,
-          json: stringifyProps(viewDef),
+          json: JSON.stringify(viewDef),
           modelSel: maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId),
           categorySel: toRowId(viewDef.categorySelectorId),
           displayStyle: toRowId(viewDef.displayStyleId),
@@ -1071,6 +1097,20 @@ export namespace ViewStore {
           err.message = `View "${name}" already exists`;
         throw e;
       }
+    }
+
+    public async updateViewDefinition(args: { viewId: RowIdOrString, viewDefinition: ViewDefinitionProps }): Promise<void> {
+      const maybeRow = (rowString: RowString) => rowString ? toRowId(rowString) : undefined;
+      const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
+
+      this.withSqliteStatement(`UPDATE ${tableName.views} SET json=?,modelSel=?,categorySel=?,displayStyle=? WHERE Id=?`, (stmt) => {
+        stmt.bindString(1, JSON.stringify(viewDef));
+        stmt.maybeBindInteger(2, maybeRow((viewDef as SpatialViewDefinitionProps).modelSelectorId));
+        stmt.bindInteger(3, toRowId(viewDef.categorySelectorId));
+        stmt.bindInteger(4, toRowId(viewDef.displayStyleId));
+        stmt.bindInteger(5, toRowId(args.viewId));
+        stmt.stepForWrite();
+      });
     }
 
     public getViewDefinitionSync(args: { viewId: RowIdOrString }): ViewDefinitionProps {
@@ -1319,9 +1359,9 @@ export namespace ViewStore {
 
   export interface ReadMethods extends ViewStoreRpc.Reader {
     getViewByNameSync(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewStoreRpc.ViewInfo | undefined;
-    getCategorySelectorSync(args: ViewStoreRpc.NameOrId): CategorySelectorProps;
+    getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps;
     getDisplayStyleSync(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): DisplayStyleProps;
-    getModelSelectorSync(args: ViewStoreRpc.NameOrId): ModelSelectorProps;
+    getModelSelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): ModelSelectorProps;
     getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
     getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
     queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
