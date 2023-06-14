@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
@@ -13,7 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";
 import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
-import { ScreenViewport } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 /**
  * @public
@@ -104,6 +104,19 @@ export enum HitDetailType {
   Hit = 1,
   Snap = 2,
   Intersection = 3,
+}
+
+/** Describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
+ * @note Only [[SheetViewState]]s contain view attachments.
+ * @alpha
+ */
+export interface ViewAttachmentHitInfo {
+  /** The element Id of the [ViewAttachment]($backend) from which the hit originated. */
+  id: Id64String;
+  /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
+   * @alpha
+   */
+  viewport: Viewport;
 }
 
 /** A HitDetail stores the result when locating geometry displayed in a view.
