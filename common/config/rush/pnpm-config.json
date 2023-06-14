@@ -16,6 +16,9 @@
       "react-dom": "17"
     }
   },
+  "globalOverrides": {
+    "dottie": "2.0.4"
+  },
   "globalPackageExtensions": {
     "@bentley/react-scripts": {
       "peerDependenciesMeta": {
