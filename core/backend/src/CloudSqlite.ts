@@ -119,7 +119,7 @@ export namespace CloudSqlite {
 
   /** Returned from `CloudContainer.queryDatabase` describing one database in the container */
   export interface CachedDbProps {
-    /** The total of (4Mb) blocks in the database. */
+    /** The total number of blocks in the database. */
     readonly totalBlocks: number;
     /** the number of blocks of the database that have been downloaded into the CloudCache */
     readonly localBlocks: number;

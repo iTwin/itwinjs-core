@@ -19,7 +19,7 @@ describe.only("ViewStore", function (this: Suite) {
     Logger.setLevel("SQLite", LogLevel.None); // we're expecting errors
     const dbName = join(__dirname, "output", "viewStore.db");
     ViewStore.ViewDb.createNewDb(dbName);
-    vs1 = new ViewStore.ViewDb({ elements: {} as any });
+    vs1 = new ViewStore.ViewDb({ guidMap: {} as any });
     vs1.openDb(dbName, OpenMode.ReadWrite);
   });
 

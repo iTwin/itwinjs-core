@@ -28,7 +28,7 @@ let iModel: StandaloneDb;
 let vs1: ViewStore.CloudAccess;
 let drawingViewId: Id64String;
 let auxCoordSystemId: Id64String;
-let elements: IModelDb.GuidMapper;
+let guidMap: IModelDb.GuidMapper;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -189,6 +189,22 @@ function populateDb(sourceDb: IModelDb) {
 describe.only("ViewStore", function (this: Suite) {
   this.timeout(0);
 
+  class FakeGuids {
+    private _ids = new Map<Id64String, GuidString>();
+    private _guids = new Map<GuidString, Id64String>();
+    private add(id: Id64String, guid: GuidString) {
+      this._ids.set(id, guid);
+      this._guids.set(guid, id);
+      return guid;
+    }
+    public getFederationGuidFromId(id: Id64String): GuidString | undefined {
+      return this._ids.get(id) ?? this.add(id, Guid.createValue());
+    }
+    public getIdFromFederationGuid(guid?: GuidString): Id64String | undefined {
+      return guid ? this._guids.get(guid) : undefined;
+    }
+  }
+
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
@@ -202,27 +218,8 @@ describe.only("ViewStore", function (this: Suite) {
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });
-    const guids: GuidString[] = [];
-    const ids1: Id64String[] = [];
-    elements = {
-      getFederationGuidFromId(id: Id64String): GuidString | undefined {
-        const index = ids1.indexOf(id);
-        if (index >= 0)
-          return guids[index];
-        return undefined;
-      },
-      getIdFromFederationGuid(guid?: GuidString): Id64String | undefined {
-        const index = guids.indexOf(guid!);
-        if (index >= 0)
-          return ids1[index];
-        return undefined;
-      },
-    };
-    for (let i = 0; i < 500; i++) {
-      guids.push(Guid.createValue());
-      ids1.push(Id64.fromLocalAndBriefcaseIds(i, 0));
-    }
-    vs1.getCloudDb().elements = elements;
+    guidMap = new FakeGuids();
+    vs1.getCloudDb().guidMap = guidMap;
     populateDb(iModel);
   });
   after(async () => {
@@ -282,14 +279,14 @@ describe.only("ViewStore", function (this: Suite) {
     expect(Id64.isValid(dsId)).true;
 
     const categories = ["0x101", "0x22"];
-    const cs1Row = await vs1locker.addCategorySelector({ categories, name: "default" });
+    const cs1Row = await vs1locker.addCategorySelector({ selector: { ids: categories }, name: "default" });
     const cs1Id = CategorySelector.insert(iModel, IModel.dictionaryId, "default", categories);
     expect(Id64.isValid(cs1Id)).true;
     expect(cs1Row).equals("@1");
 
     const models = ["0x11", "0x32"];
     const ms1Id = ModelSelector.insert(iModel, IModel.dictionaryId, "default", models);
-    const ms1Row = await vs1locker.addModelSelector({ models, name: "default" });
+    const ms1Row = await vs1locker.addModelSelector({ selector: { ids: models }, name: "default" });
     expect(Id64.isValid(ms1Id)).true;
     expect(ms1Row).equals("@1");
 
@@ -352,8 +349,8 @@ describe.only("ViewStore", function (this: Suite) {
     const v3Id = await vs1locker.addView({ viewDefinition: props, owner: "owner2", group: g1 });
     expect(v3Id).equals("@3");
 
-    sinon.stub(iModel.elements, "getFederationGuidFromId").callsFake((id) => elements.getFederationGuidFromId(id));
-    sinon.stub(iModel.elements, "getIdFromFederationGuid").callsFake((id) => elements.getIdFromFederationGuid(id));
+    sinon.stub(iModel.elements, "getFederationGuidFromId").callsFake((id) => guidMap.getFederationGuidFromId(id));
+    sinon.stub(iModel.elements, "getIdFromFederationGuid").callsFake((id) => guidMap.getIdFromFederationGuid(id));
 
     iModel.views.viewStore = vs1;
     const vsElOut = await iModel.views.getViewStateProps(viewDefinitionId, { displayStyle: { compressExcludedElementIds: true } });
@@ -408,7 +405,7 @@ describe.only("ViewStore", function (this: Suite) {
 
     // now test Drawing views.
     const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.
-    const dcs = await vs1locker.addCategorySelector({ categories: dv.categorySelectorProps.categories });
+    const dcs = await vs1locker.addCategorySelector({ selector: { ids: dv.categorySelectorProps.categories } });
     const dds = await vs1locker.addDisplayStyle({ className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
     dv.viewDefinitionProps.categorySelectorId = dcs;
     dv.viewDefinitionProps.displayStyleId = dds;

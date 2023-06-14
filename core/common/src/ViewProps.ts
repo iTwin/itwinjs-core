@@ -277,13 +277,16 @@ export namespace ViewStoreRpc {
   /** The name for a view group.  */
   export type ViewGroupName = string;
 
+  /** The name for a view group.  */
+  export type ClassFullName = string;
+
   /** Determine if a string is an Id of an entry in a ViewStore (base-36 integer with a leading "@") */
   export const isViewStoreId = (id?: ViewIdString) => true === id?.startsWith("@");
 
   /** Parameters for querying for views in a ViewStore. */
   export interface QueryParams {
     /** a list of classFullNames to accept. If not present, all classes are returned. */
-    readonly classNames?: string[];
+    readonly classNames?: ClassFullName[];
     /** Optional "LIMIT" clause to limit the number of views returned. */
     readonly limit?: number;
     /** Optional "OFFSET" clause. Only valid if Limit is also present. */
@@ -300,6 +303,33 @@ export namespace ViewStoreRpc {
     readonly owner?: OwnerName;
   }
 
+  /** Parameters for specifying a Query to select Categories or Models. */
+  export interface SelectorQuery {
+    /**
+     * The full ClassName from which to select. If this SelectorQuery is for Categories, this must be or derive from "BisCore:Category".
+     * If this SelectorQuery is for Models, this must be or derive from "BisCore:Model".
+     */
+    from: ClassFullName;
+    /** If true, only return instances of `from`. Otherwise, return instances of `from` and any subclasses of `from`. */
+    only?: boolean;
+    /**
+     * filter for query. If present, only instances of `from` that satisfy the filter will be returned.
+     * If not supplied, all instances of `from` are returned.
+     * @note
+     * This value is used into the ECQuery:`SELECT ECInstanceId FROM ${query.from} WHERE ${query.where}`.
+     */
+    where?: string;
+    /** List of Model or Category ids to add to the query results.
+     * @note This is only valid if there is a `where` clause. Otherwise all instances of `from` will be returned so there is no value in adding ids.
+    */
+    adds?: Id64Array | CompressedId64Set;
+    /** List of Model or Category Ids to remove from the query results. */
+    removes?: Id64Array | CompressedId64Set;
+  }
+
+  /** A Model or Category selector may either be a query or a list of Ids. */
+  export type SelectorProps = { query: SelectorQuery, ids?: never } | { query?: never, ids: Id64Array | CompressedId64Set };
+
   /** Information about a View in a ViewStore. */
   export interface ViewInfo {
     /** The Id of the view. */
@@ -309,7 +339,7 @@ export namespace ViewStoreRpc {
     /** The name of the owner of the view. */
     owner?: OwnerName;
     /** The className of the view. */
-    className: string;
+    className: ClassFullName;
     /** The Id of the view group containing the view. */
     groupId: IdString;
     /** If true, the view is private (unshared) and will only be returned by queries that specify the owner's name. */
@@ -377,6 +407,9 @@ export namespace ViewStoreRpc {
 
     /* an optional list of tags for the view. */
     readonly tags?: TagName[];
+
+    /** optional thumbnail for the view. */
+    readonly thumbnail?: ThumbnailProps;
   }
 
   /**
@@ -440,7 +473,7 @@ export namespace ViewStoreRpc {
      * Add a category selector to a ViewStore.
      * @returns The IdString of the new category selector.
      */
-    addCategorySelector(args: { name?: string, categories: Id64Array, owner?: OwnerName }): Promise<IdString>;
+    addCategorySelector(args: { name?: string, selector: SelectorProps, owner?: OwnerName }): Promise<IdString>;
 
     /** Add a display style to a ViewStore.
      * @returns The IdString of the new display style.
@@ -451,7 +484,7 @@ export namespace ViewStoreRpc {
      *  Add a model selector to a ViewStore.
      * @returns The IdString of the new model selector.
      */
-    addModelSelector(args: { name?: string, models: Id64Array, owner?: OwnerName }): Promise<IdString>;
+    addModelSelector(args: { name?: string, selector: SelectorProps, owner?: OwnerName }): Promise<IdString>;
 
     /**
      * Add a thumbnail for a view. If the view already has a thumbnail, it is replaced.

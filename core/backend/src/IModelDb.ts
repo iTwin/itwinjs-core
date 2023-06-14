@@ -2059,12 +2059,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
       const accessToken = await CloudSqlite.requestToken(props);
-      if (!this._viewStore) {
-        this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, elements: this._iModel.elements });
-      } else {
-        this._viewStore.container.accessToken = accessToken;
-      }
+      if (!this._viewStore)
+        this._viewStore = new ViewStore.CloudAccess({ ...props, accessToken, iModel: this._iModel });
 
+      this._viewStore.container.accessToken = accessToken;
       return this._viewStore;
     }
 
@@ -2248,9 +2246,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 
   /** Represents the current state of a pollable tile content request.
-   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
-   * @internal
-   */
+ * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+ * @internal
+ */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.

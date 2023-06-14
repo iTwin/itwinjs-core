@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, MarkRequired, Optional } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
@@ -14,9 +14,13 @@ import {
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
-
-import type { IModelDb } from "./IModelDb";
 import { SqliteStatement } from "./SqliteStatement";
+import { IModelDb } from "./IModelDb";
+import { Category } from "./Category";
+import { Model } from "./Model";
+import { Entity } from "./Entity";
+
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 // cspell:ignore nocase rowid
 
@@ -186,18 +190,23 @@ export namespace ViewStore {
   export const defaultViewGroupId = 1 as const;
 
   export interface ViewDbCtorArgs {
-    elements?: IModelDb.GuidMapper;
+    guidMap?: IModelDb.GuidMapper;
+    iModel?: IModelDb;
   }
 
   export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ViewStoreRpc.Reader {
     public override myVersion = "4.0.0";
-    private _elements?: IModelDb.GuidMapper;
-    public get elements() { return this._elements!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    public set elements(elements: IModelDb.GuidMapper) { this._elements = elements; }
+    private _iModel?: IModelDb;
+    private _guidMap?: IModelDb.GuidMapper;
+    public get guidMap(): IModelDb.GuidMapper { return this._guidMap!; }
+    public set guidMap(guidMap: IModelDb.GuidMapper) { this._guidMap = guidMap; }
+    public get iModel(): IModelDb { return this._iModel!; }
+    public set iModel(iModel: IModelDb) { this._iModel = iModel; }
 
     public constructor(arg?: ViewDbCtorArgs) {
       super();
-      this._elements = arg?.elements;
+      this._iModel = arg?.iModel;
+      this._guidMap = arg?.guidMap ?? this._iModel?.elements; // this is only so tests can mock guids
     }
 
     /** create all the tables for a new ViewDb */
@@ -697,10 +706,10 @@ export namespace ViewStore {
     private toGuidRow(id?: Id64String): RowId | undefined {
       if (undefined === id)
         return undefined;
-      const fedGuid = this.elements.getFederationGuidFromId(id);
+      const fedGuid = this.guidMap.getFederationGuidFromId(id);
       return fedGuid ? this.addGuid(fedGuid) : undefined;
     }
-    private toCompressedGuidRows(ids: Id64String[] | string): CompressedId64Set {
+    private toCompressedGuidRows(ids: Id64String[] | CompressedId64Set): CompressedId64Set {
       const result = new Set<Id64String>();
       for (const id of (typeof ids === "string" ? CompressedId64Set.iterable(ids) : ids)) {
         const guidRow = this.toGuidRow(id);
@@ -710,18 +719,24 @@ export namespace ViewStore {
       return CompressedId64Set.compressSet(result);
     }
     private fromGuidRow(guidRow: RowId): Id64String | undefined {
-      return this.elements.getIdFromFederationGuid(this.getGuid(guidRow));
+      return this.guidMap.getIdFromFederationGuid(this.getGuid(guidRow));
     }
     private fromGuidRowString(id?: string) {
       return (typeof id !== "string" || !id.startsWith("^")) ? id : this.fromGuidRow(toRowId(id));
     }
-    private fromCompressedGuidRows(guidRows: CompressedId64Set): CompressedId64Set {
-      const result = new Set<Id64String>();
+
+    private iterateCompressedGuidRows(guidRows: unknown, callback: (id: Id64String) => void) {
+      if (typeof guidRows !== "string")
+        return;
       for (const rowId64String of CompressedId64Set.iterable(guidRows)) {
         const elId = this.fromGuidRow(Id64.getLocalId(rowId64String));
         if (undefined !== elId)
-          result.add(elId);
+          callback(elId);
       }
+    }
+    private fromCompressedGuidRows(guidRows: CompressedId64Set): CompressedId64Set {
+      const result = new Set<Id64String>();
+      this.iterateCompressedGuidRows(guidRows, (id) => result.add(id));
       return CompressedId64Set.compressSet(result);
     }
     private toGuidRowMember(base: any, memberName: string) {
@@ -813,42 +828,89 @@ export namespace ViewStore {
       return groups;
     }
 
-    public async addCategorySelector(args: { name?: string, categories: Id64Array, owner?: string }): Promise<RowString> {
-      if (args.categories.length === 0)
-        throw new Error("Must specify at least one category");
+    private makeSelectorJson(props: ViewStoreRpc.SelectorProps, entity: typeof Entity) {
+      const selector = { ...props }; // shallow copy
+      if (selector.query) {
+        selector.query = { ...selector.query }; // shallow copy
+        if (!this.iModel.getJsClass(selector.query.from).is(entity))
+          throw new Error(`query must select from ${entity.classFullName}`);
+        if (selector.query.adds)
+          selector.query.adds = this.toCompressedGuidRows(selector.query.adds);
+        if (selector.query.removes)
+          selector.query.removes = this.toCompressedGuidRows(selector.query.removes);
+      } else {
+        if (!(selector.ids.length))
+          throw new Error(`Selector must specify at least one ${entity.className}`);
+        selector.ids = this.toCompressedGuidRows(selector.ids);
+      }
 
-      const json = JSON.stringify({ categories: this.toCompressedGuidRows(args.categories) });
+      return JSON.stringify(selector);
+    }
+
+    private querySelectorValues(json: unknown): Id64Array {
+      if (typeof json !== "object")
+        throw new Error("invalid selector");
+
+      const props = json as ViewStoreRpc.SelectorProps;
+      if (!props.query) {
+        // there's no query, so the ids are the list of elements
+        return (typeof props.ids === "string") ? CompressedId64Set.decompressArray(this.fromCompressedGuidRows(props.ids)) : [];
+      }
+
+      const query = props.query;
+      let sql = "SELECT ECInstanceId FROM ";
+      if (query.only)
+        sql += "ONLY ";
+      sql += query.from;
+      if (query.where)
+        sql += ` WHERE ${query.where}`;
+
+      const ids = new Set<string>();
+      try {
+        this.iModel.withStatement(sql, (stmt) => {
+          for (const el of stmt) {
+            if (typeof el.id === "string")
+              ids.add(el.id);
+          }
+        });
+        this.iterateCompressedGuidRows(props.query.adds, (id) => ids.add(id));
+        this.iterateCompressedGuidRows(props.query.removes, (id) => ids.delete(id));
+      } catch (err: any) {
+        Logger.logError("ViewStore", `querySelectorValues: ${err.message}`);
+      }
+      return [...ids];
+    }
+
+    public async addCategorySelector(args: { name?: string, selector: ViewStoreRpc.SelectorProps, owner?: string }): Promise<RowString> {
+      const json = this.makeSelectorJson(args.selector, Category);
       return fromRowId(this.addCategorySelectorRow({ name: args.name, owner: args.owner, json }));
     }
+
     public getCategorySelectorSync(args: { id: RowString }): CategorySelectorProps {
       const row = this.getCategorySelectorRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("CategorySelector not found");
 
       const props = blankElementProps({}, "BisCore:CategorySelector", args.id, row.name) as CategorySelectorProps;
-      const json = JSON.parse(row.json);
-      props.categories = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(json.categories));
+      props.categories = this.querySelectorValues(JSON.parse(row.json));
       return props;
     }
     public async getCategorySelector(args: { id: RowString }): Promise<CategorySelectorProps> {
       return this.getCategorySelectorSync(args);
     }
 
-    public async addModelSelector(args: { name?: string, models: Id64Array, owner?: string }): Promise<RowString> {
-      if (args.models.length === 0)
-        throw new Error("Must specify at least one model");
-
-      const json = JSON.stringify({ models: this.toCompressedGuidRows(args.models) });
+    public async addModelSelector(args: { name?: string, selector: ViewStoreRpc.SelectorProps, owner?: string }): Promise<RowString> {
+      const json = this.makeSelectorJson(args.selector, Model);
       return fromRowId(this.addModelSelectorRow({ name: args.name, owner: args.owner, json }));
     }
+
     public getModelSelectorSync(args: { id: RowString }): ModelSelectorProps {
       const row = this.getModelSelectorRow(toRowId(args.id));
       if (undefined === row)
         throw new Error("ModelSelector not found");
 
       const props = blankElementProps({}, "BisCore:ModelSelector", args.id, row?.name) as ModelSelectorProps;
-      const json = JSON.parse(row.json);
-      props.models = CompressedId64Set.decompressArray(this.fromCompressedGuidRows(json.models));
+      props.models = this.querySelectorValues(JSON.parse(row.json) as ViewStoreRpc.SelectorProps);
       return props;
     }
     public async getModelSelector(args: { id: RowString }): Promise<ModelSelectorProps> {
@@ -1192,13 +1254,13 @@ export namespace ViewStore {
       } else {
         if (args.categorySelectorProps === undefined)
           throw new Error("Must supply categorySelector");
-        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ categories: args.categorySelectorProps.categories, owner });
+        args.viewDefinition.categorySelectorId = await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner });
       }
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
       if (ViewStoreRpc.isViewStoreId(spatialDef.modelSelectorId)) {
         this.verifyRowId(tableName.modelSelectors, spatialDef.modelSelectorId);
       } else if (args.modelSelectorProps) {
-        spatialDef.modelSelectorId = await this.addModelSelector({ models: args.modelSelectorProps.models, owner });
+        spatialDef.modelSelectorId = await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner });
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
         throw new Error("Must supply modelSelector for Spatial views");
       }
@@ -1209,11 +1271,13 @@ export namespace ViewStore {
           throw new Error("Must supply valid displayStyle");
         spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
       }
-      const viewId = fromRowId(this.addViewDefinition(args));
+      const viewId = this.addViewDefinition(args);
       if (args.tags)
         await this.addTagsToView({ viewId, tags: args.tags, owner });
+      if (args.thumbnail)
+        await this.addOrReplaceThumbnail({ viewId, thumbnail: args.thumbnail, owner });
 
-      return viewId;
+      return fromRowId(viewId);
     }
 
     public async deleteView(arg: { viewId: RowIdOrString }) {
