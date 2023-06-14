@@ -9,8 +9,8 @@
 
 import { CompressedId64Set, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, CustomViewState3dProps, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
-  RenderMode, ViewDefinition3dProps, ViewIdString, ViewStateProps,
+  Camera, CategorySelectorProps, Code, CustomViewState3dCreatorOptions, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface,
+  ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelConnection } from "./IModelConnection";
@@ -76,13 +76,17 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
-      modelIds === undefined ? {} : { modelIds: CompressedId64Set.sortAndCompress(modelIds) });
+    const rpcOptions: CustomViewState3dCreatorOptions = modelIds ? { modelIds: CompressedId64Set.sortAndCompress(modelIds) } : {};
+    const rpc = IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token);
+    const serializedProps = await rpc.getCustomViewState3dData(this._imodel.getRpcProps(), rpcOptions);
+
+    const baseExtents = Range3d.fromJSON(serializedProps.modelExtents);
     const props = await this._createViewStateProps(
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
-      Range3d.fromJSON(serializedProps.modelExtents),
-      options);
+      baseExtents,
+      options
+    );
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
@@ -96,7 +100,7 @@ export class ViewCreator3d {
     if (options?.allSubCategoriesVisible)
       viewState.displayStyle.enableAllLoadedSubCategories(viewState.categorySelector.categories);
 
-    const range = viewState.computeFitRange();
+    const range = viewState.computeFitRange({ baseExtents });
     viewState.lookAtVolume(range, options?.vpAspect);
 
     return viewState;
@@ -236,7 +240,7 @@ export class ViewCreator3d {
   /**
    * Get the Id of the default view.
    */
-  private async _getDefaultViewId(): Promise<ViewIdString | undefined> {
+  private async _getDefaultViewId(): Promise<Id64String | undefined> {
     const viewId = await this._imodel.views.queryDefaultViewId();
     if (viewId !== Id64.invalid)
       return viewId;
