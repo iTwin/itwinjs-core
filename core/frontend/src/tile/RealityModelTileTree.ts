@@ -27,7 +27,7 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, ThreeDTileFormatInterpreter, Tile,
+  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
@@ -188,26 +188,14 @@ export class RealityTileRegion {
 
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any, smMinMaxContentZ?: { minZ: number, maxZ: number }): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)
       return undefined;
-
-    const clamp = (args: {num: number, min: number, max: number}) => {
-      return Math.min(Math.max(args.num, args.min), args.max);
-    };
 
     let corners: Point3d[] | undefined;
     let range: Range3d | undefined;
     if (undefined !== boundingVolume.box) {
       const box: number[] = boundingVolume.box;
-      if (undefined !== smMinMaxContentZ) {
-        console.log(`box was: ${  JSON.stringify(box)}`);
-        box[2] = clamp({num: box[2], min: smMinMaxContentZ.minZ, max: smMinMaxContentZ.maxZ});
-        box[5] = clamp({num: box[5], min: smMinMaxContentZ.minZ, max: smMinMaxContentZ.maxZ});
-        box[8] = clamp({num: box[8], min: smMinMaxContentZ.minZ, max: smMinMaxContentZ.maxZ});
-        box[11] = clamp({num: box[11], min: smMinMaxContentZ.minZ, max: smMinMaxContentZ.maxZ});
-        console.log(`box clamped Z: ${  JSON.stringify(box)}`);
-      }
       const center = Point3d.create(box[0], box[1], box[2]);
       const ux = Vector3d.create(box[3], box[4], box[5]);
       const uy = Vector3d.create(box[6], box[7], box[8]);
@@ -223,14 +211,10 @@ export class RealityModelTileUtils {
       range = Range3d.createArray(corners);
     } else if (Array.isArray(boundingVolume.sphere)) {
       const sphere: number[] = boundingVolume.sphere;
-      if (undefined !== smMinMaxContentZ) {
-        sphere[2] = clamp({num: sphere[2], min: smMinMaxContentZ.minZ, max: smMinMaxContentZ.maxZ});
-      }
       const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
       const radius = sphere[3];
       range = Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
     } else if (Array.isArray(boundingVolume.region)) {
-      // ###TODO: Unsure how to apply smMinMaxContentZ to a region...
       const region = RealityTileRegion.create(boundingVolume.region);
       const regionRange = region.getRange();
       return { range: regionRange.range, corners: regionRange.corners, region };
@@ -265,7 +249,6 @@ enum SMTextureType {
 enum SMBoundingVolumeWorkaround {
   None, // apply no workaround
   UseContentBoundingVolumes = 1, // Use SM content bounding volumes for the tile ranges, NOT the SM tile bounding volumes
-  ClampByContentBoundingVolumesZ = 2, // Use the min/max Z values from all SM content bounding volumes to clamp the Z values of each SM tile bounding volume.
 }
 
 /** @internal */
@@ -285,13 +268,8 @@ class RealityModelTileTreeProps {
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
-    if (json.root.SMPublisherInfo) {
-      const publisherProductInfo = ThreeDTileFormatInterpreter.getPublisherProductInfo(json.root);
-      if ("ContextCapture" === publisherProductInfo.product || 0 === publisherProductInfo.product.search("iTwin Capture"))
-        this.smBoundingVolumeWorkaround = SMBoundingVolumeWorkaround.UseContentBoundingVolumes;
-      else
-        this.smBoundingVolumeWorkaround = SMBoundingVolumeWorkaround.ClampByContentBoundingVolumesZ;
-    }
+    if (json.root.SMPublisherInfo)
+      this.smBoundingVolumeWorkaround = SMBoundingVolumeWorkaround.UseContentBoundingVolumes;
   }
 }
 
@@ -347,7 +325,6 @@ class RealityModelTileProps implements RealityTileParams {
     additiveRefinement?: boolean;
     usesGeometricError?: boolean;
     smBoundingVolumeWorkaround?: SMBoundingVolumeWorkaround;
-    smMinMaxContentZ?: { minZ: number, maxZ: number };
   }) {
     this.contentId = args.id;
     this.parent = args.parent;
@@ -355,7 +332,7 @@ class RealityModelTileProps implements RealityTileParams {
     this.additiveRefinement = args.additiveRefinement;
 
     const json = args.json;
-    const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume, args.smMinMaxContentZ);
+    const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
     if (boundingVolume) {
       this.range = boundingVolume.range;
       this.rangeCorners = boundingVolume.corners;
@@ -493,40 +470,9 @@ class RealityModelTileLoader extends RealityTileLoader {
   private _minMaxContentZ?: { minZ: number, maxZ: number };
 
   public async loadChildren(tile: RealityTile): Promise<Tile[] | undefined> {
-    console.log("loadChildren");
-    let props = await this.getChildrenProps(tile);
+    const props = await this.getChildrenProps(tile);
     if (undefined === props)
       return undefined;
-
-    if (0 === props.length)
-      return [];
-
-    if (SMBoundingVolumeWorkaround.ClampByContentBoundingVolumesZ === this.tree.smBoundingVolumeWorkaround) {
-      // find min/max Z
-      this._minMaxContentZ = { maxZ: -Number.MAX_VALUE, minZ: Number.MAX_VALUE };
-      for (const prop of props) {
-        const rmProp = (prop as RealityModelTileProps);
-        if (undefined !== rmProp.contentRange) {
-          const highZ = rmProp.contentRange.high.z;
-          const lowZ = rmProp.contentRange.low.z;
-          if (highZ > this._minMaxContentZ.maxZ)
-            this._minMaxContentZ.maxZ = highZ;
-          if (lowZ < this._minMaxContentZ.minZ)
-            this._minMaxContentZ.minZ = lowZ;
-        }
-      }
-      if (this._minMaxContentZ.maxZ > -Number.MAX_VALUE && this._minMaxContentZ.minZ < Number.MAX_VALUE) {
-        console.log(`maxZ = ${  this._minMaxContentZ.maxZ  }, minZ = ${  this._minMaxContentZ.minZ}`);
-
-        // get children props again, clamping the Zs this time.
-        props = await this.getChildrenProps(tile);
-        if (undefined === props) {
-          this._minMaxContentZ = undefined;
-          return undefined;
-        }
-      }
-      this._minMaxContentZ = undefined;
-    }
 
     const children = [];
     for (const prop of props)
@@ -555,7 +501,6 @@ class RealityModelTileLoader extends RealityTileLoader {
             additiveRefinement: undefined !== refine ? refine === "ADD" : undefined,
             usesGeometricError: this.tree.rdSource.usesGeometricError,
             smBoundingVolumeWorkaround: this.tree.smBoundingVolumeWorkaround,
-            smMinMaxContentZ: this._minMaxContentZ,
           }));
         }
       }

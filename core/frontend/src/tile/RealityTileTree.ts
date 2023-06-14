@@ -134,7 +134,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootTile: RealityTileParams;
   readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
-  readonly useContentBoundingVolumes?: boolean;
 }
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
