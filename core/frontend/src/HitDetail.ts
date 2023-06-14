@@ -119,25 +119,48 @@ export interface ViewAttachmentHitInfo {
   readonly viewport: Viewport;
 }
 
+/** Arguments supplied to the [[HitDetail]] constructor.
+ * @public
+ */
 export interface HitDetailProps {
+  /** The point in world coordinates that was used as the initial locate point. */
   readonly testPoint: Point3d;
+  /** The viewport in which the locate operation was performed. */
   readonly viewport: ScreenViewport;
+  /** The procedure that requested the locate operation. */
   readonly hitSource: HitSource;
+  /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   readonly hitPoint: Point3d;
+  /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
   readonly sourceId: Id64String;
+  /** The hit geometry priority/classification. */
   readonly priority: HitPriority;
+  /** The xy distance to the hit in view coordinates. */
   readonly distXY: number;
+  /** The distance in view coordinates between the hit and the near plane. */
   readonly distFraction: number;
+  /** The [SubCategory]($backend) to which the hit geometry belongs. */
   readonly subCategoryId?: Id64String;
+  /** The class of the hit geometry. */
   readonly geometryClass?: GeometryClass;
+  /** The Id of the [[ModelState]] from which the hit originated. */
   readonly modelId?: string;
-  /** @internal */
+  /** The IModelConnection from which the hit originated.
+   * This should almost always be left undefined, unless the hit is known to have originated from an iModel
+   * other than the one associated with the viewport.
+   * @internal
+   */
   readonly sourceIModel?: IModelConnection;
   /** @internal chiefly for debugging */
   readonly tileId?: string;
-  /** @alpha */
+  /** True if the hit originated from a reality model classifier.
+   * @alpha
+   */
   readonly isClassifier?: boolean;
-  /** @alpha */
+  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
+   * @note Only [[SheetViewState]]s can have view attachments.
+   * @alpha
+   */
   readonly viewAttachment?: ViewAttachmentHitInfo;
 }
 
@@ -149,33 +172,54 @@ export interface HitDetailProps {
 export class HitDetail {
   private readonly _props: HitDetailProps;
 
+  /** The point in world coordinates that was used as the initial locate point. */
   public get testPoint(): Point3d { return this._props.testPoint; }
+  /** The viewport in which the locate operation was performed. */
   public get viewport(): ScreenViewport { return this._props.viewport; }
+  /** The procedure that requested the locate operation. */
   public get hitSource(): HitSource { return this._props.hitSource; }
+  /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   public get hitPoint(): Point3d { return this._props.hitPoint; }
+  /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
   public get sourceId(): Id64String { return this._props.sourceId; }
+  /** The hit geometry priority/classification. */
   public get priority(): HitPriority { return this._props.priority; }
+  /** The xy distance to the hit in view coordinates. */
   public get distXY(): number { return this._props.distXY; }
+  /** The distance in view coordinates between the hit and the near plane. */
   public get distFraction(): number { return this._props.distFraction; }
+  /** The [SubCategory]($backend) to which the hit geometry belongs. */
   public get subCategoryId(): Id64String | undefined { return this._props.subCategoryId; }
+  /** The class of the hit geometry. */
   public get geometryClass(): GeometryClass | undefined { return this._props.geometryClass; }
+  /** The Id of the [[ModelState]] from which the hit originated. */
   public get modelId(): string | undefined { return this._props.modelId; }
-  /** @internal */
+  /** The IModelConnection from which the hit originated.
+   * This should almost always be left undefined, unless the hit is known to have originated from an iModel
+   * other than the one associated with the viewport.
+   * @internal
+   */
   public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
-  /** @alpha */
+  /** True if the hit originated from a reality model classifier.
+   * @alpha
+   */
   public get isClassifier(): boolean | undefined { return this._props.isClassifier; }
-  /** @alpha */
+  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
+   * @note Only [[SheetViewState]]s can have view attachments.
+   * @alpha
+   */
   public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
 
+  /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
   /** @deprecated in 4.1. Use the overload that takes a [[HitDetailProps]]. */
-  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean, viewAttachment?: ViewAttachmentHitInfo);
+  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
 
   /** @internal */
-  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean, viewAttachment?: ViewAttachmentHitInfo) {
+  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
     if (arg0 instanceof Point3d) {
       assert(undefined !== viewport && undefined !== hitSource && undefined !== hitPoint && undefined !== sourceId);
       assert(undefined !== priority && undefined !== distXY && undefined !== distFraction);
@@ -195,7 +239,6 @@ export class HitDetail {
         sourceIModel,
         tileId,
         isClassifier,
-        viewAttachment,
       };
     } else {
       this._props = { ...arg0 };

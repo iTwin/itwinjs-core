@@ -333,6 +333,7 @@ alpha;GroupMark
 internal;Hilites
 public;HiliteSet
 public;HitDetail
+public;HitDetailProps
 public;HitDetailType
 public;HitGeomType
 public;HitList
@@ -862,6 +863,7 @@ internal;VertexIndices
 internal;VertexTable
 internal;VertexTableWithIndices
 public;ViewAnimationOptions
+alpha;ViewAttachmentHitInfo
 public;ViewChangeOptions 
 public;ViewClipByElementTool 
 public;ViewClipByPlaneTool 
