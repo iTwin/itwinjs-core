@@ -1,7 +1,7 @@
 lockfileVersion: 5.3
 
 overrides:
-  dottie: 2.0.4
+  dottie: ^2.0.4
 
 packageExtensionsChecksum: f67d2c5c08a7620b9d601d262f6cbe8b
 

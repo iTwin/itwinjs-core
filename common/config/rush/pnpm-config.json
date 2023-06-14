@@ -17,7 +17,7 @@
     }
   },
   "globalOverrides": {
-    "dottie": "2.0.4"
+    "dottie": "^2.0.4"
   },
   "globalPackageExtensions": {
     "@bentley/react-scripts": {
