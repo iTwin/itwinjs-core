@@ -120,7 +120,11 @@ export interface ViewStateProps {
 export interface ViewStateLoadProps {
   /** Options for loading the view's [[DisplayStyleProps]]. */
   displayStyle?: DisplayStyleLoadProps;
-  /** bindings for query-based selectors */
+
+  /**
+   * bindings for query-based selectors
+   * @beta
+   */
   queryBindings?: {
     modelSelector?: ViewStoreRpc.QueryBindings;
     categorySelector?: ViewStoreRpc.QueryBindings;

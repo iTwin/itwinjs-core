@@ -5670,21 +5670,15 @@ export namespace ViewStore {
     // (undocumented)
     export type DisplayStyleRow = TableRow;
     export type GuidRowString = string;
-    // (undocumented)
     export interface ReadMethods extends ViewStoreRpc.Reader {
         // (undocumented)
-        getCategorySelectorSync(args: {
-            id: RowString;
-        }): CategorySelectorProps;
+        getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps;
         // (undocumented)
-        getDisplayStyleSync(args: {
-            id: RowString;
+        getDisplayStyleSync(args: ViewStoreRpc.NameOrId & {
             opts?: DisplayStyleLoadProps;
         }): DisplayStyleProps;
         // (undocumented)
-        getModelSelectorSync(args: {
-            id: RowString;
-        }): ModelSelectorProps;
+        getModelSelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): ModelSelectorProps;
         // (undocumented)
         getThumbnailSync(args: {
             viewId: RowString;
@@ -5736,14 +5730,11 @@ export namespace ViewStore {
         // (undocumented)
         viewId: RowId;
     }
-    const tableRowIdToString: (rowId: RowId) => RowString;
-    const guidRowToString: (rowId: RowId) => GuidRowString;
+    const fromRowId: (rowId: RowId) => RowString;
     // (undocumented)
     export type TimelineRow = TableRow;
     const // (undocumented)
     toRowId: (id: RowIdOrString) => RowId;
-    const // (undocumented)
-    maybeToRowId: (id?: RowIdOrString) => RowId | undefined;
     const // (undocumented)
     defaultViewGroupId: 1;
     // (undocumented)
@@ -5752,33 +5743,39 @@ export namespace ViewStore {
         // (undocumented)
         addCategorySelector(args: {
             name?: string;
-            categories: Id64Array;
+            selector: ViewStoreRpc.SelectorProps;
             owner?: string;
         }): Promise<RowString>;
+        // @internal
         addCategorySelectorRow(args: SelectorRow): RowId;
+        // (undocumented)
         addDisplayStyle(args: {
             name?: string;
             className: string;
             settings: DisplayStyleSettingsProps;
             owner?: string;
         }): Promise<RowString>;
+        // @internal
         addDisplayStyleRow(args: DisplayStyleRow): RowId;
         // @internal (undocumented)
         addGuid(guid: GuidString): RowId;
         // (undocumented)
         addModelSelector(args: {
             name?: string;
-            models: Id64Array;
+            selector: ViewStoreRpc.SelectorProps;
             owner?: string;
         }): Promise<RowString>;
+        // @internal
         addModelSelectorRow(args: SelectorRow): RowId;
         // (undocumented)
         addOrReplaceThumbnail(args: {
-            viewId: ViewStoreRpc.IdString;
-            thumbnail: ThumbnailProps;
+            viewId: RowIdOrString;
+            readonly thumbnail: ThumbnailProps;
             owner?: string;
-        }): Promise<string>;
+        }): Promise<void>;
+        // @internal
         addOrReplaceThumbnailRow(args: ThumbnailRow): RowId;
+        // @internal
         addSearch(args: SearchRow): Promise<RowId>;
         addTag(args: TagRow): RowId;
         // (undocumented)
@@ -5798,12 +5795,13 @@ export namespace ViewStore {
             timeline: RenderSchedule.ScriptProps;
             owner?: string;
         }): Promise<RowString>;
+        // @internal
         addTimelineRow(args: TimelineRow): RowId;
         // (undocumented)
         addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString>;
         // (undocumented)
         addViewDefinition(args: {
-            viewDefinition: ViewDefinitionProps;
+            readonly viewDefinition: ViewDefinitionProps;
             group?: ViewStoreRpc.ViewGroupSpec;
             owner?: string;
             isPrivate?: boolean;
@@ -5854,7 +5852,7 @@ export namespace ViewStore {
         }): void;
         // (undocumented)
         deleteThumbnail(arg: {
-            id: RowString;
+            viewId: RowString;
         }): Promise<void>;
         // (undocumented)
         deleteThumbnailSync(id: RowString): void;
@@ -5872,33 +5870,28 @@ export namespace ViewStore {
         deleteViewGroup(args: {
             name: ViewStoreRpc.ViewGroupSpec;
         }): Promise<void>;
-        // (undocumented)
+        // @internal (undocumented)
         deleteViewRow(id: RowIdOrString): void;
         // (undocumented)
         deleteViewTag(args: {
             viewId: RowId;
             tagId: RowId;
         }): void;
-        // (undocumented)
-        get elements(): IModelDb.GuidMapper;
-        set elements(elements: IModelDb.GuidMapper);
-        // (undocumented)
+        // @internal (undocumented)
         findCategorySelectorByName(name: string): RowId;
-        // (undocumented)
+        // @internal (undocumented)
         findDisplayStyleByName(name: string): RowId;
-        // (undocumented)
+        // @internal (undocumented)
         findModelSelectorByName(name: string): RowId;
-        // (undocumented)
+        // @internal (undocumented)
         findSearchByName(name: string): RowId;
-        // (undocumented)
+        // @internal (undocumented)
         findTagByName(name: string): RowId;
-        // (undocumented)
+        // @internal (undocumented)
         findTagIdsForView(viewId: RowId): RowId[];
-        // (undocumented)
+        // @internal (undocumented)
         findTimelineByName(name: string): RowId;
-        // (undocumented)
         findViewGroup(groupName: ViewStoreRpc.ViewGroupSpec): RowId;
-        // (undocumented)
         findViewIdByName(arg: {
             name: string;
             groupId?: RowIdOrString;
@@ -5910,62 +5903,50 @@ export namespace ViewStore {
         // (undocumented)
         findViewsForTag(tagId: RowId): RowId[];
         // (undocumented)
-        getCategorySelector(args: {
-            id: RowString;
-        }): Promise<CategorySelectorProps>;
+        getCategorySelector(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): Promise<CategorySelectorProps>;
+        // @internal
         getCategorySelectorRow(id: RowId): SelectorRow | undefined;
+        // @internal (undocumented)
+        getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps;
         // (undocumented)
-        getCategorySelectorSync(args: {
-            id: RowString;
-        }): CategorySelectorProps;
-        // (undocumented)
-        getDisplayStyle(args: {
-            id: RowString;
+        getDisplayStyle(args: ViewStoreRpc.NameOrId & {
             opts?: DisplayStyleLoadProps;
         }): Promise<DisplayStyleProps>;
+        // @internal
         getDisplayStyleRow(id: RowId): DisplayStyleRow | undefined;
         // (undocumented)
-        getDisplayStyleSync(args: {
-            id: RowString;
+        getDisplayStyleSync(args: ViewStoreRpc.NameOrId & {
             opts?: DisplayStyleLoadProps;
         }): DisplayStyleProps;
-        // (undocumented)
+        // @internal (undocumented)
         getGuid(rowid: RowId): GuidString | undefined;
         // (undocumented)
-        getModelSelector(args: {
-            id: RowString;
-        }): Promise<ModelSelectorProps>;
+        getModelSelector(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): Promise<ModelSelectorProps>;
+        // @internal
         getModelSelectorRow(id: RowId): SelectorRow | undefined;
         // (undocumented)
-        getModelSelectorSync(args: {
-            id: RowString;
-        }): ModelSelectorProps;
-        // (undocumented)
+        getModelSelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): ModelSelectorProps;
+        // @internal (undocumented)
         getSearch(id: RowId): SearchRow | undefined;
-        // (undocumented)
+        // @internal (undocumented)
         getTag(id: RowId): TagRow | undefined;
-        // (undocumented)
         getTagsForView(viewId: RowIdOrString): ViewStoreRpc.TagName[] | undefined;
         // (undocumented)
         getThumbnail(args: {
-            viewId: RowString;
+            viewId: RowIdOrString;
         }): Promise<ThumbnailProps | undefined>;
-        // (undocumented)
+        // @internal (undocumented)
         getThumbnailRow(viewId: RowId): undefined | ThumbnailRow;
         // (undocumented)
         getThumbnailSync(args: {
-            viewId: RowString;
+            viewId: RowIdOrString;
         }): ThumbnailProps | undefined;
         // (undocumented)
-        getTimeline(args: {
-            id: RowString;
-        }): Promise<RenderTimelineProps>;
-        // (undocumented)
+        getTimeline(args: ViewStoreRpc.NameOrId): Promise<RenderTimelineProps>;
+        // @internal (undocumented)
         getTimelineRow(id: RowId): TimelineRow | undefined;
         // (undocumented)
-        getTimelineSync(args: {
-            id: RowString;
-        }): RenderTimelineProps;
+        getTimelineSync(args: ViewStoreRpc.NameOrId): RenderTimelineProps;
         // (undocumented)
         getViewByName(arg: {
             name: ViewStoreRpc.ViewName;
@@ -5978,19 +5959,19 @@ export namespace ViewStore {
         }): ViewStoreRpc.ViewInfo | undefined;
         // (undocumented)
         getViewDefinition(args: {
-            id: RowString;
+            viewId: RowIdOrString;
         }): Promise<ViewDefinitionProps>;
         // (undocumented)
         getViewDefinitionSync(args: {
-            id: RowString;
+            viewId: RowIdOrString;
         }): ViewDefinitionProps;
-        // (undocumented)
+        // @internal (undocumented)
         getViewGroup(id: RowId): ViewGroupRow | undefined;
-        // (undocumented)
+        // @internal (undocumented)
         getViewGroupByName(name: string, parentId: RowId): RowId;
         // (undocumented)
         getViewGroupInfo(args: {
-            id: ViewStoreRpc.IdString;
+            groupId?: ViewStoreRpc.IdString;
         }): Promise<ViewStoreRpc.ViewGroupInfo | undefined>;
         // (undocumented)
         getViewGroups(args: {
@@ -6001,13 +5982,18 @@ export namespace ViewStore {
         }[]>;
         // (undocumented)
         getViewInfo(args: {
-            id: RowIdOrString;
+            viewId: RowIdOrString;
         }): Promise<ViewStoreRpc.ViewInfo | undefined>;
+        // @internal
         getViewRow(viewId: RowId): undefined | ViewRow;
+        // (undocumented)
+        get guidMap(): IModelDb.GuidMapper;
+        set guidMap(guidMap: IModelDb.GuidMapper);
+        // (undocumented)
+        get iModel(): IModelDb;
+        set iModel(iModel: IModelDb);
         // @internal (undocumented)
         iterateGuids(rowIds: RowId[], fn: (guid: GuidString, row: RowId) => void): void;
-        // (undocumented)
-        iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void): void;
         // (undocumented)
         myVersion: string;
         // (undocumented)
@@ -6020,49 +6006,92 @@ export namespace ViewStore {
             tag: string;
         }): Promise<void>;
         // (undocumented)
-        updateCategorySelector(args: {
+        renameCategorySelector(args: {
             id: RowIdOrString;
-            selector: CategorySelectorProps;
+            name?: string;
         }): Promise<void>;
         // (undocumented)
+        renameDisplayStyle(args: {
+            id: RowIdOrString;
+            name?: string;
+        }): Promise<void>;
+        // (undocumented)
+        renameModelSelector(args: {
+            id: RowIdOrString;
+            name?: string;
+        }): Promise<void>;
+        // (undocumented)
+        renameSearch(args: {
+            id: RowIdOrString;
+            name: string;
+        }): Promise<void>;
+        // (undocumented)
+        renameTag(args: {
+            oldName: string;
+            newName: string;
+        }): Promise<void>;
+        // (undocumented)
+        renameTimeline(args: {
+            id: RowIdOrString;
+            name?: string;
+        }): Promise<void>;
+        // (undocumented)
+        renameView(args: {
+            viewId: RowIdOrString;
+            name: string;
+        }): Promise<void>;
+        // (undocumented)
+        renameViewGroup(args: {
+            groupId: RowIdOrString;
+            name: string;
+        }): Promise<void>;
+        // (undocumented)
+        updateCategorySelector(args: ViewStoreRpc.NameOrId & {
+            selector: ViewStoreRpc.SelectorProps;
+        }): Promise<void>;
+        // @internal (undocumented)
         updateCategorySelectorJson(categorySelectorId: RowIdOrString, json: string): void;
         // (undocumented)
-        updateCategorySelectorName(selectorId: RowId, name?: string): Promise<void>;
+        updateDisplayStyle(args: ViewStoreRpc.NameOrId & {
+            className: string;
+            settings: DisplayStyleSettingsProps;
+        }): Promise<void>;
+        // @internal (undocumented)
+        updateDisplayStyleJson(styleId: RowId, json: string): void;
         // (undocumented)
-        updateDisplayStyleJson(styleId: RowId, json: string): Promise<void>;
+        updateModelSelector(args: ViewStoreRpc.NameOrId & {
+            selector: ViewStoreRpc.SelectorProps;
+        }): Promise<void>;
+        // @internal (undocumented)
+        updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string): void;
+        // @internal (undocumented)
+        updateSearchJson(searchId: RowId, json: string): void;
         // (undocumented)
-        updateDisplayStyleName(styleId: RowId, name?: string): Promise<void>;
+        updateTimeline(args: ViewStoreRpc.NameOrId & {
+            timeline: RenderSchedule.ScriptProps;
+        }): Promise<void>;
+        // @internal (undocumented)
+        updateTimelineJson(timelineId: RowId, json: string): void;
         // (undocumented)
-        updateModelSelectorJson(modelSelectorId: RowIdOrString, json: string): Promise<void>;
-        // (undocumented)
-        updateModelSelectorName(selectorId: RowId, name?: string): Promise<void>;
-        // (undocumented)
-        updateSearchJson(searchId: RowId, json: string): Promise<void>;
-        // (undocumented)
-        updateSearchName(searchId: RowId, name?: string): Promise<void>;
-        // (undocumented)
-        updateTimelineJson(timelineId: RowId, json: string): Promise<void>;
-        // (undocumented)
-        updateTimelineName(timelineId: RowId, name?: string): Promise<void>;
-        // (undocumented)
-        updateViewGroupJson(groupId: RowIdOrString, json: string): Promise<void>;
-        // (undocumented)
-        updateViewGroupName(groupId: RowId, name?: string): Promise<void>;
-        // (undocumented)
-        updateViewJson(viewId: RowIdOrString, json: string): Promise<void>;
-        // (undocumented)
-        updateViewName(viewId: RowId, name?: string): Promise<void>;
+        updateViewDefinition(args: {
+            viewId: RowIdOrString;
+            viewDefinition: ViewDefinitionProps;
+        }): Promise<void>;
+        // @internal (undocumented)
+        updateViewGroupJson(groupId: RowIdOrString, json: string): void;
         // (undocumented)
         updateViewShared(arg: {
             viewId: RowIdOrString;
             isShared: boolean;
-            owner: string;
+            owner?: string;
         }): Promise<void>;
     }
     // (undocumented)
     export interface ViewDbCtorArgs {
         // (undocumented)
-        elements?: IModelDb.GuidMapper;
+        guidMap?: IModelDb.GuidMapper;
+        // (undocumented)
+        iModel?: IModelDb;
     }
     export interface ViewGroupRow extends MarkRequired<TableRow, "name"> {
         // (undocumented)
@@ -6072,11 +6101,11 @@ export namespace ViewStore {
     }
     export interface ViewRow extends MarkRequired<TableRow, "name"> {
         // (undocumented)
-        categorySel?: RowId;
+        categorySel: RowId;
         // (undocumented)
         className: string;
         // (undocumented)
-        displayStyle?: RowId;
+        displayStyle: RowId;
         // (undocumented)
         groupId: RowId;
         // (undocumented)

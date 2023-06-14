@@ -424,7 +424,9 @@ export namespace ViewStore {
     public async deleteThumbnail(arg: { viewId: RowString }) {
       return this.deleteThumbnailSync(arg.viewId);
     }
-    /** get the data for a view from the database */
+    /** get the data for a view from the database
+     * @internal
+     */
     public getViewRow(viewId: RowId): undefined | ViewRow {
       return this.withSqliteStatement(`SELECT className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
@@ -615,6 +617,7 @@ export namespace ViewStore {
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
+    /** @internal */
     public getViewGroupByName(name: string, parentId: RowId): RowId {
       return this.withSqliteStatement(`SELECT Id FROM ${tableName.viewGroups} WHERE name=? AND parent=?`, (stmt) => {
         stmt.bindString(1, name);
@@ -622,21 +625,27 @@ export namespace ViewStore {
         return !stmt.nextRow() ? 0 : stmt.getValueInteger(0);
       });
     }
+    /** @internal */
     public findModelSelectorByName(name: string): RowId {
       return this.findByName(tableName.modelSelectors, name);
     }
+    /** @internal */
     public findCategorySelectorByName(name: string): RowId {
       return this.findByName(tableName.categorySelectors, name);
     }
+    /** @internal */
     public findDisplayStyleByName(name: string): RowId {
       return this.findByName(tableName.displayStyles, name);
     }
+    /** @internal */
     public findTagByName(name: string): RowId {
       return this.findByName(tableName.tags, name);
     }
+    /** @internal */
     public findTimelineByName(name: string): RowId {
       return this.findByName(tableName.timelines, name);
     }
+    /** @internal */
     public findSearchByName(name: string): RowId {
       return this.findByName(tableName.searches, name);
     }
@@ -677,6 +686,7 @@ export namespace ViewStore {
       return list;
     }
 
+    /** @internal */
     public findTagIdsForView(viewId: RowId): RowId[] {
       return this.withSqliteStatement(`SELECT tagId FROM ${tableName.taggedViews} WHERE viewId=?`, (stmt) => {
         stmt.bindInteger(1, viewId);
@@ -884,6 +894,7 @@ export namespace ViewStore {
       return undefined !== arg.name ? this.findByName(table, arg.name) : toRowId(arg.id);
     }
 
+    /** @internal */
     public getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps {
       const rowId = this.getRowId(tableName.categorySelectors, args);
       const row = this.getCategorySelectorRow(rowId);
@@ -1357,6 +1368,7 @@ export namespace ViewStore {
 
   const viewDbName = "ViewDb" as const;
 
+  /** methods of cloud `ViewDb` for read access */
   export interface ReadMethods extends ViewStoreRpc.Reader {
     getViewByNameSync(arg: { name: ViewStoreRpc.ViewName, groupId?: RowId }): ViewStoreRpc.ViewInfo | undefined;
     getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps;
