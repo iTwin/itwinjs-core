@@ -10,6 +10,7 @@ import { render, screen } from "@testing-library/react";
 import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../core-react";
 import { TildeFinder } from "../../core-react/contextmenu/TildeFinder";
 import TestUtils, { classesFromElement } from "../TestUtils";
+import userEvent from "@testing-library/user-event";
 
 describe("ContextMenu", () => {
 
@@ -674,7 +675,35 @@ describe("ContextMenu", () => {
       expect(component.getByText("Test")).to.exist;
       expect(component.getByText("B")).to.exist;
     });
+    it("should close sub-menu on opening another sub-menu", async () => {
+      const fakeClick1 = sinon.fake();
+      const fakeClick2 = sinon.fake();
+      const fakeOutsideClick = sinon.fake();
 
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="Test 1" id="1" onClick={fakeClick1} onOutsideClick={fakeOutsideClick}>
+            <ContextMenuItem> Test 1 sub-menu </ContextMenuItem>
+          </ContextSubMenu>
+          <ContextSubMenu label="Test 2" id="2" onClick={fakeClick2}>
+            <ContextMenuItem> Test 2 sub-menu </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>
+      );
+      const theUserTo = userEvent.setup();
+      const items = component.getAllByTestId("core-context-submenu-container");
+
+      await theUserTo.click(items[0]);
+      fakeClick1.should.have.been.calledOnce;
+
+      await theUserTo.click(items[1]);
+      fakeClick2.should.have.been.calledOnce;
+      fakeOutsideClick.should.have.been.calledOnce;
+
+      const subMenus = component.getAllByTestId("core-context-menu-container");
+      expect(subMenus[1].className).not.to.contain("opened");
+      expect(subMenus[2].className).to.contain("opened");
+    });
   });
 
   describe("ContextMenu.autoFlip", () => {
