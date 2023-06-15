@@ -90,15 +90,16 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/object-storage-azure": "2.0.0-dev.1",
-    "@itwin/cloud-agnostic-core": "2.0.0-dev.1",
-    "@itwin/object-storage-core": "2.0.0-dev.1",
+    "@itwin/object-storage-azure": "2.0.0-dev.2",
+    "@itwin/cloud-agnostic-core": "2.0.0-dev.2",
+    "@itwin/object-storage-core": "2.0.0-dev.2",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "fuse.js": "^3.3.0",
+    "inversify": "~6.0.1",
     "wms-capabilities": "0.4.0",
     "reflect-metadata": "0.1.13"
   },

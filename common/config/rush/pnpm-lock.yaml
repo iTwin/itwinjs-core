@@ -9,15 +9,15 @@ importers:
     specifiers:
       '@bentley/imodeljs-native': 4.1.0
       '@itwin/build-tools': workspace:*
-      '@itwin/cloud-agnostic-core': 2.0.0-dev.1
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
-      '@itwin/object-storage-azure': 2.0.0-dev.1
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-azure': 2.0.0-dev.2
+      '@itwin/object-storage-core': 2.0.0-dev.2
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -52,10 +52,10 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@bentley/imodeljs-native': 4.1.0
-      '@itwin/cloud-agnostic-core': 2.0.0-dev.1
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 2.0.0-dev.1
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-azure': 2.0.0-dev.2_inversify@6.0.1
+      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       form-data: 2.5.1
       fs-extra: 8.1.0
       inversify: 6.0.1
@@ -134,7 +134,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-core': 2.0.0-dev.2
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
@@ -142,14 +142,16 @@ importers:
       chai: ^4.1.2
       eslint: ^8.36.0
       flatbuffers: ~1.12.0
+      inversify: ~6.0.1
       js-base64: ^3.6.1
       mocha: ^10.0.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~5.0.2
     dependencies:
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       flatbuffers: 1.12.0
+      inversify: 6.0.1
       js-base64: 3.7.5
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -527,7 +529,7 @@ importers:
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
-      '@itwin/cloud-agnostic-core': 2.0.0-dev.1
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
@@ -536,8 +538,8 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': ^4.0.0-dev.33
-      '@itwin/object-storage-azure': 2.0.0-dev.1
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-azure': 2.0.0-dev.2
+      '@itwin/object-storage-core': 2.0.0-dev.2
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
@@ -554,6 +556,7 @@ importers:
       eslint: ^8.36.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
+      inversify: ~6.0.1
       mocha: ^10.0.0
       nyc: ^15.1.0
       reflect-metadata: 0.1.13
@@ -564,15 +567,16 @@ importers:
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.0.0-dev.1
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 2.0.0-dev.1
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-azure': 2.0.0-dev.2_inversify@6.0.1
+      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.3.3
       '@loaders.gl/draco': 3.3.3
       fuse.js: 3.6.1
+      inversify: 6.0.1
       reflect-metadata: 0.1.13
       wms-capabilities: 0.4.0
     devDependencies:
@@ -1638,7 +1642,7 @@ importers:
       '@itwin/imodels-access-frontend': ^3.0.0
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-core': 2.0.0-dev.2
       '@itwin/oidc-signin-tool': ~3.6.0
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.9.0
@@ -1664,6 +1668,7 @@ importers:
       glob: ^7.1.2
       https-browserify: ^1.0.0
       internal-tools: workspace:*
+      inversify: ~6.0.1
       nock: ^12.0.3
       null-loader: ^4.0.1
       nyc: ^15.1.0
@@ -1699,12 +1704,13 @@ importers:
       '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 3.0.0
       '@itwin/imodels-client-management': 3.0.0
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 24.1.2
       fs-extra: 8.1.0
+      inversify: 6.0.1
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
     devDependencies:
@@ -2474,7 +2480,7 @@ importers:
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
       '@itwin/map-layers-formats': workspace:*
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-core': 2.0.0-dev.2
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
@@ -2492,6 +2498,7 @@ importers:
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
       internal-tools: workspace:*
+      inversify: ~6.0.1
       node-simctl: ~7.1.4
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
@@ -2528,10 +2535,11 @@ importers:
       '@itwin/imodels-client-authoring': 3.0.0
       '@itwin/imodels-client-management': 3.0.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
+      inversify: 6.0.1
       vhacd-js: 0.0.1
     devDependencies:
       '@bentley/react-scripts': 5.0.4_m3lhcrciu7aqbgollylw2zkvnm
@@ -5678,12 +5686,13 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/cloud-agnostic-core/2.0.0-dev.1:
-    resolution: {integrity: sha512-nGQa2SxyxOzgRnZFk8eTLK2hZeFBOlUVpQBfeA51xbxJV+4gAax5F/94cvoS26+zoFQiTfB1OY9/vMIxXmO5eQ==}
+  /@itwin/cloud-agnostic-core/2.0.0-dev.2_inversify@6.0.1:
+    resolution: {integrity: sha512-ubqs4oVsLJaFGbop9HvUudweQbARw6gcKIdzBm9d4VfffaaLb8lbkXvA2acq2TKTujPyHx6nm5UozOXu3dkdNQ==}
     engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
     dependencies:
       inversify: 6.0.1
-      reflect-metadata: 0.1.13
     dev: false
 
   /@itwin/core-webpack-tools/3.7.4_webpack@5.81.0:
@@ -5834,16 +5843,17 @@ packages:
       - encoding
     dev: false
 
-  /@itwin/object-storage-azure/2.0.0-dev.1:
-    resolution: {integrity: sha512-bCaCuEft5J/cBxEaHDQvs8WRTLnXzvnkcD4/WzejLlW09q9pCFKA2jSeRYTR38LTv1Yz91HPYkdTAB2AXn5GWw==}
+  /@itwin/object-storage-azure/2.0.0-dev.2_inversify@6.0.1:
+    resolution: {integrity: sha512-5nQftoSO2MK5cbt8D51XwAtsdx/HkP4Er29qWp5r8tBUynUnGLLVbwd3m088Y6K2EcjsRZ2c02VHvHzFSskBxg==}
     engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
     dependencies:
       '@azure/core-paging': 1.5.0
       '@azure/storage-blob': 12.13.0
-      '@itwin/cloud-agnostic-core': 2.0.0-dev.1
-      '@itwin/object-storage-core': 2.0.0-dev.1
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2_inversify@6.0.1
+      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       inversify: 6.0.1
-      reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
       - encoding
@@ -5861,14 +5871,15 @@ packages:
       - debug
     dev: false
 
-  /@itwin/object-storage-core/2.0.0-dev.1:
-    resolution: {integrity: sha512-9GRJPfimlUNwsVXuIKmOjHldwUPMEvK8YXFxK5LqcRnsI4Djyb4hpiMrx4zOwiI5HF7yVjXiGhloRv5YkVdR/w==}
+  /@itwin/object-storage-core/2.0.0-dev.2_inversify@6.0.1:
+    resolution: {integrity: sha512-683qJwZ+EE8kQCjl+iP9EvjoQSISX4fC5rNZhWQpMYYbhzG9Igtck/9Bz1iXdxM2Osd0sO7WI2FLGKBBulBUkg==}
     engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.0.0-dev.1
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2_inversify@6.0.1
       axios: 0.27.2
       inversify: 6.0.1
-      reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
     dev: false
@@ -10634,7 +10645,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.59.1_2utyh6gct5glvuz6qwradubqqa
       '@typescript-eslint/experimental-utils': 5.59.1_iacogk7kkaymxepzhgcbytyi7q
       eslint: 8.39.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -13181,7 +13192,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -18056,7 +18067,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.21.4
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2

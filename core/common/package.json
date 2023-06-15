@@ -35,8 +35,9 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/object-storage-core": "2.0.0-dev.1",
+    "@itwin/object-storage-core": "2.0.0-dev.2",
     "flatbuffers": "~1.12.0",
+    "inversify": "~6.0.1",
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
