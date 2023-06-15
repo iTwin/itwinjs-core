@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { CloudSqlite, HubMock, IModelHost, SchemaSync } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubWrappers, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { DbResult, Guid } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
 
 // spell:ignore mkdirs
 
@@ -32,7 +32,7 @@ async function makeSchemaSync(moniker: string) {
   return syncSchema;
 }
 
-describe("shared schema channel", function (this: Suite) {
+describe("schema synchronization", function (this: Suite) {
   this.timeout(0);
 
   let sds1: SchemaSync.CloudAccess;
@@ -74,14 +74,14 @@ describe("shared schema channel", function (this: Suite) {
     b3.setSchemaSyncAccess(sds3);
 
     // initialize shared schema channel
-    await b1.initSharedSchemaChannel();
+    await b1.initSchemaSynchronization();
     await b1.saveChanges();
-    assert.isTrue(b1.usesSharedSchemaChannel());
+    assert.isTrue(b1.schemaSyncEnabled());
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
 
     //! b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
-    assert.isTrue(b2.usesSharedSchemaChannel());
+    assert.isTrue(b2.schemaSyncEnabled());
 
     //! Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -100,7 +100,7 @@ describe("shared schema channel", function (this: Suite) {
     assert.sameOrderedMembers(['p1', 'p2'], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     //! pull schema change into b2 from shared schema channel
-    b2.syncSharedSchemaChanges();
+    b2.synchronizationSchemas();
     b2.saveChanges();
 
     // ensure b2 have class and its properties
@@ -125,7 +125,7 @@ describe("shared schema channel", function (this: Suite) {
     assert.sameOrderedMembers(['p1', 'p2', 'p3', 'p4'], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     //! pull schema change into b1 from shared schema channel
-    b1.syncSharedSchemaChanges();
+    b1.synchronizationSchemas();
     b1.saveChanges();
 
     // ensure b1 have class and its properties

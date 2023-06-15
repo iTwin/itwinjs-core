@@ -812,20 +812,20 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async initSharedSchemaChannel() {
+  public async initSchemaSynchronization() {
     const store = this._schemaSyncAccess;
     if (!store) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
     }
-    await store.withLockedDb("init shared schema channel", async () => {
+    await store.withLockedDb("initialize schema synchronization", async () => {
       await this.nativeDb.saveChanges();
-      await this.nativeDb.sharedChannelInit(store.getUri());
+      await this.nativeDb.schemaSyncInit(store.getUri());
     }, OpenMode.Readonly);
   }
 
   /** @internal */
-  public usesSharedSchemaChannel() {
-    return this.nativeDb.sharedChannelEnabled();
+  public schemaSyncEnabled() {
+    return this.nativeDb.schemaSyncEnabled();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
@@ -842,21 +842,21 @@ export abstract class IModelDb extends IModel {
       return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this.usesSharedSchemaChannel()) {
+    if (this.schemaSyncEnabled()) {
       const store = this._schemaSyncAccess;
       if (!store) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db store cloud access is not set.");
       }
-      await store.withLockedDb("init shared schema channel", async () => {
-        const sharedSchemaChannelUri = store.getUri();
+      await store.withLockedDb("initialize schema synchronization", async () => {
+        const schemaSyncDbUri = store.getUri();
 
         this.saveChanges();
-        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, sharedSchemaChannelUri });
+        let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
           this.abandonChanges();
           if (this.nativeDb.getITwinId() !== Guid.empty)
             await this.acquireSchemaLock();
-          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, sharedSchemaChannelUri });
+          stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         }
         if (DbResult.BE_SQLITE_OK !== stat) {
           throw new IModelError(stat, "Error importing schema");
@@ -879,15 +879,15 @@ export abstract class IModelDb extends IModel {
     this.clearCaches();
   }
   /** @internal */
-  public syncSharedSchemaChanges() {
-    if (this.usesSharedSchemaChannel()) {
+  public synchronizationSchemas() {
+    if (this.schemaSyncEnabled()) {
       const store = this._schemaSyncAccess;
       if (!store) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
       }
       store.synchronizeWithCloud();
       store.openForRead();
-      this.nativeDb.sharedChannelPull(store.getUri());
+      this.nativeDb.schemaSyncPull(store.getUri());
       // we need to make sure if there was any change at all that was pulled rather then clear cache every time.
       this.clearCaches();
     }
@@ -906,21 +906,21 @@ export abstract class IModelDb extends IModel {
     if (serializedXmlSchemas.length === 0)
       return;
 
-    if (this.usesSharedSchemaChannel()) {
+    if (this.schemaSyncEnabled()) {
       const store = this._schemaSyncAccess;
       if (!store) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Sync data store clould access is not set.");
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
       }
       await store.withLockedDb("init shared schema channel", async () => {
-        const sharedSchemaChannelUri = store.getUri();
+        const schemaSyncDbUri = store.getUri();
 
         this.saveChanges();
-        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, sharedSchemaChannelUri });
+        let stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
         if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
           this.abandonChanges();
           if (this.nativeDb.getITwinId() !== Guid.empty)
             await this.acquireSchemaLock();
-          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, sharedSchemaChannelUri });
+          stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
         }
         if (DbResult.BE_SQLITE_OK !== stat) {
           throw new IModelError(stat, "Error importing schema");
