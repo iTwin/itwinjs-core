@@ -64,11 +64,6 @@ export class Entity {
    */
   public toJSON(): EntityProps {
     const val: any = {};
-    if (!this.iModel.isOpen) {
-      //! If IModel associated with EntityProps is closed then required metadata cannot be accessed and this operation will fail.
-      throw new IModelError(IModelStatus.NotOpen ,"IModel associated with entity is not open.");
-    }
-
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id))
       val.id = this.id;
