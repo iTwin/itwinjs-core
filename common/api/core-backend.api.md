@@ -5690,7 +5690,7 @@ export namespace ViewStore {
         }): ViewStoreRpc.ViewInfo | undefined;
         // (undocumented)
         getViewDefinitionSync(args: {
-            id: RowString;
+            viewId: RowString;
         }): ViewDefinitionProps;
         // (undocumented)
         queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
@@ -5738,7 +5738,7 @@ export namespace ViewStore {
     const // (undocumented)
     defaultViewGroupId: 1;
     // (undocumented)
-    export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ViewStoreRpc.Reader {
+    export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ReadMethods {
         constructor(arg?: ViewDbCtorArgs);
         // (undocumented)
         addCategorySelector(args: {
