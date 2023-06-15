@@ -15,6 +15,7 @@ import ignore from "rollup-plugin-ignore";
 import rollupVisualizer from "rollup-plugin-visualizer";
 import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
+import path from 'path';
 
 const mode = process.env.NODE_ENV === "development" ?? "production";
 
@@ -26,19 +27,18 @@ const iTwinDeps = Object.keys(packageJson.dependencies)
       `${pkgName.replace("@itwin/core-", "../../core/")}/src/public/*`,
     ];
   });
-// console.log(iTwinDeps);
+console.log(iTwinDeps);
 
 // use require.resolve for paths
 const resolves = Object.keys(packageJson.dependencies)
   .map((pkgName) => {
     try {
-      const path = require.resolve(pkgName).toString();
-      const delimiter = path.includes("\\") ? "\\" : "/";
-      if (path !== undefined)
-        return path.replace(/[^\\/]+$/, `public${delimiter}*`);
-    } catch { console.log(pkgName); }
+      const pkg = require.resolve(pkgName);
+      const delimiter = pkg.includes("\\") ? "\\" : "/";
+      return path.relative(process.cwd(), pkg.replace(/[^\\/]+$/, `public${delimiter}*`)).replace(/\\/g, '/').toString();
+    } catch {return "undefined";}
   })
-  .filter((path) => path !== undefined);
+  .filter((pkg) => pkg !== 'undefined');
 // use require.resolve for paths
 console.log(resolves);
 
@@ -93,7 +93,7 @@ export default defineConfig(() => {
       copy({
         targets: [
           {
-            src: iTwinDeps,
+            src: resolves,
             dest: "public",
             rename: (_name, _extension, fullPath) => {
               const regex = new RegExp("(public(?:\\\\|/))(.*)");
