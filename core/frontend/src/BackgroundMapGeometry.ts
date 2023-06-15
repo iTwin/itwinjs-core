@@ -124,8 +124,13 @@ export class BackgroundMapGeometry {
     return Promise.all(promises);
   }
 
-  public async dbToWGS84CartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    return this.cartesianRange.containsPoint(Point3d.createFrom(db)) ? this._iModel.spatialToWGS84Cartographic(db, result) : this.dbToCartographic(db, result);
+  public async dbToWGS84CartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]> {
+    const scratch = new Point3d();
+    const promises = db.map(async (p) => {
+      return this.cartesianRange.containsPoint(Point3d.createFrom(p, scratch)) ? this._iModel.spatialToWGS84Cartographic(p) : this.dbToCartographic(p);
+    });
+
+    return Promise.all(promises);
   }
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
@@ -162,7 +167,6 @@ export class BackgroundMapGeometry {
 
     return Promise.all(promises);
   }
-
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);

@@ -126,8 +126,8 @@ export class ArcGisGraphicsRenderer extends ArcGisGeometryBaseRenderer {
         // Backend reprojection
         const pointsArray = this._scratchPointsArray.getArray();
         try {
-          const spatialPointsProps = await this.toSpatialFromGcs(pointsArray);
-          this._graphics.push({ type: "pointstring", points: Point3dArray.clonePoint3dArray(spatialPointsProps) });
+          const spatialPoints = await this.toSpatialFromGcs(pointsArray);
+          this._graphics.push({ type: "pointstring", points: spatialPoints });
         } catch (error) {
           Logger.logError(loggerCategory, "ArcGisFeatureGraphicsRenderer: Could not reproject points");
         }
