@@ -22,7 +22,7 @@ export namespace SchemaSync {
     protected override createDDL() { }
   }
 
-  const defaultDbName = "SharedSchemaChannelDb" as const;
+  const defaultDbName = "SchemaSyncDb" as const;
 
   /**
    * Provides access to a cloud-based `SharedSchemaChannelDb` to hold ECSchemas.
