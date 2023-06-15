@@ -37,7 +37,7 @@ function createNewModelAndCategory(rwIModel: IModelDb) {
 
 let vs1: ViewStore.ViewDb;
 
-describe.only("ViewDefinition", () => {
+describe("ViewDefinition", () => {
   // to simulate elements with guids without having to add elements to the iModel
   class FakeGuids {
     private _ids = new Map<Id64String, GuidString>();

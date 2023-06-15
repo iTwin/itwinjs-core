@@ -9,10 +9,10 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
 import {
-  CloudSqlite, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  SnapshotDb, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements, ViewStore,
+  FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
+  SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Id64String, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
@@ -41,15 +41,6 @@ function loadEnv(envFile: string) {
     throw envResult.error;
 
   dotenvExpand(envResult);
-}
-
-const viewContainer = "views-itwin1";
-const storageType = "azure" as const;
-
-async function initializeContainer(containerId: string) {
-  await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, containerId, storageType });
-  await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
@@ -136,13 +127,6 @@ async function init() {
   AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
-  await initializeContainer(viewContainer);
-  SnapshotDb.onOpen.addListener((dbName) => {
-    const db = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
-    db.views.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType });
-    db.close();
-  });
-
   Logger.initializeToConsole();
   return shutdown;
 }

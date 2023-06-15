@@ -10,7 +10,7 @@ import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentle
 import { ViewStore } from "../../ViewStore";
 import { ThumbnailFormatProps } from "@itwin/core-common";
 
-describe.only("ViewStore", function (this: Suite) {
+describe("ViewStore", function (this: Suite) {
   this.timeout(0);
 
   let vs1: ViewStore.ViewDb;

@@ -34,6 +34,12 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async endOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }
+  public async startViewStore(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async stopViewStore(): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 
 export abstract class EventsTestRpcInterface extends RpcInterface {

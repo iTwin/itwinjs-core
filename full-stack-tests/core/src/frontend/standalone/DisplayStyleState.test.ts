@@ -12,8 +12,9 @@ import {
 } from "@itwin/core-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestRpcInterface } from "../../common/RpcInterfaces";
 
-describe.only("DisplayStyle", () => {
+describe("DisplayStyle", () => {
   let imodel: IModelConnection;
   const styleProps: DisplayStyle3dProps = {
     classFullName: "BisCore:DisplayStyle3d",
@@ -27,6 +28,7 @@ describe.only("DisplayStyle", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
+    await TestRpcInterface.getClient().startViewStore();
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
@@ -34,6 +36,7 @@ describe.only("DisplayStyle", () => {
     if (imodel)
       await imodel.close();
 
+    await TestRpcInterface.getClient().stopViewStore();
     await TestUtility.shutdownFrontend();
   });
 

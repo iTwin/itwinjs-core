@@ -77,9 +77,9 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
-      const containerProps = { baseUri, containerId: arg.containerId, storageType };
+      const containerProps = { ...arg, writeable: true, baseUri, storageType };
       const accessToken = await CloudSqlite.requestToken(containerProps);
-      return CloudSqlite.createCloudContainer({ baseUri, containerId: arg.containerId, storageType, accessToken });
+      return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
     };
 
     export const createContainers = async (props: TestContainerProps[]): Promise<TestContainer[]> => {

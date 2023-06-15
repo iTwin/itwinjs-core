@@ -83,8 +83,8 @@ export abstract class RpcInterface {
       return false;
 
     // special case for major version 0. If patch difference, backend patch must be greater than frontend patch
-    if (backendSemver.major === 0 && difference === "patch")
-      return frontendSemver.patch < backendSemver.patch;
+    if (backendSemver.major === 0)
+      return (difference === "patch" && frontendSemver.patch < backendSemver.patch);
 
     // patch difference is fine. If minor versions differ, compatible as long as backend minor version is greater
     return difference === "patch" || (difference === "minor" && frontendSemver.minor < backendSemver.minor);

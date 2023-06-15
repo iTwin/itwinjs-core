@@ -5,10 +5,22 @@
 
 import * as nock from "nock";
 import * as path from "path";
-import { IModelDb, IModelHost, IModelJsFs, NativeHost } from "@itwin/core-backend";
+import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { TestRpcInterface } from "../common/RpcInterfaces";
+import { AzuriteTest } from "./AzuriteTest";
+import { OpenMode } from "@itwin/core-bentley";
+
+const viewContainer = "views-itwin1";
+const storageType = "azure" as const;
+let removeViewStore: VoidFunction;
+
+async function initializeContainer(containerId: string) {
+  await AzuriteTest.Sqlite.createAzContainer({ containerId });
+  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, containerId, storageType });
+  await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
+}
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // eslint-disable-line deprecation/deprecation
   public static register() {
@@ -42,6 +54,18 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
 
   public async endOfflineScope(): Promise<void> {
     nock.cleanAll();
+  }
+
+  public async startViewStore(): Promise<void> {
+    await initializeContainer(viewContainer);
+    removeViewStore = SnapshotDb.onOpen.addListener((dbName) => {
+      const db = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
+      db.views.saveDefaultViewStore({ baseUri: AzuriteTest.baseUri, containerId: viewContainer, storageType });
+      db.close();
+    });
+  }
+  public async stopViewStore(): Promise<void> {
+    removeViewStore?.();
   }
 }
 
