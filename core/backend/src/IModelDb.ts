@@ -2122,21 +2122,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    private loadViewData(viewDefId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
+    private loadViewData(viewId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
       const iModel = this._iModel;
       const elements = iModel.elements;
       const loader = (() => {
-        if (ViewStoreRpc.isViewStoreId(viewDefId)) {
+        if (ViewStoreRpc.isViewStoreId(viewId)) {
           const reader = this.viewStore.reader;
           return {
-            loadView: () => reader.getViewDefinitionSync({ id: viewDefId }),
+            loadView: () => reader.getViewDefinitionSync({ viewId }),
             loadCategorySelector: (id: ViewIdString) => reader.getCategorySelectorSync({ id, bindings: options?.queryBindings?.categorySelector }),
             loadDisplayStyle: (id: ViewIdString) => reader.getDisplayStyleSync({ id, opts: options?.displayStyle }),
             loadModelSelector: (id: ViewIdString) => reader.getModelSelectorSync({ id, bindings: options?.queryBindings?.modelSelector }),
           };
         }
         return {
-          loadView: () => elements.getElementProps<ViewDefinitionProps>(viewDefId),
+          loadView: () => elements.getElementProps<ViewDefinitionProps>(viewId),
           loadCategorySelector: (id: Id64String) => elements.getElementProps<CategorySelectorProps>(id),
           loadDisplayStyle: (id: Id64String) => elements.getElementProps<DisplayStyleProps>({ id, displayStyle: options?.displayStyle }),
           loadModelSelector: (id: Id64String) => elements.getElementProps<ModelSelectorProps>(id),

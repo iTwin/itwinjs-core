@@ -186,7 +186,7 @@ export namespace ViewStore {
     iModel?: IModelDb;
   }
 
-  export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ViewStoreRpc.Reader {
+  export class ViewDb extends VersionedSqliteDb implements ViewStoreRpc.Writer, ReadMethods {
     public override myVersion = "4.0.0";
     private _iModel?: IModelDb;
     private _guidMap?: IModelDb.GuidMapper;
@@ -1375,7 +1375,7 @@ export namespace ViewStore {
     getDisplayStyleSync(args: ViewStoreRpc.NameOrId & { opts?: DisplayStyleLoadProps }): DisplayStyleProps;
     getModelSelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): ModelSelectorProps;
     getThumbnailSync(args: { viewId: RowString }): ThumbnailProps | undefined;
-    getViewDefinitionSync(args: { id: RowString }): ViewDefinitionProps;
+    getViewDefinitionSync(args: { viewId: RowString }): ViewDefinitionProps;
     queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
   }
 

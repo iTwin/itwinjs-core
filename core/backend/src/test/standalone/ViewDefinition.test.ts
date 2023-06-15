@@ -38,6 +38,7 @@ function createNewModelAndCategory(rwIModel: IModelDb) {
 let vs1: ViewStore.ViewDb;
 
 describe.only("ViewDefinition", () => {
+  // to simulate elements with guids without having to add elements to the iModel
   class FakeGuids {
     private _ids = new Map<Id64String, GuidString>();
     private _guids = new Map<GuidString, Id64String>();
@@ -103,19 +104,29 @@ describe.only("ViewDefinition", () => {
     const ms1 = iModel.elements.getElement<ModelSelector>(modelSelectorId);
     const ms1Row = await vs1.addModelSelector({ name: ms1.code.value, selector: { ids: ms1.models } });
     expect(ms1Row).equal("@1");
-    const ms1out = vs1.getModelSelectorSync({ id: ms1Row });
+    let ms1out = vs1.getModelSelectorSync({ id: ms1Row });
     expect(ms1out.classFullName).equal("BisCore:ModelSelector");
     expect(ms1out.models.length).equal(2);
     expect(ms1out.models[0]).equal(modelId);
     expect(ms1out.models[1]).equal(modelId2);
+    ms1out.models.push("0x123");
+    await vs1.updateModelSelector({ id: ms1Row, selector: { ids: ms1out.models } });
+    ms1out = vs1.getModelSelectorSync({ id: ms1Row });
+    expect(ms1out.models.length).equal(3);
+    expect(ms1out.models[2]).equal("0x123");
 
     const cs1 = iModel.elements.getElement<CategorySelector>(categorySelectorId);
     const cs1Row = await vs1.addCategorySelector({ selector: { ids: cs1.categories } });
     expect(cs1Row).equal("@1");
-    const cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
+    let cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
     expect(cs1out.classFullName).equal("BisCore:CategorySelector");
     expect(cs1out.categories.length).equal(1);
     expect(cs1out.categories[0]).equal(spatialCategoryId);
+    cs1out.categories.push("0x1234");
+    await vs1.updateCategorySelector({ id: cs1Row, selector: { ids: cs1out.categories } });
+    cs1out = vs1.getCategorySelectorSync({ id: cs1Row });
+    expect(cs1out.categories.length).equal(2);
+    expect(cs1out.categories[1]).equal("0x1234");
 
     const longElementList = CompressedId64Set.sortAndCompress(["0x2a", "0x2b", "0x2d", "0x2e", "0x43", "0x1a", "0x1d", "0x12", "0x22",
       "0x8", "0x21", "0x1b", "0x1c", "0x1e", "0x1f", "0x2c", "0x2f", "0x3a", "0x3b", "0x3d", "0x3e", "0x43",
@@ -203,6 +214,10 @@ describe.only("ViewDefinition", () => {
     const ds1out = vs1.getDisplayStyleSync({ id: ds1Row });
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");
     expect(ds1out.jsonProperties?.styles).deep.equal(JSON.parse(JSON.stringify(styles)));
+    ds1out.jsonProperties!.styles!.scheduleScript![0].elementTimelines[0].elementIds = CompressedId64Set.sortAndCompress(["0x11a", "0x11d", "0x11e", "0x12a"]);
+    await vs1.updateDisplayStyle({ id: ds1Row, className: ds1.classFullName, settings: ds1out.jsonProperties!.styles! });
+    const ds1out2 = vs1.getDisplayStyleSync({ id: ds1Row });
+    expect(ds1out2.jsonProperties?.styles).deep.equal(ds1out.jsonProperties!.styles!);
 
     const tl1Row = await vs1.addTimeline({ name: "TestRenderTimeline", timeline: styles.scheduleScript, owner: "owner2" });
     expect(tl1Row).equal("@1");
@@ -222,7 +237,7 @@ describe.only("ViewDefinition", () => {
     viewDefProps.code = { value: "TestViewDefinition", spec: "0x1", scope: "0x1" };
     const v1 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "in progress", "done"] });
     expect(v1).equal("@1");
-    const viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
+    let viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.code.value).equal("TestViewDefinition");
     expect(viewDefOut.classFullName).equal("BisCore:SpatialViewDefinition");
     expect(viewDefOut.modelSelectorId).equal(ms1Row);
@@ -233,6 +248,23 @@ describe.only("ViewDefinition", () => {
     expect(JSON.stringify(viewDefOut.extents)).equal(JSON.stringify(basicProps.extents));
     expect(JSON.stringify(viewDefOut.angles)).equal(JSON.stringify(basicProps.angles));
     expect(JSON.stringify(viewDefOut.camera)).equal(JSON.stringify(basicProps.camera));
+    viewDefOut.cameraOn = true;
+    viewDefOut.origin = [1, 2, 3];
+    await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut });
+    viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
+    expect(viewDefOut.cameraOn).equal(true);
+    expect(JSON.stringify(viewDefOut.origin)).equal(JSON.stringify([1, 2, 3]));
+    viewDefOut.displayStyleId = "@2";
+    await expect(vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut })).to.be.rejectedWith("invalid Id for displayStyles");
+    // add a new display style and uodate the view to use it
+    viewDefOut.displayStyleId = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
+    await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut });
+    viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
+    expect(viewDefOut.displayStyleId).equal("@2");
+    const vinfo = await vs1.getViewInfo({ viewId: v1 });
+    expect(vinfo?.displayStyleId).equal(viewDefOut.displayStyleId);
+    viewDefOut.displayStyleId = "@1";
+    await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut }); // change it back for sharing test below
 
     viewDefProps.code.value = "TestViewDefinition2";
     const v2 = await vs1.addView({ viewDefinition: viewDefProps, tags: ["big", "done"] });
