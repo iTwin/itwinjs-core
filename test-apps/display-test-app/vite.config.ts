@@ -64,9 +64,7 @@ export default defineConfig(() => {
       target: browserslistToEsbuild(),
       commonjsOptions: {
         include: [
-          /core\/common/,
           /core\/electron/,
-          /core\/frontend/,
           /core\/mobile/,
           /node_modules/,
         ],
@@ -128,7 +126,6 @@ export default defineConfig(() => {
       include: [
         "@itwin/core-common",
         "@itwin/core-electron/lib/cjs/ElectronFrontend",
-        "@itwin/core-frontend",
         "@itwin/core-mobile/lib/cjs/MobileFrontend",
       ],
     },
