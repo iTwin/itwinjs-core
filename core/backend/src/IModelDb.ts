@@ -314,9 +314,8 @@ export abstract class IModelDb extends IModel {
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
-  private _nativeDb?: IModelJsNative.DgnDb;
   /** @internal*/
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public readonly nativeDb: IModelJsNative.DgnDb;
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
@@ -326,7 +325,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
-    this._nativeDb = args.nativeDb;
+    this.nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
@@ -360,7 +359,6 @@ export abstract class IModelDb extends IModel {
     this._codeService?.close();
     this._codeService = undefined;
     this.nativeDb.closeIModel();
-    this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
   /** @internal */
@@ -495,9 +493,9 @@ export abstract class IModelDb extends IModel {
    * @beta
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
-    if (!this._nativeDb || !this._nativeDb.isOpen()) {
+    if (!this.nativeDb.isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
-    }
+
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
