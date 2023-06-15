@@ -245,7 +245,7 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
 }
 
 /**
- * Access to a [ViewStore]($learning/ViewStore) from the frontend.
+ * Access to a ViewStore from the frontend.
  * @beta
  */
 export namespace ViewStoreRpc {
