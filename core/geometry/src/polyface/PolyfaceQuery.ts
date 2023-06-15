@@ -939,7 +939,7 @@ export class PolyfaceQuery {
    * * Assemble each segment pair as a facet in a new polyface
    * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
-  public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+  public static sweepLinestringToFacetsXYReturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     const builder = PolyfaceBuilder.create();
     this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
       (_linestring: GrowableXYZArray, _segmentIndex: number,
@@ -951,6 +951,10 @@ export class PolyfaceQuery {
 
       });
     return builder.claimPolyface(true);
+  }
+  /** @deprecated in 4.x. Use sweepLinestringToFacetsXYReturnSweptFacets instead. */
+  public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+    return this.sweepLinestringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
   /** Find segments (within the linestring) which project to facets.
    * * Return collected line segments
