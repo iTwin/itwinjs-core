@@ -10,16 +10,13 @@ export class ProjectExtentsExample {
 
   /** get a 5 point shape of Cartographic points that encloses the project on the ground plane. */
   public async convertExtentsToCartographicShape(iModel: IModelConnection): Promise<Cartographic[]> {
-    const shape: Cartographic[] = [];
-
     // convert extents to an 8 point array
     const pts = Frustum.fromRange(iModel.projectExtents).points;
 
     // the first 4 points are on the front plane
-    for (let i = 0; i < 4; ++i) {
-      shape[i] = await iModel.spatialToCartographic(pts[i]);
+    const shape: Cartographic[] = await iModel.cartographicFromSpatial(pts.slice(0, 4));
+    for (let i = 0; i < 4; ++i)
       shape[i].height = 0; // set at ground level
-    }
 
     shape[4] = shape[0]; // close shape
     return shape;

@@ -115,8 +115,8 @@ export class TileAdmin {
   private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
-  private readonly _enableIndexedEdges: boolean;
-  private _generateAllPolyfaceEdges: boolean;
+  /** @internal */
+  public readonly edgeOptions: EdgeOptions;
   /** @internal */
   public readonly enableImprovedElision: boolean;
   /** @internal */
@@ -222,8 +222,10 @@ export class TileAdmin {
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
-    this._enableIndexedEdges = options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
-    this._generateAllPolyfaceEdges = options.generateAllPolyfaceEdges ?? defaultTileOptions.generateAllPolyfaceEdges;
+    this.edgeOptions = {
+      type: false === options.enableIndexedEdges ? "non-indexed" : "compact",
+      smooth: options.generateAllPolyfaceEdges ?? true,
+    };
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this.enableFrontendScheduleScripts = options.enableFrontendScheduleScripts ?? false;
     this.decodeImdlInWorker = options.decodeImdlInWorker ?? true;
@@ -336,18 +338,6 @@ export class TileAdmin {
 
   /** @internal */
   public get enableInstancing() { return this._enableInstancing; }
-  /** @internal */
-  public get enableIndexedEdges() { return this._enableIndexedEdges; }
-  /** @internal */
-  public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
-  public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
-  /** @internal */
-  public get edgeOptions(): EdgeOptions {
-    return {
-      indexed: this.enableIndexedEdges,
-      smooth: this.generateAllPolyfaceEdges,
-    };
-  }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -708,7 +698,7 @@ export class TileAdmin {
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
-      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
+      requestProps = { ...requestProps, edgeType: "non-indexed" !== this.edgeOptions.type ? 2 : 1 };
 
     // For backwards compatibility, these options default to true in the backend. Explicitly set them to false in (newer) frontends if not supplied.
     if (undefined === requestProps.quantizePositions || undefined === requestProps.useAbsolutePositions) {
@@ -1004,7 +994,11 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
   }
 
   /** Describes the configuration of the [[TileAdmin]].
-   * @see [[TileAdmin.create]]
+   * @see [[TileAdmin.create]] to specify the configuration at [[IModelApp.startup]] time.
+   * @note Many of these settings serve as "feature gates" introduced alongside new, potentially experimental features.
+   * Over time, as a feature is tested and proven, their relevance wanes, and the feature becomes enabled by default.
+   * Such properties should be flagged as `beta` and removed or rendered non-operational once the feature itself is considered
+   * stable.
    * @public
    */
   export interface Props {

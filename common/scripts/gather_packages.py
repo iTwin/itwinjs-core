@@ -119,29 +119,28 @@ for artifact in artifactPaths:
 
   if proc.returncode != 0:
     packagesToPublish = True
-    print ("The package does not yet exist.  Copying " + packageName + " to staging area.")
+    print ("Local version is newer than on the server.  Copying package " + packageName + " to staging area.")
     shutil.copy(artifact, stagingDir)
-    continue
 
   if 0 != len(serverVer):
     print ("The version already exists.  Skipping...")
     continue
 
-  packagesToPublish = True
-  print ("Local version is newer than on the server.  Copying package " + packageName + " to staging area.")
-  shutil.copy(artifact, stagingDir)
+  if (latestVer == "" or previousVer == ""):
+    command = "npm dist-tag ls " + packageName
+    proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
+    distTags = proc.communicate()[0]
+    if len(distTags) == 0:
+      print("error getting dist-tags")
 
-  command = "npm view " + packageName + " dist-tags.latest"
-  proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
-  latestVer = proc.communicate()[0]
-  if len(latestVer) == 0:
-    print("No version found for dist-tag 'latest'")
-
-  command = "npm view " + packageName + " dist-tags.previous"
-  proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
-  previousVer = proc.communicate()[0]
-  if len(previousVer) == 0:
-    print("No version found for dist-tag 'previous'")
+    tags = distTags.decode().split('\n')
+    for tag in tags:
+      if not len(tag) == 0:
+        [distTag, ver] = tag.split(':')
+        if distTag == "latest":
+          latestVer = ver
+        elif distTag == "previous":
+          previousVer = ver
 
 if packagesToPublish:
   distTag = determineDistTag(branchName, localVer, latestVer, previousVer)

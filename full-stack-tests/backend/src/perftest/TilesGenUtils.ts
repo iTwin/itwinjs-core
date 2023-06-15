@@ -6,7 +6,7 @@
 import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
+  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileOptions, TileProps,
 } from "@itwin/core-common";
 import { IModelDb, SpatialModel } from "@itwin/core-backend";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
@@ -59,7 +59,7 @@ export class BackendTileGenerator {
   private readonly _tileQueue: ConcurrencyQueue<void>;
   private readonly _getTileStats: boolean;
   private readonly _getTileMetadata: boolean;
-  private readonly _options = {
+  private readonly _options: TileOptions = {
     maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
     enableInstancing: true,
     enableImprovedElision: true,
@@ -70,8 +70,10 @@ export class BackendTileGenerator {
     alwaysSubdivideIncompleteTiles: false,
     optimizeBRepProcessing: true,
     useLargerTiles: true,
-    enableIndexedEdges: true,
-    generateAllPolyfaceEdges: true,
+    edgeOptions: {
+      type: "indexed",
+      smooth: true,
+    },
   };
   private readonly _stats: Stats = {
     modelCount: 0,

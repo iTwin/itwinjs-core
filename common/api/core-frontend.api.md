@@ -110,6 +110,7 @@ import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
 import { default as Fuse_2 } from 'fuse.js';
+import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
@@ -143,6 +144,7 @@ import { ImageSource } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
 import { IModelConnectionProps } from '@itwin/core-common';
+import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-common';
@@ -1489,11 +1491,11 @@ export class BackgroundMapGeometry {
     // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
-    cartographicToDbFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    cartographicToDbFromGcs(cartographic: Cartographic[]): Promise<Point3d[]>;
     // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
     // (undocumented)
-    dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    dbToCartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -2087,6 +2089,12 @@ export interface ComputeDisplayTransformArgs {
     modelId: Id64String;
     output?: Transform;
     timePoint?: number;
+    viewAttachmentId?: Id64String;
+}
+
+// @public
+export interface ComputeSpatialViewFitRangeOptions {
+    baseExtents?: Range3d;
 }
 
 // @public
@@ -2184,15 +2192,19 @@ export class CoordinateConverter {
     // (undocumented)
     protected getFromCache(inputs: XYZProps[]): PointWithStatus[];
     // (undocumented)
-    protected readonly _iModel: IModelConnection;
-    // (undocumented)
     protected _inflight: SortedArray<XYAndZ>;
+    // (undocumented)
+    get isIdle(): boolean;
+    // (undocumented)
+    protected readonly _isIModelClosed: () => boolean;
     // (undocumented)
     protected readonly _maxPointsPerRequest: number;
     // (undocumented)
     protected _onCompleted: BeEvent<() => void>;
     // (undocumented)
     protected _pending: SortedArray<XYAndZ>;
+    // (undocumented)
+    protected _redispatchOnCompletion: boolean;
     // (undocumented)
     protected readonly _requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
     // (undocumented)
@@ -2211,7 +2223,8 @@ export class CoordinateConverter {
 
 // @internal
 export interface CoordinateConverterOptions {
-    iModel: IModelConnection;
+    // (undocumented)
+    isIModelClosed: () => boolean;
     maxPointsPerRequest?: number;
     requestPoints: (points: XYAndZ[]) => Promise<PointWithStatus[]>;
 }
@@ -3738,7 +3751,7 @@ export interface GenericAbortSignal {
 // @public
 export class GeoConverter {
     // @internal
-    constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
+    constructor(opts: GeoConverterOptions);
     convertFromIModelCoords(iModelCoords: XYZProps[]): Promise<PointWithStatus[]>;
     convertToIModelCoords(geoPoints: XYZProps[]): Promise<PointWithStatus[]>;
     // @internal (undocumented)
@@ -3747,6 +3760,20 @@ export class GeoConverter {
     getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps>;
     // @internal (undocumented)
     getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps>;
+    // @internal
+    readonly onAllRequestsCompleted: BeEvent<() => void>;
+}
+
+// @internal
+export interface GeoConverterOptions {
+    // (undocumented)
+    readonly datum: string;
+    // (undocumented)
+    fromIModelCoords: (request: GeoCoordinatesRequestProps) => Promise<PointWithStatus[]>;
+    // (undocumented)
+    isIModelClosed: () => boolean;
+    // (undocumented)
+    toIModelCoords: (request: IModelCoordinatesRequestProps) => Promise<PointWithStatus[]>;
 }
 
 // @beta
@@ -3817,9 +3844,14 @@ export interface GeometryTileTreeReference extends TileTreeReference {
 // @public
 export class GeoServices {
     // @internal
-    constructor(iModel: IModelConnection);
+    constructor(options: GeoServicesOptions);
+    // @internal (undocumented)
+    static createForIModel(iModel: IModelConnection): GeoServices;
     getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
 }
+
+// @internal (undocumented)
+export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 
 // @public
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
@@ -4964,6 +4996,8 @@ export interface GraphicBranchOptions {
     iModel?: IModelConnection;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+    // @internal
+    viewAttachmentId?: Id64String;
 }
 
 // @public
@@ -5199,25 +5233,22 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
+    constructor(props: HitDetailProps);
+    // @deprecated
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
-    // (undocumented)
-    readonly distFraction: number;
-    // (undocumented)
-    readonly distXY: number;
+    get distFraction(): number;
+    get distXY(): number;
     draw(_context: DecorateContext): void;
-    // (undocumented)
-    readonly geometryClass?: GeometryClass | undefined;
+    get geometryClass(): GeometryClass | undefined;
     getHitType(): HitDetailType;
     getPoint(): Point3d;
     getToolTip(): Promise<HTMLElement | string>;
-    // (undocumented)
-    readonly hitPoint: Point3d;
-    // (undocumented)
-    readonly hitSource: HitSource;
+    get hitPoint(): Point3d;
+    get hitSource(): HitSource;
     get iModel(): IModelConnection;
-    // @alpha (undocumented)
-    readonly isClassifier: boolean;
+    // @alpha
+    get isClassifier(): boolean | undefined;
     get isElementHit(): boolean;
     get isExternalIModelHit(): boolean;
     // (undocumented)
@@ -5225,19 +5256,40 @@ export class HitDetail {
     // (undocumented)
     get isModelHit(): boolean;
     isSameHit(otherHit?: HitDetail): boolean;
-    // (undocumented)
-    readonly modelId?: string | undefined;
-    // (undocumented)
+    get modelId(): string | undefined;
+    get priority(): HitPriority;
+    get sourceId(): Id64String;
+    // @internal
+    get sourceIModel(): IModelConnection | undefined;
+    get subCategoryId(): Id64String | undefined;
+    get testPoint(): Point3d;
+    // @internal
+    get tileId(): string | undefined;
+    // @beta
+    get viewAttachment(): ViewAttachmentHitInfo | undefined;
+    get viewport(): ScreenViewport;
+}
+
+// @public
+export interface HitDetailProps {
+    readonly distFraction: number;
+    readonly distXY: number;
+    readonly geometryClass?: GeometryClass;
+    readonly hitPoint: Point3d;
+    readonly hitSource: HitSource;
+    // @alpha
+    readonly isClassifier?: boolean;
+    readonly modelId?: string;
     readonly priority: HitPriority;
-    // (undocumented)
-    readonly sourceId: string;
-    // (undocumented)
-    readonly subCategoryId?: string | undefined;
-    // (undocumented)
+    readonly sourceId: Id64String;
+    // @internal
+    readonly sourceIModel?: IModelConnection;
+    readonly subCategoryId?: Id64String;
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
-    // (undocumented)
+    // @beta
+    readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
 }
 
@@ -5566,6 +5618,13 @@ export interface ImdlBufferView {
 export type ImdlColorDef = number[];
 
 // @internal
+export interface ImdlCompactEdges {
+    readonly normalPairs?: string;
+    readonly numVisible: number;
+    readonly visibility: string;
+}
+
+// @internal
 export interface ImdlDecodeArgs {
     // (undocumented)
     isCanceled?: () => boolean;
@@ -5654,6 +5713,13 @@ export interface ImdlDocument {
 }
 
 // @internal
+export enum ImdlEdgeVisibility {
+    Hidden = 0,
+    Silhouette = 1,
+    Visible = 2
+}
+
+// @internal
 export interface ImdlIndexedEdges {
     readonly edges: string;
     readonly height: number;
@@ -5696,7 +5762,9 @@ export interface ImdlMesh {
 // @internal
 export interface ImdlMeshEdges {
     // (undocumented)
+    readonly compact?: ImdlCompactEdges;
     readonly indexed?: ImdlIndexedEdges;
+    // (undocumented)
     readonly polylines?: ImdlPolyline;
     // (undocumented)
     readonly segments?: ImdlSegmentEdges;
@@ -6347,6 +6415,7 @@ export abstract class IModelConnection extends IModel {
     protected constructor(iModelProps: IModelConnectionProps);
     // @internal
     protected beforeClose(): void;
+    cartographicFromSpatial(spatial: XYAndZ[]): Promise<Cartographic[]>;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     readonly categories: IModelConnection.Categories;
@@ -6416,6 +6485,7 @@ export abstract class IModelConnection extends IModel {
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
+    spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     // @internal
@@ -6643,6 +6713,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     getTransformNodeRange(nodeId: number): Range3d | undefined;
     get hiddenElements(): Id64Array;
+    // (undocumented)
+    readonly iModelTileTreeId: IModelTileTreeId;
     // (undocumented)
     get is3d(): boolean;
     // (undocumented)
@@ -9419,6 +9491,7 @@ export namespace Pixel {
             batchType?: BatchType;
             iModel?: IModelConnection;
             tileId?: string;
+            viewAttachmentId?: string;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
@@ -9436,6 +9509,8 @@ export namespace Pixel {
         // @internal (undocumented)
         readonly tileId?: string;
         readonly type: GeometryType;
+        // @beta
+        readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
         Edge = 4,
@@ -11703,6 +11778,8 @@ export class SheetViewState extends ViewState2d {
     // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
+    computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
+    // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
@@ -11719,6 +11796,8 @@ export class SheetViewState extends ViewState2d {
     detachFromViewport(): void;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // @internal (undocumented)
+    getAttachmentViewport(id: Id64String): Viewport | undefined;
     // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
@@ -11907,7 +11986,7 @@ export class SpatialViewState extends ViewState3d {
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
-    computeFitRange(): AxisAlignedBox3d;
+    computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
@@ -12852,7 +12931,7 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
-    get edgeOptions(): EdgeOptions;
+    readonly edgeOptions: EdgeOptions;
     // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
@@ -12862,15 +12941,10 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
-    get enableIndexedEdges(): boolean;
-    // @internal (undocumented)
     get enableInstancing(): boolean;
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
-    // @internal (undocumented)
-    get generateAllPolyfaceEdges(): boolean;
-    set generateAllPolyfaceEdges(val: boolean);
     // @internal (undocumented)
     generateTileContent(tile: {
         iModelTree: IModelTileTree;
@@ -14277,6 +14351,13 @@ export interface ViewAnimationOptions {
     animationTime?: number;
     cancelOnAbort?: boolean;
     easingFunction?: EasingFunction;
+}
+
+// @beta
+export interface ViewAttachmentHitInfo {
+    readonly id: Id64String;
+    // @alpha
+    readonly viewport: Viewport;
 }
 
 // @public
@@ -15710,6 +15791,8 @@ export abstract class ViewState extends ElementState {
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
+    // @internal
+    getAttachmentViewport(_id: Id64String): Viewport | undefined;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
@@ -15879,6 +15962,7 @@ export abstract class ViewState3d extends ViewState {
     protected _cameraOn: boolean;
     cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined;
     cartographicToRootFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d | undefined>;
+    cartographicToRootUsingGcs(cartographic: Cartographic[]): Promise<Point3d[] | undefined>;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
     // @internal
@@ -15951,6 +16035,7 @@ export abstract class ViewState3d extends ViewState {
     readonly origin: Point3d;
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
     rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
+    rootToCartographicUsingGcs(root: XYAndZ[]): Promise<Cartographic[] | undefined>;
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;
