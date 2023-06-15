@@ -15,6 +15,7 @@ import { OpenMode } from "@itwin/core-bentley";
 const viewContainer = "views-itwin1";
 const storageType = "azure" as const;
 let removeViewStore: VoidFunction;
+let saveAuthClient: AzuriteTest.AuthorizationClient;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
@@ -57,6 +58,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
   }
 
   public async startViewStore(): Promise<void> {
+    saveAuthClient = IModelHost.authorizationClient as AzuriteTest.AuthorizationClient;
+    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+    AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
     await initializeContainer(viewContainer);
     removeViewStore = SnapshotDb.onOpen.addListener((dbName) => {
       const db = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
@@ -66,6 +71,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
   }
   public async stopViewStore(): Promise<void> {
     removeViewStore?.();
+    IModelHost.authorizationClient = saveAuthClient;
   }
 }
 

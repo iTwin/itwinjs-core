@@ -25,19 +25,21 @@ describe("IModel Views", () => {
   });
 
   it("should query ids", async () => {
-    const props = await views.getViewList({ from: SpatialViewState.classFullName });
+    const props = await views.queryProps({ from: SpatialViewState.classFullName });
     expect(props).to.exist.and.be.not.empty;
   });
 
   it("should load", async () => {
-    const props = await views.getViewList({ from: SpatialViewState.classFullName });
-    const viewState = await views.load(props[0].id);
+    const props = await views.queryProps({ from: SpatialViewState.classFullName });
+    const viewState = await views.load(props[0].id!);
+
     expect(viewState).to.exist.and.be.not.empty;
   });
 
   it("should create viewstate3d using viewcreator3d", async () => {
     const viewcreator3d = new ViewCreator3d(iModel);
     const viewState = await viewcreator3d.createDefaultView();
+
     expect(viewState).to.exist.and.be.not.empty;
   });
 });

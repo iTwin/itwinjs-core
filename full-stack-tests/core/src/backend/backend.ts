@@ -24,7 +24,6 @@ import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { AzuriteTest } from "./AzuriteTest";
 import * as testCommands from "./TestEditCommands";
 
 /* eslint-disable no-console */
@@ -118,13 +117,9 @@ async function init() {
       await new Promise((resolve) => httpServer.close(resolve));
       await IpcHost.shutdown();
     };
-
   }
 
   ECSchemaRpcImpl.register();
-
-  IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-  AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
   Logger.initializeToConsole();
