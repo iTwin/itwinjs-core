@@ -2704,7 +2704,11 @@ export abstract class Viewport implements IDisposable, TileUser {
         const pixel = pixels.getPixel(x, y);
         const modelId = pixel.modelId;
         if (undefined !== modelId) {
-          const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
+          const transform = this.view.computeDisplayTransform({
+            modelId,
+            elementId: pixel.feature?.elementId,
+            viewAttachmentId: pixel.viewAttachmentId,
+          });
           transform?.multiplyInversePoint3d(npc, npc);
         }
       }

@@ -2089,6 +2089,7 @@ export interface ComputeDisplayTransformArgs {
     modelId: Id64String;
     output?: Transform;
     timePoint?: number;
+    viewAttachmentId?: Id64String;
 }
 
 // @public
@@ -4995,6 +4996,8 @@ export interface GraphicBranchOptions {
     iModel?: IModelConnection;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+    // @internal
+    viewAttachmentId?: Id64String;
 }
 
 // @public
@@ -5230,25 +5233,22 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
+    constructor(props: HitDetailProps);
+    // @deprecated
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
-    // (undocumented)
-    readonly distFraction: number;
-    // (undocumented)
-    readonly distXY: number;
+    get distFraction(): number;
+    get distXY(): number;
     draw(_context: DecorateContext): void;
-    // (undocumented)
-    readonly geometryClass?: GeometryClass | undefined;
+    get geometryClass(): GeometryClass | undefined;
     getHitType(): HitDetailType;
     getPoint(): Point3d;
     getToolTip(): Promise<HTMLElement | string>;
-    // (undocumented)
-    readonly hitPoint: Point3d;
-    // (undocumented)
-    readonly hitSource: HitSource;
+    get hitPoint(): Point3d;
+    get hitSource(): HitSource;
     get iModel(): IModelConnection;
-    // @alpha (undocumented)
-    readonly isClassifier: boolean;
+    // @alpha
+    get isClassifier(): boolean | undefined;
     get isElementHit(): boolean;
     get isExternalIModelHit(): boolean;
     // (undocumented)
@@ -5256,19 +5256,40 @@ export class HitDetail {
     // (undocumented)
     get isModelHit(): boolean;
     isSameHit(otherHit?: HitDetail): boolean;
-    // (undocumented)
-    readonly modelId?: string | undefined;
-    // (undocumented)
+    get modelId(): string | undefined;
+    get priority(): HitPriority;
+    get sourceId(): Id64String;
+    // @internal
+    get sourceIModel(): IModelConnection | undefined;
+    get subCategoryId(): Id64String | undefined;
+    get testPoint(): Point3d;
+    // @internal
+    get tileId(): string | undefined;
+    // @beta
+    get viewAttachment(): ViewAttachmentHitInfo | undefined;
+    get viewport(): ScreenViewport;
+}
+
+// @public
+export interface HitDetailProps {
+    readonly distFraction: number;
+    readonly distXY: number;
+    readonly geometryClass?: GeometryClass;
+    readonly hitPoint: Point3d;
+    readonly hitSource: HitSource;
+    // @alpha
+    readonly isClassifier?: boolean;
+    readonly modelId?: string;
     readonly priority: HitPriority;
-    // (undocumented)
-    readonly sourceId: string;
-    // (undocumented)
-    readonly subCategoryId?: string | undefined;
-    // (undocumented)
+    readonly sourceId: Id64String;
+    // @internal
+    readonly sourceIModel?: IModelConnection;
+    readonly subCategoryId?: Id64String;
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
-    // (undocumented)
+    // @beta
+    readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
 }
 
@@ -9470,6 +9491,7 @@ export namespace Pixel {
             batchType?: BatchType;
             iModel?: IModelConnection;
             tileId?: string;
+            viewAttachmentId?: string;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
@@ -9487,6 +9509,8 @@ export namespace Pixel {
         // @internal (undocumented)
         readonly tileId?: string;
         readonly type: GeometryType;
+        // @beta
+        readonly viewAttachmentId?: Id64String;
     }
     export enum GeometryType {
         Edge = 4,
@@ -11754,6 +11778,8 @@ export class SheetViewState extends ViewState2d {
     // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
+    computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
+    // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
@@ -11770,6 +11796,8 @@ export class SheetViewState extends ViewState2d {
     detachFromViewport(): void;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // @internal (undocumented)
+    getAttachmentViewport(id: Id64String): Viewport | undefined;
     // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
@@ -14325,6 +14353,13 @@ export interface ViewAnimationOptions {
     easingFunction?: EasingFunction;
 }
 
+// @beta
+export interface ViewAttachmentHitInfo {
+    readonly id: Id64String;
+    // @alpha
+    readonly viewport: Viewport;
+}
+
 // @public
 export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
     animateFrustumChange?: boolean;
@@ -15756,6 +15791,8 @@ export abstract class ViewState extends ElementState {
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
+    // @internal
+    getAttachmentViewport(_id: Id64String): Viewport | undefined;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
