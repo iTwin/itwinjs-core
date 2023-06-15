@@ -1,5 +1,8 @@
 lockfileVersion: 5.3
 
+overrides:
+  dottie: ^2.0.4
+
 packageExtensionsChecksum: f67d2c5c08a7620b9d601d262f6cbe8b
 
 importers:
@@ -12727,8 +12730,8 @@ packages:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
 
-  /dottie/2.0.3:
-    resolution: {integrity: sha512-4liA0PuRkZWQFQjwBypdxPfZaRWiv5tkhMXY2hzsa2pNf5s7U3m9cwUchfNKe8wZQxdGPQQzO6Rm2uGe0rvohQ==}
+  /dottie/2.0.4:
+    resolution: {integrity: sha512-iz64WUOmp/ECQhWMJjTWFzJN/wQ7RJ5v/a6A2OiCwjaGCpNo66WGIjlSf+IULO9DQd0b4cFawLOTbiKSrpKodw==}
     dev: false
 
   /draco3d/1.5.5:
@@ -20374,7 +20377,7 @@ packages:
       '@types/debug': 4.1.7
       '@types/validator': 13.7.12
       debug: 4.3.4
-      dottie: 2.0.3
+      dottie: 2.0.4
       inflection: 1.13.4
       lodash: 4.17.21
       moment: 2.29.4
