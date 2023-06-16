@@ -296,6 +296,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         feature.geometries = graphics.map((graphic) => {
           return {graphic};
         });
+        subLayerInfo.features.push(feature);
 
       }
 
