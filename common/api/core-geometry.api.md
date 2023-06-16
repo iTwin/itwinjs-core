@@ -1660,7 +1660,7 @@ export class CurveFactory {
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[];
-    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, wrapIfPhysicallyClosed: boolean): SectionSequenceWithPlanes | undefined;
+    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
@@ -3271,7 +3271,7 @@ export class LinearSweep extends SolidPrimitive {
     cloneSweepVector(): Vector3d;
     cloneTransformed(transform: Transform): LinearSweep;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static create(contour: CurveCollection, direction: Vector3d, capped: boolean): LinearSweep | undefined;
+    static create(contour: AnyCurve, direction: Vector3d, capped: boolean): LinearSweep | undefined;
     static createZSweep(xyPoints: XAndY[], z: number, zSweep: number, capped: boolean): LinearSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -3762,6 +3762,21 @@ export class Matrix4d implements BeJSONFunctions {
 
 // @public
 export type Matrix4dProps = Point4dProps[];
+
+// @public
+export class MiteredSweepOptions {
+    capped?: boolean;
+    outputSelect?: MiteredSweepOutputSelect;
+    strokeOptions?: StrokeOptions;
+    wrapIfPhysicallyClosed?: boolean;
+}
+
+// @public
+export enum MiteredSweepOutputSelect {
+    Mesh = 2,
+    RuledSweep = 1,
+    Sections = 0
+}
 
 // @public
 export class MomentData {
@@ -5405,7 +5420,7 @@ export class RotationalSweep extends SolidPrimitive {
     cloneAxisRay(): Ray3d;
     cloneTransformed(transform: Transform): RotationalSweep;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static create(contour: CurveCollection, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
+    static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(range: Range3d, transform?: Transform): void;
     getConstructiveFrame(): Transform | undefined;
@@ -5427,7 +5442,7 @@ export class RuledSweep extends SolidPrimitive {
     cloneSweepContours(): SweepContour[];
     cloneTransformed(transform: Transform): RuledSweep;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined;
+    static create(contours: AnyCurve[], capped: boolean): RuledSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getConstructiveFrame(): Transform | undefined;
@@ -5561,9 +5576,9 @@ export class Sample {
 
 // @public
 export interface SectionSequenceWithPlanes {
-    // (undocumented)
+    mesh?: IndexedPolyface;
     planes: Plane3dByOriginAndUnitNormal[];
-    // (undocumented)
+    ruledSweep?: RuledSweep;
     sections: AnyCurve[];
 }
 
@@ -5817,9 +5832,9 @@ export class SweepContour {
     buildFacets(options: StrokeOptions | undefined): void;
     clone(): SweepContour;
     cloneTransformed(transform: Transform): SweepContour | undefined;
-    static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined;
+    static createForLinearSweep(contour: AnyCurve, defaultNormal?: Vector3d): SweepContour | undefined;
     static createForPolygon(points: MultiLineStringDataVariant, defaultNormal?: Vector3d): SweepContour | undefined;
-    static createForRotation(contour: CurveCollection, axis: Ray3d): SweepContour | undefined;
+    static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined;
     curves: CurveCollection;
     emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform): void;
     getCurves(): CurveCollection;

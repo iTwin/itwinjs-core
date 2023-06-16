@@ -179,6 +179,8 @@ public;Matrix3d
 public;Matrix3dProps = number[][] | number[]
 public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
+public;MiteredSweepOptions
+public;MiteredSweepOutputSelect
 public;MomentData
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
