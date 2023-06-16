@@ -72,7 +72,7 @@ const createImodelProps = () => {
   };
 };
 
-describe.only("ArcGisGraphicsRenderer", () => {
+describe("ArcGisGraphicsRenderer", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
