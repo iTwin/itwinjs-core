@@ -1568,7 +1568,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     dbToCartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]>;
     // (undocumented)
-    dbToWGS84CartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    dbToWGS84CartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]>;
     // (undocumented)
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
@@ -6568,8 +6568,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get subcategories(): SubCategoriesCache;
     readonly tiles: Tiles;
-    // (undocumented)
-    toSpatialFromGcs(geoPoints: XYZProps[], datumOrGCRS?: string | GeographicCRSProps): Promise<XYZProps[]>;
+    toSpatialFromGcs(geoCoords: XYZProps[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]>;
     readonly transientIds: TransientIdSequence;
     readonly views: IModelConnection.Views;
 }
