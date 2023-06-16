@@ -815,14 +815,14 @@ export abstract class IModelDb extends IModel {
     if (!store) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
     }
+    this.nativeDb.saveChanges();
     await store.withLockedDb("initialize schema synchronization", async () => {
-      await this.nativeDb.saveChanges();
-      await this.nativeDb.schemaSyncInit(store.getUri());
+      this.nativeDb.schemaSyncInit(store.getUri());
     }, OpenMode.Readonly);
   }
 
   /** @internal */
-  public schemaSyncEnabled() {
+  public get isSchemaSyncEabled() {
     return this.nativeDb.schemaSyncEnabled();
   }
 
@@ -840,14 +840,13 @@ export abstract class IModelDb extends IModel {
       return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this.schemaSyncEnabled()) {
+    if (this.isSchemaSyncEabled) {
       const store = this._schemaSyncAccess;
-      if (!store) {
+      if (!store)
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db store cloud access is not set.");
-      }
+
       await store.withLockedDb("initialize schema synchronization", async () => {
         const schemaSyncDbUri = store.getUri();
-
         this.saveChanges();
         let stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         if (DbResult.BE_SQLITE_ERROR_SchemaLockFailed === stat) {
@@ -878,16 +877,17 @@ export abstract class IModelDb extends IModel {
   }
   /** @internal */
   public synchronizationSchemas() {
-    if (this.schemaSyncEnabled()) {
+    if (this.isSchemaSyncEabled) {
       const store = this._schemaSyncAccess;
-      if (!store) {
+      if (!store)
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
-      }
+
       store.synchronizeWithCloud();
       store.openForRead();
       this.nativeDb.schemaSyncPull(store.getUri());
       // we need to make sure if there was any change at all that was pulled rather then clear cache every time.
       this.clearCaches();
+      store.closeDb();
     }
   }
 
@@ -904,12 +904,12 @@ export abstract class IModelDb extends IModel {
     if (serializedXmlSchemas.length === 0)
       return;
 
-    if (this.schemaSyncEnabled()) {
+    if (this.isSchemaSyncEabled) {
       const store = this._schemaSyncAccess;
       if (!store) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Schema sync db cloud access is not set.");
       }
-      await store.withLockedDb("init shared schema channel", async () => {
+      await store.withLockedDb("init schema sync", async () => {
         const schemaSyncDbUri = store.getUri();
 
         this.saveChanges();

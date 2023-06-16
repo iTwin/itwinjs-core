@@ -2961,6 +2961,8 @@ export abstract class IModelDb extends IModel {
     // @internal
     get isOpen(): boolean;
     get isReadonly(): boolean;
+    // @internal (undocumented)
+    get isSchemaSyncEabled(): boolean;
     get isSnapshot(): boolean;
     isSnapshotDb(): this is SnapshotDb;
     // @internal
@@ -3021,8 +3023,6 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingDictionary): void;
-    // @internal (undocumented)
-    schemaSyncEnabled(): boolean;
     // @internal (undocumented)
     setSchemaSyncAccess(store: SchemaSync.CloudAccess): void;
     // @internal (undocumented)

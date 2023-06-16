@@ -62,8 +62,8 @@ describe("schema synchronization", function (this: Suite) {
 
     HubMock.startup("test", KnownTestLocations.outputDir);
 
-    let iModelName = "test iModel";
-    let iModelId = await HubWrappers.createIModel(user1AccessToken, iTwinId, iModelName);
+    const iModelName = "test iModel";
+    const iModelId = await HubWrappers.createIModel(user1AccessToken, iTwinId, iModelName);
 
     const b1 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user1AccessToken, iTwinId, iModelId });
     const b2 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user2AccessToken, iTwinId, iModelId });
@@ -75,15 +75,15 @@ describe("schema synchronization", function (this: Suite) {
 
     // initialize shared schema channel
     await b1.initSchemaSynchronization();
-    await b1.saveChanges();
-    assert.isTrue(b1.schemaSyncEnabled());
+    b1.saveChanges();
+    assert.isTrue(b1.isSchemaSyncEabled);
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
 
-    //! b2 briefcase need to pull to enable shared schema channel.
+    // b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
-    assert.isTrue(b2.schemaSyncEnabled());
+    assert.isTrue(b2.isSchemaSyncEabled);
 
-    //! Import schema into b1 but do not push it.
+    // Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestSchema1" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
@@ -97,14 +97,14 @@ describe("schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
-    assert.sameOrderedMembers(['p1', 'p2'], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
-    //! pull schema change into b2 from shared schema channel
+    // pull schema change into b2 from shared schema channel
     b2.synchronizationSchemas();
     b2.saveChanges();
 
     // ensure b2 have class and its properties
-    assert.sameOrderedMembers(['p1', 'p2'], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // add new properties in b2
     const schema2 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -122,14 +122,14 @@ describe("schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
-    assert.sameOrderedMembers(['p1', 'p2', 'p3', 'p4'], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
-    //! pull schema change into b1 from shared schema channel
+    // pull schema change into b1 from shared schema channel
     b1.synchronizationSchemas();
     b1.saveChanges();
 
     // ensure b1 have class and its properties
-    assert.sameOrderedMembers(['p1', 'p2', 'p3', 'p4'], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // push changes
     await b1.pushChanges({ accessToken: user1AccessToken, description: "push schema changes" });
@@ -139,11 +139,11 @@ describe("schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
-    assert.sameOrderedMembers(['p1', 'p2', 'p3', 'p4'], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
 
     b1.close();
     b2.close();
-    b3.close()
+    b3.close();
 
     HubMock.shutdown();
   });

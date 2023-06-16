@@ -10,7 +10,6 @@
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 
-
 /** @beta */
 export namespace SchemaSync {
 
@@ -25,13 +24,9 @@ export namespace SchemaSync {
   const defaultDbName = "SchemaSyncDb" as const;
 
   /**
-   * Provides access to a cloud-based `SharedSchemaChannelDb` to hold ECSchemas.
+   * Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.
    * `SchemaSync.ChannelDb`s that are stored in cloud containers require an access token that grants permission to read and/or write them.
    * All write operations will fail without an access token that grants write permission.
-   *
-   * The database is cached on a local drive so reads are fast and inexpensive, and may even be done offline after a prefetch.
-   * However, that means that callers are responsible for synchronizing the local cache to ensure it includes changes
-   * made by others, as appropriate (see [[synchronizeWithCloud]]).
    */
   export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
     public constructor(props: CloudSqlite.ContainerAccessProps) {
