@@ -760,7 +760,7 @@
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "resolve",
