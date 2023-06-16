@@ -9,7 +9,7 @@ import { AxisOrder, Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -32,6 +32,7 @@ import { CurveCollection } from "../../curve/CurveCollection";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Range1d } from "../../geometry3d/Range";
+import { IndexedPolyface } from "../../core-geometry";
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
     const allGeometry: GeometryQuery[] = [];
@@ -416,7 +417,7 @@ describe("PipeConnections", () => {
         const centerline = centerlines[centerlineIndex];
         const wrap = wrapIfClosed[centerlineIndex];
         const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
-        const sweeps = CurveFactory.createMiteredSweepSections(centerline, rectangleA, wrap);
+        const sweeps = CurveFactory.createMiteredSweepSections(centerline, rectangleA, {wrapIfPhysicallyClosed : wrap});
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out, z0Out);
         if (sweeps !== undefined) {
@@ -495,30 +496,28 @@ describe("PipeConnections", () => {
           ck.announceError("expect primitive or collection for section ", section);
           break;
         }
-        const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, true)!;
+        const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, {wrapIfPhysicallyClosed: true, outputSelect: MiteredSweepOutputSelect.Mesh})!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y1);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sections.sections, x0, y0);
-
-        const sweptSurface = RuledSweep.create(sections.sections as Array<CurveCollection>, false)!;
-        const builder = PolyfaceBuilder.create();
-        builder.addRuledSweep(sweptSurface);
-        const mesh = builder.claimPolyface();
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, x0, ySurface);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, yMesh);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, yMesh - ay * sweepShiftFraction);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, ySurface - ay * sweepShiftFraction);
-        // How to detect correctness for a complex operation . ..
-        // In these examples,
-        //    (a) the length of intermediate sections is larger than that of the original
-        //    (b) the sweep path lengths at various places along the sections are not too different from the centerline length.
-        // Check that the mesh area is fairly close to the product of those two ...
-        const meshArea = PolyfaceQuery.sumFacetAreas(mesh);
-        const referenceArea = sweptGeometryLength * sweepLength;
-        ck.testNumberInRange1d(meshArea,
-          Range1d.createXX(0.9 & referenceArea, 1.3 * referenceArea),
-          "mesh area close to quick estimate");
+        if (ck.testType(sections.ruledSweep, RuledSweep, "output ruled sweep") &&
+            ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
+          const sweptSurface = sections.ruledSweep;
+          const mesh = sections.mesh;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, x0, ySurface);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, yMesh);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, yMesh - ay * sweepShiftFraction);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, ySurface - ay * sweepShiftFraction);
+          // How to detect correctness for a complex operation . ..
+          // In these examples,
+          //    (a) the length of intermediate sections is larger than that of the original
+          //    (b) the sweep path lengths at various places along the sections are not too different from the centerline length.
+          // Check that the mesh area is fairly close to the product of those two ...
+          const meshArea = PolyfaceQuery.sumFacetAreas(mesh);
+          const referenceArea = sweptGeometryLength * sweepLength;
+          ck.testNumberInRange1d(meshArea, Range1d.createXX(0.9 & referenceArea, 1.3 * referenceArea), "mesh area close to quick estimate");
+        }
       }
     }
 
