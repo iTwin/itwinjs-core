@@ -1668,7 +1668,6 @@ importers:
       glob: ^7.1.2
       https-browserify: ^1.0.0
       internal-tools: workspace:*
-      inversify: ~6.0.1
       nock: ^12.0.3
       null-loader: ^4.0.1
       nyc: ^15.1.0
@@ -1704,19 +1703,18 @@ importers:
       '@itwin/imodels-access-frontend': 3.0.0_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 3.0.0
       '@itwin/imodels-client-management': 3.0.0
-      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
       electron: 24.1.2
       fs-extra: 8.1.0
-      inversify: 6.0.1
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': 4.0.0-dev.36_iacogk7kkaymxepzhgcbytyi7q
+      '@itwin/object-storage-core': 2.0.0-dev.2
       '@itwin/oidc-signin-tool': 3.6.1_gb3bg4qggxjigcgbsc6mu3cngu
       '@itwin/projects-client': 0.6.0
       '@types/chai': 4.3.1
@@ -2480,7 +2478,6 @@ importers:
       '@itwin/imodels-client-authoring': ^3.0.0
       '@itwin/imodels-client-management': ^3.0.0
       '@itwin/map-layers-formats': workspace:*
-      '@itwin/object-storage-core': 2.0.0-dev.2
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
@@ -2498,7 +2495,6 @@ importers:
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
       internal-tools: workspace:*
-      inversify: ~6.0.1
       node-simctl: ~7.1.4
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
@@ -2535,11 +2531,9 @@ importers:
       '@itwin/imodels-client-authoring': 3.0.0
       '@itwin/imodels-client-management': 3.0.0
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/object-storage-core': 2.0.0-dev.2_inversify@6.0.1
       '@itwin/reality-data-client': 0.9.0_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.2
-      inversify: 6.0.1
       vhacd-js: 0.0.1
     devDependencies:
       '@bentley/react-scripts': 5.0.4_m3lhcrciu7aqbgollylw2zkvnm
@@ -5686,6 +5680,13 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
+  /@itwin/cloud-agnostic-core/2.0.0-dev.2:
+    resolution: {integrity: sha512-ubqs4oVsLJaFGbop9HvUudweQbARw6gcKIdzBm9d4VfffaaLb8lbkXvA2acq2TKTujPyHx6nm5UozOXu3dkdNQ==}
+    engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
+    dev: true
+
   /@itwin/cloud-agnostic-core/2.0.0-dev.2_inversify@6.0.1:
     resolution: {integrity: sha512-ubqs4oVsLJaFGbop9HvUudweQbARw6gcKIdzBm9d4VfffaaLb8lbkXvA2acq2TKTujPyHx6nm5UozOXu3dkdNQ==}
     engines: {node: '>=12.20 <19.0.0'}
@@ -5870,6 +5871,18 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
+
+  /@itwin/object-storage-core/2.0.0-dev.2:
+    resolution: {integrity: sha512-683qJwZ+EE8kQCjl+iP9EvjoQSISX4fC5rNZhWQpMYYbhzG9Igtck/9Bz1iXdxM2Osd0sO7WI2FLGKBBulBUkg==}
+    engines: {node: '>=12.20 <19.0.0'}
+    peerDependencies:
+      inversify: ^6.0.1
+    dependencies:
+      '@itwin/cloud-agnostic-core': 2.0.0-dev.2
+      axios: 0.27.2
+    transitivePeerDependencies:
+      - debug
+    dev: true
 
   /@itwin/object-storage-core/2.0.0-dev.2_inversify@6.0.1:
     resolution: {integrity: sha512-683qJwZ+EE8kQCjl+iP9EvjoQSISX4fC5rNZhWQpMYYbhzG9Igtck/9Bz1iXdxM2Osd0sO7WI2FLGKBBulBUkg==}
@@ -8151,7 +8164,6 @@ packages:
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
-    dev: false
 
   /axobject-query/3.1.1:
     resolution: {integrity: sha512-goKlv8DZrK9hUh975fnHzhNIO4jUnFCfv/dszV5VwUGDFjI6vQ2VwoyjYjYNEbBE8AH87TduWP5uyDR1D+Iteg==}
@@ -10645,7 +10657,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.59.1_2utyh6gct5glvuz6qwradubqqa
       '@typescript-eslint/experimental-utils': 5.59.1_iacogk7kkaymxepzhgcbytyi7q
       eslint: 8.39.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -13192,7 +13204,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -18067,7 +18079,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.21.4
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.3
       lodash.memoize: 4.1.2
