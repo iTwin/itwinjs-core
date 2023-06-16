@@ -56,7 +56,7 @@ import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
-import { MapFeatureInfoTool, MapLayersFormats } from "@itwin/map-layers-formats";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
@@ -343,7 +343,6 @@ export class DisplayTestApp {
       SyncViewportFrustaTool,
       SyncViewportsTool,
       TerrainDrapeTool,
-      MapFeatureInfoTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
@@ -362,7 +361,7 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    MapLayersFormats.initialize();
+    await MapLayersFormats.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

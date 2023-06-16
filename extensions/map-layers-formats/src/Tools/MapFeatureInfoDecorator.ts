@@ -103,7 +103,7 @@ class PinMarkerCluster extends Marker {
   constructor(location: XYAndZ, size: XAndY, cluster: Cluster<PinMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
-    this.title = IModelApp.localization.getLocalizedString("mapLayersFormats:MapFeatureInfoDecorator.clusterZoomIn", { nbInstances: cluster.markers.length});
+    this.title = IModelApp.localization.getLocalizedString("mapLayersFormats:Messages.MapFeatureInfoDecorator.clusterZoomIn", { nbInstances: cluster.markers.length});
 
     this.imageOffset = new Point3d(0, size.y * 0.5);
     this.label = cluster.markers.length.toLocaleString();
