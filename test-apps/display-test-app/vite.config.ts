@@ -81,7 +81,7 @@ export default defineConfig(() => {
     },
     plugins: [
       ignore(["electron"]), // equivalent to webpack externals
-      // copy static assets to public folder
+      // copy static assets to .static-assets folder
       copy({
         targets: [
           {
