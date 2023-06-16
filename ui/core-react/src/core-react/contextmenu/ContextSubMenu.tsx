@@ -70,7 +70,12 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, // eslint-disable-line @typescript-eslint/no-unused-vars
       onSelect, icon, disabled, hidden, onHover, isSelected, onHotKeyParsed, // eslint-disable-line @typescript-eslint/no-unused-vars
       children, onClick, className, badgeType, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
-    const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
+
+    const onOutsideClickWrapper = (event: MouseEvent) => {
+      this.close();
+      onOutsideClick && onOutsideClick(event);
+    };
+    const contextMenuProps = { onOutsideClick: onOutsideClickWrapper, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
     const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
     const renderDirection = this.state.direction;
     const isDisabled = ConditionalBooleanValue.getValue(disabled);
