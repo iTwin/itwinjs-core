@@ -215,11 +215,13 @@ export class PolylineOps {
   }
   /** Create an array of planes.
    * * First plane has origin at first centerline point, with unit normal directed at the next point.
-   * * Intermediate planes have origin at intermediate points, with unit normals as the average of incoming and outgoing segments.
+   * * Intermediate planes have origin at intermediate points, with unit normals computed from the average of unit vectors along the incoming and outgoing segments.
    * * Last plane has origin at last centerline point, with unit normal directed from previous point.
    * * All sets of adjacent coincident points are reduced to a single point.
    *    * Hence the output array may have fewer points than the centerline.
    * * If there are one or fewer distinct input points, the return is undefined
+   * @param centerline points to reside in output planes
+   * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last output planes are averaged and equated (cloned).
    */
   public static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false): Plane3dByOriginAndUnitNormal[] | undefined {
     const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
