@@ -5669,7 +5669,6 @@ export namespace ViewStore {
     }
     // (undocumented)
     export type DisplayStyleRow = TableRow;
-    export type GuidRowString = string;
     export interface ReadMethods extends ViewStoreRpc.Reader {
         // (undocumented)
         getCategorySelectorSync(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): CategorySelectorProps;
@@ -5711,12 +5710,6 @@ export namespace ViewStore {
         // (undocumented)
         owner?: string;
     }
-    export interface TaggedViewRow {
-        // (undocumented)
-        tagId: RowId;
-        // (undocumented)
-        viewId: RowId;
-    }
     // (undocumented)
     export type TagRow = TableRow;
     export type ThumbnailData = Uint8Array;
@@ -5733,7 +5726,7 @@ export namespace ViewStore {
     const fromRowId: (rowId: RowId) => RowString;
     // (undocumented)
     export type TimelineRow = TableRow;
-    const // (undocumented)
+    const // @internal (undocumented)
     toRowId: (id: RowIdOrString) => RowId;
     const // (undocumented)
     defaultViewGroupId: 1;
@@ -5777,6 +5770,7 @@ export namespace ViewStore {
         addOrReplaceThumbnailRow(args: ThumbnailRow): RowId;
         // @internal
         addSearch(args: SearchRow): Promise<RowId>;
+        // @internal
         addTag(args: TagRow): RowId;
         // (undocumented)
         addTagsToView(args: {
@@ -5784,7 +5778,7 @@ export namespace ViewStore {
             tags: string[];
             owner?: string;
         }): Promise<void>;
-        // (undocumented)
+        // @internal (undocumented)
         addTagToView(args: {
             viewId: RowId;
             tagId: RowId;
@@ -5799,13 +5793,6 @@ export namespace ViewStore {
         addTimelineRow(args: TimelineRow): RowId;
         // (undocumented)
         addView(args: ViewStoreRpc.AddViewArgs): Promise<ViewStoreRpc.IdString>;
-        // (undocumented)
-        addViewDefinition(args: {
-            readonly viewDefinition: ViewDefinitionProps;
-            group?: ViewStoreRpc.ViewGroupSpec;
-            owner?: string;
-            isPrivate?: boolean;
-        }): RowId;
         // (undocumented)
         addViewGroup(args: {
             name: string;
@@ -5872,11 +5859,6 @@ export namespace ViewStore {
         }): Promise<void>;
         // @internal (undocumented)
         deleteViewRow(id: RowIdOrString): void;
-        // (undocumented)
-        deleteViewTag(args: {
-            viewId: RowId;
-            tagId: RowId;
-        }): void;
         // @internal (undocumented)
         findCategorySelectorByName(name: string): RowId;
         // @internal (undocumented)
@@ -5892,6 +5874,7 @@ export namespace ViewStore {
         // @internal (undocumented)
         findTimelineByName(name: string): RowId;
         findViewGroup(groupName: ViewStoreRpc.ViewGroupSpec): RowId;
+        // @internal
         findViewIdByName(arg: {
             name: string;
             groupId?: RowIdOrString;
@@ -5900,7 +5883,7 @@ export namespace ViewStore {
         findViewsByOwner(args: {
             owner: string;
         }): Promise<ViewStoreRpc.ViewInfo[]>;
-        // (undocumented)
+        // @internal (undocumented)
         findViewsForTag(tagId: RowId): RowId[];
         // (undocumented)
         getCategorySelector(args: ViewStoreRpc.NameOrId & ViewStoreRpc.QueryBindings): Promise<CategorySelectorProps>;
@@ -6113,7 +6096,6 @@ export namespace ViewStore {
         // (undocumented)
         modelSel?: RowId;
     }
-    // (undocumented)
     export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
         {};
 }

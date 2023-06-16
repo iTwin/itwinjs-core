@@ -89,31 +89,31 @@ export namespace ViewStore {
   } as const;
 
   /** data for a Thumbnail */
-  export type ThumbnailData = Uint8Array;
+  type ThumbnailData = Uint8Array;
 
   /** A row in a table. 0 means "not present" */
   export type RowId = number;
 
   /** a string representation of a row in a table of a ViewStore. Will be a base-36 integer with a leading "@" (e.g."@4e3") */
-  export type RowString = string;
+  type RowString = string;
 
   /** a string representation of a row in the Guid table. Will be a base-36 integer with a leading "^" (e.g."^4e3") */
-  export type GuidRowString = string;
+  type GuidRowString = string;
 
   /** common properties for all tables */
-  export interface TableRow {
+  interface TableRow {
     name?: string;
     json: string;
     owner?: string;
   }
-  export type DisplayStyleRow = TableRow;
-  export type SelectorRow = TableRow;
-  export type TagRow = TableRow;
-  export type SearchRow = TableRow;
-  export type TimelineRow = TableRow;
+  type DisplayStyleRow = TableRow;
+  type SelectorRow = TableRow;
+  type TagRow = TableRow;
+  type SearchRow = TableRow;
+  type TimelineRow = TableRow;
 
   /** a row in the "views" table */
-  export interface ViewRow extends MarkRequired<TableRow, "name"> {
+  interface ViewRow extends MarkRequired<TableRow, "name"> {
     className: string;
     groupId: RowId;
     isPrivate?: boolean;
@@ -122,23 +122,18 @@ export namespace ViewStore {
     displayStyle: RowId;
   }
 
-  /** a row in the "viewGroups" table */
-  export interface ViewGroupRow extends MarkRequired<TableRow, "name"> {
+  /** a row in the "viewGroups" table  */
+  interface ViewGroupRow extends MarkRequired<TableRow, "name"> {
     parentId: RowId;
     defaultViewId?: RowId;
   }
 
   /** a row in the "thumbnails" table */
-  export interface ThumbnailRow {
+  interface ThumbnailRow {
     viewId: RowId;
     data: ThumbnailData;
     format: ThumbnailFormatProps;
     owner?: string;
-  }
-  /** a row in the "taggedViews" table */
-  export interface TaggedViewRow {
-    viewId: RowId;
-    tagId: RowId;
   }
 
   /** convert a RowId to a RowString (base-36 integer with a leading "@") */
@@ -155,6 +150,7 @@ export namespace ViewStore {
 
   type RowIdOrString = RowId | RowString;
 
+  /** @internal */
   export const toRowId = (id: RowIdOrString): RowId => {
     if (typeof id === "number")
       return id;
@@ -343,7 +339,9 @@ export namespace ViewStore {
     public addTimelineRow(args: TimelineRow): RowId {
       return this.addTableRow(tableName.timelines, args);
     }
-    /** add a row to the "tags" table, return the RowId */
+    /** add a row to the "tags" table, return the RowId
+     * @internal
+     */
     public addTag(args: TagRow): RowId {
       return this.addTableRow(tableName.tags, args);
     }
@@ -588,6 +586,7 @@ export namespace ViewStore {
         stmt.stepForWrite();
       });
     }
+    /** @internal */
     public addTagToView(args: { viewId: RowId, tagId: RowId }) {
       this.withSqliteStatement(`INSERT OR IGNORE INTO ${tableName.taggedViews} (viewId,tagId) VALUES(?,?)`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
@@ -595,13 +594,14 @@ export namespace ViewStore {
         stmt.stepForWrite();
       });
     }
-    public deleteViewTag(args: { viewId: RowId, tagId: RowId }): void {
+    private deleteViewTag(args: { viewId: RowId, tagId: RowId }): void {
       this.withSqliteStatement(`DELETE FROM ${tableName.taggedViews} WHERE viewId=? AND tagId=?`, (stmt) => {
         stmt.bindInteger(1, args.viewId);
         stmt.bindInteger(2, args.tagId);
         stmt.stepForWrite();
       });
     }
+    /** @internal */
     public findViewsForTag(tagId: RowId): RowId[] {
       return this.withSqliteStatement(`SELECT viewId FROM ${tableName.taggedViews} WHERE tagId=?`, (stmt) => {
         stmt.bindInteger(1, tagId);
@@ -1082,7 +1082,7 @@ export namespace ViewStore {
       return viewDef;
     }
 
-    public addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
+    private addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
       const name = args.viewDefinition.code.value;
       if (name === undefined)
         throw new Error("ViewDefinition must have a name");
@@ -1179,6 +1179,7 @@ export namespace ViewStore {
     /**
      * find a view by name using path syntax (e.g., "group1/design/issues/issue113"). If the view does not exist, return 0.
      * If a groupId is specified, then the view is searched for in that group and the name should not contain a path.
+     * @internal
      */
     public findViewIdByName(arg: { name: string, groupId?: RowIdOrString }): RowId {
       let name = arg.name;
@@ -1379,6 +1380,7 @@ export namespace ViewStore {
     queryViewsSync(queryParams: ViewStoreRpc.QueryParams): ViewStoreRpc.ViewInfo[];
   }
 
+  /** arguments to construct a `ViewStore.CloudAccess` */
   export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
 
   /** Provides access to a cloud-based `ViewDb` */
