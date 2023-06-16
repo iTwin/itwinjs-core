@@ -66,6 +66,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8602 # iTwin Presentation/iTwin Presentation Docs
       artifactName: Presentation Docs
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
   # Download Transformer Docs artifact
@@ -75,7 +76,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
-      defaultBranch: refs/heads/main
+      specificBuild: 2212281
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
   # Download Auth Clients artifact
