@@ -41,7 +41,7 @@ public;CloudContainerArgs
 beta;CloudSqlite
 internal;BcvHttpLog
 internal;BcvHttpLogFilterOptions
-internal;LockAndOpenArgs
+internal;LockAndOpenArgs 
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 alpha;CodeService
 alpha;CodeService
@@ -314,6 +314,7 @@ public;SchemaImportOptions
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
+beta;SchemaSync
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingLocation 

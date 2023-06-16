@@ -967,7 +967,7 @@ export namespace CloudSqlite {
         setCache(cache: CloudCache): void;
         startPrefetch(): CloudPrefetch;
         synchronizeWithCloud(): void;
-        withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T>;
+        withLockedDb<T>(operationName: string, operation: () => Promise<T>, openMode?: OpenMode): Promise<T>;
         get writeLocker(): PickAsyncMethods<WriteMethods>;
     }
     export interface DbNameProp {
@@ -978,10 +978,10 @@ export namespace CloudSqlite {
     }
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
     // @internal (undocumented)
-    export interface LockAndOpenArgs {
+    export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
+        // (undocumented)
         container: CloudContainer;
-        dbName: string;
         moniker: string;
     }
     export enum LoggingMask {
@@ -2945,6 +2945,8 @@ export abstract class IModelDb extends IModel {
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
+    // @internal (undocumented)
+    getSchemaSyncAccess(): SchemaSync.CloudAccess | undefined;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
@@ -2952,6 +2954,8 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
+    // @internal (undocumented)
+    initSchemaSynchronization(): Promise<void>;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -2972,7 +2976,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
+    readonly nativeDb: IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -3017,6 +3021,12 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingDictionary): void;
+    // @internal (undocumented)
+    schemaSyncEnabled(): boolean;
+    // @internal (undocumented)
+    setSchemaSyncAccess(store: SchemaSync.CloudAccess): void;
+    // @internal (undocumented)
+    synchronizationSchemas(): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -4587,6 +4597,27 @@ export class Schemas {
     static registerSchema(schema: typeof Schema): void;
     // @internal
     static unregisterSchema(schemaName: string): boolean;
+}
+
+// @beta (undocumented)
+export namespace SchemaSync {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+        constructor(props: CloudSqlite.ContainerAccessProps);
+        // @internal (undocumented)
+        getUri(): string;
+        static initializeDb(args: {
+            props: CloudSqlite.ContainerAccessProps;
+            initContainer?: {
+                blockSize?: number;
+            };
+        }): Promise<void>;
+    }
+    export class SchemaSyncDb extends VersionedSqliteDb {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        readonly myVersion = "1.0.0";
+    }
 }
 
 // @public
