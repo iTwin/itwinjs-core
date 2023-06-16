@@ -10,6 +10,7 @@
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import * as os from "os";
+import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
