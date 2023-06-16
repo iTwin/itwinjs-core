@@ -18,8 +18,8 @@ import path from "path";
 
 const mode = process.env.NODE_ENV === "development" ? "development" : "production";
 
-// array of public directories from dependencies to copy into ./public
-const resolves = Object.keys(packageJson.dependencies)
+// array of public directories static assets from dependencies to copy
+const assets = Object.keys(packageJson.dependencies)
   .map((pkgName) => {
     try {
       // get path and replace last segment with specific file name to "public/*"
@@ -31,6 +31,7 @@ const resolves = Object.keys(packageJson.dependencies)
     } catch { return "undefined"; }
   })
   .filter((path) => path !== "undefined");
+assets.push("./public/*");
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -48,6 +49,7 @@ export default defineConfig(() => {
       },
     },
     envPrefix: "IMJS_",
+    publicDir: ".static-assets",
     build: {
       outDir: "./lib",
       sourcemap: "inline", // append to the resulting output file
@@ -83,8 +85,8 @@ export default defineConfig(() => {
       copy({
         targets: [
           {
-            src: resolves,
-            dest: "public",
+            src: assets,
+            dest: ".static-assets",
             rename: (_name, _extension, fullPath) => {
               // rename files to name of file without directory path
               const regex = new RegExp("(public(?:\\\\|/))(.*)");
