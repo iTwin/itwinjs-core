@@ -7,6 +7,7 @@
  * @module Solid
  */
 
+import { AnyCurve } from "../curve/CurveChain";
 import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -44,8 +45,9 @@ export class RotationalSweep extends SolidPrimitive {
     this._sweepAngle = sweepAngle;
   }
   /** Create a rotational sweep. */
-  public static create(contour: CurveCollection, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined {
-    if (!axis.direction.normalizeInPlace()) return undefined;
+  public static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined {
+    if (!axis.direction.normalizeInPlace())
+      return undefined;
     const sweepable = SweepContour.createForRotation(contour, axis);
     if (!sweepable)
       return undefined;

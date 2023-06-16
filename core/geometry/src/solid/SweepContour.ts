@@ -42,11 +42,12 @@ export class SweepContour {
   /** Axis used only in rotational case. */
   public axis: Ray3d | undefined;
 
-  private constructor(contour: CurveCollection, map: Transform, axis: Ray3d | undefined) {
-    // hm it seems that bare CurvePrimitives slip through the type checking but some later steps go blank. Wrap them as Path ...
+  private constructor(contour: AnyCurve, map: Transform, axis: Ray3d | undefined) {
     if (contour instanceof CurvePrimitive) {
+      // this.curves is a CurveCollection (not AnyCurve) so that contour type determines closure.
+      // This is the only time we detect CurvePrimitive closure and wrap as a relevant CurveChain.
       const primitive = contour;
-      contour = new Path();
+      contour = contour.startPoint().isAlmostEqual(contour.endPoint()) ? new Loop() : new Path();
       contour.tryAddChild(primitive);
     }
     this.curves = contour;
@@ -57,7 +58,7 @@ export class SweepContour {
    * * The optional default normal may be useful for guiding coordinate frame setup.
    * * the contour is CAPTURED.
    */
-  public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
+  public static createForLinearSweep(contour: AnyCurve, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
     if (localToWorld) {
       return new SweepContour(contour, localToWorld, undefined);
@@ -95,7 +96,7 @@ export class SweepContour {
    * * The axis ray is retained.
    * * the contour is CAPTURED.
    */
-  public static createForRotation(contour: CurveCollection, axis: Ray3d): SweepContour | undefined {
+  public static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined {
     // createRightHandedFrame -- the axis is a last-gasp resolver for in-plane vectors.
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, contour, axis);
     if (localToWorld) {
