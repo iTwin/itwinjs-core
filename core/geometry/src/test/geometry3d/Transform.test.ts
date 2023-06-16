@@ -356,7 +356,6 @@ describe("Transform.createFlattenAlongVectorToPlane", () => {
   it("Transform.createFlattenAlongVectorToPlane", () => {
     const ck = new Checker();
     const spacePoints = Sample.point3d;
-    // const origins = [Point3d.createZero(), Point3d.create(1, 2, 3)];
     for (const planeOrigin of spacePoints) {
       for (const planeNormal of [Vector3d.create(0, 0, 1), Vector3d.create(2, 3, -1)]) {
         for (const sweepDirection of ([Vector3d.create(0, 0, 1), Vector3d.create(-2, 3, 1)])) {
@@ -366,12 +365,9 @@ describe("Transform.createFlattenAlongVectorToPlane", () => {
               const pointB = transform.multiplyPoint3d(pointA);
               const dotB = planeNormal.dotProductStartEnd(planeOrigin, pointB);
               if (!ck.testCoordinate(0.0, dotB, "ProjectedPoint on plane")) {
-                const enableConsole = GeometryCoreTestIO.enableConsole;
-                GeometryCoreTestIO.enableConsole = true;
                 GeometryCoreTestIO.consoleLog({ planeOrigin, planeNormal, sweepDirection, trans: transform.toJSON() });
                 GeometryCoreTestIO.consoleLog({ pointA, pointB });
                 Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
-                GeometryCoreTestIO.enableConsole = enableConsole;
                 break;
               }
             }
