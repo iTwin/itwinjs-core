@@ -22,6 +22,7 @@ chai.use(chaiAsPromised);
 
 export class TestConnection extends BlankConnection {
   public toIModelCoordsCount = 0;
+  public fromIModelCount = 0;
   private _noGcsDefined = true;
   public constructor(iModelProps: IModelConnectionProps, geoServicesOpts: Partial<GeoServicesOptions>, noGcsDefined?: boolean) {
     super(iModelProps);
@@ -42,7 +43,7 @@ export class TestConnection extends BlankConnection {
         }
       },
       fromIModelCoords: async (request: GeoCoordinatesRequestProps) => {
-        this.toIModelCoordsCount++;
+        this.fromIModelCount++;
         if (geoServicesOpts.fromIModelCoords)
           return geoServicesOpts.fromIModelCoords(request);
         else {
