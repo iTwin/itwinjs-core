@@ -8,10 +8,7 @@
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-// const ITWINJS_CORE_VERSION = require("../../package.json").version.toString(); // require resolves from the lib/{cjs,esm} dir
-// eslint-disable-next-line @itwin/import-within-package
-import * as packageJson from "../package.json";
-const ITWINJS_CORE_VERSION = packageJson.version.toString();
+export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
@@ -55,7 +52,9 @@ import * as viewTool from "./tools/ViewTool";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-import "./IModeljs-css";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require("./IModeljs-css");
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
 

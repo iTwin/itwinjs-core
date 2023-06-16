@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
-import tsconfigPaths from "vite-tsconfig-paths";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteInspect from "vite-plugin-inspect";
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
@@ -15,64 +14,57 @@ import ignore from "rollup-plugin-ignore";
 import rollupVisualizer from "rollup-plugin-visualizer";
 import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
-import path from 'path';
+import path from "path";
 
-const mode = process.env.NODE_ENV === "development" ?? "production";
+const mode = process.env.NODE_ENV === "development" ? "development" : "production";
 
-const iTwinDeps = Object.keys(packageJson.dependencies)
-  .filter((pkgName) => pkgName.startsWith("@itwin"))
-  .flatMap((pkgName) => {
-    return [
-      `./node_modules/${pkgName}/lib/public/*`,
-      `${pkgName.replace("@itwin/core-", "../../core/")}/src/public/*`,
-    ];
-  });
-console.log(iTwinDeps);
-
-// use require.resolve for paths
+// array of public directories from dependencies to copy into ./public
 const resolves = Object.keys(packageJson.dependencies)
   .map((pkgName) => {
     try {
-      const pkg = require.resolve(pkgName);
-      const delimiter = pkg.includes("\\") ? "\\" : "/";
-      return path.relative(process.cwd(), pkg.replace(/[^\\/]+$/, `public${delimiter}*`)).replace(/\\/g, '/').toString();
-    } catch {return "undefined";}
+      // get path and replace last segment with specific file name to "public/*"
+      let pkg = require.resolve(pkgName).replace(/[^\\/]+$/, "public/*");
+      // remove "cjs/" or "cjs\" from path
+      pkg = pkg.replace(/cjs[\/\\]/, "");
+      // use relative path with forward slashes
+      return path.relative(process.cwd(), pkg).replace(/\\/g, '/');
+    } catch { return "undefined"; }
   })
-  .filter((pkg) => pkg !== 'undefined');
-// use require.resolve for paths
-console.log(resolves);
+  .filter((path) => path !== "undefined");
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   // This changes the output dir from dist to build
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
   return {
-    debug: true,
+    debug: mode === "development",
     server: {
-      open: false,
+      open: false, // don't open browser
       port: 3000,
-      strictPort: true,
+      strictPort: true, // exit if port is already in use
       fs: {
+        // give Vite access to files in itwinjs-core root directory
         allow: [searchForWorkspaceRoot(process.cwd())],
       },
     },
     envPrefix: "IMJS_",
     build: {
       outDir: "./lib",
-      sourcemap: "inline",
-      minify: false,
-      target: browserslistToEsbuild(),
+      sourcemap: "inline", // append to the resulting output file
+      minify: false, // disable compaction of source code
+      target: browserslistToEsbuild(), // for browserslist in package.json
       commonjsOptions: {
+        // plugin to convert CommonJS modules to ES6, so they can be included in bundle
         include: [
-          /core\/electron/,
-          /core\/mobile/,
-          /node_modules/,
+          /core\/electron/, // prevent error in ElectronApp
+          /core\/mobile/, // prevent error in MobileApp
+          /node_modules/, // prevent errors for modules
         ],
       },
       rollupOptions: {
         input: "src/index.ts",
+        // run `rushx build --stats` to view stats
         plugins: [
-          // run build with --stats flag to use plugins
           ...(process.env.npm_config_stats !== undefined ? [
             rollupVisualizer({
               open: true,
@@ -94,6 +86,7 @@ export default defineConfig(() => {
             src: resolves,
             dest: "public",
             rename: (_name, _extension, fullPath) => {
+              // rename files to name of file without directory path
               const regex = new RegExp("(public(?:\\\\|/))(.*)");
               return regex.exec(fullPath)![2];
             },
@@ -101,32 +94,36 @@ export default defineConfig(() => {
         ],
         verbose: true,
         overwrite: true,
-        copyOnce: true,
+        copyOnce: true, // only during initial build or on change
       }),
-      ...(process.env.NODE_ENV === "development" ? [viteInspect({ build: true })] : []),
+      // open http://localhost:3000/__inspect/ to debug vite plugins
+      ...(mode === "development" ? [viteInspect({ build: true })] : []),
       envCompatible({
         prefix: "IMJS_",
       }),
-      tsconfigPaths(),
     ],
     optimizeDeps: {
       esbuildOptions: {
         plugins: [
           NodeGlobalsPolyfillPlugin({
+          // Node.js globals not available to bundler by default ('process', '__dirname', etc.)
             process: true,
             buffer: true,
           }),
+          // Node.js modules not available to bundler by default
           NodeModulesPolyfillPlugin(),
           externalGlobalPlugin({
+            // allow global `window` object to access electron as external global
             electron: "window['electron']",
           }),
         ],
       },
-      // overoptimized dependencies in the same monorepo
+      // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
-        "@itwin/core-common",
-        "@itwin/core-electron/lib/cjs/ElectronFrontend",
-        "@itwin/core-mobile/lib/cjs/MobileFrontend",
+        "@itwin/core-common", // for opening iModel error
+        "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
+        "@itwin/core-frontend", // file in repository uses require (cjs)
+        "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
     },
   };
