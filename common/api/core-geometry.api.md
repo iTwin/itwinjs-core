@@ -3764,7 +3764,7 @@ export class Matrix4d implements BeJSONFunctions {
 export type Matrix4dProps = Point4dProps[];
 
 // @public
-export class MiteredSweepOptions {
+export interface MiteredSweepOptions {
     capped?: boolean;
     outputSelect?: MiteredSweepOutputSelect;
     strokeOptions?: StrokeOptions;
@@ -3773,8 +3773,8 @@ export class MiteredSweepOptions {
 
 // @public
 export enum MiteredSweepOutputSelect {
-    Mesh = 2,
-    RuledSweep = 1,
+    AlsoMesh = 2,
+    AlsoRuledSweep = 1,
     Sections = 0
 }
 

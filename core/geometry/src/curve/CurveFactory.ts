@@ -32,7 +32,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { TorusPipe } from "../solid/TorusPipe";
 import { Arc3d, ArcBlendData } from "./Arc3d";
 import { AnyCurve } from "./CurveChain";
-import { CurveChain, CurveCollection } from "./CurveCollection";
+import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineSegment3d } from "./LineSegment3d";
@@ -71,16 +71,16 @@ export enum MiteredSweepOutputSelect {
   /** Output only the parallel arrays of planes and sections. */
   Sections = 0,
   /** Output planes and sections, as well as the assembled ruled sweep. */
-  RuledSweep = 1,
+  AlsoRuledSweep = 1,
   /** Output planes and sections, as well as the ruled sweep, and stroked mesh. */
-  Mesh = 2,
+  AlsoMesh = 2,
 }
 
 /**
  * Interface bundling options for [CurveFactory.createMiteredSweepSections].
  * @public
  */
-export class MiteredSweepOptions {
+export interface MiteredSweepOptions {
   /** Whether first and last planes are averaged and equated when the centerline is physically closed. Default value is `false`. */
   wrapIfPhysicallyClosed?: boolean;
   /** Whether to output sections only, or sections plus optional geometry assembled from them. Default value is `MiteredSweepOutputSelect.Sections`. */
@@ -453,7 +453,7 @@ export class CurveFactory {
         const ruledSweep = RuledSweep.create(sectionData.sections, options.capped ?? false);
         if (ruledSweep) {
           sectionData.ruledSweep = ruledSweep;
-          if (MiteredSweepOutputSelect.Mesh === options.outputSelect) {
+          if (MiteredSweepOutputSelect.AlsoMesh === options.outputSelect) {
             const builder = PolyfaceBuilder.create(options.strokeOptions);
             builder.addRuledSweep(ruledSweep);
             sectionData.mesh = builder.claimPolyface();

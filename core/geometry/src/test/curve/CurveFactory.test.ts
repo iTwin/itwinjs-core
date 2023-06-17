@@ -417,7 +417,7 @@ describe("PipeConnections", () => {
         const centerline = centerlines[centerlineIndex];
         const wrap = wrapIfClosed[centerlineIndex];
         const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
-        const sweeps = CurveFactory.createMiteredSweepSections(centerline, rectangleA, {wrapIfPhysicallyClosed : wrap});
+        const sweeps = CurveFactory.createMiteredSweepSections(centerline, rectangleA, { wrapIfPhysicallyClosed: wrap });
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out, z0Out);
         if (sweeps !== undefined) {
@@ -496,13 +496,13 @@ describe("PipeConnections", () => {
           ck.announceError("expect primitive or collection for section ", section);
           break;
         }
-        const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, {wrapIfPhysicallyClosed: true, outputSelect: MiteredSweepOutputSelect.Mesh})!;
+        const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, { wrapIfPhysicallyClosed: true, outputSelect: MiteredSweepOutputSelect.AlsoMesh })!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y1);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sections.sections, x0, y0);
         if (ck.testType(sections.ruledSweep, RuledSweep, "output ruled sweep") &&
-            ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
+          ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
           const sweptSurface = sections.ruledSweep;
           const mesh = sections.mesh;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, x0, ySurface);
