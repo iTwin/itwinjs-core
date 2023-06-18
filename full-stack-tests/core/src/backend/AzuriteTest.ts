@@ -109,7 +109,7 @@ export namespace AzuriteTest {
       container.connect(cache);
       expect(container.isConnected);
 
-      await CloudSqlite.withWriteLock("upload", container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
+      await CloudSqlite.withWriteLock({ user: "upload", container }, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
       expect(container.isConnected);
       container.disconnect({ detach: true });
       expect(container.isConnected).false;

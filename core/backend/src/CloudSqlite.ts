@@ -18,6 +18,7 @@ import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
+import { RpcTrace } from "./core-backend";
 
 // spell:ignore logmsg httpcode
 
@@ -41,6 +42,14 @@ export namespace CloudSqlite {
     return response?.token ?? "";
   }
 
+  interface CloudContainerInternal extends CloudContainer {
+    timer?: NodeJS.Timeout;
+    refreshPromise?: Promise<void>;
+    lockExpireSeconds: number;
+    writeLockHeldBy?: string;
+    writeLockExpires?: string;
+  }
+
   /**
    * Create a new CloudContainer from a ContainerAccessProps. For non-public containers, a valid accessToken must be provided before the container
    * can be used (e.g. via [[CloudSqlite.requestToken]]).
@@ -48,8 +57,9 @@ export namespace CloudSqlite {
    * until it is disconnected. However, if the container is public, or if `tokenRefreshSeconds` is <=0, auto-refresh is not enabled.
    */
   export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel }): CloudContainer {
-    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainer & { timer?: NodeJS.Timeout, refreshPromise?: Promise<void> };
+    const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
+    container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
 
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
@@ -213,7 +223,7 @@ export namespace CloudSqlite {
   /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
-    moniker?: string;
+    user?: string;
     /** number of times to retry in the event the lock currently held by someone else.
      * After this number of attempts, `onFailure` is called. Default is 20.
      */
@@ -230,7 +240,7 @@ export namespace CloudSqlite {
   /** @internal */
   export interface LockAndOpenArgs {
     /** a string that identifies me to others if I hold the lock while they attempt to acquire it. */
-    moniker: string;
+    user: string;
     /** the name of the database within the container */
     dbName: string;
     /** the CloudContainer on which the operation will be performed */
@@ -571,15 +581,24 @@ export namespace CloudSqlite {
     * @param busyHandler if present, function called when the write lock is currently held by another user.
     * @throws if [[container]] is not connected to a CloudCache.
     */
-  export async function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler) {
-    if (container.hasWriteLock)
-      return;
-
+  export async function acquireWriteLock(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }) {
+    const container = args.container as CloudContainerInternal;
     while (true) {
       try {
-        return container.acquireWriteLock(user);
+        if (container.hasWriteLock) {
+          if (container.writeLockHeldBy === args.user)
+            return; // current user already has the lock
+
+          const err = new Error() as any; // lock held by another user within this process
+          err.errorNumber = 5;
+          err.lockedBy = container.writeLockHeldBy;
+          err.expires = container.writeLockExpires;
+          throw err;
+        }
+        return container.acquireWriteLock(args.user);
+
       } catch (e: any) {
-        if (e.errorNumber === 5 && busyHandler && "stop" !== await busyHandler(e.lockedBy, e.expires)) // 5 === BE_SQLITE_BUSY
+        if (e.errorNumber === 5 && args.busyHandler && "stop" !== await args.busyHandler(e.lockedBy, e.expires)) // 5 === BE_SQLITE_BUSY
           continue; // busy handler wants to try again
         throw e;
       }
@@ -587,31 +606,33 @@ export namespace CloudSqlite {
   }
 
   /**
-   * Perform an asynchronous write operation on a CloudContainer with the write lock held.
-   * 1. if write lock is already held, call operation and return.
-   * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
-   * 3. perform the operation
-   * 3.a if the operation throws, abandon all changes and re-throw
-   * 4. release the write lock.
-   * 5. return value from operation
-   * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
-   * @param container the CloudContainer for which the lock is to be acquired
-   * @param operation an asynchronous operation performed with the write lock held.
-   * @param busyHandler if present, function called when the write lock is currently held by another user.
-   * @returns a Promise with the result of `operation`
-   */
-  export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => Promise<T>, busyHandler?: WriteLockBusyHandler): Promise<T> {
-    if (container.hasWriteLock)
-      return operation();
-
-    await acquireWriteLock(user, container, busyHandler);
+ * Perform an asynchronous write operation on a CloudContainer with the write lock held.
+ * 1. if write lock is already held by the current user, call operation and return.
+ * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
+ * 3. perform the operation
+ * 3.a if the operation throws, abandon all changes and re-throw
+ * 4. release the write lock.
+ * 5. return value from operation
+ * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
+ * @param container the CloudContainer for which the lock is to be acquired
+ * @param operation an asynchronous operation performed with the write lock held.
+ * @param busyHandler if present, function called when the write lock is currently held by another user.
+ * @returns a Promise with the result of `operation`
+ */
+  export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
+    await acquireWriteLock(args);
     try {
+      const containerInternal = args.container as CloudContainerInternal;
+      containerInternal.writeLockHeldBy = args.user;
+      containerInternal.writeLockExpires = new Date(Date.now() + 1000 * containerInternal.lockExpireSeconds).toLocaleString();
       // eslint-disable-next-line @typescript-eslint/await-thenable
       const val = await operation(); // wait for work to finish or fail
-      container.releaseWriteLock();
+      containerInternal.releaseWriteLock();
+      containerInternal.writeLockHeldBy = undefined;
+      containerInternal.writeLockExpires = undefined;
       return val;
     } catch (e) {
-      container.abandonChanges();  // if operation threw, abandon all changes
+      args.container.abandonChanges();  // if operation threw, abandon all changes
       throw e;
     }
   }
@@ -673,7 +694,7 @@ export namespace CloudSqlite {
     public readonly dbName: string;
     /** Parameters for obtaining the write lock for this container.  */
     public readonly lockParams: ObtainLockParams = {
-      moniker: "",
+      user: "",
       nRetries: 20,
       retryDelayMs: 100,
     };
@@ -736,7 +757,7 @@ export namespace CloudSqlite {
       this._container = createCloudContainer({ writeable: true, ...args.props });
       this._cloudDb = new args.dbType(args.props);
       this.dbName = args.dbName;
-      this.lockParams.moniker = IModelHost.userMoniker;
+      this.lockParams.user = IModelHost.userMoniker;
     }
 
     /** Close the database for this DbAccess, if it is open */
@@ -760,7 +781,7 @@ export namespace CloudSqlite {
       const container = createCloudContainer({ ...args.props, writeable: true });
       container.initializeContainer({ blockSize: args.blockSize === "4M" ? 4 * 1024 * 1024 : 64 * 1024 });
       container.connect(CloudCaches.getCache({ cacheName: this._cacheName }));
-      await withWriteLock("initialize", container, async () => {
+      await withWriteLock({ user: "initialize", container }, async () => {
         const localFileName = join(KnownLocations.tmpdir, "blank.db");
         args.dbType.createNewDb(localFileName);
         await transferDb("upload", container, { dbName: args.dbName, localFileName });
@@ -801,10 +822,10 @@ export namespace CloudSqlite {
      * @note Most uses of `CloudSqliteDbAccess` require that the lock not be held by any operation for long. Make sure you don't
      * do any avoidable or time consuming work in your operation function.
      */
-    public async withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
+    public async withLockedDb<T>(args: { operationName: string, openMode?: OpenMode, user?: string }, operation: () => Promise<T>): Promise<T> {
       let nRetries = this.lockParams.nRetries;
       const cacheGuid = this.container.cache!.guid; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-      const moniker = this.lockParams.moniker ?? cacheGuid;
+      const user = args.user ?? this.lockParams.user ?? cacheGuid;
       const timer = new StopWatch(undefined, true);
       const showMs = () => `(${timer.elapsed.milliseconds}ms)`;
 
@@ -821,8 +842,9 @@ export namespace CloudSqlite {
 
       this.closeDb(); // in case it is currently open for read.
       let lockObtained = false;
+      const operationName = args.operationName;
       try {
-        return await this._cloudDb.withLockedContainer({ moniker, dbName: this.dbName, container: this.container, busyHandler }, async () => {
+        return await this._cloudDb.withLockedContainer({ user, dbName: this.dbName, container: this.container, busyHandler }, async () => {
           lockObtained = true;
           logInfo(`lock acquired by ${cacheGuid} for ${operationName} ${showMs()}`);
           return operation();
@@ -858,9 +880,9 @@ export namespace CloudSqlite {
      */
     public get writeLocker() {
       return this._writeLockProxy ??= new Proxy(this, {
-        get(access, methodName: string) {
-          const fn = access.getDbMethod(methodName);
-          return async (...args: any[]) => access.withLockedDb(methodName, fn.bind(access._cloudDb, ...args));
+        get(access, operationName: string) {
+          const fn = access.getDbMethod(operationName);
+          return async (...args: any[]) => access.withLockedDb({ operationName, user: RpcTrace.currentActivity?.user }, fn.bind(access._cloudDb, ...args));
         },
       }) as PickAsyncMethods<WriteMethods>;
     }

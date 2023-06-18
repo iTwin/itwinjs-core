@@ -26,12 +26,12 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   return count;
 }
 
-async function makePropertyStore(moniker: string) {
+async function makePropertyStore(user: string) {
   const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: propContainer, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
   const propStore = new PropertyStore.CloudAccess({ ...props, accessToken });
-  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  propStore.lockParams.moniker = moniker;
+  propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
+  propStore.lockParams.user = user;
   return propStore;
 }
 

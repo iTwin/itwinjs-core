@@ -37,12 +37,12 @@ async function initializeContainer(containerId: string) {
   await ViewStore.CloudAccess.initializeDb({ ...props, accessToken });
 }
 
-async function makeViewStore(moniker: string) {
+async function makeViewStore(user: string) {
   const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: viewContainer, writeable: true };
   const accessToken = await CloudSqlite.requestToken(props);
   const viewStore = new ViewStore.CloudAccess({ ...props, accessToken });
-  viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: moniker }));
-  viewStore.lockParams.moniker = moniker;
+  viewStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
+  viewStore.lockParams.user = user;
   return viewStore;
 }
 
