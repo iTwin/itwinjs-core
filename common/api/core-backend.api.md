@@ -805,7 +805,11 @@ export interface CloudContainerArgs {
 
 // @beta
 export namespace CloudSqlite {
-    export function acquireWriteLock(user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler): Promise<void>;
+    export function acquireWriteLock(args: {
+        user: string;
+        container: CloudContainer;
+        busyHandler?: WriteLockBusyHandler;
+    }): Promise<void>;
     // @internal
     export interface BcvHttpLog {
         readonly endTime: string | undefined;
@@ -974,7 +978,11 @@ export namespace CloudSqlite {
         setCache(cache: CloudCache): void;
         startPrefetch(): CloudPrefetch;
         synchronizeWithCloud(): void;
-        withLockedDb<T>(operationName: string, operation: () => Promise<T>): Promise<T>;
+        withLockedDb<T>(args: {
+            operationName: string;
+            openMode?: OpenMode;
+            user?: string;
+        }, operation: () => Promise<T>): Promise<T>;
         get writeLocker(): PickAsyncMethods<WriteMethods>;
     }
     export interface DbNameProp {
@@ -989,7 +997,7 @@ export namespace CloudSqlite {
         busyHandler?: WriteLockBusyHandler;
         container: CloudContainer;
         dbName: string;
-        moniker: string;
+        user: string;
     }
     export enum LoggingMask {
         AddToDelete = 4,
@@ -1000,10 +1008,10 @@ export namespace CloudSqlite {
         None = 0
     }
     export interface ObtainLockParams {
-        moniker?: string;
         nRetries: number;
         onFailure?: WriteLockBusyHandler;
         retryDelayMs: number;
+        user?: string;
     }
     // (undocumented)
     export interface PrefetchProps extends CloudHttpProps {
@@ -1023,7 +1031,11 @@ export namespace CloudSqlite {
         onProgress?: (loaded: number, total: number) => number;
     }
     export function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
-    export function withWriteLock<T>(user: string, container: CloudContainer, operation: () => Promise<T>, busyHandler?: WriteLockBusyHandler): Promise<T>;
+    export function withWriteLock<T>(args: {
+        user: string;
+        container: CloudContainer;
+        busyHandler?: WriteLockBusyHandler;
+    }, operation: () => Promise<T>): Promise<T>;
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
 }
 
@@ -5552,7 +5564,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
         dbName: string;
         lockContainer?: {
             container: CloudSqlite.CloudContainer;
-            moniker: string;
+            user: string;
         };
         upgradeFn: () => void;
     }): Promise<void | (() => void)>;

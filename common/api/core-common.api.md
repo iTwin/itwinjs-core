@@ -7811,6 +7811,8 @@ export interface RpcActivity extends SessionProps {
     readonly accessToken: AccessToken;
     readonly activityId: GuidString;
     readonly rpcMethod?: string;
+    // (undocumented)
+    readonly user?: string;
 }
 
 // @internal (undocumented)
@@ -8581,6 +8583,8 @@ export interface SerializedRpcActivity {
     id: string;
     // (undocumented)
     sessionId: string;
+    // (undocumented)
+    user?: string;
 }
 
 // @internal
