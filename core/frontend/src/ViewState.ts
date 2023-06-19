@@ -80,6 +80,10 @@ export interface ComputeDisplayTransformArgs {
    * Defaults to the [DisplayStyleSettings.timePoint]($common) specified by the view's display style.
    */
   timePoint?: number;
+  /** The element Id of the [ViewAttachment]($backend) through which the element or model is drawn.
+   * @beta
+   */
+  viewAttachmentId?: Id64String;
   /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
    * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
    */
@@ -1370,6 +1374,13 @@ export abstract class ViewState extends ElementState {
    */
   public get secondaryViewports(): Iterable<Viewport> {
     return [];
+  }
+
+  /** Find the viewport that renders the contents of the view attachment with the specified element Id into this view.
+   * @internal
+   */
+  public getAttachmentViewport(_id: Id64String): Viewport | undefined {
+    return undefined;
   }
 }
 

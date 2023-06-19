@@ -103,7 +103,7 @@
       "mochaFile=lib/test/junit_results.xml"
     ],
     "spec": [
-      "./lib/**/*.js"
+      "./lib/**/*.test.js"
     ]
   }
 }
