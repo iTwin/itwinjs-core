@@ -25,8 +25,6 @@ export class TileStorage {
     this._initializedIModels.add(iModelId);
   }
 
-<<<<<<< HEAD
-=======
   /**
    * Returns config that can be used by frontends to download tiles
    * @param iModelId Id of the iModel
@@ -34,7 +32,6 @@ export class TileStorage {
    *  It is recommended to set this to a shorter period when using S3-compatible storage - an exact expiry date cannot be ensured due to limitations in their API.
    * @see [TileStorage]($frontend)
    */
->>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
   public async getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig> {
     try {
       if (expiresInSeconds !== undefined)

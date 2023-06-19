@@ -47,12 +47,8 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-<<<<<<< HEAD
     "@itwin/eslint-plugin": "workspace:*",
-=======
-    "@itwin/eslint-plugin": "^4.0.0-dev.33",
     "@itwin/object-storage-core": "^2.0.0",
->>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",

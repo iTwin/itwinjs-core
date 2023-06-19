@@ -103,18 +103,13 @@
     "@loaders.gl/draco": "^3.1.6",
     "deep-assign": "^2.0.0",
     "fuse.js": "^3.3.0",
-<<<<<<< HEAD
+    "inversify": "~6.0.1",
     "lodash": "^4.17.10",
     "qs": "^6.5.3",
     "semver": "^7.3.5",
     "superagent": "^7.1.5",
     "wms-capabilities": "0.4.0",
-    "reflect-metadata": "0.1.13"
-=======
-    "inversify": "~6.0.1",
-    "reflect-metadata": "^0.1.13",
-    "wms-capabilities": "0.4.0"
->>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
+    "reflect-metadata": "^0.1.13"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
