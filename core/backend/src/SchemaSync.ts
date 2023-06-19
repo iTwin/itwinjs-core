@@ -25,8 +25,6 @@ export namespace SchemaSync {
 
   /**
    * Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.
-   * `SchemaSync.ChannelDb`s that are stored in cloud containers require an access token that grants permission to read and/or write them.
-   * All write operations will fail without an access token that grants write permission.
    */
   export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
     public constructor(props: CloudSqlite.ContainerAccessProps) {

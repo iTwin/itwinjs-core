@@ -2945,8 +2945,6 @@ export abstract class IModelDb extends IModel {
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
-    // @internal (undocumented)
-    getSchemaSyncAccess(): SchemaSync.CloudAccess | undefined;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
@@ -3024,7 +3022,7 @@ export abstract class IModelDb extends IModel {
     // @beta
     saveSettingDictionary(name: string, dict: SettingDictionary): void;
     // @internal (undocumented)
-    setSchemaSyncAccess(store: SchemaSync.CloudAccess): void;
+    schemaSyncAccess?: SchemaSync.CloudAccess;
     // @internal (undocumented)
     synchronizationSchemas(): void;
     // (undocumented)

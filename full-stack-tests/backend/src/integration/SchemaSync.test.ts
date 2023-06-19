@@ -69,9 +69,9 @@ describe("schema synchronization", function (this: Suite) {
     const b2 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user2AccessToken, iTwinId, iModelId });
     const b3 = await HubWrappers.openBriefcaseUsingRpc({ accessToken: user3AccessToken, iTwinId, iModelId });
 
-    b1.setSchemaSyncAccess(sds1);
-    b2.setSchemaSyncAccess(sds2);
-    b3.setSchemaSyncAccess(sds3);
+    b1.schemaSyncAccess = sds1;
+    b2.schemaSyncAccess = sds2;
+    b3.schemaSyncAccess = sds3;
 
     // initialize shared schema channel
     await b1.initSchemaSynchronization();
