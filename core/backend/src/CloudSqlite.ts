@@ -16,9 +16,9 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { RpcTrace } from "./rpc/tracing";
 
 import type { VersionedSqliteDb } from "./SQLiteDb";
-import { RpcTrace } from "./core-backend";
 
 // spell:ignore logmsg httpcode
 
