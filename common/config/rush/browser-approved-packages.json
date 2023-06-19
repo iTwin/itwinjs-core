@@ -596,7 +596,7 @@
     },
     {
       "name": "inversify",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "js-base64",
@@ -704,7 +704,7 @@
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "resolve",
