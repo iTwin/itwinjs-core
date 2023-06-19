@@ -6,10 +6,6 @@
  * @module IModelHost
  */
 
-// To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
-import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
-
-import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
