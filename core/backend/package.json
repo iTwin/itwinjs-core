@@ -90,18 +90,27 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@azure/storage-blob": "^12.7.0",
     "@bentley/imodeljs-native": "3.7.1",
     "@itwin/object-storage-azure": "^1.5.0",
     "@itwin/cloud-agnostic-core": "^1.5.0",
     "@itwin/object-storage-core": "^1.5.0",
     "@itwin/core-telemetry": "workspace:*",
+=======
+    "@bentley/imodeljs-native": "4.1.0",
+    "@itwin/cloud-agnostic-core": "^2.0.0",
+    "@itwin/core-telemetry": "workspace:*",
+    "@itwin/object-storage-azure": "^2.0.0",
+    "@itwin/object-storage-core": "^2.0.0",
+>>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
-    "inversify": "~5.0.1",
+    "inversify": "~6.0.1",
     "json5": "^2.2.3",
     "js-base64": "^3.6.1",
     "multiparty": "^4.2.1",
+    "reflect-metadata": "^0.1.13",
     "semver": "^7.3.5",
     "ws": "^7.5.3"
   },

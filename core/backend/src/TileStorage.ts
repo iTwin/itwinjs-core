@@ -25,9 +25,24 @@ export class TileStorage {
     this._initializedIModels.add(iModelId);
   }
 
+<<<<<<< HEAD
+=======
+  /**
+   * Returns config that can be used by frontends to download tiles
+   * @param iModelId Id of the iModel
+   * @param expiresInSeconds Optional number of seconds until the download URL expires. Defaults to expiring exactly at midnight of next Sunday to enable persistent client-side caching.
+   *  It is recommended to set this to a shorter period when using S3-compatible storage - an exact expiry date cannot be ensured due to limitations in their API.
+   * @see [TileStorage]($frontend)
+   */
+>>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
   public async getDownloadConfig(iModelId: string, expiresInSeconds?: number): Promise<TransferConfig> {
     try {
-      return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, expiresInSeconds);
+      if (expiresInSeconds !== undefined)
+        return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, { expiresInSeconds });
+      const expiresOn = new Date();
+      expiresOn.setDate(expiresOn.getDate() + (7 - expiresOn.getDay())); // next Sunday
+      expiresOn.setHours(0, 0, 0, 0); // exactly at midnight
+      return await this.storage.getDownloadConfig({ baseDirectory: iModelId }, { expiresOn });
     } catch (err) {
       this.logException("Failed to get download config", err);
       throw err;

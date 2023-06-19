@@ -94,21 +94,27 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/object-storage-azure": "^1.5.0",
-    "@itwin/cloud-agnostic-core": "^1.5.0",
-    "@itwin/object-storage-core": "^1.5.0",
+    "@itwin/object-storage-azure": "^2.0.0",
+    "@itwin/cloud-agnostic-core": "^2.0.0",
+    "@itwin/object-storage-core": "^2.0.0",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "deep-assign": "^2.0.0",
     "fuse.js": "^3.3.0",
+<<<<<<< HEAD
     "lodash": "^4.17.10",
     "qs": "^6.5.3",
     "semver": "^7.3.5",
     "superagent": "^7.1.5",
     "wms-capabilities": "0.4.0",
     "reflect-metadata": "0.1.13"
+=======
+    "inversify": "~6.0.1",
+    "reflect-metadata": "^0.1.13",
+    "wms-capabilities": "0.4.0"
+>>>>>>> 6e4e90f0b2 (pin tile cache URL expiry timestamp (#5626))
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
