@@ -1,17 +1,21 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Jun 2023 12:51:02 GMT and should not be manually modified.
 
-## 4.0.0
-Mon, 22 May 2023 15:34:14 GMT
+## 3.7.9
+Tue, 20 Jun 2023 12:51:02 GMT
 
-### Updates
+_Version update only_
 
-- typescript 5 compatibility
-- Support non-rush repositories by allowing to specify output file locations.
-- Update to eslint@8
-- Fixed 'betools docs' script to set 'packageRoot' to correct relative path from root to package source.
-- Upgrade TypeScript compile target to es2021.
+## 3.7.8
+Thu, 01 Jun 2023 17:00:39 GMT
+
+_Version update only_
+
+## 3.7.7
+Wed, 24 May 2023 17:27:09 GMT
+
+_Version update only_
 
 ## 3.7.6
 Mon, 15 May 2023 18:23:40 GMT

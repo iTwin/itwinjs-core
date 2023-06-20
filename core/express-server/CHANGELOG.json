@@ -2,22 +2,22 @@
   "name": "@itwin/express-server",
   "entries": [
     {
-      "version": "4.0.0",
-      "tag": "@itwin/express-server_v4.0.0",
-      "date": "Mon, 22 May 2023 15:34:14 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Update to eslint@8"
-          },
-          {
-            "comment": "Drop Node 12 and Node 14."
-          },
-          {
-            "comment": "Drop Node 16 support."
-          }
-        ]
-      }
+      "version": "3.7.9",
+      "tag": "@itwin/express-server_v3.7.9",
+      "date": "Tue, 20 Jun 2023 12:51:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.8",
+      "tag": "@itwin/express-server_v3.7.8",
+      "date": "Thu, 01 Jun 2023 17:00:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.7",
+      "tag": "@itwin/express-server_v3.7.7",
+      "date": "Wed, 24 May 2023 17:27:09 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.6",

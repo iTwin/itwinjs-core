@@ -2,28 +2,22 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
-      "version": "4.0.0",
-      "tag": "@itwin/frontend-tiles_v4.0.0",
-      "date": "Mon, 22 May 2023 15:34:14 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Update to eslint@8"
-          },
-          {
-            "comment": "Add support for schedule animations."
-          },
-          {
-            "comment": "Remove y-up-to-z-up display transform."
-          },
-          {
-            "comment": "Ensure fitting the view fits to the extents of the currently-viewed models."
-          },
-          {
-            "comment": "Add new experimental package providing alternate technique for visualizing iModels."
-          }
-        ]
-      }
+      "version": "3.7.9",
+      "tag": "@itwin/frontend-tiles_v3.7.9",
+      "date": "Tue, 20 Jun 2023 12:51:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.8",
+      "tag": "@itwin/frontend-tiles_v3.7.8",
+      "date": "Thu, 01 Jun 2023 17:00:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.7.7",
+      "tag": "@itwin/frontend-tiles_v3.7.7",
+      "date": "Wed, 24 May 2023 17:27:09 GMT",
+      "comments": {}
     },
     {
       "version": "3.7.6",
