@@ -186,8 +186,8 @@ describe("Disposal of WebGL Resources", () => {
   });
 
   after(async () => {
-    await imodel0.close();
     await imodel1.close();
+    await imodel0.close();
     await TestUtility.shutdownFrontend();
   });
 
