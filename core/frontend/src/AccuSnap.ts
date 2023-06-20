@@ -680,8 +680,9 @@ export class AccuSnap implements Decorator {
       }
     }
 
+    const hitVp = thisHit.viewAttachment ? thisHit.viewAttachment.viewport : thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
-      const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
+      const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
@@ -695,10 +696,10 @@ export class AccuSnap implements Decorator {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
       closePoint: thisHit.hitPoint,
-      worldToView: thisHit.viewport.worldToViewMap.transform0.toJSON(),
-      viewFlags: thisHit.viewport.viewFlags,
+      worldToView: hitVp.worldToViewMap.transform0.toJSON(),
+      viewFlags: hitVp.viewFlags,
       snapModes,
-      snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
+      snapAperture: hitVp.pixelsFromInches(hotDistanceInches),
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
@@ -764,7 +765,11 @@ export class AccuSnap implements Decorator {
       };
 
       const snapPoint = Point3d.fromJSON(result.snapPoint);
-      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({ modelId: thisHit.modelId, elementId: thisHit.sourceId }) : undefined;
+      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({
+        modelId: thisHit.modelId,
+        elementId: thisHit.sourceId,
+        viewAttachmentId: thisHit.viewAttachment?.id,
+      }) : undefined;
       displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);

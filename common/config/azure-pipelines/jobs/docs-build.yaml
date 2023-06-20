@@ -44,7 +44,7 @@ parameters:
 
 
 jobs:
-  - job:
+  - job: docsBuild
     workspace:
       clean: all
     pool:
