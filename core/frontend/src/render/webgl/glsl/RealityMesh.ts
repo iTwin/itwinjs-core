@@ -121,11 +121,9 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     return true;
   }
 
-  // If texture color is transparent but base color is not, don't discard
-  if (col.a > 0.05) return true;
-
-  // Only discard if both the texture and base color are transparent
-  return false;
+  // If texture color is transparent but base color is not, return true (don't discard)
+  // Else return false (discard) if both the texture and base color are transparent
+  return (col.a > 0.05);
 }
 `;
 
