@@ -6,6 +6,7 @@
  * @module IModelHost
  */
 
+import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
