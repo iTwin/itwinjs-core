@@ -21,7 +21,8 @@ Content modifiers are used to modify how instances of specified ECClasses are di
 
 ### Attribute: `class`
 
-Specification of ECClass whose content should be modified. The modifier is applied to all content if this attribute is not specified.
+Specification of ECClass whose content should be modified. The modifier applies [property overrides](./PropertySpecification.md) and [property categories](./PropertyCategorySpecification.md) to all content if this attribute is not specified. This attribute must be specified in order to apply [related](./RelatedPropertiesSpecification.md) or [calculated](./CalculatedPropertiesSpecification.md) properties to the content.
+
 
 |                   |                                                                          |
 | ----------------- | ------------------------------------------------------------------------ |
