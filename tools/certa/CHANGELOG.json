@@ -2,6 +2,12 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "3.7.9",
+      "tag": "@itwin/certa_v3.7.9",
+      "date": "Tue, 20 Jun 2023 12:51:02 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.7.8",
       "tag": "@itwin/certa_v3.7.8",
       "date": "Thu, 01 Jun 2023 17:00:39 GMT",
