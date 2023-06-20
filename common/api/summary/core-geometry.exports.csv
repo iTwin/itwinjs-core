@@ -182,6 +182,7 @@ public;Matrix4dProps = Point4dProps[]
 public;MiteredSweepOptions
 public;MiteredSweepOutputSelect
 public;MomentData
+internal;MultiChainCollector
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
 internal;Newton1dUnboundedApproximateDerivative 

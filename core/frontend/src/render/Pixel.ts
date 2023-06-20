@@ -33,6 +33,10 @@ export namespace Pixel {
     public readonly iModel?: IModelConnection;
     /** @internal */
     public readonly tileId?: string;
+    /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
+     * @beta
+     */
+    public readonly viewAttachmentId?: Id64String;
     /** @internal */
     public get isClassifier(): boolean {
       return undefined !== this.batchType && BatchType.Primary !== this.batchType;
@@ -47,6 +51,7 @@ export namespace Pixel {
       batchType?: BatchType;
       iModel?: IModelConnection;
       tileId?: string;
+      viewAttachmentId?: string;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -57,6 +62,7 @@ export namespace Pixel {
       this.planarity = args?.planarity ?? Planarity.Unknown;
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
+      this.viewAttachmentId = args?.viewAttachmentId;
     }
 
     /** The Id of the element that produced the pixel. */

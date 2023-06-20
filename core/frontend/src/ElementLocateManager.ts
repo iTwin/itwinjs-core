@@ -8,7 +8,7 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
+import { HitDetail, HitList, HitPriority, HitSource, ViewAttachmentHitInfo } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
@@ -269,10 +269,33 @@ export class ElementPicker {
         if (!hitPointWorld)
           continue;
 
-        const modelId = pixel.modelId;
-        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel, pixel.tileId, pixel.isClassifier);
-        this.hitList!.addHit(hit);
+        let viewAttachment: ViewAttachmentHitInfo | undefined;
+        if (pixel.viewAttachmentId) {
+          const attachmentViewport = vp.view.getAttachmentViewport(pixel.viewAttachmentId);
+          if (attachmentViewport)
+            viewAttachment = { viewport: attachmentViewport, id: pixel.viewAttachmentId };
+        }
 
+        const modelId = pixel.modelId;
+        const hit = new HitDetail({
+          testPoint: pickPointWorld,
+          viewport: vp,
+          hitSource: options.hitSource,
+          hitPoint: hitPointWorld,
+          sourceId: pixel.elementId,
+          priority: this.getPixelPriority(pixel),
+          distXY: testPointView.distance(elmPoint),
+          distFraction: pixel.distanceFraction,
+          subCategoryId: pixel.subCategoryId,
+          geometryClass: pixel.geometryClass,
+          modelId,
+          sourceIModel: pixel.iModel,
+          tileId: pixel.tileId,
+          isClassifier: pixel.isClassifier,
+          viewAttachment,
+        });
+
+        this.hitList!.addHit(hit);
         if (this.hitList!.hits.length > options.maxHits)
           this.hitList!.hits.length = options.maxHits; // truncate array...
       }

@@ -240,7 +240,17 @@ export class TentativePoint {
           const vp = ev.viewport!;
           if (vp.isSnapAdjustmentRequired) {
             IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-            const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
+            const hit = new HitDetail({
+              testPoint: point,
+              viewport: vp,
+              hitSource: HitSource.TentativeSnap,
+              hitPoint: point,
+              sourceId: "",
+              priority: HitPriority.Unknown,
+              distXY: 0,
+              distFraction: 0,
+            });
+
             const snap = new SnapDetail(hit);
             this.setCurrSnap(snap);
             IModelApp.toolAdmin.adjustSnapPoint();

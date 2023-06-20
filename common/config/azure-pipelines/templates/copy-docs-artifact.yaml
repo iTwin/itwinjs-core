@@ -17,6 +17,9 @@ parameters:
   - name: defaultBranch
     type: string
     default: refs/heads/master
+  - name: specificBuild
+    type: string
+    default: ""
 
   # If useCurrentDocsArtifact is set to true, attempt to pull artifact from the current run
   # rather than latest succesful run.
@@ -56,6 +59,9 @@ steps:
           ${{ if parameters.buildTag }}:
             buildVersionToDownload: latest
             tags: ${{parameters.buildTag}}
+          ${{ elseif parameters.specificBuild }}:
+            buildVersionToDownload: specific
+            buildId: ${{ parameters.specificBuild }}
           ${{ else }}:
             branchName: ${{ parameters.defaultBranch }}
             buildVersionToDownload: latestFromBranch

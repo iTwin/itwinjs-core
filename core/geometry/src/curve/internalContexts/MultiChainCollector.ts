@@ -292,7 +292,11 @@ public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): 
     }
   }
 }
-// static methods to assist offset sequences ....
+
+/**
+ * Static methods to assist offset sequences.
+ * @internal
+ */
 export class OffsetHelpers {
   // recursively sum lengths, allowing CurvePrimitive, CurveCollection, or array of such at any level.
   public static sumLengths(data: any): number {
@@ -400,7 +404,7 @@ export class OffsetHelpers {
     }
     return false;
   }
-  // Try to move move head (end) of g0 and tail (beginning) of g1 together.
+  // Try to move move tail (end) of g0 and/or head (beginning) of g1 to a common point.
   public static moveHeadOrTail(g0: CurvePrimitive, g1: CurvePrimitive, maxShift: number): boolean {
     const xyz0 = g0.endPoint();
     const xyz1 = g1.startPoint();
