@@ -994,7 +994,7 @@ export abstract class IModelDb extends IModel {
    */
   public constructEntity<T extends Entity>(props: EntityProps): T {
     const jsClass = this.getJsClass(props.classFullName);
-    return new jsClass(props, this) as T;
+    return Entity.instantiate(jsClass, props, this) as T;
   }
 
   /** Get the JavaScript class that handles a given entity class.  */

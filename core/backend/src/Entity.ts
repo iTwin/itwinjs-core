@@ -52,11 +52,18 @@ export class Entity {
   public id: Id64String;
 
   /** @internal */
-  constructor(props: EntityProps, iModel: IModelDb) {
+  protected constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
+  }
+
+  /** Invoke the constructor of the specified `Entity` subclass.
+   * @internal
+   */
+  public static instantiate(subclass: typeof Entity, props: EntityProps, iModel: IModelDb): Entity {
+    return new subclass(props, iModel);
   }
 
   /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
@@ -95,7 +102,10 @@ export class Entity {
    * @note this should have a type of `is<T extends typeof Entity>(otherClass: T): this is T` but can't because of
    * typescript's restriction on the `this` type in static methods
    */
-  public static is(otherClass: typeof Entity): boolean { return isSubclassOf(this, otherClass); }
+  public static is(otherClass: typeof Entity): boolean {
+    // inline of @itwin/core-bentley's isSubclassOf due to protected constructor.
+    return this === otherClass || this.prototype instanceof otherClass;
+  }
 
   /** whether this JavaScript class was generated for this ECClass because there was no registered custom implementation
    * ClassRegistry overrides this when generating a class
