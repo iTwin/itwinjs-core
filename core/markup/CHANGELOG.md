@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-markup
 
-This log was last generated on Wed, 21 Jun 2023 20:29:13 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Jun 2023 22:04:43 GMT and should not be manually modified.
+
+## 4.0.2
+Wed, 21 Jun 2023 22:04:43 GMT
+
+_Version update only_
 
 ## 4.0.1
 Wed, 21 Jun 2023 20:29:13 GMT
