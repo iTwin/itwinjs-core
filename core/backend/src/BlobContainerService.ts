@@ -50,6 +50,16 @@ export namespace BlobContainer {
   }
 
   /**
+   * Metadata that describes the "type" of data that is stored in the container, and how the container is being used.
+   */
+  export interface ContainerType {
+    /** The machine-readable string that describes what the container is being used for (e.g. "workspaces"). Always lowercase and singular. */
+    name: string;
+    /** A machine-readable string that describes the "format" of the data in this container (e.g. "CloudSqlite"), not required for container creation. */
+    format?: string;
+  }
+
+  /**
    * Metadata about the use of a container so that:
    *  - administrators can understand why a container exists for assigning RBAC permissions appropriately
    *  - usage reports can aggregate types of containers
@@ -57,14 +67,12 @@ export namespace BlobContainer {
    *  - applications can store important (to them) properties "on" their containers
    */
   export interface Metadata {
+    /** Human readable name for the container. */
+    name: string;
     /** Human readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
-    description: string;
-    /** a machine-readable string that describes the "format" of the data in this container (e.g. "CloudSqlite") */
-    format: string;
-    /** an identifier of the application that uses this this container */
-    application: string;
-    /** Additional properties stored on the container */
-    [propertyName: string]: string;
+    description?: string;
+    /** Properties that describe the usage of the container */
+    containerType: ContainerType;
   }
 
   /** Properties returned by `Service.requestToken` */
