@@ -56,7 +56,7 @@ export interface SectionSequenceWithPlanes {
   sections: AnyCurve[];
   /**
    * Optional `RuledSweep` generated from the sections.
-   * * The `RuledSweep` and sections array refer to the same curve objects.
+   * * The `RuledSweep` and sections array refer to the same section objects.
    */
   ruledSweep?: RuledSweep;
   /** Optional mesh generated from the `RuledSweep` generated from the sections. */
@@ -72,7 +72,7 @@ export enum MiteredSweepOutputSelect {
   Sections = 0,
   /** Output planes and sections, as well as the assembled ruled sweep. */
   AlsoRuledSweep = 1,
-  /** Output planes and sections, as well as the ruled sweep, and stroked mesh. */
+  /** Output planes and sections, as well as the assembled ruled sweep and its stroked mesh. */
   AlsoMesh = 2,
 }
 
@@ -83,7 +83,7 @@ export enum MiteredSweepOutputSelect {
 export interface MiteredSweepOptions {
   /** Whether first and last planes are averaged and equated when the centerline is physically closed. Default value is `false`. */
   wrapIfPhysicallyClosed?: boolean;
-  /** Whether to output sections only, or sections plus optional geometry assembled from them. Default value is `MiteredSweepOutputSelect.Sections`. */
+  /** Whether to output sections only, or sections plus optional geometry constructed from them. Default value is `MiteredSweepOutputSelect.Sections`. */
   outputSelect?: MiteredSweepOutputSelect;
   /** How to stroke the ruled sweep if outputting a mesh. If undefined, default stroke options are used. */
   strokeOptions?: StrokeOptions;

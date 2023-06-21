@@ -81,14 +81,18 @@ export class Checker {
     halfEdgeGraphFromIndexedLoops: false,
     offsetMesh: false,
   };
-  public constructor(enableConsole: boolean = false, enableSave: boolean = false, enableLongTests: boolean = false) {
+  /**
+   * Constructor that allows setting statics in `GeometryCoreTestIO` as a debugging convenience.
+   * * Do not push to server an invocation that passes true.
+   */
+  public constructor(enableConsole: boolean = false, enableSave: boolean = false) {
     this._numErrors = 0;
     this._numOK = 0;
     this._savedErrors = 0;
     this._savedOK = 0;
     GeometryCoreTestIO.enableConsole = enableConsole;
     GeometryCoreTestIO.enableSave = enableSave;
-    GeometryCoreTestIO.enableLongTests = enableLongTests;
+    // Note that GeometryCoreTestIO.enableLongTests remains unchanged.
   }
   public getNumErrors(): number {
     return this._savedErrors + this._numErrors;

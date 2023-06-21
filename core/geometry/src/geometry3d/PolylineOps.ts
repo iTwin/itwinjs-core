@@ -241,21 +241,24 @@ export class PolylineOps {
       // remark: the prior pack should ensure the normalization is ok.  But if it fails, we ignore this point...
       if (undefined !== Plane3dByOriginAndUnitNormal.create(packedPoints[i], unit01, perpendicular1)) {
         const newBisectorNormal = perpendicular0.getNormalRef().interpolate(0.5, perpendicular1.getNormalRef());
-        if (newBisectorNormal.normalizeInPlace())
-          bisectorPlanes.push(Plane3dByOriginAndUnitNormal.create(packedPoints[i], newBisectorNormal)!);
+        const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(packedPoints[i], newBisectorNormal);
+        if (undefined !== newBisectorPlane)
+          bisectorPlanes.push(newBisectorPlane);
         perpendicular0.setFrom(perpendicular1);
       }
     }
     // LAST point gets simple perpendicular inherited from last pass
     bisectorPlanes.push(Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef())!);
+    // reset end planes to their average plane, but leave them alone if the closure point is a cusp
     const lastIndex = bisectorPlanes.length - 1;
     if (lastIndex > 0 && wrapIfPhysicallyClosed) {
-      const firstPlane = bisectorPlanes[0]!;
-      const lastPlane = bisectorPlanes[lastIndex]!;
+      const firstPlane = bisectorPlanes[0];
+      const lastPlane = bisectorPlanes[lastIndex];
       if (Geometry.isSamePoint3d(firstPlane.getOriginRef(), lastPlane.getOriginRef())) {
-        const newBisectorNormal = firstPlane.getNormalRef().plus(lastPlane.getNormalRef());
-        if (newBisectorNormal !== undefined) {
-          bisectorPlanes[0] = Plane3dByOriginAndUnitNormal.create(firstPlane.getOriginRef(), newBisectorNormal)!;
+        const newBisectorNormal = firstPlane.getNormalRef().plus(lastPlane.getNormalRef()); // could be zero vector at a cusp
+        const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(firstPlane.getOriginRef(), newBisectorNormal);
+        if (undefined !== newBisectorPlane) {
+          bisectorPlanes[0] = newBisectorPlane;
           bisectorPlanes[lastIndex] = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal)!;
         }
       }
