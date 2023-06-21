@@ -3813,6 +3813,15 @@ export class MomentData {
     toJSON(): any;
 }
 
+// @internal
+export class MultiChainCollector {
+    constructor(endPointShiftTolerance?: number, planeTolerance?: number | undefined);
+    announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void;
+    captureCurve(candidate: GeometryQuery): void;
+    captureCurvePrimitive(candidate: CurvePrimitive): void;
+    grabResult(makeLoopIfClosed?: boolean): ChainTypes;
+}
+
 // @public
 export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
 
