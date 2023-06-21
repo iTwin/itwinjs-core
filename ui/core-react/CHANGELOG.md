@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Thu, 01 Jun 2023 17:00:39 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Jun 2023 12:51:02 GMT and should not be manually modified.
+
+## 3.7.9
+Tue, 20 Jun 2023 12:51:02 GMT
+
+### Updates
+
+- Closing sub-menu on outside click functionality
 
 ## 3.7.8
 Thu, 01 Jun 2023 17:00:39 GMT

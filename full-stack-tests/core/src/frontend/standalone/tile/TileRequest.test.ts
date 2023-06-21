@@ -11,7 +11,7 @@ import {
   IModelApp, IModelConnection, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
   TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
-import { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
+import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
