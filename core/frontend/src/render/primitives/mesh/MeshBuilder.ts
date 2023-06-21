@@ -9,7 +9,7 @@
 import { assert, Dictionary } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Feature, MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
-import { DisplayParams } from "../DisplayParams";
+import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
 import { VertexKey, VertexKeyProps, VertexMap } from "../VertexKey";
@@ -242,8 +242,10 @@ export class MeshBuilder {
   }
 
   public addTriangle(triangle: Triangle): void {
-    // Prefer to avoid adding vertices originating from degenerate triangles before we get here...
-    assert(!triangle.isDegenerate);
+    // Attempt to avoid adding vertices originating from degenerate triangles before we get here.
+    // Removed assert and just return if degenerate at this point because uncommon cases (not worth testing for) can still occur.
+    if (triangle.isDegenerate)
+      return;
 
     const onInsert = (_vk: TriangleKey) => this.mesh.addTriangle(triangle);
     this.triangleSet.insertKey(triangle, onInsert);

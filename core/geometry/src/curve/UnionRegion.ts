@@ -25,15 +25,21 @@ import { StrokeOptions } from "./StrokeOptions";
 export class UnionRegion extends CurveCollection {
   /** String name for schema properties */
   public readonly curveCollectionType = "unionRegion";
-
-  /** test if `other` is a `UnionRegion` */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof UnionRegion; }
-  /** collection of Loop and ParityRegion children. */
+  /** Test if `other` is a `UnionRegion` */
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof UnionRegion;
+  }
+  /** Collection of Loop and ParityRegion children. */
   protected _children: Array<ParityRegion | Loop>;
   /** Return the array of regions */
-  public override get children(): Array<ParityRegion | Loop> { return this._children; }
+  public override get children(): Array<ParityRegion | Loop> {
+    return this._children;
+  }
   /** Constructor -- initialize with no children */
-  public constructor() { super(); this._children = []; }
+  public constructor() {
+    super();
+    this._children = [];
+  }
   /** Create a `UnionRegion` with given region children */
   public static create(...data: Array<ParityRegion | Loop>): UnionRegion {
     const result = new UnionRegion();
@@ -42,9 +48,11 @@ export class UnionRegion extends CurveCollection {
     }
     return result;
   }
-  /** Return the boundary type (5) of a corresponding  MicroStation CurveVector */
-  public dgnBoundaryType(): number { return 5; }
-  /** dispatch to more strongly typed  `processor.announceUnionRegion(this, indexInParent)` */
+  /** Return the boundary type (5) of a corresponding MicroStation CurveVector */
+  public dgnBoundaryType(): number {
+    return 5;
+  }
+  /** Dispatch to more strongly typed `processor.announceUnionRegion(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceUnionRegion(this, indexInParent);
   }
@@ -60,8 +68,11 @@ export class UnionRegion extends CurveCollection {
     return clone;
   }
   /** Return new empty `UnionRegion` */
-  public cloneEmptyPeer(): UnionRegion { return new UnionRegion(); }
-  /** add a child.
+  public cloneEmptyPeer(): UnionRegion {
+    return new UnionRegion();
+  }
+  /**
+   * Try to add a child.
    * * Returns false if the `AnyCurve` child is not a region type.
    */
   public tryAddChild(child: AnyCurve): boolean {

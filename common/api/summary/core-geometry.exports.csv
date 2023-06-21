@@ -39,7 +39,7 @@ public;BezierCurve3d
 public;BezierCurve3dH 
 public;class BezierCurveBase 
 internal;BezierPolynomialAlgebra
-internal;BilinearPatch 
+public;BilinearPatch 
 internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
 public;BooleanClipFactory
@@ -180,6 +180,7 @@ public;Matrix3dProps = number[][] | number[]
 public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
 public;MomentData
+internal;MultiChainCollector
 public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
 internal;Newton1dUnboundedApproximateDerivative 

@@ -6,12 +6,11 @@
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GltfReaderProps, GraphicBuilder, ImdlReader, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
-import { BatchedTileContentReader } from "./BatchedTileContentReader";
 import { getMaxLevelsToSkip } from "./FrontendTiles";
 
 /** @internal */
@@ -128,45 +127,22 @@ export class BatchedTile extends Tile {
     return response.arrayBuffer();
   }
 
-  public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, shouldAbort?: () => boolean): Promise<TileContent> {
+  public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
     if (!(data instanceof Uint8Array))
       return { };
 
-    let reader: ImdlReader | BatchedTileContentReader | undefined = ImdlReader.create({
-      stream: ByteStream.fromUint8Array(data),
-      iModel: this.tree.iModel,
-      modelId: this.tree.modelId,
-      is3d: true,
-      isLeaf: this.isLeaf,
-      system,
-      isCanceled: shouldAbort,
-      timeline: this.batchedTree.scheduleScript,
-      options: {
-        tileId: this.contentId,
-      },
-    });
-
-    if (!reader) {
-      const gltfProps = GltfReaderProps.create(data, false, this.batchedTree.reader.baseUrl);
-      if (gltfProps) {
-        reader = new BatchedTileContentReader({
-          props: gltfProps,
-          iModel: this.tree.iModel,
-          system,
-          shouldAbort,
-          vertexTableRequired: true,
-          modelId: this.tree.modelId,
-          isLeaf: this.isLeaf,
-          range: this.range,
-        });
-      }
+    try {
+      return await this.batchedTree.decoder.decode({
+        stream: ByteStream.fromUint8Array(data),
+        options: { tileId: this.contentId },
+        system,
+        isCanceled,
+        isLeaf: this.isLeaf,
+      });
+    } catch {
+      return { isLeaf: true };
     }
-
-    if (!reader)
-      return { };
-
-    return reader.read();
   }
 
   protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {

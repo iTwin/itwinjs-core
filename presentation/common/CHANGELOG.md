@@ -1,6 +1,39 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- Fixed improper use of `ISchemaLocater` interface
+- Remove `handleInstancesPolymorphically` from `ContentInstancesOfSpecificClassesSpecification`
+- Update to eslint@8
+- Add deprecation attributes to `Ruleset.schema.json`
+- Promote `PropertyInfo.kindOfQuantity` to `@public`
+- Added new `applyOnNestedContent` attribute on content modifier
+- Added `Format` lookup in `ECSchema` for formatting properties with `KindOfQuantity`
+- Added peer dependency `@itwin/ecschema-metadata`
+- Add `HierarchyRequestOptions.sizeLimit` attribute to support hierarchy level size limiting
+- Promoted some `@internal` APIs to `@public`.
+- Cleaned up localizable strings
+- Promote `LabelDefinition` APIs to `@public`.
+- Added `PropertyFormatter` for formatting property values in `Content`
+- Change RPC requests' timeout handling - instead of repeating 5 times, repeat for a specified amount of time (10 minutes by default)
+- Removed unused Update related types
+- Added `ContentPropertyValuesFormatter` for content values' formatting on either frontend or backend
+- Fix `@deprecated` messages
+
+## 3.7.6
+Mon, 15 May 2023 18:23:41 GMT
+
+_Version update only_
+
+## 3.7.5
+Thu, 04 May 2023 19:43:18 GMT
+
+_Version update only_
 
 ## 3.7.4
 Tue, 25 Apr 2023 17:50:35 GMT

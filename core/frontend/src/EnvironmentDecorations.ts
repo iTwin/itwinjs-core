@@ -11,7 +11,7 @@ import {
   ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
-import { tryImageElementFromUrl } from "./ImageUtil";
+import { tryImageElementFromUrl } from "./common/ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/RenderGraphic";

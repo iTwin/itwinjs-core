@@ -1,6 +1,49 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 25 Apr 2023 17:50:35 GMT and should not be manually modified.
+This log was last generated on Mon, 22 May 2023 15:34:14 GMT and should not be manually modified.
+
+## 4.0.0
+Mon, 22 May 2023 15:34:14 GMT
+
+### Updates
+
+- implemented constant lod texture mapping for tiles
+- Deprecate IModelConnection's query, queryRowCount, and restartQuery methods.
+- Deprecated IModelAppOptions.rpcInterfaces in favor of using platform-specific RPC manager.
+- Fixed inconsistent point sizes for additive point cloud tiles.
+- added return of rtcCenter to readPointCloudTileContent
+- Promote and document some map layers functions.
+- Update to eslint@8
+- Patch how dynamic import for packages are resolved in Vite based apps so tiles render"
+- Remove dependency on `lodash`
+- Map-layers should not be displayed past maximum LOD limit advertised by service metadata
+- Improved tiling tests
+- Move webgl-compatibility package out of peer to direct deps in core-frontend
+- Refactoring of internal request api, removed 'superagent', 'deep-assign' and 'qs' dependencies.
+- add IModelApp.hubAccess to public api
+- ViewState3d.lookAt with ortho paramters should not use camera focusDist
+- Implemented constant lod texture mapping mode.
+- Fixed clipping problem with decorators.
+- Drop support for WebGL 1.
+- Promote terrain-related APIs to public.
+- Add readGltf which returns bounding boxes along with the graphic.
+- When reading glTF, use a default material if none is specified, per the glTF spec.
+- Promote APIs for converting between geographic and iModel coordinates.
+- Promote HiliteSet constructor and NoRenderApp to public.
+- Record statistics about tile content decoding times to TileRequestChannelStatistics.
+- Add an option for ViewCreator3d to make all subcategories visible.
+- add physics-based Atmospheric scattering shader
+- Localize tooltips for view clip decorations.
+
+## 3.7.6
+Mon, 15 May 2023 18:23:40 GMT
+
+_Version update only_
+
+## 3.7.5
+Thu, 04 May 2023 19:43:18 GMT
+
+_Version update only_
 
 ## 3.7.4
 Tue, 25 Apr 2023 17:50:35 GMT

@@ -11,7 +11,7 @@ import { SpatialViewState } from "../../../SpatialViewState";
 import { createBlankConnection } from "../../createBlankConnection";
 import { BoxDecorator, SphereDecorator, TestDecorator } from "../../TestDecorators";
 import { expectColors } from "../../ExpectColors";
-import { ViewRect } from "../../../ViewRect";
+import { ViewRect } from "../../../common/ViewRect";
 import { ViewState } from "../../../ViewState";
 import { StandardViewId } from "../../../StandardView";
 

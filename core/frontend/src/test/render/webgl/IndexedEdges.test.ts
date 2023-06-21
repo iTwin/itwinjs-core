@@ -8,8 +8,9 @@ import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
-import { VertexIndices } from "../../../render/primitives/VertexTable";
-import { EdgeParams, EdgeTable } from "../../../render/primitives/EdgeParams";
+import { createEdgeParams } from "../../../render/primitives/EdgeParams";
+import { EdgeTable } from "../../../common/render/primitives/EdgeParams";
+import { VertexIndices } from "../../../common/render/primitives/VertexIndices";
 
 function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
   return new OctEncodedNormalPair(new OctEncodedNormal(n0), new OctEncodedNormal(n1));
@@ -88,10 +89,10 @@ describe("IndexedEdgeParams", () => {
         tileAdmin: { enableIndexedEdges: false },
         localization: new EmptyLocalization(),
       });
-      expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
+      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("non-indexed");
 
       const args = createMeshArgs();
-      const edges = EdgeParams.fromMeshArgs(args)!;
+      const edges = createEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.segments).not.to.be.undefined;
       expect(edges.silhouettes).not.to.be.undefined;
@@ -103,6 +104,7 @@ describe("IndexedEdgeParams", () => {
   describe("when enabled", () => {
     before(async () => {
       await IModelApp.startup({ localization: new EmptyLocalization() });
+      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("compact");
     });
 
     after(async () => {
@@ -112,13 +114,13 @@ describe("IndexedEdgeParams", () => {
     it("are not produced if MeshArgs supplies no edges", () => {
       const args = createMeshArgs();
       args.edges?.clear();
-      expect(EdgeParams.fromMeshArgs(args)).to.be.undefined;
+      expect(createEdgeParams(args)).to.be.undefined;
     });
 
     it("are not produced for polylines in 2d", () => {
       const args = createMeshArgs({ is2d: true });
 
-      const edges = EdgeParams.fromMeshArgs(args)!;
+      const edges = createEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.polylines).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
@@ -131,7 +133,7 @@ describe("IndexedEdgeParams", () => {
       expect(args.edges).not.to.be.undefined;
       args.edges!.width = 4;
 
-      const edges = EdgeParams.fromMeshArgs(args)!;
+      const edges = createEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.polylines).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
@@ -141,7 +143,7 @@ describe("IndexedEdgeParams", () => {
 
     it("are created from MeshArgs", () => {
       const args = createMeshArgs();
-      const edges = EdgeParams.fromMeshArgs(args)!;
+      const edges = createEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
       expect(edges.polylines).to.be.undefined;
@@ -175,7 +177,7 @@ describe("IndexedEdgeParams", () => {
 
     it("inserts padding between segments and silhouettes when required", () => {
       const args = createMeshArgs();
-      const edges = EdgeParams.fromMeshArgs(args, 15)!;
+      const edges = createEdgeParams(args, 15)!;
       expect(edges).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
       expectIndices(edges.indexed!.indices, [
@@ -221,7 +223,7 @@ describe("IndexedEdgeParams", () => {
           edgs.silhouettes.normals.push(makeNormalPair(4, 5));
         }
 
-        const edgeParams = EdgeParams.fromMeshArgs(meshargs, 15)!;
+        const edgeParams = createEdgeParams(meshargs, 15)!;
         expect(edgeParams).not.to.be.undefined;
         expect(edgeParams.indexed).not.to.be.undefined;
         return edgeParams.indexed!.edges;

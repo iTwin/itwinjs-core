@@ -1,4 +1,4 @@
-import os, re, subprocess, sys
+import os, re, subprocess, sys, string
 
 def getSHAFromTag(tag):
   cmd = ['git', 'rev-list', '-n', '1', tag]
@@ -20,6 +20,72 @@ def getCommitMessage(sha):
   if len(re.findall(pattern, commitMessage)) > 1:
     commitMessage = re.sub(pattern, "", commitMessage, 1)
   return commitMessage
+
+# Replaces relative image links with complete URLs
+def replace_image_links(file_path):
+    with open(file_path, 'r+') as f:
+        content = f.read()
+
+        # Use Linux path format
+        content = content.replace('\\', '/')
+
+        # Replace the "./assets" part of the image links with the correct URL
+        updated_content = re.sub(r'!\[(.*?)\]\(\./assets(.*?)\)', r'![\1](https://github.com/iTwin/itwinjs-core/raw/master/docs/changehistory/assets\2)', content)
+
+        # Move the file cursor to the beginning and truncate the file
+        f.seek(0)
+        f.truncate()
+
+        # Write the updated content back to the file
+        f.write(updated_content)
+
+# Convert headings to HTML
+# Needed because github release markdown doesn't support linking within a document
+def convert_markdown_headings_to_html(file_path):
+
+    # Read the Markdown file
+    with open(file_path, 'r') as f:
+        markdown_text = f.read()
+
+    heading_counts = {}
+
+    def replace_heading(match):
+        heading_text = match.group(2).strip().lower()
+        if heading_text in heading_counts:
+            heading_counts[heading_text] += 1
+        else:
+            heading_counts[heading_text] = 1
+
+        heading_id = generate_id(heading_text, heading_counts[heading_text])
+
+        return f'<h{len(match.group(1))} id="{heading_id}">{match.group(2)}</h{len(match.group(1))}>'
+
+    html_text = re.sub(
+        r'^(#+)\s+(.*)$',
+        replace_heading,
+        markdown_text,
+        flags=re.MULTILINE
+    )
+
+    # Update the Markdown file with the modified content
+    with open(file_path, 'w') as f:
+        f.write(html_text)
+
+def generate_id(heading_text, count=None):
+    # Remove leading/trailing whitespace
+    heading_text = heading_text.strip()
+
+    # Generate a valid id attribute from the heading text
+    heading_text = heading_text.lower().translate(
+        str.maketrans('', '', string.punctuation.replace('-', ''))
+    )
+    heading_text = heading_text.replace(' ', '-')
+
+    # Add count suffix if there are multiple occurrences of the heading name
+    if count is not None and count > 1:
+        heading_text += f'-{count - 1}'
+
+    return heading_text
 
 # Tag assumed to be of format release/x.x.x
 def createRelease(tag):
@@ -79,6 +145,8 @@ def createRelease(tag):
     if not os.path.exists(fileName):
       print("changehistory {0} could not be found.. exiting".format(currentVer))
       return
+    replace_image_links(fileName)
+    convert_markdown_headings_to_html(fileName)
 
   # Create GitHub release using the markdown file
   print("Publishing GitHub release...")

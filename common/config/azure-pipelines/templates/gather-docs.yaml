@@ -41,6 +41,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
+      defaultBranch: refs/heads/release/4.0.x
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # Download BIS Docs artifact
@@ -65,6 +66,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8602 # iTwin Presentation/iTwin Presentation Docs
       artifactName: Presentation Docs
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
 
   # Download Transformer Docs artifact
@@ -74,7 +76,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 9056 # iTwin Transformer/Transformer Generate Docs
       artifactName: Transformer Docs
-      defaultBranch: refs/heads/main
+      specificBuild: 2212281
       useCurrentDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
 
   # Download Auth Clients artifact
@@ -82,7 +84,7 @@ steps:
     parameters:
       workingDir: ${{ parameters.workingDir }}
       stagingDir: ${{ parameters.stagingDir }}
-      pipelineId: 6189 # iTwin.js/clients/iTwin.auth-clients.publish build
+      pipelineId: 9108 # iTwin.js/clients/iTwin.auth-clients.docs build
       artifactName: iTwin-Auth-Clients Docs
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}

@@ -19,6 +19,7 @@ import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 import { Range3d } from "@itwin/core-geometry";
+import { AnimationNodeId } from "../common/render/AnimationNodeId";
 
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
  * @internal
@@ -29,14 +30,6 @@ export interface GraphicBranchFrustum {
     x: number;
     y: number;
   };
-}
-
-/** Special values of [[GraphicBranch.animationNodeId]].
- * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.
- * @internal
- */
-export enum AnimationNodeId {
-  Untransformed = 0xffffffff,
 }
 
 /**
@@ -147,6 +140,10 @@ export interface GraphicBranchOptions {
   appearanceProvider?: FeatureAppearanceProvider;
   /** @internal Secondary planar classifiers (map layers) */
   secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+  /** The Id of the [ViewAttachment]($backend) from which this branch's graphics originated.
+   * @internal
+   */
+  viewAttachmentId?: Id64String;
 }
 
 /** Clip/Transform for a branch that are varied over time.

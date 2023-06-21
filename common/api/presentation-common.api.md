@@ -108,8 +108,11 @@ export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
 
 // @public
 export interface CalculatedPropertiesSpecification {
+    categoryId?: string | CategoryIdentifier;
+    editor?: PropertyEditorSpecification;
     label: string;
     priority?: number;
+    renderer?: CustomRendererSpecification;
     value: string;
 }
 
@@ -827,6 +830,8 @@ export interface ECValueBinding extends BasePresentationQueryBinding {
     value: any;
     // (undocumented)
     valueType: string;
+    // (undocumented)
+    valueTypeExtended?: string;
 }
 
 // @alpha (undocumented)
@@ -837,6 +842,8 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
     value: any[];
     // (undocumented)
     valueType: string;
+    // (undocumented)
+    valueTypeExtended?: string;
 }
 
 // @public
@@ -2107,7 +2114,7 @@ export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 // @internal (undocumented)
-export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
+export const PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface";
 
 // @public
 export class PresentationError extends BentleyError {

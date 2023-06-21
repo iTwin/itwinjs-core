@@ -1,227 +1,355 @@
-# 3.6.0 Change Notes
+# 4.0.0 Change Notes
 
 Table of contents:
 
-- [API support policies](#api-support-policies)
-- [Electron 22 support](#electron-22-support)
-- [Display system](#display-system)
-  - [Point cloud shading](#point-cloud-shading)
-  - [Normal mapping](#normal-mapping)
-  - [Smooth viewport resizing](#smooth-viewport-resizing)
-  - [Pickable view overlays](#pickable-view-overlays)
-  - [Element clipping example](#element-clipping-example)
-  - [Support larger terrain meshes](#support-larger-terrain-meshes)
+- [Breaking Changes](#breaking-changes)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Node.js](#nodejs)
+    - [WebGL](#webgl)
+    - [Electron](#electron)
+  - [Default RPC Registration](#default-rpc-registration)
+  - [Breaking out of lockstep](#breaking-out-of-lockstep)
+    - [AppUI](#appui)
+    - [Presentation](#presentation)
+    - [Transformation](#transformation)
+    - [eslint-plugin](#eslint-plugin)
+    - [map-layers](#map-layers)
+  - [Deprecated API removals](#deprecated-api-removals)
+  - [Deprecated API replacements](#deprecated-api-replacements)
+    - [Querying ECSql](#querying-ecsql)
+  - [Interfaces changed](#interfaces-changed)
+    - [Core Quantity](#itwincore-quantity)
+    - [ECSchema Metadata](#itwinecschema-metadata)
+- [Backend](#backend)
+  - [BackendHubAccess](#backendhubaccess)
 - [Geometry](#geometry)
-  - [Query mesh convexity](#query-mesh-convexity)
-- [Write-ahead logging](#write-ahead-logging)
-- [Presentation](#presentation)
-  - [Hierarchy levels filtering](#hierarchy-levels-filtering)
-  - [Grouping nodes HiliteSet](#grouping-nodes-hiliteset)
-- [API promotions](#api-promotions)
-- [API deprecations](#api-deprecations)
+  - [Mesh offset](#mesh-offset)
+  - [Mesh intersection with ray](#mesh-intersection-with-ray)
+  - [Abstract base class Plane3d](#abstract-base-class-plane3d)
+  - [Intersect local ranges](#intersect-local-ranges)
+- [Display](#display)
+  - [glTF bounding boxes](#gltf-bounding-boxes)
+  - [Atmospheric Scattering](#atmospheric-scattering)
+  - [Constant LOD mapping mode](#constant-load-mapping-mode)
+- [Presentation](#presentation-1)
+  - [Active unit system](#active-unit-system)
+  - [Hierarchy level filtering and limiting](#hierarchy-level-filtering-and-limiting)
+  - [Stopped "eating" errors on the frontend](#stopped-eating-errors-on-the-frontend)
+  - [Handling of long-running requests](#handling-of-long-running-requests)
+  - [Dependency updates](#dependency-updates)
+- [Schemas](#schemas)
 
-## API support policies
+## Breaking Changes
 
-iTwin.js now documents the [official policies](../learning/api-support-policies.md) defining the level of stability and support afforded to its public APIs and each major release.
+### Updated minimum requirements
 
-## Electron 22 support
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
 
-In addition to already supported Electron versions, iTwin.js now supports [Electron 22](https://www.electronjs.org/blog/electron-22-0).
+#### Node.js
 
-## Display system
+Node 12 reached [end-of-life](https://github.com/nodejs/release#end-of-life-releases) in 2020, and Node 14 as well as Node 16 will do so shortly. iTwin.js 4.0 requires a minimum of Node 18.12.0, though we recommend using the latest long-term-support version.
 
-### Point cloud shading
+#### WebGL
 
-Point clouds can provide valuable real-world context when visualizing an iTwin, but it can often be difficult to discern individual features within the cloud of points - especially when the point cloud lacks color data. You can now accentuate the depth, shape, and surface of a point cloud using a technique called "eye-dome lighting" that uses the relative depths of the points to compute a lighting effect.
+Web browsers display 3d graphics using an API called [WebGL](https://en.wikipedia.org/wiki/WebGL), which comes in 2 versions: WebGL 1, released 11 years ago; and WebGL 2, released 6 years ago. WebGL 2 provides many more capabilities than WebGL 1. Because some browsers (chiefly Safari) did not provide support for WebGL 2, iTwin.js has maintained support for both versions, which imposed some limitations on the features and efficiency of its rendering system.
 
-Point cloud shading is specified by several properties of [RealityModelDisplaySettings.pointCloud]($common), all with names prefixed with `edl` (short for "eye-dome lighting"):
+Over a year ago, support for WebGL 2 finally became [available in all major browsers](https://www.khronos.org/blog/webgl-2-achieves-pervasive-support-from-all-major-web-browsers). iTwin.js now **requires** WebGL 2 - WebGL 1 is no longer supported. This change will have no effect on most users, other than to improve their graphics performance. However, users of iOS will need to make sure they have upgraded to iOS 15 or newer to take advantage of WebGL 2 (along with the many other benefits of keeping their operating system up to date).
 
-- [PointCloudDisplaySettings.edlMode]($common) enables the effect if set to "on" or "full".
-- [PointCloudDisplaySettings.edlStrength]($common) specifies the intensity of the effect.
-- [PointCloudDisplaySettings.edlRadius]($common) specifies the radius in pixels around each point that should be sampled to detect differences in depth.
-- [PointCloudDisplaySettings.edlFilter]($common) specifies whether to apply a filtering pass to smooth out the effect, when `edlMode` is set to "full".
+[IModelApp.queryRenderCompatibility]($frontend) will now produce [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility) for a client that does not support WebGL 2.
 
-Each point cloud in a view can have its own independent EDL settings. You can configure those settings via [ContextRealityModel.displaySettings]($common) for context reality models, and [DisplayStyleSettings.setRealityModelDisplaySettings]($common) for persistent reality models. Adjusting related settings like [PointCloudDisplaySettings.sizeMode]($common) and [PointCloudDisplaySettings.shape]($common) can influence the shading effect.
+#### Electron
 
-A monochrome point cloud with (bottom) and without (top) shading:
+Electron versions from 14 to 17 reached their end-of-life last year, and for this reason, support for these versions were dropped. To be able to drop Node 16, Electron 22 was also dropped. iTwin.js now supports Electron 23 and Electron 24.
 
-![Monochrome point cloud shading](./assets/edl-mono.jpg)
+### Default RPC Registration
 
-A colorized point cloud with (bottom) and without (top) shading:
+Previously, `@itwin/core-electron` and `@itwin/core-mobile` automatically registered the following RPCs on your behalf:
 
-![Colorized point cloud shading](./assets/edl-color.jpg)
+- IModelReadRpcInterface
+- IModelTileRpcInterface
+- SnapshotIModelRpcInterface
+- PresentationRpcInterface
 
-### Normal mapping
+To be more aligned with our approach on Web and to prevent unnecessary registrations and coupling of dependencies, we are now requiring the consumer to register all RPCs they need on their end. Please refer to the documentation for [ElectronApp.startup]($core-electron) and [MobileHost.startup]($core-mobile).
 
-[Normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) is a technique that simulates additional surface details by mapping a texture containing normal vectors onto a surface. [RenderMaterial]($common)s now support applying normal maps.
+### Breaking out of lockstep
 
-You can create a [RenderMaterial]($common) with a normal map on the frontend via [RenderSystem.createRenderMaterial]($frontend). The normal map is specified by the [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend).
+To move more quickly and release independently, the following packages have broken out of lockstep with iTwin.js Core and have moved outside of the itwinjs-core repository.
 
-To create a [RenderMaterialElement]($backend) with a normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend).
+#### AppUI
 
-The image below illustrates the effects of normal mapping. The cubes in the top row have no normal maps, while the cubes in the bottom row are normal mapped.
+The source code for the following packages was moved to the new [AppUi repository](https://github.com/iTwin/appui).
 
-![Normal mapping](./assets/normal-maps.jpg)
+- @itwin/appui-react
+- @itwin/appui-layout-react
+- @itwin/components-react
+- @itwin/core-react
+- @itwin/imodel-components-react
 
-### Smooth viewport resizing
+#### Presentation
 
-Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
+The source code for the following packages was moved to the new [Presentation repository](https://github.com/iTwin/presentation).
 
-### Pickable view overlays
+- @itwin/presentation-components
+- @itwin/presentation-opentelemetry
+- @itwin/presentation-testing
 
-A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
+#### Transformation
 
-### Element clipping example
+The transformer package `@itwin/core-transformer` was renamed to [`@itwin/imodel-transformer`](https://github.com/iTwin/imodel-transformer) and has its own repository now with supporting packages.
 
-In some cases it is useful to apply a [clipping volume](https://www.itwinjs.org/reference/core-common/views/viewdetails/clipvector/) to a view that mimics the shape of one or more elements. For example, you may have a view displaying a reality mesh captured from a real-world asset like a factory, and a design model representing the same asset, and wish to isolate the portions of the reality mesh corresponding to a series of pipe elements in the design model.
+#### eslint-plugin
 
-display-test-app now provides an [example tool](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/ViewClipByElementGeometryTool.ts) demonstrating how this can be achieved. It uses [IModelConnection.generateElementMeshes]($frontend) to produce [Polyface]($core-geometry)s from one or more elements; decomposes them into a set of convex hulls using [VHACD.js](https://www.npmjs.com/package/vhacd-js); and creates a clipping volume from the hulls via [ConvexClipPlaneSet.createConvexPolyface]($core-geometry). The example tool can be accessed in display-test-app using the keyin `dta clip element geometry`.
+`@itwin/eslint-plugin` has moved to the [eslint-plugin repository](https://github.com/iTwin/eslint-plugin).
 
-### Support larger terrain meshes
+#### map-layers
 
-Previously, [RealityMeshParams]($frontend) only supported 16-bit vertex indices, which limited the number of vertices that could be produced by a [TerrainMeshProvider]($frontend). That limit has been extended to 32 bits (the maximum supported by WebGL). The code has also been optimized to allocate only as many bytes per vertex index as required. For example, if a mesh contains fewer than 256 vertices, only one byte will be allocated per vertex index.
+`@itwin/map-layers` has moved into the [viewer-components-react repository](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/map-layers).
+
+### Deprecated API removals
+
+The following previously-deprecated APIs have been removed:
+
+**@itwin/core-backend**:
+
+- `AliCloudStorageService`
+- `AliCloudStorageServiceCredentials`
+- `AzureBlobStorage`
+- `CloudStorageService`
+- `CloudStorageTileUploader`
+- `CloudStorageUploadOptions`
+- `tileCacheService` property of [IModelHost]($backend), [IModelHostOptions]($backend), and [IModelHostConfiguration]($backend)
+- `IModelHost.tileUploader`
+
+**@itwin/core-common**:
+
+- `CloudStorageCache`
+- `CloudStorageContainerDescriptor`
+- `CloudStorageContainerUrl`
+- `CloudStorageProvider`
+- `CloudStorageTileCache`
+- `IModelTileRpcInterface.getTileCacheContainerUrl`
+- `IModelTileRpcInterface.isUsingExternalTileCache`
+
+**@itwin/presentation-common**
+
+- `ContentInstancesOfSpecificClassesSpecification.handlePropertiesPolymorphically`
+
+### Deprecated API replacements
+
+#### Querying ECSql
+
+[ECSqlReader]($common) can be used as an AsyncIterableIterator. This makes migrating from using `query` to using `createQueryReader` much easier.
+Both of these are methods that exist in [IModelDb]($backend), [ECDb]($backend), and [IModelConnection]($frontend).
+
+`createQueryReader` can now be used as shown below:
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const rowId = row[0]; // or 'row.id'
+}
+```
+
+It is important to note that the object returned by `createQueryReader` is a [QueryRowProxy]($common) object and _not_ a raw JavaScript object. To get a raw JavaScript object (as would have been assumed previously when using `query`), call `.toRow()` on the [QueryRowProxy]($common) object.
+
+```ts
+for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
+  const jsRow = row.toRow();
+}
+```
+
+### Interfaces changed
+
+#### @itwin/core-quantity
+
+- The interface `UnitConversion` has been renamed to [UnitConversionProps]($quantity).
+
+#### @itwin/ecschema-metadata
+
+- The `FormatProps` interface has been replaced with the [SchemaItemFormatProps]($ecschema-metadata) type alias.
+- The `UnitProps` interface has been renamed to [SchemaItemUnitProps]($ecschema-metadata).
+- [ISchemaLocater.getSchema]($ecschema-metadata) and [ISchemaLocater.getSchemaSync]($ecschema-metadata) now take a `Readonly<SchemaKey>` instead of a [SchemaKey]($ecschema-metadata) and the [SchemaContext]($ecschema-metadata) parameter is no longer optional.
+
+## Backend
+
+### BackendHubAccess
+
+BackendHubAccess has been marked @internal from @beta. The 'hubAccess' property on [IModelHostConfiguration]($core-backend) has also been marked @internal from @beta.
+
+### Entity.getReferenceIds
+
+[Entity.getReferenceIds]($core-backend) no longer returns a set of [Id64String]($core-bentley), but an [EntityReferenceSet]($core-common), because it now supports returning references
+of entities that aren't elements.
 
 ## Geometry
 
-### Query mesh convexity
+### Mesh offset
 
-A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permits testing the convexity of a mesh by inspecting the dihedral angles of all of its edges. For an example of its usage, see the [element clipping example](#element-clipping-example).
+The new static method [PolyfaceQuery.cloneOffset]($core-geometry) creates a mesh with facets offset by a given distance. The image below illustrates the basic concepts.
 
-## Write-ahead logging
+![Offset Example 1](./assets/cloneOffsetMeshBoxes.png "Original box mesh, offset box, and chamfered offset box")
 
-Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_journal_mode) journal mode for writes to local briefcase files. It now uses [write-ahead logging](https://www.sqlite.org/wal.html) (WAL) mode. This change should be invisible to applications, other than performance of [IModelDb.saveChanges]($backend) should improve in most cases. However, there are a few subtle implications of this change that may affect existing applications:
+At left is the original box, size 3 x 5 in the large face and 2 deep. The middle is constructed by `cloneOffset` with offset of 0.15 and default options. Note that it maintains the original sharp corners. The right box is constructed with [OffsetMeshOptions.chamferAngleBetweenNormals]($core-geometry) of 80 degrees. This specifies that when the original angle between normals of adjacent facets exceeds 80 degrees the corner should be chamfered, creating the slender chamfer faces along the edges and the triangles at the vertices. The default 120 degree chamfer threshold encourages corners to be extended to intersection rather than chamfered.
 
-- Attempting to open more than one simultaneous writeable connections to the same briefcase will now fail on open. Previously, both opens would succeed, followed by a failure on the first attempted write by one or the other connection.
-- Failure to close a writeable briefcase may leave a "-wal" file. Previously, if a program crashed or exited with an open briefcase, it would leave the briefcase file as-of its last call to `IModelDb.saveChanges`. Now, there will be another file with the name of the briefcase with "-wal" appended. This is not a problem and the briefcase is completely intact, except that the briefcase file itself is not sufficient for copying (it will not include recent changes.) The "-wal" file will be used by future connections and will be deleted the next time the briefcase is successfully closed.
-- Attempting to copy an open-for-write briefcase file may not include recent changes. This scenario generally only arises for tests. If you wish to copy an open-for-write briefcase file, you must now call [IModelDb.performCheckpoint]($backend) first.
+The image below illustrates results with a more complex cross section.
+
+![Offset Example 2](./assets/cloneOffsetMeshExample2.png "Offset with sharp corners and with chamfers.")
+
+The lower left is the original (smaller, inside) mesh with the (transparent) offset mesh around it with all sharp corners. At upper right the offset has chamfers, again due to setting the `chamferAngleBetweenNormals` to 120 degrees.
+
+### Mesh intersection with ray
+
+New functionality computes the intersection(s) of a [Ray3d]($core-geometry) with a [Polyface]($core-geometry). By default, [PolyfaceQuery.intersectRay3d]($core-geometry) returns a [FacetLocationDetail]($core-geometry) for the first found facet that intersects the infinite line parameterized by the ray. A callback can be specified in the optional [FacetIntersectOptions]($core-geometry) parameter to customize intersection processing, e.g., to filter and collect multiple intersections. Other options control whether to populate the returned detail with interpolated auxiliary vertex data: normals, uv parameters, colors, and/or the barycentric scale factors used to interpolate such data.
+
+There is also new support for intersecting a `Ray3d` with a triangle or a polygon. [BarycentricTriangle.intersectRay3d]($core-geometry) and [BarycentricTriangle.intersectSegment]($core-geometry) return a [TriangleLocationDetail]($core-geometry) for the intersection point of the plane of the triangle with the infinite line parameterized by a ray or segment. Similarly, [PolygonOps.intersectRay3d]($core-geometry) returns a [PolygonLocationDetail]($core-geometry) for the intersection point in the plane of the polygon. Both returned detail objects contain properties classifying where the intersection point lies with respect to the triangle/polygon, including `isInsideOrOn` and closest edge data.
+
+A new method [Ray3d.intersectionWithTriangle]($core-geometry) is also added which is 2-3 times faster than [BarycentricTriangle.intersectRay3d]($core-geometry). This new method only returns the intersection coordinates of the ray and triangle and no extra data.
+
+### Abstract base class [Plane3d]($core-geometry)
+
+A new abstract base class [Plane3d]($core-geometry) is defined to provide shared queries and enforce method names in multiple classes that act as 3D "planes" with various representations.
+
+- The following classes now declare that they _extend_ [Plane3d]($core-geometry):
+  - [Plane3dByOriginAndUnitNormal]($core-geometry) extends [Plane3d]($core-geometry)
+  - [Plane3dByOriginAndVectors]($core-geometry) extends [Plane3d]($core-geometry)
+  - [Point4d]($core-geometry) extends [Plane3d]($core-geometry)
+  - [ClipPlane]($core-geometry) extends [Plane3d]($core-geometry)
+
+This will provide more consistency and functionality than previously provided by the _interface_ [PlaneAltitudeEvaluator]($core-geometry).   API compatibility with the weaker [PlaneAltitudeEvaluator]($core-geometry) is maintained as follows:
+
+- The abstract base class [Plane3d]($core-geometry) declares that it implements the [PlaneAltitudeEvaluator]($core-geometry).
+- Classes that _extend_ [Plane3d]($core-geometry) inherit the _extended_ declaration of the base class (compatibility "by interface name").
+- Classes that _extend_ [Plane3d]($core-geometry) inherit the various _abstract_ method obligations and (non-abstract) method implementations from the base class (compatibility "by collected list of methods").
+
+With these changes the [PlaneAltitudeEvaluator]($core-geometry) can be deprecated.
+
+### Intersect local ranges
+
+A new method [ClipUtilities.doLocalRangesIntersect]($core-geometry) is added for determining whether two [Range3d]($core-geometry) objects in different local coordinates clash. This method performs an intersection of the ranges in the same coordinate system, _without_ expanding their volumes, as can happen when a `Range3d` is rotated. An optional `margin` signed distance can be used to shrink or expand the second range before the intersection, allowing for proximity testing. This can be used, for example, to efficiently test whether two elements in an iModel are approximately within 50cm of each other:
+
+```ts
+  // first element data, e.g. from iModel query
+  const range0 = Range3d.create(Point3d.fromJSON(el.bBoxLow), Point3d.fromJSON(el.bBoxHigh));
+  const placement0 = Placement3d.fromJSON({ origin: el.origin, angles: { pitch: el.pitch, roll: el.roll, yaw: el.yaw } });
+  // [...] second element data similarly
+  const isClash = ClipUtilities.doLocalRangesIntersect(range0, placement0.transform, range1, placement1.transform, 0.5);
+```
+
+## Display
+
+### glTF bounding boxes
+
+The existing [readGltfGraphics]($frontend) function returns an opaque [RenderGraphic]($frontend). A new [readGltf]($frontend) function has been added that produces a [GltfGraphic]($frontend) that - in addition to the `RenderGraphic` - includes the bounding boxes of the glTF model in local and world coordinates.
+
+### Atmospheric Scattering
+
+A physics-based Atmospheric Scattering effect is now available for the rendering system.
+
+![Globe View of Atmospheric Scattering](.\assets\atmosphere_globe.jpg)
+
+This effect can be toggled via [Environment.displayAtmosphere]($common) and adjusted through [Environment.atmosphere]($common).
+It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
+
+The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common).
+
+![Sky View of Atmospheric Scattering](.\assets\atmosphere_distance.jpg)
+![Atmospheric Scattering from Space](.\assets\atmosphere_space.jpg)
+![Atmospheric Scattering at Sunset](.\assets\atmosphere_sunset.jpg)
+
+### Constant LOD mapping mode
+
+Constant level-of-detail ("LOD") mapping mode is a technique that dynamically calculates texture cordinates to keep the texture near a certain size on the screen, thus preserving the level of detail no matter what the zoom level. It blends from one size of the texture to another as the view is zoomed in or out so that the change is smooth.
+
+You can create a [RenderMaterial]($common) that uses this mode on the frontend via [RenderSystem.createRenderMaterial]($frontend) by setting `useConstantLod` to `true` in [MaterialTextureMappingProps]($frontend) and optionally specifying its parameters via `constantLodProps` (see [TextureMapping.ConstantLodParamProps]($common)).
+
+You can also have a normal map use constant LOD mapping by setting `useConstantLod` in its properties via [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend). It is thus possible to have a pattern map which uses constant lod mapping and a normal map which uses some other texture mapping mode or visa versa.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD pattern map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass in a `patternMap` with a [TextureMapProps]($common) which has `pattern_useConstantLod` set to true and optionally specify any or all of the `pattern_constantLod_*` properties.
+
+To create a [RenderMaterialElement]($backend) with a constant LOD normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend) and turn on the `useConstantLod` flag in its `NormalFlags` property.
+
+The image below illustrates the effects of constant LOD mapping.
+
+![Constant LOD mapping zoomin](./assets/ConstantLod.gif "Zooming in on comstant lod mapped texture. Note how detail fades out and is replaced by smaller detail as you zoom in.")     ![Constant LOD mapping](./assets/ConstantLod.jpg "view of constant lod mapping looking across surface")
 
 ## Presentation
 
-### Hierarchy levels filtering
+### Active unit system
 
-Ability to filter individual hierarchy levels was added for tree components that use [PresentationTreeDataProvider]($presentation-components). To enable this, [PresentationTreeRenderer]($presentation-components) should be passed to [ControlledTree]($components-react) through [ControlledTreeProps.treeRenderer]($components-react):
+[PresentationManager]($presentation-frontend) has a way to set active unit system either through props when initializing ([PresentationManagerProps.activeUnitSystem]($presentation-frontend)) or directly through a setter ([PresentationManager.activeUnitSystem]($presentation-frontend)). Both of these ways have been deprecated in favor of using [QuantityFormatter.activeUnitSystem]($core-frontend) (access `QuantityFormatter` through `IModelApp.quantityFormatter`) to avoid asking consumers set the active unit system in two places. For the time being, while we keep the deprecated unit system setters on the presentation manager, they act as an override to [QuantityFormatter.activeUnitSystem]($core-frontend), but the latter is now used by default, so setting active unit system on presentation manager is not necessary any more.
+
+### Hierarchy level filtering and limiting
+
+Two new features have been made available to help working with very large hierarchies - hierarchy level filtering and limiting. Filtering was already available since `3.6` and has been promoted to `@beta`, limiting has been newly added as `@beta`. See [hierarchy filtering and limiting page](../presentation/hierarchies/FilteringLimiting.md) for more details.
+
+### Stopped "eating" errors on the frontend
+
+The [PresentationManager]($presentation-frontend) used to "eat" errors and return default value instead of re-throwing and exposing them to consumers. This made it impossible for consumer code to know that an error occurred, which could cause it to make wrong decisions. The decision has been re-considered and now Presentation manager lets consumers catch the errors. This affects the following APIs:
+
+- [PresentationManager.getNodes]($presentation-frontend)
+- [PresentationManager.getNodesAndCount]($presentation-frontend)
+- [PresentationManager.getContent]($presentation-frontend)
+- [PresentationManager.getContentAndSize]($presentation-frontend)
+- [PresentationManager.getPagedDistinctValues]($presentation-frontend)
+- [PresentationManager.getDisplayLabelDefinitions]($presentation-frontend)
+
+Consumers of these APIs should make sure they're wrapped with try/catch blocks and the errors are handled appropriately. See our [error handling page](../presentation/advanced/ErrorHandling.md) for more details.
+
+### Handling of long-running requests
+
+The timeouts' strategy used for Presentation RPC has been changed.
+
+Previously, the backend would return a "timeout" status if creating the response took more than 90 seconds (or as configured through [PresentationPropsBase.requestTimeout]($presentation-backend)). The frontend, upon receiving such a status, would repeat the request 5 times before propagating the timeout to the requestor on the frontend. This means that changing the timeout on the backend affects how long in total the frontend waits. By default that was 5 times 90 seconds, so 7.5 minutes in total.
+
+Now, the two timeout configs on the backend and the frontend have been separated. The timeout on the frontend is set through [PresentationManagerProps.requestTimeout]($presentation-frontend) and defaults to 10 minutes. Presentation manager will repeat the RPC request as many times as needed to wait at least 10 minutes until returning the "timeout" response to the requestor. With this change the timeout configuration on the backend becomes less important as it merely affects how often the frontend will have to repeat the request. It can still be changed through [PresentationPropsBase.requestTimeout]($presentation-backend), but the default value has been reduced to 5 seconds.
+
+### Use content modifiers on nested content
+
+Previously, the [calculated](../presentation/content/ContentModifier.md#attribute-calculatedproperties) and [related properties](../presentation/content/ContentModifier.md#attribute-relatedproperties) defined in [content modifiers](../presentation/content/ContentModifier.md) were only applied on directly loaded instances' content. Occasionally, there is a need to request calculated and/or related properties to be loaded for specific instances in all situations, no matter if their content is loaded directly or indirectly. Previously that was only possible by chaining [related properties](../presentation/content/ContentModifier.md#attribute-relatedproperties) and [nested related properties](../presentation/content/RelatedPropertiesSpecification.md#attribute-nestedrelatedproperties) attributes. Now the content modifier rule has an attribute [`applyOnNestedContent`](../presentation/content/ContentModifier.md#attribute-applyonnestedcontent) which indicates if the modifier should be used on nested content. This removes the need to have duplicate [related properties specifications](../presentation/content/RelatedPropertiesSpecification.md) in those situations.
+
+### Dependency updates
+
+In addition to upgrading iTwin.js core dependencies to `4.0`, there are some other notable upgrades:
+
+- Support for React 18 (keep support of React 17 too).
+- Upgrade [iTwinUI](https://github.com/iTwin/iTwinUI) from v1 to v2.
+- `@itwin/presentation-backend`, `@itwin/presentation-common` and `@itwin/presentation-frontend` have new peer dependency `@itwin/ecschema-metadata`.
+
+### ContentInstancesOfSpecificClassesSpecification
+
+The deprecated field `handleInstancesPolymorphically` of [ContentInstancesOfSpecificClassesSpecification]($presentation-common) has been removed. To specify handling polymorphically, specify the value in `classes.arePolymorphic` or `excludedClasses.arePolymorphic`.
+
+## Schemas
+
+### Asynchronous schema loading
+
+Added proper support for loading multiple schemas asynchronously and the ability to get information about a schema that is partially loaded.
 
 ```ts
-return <ControlledTree
-  // other props
-  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={imodel} modelSource={modelSource} />}
-/>;
+const context = new SchemaContext();
+const locater = new SchemaXmlFileLocater();
+locater.addSchemaSearchPath("/Users/me/schemas/");
+context.addLocater(locater);
+
+const schemaKey = new SchemaKey("MySchemaWithManyReferences", 1, 0, 42);
+
+// Start loading the schema but return as soon as we have loaded the name and version of the schema and it's references
+const schemaInfo = await context.getSchemaInfo(schemaKey, SchemaMatchType.Exact);
+// Get the whole schema either awaiting the schema promise created by getSchemaInfo or start loading if not already started
+const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+// Await the schema promise created by getSchemaInfo or return undefined if not already started
+const schema2 = await context.getCachedSchema(schemaKey, SchemaMatchType.Exact);
 ```
 
-[PresentationTreeRenderer]($presentation-components) renders nodes with action buttons for applying and clearing filters. Some hierarchy levels might not be filterable depending on the presentation rules used to build them. In that case, action buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes, `There are no child nodes matching current filter` message is rendered in that hierarchy level.
+### Other minor API changes
 
-![Filtered Tree](./assets/filtered-tree.jpg)
-
-Dialog component for creating hierarchy level filter is opened when node's `Filter` button is clicked. This dialog allows to create complex filters with multiple conditions based on properties from instances that are represented by the nodes in that hierarchy level.
-
-![Filter Builder Dialog](./assets/filter-builder-dialog.jpg)
-
-### Grouping nodes HiliteSet
-
-[HiliteSetProvider.getHiliteSet]($presentation-frontend) now supports getting [HiliteSet]($presentation-frontend) for grouping nodes. Previously, [HiliteSetProvider.getHiliteSet]($presentation-frontend) used to return empty [HiliteSet]($presentation-frontend) if called with key of the grouping node. Now it returns [HiliteSet]($presentation-frontend) for all the instances that are grouped under grouping node. This also means that now elements will be hilited in viewport using [Unified Selection](../presentation/unified-selection/index.md) when grouping node is selected in the tree.
-
-## API promotions
-
-The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' [stability contract](../learning/api-support-policies.md).
-
-### @itwin/core-bentley
-
-- [AccessToken]($bentley)
-
-### @itwin/core-common
-
-- [AuthorizationClient]($common)
-- [FrustumPlanes]($common)
-
-### @itwin/core-frontend
-
-- [Viewport.queryVisibleFeatures]($frontend)
-- [ViewState3d.lookAt]($frontend)
-
-### @itwin/presentation-common
-
-- Presentation rules:
-  - [InstanceLabelOverridePropertyValueSpecification.propertySource]($presentation-common)
-  - [ChildNodeSpecificationBase.suppressSimilarAncestorsCheck]($presentation-common)
-  - [RequiredSchemaSpecification]($presentation-common) and its usages:
-    - [SubCondition.requiredSchemas]($presentation-common)
-    - [RuleBase.requiredSchemas]($presentation-common)
-    - [Ruleset.requiredSchemas]($presentation-common)
-- Content traversal - related APIs:
-  - [traverseContent]($presentation-common)
-  - [IContentVisitor]($presentation-common)
-- Selection scope computation - related APIs:
-  - [SelectionScopeProps]($presentation-common)
-  - [ComputeSelectionRequestOptions]($presentation-common)
-  - [PresentationRpcInterface.getElementProperties]($presentation-common)
-- Element properties request - related APIs:
-  - [ElementProperties]($presentation-common)
-  - [ElementPropertiesRequestOptions]($presentation-common)
-  - [PresentationRpcInterface.computeSelection]($presentation-common)
-- Content sources request - related APIs:
-  - [ContentSourcesRequestOptions]($presentation-common)
-  - [PresentationRpcInterface.getContentSources]($presentation-common)
-- Content instance keys request - related APIs:
-  - [ContentInstanceKeysRequestOptions]($presentation-common)
-  - [PresentationRpcInterface.getContentInstanceKeys]($presentation-common)
-- [NestedContentField.relationshipMeaning]($presentation-common)
-- [ContentFlags.IncludeInputKeys]($presentation-common) and [Item.inputKeys]($presentation-common)
-
-### @itwin/presentation-backend
-
-- Presentation manager's caching related APIs:
-  - [HierarchyCacheMode]($presentation-backend)
-  - [HierarchyCacheConfig]($presentation-backend)
-  - [PresentationManagerCachingConfig.hierarchies]($presentation-backend) and [PresentationManagerCachingConfig.workerConnectionCacheSize]($presentation-backend)
-- [PresentationManager.getElementProperties]($presentation-backend) and [MultiElementPropertiesResponse]($presentation-backend)
-- [PresentationManager.getContentSources]($presentation-backend)
-- [PresentationManager.computeSelection]($presentation-backend)
-- [RulesetEmbedder]($presentation-backend) and related APIs
-
-### @itwin/presentation-frontend
-
-- [PresentationManager.getContentSources]($presentation-frontend)
-- [PresentationManager.getElementProperties]($presentation-frontend)
-- [PresentationManager.getContentInstanceKeys]($presentation-frontend)
-
-### @itwin/presentation-components
-
-- [FavoritePropertiesDataFilterer]($presentation-components)
-- [PresentationPropertyDataProvider.getPropertyRecordInstanceKeys]($presentation-components)
-- [PresentationTreeDataProviderProps.customizeTreeNodeItem]($presentation-components)
-- [PresentationTreeNodeLoaderProps.seedTreeModel]($presentation-components)
-
-## API deprecations
-
-### @itwin/core-bentley
-
-[ByteStream]($bentley)'s `next` property getters like [ByteStream.nextUint32]($bentley) and [ByteStream.nextFloat64]($bentley) have been deprecated and replaced with corresponding `read` methods like [ByteStream.readUint32]($bentley) and [ByteStream.readFloat64]($bentley). The property getters have the side effect of incrementing the stream's current read position, which can result in surprising behavior and may [trip up code optimizers](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593) that assume property access is free of side effects.
-
-Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is called. Code optimizers like [Angular](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593)'s may elide repeated calls to `next` assuming it will return the same value each time. Prefer to use the new [TransientIdSequence.getNext]($bentley) method instead.
-
-### @itwin/core-frontend
-
-[ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
-
-[NativeApp.requestDownloadBriefcase]($frontend) parameter `progress` is deprecated in favor of `progressCallback` in [DownloadBriefcaseOptions]($frontend). Similarly, `progressCallback` in [PullChangesOptions]($frontend) is now deprecated and should be replaced with `downloadProgressCallback` in [PullChangesOptions]($frontend). Both new variables are of type [OnDownloadProgress]($frontend), which more accurately represents information reported during downloads.
-
-[IModelConnection.displayedExtents]($frontend) and [IModelConnection.expandDisplayedExtents]($frontend) are deprecated. The displayed extents are expanded every time a [ContextRealityModel]($common) is added to any view in the iModel, and never shrink. They were previously used to compute the viewed extents of every [SpatialViewState]($frontend), which could produce an unnecessarily large frustum resulting in graphical artifacts. Now each spatial view computes its extents based on the extents of the models it is currently displaying. `displayedExtents` is still computed as before to support existing users of the API, but its use is not recommended.
-
-### @itwin/core-backend
-
-[RenderMaterialElement.Params]($backend) is defined as a class, which makes it unwieldy to use. You can now use the interface [RenderMaterialElementParams]($backend) instead.
-
-### @itwin/appui-abstract
-
-[UiItemsProvider]($appui-abstract) and other AppUI specific types and APIs are deprecated and moved to `@itwin/appui-react` package.
-For a replacement in case of API rename consult @deprecated tag in the documentation.
-
-### @itwin/appui-react
-
-`ModelsTree` and `CategoryTree` were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
-
-`SpatialContainmentTree` were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. `SpatialContainmentTree` will be removed in future major version.
-
-### @itwin/presentation-common
-
-A bunch of `{api_name}JSON` interfaces, completely matching their sibling `{api_name}` definition, thus having no real benefit, have been forcing us to map back and forth between `{api_name}` and `{api_name}JSON` with `{api_name}.toJSON` and `{api_name}.fromJSON` helper functions. Majority of them are marked public as they're part of public RPC interface, but are generally not expected to be directly used by consumer code. They have been deprecated with the recommendation to use `{api_name}`.
+- Added `SchemaInfo` interface with schema keys for a schema and it's references.  `Schema` implicitly supports this interface.
+- Some beta components had breaking changes and were moved to internal:
+  - `SchemaGraph`
+    - Now supports working with a `SchemaInfo` and a `SchemaContext` necessitating the init be made async.
+  - `SchemaMap`
+    - Use `Array<Schema>` in its place.
+  - `SchemaCache`
+    - Updated to support caching partially loaded schemas, use `SchemaContext` to cache schemas in it's place.
+- Added helper method `SchemaFileUtility.writeSchemaToXmlString` to write schema xml to a string
+- Added `Schema.startLoadingFromJson` to partially load a schema and return as soon as the `SchemaInfo` could be loaded.
