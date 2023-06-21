@@ -48,7 +48,7 @@ jobs:
     - task: NodeTool@0
       displayName: Use Node 18.x
       inputs:
-        versionSpec: 18.x
+        versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
         checkLatest: true
 
     - bash: |
@@ -178,7 +178,11 @@ jobs:
       - task: NodeTool@0
         displayName: 'Use Node 12.x'
         inputs:
+<<<<<<< HEAD
           versionSpec: 12.x
+=======
+          versionSpec: 18.16.0 #TODO Change back to 18.x once segfault on 18.16.1? is resolved.
+>>>>>>> 8d1e486fd2 (Force node 18.16.0 for CI (#5661))
           checkLatest: true
 
       - bash: |
