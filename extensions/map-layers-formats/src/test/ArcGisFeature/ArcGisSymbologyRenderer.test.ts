@@ -5,8 +5,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { NewYorkDataset } from "./NewYorkDataset";
-import { ArcGisSymbologyRenderer, EsriPMS, EsriSFS, EsriSLS } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { SymbologyDataset } from "./SymbologyDataset";
+import { EsriPMS, EsriSLS, EsriSFS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 
 describe("ArcGisSymbologyRenderer", () => {
 
@@ -74,4 +76,23 @@ describe("ArcGisSymbologyRenderer", () => {
 
   });
 
-});
+  it("should construct unique value renderer", async () => {
+
+    const info = SymbologyDataset.uniqueValueDrawingInfo;
+    const renderer =  EsriUniqueValueRenderer.fromJSON(info.drawingInfo.renderer as any);
+    expect(renderer.field1).equals(info.drawingInfo.renderer.field1)
+    expect(renderer.field2).to.be.undefined;
+    expect(renderer.field3).to.be.undefined;
+    expect(renderer.type).equals(info.drawingInfo.renderer.type);
+    expect(renderer.uniqueValueInfos.length).equals(info.drawingInfo.renderer.uniqueValueInfos.length);
+    for (let i = 0 ; i < renderer.uniqueValueInfos.length; i++) {
+      const lhs = renderer.uniqueValueInfos[i];
+      const rhs = info.drawingInfo.renderer.uniqueValueInfos[i];
+      expect(lhs.value).equals(rhs.value);
+      expect(lhs.label).equals(rhs.label);
+      expect(lhs.description).equals(rhs.description);
+      expect(lhs.symbol.type).equals(rhs.symbol.type);
+    }
+  });
+
+}); // end test suite
